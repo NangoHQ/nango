@@ -314,6 +314,62 @@ export type PostFunctionInvocation = ApiEndpoint<{
     Success: FunctionInvocationSuccess;
 }>;
 
+export type FunctionVariantErrorCode =
+    | 'invalid_variant'
+    | 'function_not_found'
+    | 'connection_not_found'
+    | 'function_disabled'
+    | 'function_variant_not_found'
+    | 'invalid_frequency'
+    | 'resource_capped'
+    | 'server_error';
+
+export type FunctionVariantSuccess = {
+    function: { uuid: string; name: string };
+    variant: string;
+    frequency: string;
+    state: 'enabled' | 'disabled';
+};
+
+export type PostFunctionVariant = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'variant_created', 'environment'>;
+    Method: 'POST';
+    Path: '/connections/:connectionId/functions/:functionUuid/variants';
+    Params: { connectionId: string; functionUuid: string };
+    Body: { variant: string };
+    Error: ApiError<FunctionVariantErrorCode>;
+    Success: FunctionVariantSuccess;
+}>;
+
+export type DeleteFunctionVariant = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'variant_deleted', 'environment'>;
+    Method: 'DELETE';
+    Path: '/connections/:connectionId/functions/:functionUuid/variants/:variant';
+    Params: { connectionId: string; functionUuid: string; variant: string };
+    Error: ApiError<FunctionVariantErrorCode>;
+    Success: { success: boolean };
+}>;
+
+export type PatchConnectionFunction = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'variant_updated', 'environment'>;
+    Method: 'PATCH';
+    Path: '/connections/:connectionId/functions/:functionUuid';
+    Params: { connectionId: string; functionUuid: string };
+    Body: PatchFunctionVariant['Body'];
+    Error: ApiError<FunctionVariantErrorCode>;
+    Success: FunctionVariantSuccess;
+}>;
+
+export type PatchFunctionVariant = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'variant_updated', 'environment'>;
+    Method: 'PATCH';
+    Path: '/connections/:connectionId/functions/:functionUuid/variants/:variant';
+    Params: { connectionId: string; functionUuid: string; variant: string };
+    Body: { enabled: boolean; frequency?: string | null } | { enabled?: boolean; frequency: string | null };
+    Error: ApiError<FunctionVariantErrorCode>;
+    Success: FunctionVariantSuccess;
+}>;
+
 export type GetFunctionInvocation = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';

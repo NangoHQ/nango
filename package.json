@@ -58,6 +58,7 @@
         "storybook": "npm --prefix packages/design-system run storybook",
         "nango": "cd ./packages/server && npm run nango",
         "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d",
+        "internal-auth:key": "tsx scripts/generate-internal-auth-key.ts",
         "changelog:providers": "tsx scripts/provider-changelog.ts",
         "changelog:integrations": "tsx scripts/pre-built-integrations-changelog.ts"
     },

@@ -10,7 +10,7 @@ import {
     githubAppClient,
     syncEndUserToConnection
 } from '@nangohq/shared';
-import { report, stringifyError } from '@nangohq/utils';
+import { basePublicUrl, report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
 import { noteConnectionUpsert, oauthAuthType } from '../hooks/auditConnection.js';
@@ -34,7 +34,7 @@ class AppAuthController {
         // this is an instance where an organization approved an install
         // reconcile the installation id using the webhook
         if ((action === 'install' && !state) || (action === 'update' && !state)) {
-            res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
+            res.redirect(basePublicUrl);
             return;
         }
 

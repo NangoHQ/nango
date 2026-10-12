@@ -1,7 +1,11 @@
+import { createPrivateKey, createPublicKey } from 'node:crypto';
+
 import * as z from 'zod';
 
 import { DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST, mergeProxyBaseUrlOverrideDenylist } from '../proxy/baseUrlOverrideDenylist.js';
 import { roles } from '../roles.js';
+
+import type { InternalAuthPublicKey } from '@nangohq/types';
 
 const PUBSUB_SUBJECTS = ['user', 'usage', 'team', 'lambda_keep_warm', 'audit'] as const;
 
@@ -169,6 +173,51 @@ function outboundUrlPolicySchema(varName: string) {
                 })
                 .strict()
                 .optional()
+        );
+}
+
+const INTERNAL_AUTH_KID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const INTERNAL_AUTH_RAW_PUBLIC_KEY = /^[A-Za-z0-9_-]{43}$/;
+
+/** JSON array of `{ kid, publicKey }`. Blank or unset is an empty list. */
+function internalAuthPublicKeysSchema(varName: string) {
+    return z
+        .string()
+        .optional()
+        .transform((raw, ctx) => {
+            const value = raw?.trim();
+            if (!value) {
+                return [];
+            }
+            try {
+                return JSON.parse(value) as unknown;
+            } catch {
+                ctx.addIssue(`Invalid JSON in ${varName}`);
+                return z.NEVER;
+            }
+        })
+        .pipe(
+            z
+                .array(
+                    z.object({
+                        kid: z.string().regex(INTERNAL_AUTH_KID),
+                        publicKey: z.string().regex(INTERNAL_AUTH_RAW_PUBLIC_KEY)
+                    })
+                )
+                .check((payload) => {
+                    const seen = new Set<string>();
+                    for (const [index, entry] of payload.value.entries()) {
+                        if (seen.has(entry.kid)) {
+                            payload.issues.push({
+                                code: 'custom',
+                                message: `${varName} repeats kid ${entry.kid}`,
+                                path: [index, 'kid'],
+                                input: entry.kid
+                            });
+                        }
+                        seen.add(entry.kid);
+                    }
+                })
         );
 }
 
@@ -775,6 +824,12 @@ const ENVS_SHAPE = z.object({
         .stringbool({ truthy: ['true'], falsy: ['false'] })
         .optional()
         .default(false),
+    NANGO_INTERNAL_AUTH_JOBS_KEY_ID: z.string().optional(),
+    NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: z.string().optional(),
+    NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: internalAuthPublicKeysSchema('NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS'),
+    NANGO_INTERNAL_AUTH_SERVER_KEY_ID: z.string().optional(),
+    NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY: z.string().optional(),
+    NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS: internalAuthPublicKeysSchema('NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS'),
 
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
@@ -994,6 +1049,95 @@ const ENVS_SHAPE = z.object({
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
 });
 
+/** SPKI prefix length for an Ed25519 public key (RFC 8410). The raw key is the remaining 32 bytes. */
+const ED25519_SPKI_PREFIX_LEN = 12;
+
+/** Env files often store PEM with escaped newlines. */
+export function normalizePem(value: string): string {
+    const trimmed = value.trim();
+    return trimmed.includes('\\n') ? trimmed.replace(/\\n/g, '\n') : trimmed;
+}
+
+function presentEnv(value: string | undefined): string | undefined {
+    const trimmed = value?.trim();
+    return trimmed ? trimmed : undefined;
+}
+
+function ed25519RawPublicKey(privatePem: string): string | null {
+    try {
+        const privateKey = createPrivateKey(privatePem);
+        if (privateKey.asymmetricKeyType !== 'ed25519') {
+            return null;
+        }
+        const spki = Buffer.from(createPublicKey(privateKey).export({ type: 'spki', format: 'der' }));
+        return spki.subarray(ED25519_SPKI_PREFIX_LEN).toString('base64url');
+    } catch {
+        return null;
+    }
+}
+
+function checkInternalAuthKeyPair(
+    value: object,
+    push: (issue: { code: 'custom'; message: string; path: string[]; input: unknown }) => void,
+    names: { privateName: string; keyIdName: string; publicName: string }
+): void {
+    const record = value as Record<string, unknown>;
+    const privateRaw = record[names.privateName];
+    const keyIdRaw = record[names.keyIdName];
+    const publicRaw = record[names.publicName];
+    const privateKey = presentEnv(typeof privateRaw === 'string' ? privateRaw : undefined);
+    const keyId = presentEnv(typeof keyIdRaw === 'string' ? keyIdRaw : undefined);
+    const publicKeys = Array.isArray(publicRaw) ? (publicRaw as InternalAuthPublicKey[]) : undefined;
+
+    if (!privateKey) {
+        return;
+    }
+
+    if (!privateKey.includes('BEGIN PRIVATE KEY') || !ed25519RawPublicKey(normalizePem(privateKey))) {
+        push({
+            code: 'custom',
+            message: `${names.privateName} must be an unencrypted Ed25519 PKCS8 PEM`,
+            path: [names.privateName],
+            input: privateRaw
+        });
+    }
+
+    if (!keyId) {
+        push({
+            code: 'custom',
+            message: `${names.keyIdName} is required when ${names.privateName} is set`,
+            path: [names.keyIdName],
+            input: keyIdRaw
+        });
+        return;
+    }
+
+    if (!publicKeys) {
+        return;
+    }
+
+    const match = publicKeys.find((entry) => entry.kid === keyId);
+    if (!match) {
+        push({
+            code: 'custom',
+            message: `${names.publicName} must include ${keyId} when ${names.privateName} is set`,
+            path: [names.publicName],
+            input: publicRaw
+        });
+        return;
+    }
+
+    const raw = ed25519RawPublicKey(normalizePem(privateKey));
+    if (raw && match.publicKey !== raw) {
+        push({
+            code: 'custom',
+            message: `${names.publicName} entry ${keyId} does not match ${names.privateName}`,
+            path: [names.publicName],
+            input: publicRaw
+        });
+    }
+}
+
 export const ENVS = ENVS_SHAPE.check((ctx) => {
     // EMAIL_HTTP_URL on its own selects the HTTP email provider, which cannot send without a body
     // template. Fail here so a half-configured provider surfaces at startup instead of on the
@@ -1004,6 +1148,32 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
             message: 'EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set',
             path: ['EMAIL_HTTP_BODY'],
             input: ctx.value.EMAIL_HTTP_BODY
+        });
+    }
+
+    const pushIssue = (issue: { code: 'custom'; message: string; path: string[]; input: unknown }) => {
+        ctx.issues.push(issue);
+    };
+    checkInternalAuthKeyPair(ctx.value, pushIssue, {
+        privateName: 'NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY',
+        keyIdName: 'NANGO_INTERNAL_AUTH_JOBS_KEY_ID',
+        publicName: 'NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS'
+    });
+    checkInternalAuthKeyPair(ctx.value, pushIssue, {
+        privateName: 'NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY',
+        keyIdName: 'NANGO_INTERNAL_AUTH_SERVER_KEY_ID',
+        publicName: 'NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS'
+    });
+
+    const jobsKeys = ctx.value.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS;
+    const serverKeys = ctx.value.NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS;
+    const jobsKids = new Set(jobsKeys.map((entry) => entry.kid));
+    if (serverKeys.some((entry) => jobsKids.has(entry.kid))) {
+        ctx.issues.push({
+            code: 'custom',
+            message: 'NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS reuses a kid from NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS',
+            path: ['NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS'],
+            input: ctx.value.NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS
         });
     }
 });

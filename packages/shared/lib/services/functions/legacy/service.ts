@@ -70,12 +70,10 @@ export async function listFunctions({
  */
 export async function listActions({
     environmentId,
-    providerConfigKey,
-    limit = 200
+    providerConfigKey
 }: {
     environmentId: number;
     providerConfigKey: string;
-    limit?: number;
 }): Promise<Result<ListedNangoActionFunction[], ListFunctionsError>> {
     try {
         const integrationId = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
@@ -88,7 +86,7 @@ export async function listActions({
             );
         }
 
-        const rows = await functionsModel.findActiveActions({ environmentId, providerConfigKey, limit });
+        const rows = await functionsModel.findActiveActions({ environmentId, providerConfigKey });
         const mapped = mapListingRows(rows);
         if (mapped.isErr()) {
             return Err(mapped.error);

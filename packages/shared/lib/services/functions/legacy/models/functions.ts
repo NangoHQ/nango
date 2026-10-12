@@ -102,19 +102,11 @@ export async function findActiveByEnvironment({
     return { rows: pageRows, total };
 }
 
-export async function findActiveActions({
-    environmentId,
-    providerConfigKey,
-    limit
-}: {
-    environmentId: number;
-    providerConfigKey: string;
-    limit: number;
-}): Promise<FunctionRow[]> {
+export async function findActiveActions({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Promise<FunctionRow[]> {
     const config = await providerForConfig(environmentId, providerConfigKey);
     const catalog = await catalogTools(config?.accountUuid, config?.provider, 'action');
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type: 'action', search: undefined, catalog });
-    const rows = await db.knex.from(listing).select<FunctionRow[]>('*').orderBy(listingOrderBy).limit(limit);
+    const rows = await db.knex.from(listing).select<FunctionRow[]>('*').orderBy(listingOrderBy);
     hydrateCatalogJsonSchemas(rows, catalog);
     return rows;
 }

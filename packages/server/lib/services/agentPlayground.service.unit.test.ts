@@ -8,7 +8,7 @@ import { seeders } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionServer.js';
-import { buildMcpTools, newestConnectionPerIntegration, sessionOwner, toolNeedsApproval } from './agentPlayground.service.js';
+import { buildMcpTools, existingIntegrationFor, newestConnectionPerIntegration, sessionOwner, toolNeedsApproval } from './agentPlayground.service.js';
 
 import type { AgentSession } from '@nangohq/types';
 
@@ -65,10 +65,46 @@ describe('toolNeedsApproval', () => {
         { toolName: 'nango_execute', input: {}, expected: true },
         { toolName: 'pg-google-calendar__delete-event', input: {}, expected: true },
         { toolName: 'pg-google-calendar__search-events', input: {}, expected: false },
+        { toolName: 'pg-slack__lookup-user-by-email', input: {}, expected: false },
+        { toolName: 'pg-notion__query-database', input: {}, expected: false },
+        { toolName: 'pg-notion__search', input: {}, expected: false },
+        { toolName: 'pg-hubspot__whoami', input: {}, expected: false },
+        { toolName: 'pg-google-docs__export-document', input: {}, expected: false },
+        { toolName: 'pg-slack__post-message', input: {}, expected: true },
+        { toolName: 'pg-slack__open-dm', input: {}, expected: true },
         { toolName: 'nango_tool_search', input: { query: 'delete event' }, expected: false },
         { toolName: 'nango_create_connection', input: {}, expected: false }
     ])('$toolName $input → $expected', ({ toolName, input, expected }) => {
         expect(toolNeedsApproval(toolName, input)).toBe(expected);
+    });
+});
+
+describe('existingIntegrationFor', () => {
+    it('prefers the playground integration, then the one keyed by the provider name, then the oldest', () => {
+        const integrations = [
+            { unique_key: 'slack', provider: 'slack', missing_fields: [] },
+            { unique_key: 'pg-slack', provider: 'slack', missing_fields: [] },
+            { unique_key: 'old-calendar', provider: 'google-calendar', missing_fields: [] },
+            { unique_key: 'google-calendar', provider: 'google-calendar', missing_fields: [] },
+            { unique_key: 'new-github', provider: 'github', missing_fields: [] },
+            { unique_key: 'newer-github', provider: 'github', missing_fields: [] }
+        ];
+
+        expect(existingIntegrationFor(integrations, 'slack')?.unique_key).toBe('pg-slack');
+        expect(existingIntegrationFor(integrations, 'google-calendar')?.unique_key).toBe('google-calendar');
+        expect(existingIntegrationFor(integrations, 'github')?.unique_key).toBe('new-github');
+        expect(existingIntegrationFor(integrations, 'linear')).toBeUndefined();
+    });
+
+    it('prefers a complete integration, and falls back to an incomplete one', () => {
+        const integrations = [
+            { unique_key: 'slack', provider: 'slack', missing_fields: ['oauth_client_secret'] },
+            { unique_key: 'slack-prod', provider: 'slack', missing_fields: [] },
+            { unique_key: 'linear', provider: 'linear', missing_fields: ['oauth_client_id'] }
+        ];
+
+        expect(existingIntegrationFor(integrations, 'slack')?.unique_key).toBe('slack-prod');
+        expect(existingIntegrationFor(integrations, 'linear')?.unique_key).toBe('linear');
     });
 });
 

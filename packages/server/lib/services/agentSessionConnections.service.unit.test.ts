@@ -3,13 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import db from '@nangohq/database';
 import { connectionService } from '@nangohq/shared';
 
-import {
-    AGENT_SESSION_TAG_KEY,
-    agentSessionTenantConnectionsSchema,
-    findConnectionCreatedForSession,
-    MAX_SELECTORS,
-    pickConnectionPerIntegration
-} from './agentSessionConnections.service.js';
+import { AGENT_SESSION_TAG_KEY, findConnectionCreatedForSession, pickConnectionPerIntegration } from './agentSessionConnections.service.js';
 
 import type { AgentSessionConnectionResolutionError } from './agentSessionConnections.service.js';
 import type { ConnectionIntegrationMatchRow, ConnectionMatch, ConnectionMatchCandidate } from '@nangohq/shared';
@@ -267,75 +261,6 @@ describe('pickConnectionPerIntegration', () => {
         });
 
         expect(expectError(result).code).toBe('pinned_connection_not_matched');
-    });
-});
-
-describe('agentSessionTenantConnectionsSchema', () => {
-    it('normalizes the public shape into the resolver contract', () => {
-        const parsed = agentSessionTenantConnectionsSchema.parse({
-            any: [{ tags: { WorkspaceSlug: 'marketing' } }, { tags: { end_user_id: 'user-74', organization_id: 'acme' } }],
-            pinned: [{ integration_id: 'notion', connection_id: 'notion-1' }]
-        });
-
-        expect(parsed).toStrictEqual({
-            any: [{ tags: { workspaceslug: 'marketing' } }, { tags: { end_user_id: 'user-74', organization_id: 'acme' } }],
-            pinned: [{ integrationId: 'notion', connectionId: 'notion-1' }]
-        });
-    });
-
-    it('accepts selectors with no pins', () => {
-        const parsed = agentSessionTenantConnectionsSchema.parse({ any: [{ tags: { end_user_id: 'user-74' } }] });
-
-        expect(parsed.pinned).toStrictEqual([]);
-    });
-
-    it('accepts pins with no selectors, the escape hatch that applies no tag filter', () => {
-        const parsed = agentSessionTenantConnectionsSchema.parse({ pinned: [{ integration_id: 'notion', connection_id: 'notion-1' }] });
-
-        expect(parsed.any).toStrictEqual([]);
-    });
-
-    it('accepts one pin per integration without an arbitrary count limit', () => {
-        const pinned = Array.from({ length: 200 }, (_, index) => ({ integration_id: `integration-${index}`, connection_id: `connection-${index}` }));
-
-        expect(agentSessionTenantConnectionsSchema.safeParse({ pinned }).success).toBe(true);
-    });
-
-    it('rejects a tenant that constrains nothing at all', () => {
-        expect(agentSessionTenantConnectionsSchema.safeParse({}).success).toBe(false);
-        expect(agentSessionTenantConnectionsSchema.safeParse({ any: [], pinned: [] }).success).toBe(false);
-    });
-
-    it('rejects a selector that constrains nothing', () => {
-        expect(agentSessionTenantConnectionsSchema.safeParse({ any: [{}] }).success).toBe(false);
-        expect(agentSessionTenantConnectionsSchema.safeParse({ any: [{ tags: {} }] }).success).toBe(false);
-    });
-
-    it('rejects end user fields, since end users are selected through their tags', () => {
-        expect(agentSessionTenantConnectionsSchema.safeParse({ any: [{ end_user_id: 'user-74' }] }).success).toBe(false);
-        expect(agentSessionTenantConnectionsSchema.safeParse({ any: [{ tags: { workspaceslug: 'marketing' }, end_user_id: 'user-74' }] }).success).toBe(false);
-    });
-
-    it('rejects two pins on the same integration', () => {
-        const result = agentSessionTenantConnectionsSchema.safeParse({
-            pinned: [
-                { integration_id: 'notion', connection_id: 'notion-1' },
-                { integration_id: 'notion', connection_id: 'notion-2' }
-            ]
-        });
-
-        expect(result.success).toBe(false);
-    });
-
-    it('rejects an oversized selector list', () => {
-        expect(
-            agentSessionTenantConnectionsSchema.safeParse({ any: Array.from({ length: MAX_SELECTORS + 1 }, () => ({ tags: { endUser: 'user-74' } })) }).success
-        ).toBe(false);
-    });
-
-    it('rejects unknown keys so a typo never silently widens the selector', () => {
-        expect(agentSessionTenantConnectionsSchema.safeParse({ any: [{ tag: { a: 'b' } }] }).success).toBe(false);
-        expect(agentSessionTenantConnectionsSchema.safeParse({ any: [{ tags: { endUser: 'user-74' } }], connections: [] }).success).toBe(false);
     });
 });
 

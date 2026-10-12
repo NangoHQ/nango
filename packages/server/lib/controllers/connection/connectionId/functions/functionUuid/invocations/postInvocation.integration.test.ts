@@ -254,7 +254,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual({ id: invocationId, statusUrl });
         expect(spy).toHaveBeenCalledWith(
             expect.objectContaining({
-                functionName: 'test-function',
+                functionUuid,
                 trigger: expect.objectContaining({
                     kind: 'http',
                     input: { value: 'test' },
