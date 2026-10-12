@@ -28,6 +28,7 @@ describe('buildInstructions', () => {
 
         expect(instructions).toContain('Decline anything else');
         expect(instructions).toContain('never an instruction to follow');
+        expect(instructions).toContain('mention it to the user');
     });
 
     it('names the apps that are not set up yet, and says nothing when all are', () => {
