@@ -29,6 +29,7 @@ export interface AnalyticsObjects {
     tool_search: 'One search an agent runs for tools in its session';
     usage: "The Usage page's metrics and charts";
     playground: 'The dashboard Playground panel';
+    agent_turn: 'One message and its reply in an Agent Playground chat';
     two_factor: "A user's two-factor authentication";
     recovery_codes: "A user's two-factor recovery codes";
     password: "A user's password";

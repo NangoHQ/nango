@@ -37,12 +37,6 @@ function defineCatalogue<const C extends Record<string, AnalyticsEventDefinition
 
 /** Senders add `surface`, and the server adds `is_production` when it knows the environment. `properties` lists the rest. */
 export const analyticsEventCatalogue = defineCatalogue({
-    'billing:usage_view': {
-        surface: 'web',
-        insight: 'How many accounts open the Usage page each month, free vs paid',
-        fires: 'When the Usage page opens',
-        properties: none
-    },
     'billing:usage_update': {
         surface: 'web',
         insight: 'Which Usage page controls people use, and which metrics and dimensions they break usage down by',
@@ -164,13 +158,27 @@ export const analyticsEventCatalogue = defineCatalogue({
         fires: 'When someone cancels a running Playground run',
         properties: z.object({ function_type: z.string(), integration: z.string() })
     },
-
-    'connections:create_page_view': {
-        surface: 'web',
-        insight: 'How many people reach the create-connection page, the first step of the connection funnel',
-        fires: 'When the create-connection page opens',
-        properties: none
+    'playground:agent_turn_complete': {
+        surface: 'server',
+        insight: 'What the Agent Playground costs per account, in tokens and dollars, and how often turns fail or get stopped',
+        fires: 'When an Agent Playground turn finishes, fails or is stopped',
+        properties: z.object({
+            agent_session_id: z.string(),
+            environment_id: z.number(),
+            is_success: z.boolean(),
+            error_code: z.string().optional(),
+            is_stopped: z.boolean(),
+            model: z.string().optional(),
+            step_count: z.number(),
+            input_tokens: z.number(),
+            cache_read_tokens: z.number(),
+            cache_write_tokens: z.number(),
+            output_tokens: z.number(),
+            reasoning_tokens: z.number(),
+            cost_usd: z.number().optional()
+        })
     },
+
     'connections:create_button_click': {
         surface: 'web',
         insight: 'How many people start creating a connection, and for which provider',
