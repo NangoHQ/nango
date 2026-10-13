@@ -420,6 +420,20 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(again.sessionCreated).toBeUndefined();
     });
 
+    it('starts a new session without calling it expired when the last one was terminated', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { account, user, env } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+
+        const first = await chat(session, { messages: [userMessage('hi')] });
+        (await agentSessionService.terminateAgentSession({ account, environment: env, sessionId: first.sessionId ?? '' })).unwrap();
+        const again = await chat(session, { sessionId: first.sessionId, messages: [userMessage('hi')] });
+
+        expect(again.sessionId).not.toBe(first.sessionId);
+        expect(again.sessionCreated).toBeDefined();
+        expect(again.sessionCreated?.reason).toBeUndefined();
+    });
+
     it("starts a new session once the user's email no longer matches it", async () => {
         vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();

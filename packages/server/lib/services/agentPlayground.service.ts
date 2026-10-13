@@ -233,9 +233,9 @@ async function getOrCreateSession(
         // Connections a session creates must stay in the user's scope, which follows their current email.
         existing.value.metaTools.nangoCreateConnection.tags['end_user_email'] === ctx.user.email
     ) {
-        if (existing.value.endedAt || existing.value.expiresAt <= new Date()) {
+        if (existing.value.endedReason === 'expired' || (!existing.value.endedAt && existing.value.expiresAt <= new Date())) {
             reason = 'expired';
-        } else {
+        } else if (!existing.value.endedAt) {
             // Without this, connecting an app from the chat would replace the session the connection was made in.
             const current = await withConnectionsCreatedInSession(existing.value).catch((err: unknown) => {
                 report(err);
