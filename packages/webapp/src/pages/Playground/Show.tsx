@@ -1,9 +1,9 @@
 import { Bot, ChevronLeft, Code } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, Navigate, Outlet, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
+import { Link, Navigate, Outlet, useLocation, useOutletContext } from 'react-router-dom';
 
-import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
+import { SegmentedNav } from '@/components/ui/SegmentedNav';
 import { trackPlaygroundOpened } from '@/features/Playground/analytics';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
@@ -11,10 +11,10 @@ import { cn } from '@/utils/utils';
 import { usePlaygroundTabs } from './usePlaygroundTabs';
 
 import type { PlaygroundTab } from './usePlaygroundTabs';
-import type { SegmentedTabOption } from '@/components/ui/SegmentedTabs';
 import type { PlaygroundLocationState } from '@/utils/playground';
+import type { LucideIcon } from 'lucide-react';
 
-const TAB_OPTIONS: SegmentedTabOption<PlaygroundTab>[] = [
+const TAB_OPTIONS: { value: PlaygroundTab; label: string; Icon: LucideIcon }[] = [
     { value: 'agent', label: 'Agent', Icon: Bot },
     { value: 'functions', label: 'Functions', Icon: Code }
 ];
@@ -30,7 +30,6 @@ export function usePlaygroundToolbarSlot(): HTMLElement | null {
 export const PlaygroundShow: React.FC = () => {
     const env = useStore((s) => s.env);
     const location = useLocation();
-    const navigate = useNavigate();
     const { ready, tabs } = usePlaygroundTabs();
     const [toolbarSlot, setToolbarSlot] = useState<HTMLDivElement | null>(null);
     const back = (location.state as PlaygroundLocationState | null)?.back;
@@ -39,11 +38,12 @@ export const PlaygroundShow: React.FC = () => {
     const segment = location.pathname.split('/').filter(Boolean).at(-1);
     const tab = TAB_OPTIONS.find((option) => option.value === segment)?.value;
 
+    const functionsShown = tab === 'functions' && tabs.includes('functions');
     useEffect(() => {
-        if (tab === 'functions' && !back) {
+        if (functionsShown && !back) {
             trackPlaygroundOpened('playground');
         }
-    }, [tab, back]);
+    }, [functionsShown, back]);
 
     if (!ready) {
         return null;
@@ -79,11 +79,14 @@ export const PlaygroundShow: React.FC = () => {
                     )}
                     <div ref={setToolbarSlot} className="flex items-center justify-between gap-2 empty:hidden">
                         {tabs.length > 1 && (
-                            <SegmentedTabs
+                            <SegmentedNav
                                 aria-label="Playground mode"
                                 value={tab}
-                                onValueChange={(next) => void navigate(`/${env}/playground/${next}`, { state: tabState })}
-                                options={TAB_OPTIONS.filter((option) => tabs.includes(option.value))}
+                                state={tabState}
+                                options={TAB_OPTIONS.filter((option) => tabs.includes(option.value)).map((option) => ({
+                                    ...option,
+                                    to: `/${env}/playground/${option.value}`
+                                }))}
                             />
                         )}
                     </div>

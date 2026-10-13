@@ -1,41 +1,49 @@
 import { Bot, Code } from 'lucide-react';
-import { useState } from 'react';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 
-import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
+import { SegmentedNav } from '@/components/ui/SegmentedNav';
 import { Button } from '../src/components/ui/button';
 
-import type { SegmentedTabOption } from '@/components/ui/SegmentedTabs';
+import type { SegmentedNavOption } from '@/components/ui/SegmentedNav';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'App Components/UI/SegmentedTabs',
-    parameters: { layout: 'padded' }
+    title: 'App Components/UI/SegmentedNav',
+    parameters: { layout: 'padded' },
+    decorators: [
+        (Story) => (
+            <MemoryRouter initialEntries={['/agent']}>
+                <Story />
+            </MemoryRouter>
+        )
+    ]
 };
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 type Mode = 'agent' | 'functions';
 
-const withIcons: SegmentedTabOption<Mode>[] = [
-    { value: 'agent', label: 'Agent', Icon: Bot },
-    { value: 'functions', label: 'Functions', Icon: Code }
+const withIcons: SegmentedNavOption<Mode>[] = [
+    { value: 'agent', label: 'Agent', to: '/agent', Icon: Bot },
+    { value: 'functions', label: 'Functions', to: '/functions', Icon: Code }
 ];
 
-const Controlled: React.FC<{ options: SegmentedTabOption<Mode>[] }> = ({ options }) => {
-    const [value, setValue] = useState<Mode>('agent');
-    return <SegmentedTabs aria-label="Playground mode" value={value} onValueChange={setValue} options={options} />;
+const Routed: React.FC<{ options: SegmentedNavOption<Mode>[] }> = ({ options }) => {
+    const { pathname } = useLocation();
+    const value = options.find((option) => option.to === pathname)?.value ?? 'agent';
+    return <SegmentedNav aria-label="Playground mode" value={value} options={options} />;
 };
 
 export const Default: Story = {
-    render: () => <Controlled options={withIcons} />
+    render: () => <Routed options={withIcons} />
 };
 
 export const LabelsOnly: Story = {
     render: () => (
-        <Controlled
+        <Routed
             options={[
-                { value: 'agent', label: 'Agent' },
-                { value: 'functions', label: 'Functions' }
+                { value: 'agent', label: 'Agent', to: '/agent' },
+                { value: 'functions', label: 'Functions', to: '/functions' }
             ]}
         />
     )
@@ -43,8 +51,8 @@ export const LabelsOnly: Story = {
 
 export const BesideAnOutlineButton: Story = {
     render: () => (
-        <div className="flex items-center gap-2">
-            <Controlled options={withIcons} />
+        <div className="flex w-[480px] items-center justify-between">
+            <Routed options={withIcons} />
             <Button variant="outline" size="md">
                 New chat
             </Button>
