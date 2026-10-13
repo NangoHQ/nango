@@ -1,6 +1,6 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai';
-import { ArrowUp, CircleAlert, CircleCheck, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
+import { ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, CircleCheck, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
@@ -20,6 +20,8 @@ import {
 
 import { LogoInverted } from '@/assets/LogoInverted';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { CodeBlock } from '@/components/ui/CodeBlock';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useUser } from '@/hooks/useUser';
@@ -33,7 +35,7 @@ import { ToolCallCard } from './components/ToolCallCard';
 import { hideTrailingLink } from './streamingMarkdown';
 import { describeTool, humanize } from './toolDisplay';
 
-import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata } from '@nangohq/types';
+import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata, AgentPlaygroundSessionCreated, GetMeta } from '@nangohq/types';
 import type { UIMessage } from 'ai';
 
 type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
@@ -80,6 +82,7 @@ export const AgentPlaygroundShow: React.FC = () => {
             <Chat
                 key={`${env}-${chatKey}`}
                 env={env}
+                model={meta?.data.agentPlaygroundModel ?? undefined}
                 onReset={() => {
                     clearAgentPlaygroundChat();
                     setChatKey((key) => key + 1);
@@ -89,7 +92,9 @@ export const AgentPlaygroundShow: React.FC = () => {
     );
 };
 
-const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) => {
+type PlaygroundModel = NonNullable<GetMeta['Success']['data']['agentPlaygroundModel']>;
+
+const Chat: React.FC<{ env: string; model: PlaygroundModel | undefined; onReset: () => void }> = ({ env, model, onReset }) => {
     const sessionId = useRef<string | undefined>(undefined);
     const transport = useMemo(
         () =>
@@ -227,7 +232,9 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         }
     }, [messages, error]);
 
-    const composer = <Composer busy={busy} awaitingApproval={awaitingApproval} onSend={send} onStop={() => void stop()} />;
+    const firstSessionMessageId = messages.find((message) => message.metadata?.sessionCreated)?.id;
+
+    const composer = <Composer model={model} busy={busy} awaitingApproval={awaitingApproval} onSend={send} onStop={() => void stop()} />;
 
     if (messages.length === 0) {
         return (
@@ -262,6 +269,9 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
                                     setup={message.metadata.integrationSetup}
                                     onTryAgain={message.id === lastMessage?.id && !busy ? () => void regenerate() : undefined}
                                 />
+                            )}
+                            {message.metadata?.sessionCreated && (
+                                <SessionNotice created={message.metadata.sessionCreated} replaced={message.id !== firstSessionMessageId} />
                             )}
                             {message.parts.map((part, index) => {
                                 if (part.type === 'text') {
@@ -301,12 +311,13 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
 };
 
 // Holds the draft itself, so typing doesn't re-render the message list.
-const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (text: string) => boolean; onStop: () => void }> = ({
-    busy,
-    awaitingApproval,
-    onSend,
-    onStop
-}) => {
+const Composer: React.FC<{
+    model: PlaygroundModel | undefined;
+    busy: boolean;
+    awaitingApproval: boolean;
+    onSend: (text: string) => boolean;
+    onStop: () => void;
+}> = ({ model, busy, awaitingApproval, onSend, onStop }) => {
     const [input, setInput] = useState('');
     const submit = () => {
         if (onSend(input)) {
@@ -336,6 +347,12 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
                     }}
                 />
                 <InputGroupAddon align="inline-end">
+                    {model && (
+                        <span className="mr-2 flex items-center gap-1 text-body-small-regular text-text-muted">
+                            {model.provider && <img src={`/images/template-logos/${model.provider}.svg`} alt="" className="size-4.5" />}
+                            {model.label}
+                        </span>
+                    )}
                     {busy ? (
                         <InputGroupButton label="Stop" variant="secondary" size="icon-sm" onClick={onStop}>
                             <Square />
@@ -469,6 +486,51 @@ const IntegrationSetupNotice: React.FC<{ env: string; setup: AgentPlaygroundInte
                 )}
             </AlertActions>
         </Alert>
+    );
+};
+
+function sessionNoticeText(reason: AgentPlaygroundSessionCreated['reason'], replaced: boolean): string {
+    switch (reason) {
+        case 'integrations_changed':
+            return 'Started a new agent session to pick up your integration changes.';
+        case 'connections_changed':
+            return 'Started a new agent session to pick up your new connections.';
+        case 'expired':
+            return 'Started a new agent session because the last one expired.';
+        default:
+            return replaced ? 'Started a new agent session.' : 'Started an agent session.';
+    }
+}
+
+const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced: boolean }> = ({ created, replaced }) => {
+    return (
+        <Collapsible className="group/session flex flex-col gap-3">
+            <CollapsibleTrigger className="flex items-center gap-2 self-start text-left text-body-medium-regular text-text-secondary hover:text-text-default">
+                <CircleCheck className="size-4 shrink-0 text-icon-success" />
+                {sessionNoticeText(created.reason, replaced)}
+                <ChevronDown className="size-4 shrink-0 transition-transform group-data-[state=open]/session:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+                <CodeBlock
+                    title="POST /sessions"
+                    language="json"
+                    code={JSON.stringify(created.request, null, 2)}
+                    constrainHeight={false}
+                    headerElement={
+                        <a
+                            href="https://nango.dev/docs/guides/agent-sessions"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-1 text-body-small-medium text-text-secondary hover:text-text-default"
+                        >
+                            <BookOpen className="size-3.5" />
+                            Agent sessions docs
+                            <ArrowUpRight className="size-3.5" />
+                        </a>
+                    }
+                />
+            </CollapsibleContent>
+        </Collapsible>
     );
 };
 
