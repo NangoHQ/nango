@@ -45,11 +45,20 @@ function apiError(status: number, code: string) {
     return new APIError({ res: new Response(null, { status }), json: { error: { code } } });
 }
 
+const PRIVATE = '/dev/connections';
+const SIGNIN = '/signin?next=%2Fdev%2Fconnections';
+
 const userStates = {
-    'loaded user': () => ({ user, userError: undefined }),
-    'loaded user, failed refetch': () => ({ user, userError: { error: { code: 'server_error' } } }),
-    'no user, API error': () => ({ user: undefined, userError: { error: { code: 'server_error' } } }),
-    'no user, network error': () => ({ user: undefined, userError: undefined })
+    'loaded user': { state: () => ({ user, userError: undefined }), ends: { [PRIVATE]: '/dev/connections', [SIGNIN]: '/dev/connections' } },
+    'loaded user, failed refetch': {
+        state: () => ({ user, userError: { error: { code: 'server_error' } } }),
+        ends: { [PRIVATE]: '/dev/connections', [SIGNIN]: '/signin' }
+    },
+    'no user, API error': {
+        state: () => ({ user: undefined, userError: { error: { code: 'server_error' } } }),
+        ends: { [PRIVATE]: '/signin', [SIGNIN]: '/signin' }
+    },
+    'no user, network error': { state: () => ({ user: undefined, userError: undefined }), ends: { [PRIVATE]: '/dev/connections', [SIGNIN]: '/signin' } }
 };
 
 const metaStates = {
@@ -61,13 +70,14 @@ const metaStates = {
     'no meta, no session': () => ({ meta: undefined, metaError: apiError(401, 'unauthorized') })
 };
 
-const cases = Object.entries(userStates).flatMap(([userLabel, userState]) =>
+const cases = Object.entries(userStates).flatMap(([userLabel, { state: userState, ends }]) =>
     Object.entries(metaStates).flatMap(([metaLabel, metaState]) =>
-        ['/dev/connections', '/signin?next=%2Fdev%2Fconnections'].map((start) => ({
+        ([PRIVATE, SIGNIN] as const).map((start) => ({
             name: `${userLabel} + ${metaLabel}, from ${start}`,
             userState,
             metaState,
-            start
+            start,
+            end: ends[start]
         }))
     )
 );
@@ -90,7 +100,7 @@ describe('PrivateRoute and SignedOutRoute together', () => {
         container.remove();
     });
 
-    it.each(cases)('settles on one page: $name', async ({ userState, metaState, start }) => {
+    it.each(cases)('settles on one page: $name', async ({ userState, metaState, start, end }) => {
         Object.assign(mocks, userState(), metaState());
 
         const router = createMemoryRouter(
@@ -119,5 +129,6 @@ describe('PrivateRoute and SignedOutRoute together', () => {
         }
 
         expect(navigations).toBeLessThanOrEqual(2);
+        expect(router.state.location.pathname).toBe(end);
     });
 });
