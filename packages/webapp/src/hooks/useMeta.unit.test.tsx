@@ -51,7 +51,7 @@ describe('useMeta', () => {
 
     beforeEach(() => {
         mocks.fetchMeta.mockReset();
-        queryClient = new QueryClient({ defaultOptions: { queries: { retry: 0 } } });
+        queryClient = new QueryClient({ defaultOptions: { queries: { retry: 0, retryDelay: 0 } } });
         container = document.createElement('div');
         document.body.appendChild(container);
         root = createRoot(container);
@@ -91,6 +91,25 @@ describe('useMeta', () => {
         await render();
 
         expect(container.textContent).toBe('boundary');
+        expect(mocks.fetchMeta).toHaveBeenCalledTimes(3);
+    });
+
+    it('recovers when a retry succeeds', async () => {
+        mocks.fetchMeta.mockRejectedValueOnce(new TypeError('Failed to fetch')).mockResolvedValueOnce(jsonResponse(502, { error: { code: 'server_error' } }));
+        mocks.fetchMeta.mockResolvedValue(jsonResponse(200, meta));
+
+        await render();
+
+        expect(container.textContent).toBe('meta');
+    });
+
+    it('does not retry a client error', async () => {
+        mocks.fetchMeta.mockResolvedValue(jsonResponse(401, { error: { code: 'plan_not_found' } }));
+
+        await render();
+
+        expect(container.textContent).toBe('boundary');
+        expect(mocks.fetchMeta).toHaveBeenCalledTimes(1);
     });
 
     it('keeps the cached meta when a refetch fails', async () => {

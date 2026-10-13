@@ -12,6 +12,7 @@ export function useMeta(enabled: boolean = true) {
         queryKey: metaQueryKey,
         // A failed refetch keeps the cached meta, and the query cache's error handler signs a no-session user out.
         throwOnError: (error, query) => !query.state.data && !isNoSessionApiError(error),
+        retry: (failureCount, error) => failureCount < 2 && (!(error instanceof APIError) || error.res.status >= 500),
         queryFn: async (): Promise<GetMeta['Success']> => {
             const res = await apiFetch('/api/v1/meta', {
                 method: 'GET'
