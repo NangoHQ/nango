@@ -102,9 +102,12 @@ export const PrivateRoute: React.FC = () => {
     if (loadingUser) {
         return null;
     }
-    // Only a missing user goes to /signin. SignedOutRoute sends a loaded user straight back, and the two loop.
     if (!user) {
-        return userError ? <Navigate to={signinPathWithNext(location)} replace /> : null;
+        if (userError) {
+            // Only a missing user goes to /signin. SignedOutRoute sends a loaded user straight back, and the two loop.
+            return <Navigate to={signinPathWithNext(location)} replace />;
+        }
+        return null;
     }
     if (!meta || !ready) {
         return null;
