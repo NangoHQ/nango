@@ -14,10 +14,18 @@ let getSpendAlertSpy: any;
 let setSpendAlertSpy: any;
 let removeSpendAlertSpy: any;
 
-async function seedPlan(planName: string, { subscriptionId = 'orb_sub_123' }: { subscriptionId?: string | null } = {}) {
+async function seedPlan(
+    planName: string,
+    { subscriptionId = 'orb_sub_123', hasGrowthFeatures = false }: { subscriptionId?: string | null; hasGrowthFeatures?: boolean } = {}
+) {
     const seed = await seeders.seedAccountEnvAndUser();
     // A silently failed update would test the seeded default plan and pass for the wrong reason.
-    const updated = await updatePlan(db.knex, { id: seed.plan.id, name: planName as any, orb_subscription_id: subscriptionId });
+    const updated = await updatePlan(db.knex, {
+        id: seed.plan.id,
+        name: planName as any,
+        orb_subscription_id: subscriptionId,
+        has_growth_features: hasGrowthFeatures
+    });
     if (updated.isErr()) {
         throw updated.error;
     }
@@ -37,8 +45,8 @@ afterAll(() => {
 
 beforeEach(() => {
     vi.clearAllMocks();
-    getSpendAlertSpy.mockResolvedValue(Ok({ id: 'alert_1', thresholdInCents: 5000, currency: 'USD' }));
-    setSpendAlertSpy.mockResolvedValue(Ok({ id: 'alert_1', thresholdInCents: 5000, currency: 'USD' }));
+    getSpendAlertSpy.mockResolvedValue(Ok({ id: 'alert_1', thresholdInCents: 7500, currency: 'USD' }));
+    setSpendAlertSpy.mockResolvedValue(Ok({ id: 'alert_1', thresholdInCents: 7500, currency: 'USD' }));
     removeSpendAlertSpy.mockResolvedValue(Ok(undefined));
 });
 
@@ -87,18 +95,22 @@ describe(`GET ${route}`, () => {
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
-            expect(res.json.data).toStrictEqual({ thresholdInCents: null, currency: null });
+            expect(res.json.data).toStrictEqual({ thresholdInCents: null, currency: null, floorInCents: null });
             expect(getSpendAlertSpy).not.toHaveBeenCalled();
         });
 
-        it.each(['starter-v2', 'growth-v2', 'startup-deal'])('should return the threshold on %s', async (planName) => {
+        it.each([
+            ['starter-v2', 5000],
+            ['growth-v2', 50000],
+            ['startup-deal', 0]
+        ])('should return the threshold and floor on %s', async (planName, floorInCents) => {
             const { session } = await seedPlan(planName);
 
             const res = await api.fetch(route, { method: 'GET', session, query: { env: 'dev' } });
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
-            expect(res.json.data).toStrictEqual({ thresholdInCents: 5000, currency: 'USD' });
+            expect(res.json.data).toStrictEqual({ thresholdInCents: 7500, currency: 'USD', floorInCents });
             expect(getSpendAlertSpy).toHaveBeenCalledWith('orb_sub_123');
         });
     });
@@ -111,7 +123,7 @@ describe(`GET ${route}`, () => {
             const res = await api.fetch(route, { method: 'GET', session, query: { env: 'dev' } });
 
             isSuccess(res.json);
-            expect(res.json.data).toStrictEqual({ thresholdInCents: null, currency: 'USD' });
+            expect(res.json.data).toStrictEqual({ thresholdInCents: null, currency: 'USD', floorInCents: 5000 });
         });
 
         it('should 500 when the Orb read fails', async () => {
@@ -132,7 +144,7 @@ describe(`GET ${route}`, () => {
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
-            expect(res.json.data).toStrictEqual({ thresholdInCents: null, currency: null });
+            expect(res.json.data).toStrictEqual({ thresholdInCents: null, currency: null, floorInCents: null });
             expect(getSpendAlertSpy).not.toHaveBeenCalled();
         });
     });
@@ -141,7 +153,7 @@ describe(`GET ${route}`, () => {
 describe(`PUT ${route}`, () => {
     describe('Authentication & Authorization', () => {
         it('should be protected', async () => {
-            const res = await api.fetch(route, { method: 'PUT', query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
+            const res = await api.fetch(route, { method: 'PUT', query: { env: 'dev' }, body: { thresholdInCents: 7500 } });
 
             shouldBeProtected(res);
         });
@@ -154,7 +166,7 @@ describe(`PUT ${route}`, () => {
                 session,
                 // @ts-expect-error missing env on purpose
                 query: {},
-                body: { thresholdInCents: 5000 }
+                body: { thresholdInCents: 7500 }
             });
 
             shouldRequireSessionEnv(res);
@@ -168,7 +180,7 @@ describe(`PUT ${route}`, () => {
             ['a fractional cent', { thresholdInCents: 50.5 }],
             ['an amount past the ceiling', { thresholdInCents: 1_000_000_001 }],
             ['a missing threshold', {}],
-            ['an unknown field', { thresholdInCents: 5000, foo: 'bar' }]
+            ['an unknown field', { thresholdInCents: 7500, foo: 'bar' }]
         ])('should reject %s', async (_label, body) => {
             const { session } = await seedPlan('starter-v2');
 
@@ -185,7 +197,7 @@ describe(`PUT ${route}`, () => {
         it.each(['free', 'free-uncapped', 'enterprise'])('should refuse to set a threshold on %s', async (planName) => {
             const { session } = await seedPlan(planName);
 
-            const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
+            const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: { thresholdInCents: 7500 } });
 
             isError(res.json);
             expect(res.res.status).toBe(400);
@@ -194,22 +206,54 @@ describe(`PUT ${route}`, () => {
         });
     });
 
+    describe('Monthly floor', () => {
+        it.each([
+            ['at the starter-v2 base fee', 'starter-v2', false, 5000],
+            ['below the pay-as-you-go minimum', 'pay-as-you-go', false, 2500],
+            ['at the growth-v2 base fee', 'growth-v2', false, 50000],
+            ['at the pay-as-you-go minimum plus the Growth add-on', 'pay-as-you-go', true, 50000]
+        ])('should reject a threshold %s', async (_label, planName, hasGrowthFeatures, thresholdInCents) => {
+            const { session } = await seedPlan(planName, { hasGrowthFeatures });
+
+            const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: { thresholdInCents } });
+
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error.code).toBe('threshold_below_floor');
+            expect(setSpendAlertSpy).not.toHaveBeenCalled();
+        });
+
+        it.each([
+            ['just above the starter-v2 base fee', 'starter-v2', false, 5001],
+            ['just above the pay-as-you-go minimum plus the Growth add-on', 'pay-as-you-go', true, 50001],
+            ['on growth-v2 carrying the add-on flag ahead of a migration', 'growth-v2', true, 50001],
+            ['on startup-deal, which has no floor', 'startup-deal', false, 1]
+        ])('should accept a threshold %s', async (_label, planName, hasGrowthFeatures, thresholdInCents) => {
+            const { session } = await seedPlan(planName, { hasGrowthFeatures });
+
+            const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: { thresholdInCents } });
+
+            expect(res.res.status).toBe(200);
+            expect(setSpendAlertSpy).toHaveBeenCalledWith('orb_sub_123', { thresholdInCents });
+        });
+    });
+
     it('should save the threshold and echo it back', async () => {
         const { session } = await seedPlan('starter-v2');
 
-        const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
+        const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: { thresholdInCents: 7500 } });
 
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
-        expect(res.json.data).toStrictEqual({ thresholdInCents: 5000, currency: 'USD' });
-        expect(setSpendAlertSpy).toHaveBeenCalledWith('orb_sub_123', { thresholdInCents: 5000 });
+        expect(res.json.data).toStrictEqual({ thresholdInCents: 7500, currency: 'USD' });
+        expect(setSpendAlertSpy).toHaveBeenCalledWith('orb_sub_123', { thresholdInCents: 7500 });
     });
 
     it('should report the feature unavailable when a spend plan has no linked subscription', async () => {
         // GET degrades to a null threshold in this state, so PUT has to say why the save can't land.
         const { session } = await seedPlan('starter-v2', { subscriptionId: null });
 
-        const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
+        const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: { thresholdInCents: 7500 } });
 
         isError(res.json);
         expect(res.res.status).toBe(400);
@@ -221,7 +265,7 @@ describe(`PUT ${route}`, () => {
         const { session } = await seedPlan('starter-v2');
         setSpendAlertSpy.mockResolvedValue(Err(new Error('failed_to_set_spend_alert')));
 
-        const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
+        const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: { thresholdInCents: 7500 } });
 
         isError(res.json);
         expect(res.res.status).toBe(500);

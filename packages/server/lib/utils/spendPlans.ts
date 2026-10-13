@@ -1,3 +1,6 @@
+import { GROWTH_ADD_ON_IN_CENTS, MINIMUM_IN_CENTS } from '@nangohq/billing';
+import { getPlanDefinition } from '@nangohq/shared';
+
 import type { DBPlan } from '@nangohq/types';
 
 // Plans billed monthly with usage-based overage — the only ones where "this period's spend" means
@@ -22,4 +25,12 @@ const SPEND_PLANS: Record<DBPlan['name'], boolean> = {
 export function isSpendPlan(plan: Pick<DBPlan, 'name'>): boolean {
     // Compared against `true` so an unlisted name colliding with an Object.prototype key can't read as allowed.
     return SPEND_PLANS[plan.name] === true;
+}
+
+export function getSpendFloorInCents(plan: Pick<DBPlan, 'name' | 'has_growth_features'>): number {
+    if (plan.name === 'pay-as-you-go') {
+        // Only pay-as-you-go bills the add-on on top: growth-v2 and startup-deal also carry the flag ahead of a migration.
+        return MINIMUM_IN_CENTS + (plan.has_growth_features ? GROWTH_ADD_ON_IN_CENTS : 0);
+    }
+    return (getPlanDefinition(plan.name)?.basePrice ?? 0) * 100;
 }
