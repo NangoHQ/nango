@@ -6,7 +6,7 @@ import type { RemoteMcpTool } from './remoteMcp.service.js';
 import type { AgentSessionResolvedConnection, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { Span } from 'dd-trace';
 
-const DISCOVERY_TIMEOUT_MS = 10_000;
+const DISCOVERY_REQUEST_TIMEOUT_MS = 10_000;
 
 export type McpServerDiscovery = { status: 'available'; tools: RemoteMcpTool[] } | { status: 'unavailable' };
 
@@ -49,12 +49,11 @@ async function discoverServer({
     return await tracer.trace<Promise<McpServerDiscovery>>('server.agentSession.mcpDiscovery', async (span: Span) => {
         span.setTag('nango.integrationId', connection.integrationId);
 
-        const signal = AbortSignal.timeout(DISCOVERY_TIMEOUT_MS);
         try {
             const { result } = await withRemoteMcpSession(
                 { account, environment, plan, integrationId: connection.integrationId, connectionId: connection.connectionId, provider: connection.provider },
-                async (session) => await listRemoteTools(session, { signal }),
-                { signal }
+                async (session) => await listRemoteTools(session, { timeoutMs: DISCOVERY_REQUEST_TIMEOUT_MS }),
+                { timeoutMs: DISCOVERY_REQUEST_TIMEOUT_MS }
             );
             if (result.isErr()) {
                 span.setTag('nango.error', result.error);

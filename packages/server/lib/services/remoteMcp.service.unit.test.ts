@@ -172,23 +172,42 @@ describe('listRemoteTools through the proxy', () => {
         expect(result.isErr() && result.error).toMatchObject({ code: 'response_too_large', message: 'The MCP server response exceeds the 5 MB limit' });
     });
 
-    it('gives up on a server that never answers when the signal fires, and cancels the proxy request', async () => {
-        let hungRequest: ProxyServiceRequest | undefined;
-        const timeout = new AbortController();
-        mcpServer((_message, params) => {
-            hungRequest = params;
-            const hung = new Promise<ReturnType<typeof response>>((_resolve, reject) =>
-                params.abortSignal?.addEventListener('abort', () => reject(new Error('aborted')))
+    it('gives up on a server that never answers within the request timeout, and cancels the proxy request', async () => {
+        vi.useFakeTimers();
+        try {
+            let hungRequest: ProxyServiceRequest | undefined;
+            mcpServer((_message, params) => {
+                hungRequest = params;
+                return new Promise((_resolve, reject) => params.abortSignal?.addEventListener('abort', () => reject(new Error('aborted'))));
+            });
+
+            const listing = withRemoteMcpSession(TARGET, async (client) => await listRemoteTools(client, { timeoutMs: 10_000 }), { timeoutMs: 10_000 });
+            await vi.advanceTimersByTimeAsync(10_000);
+            const { result } = await listing;
+
+            expect(result.isErr() && result.error).toMatchObject({ code: 'timeout', method: 'tools/list' });
+            expect(hungRequest?.abortSignal?.aborted).toBe(true);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it('gives up on a handshake that never answers within the request timeout', async () => {
+        vi.useFakeTimers();
+        try {
+            request.mockImplementation(
+                (params: ProxyServiceRequest) =>
+                    new Promise((_resolve, reject) => params.abortSignal?.addEventListener('abort', () => reject(new Error('aborted'))))
             );
-            timeout.abort(new DOMException('The operation timed out', 'TimeoutError'));
-            return hung;
-        });
 
-        const { signal } = timeout;
-        const { result } = await withRemoteMcpSession(TARGET, async (client) => await listRemoteTools(client, { signal }), { signal });
+            const listing = withRemoteMcpSession(TARGET, async (client) => await listRemoteTools(client, { timeoutMs: 10_000 }), { timeoutMs: 10_000 });
+            await vi.advanceTimersByTimeAsync(10_000);
+            const { result } = await listing;
 
-        expect(result.isErr() && result.error).toMatchObject({ code: 'timeout', method: 'tools/list' });
-        expect(hungRequest?.abortSignal?.aborted).toBe(true);
+            expect(result.isErr() && result.error).toMatchObject({ code: 'timeout', method: 'initialize' });
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it('stops waiting on a server that never answers the session close, and cancels that request', async () => {

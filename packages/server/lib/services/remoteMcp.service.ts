@@ -86,7 +86,7 @@ export function mcpEndpointOf(provider: string): string | undefined {
 export async function withRemoteMcpSession<T>(
     target: RemoteMcpTarget,
     fn: (client: Client) => Promise<Result<T, RemoteMcpError>>,
-    { signal }: { signal?: AbortSignal } = {}
+    { timeoutMs }: { timeoutMs?: number } = {}
 ): Promise<RemoteMcpRun<T>> {
     const endpoint = mcpEndpointOf(target.provider);
     if (!endpoint) {
@@ -102,7 +102,7 @@ export async function withRemoteMcpSession<T>(
 
     try {
         try {
-            await client.connect(transport, signal ? { signal } : undefined);
+            await client.connect(transport, timeoutMs ? { timeout: timeoutMs } : undefined);
         } catch (err) {
             return { logOperationId: log.operationId, result: Err(toRemoteMcpError(err, 'initialize')) };
         }
@@ -117,10 +117,10 @@ export async function withRemoteMcpSession<T>(
 /**
  * Lists every tool the server has.
  */
-export async function listRemoteTools(client: Client, { signal }: { signal?: AbortSignal } = {}): Promise<Result<RemoteMcpTool[], RemoteMcpError>> {
+export async function listRemoteTools(client: Client, { timeoutMs }: { timeoutMs?: number } = {}): Promise<Result<RemoteMcpTool[], RemoteMcpError>> {
     let listed: { tools: Tool[] };
     try {
-        listed = await client.listTools(undefined, signal ? { signal } : undefined);
+        listed = await client.listTools(undefined, timeoutMs ? { timeout: timeoutMs } : undefined);
     } catch (err) {
         return Err(toRemoteMcpError(err, 'tools/list'));
     }
