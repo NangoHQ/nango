@@ -2772,7 +2772,7 @@ The toolset is a subset of the Integrations that are enabled in your Nango envir
 ```
 
 You can use the following selectors:
-- `"*"` on an integration means every action function on it
+- `"*"` on an integration means every action function on it, and every tool of its MCP server
 - `allow` makes the integration an allowlist, where `"*"` means every tool
 - `deny` always subtracts from whatever `allow` gave
 - To deny an integration entirely, leave it out of the toolset
@@ -2820,11 +2820,11 @@ When the session is created, Nango lists the tools of each connected MCP server 
 }
 ```
 
-`allow`, `deny` and `pinned_tools` name a tool exactly as the server lists it. Patterns are not supported, so a tool the server adds later never reaches an allowlist by accident. In the session, the tool is called `<integration>__<tool>`, the same as an action.
+`allow`, `deny` and `pinned_tools` name a tool exactly as the server lists it. In the session, the tool gets a name like an action's, such as `notion-mcp__notion-search`. Agents call it by the name the tool list or `nango_tool_search` gives.
 
 The list is taken once, at creation. Tools the server adds or removes afterwards don't change the session, so create a new one to pick them up.
 
-If an action you deployed on the integration has the same name as a server tool, the session uses the action.
+If an action you deployed on the integration has the same name as a server tool, the session keeps the action and leaves the server's tool out.
 
 #### When a server can't be listed
 
@@ -2839,7 +2839,7 @@ A server that fails or does not answer `tools/list` within 10 seconds does not f
 }
 ```
 
-`mcp_server` is only present for integrations with a connected MCP server. Tool names you set for an unavailable server can't be checked, so they don't fail creation either.
+`mcp_server` is only present for integrations with a connected MCP server.
 
 #### Running MCP server tools
 
