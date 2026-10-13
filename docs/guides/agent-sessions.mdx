@@ -427,11 +427,11 @@ When the session is created, Nango lists the tools of each connected MCP server 
 }
 ```
 
-`allow`, `deny` and `pinned_tools` name a tool exactly as the server lists it. Patterns are not supported, so a tool the server adds later never reaches an allowlist by accident. In the session, the tool is called `<integration>__<tool>`, the same as an action.
+`allow`, `deny` and `pinned_tools` name a tool exactly as the server lists it. In the session, the tool is called `<integration>__<tool>`, the same as an action.
 
 The list is taken once, at creation. Tools the server adds or removes afterwards don't change the session, so create a new one to pick them up.
 
-If an action you deployed on the integration has the same name as a server tool, the session uses the action.
+If an action you deployed on the integration has the same name as a server tool, the session prioritizes the action over the MCP tool.
 
 #### When a server can't be listed
 
@@ -446,7 +446,7 @@ A server that fails or does not answer `tools/list` within 10 seconds does not f
 }
 ```
 
-`mcp_server` is only present for integrations with a connected MCP server. Tool names you set for an unavailable server can't be checked, so they don't fail creation either.
+`mcp_server` is only present for integrations with a connected MCP server.
 
 #### Running MCP server tools
 
