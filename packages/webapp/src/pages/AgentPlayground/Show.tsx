@@ -516,7 +516,7 @@ const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced
                             href="https://nango.dev/docs/guides/agent-sessions"
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center gap-1 text-body-small-medium text-text-secondary hover:text-text-default"
+                            className="flex items-center gap-1 text-s text-text-muted hover:text-text-default"
                         >
                             <BookOpen className="size-3.5" />
                             Agent sessions docs
