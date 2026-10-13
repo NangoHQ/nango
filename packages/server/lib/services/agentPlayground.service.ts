@@ -202,7 +202,7 @@ export function playgroundSessionRequest({
     scope: Tags;
     connectionTags: Tags;
 }): PostAgentSessionsBody {
-    // A tag selector fails as ambiguous once the user has two connections to one integration, so it is only safe while nothing matches it.
+    // A tag selector fails as ambiguous once a user has two connections to one integration. Use it only while nothing is pinned.
     const connections =
         pinned.length > 0
             ? { pinned: pinned.map((pin) => ({ integration_id: pin.integrationId, connection_id: pin.connectionId })) }
