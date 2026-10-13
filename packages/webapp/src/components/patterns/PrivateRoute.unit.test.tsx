@@ -18,12 +18,10 @@ const mocks = vi.hoisted(() => {
         userError: undefined as unknown,
         meta: undefined as Record<string, unknown> | undefined,
         metaError: null as unknown,
-        captureException: vi.fn(),
         storeState: {} as Record<string, unknown>
     };
 });
 
-vi.mock('@sentry/react', () => ({ captureException: mocks.captureException }));
 vi.mock('../../hooks/useUser', () => ({
     useUser: () => ({ user: mocks.user, loading: false, error: mocks.userError })
 }));
@@ -54,7 +52,6 @@ describe('PrivateRoute', () => {
         mocks.userError = undefined;
         mocks.meta = undefined;
         mocks.metaError = null;
-        mocks.captureException.mockReset();
         mocks.storeState = { env: 'dev', setEnvs: vi.fn(), setBaseUrl: vi.fn(), setDebugMode: vi.fn(), setEnv: vi.fn() };
         container = document.createElement('div');
         document.body.appendChild(container);
@@ -100,17 +97,6 @@ describe('PrivateRoute', () => {
         expect(container.textContent).toBe('connections');
     });
 
-    it('reports a failed meta request to Sentry', async () => {
-        mocks.metaError = apiError(502, 'server_error');
-
-        await renderAt('/dev/connections');
-
-        expect(mocks.captureException).toHaveBeenCalledWith(mocks.metaError, {
-            tags: { query: 'meta', cached: 'false' },
-            extra: { status: 502, code: 'server_error' }
-        });
-    });
-
     it('renders nothing while a no-session meta error signs the user out', async () => {
         mocks.metaError = apiError(401, 'unauthorized');
 
@@ -118,7 +104,6 @@ describe('PrivateRoute', () => {
 
         expect(router.state.location.pathname).toBe('/dev/connections');
         expect(container.textContent).toBe('');
-        expect(mocks.captureException).not.toHaveBeenCalled();
     });
 
     it('sends a user who failed to load to /signin', async () => {

@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react';
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
@@ -9,7 +8,7 @@ import PageEnvironmentUnauthorized from '../../pages/PageEnvironmentUnauthorized
 import PageNotFound from '../../pages/PageNotFound';
 import { useStore } from '../../store';
 import { resumeAnalytics, stopAnalytics, useAnalyticsIdentify } from '../../utils/analytics';
-import { APIError, apiErrorCode, isNoSessionApiError } from '../../utils/api';
+import { isNoSessionApiError } from '../../utils/api';
 import { isNonEnvPath, signinPathWithNext } from '../../utils/routes';
 import { ErrorBoundary } from './ErrorBoundary';
 
@@ -103,17 +102,6 @@ export const PrivateRoute: React.FC = () => {
         resumeAnalytics();
         identify(user, meta.accountGroup);
     }, [user, meta, identify]);
-
-    useEffect(() => {
-        if (!metaFailed) {
-            return;
-        }
-        Sentry.captureException(metaError, {
-            tags: { query: 'meta', cached: String(!!meta) },
-            extra: metaError instanceof APIError ? { status: metaError.res.status, code: apiErrorCode(metaError) } : undefined
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [metaError]);
 
     if (loadingUser) {
         return null;
