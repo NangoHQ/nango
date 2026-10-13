@@ -39,7 +39,6 @@ function readReferringDomain(value: unknown): string | undefined {
     return;
 }
 
-/** Version-specific adapter for posthog-js 1.435.9; covered by the SDK regression test. */
 export function acquisitionFromInitialInfo(info: unknown): SignupAcquisition | undefined {
     if (!info || typeof info !== 'object') return;
     const { u: initialPageUrl, r: initialReferrer } = info as { u?: unknown; r?: unknown };
