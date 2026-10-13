@@ -780,6 +780,20 @@ const ENVS_SHAPE = z.object({
     DEPLOY_BATCH_SIZE: z.coerce.number().int().positive().optional().default(5),
     DEPLOY_LOCK_TTL_MS: z.coerce.number().int().positive().optional().default(600_000),
 
+    // Usage telemetry
+    // Postgres storage for usage telemetry (e.g. concurrency), readable by self-hosted and BYOC deployments.
+    // Unset means off: writes are dropped.
+    NANGO_USAGE_TELEMETRY_POSTGRES_DATABASE_URL: z.url().optional(),
+    NANGO_USAGE_TELEMETRY_POSTGRES_POOL_MAX: z.coerce.number().int().positive().optional().default(5),
+    NANGO_USAGE_TELEMETRY_POSTGRES_SSL: z.stringbool().optional().default(false),
+    NANGO_USAGE_TELEMETRY_POSTGRES_RETENTION_DAYS: z.coerce.number().int().positive().default(60),
+    NANGO_USAGE_TELEMETRY_POSTGRES_PARTITION_INTERVAL_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .max(6 * 3_600_000) // capped so tomorrow's partition is always created before midnight reaches it
+        .default(3_600_000),
+
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
     // The following are only considered in local, self-hosted and BYOC deployments that configure

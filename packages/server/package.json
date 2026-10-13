@@ -46,6 +46,7 @@
         "@nangohq/shared": "file:../shared",
         "@nangohq/tasks": "file:../tasks",
         "@nangohq/usage": "file:../usage",
+        "@nangohq/usage-telemetry": "file:../usage-telemetry",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
         "@posthog/mcp": "0.18.0",

@@ -66,6 +66,9 @@
             "path": "../usage"
         },
         {
+            "path": "../usage-telemetry"
+        },
+        {
             "path": "../utils"
         },
         {

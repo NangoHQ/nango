@@ -2,6 +2,7 @@ import { KnexDatabase } from '@nangohq/database';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { start as migrateLogs } from '@nangohq/logs';
 import { records } from '@nangohq/records';
+import { destroyUsageTelemetryDb, migrateUsageTelemetryDb } from '@nangohq/usage-telemetry';
 
 import { destroyAuditDb, migrateAuditDb } from './auditDb.js';
 import { tasks } from './tasks/index.js';
@@ -15,5 +16,7 @@ await records.migrate();
 await tasks.migrate();
 await migrateAuditDb();
 await destroyAuditDb();
+await migrateUsageTelemetryDb();
+await destroyUsageTelemetryDb();
 
 process.exit(0);

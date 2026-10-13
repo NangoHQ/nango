@@ -15,6 +15,7 @@ import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, productTracking, pubsub } from '@nangohq/shared';
+import { destroyUsageTelemetryDb, migrateUsageTelemetryDb, startUsageTelemetryPartitions } from '@nangohq/usage-telemetry';
 import { flags, getLogger, metrics, NANGO_VERSION, once, report } from '@nangohq/utils';
 
 import { destroyAuditDb, migrateAuditDb, startAuditPartitions } from './auditDb.js';
@@ -88,12 +89,14 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await migrateFleets();
     await tasks.migrate();
     await migrateAuditDb();
+    await migrateUsageTelemetryDb();
     await db.destroy();
 } else {
     logger.info('Not migrating database');
 }
 
 const auditPartitions = startAuditPartitions();
+const usageTelemetryPartitions = startUsageTelemetryPartitions();
 
 // Preload providers
 getProviders();
@@ -136,6 +139,8 @@ const close = once(() => {
         await stopFleets();
         await auditPartitions?.abort();
         await destroyAuditDb();
+        await usageTelemetryPartitions?.abort();
+        await destroyUsageTelemetryDb();
         await tasks.stop();
         await db.destroy();
         await records.close();
