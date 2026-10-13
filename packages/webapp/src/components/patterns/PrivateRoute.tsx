@@ -1,18 +1,25 @@
+import { CircleX } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
+
+import { Alert, AlertActions, AlertButton, AlertDescription } from '@nangohq/design-system';
 
 import { useMeta } from '../../hooks/useMeta';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useUser } from '../../hooks/useUser';
+import DefaultLayout from '../../layout/DefaultLayout';
 import PageEnvironmentUnauthorized from '../../pages/PageEnvironmentUnauthorized';
 import PageNotFound from '../../pages/PageNotFound';
 import { useStore } from '../../store';
 import { resumeAnalytics, stopAnalytics, useAnalyticsIdentify } from '../../utils/analytics';
+import { APIError, isNoSessionError } from '../../utils/api';
 import { isNonEnvPath, signinPathWithNext } from '../../utils/routes';
+import { useSignout } from '../../utils/user';
+import { Spinner } from '../ui/Spinner';
 
 export const PrivateRoute: React.FC = () => {
     const { user, loading: loadingUser, error: userError } = useUser();
-    const { data, error: metaError, isLoading: loadingMeta } = useMeta(!!user);
+    const { data, error: metaError, isFetching: fetchingMeta, refetch: refetchMeta } = useMeta(!!user);
     const meta = data?.data;
     const [notFoundEnv, setNotFoundEnv] = useState(false);
     const [unauthorizedEnv, setUnauthorizedEnv] = useState(false);
@@ -28,7 +35,7 @@ export const PrivateRoute: React.FC = () => {
     const setEnv = useStore((state) => state.setEnv);
 
     useEffect(() => {
-        if (!meta || metaError) {
+        if (!meta) {
             return;
         }
 
@@ -36,11 +43,11 @@ export const PrivateRoute: React.FC = () => {
         setBaseUrl(meta.baseUrl);
         setDebugMode(meta.debugMode);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [meta, metaError]);
+    }, [meta]);
 
     useEffect(() => {
         // The env check below reads the user's grants; deciding before they land bounces the user.
-        if (!meta || metaError || !user) {
+        if (!meta || !user) {
             return;
         }
 
@@ -85,7 +92,7 @@ export const PrivateRoute: React.FC = () => {
 
         // it's ready when datastore and path are finally reconciliated
         setReady(true);
-    }, [meta, loadingMeta, env, metaError, setEnv, can, user, location.pathname]);
+    }, [meta, env, setEnv, can, user, location.pathname]);
 
     useEffect(() => {
         if (!user || !meta) {
@@ -99,10 +106,21 @@ export const PrivateRoute: React.FC = () => {
         identify(user, meta.accountGroup);
     }, [user, meta, identify]);
 
-    if (userError || metaError) {
-        return <Navigate to={signinPathWithNext(location)} replace />;
+    if (loadingUser) {
+        return null;
     }
-    if (loadingUser || loadingMeta || !ready) {
+    // SignedOutRoute sends a loaded user straight back here, so redirecting one to /signin loops forever.
+    if (!user) {
+        return userError ? <Navigate to={signinPathWithNext(location)} replace /> : null;
+    }
+    if (!meta) {
+        // The query cache's error handler is already signing a no-session user out.
+        if (!metaError || (metaError instanceof APIError && isNoSessionError(metaError.res.status, metaError.json))) {
+            return null;
+        }
+        return <MetaLoadError retrying={fetchingMeta} onRetry={() => void refetchMeta()} />;
+    }
+    if (!ready) {
         return null;
     }
 
@@ -115,4 +133,24 @@ export const PrivateRoute: React.FC = () => {
     }
 
     return <Outlet />;
+};
+
+const MetaLoadError: React.FC<{ retrying: boolean; onRetry: () => void }> = ({ retrying, onRetry }) => {
+    const signout = useSignout();
+
+    return (
+        <DefaultLayout>
+            <Alert variant="danger">
+                <CircleX />
+                <AlertDescription>We couldn&apos;t load your account. Check your connection and try again.</AlertDescription>
+                <AlertActions>
+                    <AlertButton onClick={onRetry} disabled={retrying}>
+                        Retry
+                        {retrying && <Spinner />}
+                    </AlertButton>
+                    <AlertButton onClick={() => void signout()}>Sign out</AlertButton>
+                </AlertActions>
+            </Alert>
+        </DefaultLayout>
+    );
 };
