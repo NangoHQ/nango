@@ -29,7 +29,7 @@ export function isSpendPlan(plan: Pick<DBPlan, 'name'>): boolean {
 
 export function getSpendFloorInCents(plan: Pick<DBPlan, 'name' | 'has_growth_features'>): number {
     if (plan.name === 'pay-as-you-go') {
-        // Only pay-as-you-go bills the add-on on top: growth-v2 and startup-deal also carry the flag ahead of a migration.
+        // Only pay-as-you-go bills the add-on. growth-v2 and startup-deal also set the flag ahead of a migration.
         return MINIMUM_IN_CENTS + (plan.has_growth_features ? GROWTH_ADD_ON_IN_CENTS : 0);
     }
     return (getPlanDefinition(plan.name)?.basePrice ?? 0) * 100;
