@@ -48,24 +48,13 @@ function redactSensitiveEvent<TEvent extends Sentry.Event>(event: TEvent): TEven
     return event;
 }
 
-// Must match the `sentry_environment` the CSP report-uri sends for the same deployment.
-function getSentryEnvironment(): string {
-    const { hostname } = window.location;
-    if (hostname === 'app-staging.nango.dev') {
-        return 'staging';
-    }
-    if (hostname === 'app-development.nango.dev' || hostname.endsWith('.app-development.nango.dev')) {
-        return 'development';
-    }
-    return 'production';
-}
-
 // The dashboard renders customer-supplied data that can contain PHI (NAN-6428): no session
 // replays, no console breadcrumbs, no serialized non-Error throw payloads.
 Sentry.init({
     dsn: globalEnv.publicSentryKey,
-    enabled: !import.meta.env.DEV,
-    environment: getSentryEnvironment(),
+    // Without an environment, Sentry files events under `production`.
+    enabled: !import.meta.env.DEV && Boolean(globalEnv.environment),
+    environment: globalEnv.environment,
     ignoreErrors: sentryIgnoreErrors,
     integrations: [
         Sentry.reactRouterV6BrowserTracingIntegration({
