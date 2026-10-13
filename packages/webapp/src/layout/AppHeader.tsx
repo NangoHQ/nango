@@ -36,7 +36,7 @@ export const AppHeader: React.FC = () => {
                             }}
                         >
                             <Box />
-                            Playground
+                            Function Playground
                         </Button>
                     )}
                 </PermissionGate>

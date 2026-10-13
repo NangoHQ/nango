@@ -110,7 +110,7 @@ export const Playground: React.FC = () => {
                             {/* Header */}
                             <div className="flex w-full items-start justify-between">
                                 <div className="min-w-0 flex flex-col gap-2">
-                                    <h2 className="text-text-strong text-heading-medium">Playground</h2>
+                                    <h2 className="text-text-strong text-heading-medium">Function Playground</h2>
                                     <p className="text-body-medium-regular text-text-secondary">Quickly run any function.</p>
                                 </div>
                                 <IconButton variant="ghost" size="2xs" label="Close playground" onClick={() => setPlaygroundOpen(false)}>

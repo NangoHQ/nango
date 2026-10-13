@@ -134,7 +134,7 @@ export const ConnectionShow = () => {
                                 });
                             }}
                         >
-                            Playground
+                            Function Playground
                             <ExternalLink className="size-4" />
                         </button>
                     </TabsList>
