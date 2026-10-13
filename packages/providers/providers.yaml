@@ -9660,7 +9660,7 @@ freshdesk-mcp:
             type: string
             title: API Key
             description: The API Key of your FreshDesk account
-            example: AbCdEfGhIjKlMnOpQrStUvWx_yZ0123456789aBcDeFgHiJkLmNoPqRs
+            example: Xk9T************************************************_p4W
             pattern: '^[A-Za-z0-9_]+$'
             doc_section: '#step-1-finding-your-freshdesk-api-key'
 
@@ -9793,7 +9793,7 @@ freshservice-mcp:
             type: string
             title: API Key
             description: The API Key of your Freshservice account
-            example: AbCdEfGhIjKlMnOpQrStUvWx_yZ0123456789aBcDeFgHiJkLmNoPqRs
+            example: Xk9T************************************************_p4W
             pattern: '^[A-Za-z0-9_]+$'
             doc_section: '#step-1-finding-your-freshservice-api-key'
 
