@@ -8,7 +8,7 @@ import proxyService from './proxy.service.js';
 import type { ProxyQueryParams, ProxyRequestOutput } from './mcpProxySchema.js';
 import type { ProxyServiceError, ProxyServiceResponse } from './proxy.service.js';
 import type { LogContext } from '@nangohq/logs';
-import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, OperationActor } from '@nangohq/types';
+import type { ApiKeyPrincipal, DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, OperationActor } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Server.MCP.Proxy');
@@ -27,6 +27,7 @@ export interface McpProxyRequest {
     headers?: Record<string, string> | undefined;
     body?: unknown;
     baseUrlOverride?: string | undefined;
+    apiKey?: ApiKeyPrincipal | undefined;
     retries?: number | undefined;
     decompress?: boolean | undefined;
     retryOn?: number[] | undefined;
@@ -60,6 +61,7 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<M
         account,
         environment,
         plan: params.plan,
+        ...(params.apiKey ? { apiKey: params.apiKey } : {}),
         method: params.method,
         endpoint: appendQueryParams(params.path, params.queryParams),
         integrationId,

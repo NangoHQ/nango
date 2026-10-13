@@ -171,7 +171,8 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                         : {})
                 },
                 internalConfig: {
-                    providerName: this.provider!
+                    providerName: this.provider!,
+                    monitoringContext: { accountId: this.accountId, environmentId: this.environmentId, callsite: 'sdk' }
                 }
             }).unwrap(),
             outboundPolicy: runnerOutboundPolicy,
