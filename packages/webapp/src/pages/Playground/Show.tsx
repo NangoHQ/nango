@@ -1,0 +1,97 @@
+import { Bot, ChevronLeft, Code } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
+import { Link, Navigate, Outlet, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
+
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
+import { trackPlaygroundOpened } from '@/features/Playground/analytics';
+import DashboardLayout from '@/layout/DashboardLayout';
+import { useStore } from '@/store';
+import { cn } from '@/utils/utils';
+import { usePlaygroundTabs } from './usePlaygroundTabs';
+
+import type { PlaygroundTab } from './usePlaygroundTabs';
+import type { SegmentedTabOption } from '@/components/ui/SegmentedTabs';
+import type { PlaygroundLocationState } from '@/utils/playground';
+
+const TAB_OPTIONS: SegmentedTabOption<PlaygroundTab>[] = [
+    { value: 'agent', label: 'Agent', Icon: Bot },
+    { value: 'functions', label: 'Functions', Icon: Code }
+];
+
+interface PlaygroundOutletContext {
+    toolbarSlot: HTMLElement | null;
+}
+
+export function usePlaygroundToolbarSlot(): HTMLElement | null {
+    return useOutletContext<PlaygroundOutletContext>().toolbarSlot;
+}
+
+export const PlaygroundShow: React.FC = () => {
+    const env = useStore((s) => s.env);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { ready, tabs } = usePlaygroundTabs();
+    const [toolbarSlot, setToolbarSlot] = useState<HTMLDivElement | null>(null);
+    const back = (location.state as PlaygroundLocationState | null)?.back;
+    const tabState: PlaygroundLocationState = back ? { back } : {};
+
+    const segment = location.pathname.split('/').filter(Boolean).at(-1);
+    const tab = TAB_OPTIONS.find((option) => option.value === segment)?.value;
+
+    useEffect(() => {
+        if (tab === 'functions' && !back) {
+            trackPlaygroundOpened('playground');
+        }
+    }, [tab, back]);
+
+    if (!ready) {
+        return null;
+    }
+
+    if (tabs.length === 0) {
+        return (
+            <DashboardLayout title="Playground">
+                <p className="text-text-secondary">{`Your role can't use the Playground in this environment.`}</p>
+            </DashboardLayout>
+        );
+    }
+
+    if (!tab || !tabs.includes(tab)) {
+        return <Navigate to={`/${env}/playground/${tabs[0]}`} state={tabState} replace />;
+    }
+
+    return (
+        <DashboardLayout fullWidth className="h-full">
+            <Helmet>
+                <title>Playground - Nango</title>
+            </Helmet>
+            <div className={cn('flex h-full flex-col', tab === 'functions' ? 'gap-10' : 'gap-6')}>
+                <div className="flex flex-col gap-4">
+                    {back && (
+                        <Link
+                            to={back.to}
+                            className="inline-flex w-fit items-center gap-1 text-body-medium-medium text-text-secondary hover:text-text-strong focus-default"
+                        >
+                            <ChevronLeft className="size-4" />
+                            Back to {back.label}
+                        </Link>
+                    )}
+                    <div ref={setToolbarSlot} className="flex items-center justify-between gap-2 empty:hidden">
+                        {tabs.length > 1 && (
+                            <SegmentedTabs
+                                aria-label="Playground mode"
+                                value={tab}
+                                onValueChange={(next) => void navigate(`/${env}/playground/${next}`, { state: tabState })}
+                                options={TAB_OPTIONS.filter((option) => tabs.includes(option.value))}
+                            />
+                        )}
+                    </div>
+                </div>
+                <div className="min-h-0 flex-1">
+                    <Outlet context={{ toolbarSlot } satisfies PlaygroundOutletContext} />
+                </div>
+            </div>
+        </DashboardLayout>
+    );
+};

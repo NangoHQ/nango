@@ -15,7 +15,6 @@ const STATUS_POLL_INTERVAL_MS = 1500;
 
 export function usePlayground(inputFields: InputField[]) {
     const env = useStore((s) => s.env);
-    const isOpen = usePlaygroundStore((s) => s.isOpen);
     const playgroundIntegration = usePlaygroundStore((s) => s.integration);
     const playgroundConnection = usePlaygroundStore((s) => s.connection);
     const playgroundFunction = usePlaygroundStore((s) => s.function);
@@ -53,7 +52,7 @@ export function usePlayground(inputFields: InputField[]) {
 
             return fetchOperation(pendingOperationId, env);
         },
-        enabled: !!pendingOperationId && isOpen,
+        enabled: !!pendingOperationId,
         refetchInterval: (query) => {
             const state = query.state.data?.state;
             // Keep polling if data is null (transient fetch failure) or still in progress.

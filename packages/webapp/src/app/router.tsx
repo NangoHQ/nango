@@ -2,6 +2,7 @@ import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 import { PrivateRoute } from '@/components/patterns/PrivateRoute';
 import { SignedOutRoute } from '@/components/patterns/SignedOutRoute';
+import { FunctionPlayground } from '@/features/Playground';
 import { EmailVerified } from '@/pages/Account/EmailVerified';
 import ForgotPassword from '@/pages/Account/ForgotPassword';
 import { InviteSignup } from '@/pages/Account/InviteSignup';
@@ -12,7 +13,7 @@ import { Signin } from '@/pages/Account/Signin';
 import { Signup } from '@/pages/Account/Signup';
 import { VerifyEmail } from '@/pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from '@/pages/Account/VerifyEmailByExpiredToken';
-import { AgentPlaygroundShow } from '@/pages/AgentPlayground/Show';
+import { AgentPlayground } from '@/pages/AgentPlayground/Show';
 import { AccountApiKeysShow } from '@/pages/ApiKeys/Show';
 import { AuditShow } from '@/pages/Audit/Show';
 import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
@@ -37,6 +38,7 @@ import { NotFound } from '@/pages/NotFound';
 import { OAuthConsent } from '@/pages/OAuth/Consent';
 import { AccountDiscovery } from '@/pages/Onboarding/AccountDiscovery';
 import { HearAboutUs } from '@/pages/Onboarding/HearAboutUs';
+import { PlaygroundShow } from '@/pages/Playground/Show';
 import { Root } from '@/pages/Root';
 import { TeamBilling } from '@/pages/Team/Billing/Show';
 import { TeamSettingsPage } from '@/pages/Team/Settings';
@@ -371,9 +373,22 @@ export const router = sentryCreateBrowserRouter([
                         element: <RedirectWithEnv path="logs" />
                     },
                     {
-                        path: 'agent-playground',
-                        element: <AgentPlaygroundShow />,
-                        handle: { breadcrumb: 'Agent Playground' } as BreadcrumbHandle
+                        path: 'playground',
+                        element: <PlaygroundShow />,
+                        handle: { breadcrumb: 'Playground' } as BreadcrumbHandle,
+                        children: [
+                            { index: true, element: null },
+                            {
+                                path: 'agent',
+                                element: <AgentPlayground />,
+                                handle: { breadcrumb: 'Agent' } as BreadcrumbHandle
+                            },
+                            {
+                                path: 'functions',
+                                element: <FunctionPlayground />,
+                                handle: { breadcrumb: 'Functions' } as BreadcrumbHandle
+                            }
+                        ]
                     },
                     {
                         path: 'environment-settings',

@@ -2,7 +2,7 @@ import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai';
 import { ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, CircleCheck, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Helmet } from 'react-helmet';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 
 import {
@@ -22,10 +22,8 @@ import { LogoInverted } from '@/assets/LogoInverted';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
-import { useMeta } from '@/hooks/useMeta';
-import { usePermissions } from '@/hooks/usePermissions';
 import { useUser } from '@/hooks/useUser';
-import DashboardLayout from '@/layout/DashboardLayout';
+import { usePlaygroundToolbarSlot } from '@/pages/Playground/Show';
 import { useStore } from '@/store';
 import { clearAgentPlaygroundChat, loadAgentPlaygroundChat, saveAgentPlaygroundChat } from '@/store/agentPlaygroundChat';
 import { globalEnv } from '@/utils/env';
@@ -53,45 +51,25 @@ function providerName(provider: string): string {
     return STARTER_PROMPTS.find((starter) => starter.provider === provider)?.name ?? humanize(provider);
 }
 
-export const AgentPlaygroundShow: React.FC = () => {
+export const AgentPlayground: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { data: meta } = useMeta();
-    const { can } = usePermissions();
+    const toolbarSlot = usePlaygroundToolbarSlot();
     const [chatKey, setChatKey] = useState(0);
 
-    if (meta && !meta.data.agentPlayground) {
-        return (
-            <DashboardLayout title="Agent Playground">
-                <p className="text-text-secondary">The Agent Playground is not enabled for this account.</p>
-            </DashboardLayout>
-        );
-    }
-    if (meta && !can('environment:agent_sessions:write')) {
-        return (
-            <DashboardLayout title="Agent Playground">
-                <p className="text-text-secondary">{`Your role can't use the Agent Playground in this environment.`}</p>
-            </DashboardLayout>
-        );
-    }
-
     return (
-        <DashboardLayout fullWidth title="Agent Playground" className="h-full">
-            <Helmet>
-                <title>Agent Playground - Nango</title>
-            </Helmet>
-            <Chat
-                key={`${env}-${chatKey}`}
-                env={env}
-                onReset={() => {
-                    clearAgentPlaygroundChat();
-                    setChatKey((key) => key + 1);
-                }}
-            />
-        </DashboardLayout>
+        <Chat
+            key={`${env}-${chatKey}`}
+            env={env}
+            toolbarSlot={toolbarSlot}
+            onReset={() => {
+                clearAgentPlaygroundChat();
+                setChatKey((key) => key + 1);
+            }}
+        />
     );
 };
 
-const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) => {
+const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: () => void }> = ({ env, toolbarSlot, onReset }) => {
     const sessionId = useRef<string | undefined>(undefined);
     const transport = useMemo(
         () =>
@@ -243,11 +221,15 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
 
     return (
         <div className="mx-auto flex h-full max-w-3xl flex-col">
-            <div className="flex items-center pb-2">
-                <Button variant="outline" size="sm" onClick={onReset}>
-                    <Plus /> New chat
-                </Button>
-            </div>
+            {toolbarSlot &&
+                createPortal(
+                    <div className="ml-auto">
+                        <Button variant="outline" size="md" onClick={onReset}>
+                            <Plus /> New chat
+                        </Button>
+                    </div>,
+                    toolbarSlot
+                )}
 
             <div
                 ref={scroller}

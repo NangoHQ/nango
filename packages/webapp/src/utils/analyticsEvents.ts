@@ -21,7 +21,7 @@ export interface AnalyticsEvents {
     'billing:overdue_alert_link_click': Record<string, never>;
 
     // Playground
-    'playground:playground_view': { source: 'header' | 'connection' | 'integration' | 'function' };
+    'playground:playground_view': { source: 'playground' | 'connection' | 'integration' | 'function' };
     'playground:run_start': { function_type: string; integration: string; is_run_again: boolean };
     'playground:run_complete': { function_type: string; integration: string; is_success: boolean; run_state: string; run_duration_ms: number };
     'playground:run_cancel': { function_type: string; integration: string };

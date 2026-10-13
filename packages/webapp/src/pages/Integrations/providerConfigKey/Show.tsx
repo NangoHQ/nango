@@ -14,7 +14,7 @@ import { usePathNavigation } from '@/hooks/usePathNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
-import { openPlaygroundWithContext } from '@/utils/playground';
+import { useOpenPlaygroundWithContext } from '@/utils/playground';
 import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
 import { FunctionsTab } from './Functions/Tab';
 import { SettingsTab } from './Settings/Tab';
@@ -32,6 +32,7 @@ export const ShowIntegration: React.FC = () => {
 
     const { can } = usePermissions();
     const canCreateTestConnection = can('environment:connections:update');
+    const openPlaygroundWithContext = useOpenPlaygroundWithContext();
 
     const { data, isLoading: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
     const integration = data?.data;

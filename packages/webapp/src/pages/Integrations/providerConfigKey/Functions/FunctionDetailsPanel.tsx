@@ -16,7 +16,7 @@ import { useGetIntegrationFunctionCode, useGetTemplateFunctionCode } from '@/hoo
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
-import { openPlaygroundWithContext } from '@/utils/playground';
+import { useOpenPlaygroundWithContext } from '@/utils/playground';
 import { buildPullCommand, isSyncOrAction } from '@/utils/scripts';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
@@ -39,6 +39,7 @@ interface FunctionDetailsPanelProps {
 
 export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, integration, onDeleted }) => {
     const env = useStore((state) => state.env);
+    const openPlaygroundWithContext = useOpenPlaygroundWithContext();
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
     const [activeTab, setActiveTab] = useState<'input' | 'output' | 'code'>('input');

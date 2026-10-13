@@ -10,7 +10,7 @@ import { useGetIntegration } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
-import { openPlaygroundWithContext } from '@/utils/playground';
+import { useOpenPlaygroundWithContext } from '@/utils/playground';
 import { IntegrationLogoWithProfile } from './components/IntegrationLogoWithProfile';
 
 import type { GetConnection, GetIntegration } from '@nangohq/types';
@@ -36,6 +36,7 @@ export const ConnectionShow = () => {
     const env = useStore((state) => state.env);
     const { connectionId, providerConfigKey } = useParams();
     const location = useLocation();
+    const openPlaygroundWithContext = useOpenPlaygroundWithContext();
     const {
         data: connectionResponse,
         error: connectionError,
@@ -134,7 +135,7 @@ export const ConnectionShow = () => {
                                 });
                             }}
                         >
-                            Function Playground
+                            Playground
                             <ExternalLink className="size-4" />
                         </button>
                     </TabsList>
