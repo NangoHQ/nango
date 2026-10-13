@@ -31,7 +31,7 @@ import type {
     Tags
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-import type { JSONSchema7, LanguageModel, ToolSet, UIMessage, UIMessageChunk } from 'ai';
+import type { JSONSchema7, ToolSet, UIMessage, UIMessageChunk } from 'ai';
 
 const logger = getLogger('AgentPlayground');
 
@@ -248,8 +248,9 @@ async function getOrCreateSession(
         }
     }
 
-    // Created from the public request body, so the request returned in sessionCreated is the one that ran.
+    // This request is returned to the user as the one that created the session, so the session must be built from it.
     const request = playgroundSessionRequest({ pinned, scope: playgroundConnectionScope(ctx.user), connectionTags: playgroundConnectionTags(ctx.user) });
+    // Converts the public body into createAgentSession's arguments, the same way the public POST /sessions does.
     const parsed = postAgentSessionsBodySchema.safeParse(request);
     if (!parsed.success) {
         return Err(new AgentPlaygroundError('session_creation_failed', parsed.error.message, { cause: parsed.error }));
@@ -350,15 +351,13 @@ export async function startTurn({
     sessionId,
     messages,
     timeZone,
-    abortSignal,
-    model
+    abortSignal
 }: {
     ctx: PlaygroundContext;
     sessionId: string | undefined;
     messages: PlaygroundUIMessage[];
     timeZone: string;
     abortSignal?: AbortSignal;
-    model?: () => LanguageModel;
 }): Promise<Result<ReadableStream<UIMessageChunk<AgentPlaygroundMessageMetadata>>, AgentPlaygroundError>> {
     const lastMessage = messages.at(-1);
     // The provider comes from the browser, so only the playground's own providers are set up.
@@ -380,13 +379,19 @@ export async function startTurn({
     } catch (err) {
         return Err(new AgentPlaygroundError('session_creation_failed', 'Could not read the integrations and connections', { cause: err }));
     }
-    const resolved = await getOrCreateSession(ctx, sessionId, integrationIds, pinned);
-    if (resolved.isErr()) {
-        return Err(resolved.error);
+    const sessionResult = await getOrCreateSession(ctx, sessionId, integrationIds, pinned);
+    if (sessionResult.isErr()) {
+        return Err(sessionResult.error);
     }
-    const { session, created: sessionCreated } = resolved.value;
+    const { session, created: sessionCreated } = sessionResult.value;
     const sessionMetadata = { sessionId: session.id, sessionExpiresAt: session.expiresAt.toISOString() };
-    const startMetadata = { ...sessionMetadata, ...(integrationSetup ? { integrationSetup } : {}), ...(sessionCreated ? { sessionCreated } : {}) };
+    const startMetadata: AgentPlaygroundMessageMetadata = { ...sessionMetadata };
+    if (integrationSetup) {
+        startMetadata.integrationSetup = integrationSetup;
+    }
+    if (sessionCreated) {
+        startMetadata.sessionCreated = sessionCreated;
+    }
 
     const server = createAgentSessionMcpServer({ account: ctx.account, environment: ctx.environment, plan: ctx.plan, session });
     const client = new Client({ name: 'nango-agent-playground', version: '1.0.0' });
@@ -425,7 +430,7 @@ export async function startTurn({
     let failed = false;
 
     const result = streamText({
-        model: (model ?? createPlaygroundModel)(),
+        model: createPlaygroundModel(),
         instructions: buildInstructions(
             timeZone,
             new Date(),
