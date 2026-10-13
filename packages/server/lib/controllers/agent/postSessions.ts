@@ -163,7 +163,7 @@ export const agentSessionExpiresInSchema = z
     .refine((ms) => ms >= MIN_EXPIRES_IN_MS, { message: 'expires_in cannot be shorter than 60s' })
     .refine((ms) => ms <= MAX_EXPIRES_IN_MS, { message: 'expires_in cannot exceed 15d' });
 
-const bodySchema = z.strictObject({
+export const postAgentSessionsBodySchema = z.strictObject({
     tenant: z.strictObject({
         connections: agentSessionTenantConnectionsSchema
     }),
@@ -180,7 +180,7 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
         return;
     }
 
-    const body = bodySchema.safeParse(req.body);
+    const body = postAgentSessionsBodySchema.safeParse(req.body);
     if (!body.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(body.error) } });
         return;

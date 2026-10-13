@@ -8,12 +8,14 @@ import { seeders } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionServer.js';
+import { postAgentSessionsBodySchema } from '../controllers/agent/postSessions.js';
 import {
     buildMcpTools,
     existingIntegrationFor,
-    isSessionCurrent,
     newestConnectionPerIntegration,
     playgroundConnectionTags,
+    playgroundSessionRequest,
+    sessionChange,
     sessionOwner,
     toolNeedsApproval
 } from './agentPlayground.service.js';
@@ -77,22 +79,22 @@ describe('playgroundConnectionTags', () => {
     });
 });
 
-describe('isSessionCurrent', () => {
+describe('sessionChange', () => {
     const pinned = [{ integrationId: 'notion', connectionId: 'notion-acme' }];
 
-    it('matches the integrations and connections the session was created with', () => {
-        expect(isSessionCurrent(session(), ['notion'], pinned)).toBe(true);
+    it('finds no change for the integrations and connections the session was created with', () => {
+        expect(sessionChange(session(), ['notion'], pinned)).toBeUndefined();
     });
 
-    it('does not match once an integration was added or deleted', () => {
-        expect(isSessionCurrent(session(), ['notion', 'github'], pinned)).toBe(false);
-        expect(isSessionCurrent(session(), ['github'], pinned)).toBe(false);
+    it('reports an integration that was added or deleted', () => {
+        expect(sessionChange(session(), ['notion', 'github'], pinned)).toBe('integrations_changed');
+        expect(sessionChange(session(), ['github'], pinned)).toBe('integrations_changed');
     });
 
-    it('does not match once the newest connection changed, was added or was deleted', () => {
-        expect(isSessionCurrent(session(), ['notion'], [{ integrationId: 'notion', connectionId: 'notion-new' }])).toBe(false);
-        expect(isSessionCurrent(session(), ['notion'], [...pinned, { integrationId: 'github', connectionId: 'github-1' }])).toBe(false);
-        expect(isSessionCurrent(session(), ['notion'], [])).toBe(false);
+    it('reports a newest connection that changed, was added or was deleted', () => {
+        expect(sessionChange(session(), ['notion'], [{ integrationId: 'notion', connectionId: 'notion-new' }])).toBe('connections_changed');
+        expect(sessionChange(session(), ['notion'], [...pinned, { integrationId: 'github', connectionId: 'github-1' }])).toBe('connections_changed');
+        expect(sessionChange(session(), ['notion'], [])).toBe('connections_changed');
     });
 });
 
@@ -166,6 +168,30 @@ describe('newestConnectionPerIntegration', () => {
             { integrationId: 'notion', connectionId: 'newest-notion' },
             { integrationId: 'slack', connectionId: 'only-slack' }
         ]);
+    });
+});
+
+describe('playgroundSessionRequest', () => {
+    const scope = { end_user_email: 'ada@example.com' };
+    const connectionTags = playgroundConnectionTags({ id: 1, uuid: 'user-a', email: 'ada@example.com', name: 'Ada' });
+
+    it('pins the connections the session pinned', () => {
+        const request = playgroundSessionRequest({ pinned: [{ integrationId: 'github', connectionId: 'conn-1' }], scope, connectionTags });
+
+        expect(request).toEqual({
+            tenant: { connections: { pinned: [{ integration_id: 'github', connection_id: 'conn-1' }] } },
+            toolset: '*',
+            meta_tools: { nango_create_connection: { enabled: true, tags: connectionTags }, nango_proxy: true },
+            expires_in: '1h'
+        });
+        expect(postAgentSessionsBodySchema.safeParse(request).success).toBe(true);
+    });
+
+    it("selects the user's connections by tag when nothing is connected yet, so the API accepts it", () => {
+        const request = playgroundSessionRequest({ pinned: [], scope, connectionTags });
+
+        expect(request.tenant.connections).toEqual({ any: [{ tags: scope }] });
+        expect(postAgentSessionsBodySchema.safeParse(request).success).toBe(true);
     });
 });
 
