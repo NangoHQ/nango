@@ -7954,7 +7954,7 @@ See [Data storage](/guides/platform/self-hosting#data-storage) on the overview p
 
 | Area | Nango | You |
 | --- | --- | --- |
-| Managed image releases | Publishes them, on a two-month cadence plus hotfixes | Pull and apply them |
+| Managed image releases | Publishes them, on a two-week cadence plus hotfixes | Pull and apply them |
 | Helm chart | Maintains it | Deploy and configure it |
 | Infrastructure provisioning | — | Provision it — VPC, database, cache, cluster, on any cloud or on-prem |
 | Application deployment & updates | — | Deploy and update it yourself |
@@ -8549,7 +8549,7 @@ If `NANGO_LOGS_ENABLED` is `false`, logs are sent to stdout and can be viewed in
     Support per your contract's SLA, plus the managed image releases and Helm chart maintained by Nango. Nango doesn't have visibility into your instance, so support relies on what you share with us — logs, dashboard state, error messages.
   </Accordion>
   <Accordion title="Who applies updates?">
-    You do. We publish managed images on a two-month cadence plus hotfixes, and notify your Slack channel and the `managed-image-releases` repo — pulling and deploying them is on your team.
+    You do. We publish managed images on a two-week cadence plus hotfixes, and notify via the `managed-image-releases` repo — pulling and deploying them is on your team.
   </Accordion>
   <Accordion title="Which clouds are supported?">
     AWS, GCP, Azure, and on-prem Kubernetes — anywhere you can run the Helm chart.
