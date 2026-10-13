@@ -4,6 +4,7 @@ import { createBrowserRouter, createRoutesFromChildren, matchRoutes, useLocation
 
 import { globalEnv } from './env';
 import { redactSensitiveProperties, redactSensitiveText } from './sensitive-url';
+import { sentryIgnoreErrors } from './sentry-ignore-errors';
 
 /**
  * Auth routes carry tokens in the URL path (NAN-6506). `sendDefaultPii: false` does not cover
@@ -65,16 +66,7 @@ Sentry.init({
     dsn: globalEnv.publicSentryKey,
     enabled: !import.meta.env.DEV,
     environment: getSentryEnvironment(),
-    ignoreErrors: [
-        'AbortError',
-        // Anchored: a plain string matches substrings, and would also drop "Failed to fetch dynamically imported module".
-        /^(TypeError: )?Failed to fetch( \(.+\))?$/,
-        /^(TypeError: )?Load failed( \(.+\))?$/,
-        'NetworkError when attempting to fetch resource',
-        "Failed to execute 'writeText' on 'Clipboard'",
-        "Failed to execute 'readText' on 'Clipboard'",
-        'Object Not Found Matching Id'
-    ],
+    ignoreErrors: sentryIgnoreErrors,
     integrations: [
         Sentry.reactRouterV6BrowserTracingIntegration({
             useEffect,
