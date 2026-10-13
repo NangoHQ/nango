@@ -2,6 +2,7 @@ import { getFlags } from '@nangohq/feature-flags';
 import { accountGroupProperties, environmentService } from '@nangohq/shared';
 import { baseUrl, NANGO_VERSION, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { playgroundModelLabel } from '../../../services/agentPlaygroundModel.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { canViewAuditTrail } from '../../../utils/auditTrail.js';
 
@@ -21,6 +22,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to retrieve environments' } });
         return;
     }
+    const agentPlayground = await getFlags().isAgentPlaygroundEnabled(account.uuid);
     res.status(200).send({
         data: {
             environments: environments.value.map((env) => {
@@ -33,7 +35,8 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             auditTrail: await canViewAuditTrail(req, plan),
             toolsCatalog: await getFlags().hasCatalogTools(account.uuid),
             accountGroup: accountGroupProperties(account, plan),
-            agentPlayground: await getFlags().isAgentPlaygroundEnabled(account.uuid)
+            agentPlayground,
+            agentPlaygroundModel: agentPlayground ? playgroundModelLabel() : null
         }
     });
 });
