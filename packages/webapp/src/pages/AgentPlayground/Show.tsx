@@ -235,7 +235,7 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
 
     if (messages.length === 0) {
         return (
-            <div className="mx-auto flex h-full max-w-3xl flex-col">
+            <div className="mx-auto flex h-full max-w-[800px] flex-col">
                 <EmptyState composer={composer} onPick={send} />
             </div>
         );
@@ -531,25 +531,28 @@ const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced
 
 const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string, provider: string) => void }> = ({ composer, onPick }) => {
     return (
-        <div className="flex flex-1 flex-col items-center justify-center gap-6 pb-8 text-center">
-            <div className="relative flex w-full justify-center">
+        <div className="flex flex-1 flex-col items-center text-center">
+            {/* Equal-basis halves above and below keep the composer centred, whatever sits around it. */}
+            <div className="flex w-full flex-1 basis-0 flex-col items-center justify-end pb-6">
+                {/* Relies on LogoInverted's path order: hides the disc and eye, fills the wolf. */}
                 <LogoInverted
                     aria-hidden
-                    className="pointer-events-none absolute bottom-[calc(100%+16px)] left-1/2 size-40 -translate-x-1/2 text-text-strong opacity-[0.05] [mask-image:radial-gradient(circle,black_45%,transparent_75%)]"
+                    className="pointer-events-none -mb-20 size-72 text-text-strong opacity-[0.06] [mask-image:linear-gradient(to_bottom,black_30%,transparent_70%)] [&_path:nth-child(-n+2)]:hidden [&_path:nth-child(3)]:fill-current"
                 />
                 <h2 className="relative text-heading-medium text-text-strong">Explore how Nango works with an agent</h2>
             </div>
             {composer}
-            <div className="grid w-full grid-cols-2 gap-3">
+            <div className="grid w-full flex-1 basis-0 auto-rows-min grid-cols-2 gap-3 pt-6">
                 {STARTER_PROMPTS.map(({ prompt, provider }) => (
                     <button
                         key={prompt}
                         type="button"
                         onClick={() => onPick(prompt, provider)}
-                        className="flex items-center gap-3 rounded-ds-xs border-ds-hairline border-border-muted bg-surface-panel px-3 py-2.5 text-left text-body-medium-regular text-text-default transition-colors hover:border-border-strong"
+                        className="group flex items-center gap-2.5 rounded-ds-md border-ds-hairline border-border-muted bg-surface-panel px-3 py-3 text-left text-body-medium-regular text-text-default transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-container-panel"
                     >
-                        <IntegrationLogo provider={provider} className="size-8 shrink-0" />
-                        {prompt}
+                        <IntegrationLogo provider={provider} className="size-5 shrink-0 border-0 bg-transparent p-0" />
+                        <span className="flex-1">{prompt}</span>
+                        <ArrowUpRight className="size-4 shrink-0 text-text-muted opacity-0 transition-opacity group-hover:opacity-100" />
                     </button>
                 ))}
             </div>
