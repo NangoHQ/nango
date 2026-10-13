@@ -46,6 +46,7 @@ export function useOpenPlaygroundWithContext() {
                 connectionSearch: ''
             };
 
+            usePlaygroundStore.getState().abortActiveRun?.();
             usePlaygroundStore.getState().setState(next);
             trackPlaygroundOpened(override.source);
 
