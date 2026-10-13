@@ -209,7 +209,7 @@ describe(`PUT ${route}`, () => {
     describe('Monthly floor', () => {
         it.each([
             ['at the starter-v2 base fee', 'starter-v2', false, 5000],
-            ['below the pay-as-you-go minimum', 'pay-as-you-go', false, 2500],
+            ['at the pay-as-you-go minimum', 'pay-as-you-go', false, 5000],
             ['at the growth-v2 base fee', 'growth-v2', false, 50000],
             ['at the pay-as-you-go minimum plus the Growth add-on', 'pay-as-you-go', true, 50000]
         ])('should reject a threshold %s', async (_label, planName, hasGrowthFeatures, thresholdInCents) => {
@@ -225,6 +225,7 @@ describe(`PUT ${route}`, () => {
 
         it.each([
             ['just above the starter-v2 base fee', 'starter-v2', false, 5001],
+            ['just above the pay-as-you-go minimum', 'pay-as-you-go', false, 5001],
             ['just above the pay-as-you-go minimum plus the Growth add-on', 'pay-as-you-go', true, 50001],
             ['on growth-v2 carrying the add-on flag ahead of a migration', 'growth-v2', true, 50001],
             ['on startup-deal, which has no floor', 'startup-deal', false, 1]
