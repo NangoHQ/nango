@@ -165,6 +165,18 @@ describe('trackAgentSessionToolCall', () => {
         expect(onlyEvent().properties).toMatchObject({ is_pinned: pinned });
     });
 
+    it('marks a tool that ran on an MCP server', () => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'linear-mcp', toolName: 'list_issues', mcpTool: true }));
+
+        expect(onlyEvent().properties).toMatchObject({ is_mcp_tool: true });
+    });
+
+    it('leaves the MCP marker off a deployed action', () => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc' }));
+
+        expect(onlyEvent().properties).not.toHaveProperty('is_mcp_tool');
+    });
+
     it('leaves pinned out when the call site cannot say', () => {
         inRequest(() => trackAgentSessionToolCall({ metaTool: 'nango_execute', session, toolName: 'made_up', errorCode: 'tool_not_in_session' }));
 
