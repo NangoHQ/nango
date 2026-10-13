@@ -18,25 +18,24 @@ const mocks = vi.hoisted(() => {
         userError: undefined as unknown,
         meta: undefined as Record<string, unknown> | undefined,
         metaError: null as unknown,
-        refetchMeta: vi.fn(),
+        captureException: vi.fn(),
         storeState: {} as Record<string, unknown>
     };
 });
 
+vi.mock('@sentry/react', () => ({ captureException: mocks.captureException }));
 vi.mock('../../hooks/useUser', () => ({
     useUser: () => ({ user: mocks.user, loading: false, error: mocks.userError })
 }));
 vi.mock('../../hooks/useMeta', () => ({
-    useMeta: () => ({ data: mocks.meta ? { data: mocks.meta } : undefined, error: mocks.metaError, isFetching: false, refetch: mocks.refetchMeta })
+    useMeta: () => ({ data: mocks.meta ? { data: mocks.meta } : undefined, error: mocks.metaError })
 }));
 vi.mock('../../hooks/usePermissions', () => ({ usePermissions: () => ({ can: () => true }) }));
 vi.mock('../../utils/analytics', () => ({ useAnalyticsIdentify: () => vi.fn(), resumeAnalytics: vi.fn(), stopAnalytics: vi.fn() }));
-vi.mock('../../utils/user', () => ({ useSignout: () => vi.fn() }));
 vi.mock('../../store', () => ({
     useStore: (selector: (state: Record<string, unknown>) => unknown) => selector(mocks.storeState)
 }));
-vi.mock('../../layout/DefaultLayout', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
-vi.mock('../ui/Spinner', () => ({ Spinner: () => null }));
+vi.mock('./ErrorBoundary', () => ({ ErrorBoundary: () => <p>error page</p> }));
 vi.mock('../../pages/PageNotFound', () => ({ default: () => <p>not found</p> }));
 vi.mock('../../pages/PageEnvironmentUnauthorized', () => ({ default: () => <p>unauthorized</p> }));
 
@@ -55,7 +54,7 @@ describe('PrivateRoute', () => {
         mocks.userError = undefined;
         mocks.meta = undefined;
         mocks.metaError = null;
-        mocks.refetchMeta.mockReset();
+        mocks.captureException.mockReset();
         mocks.storeState = { env: 'dev', setEnvs: vi.fn(), setBaseUrl: vi.fn(), setDebugMode: vi.fn(), setEnv: vi.fn() };
         container = document.createElement('div');
         document.body.appendChild(container);
@@ -88,20 +87,7 @@ describe('PrivateRoute', () => {
         const router = await renderAt('/dev/connections');
 
         expect(router.state.location.pathname).toBe('/dev/connections');
-        expect(container.textContent).toContain('Retry');
-    });
-
-    it('refetches meta when Retry is clicked', async () => {
-        mocks.metaError = new TypeError('Failed to fetch');
-        await renderAt('/dev/connections');
-
-        const retry = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Retry');
-        await act(async () => {
-            retry?.click();
-            await Promise.resolve();
-        });
-
-        expect(mocks.refetchMeta).toHaveBeenCalledTimes(1);
+        expect(container.textContent).toBe('error page');
     });
 
     it('keeps the page when a meta refetch fails after it loaded', async () => {
@@ -111,7 +97,18 @@ describe('PrivateRoute', () => {
         const router = await renderAt('/dev/connections');
 
         expect(router.state.location.pathname).toBe('/dev/connections');
-        expect(container.textContent).toContain('connections');
+        expect(container.textContent).toBe('connections');
+    });
+
+    it('reports a failed meta request to Sentry', async () => {
+        mocks.metaError = apiError(502, 'server_error');
+
+        await renderAt('/dev/connections');
+
+        expect(mocks.captureException).toHaveBeenCalledWith(mocks.metaError, {
+            tags: { query: 'meta', cached: 'false' },
+            extra: { status: 502, code: 'server_error' }
+        });
     });
 
     it('renders nothing while a no-session meta error signs the user out', async () => {
@@ -121,6 +118,7 @@ describe('PrivateRoute', () => {
 
         expect(router.state.location.pathname).toBe('/dev/connections');
         expect(container.textContent).toBe('');
+        expect(mocks.captureException).not.toHaveBeenCalled();
     });
 
     it('sends a user who failed to load to /signin', async () => {

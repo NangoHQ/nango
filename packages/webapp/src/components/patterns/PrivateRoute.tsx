@@ -1,26 +1,24 @@
-import { CircleX } from 'lucide-react';
+import * as Sentry from '@sentry/react';
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-
-import { Alert, AlertActions, AlertButton, AlertDescription } from '@nangohq/design-system';
 
 import { useMeta } from '../../hooks/useMeta';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useUser } from '../../hooks/useUser';
-import DefaultLayout from '../../layout/DefaultLayout';
 import PageEnvironmentUnauthorized from '../../pages/PageEnvironmentUnauthorized';
 import PageNotFound from '../../pages/PageNotFound';
 import { useStore } from '../../store';
 import { resumeAnalytics, stopAnalytics, useAnalyticsIdentify } from '../../utils/analytics';
-import { isNoSessionApiError } from '../../utils/api';
+import { APIError, apiErrorCode, isNoSessionApiError } from '../../utils/api';
 import { isNonEnvPath, signinPathWithNext } from '../../utils/routes';
-import { useSignout } from '../../utils/user';
-import { Spinner } from '../ui/Spinner';
+import { ErrorBoundary } from './ErrorBoundary';
 
 export const PrivateRoute: React.FC = () => {
     const { user, loading: loadingUser, error: userError } = useUser();
-    const { data, error: metaError, isFetching: fetchingMeta, refetch: refetchMeta } = useMeta(!!user);
+    const { data, error: metaError } = useMeta(!!user);
     const meta = data?.data;
+    // The query cache's error handler is already signing a no-session user out.
+    const metaFailed = !!metaError && !isNoSessionApiError(metaError);
     const [notFoundEnv, setNotFoundEnv] = useState(false);
     const [unauthorizedEnv, setUnauthorizedEnv] = useState(false);
     const [ready, setReady] = useState(false);
@@ -106,6 +104,17 @@ export const PrivateRoute: React.FC = () => {
         identify(user, meta.accountGroup);
     }, [user, meta, identify]);
 
+    useEffect(() => {
+        if (!metaFailed) {
+            return;
+        }
+        Sentry.captureException(metaError, {
+            tags: { query: 'meta', cached: String(!!meta) },
+            extra: metaError instanceof APIError ? { status: metaError.res.status, code: apiErrorCode(metaError) } : undefined
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [metaError]);
+
     if (loadingUser) {
         return null;
     }
@@ -114,11 +123,7 @@ export const PrivateRoute: React.FC = () => {
         return userError ? <Navigate to={signinPathWithNext(location)} replace /> : null;
     }
     if (!meta) {
-        // The query cache's error handler is already signing a no-session user out.
-        if (!metaError || isNoSessionApiError(metaError)) {
-            return null;
-        }
-        return <MetaLoadError retrying={fetchingMeta} onRetry={() => void refetchMeta()} />;
+        return metaFailed ? <ErrorBoundary /> : null;
     }
     if (!ready) {
         return null;
@@ -133,24 +138,4 @@ export const PrivateRoute: React.FC = () => {
     }
 
     return <Outlet />;
-};
-
-const MetaLoadError: React.FC<{ retrying: boolean; onRetry: () => void }> = ({ retrying, onRetry }) => {
-    const signout = useSignout();
-
-    return (
-        <DefaultLayout>
-            <Alert variant="danger">
-                <CircleX />
-                <AlertDescription>We couldn&apos;t load your account. Try again, or sign out.</AlertDescription>
-                <AlertActions>
-                    <AlertButton onClick={onRetry} disabled={retrying}>
-                        Retry
-                        {retrying && <Spinner className="size-3" />}
-                    </AlertButton>
-                    <AlertButton onClick={() => void signout()}>Sign out</AlertButton>
-                </AlertActions>
-            </Alert>
-        </DefaultLayout>
-    );
 };
