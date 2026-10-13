@@ -42,8 +42,8 @@ const inputGroupVariants = cva(
                     'h-auto items-end rounded-ds-lg border-border-default bg-surface-panel hover:border-border-strong',
                     '[&>textarea]:max-h-48 [&>textarea]:min-h-24 [&>textarea]:px-4 [&>textarea]:pt-4 [&>textarea]:[field-sizing:content] [&>[data-align=inline-end]]:pr-3 [&>[data-align=inline-end]]:pb-3',
                     'shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.12)]',
-                    // Repeats the elevation so focusing doesn't flatten the composer.
-                    'has-[[data-slot=input-group-control]:focus-visible]:shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.12),0_0_0_0.5px_var(--focus-ring-default),inset_0_0_0_0.5px_var(--focus-ring-default)]'
+                    // The composer keeps focus for the whole conversation, so a darker border marks focus instead of the ring.
+                    'has-[[data-slot=input-group-control]:focus-visible]:border-border-stronger has-[[data-slot=input-group-control]:focus-visible]:shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.12)]'
                 ]
             }
         },
