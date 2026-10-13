@@ -2,7 +2,7 @@ import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { mfaService, seeders, userService } from '@nangohq/shared';
-import { nanoid, normalizeEmail } from '@nangohq/utils';
+import { nanoid, normalizeEmail, Ok } from '@nangohq/utils';
 
 import type { runServer as runServerType } from '../../../../utils/tests.js';
 
@@ -13,6 +13,7 @@ const workosMocks = vi.hoisted(() => {
     process.env['AUTH_ALLOW_SIGNUP'] = 'true';
     process.env['NANGO_SERVER_URL'] = 'http://localhost:3003';
     process.env['NANGO_PUBLIC_SERVER_URL'] = 'http://localhost:3003';
+    process.env['FLAG_USAGE_ENABLED'] = 'true';
 
     return {
         authenticateWithCode: vi.fn(),
@@ -20,6 +21,13 @@ const workosMocks = vi.hoisted(() => {
         getOrganization: vi.fn()
     };
 });
+
+const billingMocks = vi.hoisted(() => ({
+    linkBillingCustomer: vi.fn(),
+    linkBillingFreeSubscription: vi.fn()
+}));
+
+vi.mock('../../../../utils/billing.js', () => billingMocks);
 
 vi.mock('../../../../clients/workos.client.js', () => ({
     getWorkOSClient: () => ({
@@ -54,6 +62,42 @@ describe(`POST ${route}`, () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        billingMocks.linkBillingCustomer.mockResolvedValue(Ok({ id: 'orb_customer' }));
+        billingMocks.linkBillingFreeSubscription.mockResolvedValue(Ok({ id: 'orb_subscription' }));
+    });
+
+    it('should not set up billing when a WorkOS organization member joins an existing account', async () => {
+        const { account } = await seeders.seedAccountEnvAndUser();
+        const email = `${nanoid()}@example.com`;
+
+        workosMocks.getOrganization.mockResolvedValue({ name: account.name });
+        workosMocks.authenticateWithCode.mockResolvedValue({
+            user: { email, firstName: 'Managed', lastName: 'User' },
+            organizationId: 'org_123'
+        });
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { redirect: 'manual' });
+
+        expect(callbackRes.status).toBe(302);
+        expect((await userService.getUserByEmail(email))?.account_id).toBe(account.id);
+        expect(billingMocks.linkBillingCustomer).not.toHaveBeenCalled();
+        expect(billingMocks.linkBillingFreeSubscription).not.toHaveBeenCalled();
+    });
+
+    it('should set up billing when a WorkOS organization sign-in creates the account', async () => {
+        const email = `${nanoid()}@example.com`;
+
+        workosMocks.getOrganization.mockResolvedValue({ name: `org-${nanoid()}` });
+        workosMocks.authenticateWithCode.mockResolvedValue({
+            user: { email, firstName: 'Managed', lastName: 'User' },
+            organizationId: 'org_123'
+        });
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { redirect: 'manual' });
+
+        expect(callbackRes.status).toBe(302);
+        expect(billingMocks.linkBillingCustomer).toHaveBeenCalledTimes(1);
+        expect(billingMocks.linkBillingFreeSubscription).toHaveBeenCalledTimes(1);
     });
 
     it('should redirect invalid WorkOS callback payloads to signin', async () => {
