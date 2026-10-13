@@ -66,6 +66,27 @@ describe('createAgentSessionMcpServer', () => {
         }
     });
 
+    it("sends the session's instructions on initialize", async () => {
+        const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+        const server = createAgentSessionMcpServer({
+            account: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: null,
+            session: session({ compiledToolset: { notion: { provider: 'notion', pinned: [], searchable: [tool('read_doc')] } } })
+        });
+        const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+        await server.connect(serverTransport);
+        await client.connect(clientTransport);
+
+        try {
+            expect(client.getInstructions()).toContain('- notion (notion): not connected');
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
     it.each([
         { requestParams: { name: 'notion__read_doc' }, clientParams: { name: 'notion__read_doc' }, expectedInput: undefined },
         {
@@ -169,6 +190,32 @@ describe('listSessionTools', () => {
                 description: 'send_message description',
                 inputSchema: { $schema: 'https://json-schema.org/draft/2020-12/schema', type: 'object', properties: {}, additionalProperties: true },
                 _meta: { 'nango/integration': 'slack', 'nango/tool': 'send_message' }
+            }
+        ]);
+    });
+
+    it('lists a pinned MCP server tool with the schema and annotations its server gave', () => {
+        const inputSchema = { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] };
+        const tools = listSessionTools(
+            session({
+                compiledToolset: {
+                    'linear-mcp': {
+                        provider: 'linear-mcp',
+                        pinned: [{ name: 'list_issues', description: 'List issues', mcp: { inputSchema, annotations: { readOnlyHint: true } } }],
+                        searchable: [],
+                        mcpServer: 'available'
+                    }
+                }
+            })
+        );
+
+        expect(tools.slice(2)).toStrictEqual([
+            {
+                name: 'linear-mcp__list_issues',
+                description: 'List issues',
+                inputSchema,
+                annotations: { readOnlyHint: true },
+                _meta: { 'nango/integration': 'linear-mcp', 'nango/tool': 'list_issues' }
             }
         ]);
     });

@@ -4,11 +4,12 @@ import { toJsonSchema202012 } from '../../mcp/utils.js';
 import { createConnectionTool } from './createConnection/createConnection.js';
 import { executeSessionTool, executeTool } from './execute/execute.js';
 import { proxyTool } from './proxy/proxy.js';
+import { buildSessionInstructions } from './sessionInstructions.js';
 import { callAgentSessionTool, MAX_TOOL_NAME_LENGTH } from './sessionTool.js';
 import { toolSearchTool } from './toolSearch/search.js';
 
 import type { AgentSessionCallableTool, AgentSessionMcpContext, AgentSessionMcpTool } from './sessionTool.js';
-import type { RegisteredTool, RequestId, Tool } from '@modelcontextprotocol/server';
+import type { RegisteredTool, RequestId, Tool, ToolAnnotations } from '@modelcontextprotocol/server';
 import type { AgentSession } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -34,8 +35,8 @@ type SessionTool = Tool & { description: string };
 const META_TOOLS: AgentSessionMcpTool[] = [toolSearchTool, executeTool, proxyTool, createConnectionTool];
 
 /**
- * The compiled toolset stores a name and a description per tool, not an argument schema, so a
- * pinned tool is listed as accepting a free-form object.
+ * The compiled toolset stores no argument schema for a deployed action, so a pinned action is listed
+ * as accepting a free-form object. An MCP server tool is listed with the schema its server gave.
  */
 const PINNED_TOOL_INPUT_SCHEMA: Tool['inputSchema'] = {
     $schema: JSON_SCHEMA_2020_12,
@@ -69,7 +70,8 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
         {
             capabilities: {
                 tools: { listChanged: false }
-            }
+            },
+            instructions: buildSessionInstructions(session)
         }
     );
 
@@ -223,7 +225,8 @@ export function buildSessionTools(session: AgentSession): SessionTools {
             listed.push({
                 name,
                 description: tool.description,
-                inputSchema: PINNED_TOOL_INPUT_SCHEMA,
+                inputSchema: tool.mcp ? (tool.mcp.inputSchema as Tool['inputSchema']) : PINNED_TOOL_INPUT_SCHEMA,
+                ...(tool.mcp?.annotations ? { annotations: tool.mcp.annotations as ToolAnnotations } : {}),
                 _meta: { [INTEGRATION_META_KEY]: integrationId, [TOOL_META_KEY]: tool.name }
             });
         }

@@ -21,7 +21,7 @@ export interface AgentPlaygroundMessageMetadata {
     usage?: AgentPlaygroundUsage;
 }
 
-export type AgentPlaygroundErrorCode = 'feature_disabled' | 'session_creation_failed' | 'model_error';
+export type AgentPlaygroundErrorCode = 'feature_disabled' | 'session_creation_failed' | 'model_error' | 'too_many_request';
 
 export type PostAgentPlaygroundChat = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };

@@ -507,7 +507,7 @@ URL patterns:
 | `kustomer` | Kustomer | API_KEY | [docs](https://nango.dev/docs/integrations/all/kustomer.md) |  |  | crm |
 | `lagrowthmachine` | La Growth Machine | API_KEY | [docs](https://nango.dev/docs/integrations/all/lagrowthmachine.md) | [connect](https://nango.dev/docs/integrations/all/lagrowthmachine/connect.md) |  | marketing |
 | `lastpass` | LastPass | BASIC | [docs](https://nango.dev/docs/integrations/all/lastpass.md) | [connect](https://nango.dev/docs/integrations/all/lastpass/connect.md) |  | productivity |
-| `lattice` | Lattice | API_KEY | [docs](https://nango.dev/docs/integrations/all/lattice.md) | [connect](https://nango.dev/docs/integrations/all/lattice/connect.md) |  | hr |
+| `lattice` | Lattice | API_KEY | [docs](https://nango.dev/docs/api-integrations/lattice.md) | [connect](https://nango.dev/docs/api-integrations/lattice/connect.md) |  | hr |
 | `leadfeeder` | Leadfeeder | API_KEY | [docs](https://nango.dev/docs/api-integrations/leadfeeder.md) | [connect](https://nango.dev/docs/api-integrations/leadfeeder/connect.md) |  | marketing, crm |
 | `leadmagic` | LeadMagic | API_KEY | [docs](https://nango.dev/docs/integrations/all/leadmagic.md) | [connect](https://nango.dev/docs/integrations/all/leadmagic/connect.md) |  | marketing, crm |
 | `leapsome` | Leapsome | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/leapsome.md) | [connect](https://nango.dev/docs/api-integrations/leapsome/connect.md) |  | hr |
@@ -690,7 +690,7 @@ URL patterns:
 | `peopledatalabs` | People Data Labs | API_KEY | [docs](https://nango.dev/docs/integrations/all/peopledatalabs.md) |  |  | analytics |
 | `perdoo` | Perdoo | API_KEY | [docs](https://nango.dev/docs/api-integrations/perdoo.md) | [connect](https://nango.dev/docs/api-integrations/perdoo/connect.md) |  | productivity, analytics |
 | `perimeter81` | Perimeter81 | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/perimeter81.md) | [connect](https://nango.dev/docs/integrations/all/perimeter81/connect.md) |  | productivity |
-| `perk` | Perk | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/perk.md) |  | [setup](https://nango.dev/docs/api-integrations/perk/how-to-register-your-own-perk-api-oauth-app.md) | productivity |
+| `perk` | Perk | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/perk.md) | [connect](https://nango.dev/docs/api-integrations/perk/connect.md) | [setup](https://nango.dev/docs/api-integrations/perk/how-to-register-your-own-perk-api-oauth-app.md) | productivity |
 | `perplexity` | Perplexity | API_KEY | [docs](https://nango.dev/docs/integrations/all/perplexity.md) |  |  | productivity, dev-tools |
 | `personio` | Personio (v1) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/personio.md) | [connect](https://nango.dev/docs/integrations/all/personio/connect.md) |  | hr |
 | `personio-recruiting` | Personio Recruiting | API_KEY | [docs](https://nango.dev/docs/integrations/all/personio-recruiting.md) |  |  | hr, ats |
