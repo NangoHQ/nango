@@ -1538,6 +1538,7 @@
               "api-integrations/linkly",
               "integrations/all/listmonk",
               "api-integrations/listrak",
+              "api-integrations/litmos",
               "api-integrations/liveswitch",
               "api-integrations/livetennisapi",
               "api-integrations/lob",
