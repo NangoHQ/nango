@@ -8,13 +8,11 @@ import PageEnvironmentUnauthorized from '../../pages/PageEnvironmentUnauthorized
 import PageNotFound from '../../pages/PageNotFound';
 import { useStore } from '../../store';
 import { resumeAnalytics, stopAnalytics, useAnalyticsIdentify } from '../../utils/analytics';
-import { isNoSessionApiError } from '../../utils/api';
 import { isNonEnvPath, signinPathWithNext } from '../../utils/routes';
-import { ErrorBoundary } from './ErrorBoundary';
 
 export const PrivateRoute: React.FC = () => {
     const { user, loading: loadingUser, error: userError } = useUser();
-    const { data, error: metaError } = useMeta(!!user);
+    const { data } = useMeta(!!user);
     const meta = data?.data;
     const [notFoundEnv, setNotFoundEnv] = useState(false);
     const [unauthorizedEnv, setUnauthorizedEnv] = useState(false);
@@ -108,11 +106,7 @@ export const PrivateRoute: React.FC = () => {
     if (!user) {
         return userError ? <Navigate to={signinPathWithNext(location)} replace /> : null;
     }
-    if (!meta) {
-        // The query cache's error handler is already signing a no-session user out.
-        return metaError && !isNoSessionApiError(metaError) ? <ErrorBoundary /> : null;
-    }
-    if (!ready) {
+    if (!meta || !ready) {
         return null;
     }
 

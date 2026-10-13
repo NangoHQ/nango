@@ -34,7 +34,6 @@ vi.mock('../../utils/analytics', () => ({ useAnalyticsIdentify: () => vi.fn(), r
 vi.mock('../../store', () => ({
     useStore: (selector: (state: Record<string, unknown>) => unknown) => selector(mocks.storeState)
 }));
-vi.mock('./ErrorBoundary', () => ({ ErrorBoundary: () => <p>error page</p> }));
 vi.mock('../../pages/PageNotFound', () => ({ default: () => <p>not found</p> }));
 vi.mock('../../pages/PageEnvironmentUnauthorized', () => ({ default: () => <p>unauthorized</p> }));
 

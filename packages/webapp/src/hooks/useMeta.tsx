@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { APIError, apiFetch } from '../utils/api';
+import { APIError, apiFetch, isNoSessionApiError } from '../utils/api';
 
 import type { GetMeta } from '@nangohq/types';
 
@@ -10,6 +10,8 @@ export function useMeta(enabled: boolean = true) {
     return useQuery<GetMeta['Success'], APIError>({
         enabled,
         queryKey: metaQueryKey,
+        // A failed refetch keeps the cached meta, and the query cache's error handler signs a no-session user out.
+        throwOnError: (error, query) => !query.state.data && !isNoSessionApiError(error),
         queryFn: async (): Promise<GetMeta['Success']> => {
             const res = await apiFetch('/api/v1/meta', {
                 method: 'GET'

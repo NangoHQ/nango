@@ -33,7 +33,6 @@ vi.mock('../../utils/analytics', () => ({ useAnalyticsIdentify: () => vi.fn(), r
 vi.mock('../../store', () => ({
     useStore: (selector: (state: Record<string, unknown>) => unknown) => selector(mocks.storeState)
 }));
-vi.mock('./ErrorBoundary', () => ({ ErrorBoundary: () => <p>error page</p> }));
 vi.mock('../../pages/PageNotFound', () => ({ default: () => <p>not found</p> }));
 vi.mock('../../pages/PageEnvironmentUnauthorized', () => ({ default: () => <p>unauthorized</p> }));
 
@@ -84,7 +83,6 @@ describe('PrivateRoute', () => {
         const router = await renderAt('/dev/connections');
 
         expect(router.state.location.pathname).toBe('/dev/connections');
-        expect(container.textContent).toBe('error page');
     });
 
     it('keeps the page when a meta refetch fails after it loaded', async () => {
