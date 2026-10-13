@@ -6,7 +6,7 @@ import { createAccount } from '../../../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../../../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../../../../seeders/environment.seeder.js';
 import { getCatalogTool } from '../../../catalog/actions.js';
-import { findActionInputSchemas, findIntegrationFunctions } from './functions.js';
+import { findActionInputSchemas, findActiveFunctionAvailability, findIntegrationFunctions } from './functions.js';
 
 import type { DBSyncConfig, IntegrationConfig, NangoConfigMetadata } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
@@ -77,6 +77,43 @@ const objectInput: { definitions: Record<string, JSONSchema7> } = {
     definitions: { SendEmailInput: { type: 'object', properties: { to: { type: 'string' } }, required: ['to'] } }
 };
 
+describe(findActiveFunctionAvailability, () => {
+    beforeAll(async () => {
+        await multipleMigrations();
+    });
+
+    it('reports a disabled action as enabled and leaves a disabled sync alone when tools-catalog is on', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action', enabled: false });
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'sync_issues', type: 'sync', enabled: false });
+
+        const rows = await findActiveFunctionAvailability({ environmentId: environment.id, providerConfigKey: 'github' });
+
+        expect(rows).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ name: 'create_issue', type: 'action', enabled: true }),
+                expect.objectContaining({ name: 'sync_issues', type: 'sync', enabled: false })
+            ])
+        );
+    });
+
+    it('keeps a disabled action disabled when tools-catalog is off', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action', enabled: false });
+
+        const rows = await findActiveFunctionAvailability({ environmentId: environment.id, providerConfigKey: 'github' });
+
+        expect(rows).toEqual([expect.objectContaining({ name: 'create_issue', type: 'action', enabled: false })]);
+    });
+});
+
 describe(findIntegrationFunctions, () => {
     beforeAll(async () => {
         await multipleMigrations();
@@ -91,13 +128,15 @@ describe(findIntegrationFunctions, () => {
 
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'upsert_doc', type: 'action', metadata: { description: 'Upsert' } });
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'sync_pages', type: 'sync' });
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'paused_sync', type: 'sync', enabled: false });
         await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action', enabled: false });
 
         const functions = await findIntegrationFunctions({ environmentId: environment.id });
 
         expect(functions).toEqual(
             expect.arrayContaining([
-                { integration_id: 'github', provider: 'github', name: 'create_issue', type: 'action', description: null, enabled: false },
+                { integration_id: 'github', provider: 'github', name: 'create_issue', type: 'action', description: null, enabled: true },
+                { integration_id: 'notion', provider: 'notion', name: 'paused_sync', type: 'sync', description: null, enabled: false },
                 { integration_id: 'notion', provider: 'notion', name: 'sync_pages', type: 'sync', description: null, enabled: true },
                 { integration_id: 'notion', provider: 'notion', name: 'upsert_doc', type: 'action', description: 'Upsert', enabled: true }
             ])
@@ -162,12 +201,16 @@ describe(findIntegrationFunctions, () => {
         mockHasCatalogTools.mockResolvedValue(false);
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
-        await createConfigSeed(environment, 'github', 'github');
+        const github = await createConfigSeed(environment, 'github', 'github');
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action', enabled: false });
 
         const functions = await findIntegrationFunctions({ environmentId: environment.id });
 
         expect(mockHasCatalogTools).toHaveBeenCalledWith(account.uuid);
         expect(functions.some((row) => row.name === 'create-issue')).toBe(false);
+        expect(functions).toEqual(
+            expect.arrayContaining([{ integration_id: 'github', provider: 'github', name: 'create_issue', type: 'action', description: null, enabled: false }])
+        );
     });
 
     it('does not return a function whose environment disagrees with its integration', async () => {
@@ -266,6 +309,23 @@ describe(findActionInputSchemas, () => {
             actions: ['sync_pages', 'turned_off', 'old_version', 'removed', 'kept'].map((name) => ({ integrationId: 'notion', name }))
         });
 
+        expect(rows.map((row) => row.name).sort()).toStrictEqual(['kept', 'turned_off']);
+    });
+
+    it('leaves out a disabled action when tools-catalog is off', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const notion = await createConfigSeed(environment, 'notion', 'notion');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'turned_off', type: 'action', enabled: false });
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'kept', type: 'action' });
+
+        const rows = await findActionInputSchemas({
+            environmentId: environment.id,
+            actions: ['turned_off', 'kept'].map((name) => ({ integrationId: 'notion', name }))
+        });
+
         expect(rows.map((row) => row.name)).toStrictEqual(['kept']);
     });
 
@@ -274,14 +334,21 @@ describe(findActionInputSchemas, () => {
         const environment = await createEnvironmentSeed(account.id);
         const github = await createConfigSeed(environment, 'github', 'github');
 
-        await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create-issue', type: 'action', enabled: false });
+        await insertSyncConfig({
+            environmentId: environment.id,
+            integration: github,
+            name: 'create-issue',
+            type: 'action',
+            enabled: false,
+            input: 'DeployedInput'
+        });
 
         const rows = await findActionInputSchemas({
             environmentId: environment.id,
             actions: [{ integrationId: 'github', name: 'create-issue' }]
         });
 
-        expect(rows).toStrictEqual([]);
+        expect(rows).toStrictEqual([{ integration_id: 'github', name: 'create-issue', input: 'DeployedInput', models_json_schema: null }]);
     });
 
     it('does not return the catalog schema when tools-catalog is off', async () => {

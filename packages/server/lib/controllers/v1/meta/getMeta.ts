@@ -31,6 +31,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             debugMode: req.session.debugMode === true,
             gettingStartedClosed: sessionUser.getting_started_closed,
             auditTrail: await canViewAuditTrail(req, plan),
+            toolsCatalog: await getFlags().hasCatalogTools(account.uuid),
             accountGroup: accountGroupProperties(account, plan),
             agentPlayground: await getFlags().isAgentPlaygroundEnabled(account.uuid)
         }

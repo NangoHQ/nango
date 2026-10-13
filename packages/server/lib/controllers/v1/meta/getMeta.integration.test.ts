@@ -1,5 +1,6 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 
 import { authenticateUser, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
@@ -39,5 +40,18 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, { method: 'GET', session });
         isSuccess(res.json);
         expect(res.json.data.accountGroup).toStrictEqual({ name: account.name, plan: plan.name, created_date: new Date(account.created_at).toISOString() });
+    });
+
+    it('returns the tools-catalog flag for the account', async () => {
+        const spy = vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
+        const { account, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        // @ts-expect-error type declares `env` but the controller rejects any query param
+        const res = await api.fetch(route, { method: 'GET', session });
+
+        isSuccess(res.json);
+        expect(res.json.data.toolsCatalog).toBe(true);
+        expect(spy).toHaveBeenCalledWith(account.uuid);
+        spy.mockRestore();
     });
 });

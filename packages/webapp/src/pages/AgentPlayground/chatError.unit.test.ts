@@ -21,6 +21,16 @@ describe('describeChatError', () => {
         expect(describeChatError(error)).toEqual({ title: "This chat can't continue.", action: 'new-chat' });
     });
 
+    it('asks a rate-limited user to wait', () => {
+        const error = new Error(JSON.stringify({ error: { code: 'too_many_request', message: 'Too many Agent Playground messages for this user' } }));
+
+        expect(describeChatError(error)).toEqual({
+            title: 'Too many messages in a short time.',
+            detail: 'Wait a minute, then try again.',
+            action: 'retry'
+        });
+    });
+
     it('keeps the text of an error sent mid-reply', () => {
         expect(describeChatError(new Error('Rate limit reached'))).toEqual({
             title: 'The agent ran into a problem.',

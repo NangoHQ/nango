@@ -114,11 +114,11 @@ Use the Sync tools to set sync state or trigger syncs for an integration in the 
 
 ### Functions
 
-Use the Functions tools to inspect and deploy template functions in the authenticated Nango environment. Use `get_deployment_status` to check whether a deployment has finished.
+Use the Functions tools to inspect available functions and deploy templates in the authenticated Nango environment. `functions_list` includes deployed functions and Nango catalog actions. Catalog actions are available out of the box; use `deploy_template` when you want to enable a sync template or explicitly deploy a template.
 
 | Tool                    | Description                                                                   | Additional permission        |
 | ----------------------- | ----------------------------------------------------------------------------- | ---------------------------- |
-| `functions_list`        | List and filter deployed syncs, actions, and on-event scripts by integration. | `environment:functions:list` |
+| `functions_list`        | List and filter available functions by integration, including Nango catalog actions. | `environment:functions:list` |
 | `deploy_template`       | Deploy a function template.                                                   | `environment:deploy`         |
 | `get_deployment_status` | Retrieve a deployment's current status and result.                            | `environment:deploy`         |
 

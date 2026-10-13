@@ -74,8 +74,9 @@ export function buildFlags(client: FeatureFlagsClient) {
             return client.isEnabled('allow-unauthorized-microsoft-teams-webhook', { targetingKey: accountUuid, accountUuid }, false);
         },
         /**
-         * Whether catalog actions are listed as enabled and runnable for this account.
-         * Default `false`.
+         * Whether every action is listed and run as enabled for this account.
+         * Catalog actions are included, and a deployed action is treated as enabled
+         * even when `_nango_sync_configs.enabled` is false. Default `false`.
          */
         hasCatalogTools(accountUuid: string) {
             return client.isEnabled('tools-catalog', { targetingKey: accountUuid, accountUuid }, false);

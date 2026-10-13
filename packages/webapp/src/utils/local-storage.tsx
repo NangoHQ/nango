@@ -53,6 +53,7 @@ export enum LocalStorageKeys {
     AgentPlaygroundChat = 'nango_agent_playground_chat',
     Theme = 'nango_theme',
     RecordsDocsBannerDismissed = 'nango_records_docs_banner_dismissed',
+    IntegrationSetupGuideDismissed = 'nango_integration_setup_guide_dismissed',
     DevPlanOverride = 'nango_dev_plan_override'
 }
 
@@ -74,6 +75,7 @@ const KEY_CATEGORY: Record<LocalStorageKeys, 'session' | 'preference'> = {
     [LocalStorageKeys.AgentPlaygroundChat]: 'session',
     [LocalStorageKeys.Theme]: 'preference',
     [LocalStorageKeys.RecordsDocsBannerDismissed]: 'preference',
+    [LocalStorageKeys.IntegrationSetupGuideDismissed]: 'preference',
     [LocalStorageKeys.DevPlanOverride]: 'session'
 };
 
