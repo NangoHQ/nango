@@ -12945,6 +12945,59 @@ intuit:
         base_url: https://quickbooks.api.intuit.com
     docs: https://nango.dev/docs/integrations/all/intuit
 
+iplicit:
+    display_name: iplicit
+    categories:
+        - accounting
+        - erp
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.iplicit.com/api/session/create/api
+    token_params:
+        username: ${credentials.username}
+        userApiKey: ${credentials.apiKey}
+    token_headers:
+        content-type: application/json
+        domain: ${connectionConfig.domain}
+    token_response:
+        token: sessionToken
+        token_expiration: tokenDue
+        token_expiration_strategy: expireAt
+    proxy:
+        base_url: https://api.iplicit.com
+        headers:
+            authorization: Bearer ${accessToken}
+            domain: ${connectionConfig.domain}
+        verification:
+            method: GET
+            endpoints:
+                - /api/LegalEntity
+    docs: https://nango.dev/docs/api-integrations/iplicit
+    docs_connect: https://nango.dev/docs/api-integrations/iplicit/connect
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: Your iplicit environment domain.
+            example: sandbox.demo
+            pattern: '^[a-zA-Z0-9.-]+$'
+            doc_section: '#step-1-get-your-api-credentials'
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your iplicit API user account name.
+            doc_section: '#step-1-get-your-api-credentials'
+            order: 2
+        apiKey:
+            type: string
+            title: API Key
+            description: Your iplicit API key.
+            secret: true
+            doc_section: '#step-1-get-your-api-credentials'
+            order: 3
+
 ironclad:
     display_name: Ironclad
     categories:
