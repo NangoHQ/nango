@@ -129,5 +129,16 @@ describe('PrivateRoute and SignedOutRoute together', () => {
 
         expect(navigations).toBeLessThanOrEqual(2);
         expect(router.state.location.pathname).toBe(end);
+        expect(container.textContent).toBe(expectedPage(end));
     });
 });
+
+function expectedPage(end: string): string {
+    if (end === '/signin') {
+        return 'signin';
+    }
+    if (mocks.user && mocks.meta) {
+        return 'connections';
+    }
+    return '';
+}
