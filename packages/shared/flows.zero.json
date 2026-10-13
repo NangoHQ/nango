@@ -183744,6 +183744,320 @@
         "symLinkTargetName": null
     },
     {
+        "providerConfigKey": "clarify",
+        "actions": [
+            {
+                "type": "action",
+                "description": "Fetch a single Clarify list by object type and list ID.",
+                "endpoint": null,
+                "input": "ActionInput_clarify_getlist",
+                "name": "get-list",
+                "output": ["ActionOutput_clarify_getlist"],
+                "scopes": [],
+                "usedModels": ["ActionInput_clarify_getlist", "ActionOutput_clarify_getlist"],
+                "version": "1.0.2",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_clarify_getlist": {
+                            "type": "object",
+                            "properties": {
+                                "object": {
+                                    "type": "string",
+                                    "description": "Object type (person, company, deal, or a custom c_* object)."
+                                },
+                                "listId": {
+                                    "type": "string",
+                                    "description": "Unique ID of the list."
+                                }
+                            },
+                            "required": ["object", "listId"],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_clarify_getlist": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "entity": {
+                                    "type": "string"
+                                },
+                                "emoji": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "description": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "state": {
+                                    "type": "string"
+                                },
+                                "createdAt": {
+                                    "type": "string"
+                                },
+                                "updatedAt": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["id", "title", "entity"],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "List records that belong to a Clarify list.",
+                "endpoint": null,
+                "input": "ActionInput_clarify_listlistresources",
+                "name": "list-list-resources",
+                "output": ["ActionOutput_clarify_listlistresources"],
+                "scopes": [],
+                "usedModels": ["ActionInput_clarify_listlistresources", "ActionOutput_clarify_listlistresources"],
+                "version": "1.0.2",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_clarify_listlistresources": {
+                            "type": "object",
+                            "properties": {
+                                "object": {
+                                    "type": "string",
+                                    "description": "Object type (person, company, deal, or a custom c_* object)."
+                                },
+                                "listId": {
+                                    "type": "string",
+                                    "description": "Unique ID of the list."
+                                },
+                                "limit": {
+                                    "description": "Page size (default 50 on the Clarify API).",
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 1000
+                                },
+                                "offset": {
+                                    "description": "Records to skip before this page.",
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "required": ["object", "listId"],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_clarify_listlistresources": {
+                            "type": "object",
+                            "properties": {
+                                "resources": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "attributes": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "required": ["id", "type", "attributes"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "meta": {
+                                    "type": "object",
+                                    "properties": {
+                                        "totalRecords": {
+                                            "type": "number"
+                                        },
+                                        "totalPages": {
+                                            "type": "number"
+                                        },
+                                        "offset": {
+                                            "type": "number"
+                                        },
+                                        "limit": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["totalRecords", "totalPages", "offset", "limit"],
+                                    "additionalProperties": false
+                                },
+                                "nextOffset": {
+                                    "description": "Pass as offset to fetch the next page, if more results exist.",
+                                    "type": "number"
+                                }
+                            },
+                            "required": ["resources", "meta"],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "List Clarify workspace lists across all object types.",
+                "endpoint": null,
+                "input": "ActionInput_clarify_listlists",
+                "name": "list-lists",
+                "output": ["ActionOutput_clarify_listlists"],
+                "scopes": [],
+                "usedModels": ["ActionInput_clarify_listlists", "ActionOutput_clarify_listlists"],
+                "version": "1.0.3",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_clarify_listlists": {
+                            "type": "object",
+                            "properties": {
+                                "limit": {
+                                    "description": "Page size (default 50 on the Clarify API).",
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 1000
+                                },
+                                "offset": {
+                                    "description": "Records to skip before this page.",
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                },
+                                "entity": {
+                                    "description": "Filter lists by object type (e.g. person, company, deal).",
+                                    "type": "string"
+                                },
+                                "listType": {
+                                    "default": "all",
+                                    "description": "Which list types to return. Clarify excludes dynamic lists unless filter[type] is set; default all fetches static and dynamic.",
+                                    "type": "string",
+                                    "enum": ["static", "dynamic", "all"]
+                                }
+                            },
+                            "required": ["listType"],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_clarify_listlists": {
+                            "type": "object",
+                            "properties": {
+                                "lists": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "entity": {
+                                                "type": "string"
+                                            },
+                                            "emoji": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "description": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "createdAt": {
+                                                "type": "string"
+                                            },
+                                            "updatedAt": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id", "title", "entity"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "meta": {
+                                    "type": "object",
+                                    "properties": {
+                                        "totalRecords": {
+                                            "type": "number"
+                                        },
+                                        "totalPages": {
+                                            "type": "number"
+                                        },
+                                        "offset": {
+                                            "type": "number"
+                                        },
+                                        "limit": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["totalRecords", "totalPages", "offset", "limit"],
+                                    "additionalProperties": false
+                                },
+                                "nextOffset": {
+                                    "description": "Pass as offset to fetch the next page, if more results exist.",
+                                    "type": "number"
+                                }
+                            },
+                            "required": ["lists", "meta"],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            }
+        ],
+        "syncs": [],
+        "onEventScripts": {
+            "post-connection-creation": [],
+            "pre-connection-deletion": [],
+            "validate-connection": []
+        },
+        "sdkVersion": "0.71.12",
+        "symLinkTargetName": null
+    },
+    {
         "providerConfigKey": "clerk",
         "actions": [
             {
