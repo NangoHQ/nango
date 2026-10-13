@@ -26349,8 +26349,8 @@ perk:
     categories:
         - productivity
     auth_mode: OAUTH2
-    authorization_url: https://app.travelperk.com/oauth2/authorize/
-    token_url: https://app.travelperk.com/accounts/oauth2/token/
+    authorization_url: https://app.${connectionConfig.domain}/oauth2/authorize/ || https://app.travelperk.com/oauth2/authorize/
+    token_url: https://app.${connectionConfig.domain}/accounts/oauth2/token/ || https://app.travelperk.com/accounts/oauth2/token/
     disable_pkce: true
     scope_separator: ' '
     authorization_params:
@@ -26360,12 +26360,25 @@ perk:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api.travelperk.com
+        base_url: https://api.${connectionConfig.domain} || https://api.travelperk.com
         retry:
             after:
                 - 'retry-after'
     docs: https://nango.dev/docs/api-integrations/perk
+    docs_connect: https://nango.dev/docs/api-integrations/perk/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/perk/how-to-register-your-own-perk-api-oauth-app
+    connection_config:
+        domain:
+            type: string
+            title: Environment
+            description: Your Perk environment.
+            default_value: perk.com
+            format: hostname
+            enum:
+                - perk.com
+                - sandbox-perk.com
+            order: 1
+            doc_section: '#step-1-choosing-your-environment'
 
 tripletex:
     display_name: Tripletex

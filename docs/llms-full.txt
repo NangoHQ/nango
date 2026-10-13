@@ -16613,7 +16613,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `peopledatalabs` | People Data Labs | API_KEY | [docs](https://nango.dev/docs/integrations/all/peopledatalabs.md) |  |  | analytics |
 | `perdoo` | Perdoo | API_KEY | [docs](https://nango.dev/docs/api-integrations/perdoo.md) | [connect](https://nango.dev/docs/api-integrations/perdoo/connect.md) |  | productivity, analytics |
 | `perimeter81` | Perimeter81 | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/perimeter81.md) | [connect](https://nango.dev/docs/integrations/all/perimeter81/connect.md) |  | productivity |
-| `perk` | Perk | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/perk.md) |  | [setup](https://nango.dev/docs/api-integrations/perk/how-to-register-your-own-perk-api-oauth-app.md) | productivity |
+| `perk` | Perk | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/perk.md) | [connect](https://nango.dev/docs/api-integrations/perk/connect.md) | [setup](https://nango.dev/docs/api-integrations/perk/how-to-register-your-own-perk-api-oauth-app.md) | productivity |
 | `perplexity` | Perplexity | API_KEY | [docs](https://nango.dev/docs/integrations/all/perplexity.md) |  |  | productivity, dev-tools |
 | `personio` | Personio (v1) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/personio.md) | [connect](https://nango.dev/docs/integrations/all/personio/connect.md) |  | hr |
 | `personio-recruiting` | Personio Recruiting | API_KEY | [docs](https://nango.dev/docs/integrations/all/personio-recruiting.md) |  |  | hr, ats |
