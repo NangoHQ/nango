@@ -1,7 +1,7 @@
 import { Bot, ChevronLeft, Code } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, Navigate, Outlet, useLocation, useOutletContext } from 'react-router-dom';
+import { Link, Navigate, Outlet, useLocation, useMatch, useOutletContext } from 'react-router-dom';
 
 import { SegmentedNav } from '@/components/ui/SegmentedNav';
 import { trackPlaygroundOpened } from '@/features/Playground/analytics';
@@ -35,8 +35,8 @@ export const PlaygroundShow: React.FC = () => {
     const back = (location.state as PlaygroundLocationState | null)?.back;
     const tabState: PlaygroundLocationState = back ? { back } : {};
 
-    const segment = location.pathname.split('/').filter(Boolean).at(-1);
-    const tab = TAB_OPTIONS.find((option) => option.value === segment)?.value;
+    const tabParam = useMatch('/:env/playground/:tab')?.params.tab;
+    const tab = TAB_OPTIONS.find((option) => option.value === tabParam)?.value;
 
     const functionsShown = tab === 'functions' && tabs.includes('functions');
     useEffect(() => {

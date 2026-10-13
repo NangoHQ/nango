@@ -4,8 +4,6 @@ import { useCallback, useMemo } from 'react';
 import { Button, FieldLabel } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
 import { PlaygroundInputs } from './PlaygroundInputs';
@@ -49,9 +47,6 @@ export const FunctionPlayground: React.FC = () => {
 
     const { handleRun, handleCancel } = usePlayground(inputFields);
 
-    const { can } = usePermissions();
-    const canUsePlayground = can('environment:syncs:execute');
-
     const clearInputError = useCallback((name: string) => clearPlaygroundInputError(name), [clearPlaygroundInputError]);
 
     const playgroundConnection = usePlaygroundStore((s) => s.connection);
@@ -90,14 +85,10 @@ export const FunctionPlayground: React.FC = () => {
                         </>
                     ) : (
                         <ConditionalTooltip condition={isFunctionDisabled} content="Enable this function to run it from the Playground.">
-                            <PermissionGate condition={canUsePlayground} message="Your role does not have permission to use the playground.">
-                                {(allowed) => (
-                                    <Button variant="primary" size="md" onClick={handleRun} disabled={!canRun || !allowed}>
-                                        {result ? <RotateCcw /> : <Play />}
-                                        {result ? 'Run again' : 'Run'}
-                                    </Button>
-                                )}
-                            </PermissionGate>
+                            <Button variant="primary" size="md" onClick={handleRun} disabled={!canRun}>
+                                {result ? <RotateCcw /> : <Play />}
+                                {result ? 'Run again' : 'Run'}
+                            </Button>
                         </ConditionalTooltip>
                     )}
                 </div>
