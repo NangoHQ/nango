@@ -541,7 +541,7 @@ const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string,
                 {/* Relies on LogoInverted's path order: hides the disc and eye, fills the wolf. */}
                 <LogoInverted
                     aria-hidden
-                    className="pointer-events-none -mb-20 size-72 text-text-strong opacity-[0.06] [mask-image:linear-gradient(to_bottom,black_30%,transparent_70%)] [&_path:nth-child(-n+2)]:hidden [&_path:nth-child(3)]:fill-current"
+                    className="pointer-events-none -mb-28 size-96 text-text-strong opacity-[0.06] [mask-image:linear-gradient(to_bottom,black_30%,transparent_70%)] [&_path:nth-child(-n+2)]:hidden [&_path:nth-child(3)]:fill-current"
                 />
                 <h2 className="relative text-heading-medium text-text-strong">Explore how Nango works with an agent</h2>
             </div>
