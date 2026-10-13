@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { trackPlaygroundOpened } from '@/features/Playground/analytics';
+import { usePlaygroundTabs } from '@/pages/Playground/usePlaygroundTabs';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
 
@@ -19,6 +20,10 @@ export interface PlaygroundContextOverride {
 
 export interface PlaygroundLocationState {
     back?: { to: string; label: string };
+}
+
+export function useCanOpenPlaygroundFunctions(): boolean {
+    return usePlaygroundTabs().tabs.includes('functions');
 }
 
 export function useOpenPlaygroundWithContext() {
@@ -44,9 +49,9 @@ export function useOpenPlaygroundWithContext() {
             usePlaygroundStore.getState().setState(next);
             trackPlaygroundOpened(override.source);
 
-            const state: PlaygroundLocationState = { back: { to: location.pathname + location.search, label: override.source } };
+            const state: PlaygroundLocationState = { back: { to: location.pathname + location.search + location.hash, label: override.source } };
             void navigate(`/${env}/playground/functions`, { state });
         },
-        [env, navigate, location.pathname, location.search]
+        [env, navigate, location.pathname, location.search, location.hash]
     );
 }
