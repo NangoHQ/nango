@@ -1,13 +1,15 @@
+import type { SignupAcquisition } from '../account/acquisition.js';
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { DBEnvironment } from '../environment/db.js';
 
 export type ApiEnvironmentSummary = Pick<DBEnvironment, 'id' | 'account_id' | 'name' | 'is_production'>;
 
-export type AccountGroupProperties = {
+export type AccountGroupProperties = SignupAcquisition & {
     name?: string;
     plan?: string;
     created_date?: string;
     is_internal?: boolean;
+    discovery_source?: string;
 };
 
 export type GetMeta = ApiEndpoint<{
