@@ -7978,7 +7978,7 @@ Support follows your contract's SLA. Reach out through your support channel with
 
 ## Updates
 
-You pull and apply updates yourself. Notifications about new releases are posted to your dedicated Nango Slack channel, and you can subscribe directly to the [`NangoHQ/managed-image-releases`](https://github.com/NangoHQ/managed-image-releases) repository:
+You pull and apply updates yourself. Notifications about new releases are available by subscribing to the [`NangoHQ/managed-image-releases`](https://github.com/NangoHQ/managed-image-releases) repository:
 
 - **GitHub:** watch the repository, select **Custom**, and enable **Releases**.
 - **RSS/Atom:** subscribe to `https://github.com/NangoHQ/managed-image-releases/releases.atom`, which can be wired into Slack, Microsoft Teams, RSS readers, or internal automation.
