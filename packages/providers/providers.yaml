@@ -14029,7 +14029,7 @@ lattice:
         - hr
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.latticehq.com/
+        base_url: https://${connectionConfig.hostname} || https://api.latticehq.com
         headers:
             authorization: Bearer ${apiKey}
             accept: application/json
@@ -14037,14 +14037,25 @@ lattice:
         retry:
             after:
                 - 'retry-after'
-    docs: https://nango.dev/docs/integrations/all/lattice
-    docs_connect: https://nango.dev/docs/integrations/all/lattice/connect
+    docs: https://nango.dev/docs/api-integrations/lattice
+    docs_connect: https://nango.dev/docs/api-integrations/lattice/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Data residency
+            description: Your Lattice data residency region.
+            format: hostname
+            enum:
+                - api.latticehq.com
+                - api.emea.latticehq.com
+            doc_section: '#step-2-choosing-your-data-residency'
+            order: 1
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Lattice account
-            doc_section: '#step-1-finding-lattice-api-key'
+            doc_section: '#step-1-how-to-generate-lattice-api-keys-for-public-and-scim-apis'
 
 leadmagic:
     display_name: LeadMagic
