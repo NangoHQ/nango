@@ -21,7 +21,8 @@ describe('sentryIgnoreErrors', () => {
         ['TypeError', 'Failed to fetch (api-development.nango.dev)'],
         ['TypeError', 'Load failed'],
         ['TypeError', 'NetworkError when attempting to fetch resource.'],
-        ['NotAllowedError', "Failed to execute 'writeText' on 'Clipboard': Document is not focused."]
+        ['NotAllowedError', "Failed to execute 'writeText' on 'Clipboard': Document is not focused."],
+        ['UnhandledRejection', 'Non-Error promise rejection captured with value: Object Not Found Matching Id:3, MethodName:update, ParamCount:4']
     ])('drops %s: %s', (type, value) => {
         expect(isDropped(type, value)).toBe(true);
     });
