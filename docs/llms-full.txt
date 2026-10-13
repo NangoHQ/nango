@@ -7876,7 +7876,7 @@ Nango additionally watches instance health via Datadog — see [What leaves your
 
 ## Updates
 
-Nango applies updates for you, delivered via GitOps once your infrastructure is provisioned — you don't need to pull or apply anything yourself. Managed image updates are published on a **two-month cadence**, with occasional **hotfixes** as needed; see the full [changelog](/updates/changelog).
+Nango applies updates for you, delivered via GitOps once your infrastructure is provisioned — you don't need to pull or apply anything yourself. Managed image updates are published on a **two-week cadence**, with occasional **hotfixes** as needed; see the full [changelog](/updates/changelog).
 
 ## Cloud provider support
 
