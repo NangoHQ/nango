@@ -18,6 +18,7 @@ const CLIENT_INFO = { name: 'nango-agent-session', version: '1.0.0' };
 // The transport insists on a URL, but every request goes through the proxy, which ignores it.
 const PROXY_PLACEHOLDER_URL = new URL('https://nango-proxy.invalid/');
 
+const INITIALIZE_TIMEOUT_MS = 10_000;
 const TERMINATE_SESSION_TIMEOUT_MS = 2_000;
 
 export interface RemoteMcpTool {
@@ -83,11 +84,7 @@ export function mcpEndpointOf(provider: string): string | undefined {
  * speaks the protocol, and its requests are sent through the Nango proxy, so the connection's
  * credentials are applied and refreshed the way any proxy call has them.
  */
-export async function withRemoteMcpSession<T>(
-    target: RemoteMcpTarget,
-    fn: (client: Client) => Promise<Result<T, RemoteMcpError>>,
-    { timeoutMs }: { timeoutMs?: number } = {}
-): Promise<RemoteMcpRun<T>> {
+export async function withRemoteMcpSession<T>(target: RemoteMcpTarget, fn: (client: Client) => Promise<Result<T, RemoteMcpError>>): Promise<RemoteMcpRun<T>> {
     const endpoint = mcpEndpointOf(target.provider);
     if (!endpoint) {
         return {
@@ -102,7 +99,7 @@ export async function withRemoteMcpSession<T>(
 
     try {
         try {
-            await client.connect(transport, timeoutMs ? { timeout: timeoutMs } : undefined);
+            await client.connect(transport, { timeout: INITIALIZE_TIMEOUT_MS });
         } catch (err) {
             return { logOperationId: log.operationId, result: Err(toRemoteMcpError(err, 'initialize')) };
         }

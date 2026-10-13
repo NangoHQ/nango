@@ -181,7 +181,7 @@ describe('listRemoteTools through the proxy', () => {
                 return new Promise((_resolve, reject) => params.abortSignal?.addEventListener('abort', () => reject(new Error('aborted'))));
             });
 
-            const listing = withRemoteMcpSession(TARGET, async (client) => await listRemoteTools(client, { timeoutMs: 10_000 }), { timeoutMs: 10_000 });
+            const listing = withRemoteMcpSession(TARGET, async (client) => await listRemoteTools(client, { timeoutMs: 10_000 }));
             await vi.advanceTimersByTimeAsync(10_000);
             const { result } = await listing;
 
@@ -200,7 +200,7 @@ describe('listRemoteTools through the proxy', () => {
                     new Promise((_resolve, reject) => params.abortSignal?.addEventListener('abort', () => reject(new Error('aborted'))))
             );
 
-            const listing = withRemoteMcpSession(TARGET, async (client) => await listRemoteTools(client, { timeoutMs: 10_000 }), { timeoutMs: 10_000 });
+            const listing = withRemoteMcpSession(TARGET, async (client) => await listRemoteTools(client, { timeoutMs: 10_000 }));
             await vi.advanceTimersByTimeAsync(10_000);
             const { result } = await listing;
 
