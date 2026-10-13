@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => {
         userError: undefined as unknown,
         meta: undefined as Record<string, unknown> | undefined,
         metaError: null as unknown,
+        refetchMeta: vi.fn(),
         storeState: {} as Record<string, unknown>
     };
 });
@@ -26,7 +27,7 @@ vi.mock('../../hooks/useUser', () => ({
     useUser: () => ({ user: mocks.user, loading: false, error: mocks.userError })
 }));
 vi.mock('../../hooks/useMeta', () => ({
-    useMeta: () => ({ data: mocks.meta ? { data: mocks.meta } : undefined, error: mocks.metaError, isFetching: false, refetch: vi.fn() })
+    useMeta: () => ({ data: mocks.meta ? { data: mocks.meta } : undefined, error: mocks.metaError, isFetching: false, refetch: mocks.refetchMeta })
 }));
 vi.mock('../../hooks/usePermissions', () => ({ usePermissions: () => ({ can: () => true }) }));
 vi.mock('../../utils/analytics', () => ({ useAnalyticsIdentify: () => vi.fn(), resumeAnalytics: vi.fn(), stopAnalytics: vi.fn() }));
@@ -54,6 +55,7 @@ describe('PrivateRoute', () => {
         mocks.userError = undefined;
         mocks.meta = undefined;
         mocks.metaError = null;
+        mocks.refetchMeta.mockReset();
         mocks.storeState = { env: 'dev', setEnvs: vi.fn(), setBaseUrl: vi.fn(), setDebugMode: vi.fn(), setEnv: vi.fn() };
         container = document.createElement('div');
         document.body.appendChild(container);
@@ -87,6 +89,19 @@ describe('PrivateRoute', () => {
 
         expect(router.state.location.pathname).toBe('/dev/connections');
         expect(container.textContent).toContain('Retry');
+    });
+
+    it('refetches meta when Retry is clicked', async () => {
+        mocks.metaError = new TypeError('Failed to fetch');
+        await renderAt('/dev/connections');
+
+        const retry = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Retry');
+        await act(async () => {
+            retry?.click();
+            await Promise.resolve();
+        });
+
+        expect(mocks.refetchMeta).toHaveBeenCalledTimes(1);
     });
 
     it('keeps the page when a meta refetch fails after it loaded', async () => {

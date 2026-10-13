@@ -12,7 +12,7 @@ import PageEnvironmentUnauthorized from '../../pages/PageEnvironmentUnauthorized
 import PageNotFound from '../../pages/PageNotFound';
 import { useStore } from '../../store';
 import { resumeAnalytics, stopAnalytics, useAnalyticsIdentify } from '../../utils/analytics';
-import { APIError, isNoSessionError } from '../../utils/api';
+import { isNoSessionApiError } from '../../utils/api';
 import { isNonEnvPath, signinPathWithNext } from '../../utils/routes';
 import { useSignout } from '../../utils/user';
 import { Spinner } from '../ui/Spinner';
@@ -115,7 +115,7 @@ export const PrivateRoute: React.FC = () => {
     }
     if (!meta) {
         // The query cache's error handler is already signing a no-session user out.
-        if (!metaError || (metaError instanceof APIError && isNoSessionError(metaError.res.status, metaError.json))) {
+        if (!metaError || isNoSessionApiError(metaError)) {
             return null;
         }
         return <MetaLoadError retrying={fetchingMeta} onRetry={() => void refetchMeta()} />;
@@ -142,11 +142,11 @@ const MetaLoadError: React.FC<{ retrying: boolean; onRetry: () => void }> = ({ r
         <DefaultLayout>
             <Alert variant="danger">
                 <CircleX />
-                <AlertDescription>We couldn&apos;t load your account. Check your connection and try again.</AlertDescription>
+                <AlertDescription>We couldn&apos;t load your account. Try again, or sign out.</AlertDescription>
                 <AlertActions>
                     <AlertButton onClick={onRetry} disabled={retrying}>
                         Retry
-                        {retrying && <Spinner />}
+                        {retrying && <Spinner className="size-3" />}
                     </AlertButton>
                     <AlertButton onClick={() => void signout()}>Sign out</AlertButton>
                 </AlertActions>
