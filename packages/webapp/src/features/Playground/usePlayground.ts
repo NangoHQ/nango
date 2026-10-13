@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { fetchSyncByName } from '@/hooks/useSyncs';
 import { useStore } from '@/store';
@@ -12,6 +12,8 @@ import type { InputField } from './types';
 
 const FIND_OP_POLL_INTERVAL_MS = 500;
 const STATUS_POLL_INTERVAL_MS = 1500;
+
+const activeRun: { controller: AbortController | null } = { controller: null };
 
 export function usePlayground(inputFields: InputField[]) {
     const env = useStore((s) => s.env);
@@ -27,19 +29,14 @@ export function usePlayground(inputFields: InputField[]) {
     const setInputErrors = usePlaygroundStore((s) => s.setInputErrors);
     const setAbortActiveRun = usePlaygroundStore((s) => s.setAbortActiveRun);
 
-    const runAbortRef = useRef<AbortController | null>(null);
-
+    // No unmount cleanup: a run outlives a tab switch, and an environment switch must still be able to cancel it.
     useEffect(() => {
         setAbortActiveRun(() => {
-            runAbortRef.current?.abort();
+            activeRun.controller?.abort();
             setPendingOperationId(null);
             setRunning(false);
             setResult(null);
         });
-
-        return () => {
-            setAbortActiveRun(null);
-        };
     }, [setAbortActiveRun, setPendingOperationId, setResult, setRunning]);
 
     // --- useQuery: poll operation status when pendingOperationId is set ---
@@ -104,7 +101,7 @@ export function usePlayground(inputFields: InputField[]) {
         });
 
         const controller = new AbortController();
-        runAbortRef.current = controller;
+        activeRun.controller = controller;
         setRunning(true);
         setResult(null);
         setInputErrors({});
@@ -247,7 +244,9 @@ export function usePlayground(inputFields: InputField[]) {
             }
             setRunning(false);
         } finally {
-            runAbortRef.current = null;
+            if (activeRun.controller === controller) {
+                activeRun.controller = null;
+            }
         }
     }, [
         playgroundIntegration,
@@ -265,7 +264,7 @@ export function usePlayground(inputFields: InputField[]) {
 
     // --- handleCancel ---
     const handleCancel = useCallback(async () => {
-        runAbortRef.current?.abort();
+        activeRun.controller?.abort();
         setPendingOperationId(null);
         setRunning(false);
         setResult(null);
