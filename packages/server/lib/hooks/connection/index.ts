@@ -35,6 +35,7 @@ export { default as snipeItCredentialsVerification } from './providers/snipe-it/
 export { default as snowflakePostConnection } from './providers/snowflake/post-connection.js';
 export { default as skioCredentialsVerification } from './providers/skio/credentials-verification.js';
 export { default as pushpayChmsV1CredentialsVerification } from './providers/pushpay-chms-v1/credentials-verification.js';
+export { default as fiixCredentialsVerification } from './providers/fiix/credentials-verification.js';
 export { default as bullhornPostConnection } from './providers/bullhorn/post-connection.js';
 export { default as candisPostConnection } from './providers/candis/post-connection.js';
 export { default as highlevelPostConnection } from './providers/highlevel/post-connection.js';

@@ -1327,6 +1327,7 @@
               "integrations/all/figjam",
               "integrations/all/figma",
               "integrations/all/figma-scim",
+              "api-integrations/fiix",
               "integrations/all/fillout",
               "integrations/all/fillout-api-key",
               "integrations/all/findymail",
