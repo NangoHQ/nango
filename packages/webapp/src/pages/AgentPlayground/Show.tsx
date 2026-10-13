@@ -243,18 +243,22 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
 
     return (
         <div className="mx-auto flex h-full max-w-3xl flex-col">
-            <div className="flex items-center pb-4">
-                <Button variant="secondary" size="sm" onClick={onReset}>
+            <div className="flex items-center pb-2">
+                <Button variant="outline" size="sm" onClick={onReset}>
                     <Plus /> New chat
                 </Button>
             </div>
 
-            <div ref={scroller} onScroll={onScroll} className="flex min-h-0 flex-1 flex-col gap-8 overflow-auto pb-6">
+            <div
+                ref={scroller}
+                onScroll={onScroll}
+                className="flex min-h-0 flex-1 flex-col gap-8 overflow-auto pt-4 pb-6 [mask-image:linear-gradient(to_bottom,transparent,black_16px,black_calc(100%-16px),transparent)]"
+            >
                 {messages.map((message) =>
                     message.metadata?.hidden ? null : message.role === 'user' ? (
                         <div
                             key={message.id}
-                            className="max-w-[80%] self-end whitespace-pre-wrap rounded-ds-xs bg-surface-panel-inset px-4 py-2.5 text-body-medium-regular text-text-default"
+                            className="max-w-[80%] self-end whitespace-pre-wrap rounded-ds-md bg-surface-panel-inset px-4 py-2.5 text-body-medium-regular text-text-default"
                         >
                             {message.parts.map((part) => (part.type === 'text' ? part.text : '')).join('')}
                         </div>

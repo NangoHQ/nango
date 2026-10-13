@@ -85,27 +85,31 @@ const Subtitle: React.FC<{ display: ToolDisplay }> = ({ display }) => {
     return text ? <span className="truncate text-body-small-regular text-text-secondary">{text}</span> : null;
 };
 
-const IconBox: React.FC<{ display: ToolDisplay }> = ({ display }) => {
+const ToolIcon: React.FC<{ display: ToolDisplay }> = ({ display }) => {
     const provider = display.integrationId ? providerFor(display.integrationId) : undefined;
     if (provider) {
         // Keyed so a logo that 404'd on a half-streamed id retries once the full id arrives.
-        return <IntegrationLogo key={provider} provider={provider} className="size-8" />;
-    }
-    if (display.kind === 'search') {
-        return <NangoBox />;
+        return <IntegrationLogo key={provider} provider={provider} className="size-5 shrink-0 border-0 bg-transparent p-0" />;
     }
     return (
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-sm border-[0.5px] border-border-muted bg-surface-raised">
+        <span className="flex size-5 shrink-0 items-center justify-center">
             <Wrench className="size-4 text-icon-secondary" />
-        </div>
+        </span>
     );
 };
 
-const NangoBox: React.FC = () => (
-    <div className="flex size-8 shrink-0 items-center justify-center rounded-sm border-[0.5px] border-border-muted bg-surface-raised">
-        <LogoInverted className="size-4 text-text-strong" />
-    </div>
-);
+const StatusIcon: React.FC<{ running: boolean; stopped: boolean; failed: boolean }> = ({ running, stopped, failed }) => {
+    if (running) {
+        return <Spinner />;
+    }
+    if (stopped) {
+        return <CircleSlash className="size-4 text-icon-secondary" />;
+    }
+    if (failed) {
+        return <XCircle className="size-4 text-icon-danger" />;
+    }
+    return <CheckCircle2 className="size-4 text-icon-success" />;
+};
 
 export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     part,
@@ -159,38 +163,53 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     const searchOutput =
         display.kind === 'search' && part.state === 'output-available' ? (part.output as { matches?: unknown[]; related?: unknown[] }) : undefined;
 
+    const payload = (
+        <Payload
+            input={toolArguments(part.toolName, part.input)}
+            output={part.state === 'output-available' ? part.output : undefined}
+            error={part.state === 'output-error' ? part.errorText : part.state === 'output-denied' ? 'You denied this request.' : undefined}
+        />
+    );
+    const meta = (
+        <>
+            {duration !== null && part.state !== 'output-denied' && <span className="font-mono">{formatDuration(duration)}</span>}
+            {stopped && <span>Stopped</span>}
+            <StatusIcon running={running} stopped={stopped} failed={failed} />
+            <ChevronDown className="size-4 transition-transform group-data-[state=open]/card:rotate-180" />
+        </>
+    );
+
+    if (display.kind === 'search') {
+        return (
+            <Collapsible className="group/card -my-2">
+                <CollapsibleTrigger className="flex w-full items-center gap-2 py-1 text-left text-body-medium-regular text-text-secondary hover:text-text-default">
+                    <LogoInverted className="size-4 shrink-0 text-text-strong" />
+                    <span className="shrink-0">{display.title}</span>
+                    {display.subtitle && <span className="min-w-0 truncate text-text-muted">{display.subtitle}</span>}
+                    <span className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-body-small-regular">
+                        {searchOutput && <span>{searchSummary(searchOutput.matches?.length ?? 0, searchOutput.related?.length ?? 0)}</span>}
+                        {meta}
+                    </span>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-2">
+                    <div className="rounded-ds-xs border border-border-muted bg-surface-panel p-3">{payload}</div>
+                </CollapsibleContent>
+            </Collapsible>
+        );
+    }
+
     return (
         <Collapsible className="group/card rounded-ds-xs border border-border-muted bg-surface-panel">
             <CollapsibleTrigger className="flex w-full items-center gap-3 px-4 py-3 text-left">
-                <IconBox display={display} />
+                <ToolIcon display={display} />
                 <div className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-body-medium-medium text-text-strong">{display.title}</span>
                     <Subtitle display={display} />
                 </div>
-                <div className="flex shrink-0 items-center gap-2 text-body-small-regular text-text-secondary">
-                    {searchOutput && <span>{searchSummary(searchOutput.matches?.length ?? 0, searchOutput.related?.length ?? 0)}</span>}
-                    {duration !== null && part.state !== 'output-denied' && <span className="font-mono">{formatDuration(duration)}</span>}
-                    {stopped && <span>Stopped</span>}
-                    {running ? (
-                        <Spinner />
-                    ) : stopped ? (
-                        <CircleSlash className="size-4 text-icon-secondary" />
-                    ) : failed ? (
-                        <XCircle className="size-4 text-icon-danger" />
-                    ) : (
-                        <CheckCircle2 className="size-4 text-icon-success" />
-                    )}
-                    <ChevronDown className="size-4 transition-transform group-data-[state=open]/card:rotate-180" />
-                </div>
+                <div className="flex shrink-0 items-center gap-2 text-body-small-regular text-text-secondary">{meta}</div>
             </CollapsibleTrigger>
             <CollapsibleContent className="border-t border-border-muted">
-                <div className="p-3">
-                    <Payload
-                        input={toolArguments(part.toolName, part.input)}
-                        output={part.state === 'output-available' ? part.output : undefined}
-                        error={part.state === 'output-error' ? part.errorText : part.state === 'output-denied' ? 'You denied this request.' : undefined}
-                    />
-                </div>
+                <div className="p-3">{payload}</div>
             </CollapsibleContent>
         </Collapsible>
     );
@@ -201,7 +220,7 @@ const InterruptedCard: React.FC<{ display: ToolDisplay; onRetry: ((title: string
 
     return (
         <div className="flex items-center gap-3 rounded-ds-xs border border-border-muted bg-surface-panel px-4 py-3">
-            <IconBox display={display} />
+            <ToolIcon display={display} />
             <div className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-body-medium-medium text-text-strong">{display.title}</span>
                 {(display.method || display.path) && <Subtitle display={display} />}
@@ -251,7 +270,7 @@ const ApprovalCard: React.FC<{
                     onClick={() => setOpen((o) => !o)}
                     className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
                 >
-                    <IconBox display={display} />
+                    <ToolIcon display={display} />
                     <span className="flex min-w-0 flex-1 flex-col">
                         <span className="text-body-medium-medium text-text-strong">The agent wants to make a change</span>
                         <Subtitle
@@ -264,7 +283,7 @@ const ApprovalCard: React.FC<{
                     </span>
                 </button>
                 <div className="flex shrink-0 items-center gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => onApprove(approvalId, false)}>
+                    <Button size="sm" variant="outline" onClick={() => onApprove(approvalId, false)}>
                         Deny
                     </Button>
                     <Button size="sm" onClick={() => onApprove(approvalId, true)}>
