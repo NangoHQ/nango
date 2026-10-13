@@ -21,6 +21,8 @@ export function describeChatError(error: Error): ChatErrorDisplay {
             return { title: 'The Agent Playground is not enabled for this account.', action: 'none' };
         case 'session_creation_failed':
             return { title: "Couldn't start the agent.", ...(detail ? { detail } : {}), action: 'retry' };
+        case 'too_many_request':
+            return { title: 'Too many messages in a short time.', detail: 'Wait a minute, then try again.', action: 'retry' };
         case 'invalid_body':
             return { title: "This chat can't continue.", ...(detail ? { detail } : {}), action: 'new-chat' };
         default:
