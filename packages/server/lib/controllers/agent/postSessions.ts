@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { createdAgentSessionToPublicApi } from '../../formatters/agentSession.js';
-import { connectionIdSchema, connectionTagsSchema, providerConfigKeySchema, scriptNameSchema, TAG_MAX_COUNT } from '../../helpers/validation.js';
+import { connectionIdSchema, connectionTagsSchema, providerConfigKeySchema, TAG_MAX_COUNT } from '../../helpers/validation.js';
 import * as agentSessionService from '../../services/agentSession.service.js';
 import { trackAgentSessionCreated } from '../../services/agentSessionAnalytics.service.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
@@ -70,7 +70,13 @@ export const agentSessionTenantConnectionsSchema = z
         })
     );
 
-const toolListSchema = z.array(scriptNameSchema);
+// An MCP tool name may also carry dots, which no deployed action name can.
+const toolNameSchema = z
+    .string()
+    .regex(/^[a-zA-Z0-9_.-]+$/)
+    .max(255);
+
+const toolListSchema = z.array(toolNameSchema);
 
 const toolListSelectorSchema = z.strictObject({ tools: toolListSchema });
 
@@ -192,10 +198,11 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
         return;
     }
 
-    const { account, environment } = res.locals;
+    const { account, environment, plan } = res.locals;
     const created = await agentSessionService.createAgentSession({
         account,
         environment,
+        plan,
         connections: body.data.tenant.connections,
         toolset: body.data.toolset,
         pinnedTools: body.data.pinned_tools,

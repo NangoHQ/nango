@@ -1077,6 +1077,7 @@ airtable-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.airtable.com
         headers:
@@ -1481,6 +1482,7 @@ anarlog-mcp:
         - mcp
     auth_mode: MCP_OAUTH2_GENERIC
     mcp_server_url: https://api.anarlog.so/mcp
+    mcp_endpoint: /
     proxy:
         base_url: https://api.anarlog.so/mcp
         headers:
@@ -1585,6 +1587,7 @@ amplitude-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.amplitude.com
         headers:
@@ -1609,6 +1612,7 @@ amplitude-mcp-eu:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.eu.amplitude.com
         headers:
@@ -2001,6 +2005,7 @@ asana-mcp:
         grant_type: refresh_token
     default_scopes:
         - default
+    mcp_endpoint: /v2/mcp
     proxy:
         headers:
             accept: application/json,text/event-stream
@@ -2137,6 +2142,7 @@ astro-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /v1alpha1/astro/mcp
     proxy:
         base_url: https://api.astronomer.io
         headers:
@@ -2456,6 +2462,7 @@ attio-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.attio.com
         headers:
@@ -4724,6 +4731,7 @@ canva-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.canva.com
         headers:
@@ -5285,6 +5293,7 @@ chili-piper-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /
     proxy:
         base_url: https://fire.chilipiper.com/api/fire-edge/v1/org/mcp
         headers:
@@ -5381,6 +5390,7 @@ circleback-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://app.circleback.ai/api/
         headers:
@@ -5509,6 +5519,7 @@ clay-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /v3/mcp
     proxy:
         base_url: https://api.clay.com
         headers:
@@ -5780,6 +5791,7 @@ cloudflare-mcp:
         - dev-tools
         - mcp
     auth_mode: MCP_OAUTH2_GENERIC
+    mcp_endpoint: /
     proxy:
         base_url: ${connectionConfig.mcp_server_url}
         headers:
@@ -7225,6 +7237,7 @@ digits-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://api.digits.com
     docs: https://nango.dev/docs/api-integrations/digits-mcp
@@ -7869,6 +7882,7 @@ dualentry-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://api.dualentry.com
     docs: https://nango.dev/docs/api-integrations/dualentry-mcp
@@ -10119,6 +10133,7 @@ granola-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         headers:
             accept: application/json,text/event-stream
@@ -10793,6 +10808,7 @@ google-calendar-mcp:
         - productivity
         - mcp
     alias: google-calendar
+    mcp_endpoint: /v1
     proxy:
         base_url: https://calendarmcp.googleapis.com/mcp
         headers:
@@ -11716,6 +11732,7 @@ hail-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.hail.so
         headers:
@@ -11917,6 +11934,7 @@ hex-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://app.hex.tech
         headers:
@@ -12323,6 +12341,7 @@ hubspot-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /
     proxy:
         base_url: https://mcp.hubspot.com
     docs: https://nango.dev/docs/api-integrations/hubspot-mcp
@@ -14360,6 +14379,11 @@ linear-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://mcp.linear.app
+        headers:
+            accept: application/json,text/event-stream
     docs: https://nango.dev/docs/api-integrations/linear-mcp
 
 linkedin:
@@ -14638,6 +14662,7 @@ lovable-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /
     proxy:
         headers:
             accept: application/json,text/event-stream
@@ -15053,6 +15078,11 @@ mcp-generic:
     categories:
         - mcp
     auth_mode: MCP_OAUTH2_GENERIC
+    mcp_endpoint: /
+    proxy:
+        base_url: ${connectionConfig.mcp_server_url}
+        headers:
+            accept: application/json,text/event-stream
     connection_config:
         mcp_server_url:
             type: string
@@ -15368,6 +15398,7 @@ meta-mcp:
     token_url: https://graph.facebook.com/v26.0/oauth/access_token
     authorization_params:
         response_type: code
+    mcp_endpoint: /ads
     proxy:
         base_url: https://mcp.facebook.com
         headers:
@@ -16793,6 +16824,7 @@ neon-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.neon.tech
         headers:
@@ -17442,6 +17474,7 @@ notion-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         headers:
             accept: application/json,text/event-stream
@@ -18504,6 +18537,7 @@ pandadoc-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /v1/mcp
     proxy:
         base_url: https://mcp.pandadoc.com
         headers:
@@ -18526,6 +18560,7 @@ pandadoc-mcp-eu:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /v1/mcp
     proxy:
         base_url: https://mcp.pandadoc.eu
         headers:
@@ -19754,6 +19789,7 @@ pleo-mcp:
         resource: https://mcp.pleo.io/
     default_scopes:
         - authenticated
+    mcp_endpoint: /mcp
     proxy:
         headers:
             accept: application/json,text/event-stream
@@ -20893,6 +20929,7 @@ render-mcp:
         - dev-tools
         - mcp
     auth_mode: API_KEY
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.render.com
         headers:
@@ -20925,6 +20962,7 @@ raindrop-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.raindrop.ai
         headers:
@@ -21415,6 +21453,7 @@ robinhood-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp/trading
     proxy:
         base_url: https://agent.robinhood.com
         headers:
@@ -22377,6 +22416,7 @@ sanity-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.sanity.io
         headers:
@@ -22827,6 +22867,7 @@ scrollstash-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.scrollstash.com
         headers:
@@ -24203,6 +24244,7 @@ slack-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.slack.com
         headers:
@@ -24730,6 +24772,7 @@ stitch-mcp:
     alias: google
     default_scopes:
         - https://www.googleapis.com/auth/cloud-platform
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://stitch.googleapis.com
         headers:
@@ -25087,6 +25130,7 @@ supabase-mcp:
         - dev-tools
         - mcp
     auth_mode: API_KEY
+    mcp_endpoint: /mcp?project_ref=${connectionConfig.projectRef}
     proxy:
         base_url: https://mcp.supabase.com
         headers:
@@ -25141,6 +25185,7 @@ supabase-mcp-oauth:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp?project_ref=${connectionConfig.projectRef}
     proxy:
         base_url: https://mcp.supabase.com
         headers:
@@ -25177,6 +25222,7 @@ superhuman-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.mail.superhuman.com
         headers:
@@ -26525,6 +26571,7 @@ trigify-io-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://api.trigify.io
         headers:
@@ -27621,6 +27668,7 @@ vercel-mcp:
         grant_type: refresh_token
     default_scopes:
         - offline_access
+    mcp_endpoint: /
     proxy:
         headers:
             accept: application/json,text/event-stream
@@ -28400,6 +28448,7 @@ wordpress-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /v2/mcp/v1
     proxy:
         base_url: https://public-api.wordpress.com/wpcom
         headers:
