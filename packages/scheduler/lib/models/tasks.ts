@@ -523,6 +523,31 @@ export interface GroupBackpressure {
     queued: number;
 }
 
+/**
+ * Started tasks per environment. Tasks whose group key carries no environment are left out.
+ * The count is abandoned after `queryTimeoutMs` so a slow one cannot pile up behind the next.
+ */
+export async function countStartedTasksByEnvironment(
+    db: knex.Knex,
+    { queryTimeoutMs }: { queryTimeoutMs: number }
+): Promise<Result<{ environmentId: number; count: number }[]>> {
+    try {
+        const rows = await db.transaction(async (trx) => {
+            await trx.raw("SELECT set_config('statement_timeout', ?, true)", [String(queryTimeoutMs)]);
+            const { rows } = await trx.raw<{ rows: { environmentId: number; count: number }[] }>(
+                `SELECT substring(group_key FROM 'environment:(\\d+)')::int AS "environmentId", COUNT(*)::int AS count
+                 FROM ${TASKS_TABLE}
+                 WHERE state = 'STARTED' AND group_key ~ 'environment:\\d+'
+                 GROUP BY 1`
+            );
+            return rows;
+        });
+        return Ok(rows);
+    } catch (err) {
+        return Err(new Error(`Error counting started tasks by environment: ${stringifyError(err)}`));
+    }
+}
+
 export async function getGroupsWithBackpressure(db: knex.Knex, { limit }: { limit: number }): Promise<Result<GroupBackpressure[]>> {
     try {
         const { rows } = await db.raw<{ rows: GroupBackpressure[] }>(

@@ -406,6 +406,12 @@ const ENVS_SHAPE = z.object({
     ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_BACKPRESSURE_MONITORING_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
     ORCHESTRATOR_BACKPRESSURE_MONITORING_TOP_N: z.coerce.number().optional().default(10),
+    ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS: z.coerce
+        .number()
+        .int()
+        .refine((ms) => ms === 0 || ms >= 1000, { message: 'must be 0 (disabled) or at least 1000' })
+        .default(0),
+    ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS: z.coerce.number().int().positive().min(1000).default(1000),
     ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
     ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: z.coerce.number().int().nonnegative().optional().default(0),

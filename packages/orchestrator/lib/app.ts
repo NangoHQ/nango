@@ -5,6 +5,7 @@ import { DatabaseClient, defaultDatabaseClientOptions, Scheduler } from '@nangoh
 import { metrics, once, report, stringifyError } from '@nangohq/utils';
 
 import { BackpressureMonitor } from './backpressure-monitor.js';
+import { ConcurrencySampler } from './concurrency-sampler.js';
 import { envs } from './env.js';
 import { TaskEventsHandler } from './events.js';
 import { createImmediateRateLimiter } from './rateLimiter.js';
@@ -78,6 +79,20 @@ try {
     });
     backpressureMonitor.start();
 
+    const concurrencySampler =
+        envs.ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS > 0
+            ? new ConcurrencySampler({
+                  scheduler,
+                  tickIntervalMs: envs.ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS,
+                  queryTimeoutMs: envs.ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS,
+                  onError: (err) => {
+                      report(err);
+                      logger.error(`ConcurrencySampler error: ${stringifyError(err)}`);
+                  }
+              })
+            : null;
+    concurrencySampler?.start();
+
     // default max listener is 10
     // but we need more listeners
     // each processor fetching from a group_key adds a listener for the long-polling dequeue
@@ -98,6 +113,7 @@ try {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         api.close(async () => {
             await backpressureMonitor.stop();
+            await concurrencySampler?.stop();
             await scheduler.stop();
             await eventsHandler.disconnect();
             await immediateRateLimiter.destroy();

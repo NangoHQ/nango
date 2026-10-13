@@ -435,6 +435,37 @@ describe('Task', () => {
             expect((await tasks.getGroupsWithBackpressure(db, { limit: 10 })).unwrap()).toEqual([{ group_key: 'sync:environment:1', queued: 3 }]);
         });
     });
+    describe('countStartedTasksByEnvironment', () => {
+        it('counts started tasks per environment, leaving out other states and unattributable groups', async () => {
+            await startTask(db, { groupKey: 'sync:environment:1' });
+            await startTask(db, { groupKey: 'action:environment:1' });
+            await startTask(db, { groupKey: 'sync:environment:22' });
+            await createTask(db, { groupKey: 'sync:environment:22' }); // tasks in the backlog do not count towards active concurrency
+
+            // no `environment:<id>` means the task will be ignored
+            await startTask(db, { groupKey: 'no-environment' });
+
+            // tasks that are started and terminated between snapshots are not metered
+            const succeeded = await startTask(db, { groupKey: 'sync:environment:3' });
+            await succeedTask(db, succeeded.id);
+
+            const counts = (await tasks.countStartedTasksByEnvironment(db, { queryTimeoutMs: 1000 })).unwrap();
+            expect(counts.sort((a, b) => a.environmentId - b.environmentId)).toEqual([
+                { environmentId: 1, count: 2 },
+                { environmentId: 22, count: 1 }
+            ]);
+        });
+        it('returns an error when the count exceeds the query timeout', async () => {
+            // Holding an exclusive lock makes the count wait, which triggers the timeout.
+            const blocker = await db.transaction();
+            try {
+                await blocker.raw(`LOCK TABLE ${tasks.TASKS_TABLE} IN ACCESS EXCLUSIVE MODE`);
+                expect((await tasks.countStartedTasksByEnvironment(db, { queryTimeoutMs: 100 })).isErr()).toBe(true);
+            } finally {
+                await blocker.rollback();
+            }
+        });
+    });
     describe('concurrency overrides', () => {
         it('stamps the override onto the task at create time', async () => {
             const groupKey = nanoid();
