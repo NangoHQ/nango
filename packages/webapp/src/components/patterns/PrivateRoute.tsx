@@ -16,8 +16,6 @@ export const PrivateRoute: React.FC = () => {
     const { user, loading: loadingUser, error: userError } = useUser();
     const { data, error: metaError } = useMeta(!!user);
     const meta = data?.data;
-    // The query cache's error handler is already signing a no-session user out.
-    const metaFailed = !!metaError && !isNoSessionApiError(metaError);
     const [notFoundEnv, setNotFoundEnv] = useState(false);
     const [unauthorizedEnv, setUnauthorizedEnv] = useState(false);
     const [ready, setReady] = useState(false);
@@ -111,7 +109,8 @@ export const PrivateRoute: React.FC = () => {
         return userError ? <Navigate to={signinPathWithNext(location)} replace /> : null;
     }
     if (!meta) {
-        return metaFailed ? <ErrorBoundary /> : null;
+        // The query cache's error handler is already signing a no-session user out.
+        return metaError && !isNoSessionApiError(metaError) ? <ErrorBoundary /> : null;
     }
     if (!ready) {
         return null;
