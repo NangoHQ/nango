@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1048
+Provider count: 1050
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -344,8 +344,10 @@ URL patterns:
 | `freepik` | Freepik | API_KEY | [docs](https://nango.dev/docs/api-integrations/freepik.md) | [connect](https://nango.dev/docs/api-integrations/freepik/connect.md) |  | other |
 | `freshbooks` | FreshBooks | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/freshbooks.md) |  |  | accounting |
 | `freshdesk` | FreshDesk | BASIC | [docs](https://nango.dev/docs/api-integrations/freshdesk.md) | [connect](https://nango.dev/docs/api-integrations/freshdesk/connect.md) |  | support |
+| `freshdesk-mcp` | FreshDesk (MCP) | API_KEY | [docs](https://nango.dev/docs/api-integrations/freshdesk-mcp.md) | [connect](https://nango.dev/docs/api-integrations/freshdesk-mcp/connect.md) |  | support, mcp |
 | `freshsales` | Freshsales | API_KEY | [docs](https://nango.dev/docs/api-integrations/freshsales.md) | [connect](https://nango.dev/docs/api-integrations/freshsales/connect.md) |  | crm |
 | `freshservice` | Freshservice | BASIC | [docs](https://nango.dev/docs/integrations/all/freshservice.md) | [connect](https://nango.dev/docs/integrations/all/freshservice/connect.md) |  | support |
+| `freshservice-mcp` | Freshservice (MCP) | API_KEY | [docs](https://nango.dev/docs/api-integrations/freshservice-mcp.md) | [connect](https://nango.dev/docs/api-integrations/freshservice-mcp/connect.md) |  | support, mcp |
 | `freshteam` | Freshteam | API_KEY | [docs](https://nango.dev/docs/integrations/all/freshteam.md) | [connect](https://nango.dev/docs/integrations/all/freshteam/connect.md) |  | hr, ats |
 | `freshworks` | Freshworks | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/freshworks.md) | [connect](https://nango.dev/docs/api-integrations/freshworks/connect.md) | [setup](https://nango.dev/docs/api-integrations/freshworks/how-to-register-your-own-freshworks-api-oauth-app.md) | crm, support |
 | `front` | Front | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/front.md) |  |  | support, ticketing |
@@ -505,7 +507,7 @@ URL patterns:
 | `kustomer` | Kustomer | API_KEY | [docs](https://nango.dev/docs/integrations/all/kustomer.md) |  |  | crm |
 | `lagrowthmachine` | La Growth Machine | API_KEY | [docs](https://nango.dev/docs/integrations/all/lagrowthmachine.md) | [connect](https://nango.dev/docs/integrations/all/lagrowthmachine/connect.md) |  | marketing |
 | `lastpass` | LastPass | BASIC | [docs](https://nango.dev/docs/integrations/all/lastpass.md) | [connect](https://nango.dev/docs/integrations/all/lastpass/connect.md) |  | productivity |
-| `lattice` | Lattice | API_KEY | [docs](https://nango.dev/docs/integrations/all/lattice.md) | [connect](https://nango.dev/docs/integrations/all/lattice/connect.md) |  | hr |
+| `lattice` | Lattice | API_KEY | [docs](https://nango.dev/docs/api-integrations/lattice.md) | [connect](https://nango.dev/docs/api-integrations/lattice/connect.md) |  | hr |
 | `leadfeeder` | Leadfeeder | API_KEY | [docs](https://nango.dev/docs/api-integrations/leadfeeder.md) | [connect](https://nango.dev/docs/api-integrations/leadfeeder/connect.md) |  | marketing, crm |
 | `leadmagic` | LeadMagic | API_KEY | [docs](https://nango.dev/docs/integrations/all/leadmagic.md) | [connect](https://nango.dev/docs/integrations/all/leadmagic/connect.md) |  | marketing, crm |
 | `leapsome` | Leapsome | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/leapsome.md) | [connect](https://nango.dev/docs/api-integrations/leapsome/connect.md) |  | hr |
@@ -688,7 +690,7 @@ URL patterns:
 | `peopledatalabs` | People Data Labs | API_KEY | [docs](https://nango.dev/docs/integrations/all/peopledatalabs.md) |  |  | analytics |
 | `perdoo` | Perdoo | API_KEY | [docs](https://nango.dev/docs/api-integrations/perdoo.md) | [connect](https://nango.dev/docs/api-integrations/perdoo/connect.md) |  | productivity, analytics |
 | `perimeter81` | Perimeter81 | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/perimeter81.md) | [connect](https://nango.dev/docs/integrations/all/perimeter81/connect.md) |  | productivity |
-| `perk` | Perk | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/perk.md) |  | [setup](https://nango.dev/docs/api-integrations/perk/how-to-register-your-own-perk-api-oauth-app.md) | productivity |
+| `perk` | Perk | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/perk.md) | [connect](https://nango.dev/docs/api-integrations/perk/connect.md) | [setup](https://nango.dev/docs/api-integrations/perk/how-to-register-your-own-perk-api-oauth-app.md) | productivity |
 | `perplexity` | Perplexity | API_KEY | [docs](https://nango.dev/docs/integrations/all/perplexity.md) |  |  | productivity, dev-tools |
 | `personio` | Personio (v1) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/personio.md) | [connect](https://nango.dev/docs/integrations/all/personio/connect.md) |  | hr |
 | `personio-recruiting` | Personio Recruiting | API_KEY | [docs](https://nango.dev/docs/integrations/all/personio-recruiting.md) |  |  | hr, ats |

@@ -728,6 +728,14 @@
     {
       "source": "/guides/functions/tool-calling",
       "destination": "/guides/agent-sessions"
+    },
+    {
+      "source": "/integrations/all/lattice",
+      "destination": "/api-integrations/lattice"
+    },
+    {
+      "source": "/integrations/all/lattice/connect",
+      "destination": "/api-integrations/lattice/connect"
     }
   ],
   "navigation": {
@@ -1346,8 +1354,10 @@
               "api-integrations/freepik",
               "integrations/all/freshbooks",
               "api-integrations/freshdesk",
+              "api-integrations/freshdesk-mcp",
               "api-integrations/freshsales",
               "integrations/all/freshservice",
+              "api-integrations/freshservice-mcp",
               "integrations/all/freshteam",
               "api-integrations/freshworks",
               "integrations/all/front",
@@ -1508,7 +1518,7 @@
               "integrations/all/kustomer",
               "integrations/all/lagrowthmachine",
               "integrations/all/lastpass",
-              "integrations/all/lattice",
+              "api-integrations/lattice",
               "api-integrations/leadfeeder",
               "integrations/all/leadmagic",
               "api-integrations/leapsome",

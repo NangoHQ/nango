@@ -66,7 +66,8 @@ export async function listFunctions({
 
 /**
  * Lists all action functions for a single integration without pagination.
- * The result includes disabled actions so callers can decide how to expose them.
+ * When tools-catalog is on, every action is reported enabled. When it is off,
+ * disabled actions are still included so callers can decide how to expose them.
  */
 export async function listActions({
     environmentId,

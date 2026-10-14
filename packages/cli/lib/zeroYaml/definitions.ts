@@ -34,6 +34,7 @@ import type {
     DBFunctionConfigVersion,
     FunctionConcurrencyLimit,
     FunctionDeploymentArtifact,
+    FunctionTags,
     NangoYamlParsed,
     NangoYamlParsedIntegration,
     ParsedNangoAction,
@@ -41,6 +42,7 @@ import type {
     Result
 } from '@nangohq/types';
 
+// TODO: consolidate with the `server` schemas to have a single source of truth
 const debounceKeySourceSchema = z.union([z.object({ body: z.string() }).strict(), z.object({ header: z.string() }).strict()]);
 const functionTriggerDefinitionSchema = z.discriminatedUnion('kind', [
     z.object({ kind: z.literal('none') }).strict(),
@@ -71,6 +73,27 @@ const functionTriggerDefinitionSchema = z.discriminatedUnion('kind', [
         .strict()
 ]) satisfies z.ZodType<FunctionTriggerDefinition>;
 
+const functionTagStringSchema = z.string().max(64);
+const functionTagKeySchema = z
+    .string()
+    .regex(/^[a-z][a-z0-9_\-./]*$/, {
+        message: 'Tag keys must start with a lowercase letter and contain only lowercase letters, digits, underscores, hyphens, periods, or slashes'
+    })
+    .max(64);
+const functionTagValueSchema = z.union([functionTagStringSchema, z.array(functionTagStringSchema).max(64)], {
+    error: (iss) => {
+        const got = Array.isArray(iss.input) ? 'array' : iss.input === null ? 'null' : typeof iss.input;
+        return `Expected string or string[], received ${got}`;
+    }
+});
+export const functionTagsSchema = z
+    .record(functionTagKeySchema, functionTagValueSchema, {
+        error: (iss) => (iss.code === 'invalid_key' ? iss.issues[0]?.message : undefined)
+    })
+    .refine((tags) => Object.keys(tags).length <= 32, {
+        message: 'Functions cannot have more than 32 tags'
+    }) satisfies z.ZodType<FunctionTags>;
+
 interface FunctionDefinition {
     description: string;
     trigger?: FunctionTriggerDefinition | undefined;
@@ -79,6 +102,7 @@ interface FunctionDefinition {
     input?: z.ZodTypeAny | undefined;
     output?: z.ZodTypeAny | undefined;
     data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
+    tags?: FunctionTags | undefined;
 }
 
 export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'> & { filePath: string };
@@ -374,7 +398,7 @@ export function validateFunction({
     integrationId,
     basename
 }: {
-    params: Pick<FunctionDefinition, 'trigger' | 'input' | 'data' | 'requires'>;
+    params: Pick<FunctionDefinition, 'trigger' | 'input' | 'data' | 'requires' | 'tags'>;
     integrationId: string;
     basename: string;
 }): Result<void> {
@@ -412,6 +436,15 @@ export function validateFunction({
     }
     if (params.requires?.invoke === true) {
         return Err(new Error(`Function '${fnPath}' declares requires.invoke which is not supported yet.`));
+    }
+    if (params.tags !== undefined) {
+        const tagsValidation = functionTagsSchema.safeParse(params.tags);
+        if (!tagsValidation.success) {
+            const details = tagsValidation.error.issues
+                .map((issue) => `${issue.path.length > 0 ? `${issue.path.map((key) => `${JSON.stringify(key)}`).join('')}: ` : ''}${issue.message}`)
+                .join('; ');
+            return Err(new Error(`Function '${fnPath}' has invalid tags: ${details}`));
+        }
     }
 
     return Ok(undefined);
@@ -482,7 +515,8 @@ export function parseFunction({
         model_schema_refs: Object.keys(models || {}).map(toSchemaRef),
         metadata_schema_ref: toSchemaRefNullable(metadataName),
         checkpoint_schema_ref: toSchemaRefNullable(checkpointName),
-        json_schema: buildJsonSchemaDefinitionsFromZodModels(allZodModels)
+        json_schema: buildJsonSchemaDefinitionsFromZodModels(allZodModels),
+        tags: params.tags ?? {}
     };
 }
 
