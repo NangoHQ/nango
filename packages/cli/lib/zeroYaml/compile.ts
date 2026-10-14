@@ -235,7 +235,6 @@ export async function bundleFile({
                                 filename: args.path,
                                 cloneInputAst: false,
                                 plugins: [plugin],
-                                parserOpts: { sourceType: 'module', plugins: ['typescript'] },
                                 generatorOpts: { decoratorsBeforeExport: true }
                             });
                             return { contents: result?.code ?? source, loader: 'ts' };
