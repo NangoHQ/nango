@@ -76,6 +76,12 @@ describe('usage telemetry postgres migrate', () => {
         }
     });
 
+    it('refuses attributes too large to sit in the key', async () => {
+        await expect(table().insert(row({ attributes: { environment_id: 1, note: 'x'.repeat(1024) } }))).rejects.toMatchObject({ code: PG_CHECK_VIOLATION });
+        await table().insert(row({ attributes: { environment_id: 1, note: 'x'.repeat(900) } }));
+        await knex.raw('TRUNCATE ??.??', [schema, USAGE_TELEMETRY_TABLE]);
+    });
+
     it('refuses null and non-object attributes', async () => {
         await expect(table().insert(row({ attributes: null }))).rejects.toMatchObject({ code: PG_NOT_NULL_VIOLATION });
         await expect(table().insert(row({ attributes: JSON.stringify(null) }))).rejects.toMatchObject({ code: PG_CHECK_VIOLATION });

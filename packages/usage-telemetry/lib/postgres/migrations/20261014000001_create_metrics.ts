@@ -9,6 +9,8 @@ export async function up(knex: Knex, schema: string): Promise<void> {
             value      DOUBLE PRECISION NOT NULL CHECK (value NOT IN ('NaN', 'Infinity', '-Infinity')),
             metric     TEXT             NOT NULL,
             attributes JSONB            NOT NULL DEFAULT '{}' CHECK (jsonb_typeof(attributes) = 'object'),
+            -- Attributes are part of the key, and a btree entry cannot exceed ~2.7 KB: bound them well below it.
+            CONSTRAINT metrics_attributes_size CHECK (octet_length(attributes::text) <= 1024),
             PRIMARY KEY (metric, ts, attributes)
         ) PARTITION BY RANGE (ts)`,
         [schema, USAGE_TELEMETRY_TABLE]
