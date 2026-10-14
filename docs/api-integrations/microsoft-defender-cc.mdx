@@ -1,0 +1,86 @@
+---
+title: 'Microsoft Defender (Client Credentials)'
+sidebarTitle: 'Microsoft Defender (Client Credentials)'
+description: 'Integrate your application with the Microsoft Defender for Endpoint API using Client Credentials'
+---
+
+## 🚀 Quickstart
+
+Connect to Microsoft Defender (Client Credentials) with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Microsoft Defender (Client Credentials)_.
+
+    In the integration's **Settings**, add `https://api.securitycenter.microsoft.com/.default` under **Scopes**.
+    </Step>
+    <Step id="authorize-microsoft-defender" title="Authorize Microsoft Defender for Endpoint">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your **Tenant ID**, **Client ID**, and **Client Secret**. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-microsoft-defender-api" title="Call the Microsoft Defender for Endpoint API">
+    Let's make your first request to the Microsoft Defender for Endpoint API to list alerts. Your app needs the `Alert.Read.All` application permission for this request. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/alerts?\$top=10" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/alerts',
+            params: { $top: '10' },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Microsoft Defender (Client Credentials) integration guides
+
+- [How do I link my account?](/api-integrations/microsoft-defender-cc/connect)  
+Register an app in Microsoft Entra ID and get your Tenant ID, Client ID, and Client Secret.
+
+Official docs: [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/apis-intro)
+
+## 🧩 Pre-built syncs & actions for Microsoft Defender (Client Credentials)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/microsoft-defender-cc/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Set the integration's scope to `https://api.securitycenter.microsoft.com/.default`. The client credentials flow only accepts a `/.default` scope, and Microsoft requires this audience for the Defender for Endpoint APIs, even though requests go to `https://api.security.microsoft.com`. Without it, token requests fail.
+- The scope doesn't grant individual permissions. The token includes the application permissions an admin has consented to on the app registration.
+- Each endpoint needs its own application permission on the **WindowsDefenderATP** API, such as `Alert.Read.All` or `Machine.Read.All`. A missing permission returns `403 Forbidden`. Check the **Permissions** section of each endpoint in the [API reference](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list).
+
+---
