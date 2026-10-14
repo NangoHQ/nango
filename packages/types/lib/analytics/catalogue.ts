@@ -130,7 +130,7 @@ export const analyticsEventCatalogue = defineCatalogue({
         surface: 'web',
         insight: 'How many accounts open the API Playground each week, and from where',
         fires: 'When the Playground opens',
-        properties: z.object({ source: z.enum(['header', 'connection', 'integration', 'function']) })
+        properties: z.object({ source: z.enum(['playground', 'connection', 'integration', 'function']) })
     },
     'playground:run_start': {
         surface: 'web',

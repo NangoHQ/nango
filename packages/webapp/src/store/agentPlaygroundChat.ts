@@ -25,7 +25,9 @@ export function loadAgentPlaygroundChat(env: string, userId: string, now = Date.
         }
         const stored = JSON.parse(raw) as StoredChat;
         const expiresAt = sessionExpiresAt(stored.messages);
-        if (stored.env !== env || stored.userId !== userId || !expiresAt || expiresAt <= now) {
+        // A reply that stopped before any session, such as a setup notice, holds no app data and has nothing to expire with.
+        const answeredWithoutSession = expiresAt === undefined && stored.messages.at(-1)?.role === 'assistant';
+        if (stored.env !== env || stored.userId !== userId || (!answeredWithoutSession && (!expiresAt || expiresAt <= now))) {
             clearAgentPlaygroundChat();
             return undefined;
         }

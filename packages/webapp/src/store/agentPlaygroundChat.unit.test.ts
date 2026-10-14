@@ -59,10 +59,14 @@ describe('agent playground chat storage', () => {
         expect(loadAgentPlaygroundChat('dev', 'user', now)?.[0]?.parts[0]).toMatchObject({ state: 'output-denied' });
     });
 
-    it('drops a chat with no session yet', () => {
-        saveAgentPlaygroundChat('dev', 'user', [message()]);
-
+    it('drops a chat with no session yet, unless it ended on a reply', () => {
+        const prompt = { ...message(), role: 'user' as const };
+        saveAgentPlaygroundChat('dev', 'user', [prompt]);
         expect(loadAgentPlaygroundChat('dev', 'user', now)).toBeUndefined();
+
+        const setupOnly = [prompt, message()];
+        saveAgentPlaygroundChat('dev', 'user', setupOnly);
+        expect(loadAgentPlaygroundChat('dev', 'user', now)).toEqual(setupOnly);
     });
 
     it('forgets the chat when it is emptied or cleared', () => {

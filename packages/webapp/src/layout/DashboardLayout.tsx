@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { SidebarInset, SidebarProvider } from '@/components/ui/Sidebar';
-import { Playground } from '@/features/Playground';
 import { AppHeader } from '@/layout/AppHeader';
 import { cn } from '@/utils/utils';
 import { AppSidebar } from './AppSidebar';
@@ -42,7 +41,6 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(
                             {/* Mirrors SectionHeader's inner row: same cap inside the same padding, so the two line up */}
                             {centered ? <div className={cn('mx-auto w-full', CENTERED_MAX_WIDTH)}>{children}</div> : children}
                         </div>
-                        <Playground />
                     </div>
                 </SidebarInset>
             </SidebarProvider>
