@@ -98,7 +98,7 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({
 
     return (
         <div className="flex items-center gap-3 rounded-ds-xs border border-border-muted bg-surface-panel px-4 py-3">
-            <IntegrationLogo provider={provider} className="size-8" />
+            <IntegrationLogo provider={provider} className="size-6 shrink-0 border-0 bg-transparent p-0" />
             <div className="flex min-w-0 flex-1 flex-col">
                 <span className="text-body-medium-medium text-text-strong">Connect {name}</span>
                 {expired && status === 'idle' ? (
@@ -133,7 +133,7 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({
                 </Button>
             ) : (
                 <Button size="sm" onClick={connect} loading={status === 'waiting'}>
-                    {failure && status === 'idle' ? 'Try again' : `Connect ${name}`} <ArrowRight />
+                    {failure && status === 'idle' ? 'Try again' : 'Connect'} <ArrowRight />
                 </Button>
             )}
         </div>

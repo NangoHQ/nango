@@ -1,6 +1,6 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai';
-import { ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, CircleCheck, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
+import { ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
@@ -20,6 +20,7 @@ import {
 
 import { LogoInverted } from '@/assets/LogoInverted';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { useUser } from '@/hooks/useUser';
@@ -31,7 +32,7 @@ import { describeChatError } from './chatError';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
 import { hideTrailingLink } from './streamingMarkdown';
-import { describeTool, humanize } from './toolDisplay';
+import { humanize } from './toolDisplay';
 
 import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata, AgentPlaygroundSessionCreated } from '@nangohq/types';
 import type { UIMessage } from 'ai';
@@ -224,7 +225,7 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
             {toolbarSlot &&
                 createPortal(
                     <div className="ml-auto">
-                        <Button variant="outline" size="md" onClick={onReset}>
+                        <Button variant="outline" size="lg" onClick={onReset}>
                             <Plus /> New chat
                         </Button>
                     </div>,
@@ -240,7 +241,7 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
                     message.metadata?.hidden ? null : message.role === 'user' ? (
                         <div
                             key={message.id}
-                            className="max-w-[80%] self-end whitespace-pre-wrap rounded-ds-md bg-surface-panel-inset px-4 py-2.5 text-body-medium-regular text-text-default"
+                            className="max-w-[80%] self-end whitespace-pre-wrap rounded-ds-xs bg-surface-panel-inset px-4 py-2.5 text-body-medium-regular text-text-default"
                         >
                             {message.parts.map((part) => (part.type === 'text' ? part.text : '')).join('')}
                         </div>
@@ -336,7 +337,7 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
                     </span>
                     {busy ? (
                         <InputGroupButton label="Stop" variant="secondary" size="icon-sm" onClick={onStop}>
-                            <Square />
+                            <Square className="size-3 fill-current" />
                         </InputGroupButton>
                     ) : (
                         <InputGroupButton label="Send" type="submit" variant="primary" size="icon-sm" disabled={!input.trim() || awaitingApproval}>
@@ -385,11 +386,13 @@ function workingLabel(messages: PlaygroundMessage[]): string | null {
         return null;
     }
     if (part?.type === 'dynamic-tool') {
-        if (part.state === 'approval-requested') {
+        if (
+            part.state === 'approval-requested' ||
+            part.state === 'input-streaming' ||
+            part.state === 'input-available' ||
+            part.state === 'approval-responded'
+        ) {
             return null;
-        }
-        if (part.state === 'input-streaming' || part.state === 'input-available' || part.state === 'approval-responded') {
-            return `${describeTool(part.toolName, part.input).title}…`;
         }
     }
     return 'Thinking…';
@@ -423,13 +426,13 @@ const IntegrationSetupNotice: React.FC<{ env: string; setup: AgentPlaygroundInte
 
     if (setup.outcome === 'created' || setup.outcome === 'existing') {
         return (
-            <div className="flex items-center gap-2 text-body-medium-regular text-text-secondary" role="status">
-                <CircleCheck className="size-4 shrink-0 text-icon-success" />
-                <span>
-                    {setup.outcome === 'created' ? `Created the ${name} integration.` : `Using your ${name} integration.`}{' '}
-                    <Link to={href} className="whitespace-nowrap text-text-default underline underline-offset-2">
+            <div className="flex min-h-7 items-center gap-2 pr-[17px] text-body-medium-regular text-text-secondary" role="status">
+                <IntegrationLogo provider={setup.provider} className="-mx-0.5 size-5 shrink-0 border-0 bg-transparent p-0" />
+                <span className="min-w-0 truncate">{setup.outcome === 'created' ? `Created the ${name} integration` : `Using your ${name} integration`}</span>
+                <span className="ml-auto flex shrink-0 items-center gap-2 pl-2">
+                    <ButtonLink to={href} variant="outline" size="sm">
                         View integration
-                    </Link>
+                    </ButtonLink>
                 </span>
             </div>
         );
@@ -473,23 +476,26 @@ const IntegrationSetupNotice: React.FC<{ env: string; setup: AgentPlaygroundInte
 function sessionNoticeText(reason: AgentPlaygroundSessionCreated['reason'], replaced: boolean): string {
     switch (reason) {
         case 'integrations_changed':
-            return 'Started a new agent session to pick up your integration changes.';
+            return 'Started a new agent session to pick up your integration changes';
         case 'connections_changed':
-            return 'Started a new agent session to pick up your new connections.';
+            return 'Started a new agent session to pick up your new connections';
         case 'expired':
-            return 'Started a new agent session because the last one expired.';
+            return 'Started a new agent session because the last one expired';
         default:
-            return replaced ? 'Started a new agent session.' : 'Started an agent session.';
+            return replaced ? 'Started a new agent session' : 'Started an agent session';
     }
 }
 
 const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced: boolean }> = ({ created, replaced }) => {
     return (
         <Collapsible className="group/session flex flex-col gap-3">
-            <CollapsibleTrigger className="flex items-center gap-2 self-start text-left text-body-medium-regular text-text-secondary hover:text-text-default">
-                <CircleCheck className="size-4 shrink-0 text-icon-success" />
-                {sessionNoticeText(created.reason, replaced)}
-                <ChevronDown className="size-4 shrink-0 transition-transform group-data-[state=open]/session:rotate-180" />
+            <CollapsibleTrigger className="flex min-h-7 w-full items-center gap-2 pr-[17px] text-left text-body-medium-regular text-text-secondary hover:text-text-default">
+                <LogoInverted className="size-4 shrink-0 text-text-strong" />
+                <span className="min-w-0 truncate">{sessionNoticeText(created.reason, replaced)}</span>
+                <span className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-body-small-regular">
+                    <span className="group-data-[state=open]/session:hidden">POST /sessions</span>
+                    <ChevronDown className="size-4 transition-transform group-data-[state=open]/session:rotate-180" />
+                </span>
             </CollapsibleTrigger>
             <CollapsibleContent>
                 <CodeBlock
@@ -534,7 +540,7 @@ const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string,
                         key={prompt}
                         type="button"
                         onClick={() => onPick(prompt, provider)}
-                        className="group flex items-center gap-2.5 rounded-ds-md border-ds-hairline border-border-muted bg-surface-panel px-3 py-3 text-left text-body-medium-regular text-text-default transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-container-panel"
+                        className="group flex items-center gap-2.5 rounded-ds-xs border-ds-hairline border-border-muted bg-surface-panel px-3 py-3 text-left text-body-medium-regular text-text-default transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-container-panel"
                     >
                         <IntegrationLogo provider={provider} className="size-5 shrink-0 border-0 bg-transparent p-0" />
                         <span className="flex-1">{prompt}</span>
