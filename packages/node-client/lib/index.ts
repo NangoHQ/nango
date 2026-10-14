@@ -465,7 +465,7 @@ export class Nango {
      * @returns The response from the server
      */
     public async patchConnection(params: PatchPublicConnection['QP'], body: PatchPublicConnection['Body']): Promise<PatchPublicConnection['Success']> {
-        const url = `${this.serverUrl}/connections/${params.connectionId}?provider_config_key=${params.provider_config_key}`;
+        const url = `${this.serverUrl}/connections/${encodeURIComponent(params.connectionId)}?provider_config_key=${params.provider_config_key}`;
         const response = await this.http.patch(url, body, { headers: this.enrichHeaders({ 'Content-Type': 'application/json' }) });
         return response.data;
     }
@@ -599,7 +599,7 @@ export class Nango {
      * @returns A promise that resolves with the Axios response from the server
      */
     public async deleteConnection(providerConfigKey: string, connectionId: string): Promise<AxiosResponse<void>> {
-        const url = `${this.serverUrl}/connections/${connectionId}?provider_config_key=${providerConfigKey}`;
+        const url = `${this.serverUrl}/connections/${encodeURIComponent(connectionId)}?provider_config_key=${providerConfigKey}`;
 
         const headers = {
             'Content-Type': 'application/json'
@@ -1453,7 +1453,7 @@ export class Nango {
             refreshGithubAppJwtToken = false
         } = options;
 
-        const url = `${this.serverUrl}/connections/${connectionId}`;
+        const url = `${this.serverUrl}/connections/${encodeURIComponent(connectionId)}`;
 
         const headers = {
             'Content-Type': 'application/json'
