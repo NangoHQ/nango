@@ -2,14 +2,13 @@ import { createAction } from 'nango';
 import { z } from 'zod';
 
 const InputSchema = z.object({
-    document_number: z.string().describe('Spanish ID document number (DNI/NIE).'),
-    document_expiration_date: z.string().describe('Document expiration date (YYYY-MM-DD).'),
-    document_support: z.string().optional().describe('Support number required for NIE documents.')
+    document_number: z.string(),
+    document_expiration_date: z.string(),
+    document_support: z.string().optional()
 });
-
-const OutputSchema = z.object({
-    data: z.unknown()
-});
+type Input = z.infer<typeof InputSchema>;
+const OutputSchema = z.object({ data: z.unknown() });
+type Output = z.infer<typeof OutputSchema>;
 
 const action = createAction({
     description: 'Checks whether a person has Cl@ve PIN available in Belender.',
@@ -17,8 +16,7 @@ const action = createAction({
     endpoint: { method: 'POST', path: '/clave-pin/check-service', group: 'Clave PIN' },
     input: InputSchema,
     output: OutputSchema,
-
-    exec: async (nango, input): Promise<z.infer<typeof OutputSchema>> => {
+    exec: async (nango, input: Input): Promise<Output> => {
         const response = await nango.post({
             endpoint: '/requests/clave-pin/check-service',
             data: {
@@ -28,10 +26,8 @@ const action = createAction({
             },
             retries: 3
         });
-
         return { data: response.data };
     }
 });
-
 export type NangoActionLocal = Parameters<(typeof action)['exec']>[0];
 export default action;

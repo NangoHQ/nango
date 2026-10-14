@@ -2,17 +2,16 @@ import { createAction } from 'nango';
 import { z } from 'zod';
 
 const InputSchema = z.object({
-    package_id: z.string().uuid().describe('Belender package UUID for this environment (QA vs prod).'),
+    package_id: z.string(),
     document_number: z.string(),
     document_expiration_date: z.string(),
-    check_legal: z.boolean().optional().describe('Whether to run legal checks. Defaults depend on Belender.'),
+    check_legal: z.boolean().optional(),
     document_support: z.string().optional(),
-    extra: z.record(z.string(), z.unknown()).optional().describe('Additional JSON fields accepted by Belender.')
+    extra: z.record(z.string(), z.unknown()).optional()
 });
-
-const OutputSchema = z.object({
-    data: z.unknown()
-});
+type Input = z.infer<typeof InputSchema>;
+const OutputSchema = z.object({ data: z.unknown() });
+type Output = z.infer<typeof OutputSchema>;
 
 const action = createAction({
     description: 'Creates a Belender Cl@ve PIN request.',
@@ -20,18 +19,15 @@ const action = createAction({
     endpoint: { method: 'POST', path: '/clave-pin', group: 'Clave PIN' },
     input: InputSchema,
     output: OutputSchema,
-
-    exec: async (nango, input): Promise<z.infer<typeof OutputSchema>> => {
+    exec: async (nango, input: Input): Promise<Output> => {
         const { extra, ...rest } = input;
         const response = await nango.post({
             endpoint: '/requests/clave-pin',
             data: { ...rest, ...(extra ?? {}) },
             retries: 3
         });
-
         return { data: response.data };
     }
 });
-
 export type NangoActionLocal = Parameters<(typeof action)['exec']>[0];
 export default action;
