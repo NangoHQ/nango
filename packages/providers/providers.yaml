@@ -15936,6 +15936,30 @@ microsoft-dynamics-365-finance-and-operations-cc:
             doc_section: '#step-2-finding-your-environment-url'
             order: 2
 
+microsoft-defender-cc:
+    display_name: Microsoft Defender (Client Credentials)
+    categories:
+        - iam
+    auth_mode: OAUTH2_CC
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+    default_scopes:
+        - https://api.securitycenter.microsoft.com/.default
+    proxy:
+        base_url: https://api.security.microsoft.com
+    docs: https://nango.dev/docs/api-integrations/microsoft-defender-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-defender-cc/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: Your Microsoft Entra tenant ID.
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-register-an-app-in-microsoft-entra-id'
+            order: 1
+
 microsoft-dataverse:
     display_name: Microsoft Dataverse (Dynamics 365 CRM)
     alias: microsoft-dynamics-365-finance-and-operations
