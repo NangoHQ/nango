@@ -8,6 +8,7 @@ type Has<T, K extends PropertyKey> = K extends keyof T ? true : false;
 describe('createTool', () => {
     it('builds an http function with proxy access', () => {
         const tool = createTool({
+            name: 'get_issue',
             description: 'Get an issue',
             input: z.object({ issueNumber: z.number() }),
             output: z.object({ title: z.string() }),
@@ -26,6 +27,7 @@ describe('createTool', () => {
 
         expect(tool).toMatchObject({
             type: 'function',
+            name: 'get_issue',
             description: 'Get an issue',
             trigger: { kind: 'http' },
             tags: { domain: 'issues', instructions: 'Use it to read one issue', required_scopes: ['repo'] },

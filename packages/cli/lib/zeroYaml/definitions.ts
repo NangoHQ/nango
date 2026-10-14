@@ -4,7 +4,7 @@ import { pathToFileURL } from 'url';
 import * as z from 'zod';
 
 import { getInterval } from '@nangohq/nango-yaml';
-import { deriveFunctionCapabilities, reservedToolTagKeys, toolToFunctionProps } from '@nangohq/runner-sdk';
+import { deriveFunctionCapabilities, reservedToolTagKeys } from '@nangohq/runner-sdk';
 
 import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
@@ -27,6 +27,7 @@ import type {
     CreateOnEventResponse,
     CreateSyncResponse,
     CreateToolProps,
+    CreateToolResponse,
     FunctionRequires,
     FunctionTriggerDefinition
 } from '@nangohq/runner-sdk';
@@ -115,9 +116,6 @@ const toolNameSchema = z
     .regex(/^[a-zA-Z0-9_-]+$/, { message: 'Tool names can only contain letters, digits, underscores, or hyphens' })
     .max(64);
 
-// A compiled `createTool` export: the tool's own props, tagged by the compiler.
-type CompiledTool = CreateToolProps & { type: 'function'; tool: true };
-
 interface FunctionDefinition {
     description: string;
     trigger?: FunctionTriggerDefinition | undefined;
@@ -176,7 +174,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
             | CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>
             | CreateOnEventResponse
             | CreateFunctionResponse
-            | CompiledTool;
+            | CreateToolResponse;
 
         const basename = path.basename(filePath, '.js');
         const realPath = filePath.replace(/\.js$/, '.ts');
@@ -242,12 +240,13 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 break;
             }
             case 'function': {
-                if ('tool' in script) {
-                    const validationRes = validateTool({ params: script, filePath: realPath });
+                const toolDefinition = moduleContent.default.__nangoToolDefinition as CreateToolProps | undefined;
+                if (toolDefinition) {
+                    const validationRes = validateTool({ params: toolDefinition, filePath: realPath });
                     if (validationRes.isErr()) {
                         return Err(validationRes.error);
                     }
-                    const name = script.name ?? basename;
+                    const name = toolDefinition.name ?? basename;
                     if (parsed.functions.some((fn) => fn.integrationId === integrationId && fn.name === name)) {
                         return Err(
                             new Error(`Tool '${realPath}' is named '${name}', which is already used. Tool and function names must be unique per integration.`)
@@ -255,7 +254,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                     }
                     parsed.functions.push({
                         ...parseFunction({
-                            params: toolToFunctionProps(script),
+                            params: script,
                             integrationId,
                             integrationIdClean,
                             basename: name,

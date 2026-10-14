@@ -35,7 +35,7 @@ export type CreateToolResponse<TInput extends z.ZodTypeAny = z.ZodTypeAny, TOutp
     undefined,
     ToolTrigger,
     ToolRequires
->;
+> & { name?: string };
 
 /**
  * Create a tool an agent can call. A tool is a function with an http trigger.
@@ -57,7 +57,7 @@ export type CreateToolResponse<TInput extends z.ZodTypeAny = z.ZodTypeAny, TOutp
 export function createTool<TInput extends z.ZodTypeAny, TOutput extends z.ZodTypeAny>(
     params: CreateToolProps<TInput, TOutput>
 ): CreateToolResponse<TInput, TOutput> {
-    return createFunction(toolToFunctionProps(params));
+    return { ...createFunction(toolToFunctionProps(params)), ...(params.name !== undefined ? { name: params.name } : {}) };
 }
 
 export function toolToFunctionProps<TInput extends z.ZodTypeAny, TOutput extends z.ZodTypeAny>(
