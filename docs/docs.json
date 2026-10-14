@@ -1903,6 +1903,7 @@
               "integrations/all/stripe-app",
               "api-integrations/stripe-app-sandbox",
               "integrations/all/stripe-express",
+              "integrations/all/stripe-link",
               "api-integrations/supabase",
               "api-integrations/supabase-mcp",
               "api-integrations/supabase-mcp-oauth",

@@ -25185,6 +25185,26 @@ stripe-api-key:
             pattern: '^acct_[A-Za-z0-9]{16}(\/acct_[A-Za-z0-9]{16})?$'
             doc_section: '#step-2-finding-your-stripe-context'
 
+stripe-link:
+    display_name: Stripe Link
+    categories:
+        - payment
+    auth_mode: OAUTH2
+    authorization_url: https://login.link.com/auth
+    token_url: https://login.link.com/auth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - payment_methods.agentic
+        - userinfo:read
+    proxy:
+        base_url: https://api.link.com
+    docs: https://nango.dev/docs/integrations/all/stripe-link
+
 supabase:
     display_name: Supabase
     categories:
