@@ -9,7 +9,7 @@ interface StoredChat {
     lastMessageAt: number;
 }
 
-// The chat holds data from the user's connected apps, so it goes once nobody has used it for this long.
+// The chat holds data from the user's connected apps, so the dashboard drops it once nobody has used it for this long.
 export const AGENT_PLAYGROUND_CHAT_IDLE_MS = 24 * 60 * 60 * 1000;
 
 const CHAT_PREFIX = 'nango_agent_playground_chat:';
@@ -33,17 +33,19 @@ function isIdle(chat: StoredChat | undefined, now: number): boolean {
     return !chat || typeof chat.lastMessageAt !== 'number' || now - chat.lastMessageAt >= AGENT_PLAYGROUND_CHAT_IDLE_MS;
 }
 
-function removeIdleChats(now: number): void {
-    for (const key of keysWithPrefix(localStorage, CHAT_PREFIX)) {
-        if (isIdle(readChat(key.slice(CHAT_PREFIX.length)), now)) {
-            localStorage.removeItem(key);
+export function removeIdleAgentPlaygroundChats(now = Date.now()): void {
+    try {
+        for (const key of keysWithPrefix(localStorage, CHAT_PREFIX)) {
+            if (isIdle(readChat(key.slice(CHAT_PREFIX.length)), now)) {
+                localStorage.removeItem(key);
+            }
         }
-    }
+    } catch {}
 }
 
 export function openAgentPlaygroundChat(env: string, userId: string, now = Date.now()): { chatId: string; messages?: PlaygroundMessage[] } {
     try {
-        removeIdleChats(now);
+        removeIdleAgentPlaygroundChats(now);
         for (const chatId of [sessionStorage.getItem(LAST_CHAT_PREFIX + env), localStorage.getItem(LAST_CHAT_PREFIX + env)]) {
             const chat = chatId ? readChat(chatId) : undefined;
             if (chatId && chat?.userId === userId) {

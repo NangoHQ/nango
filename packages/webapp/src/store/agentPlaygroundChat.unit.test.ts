@@ -6,6 +6,7 @@ import {
     deleteAgentPlaygroundChat,
     INTERRUPTED_CALL,
     openAgentPlaygroundChat,
+    removeIdleAgentPlaygroundChats,
     saveAgentPlaygroundChat
 } from './agentPlaygroundChat';
 
@@ -63,6 +64,15 @@ describe('agent playground chat storage', () => {
         expect(openAgentPlaygroundChat('dev', 'user', now + AGENT_PLAYGROUND_CHAT_IDLE_MS - 1)).toEqual({ chatId: 'a', messages });
         expect(openAgentPlaygroundChat('dev', 'user', now + AGENT_PLAYGROUND_CHAT_IDLE_MS).chatId).not.toBe('a');
         expect(local.store.has('nango_agent_playground_chat:a')).toBe(false);
+    });
+
+    it('drops idle chats in every environment without opening one', () => {
+        save('a', [message()], now, 'dev');
+        save('b', [message()], now + 2 * hour, 'prod');
+
+        removeIdleAgentPlaygroundChats(now + AGENT_PLAYGROUND_CHAT_IDLE_MS + hour);
+
+        expect([...local.store.keys()].filter((key) => key.startsWith('nango_agent_playground_chat:'))).toEqual(['nango_agent_playground_chat:b']);
     });
 
     it("prefers this tab's chat, and falls back to the environment's last chat in a new tab", () => {
