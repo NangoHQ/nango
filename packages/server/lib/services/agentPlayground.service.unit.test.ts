@@ -71,7 +71,13 @@ describe('describeTurn', () => {
     });
     const reply: PlaygroundUIMessage = { id: 'reply', role: 'assistant', parts: [{ type: 'text', text: 'Done.' }] };
 
-    it('names the starter', () => {
+    it('sends the typed first message, capped', () => {
+        const turn = describeTurn([userMessage('a'.repeat(600))], undefined);
+
+        expect(turn).toStrictEqual({ isFirstTurn: true, prompt: 'a'.repeat(500) });
+    });
+
+    it('names the starter instead of sending its text', () => {
         expect(describeTurn([userMessage('Show my calendar', { starterProvider: 'google-calendar' })], 'google-calendar')).toStrictEqual({
             isFirstTurn: true,
             starterProvider: 'google-calendar'
@@ -81,10 +87,13 @@ describe('describeTurn', () => {
     it('still treats the first typed message as first after an empty setup-only reply', () => {
         const setupOnly: PlaygroundUIMessage = { id: 'setup', role: 'assistant', parts: [] };
 
-        expect(describeTurn([userMessage('Show my calendar'), setupOnly, userMessage('List my issues')], undefined)).toStrictEqual({ isFirstTurn: true });
+        expect(describeTurn([userMessage('Show my calendar'), setupOnly, userMessage('List my issues')], undefined)).toStrictEqual({
+            isFirstTurn: true,
+            prompt: 'List my issues'
+        });
     });
 
-    it('marks a later turn', () => {
+    it('sends no text after the first turn', () => {
         expect(describeTurn([userMessage('List my issues'), reply, userMessage('Now close the first one')], undefined)).toStrictEqual({
             isFirstTurn: false
         });

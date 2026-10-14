@@ -217,7 +217,8 @@ describe('POST /api/v1/agent-playground/chat', () => {
                 }
                 expect(byName('playground:agent_turn_complete')?.properties).toMatchObject({
                     chat_id: chatId,
-                    is_first_turn: true
+                    is_first_turn: true,
+                    prompt: 'Find my calendar events'
                 });
             });
         } finally {

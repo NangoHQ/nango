@@ -344,12 +344,21 @@ function parseTextContent(content: { type: string; text?: string }[]): unknown {
     }
 }
 
+const MAX_TRACKED_PROMPT_LENGTH = 500;
+
 export function describeTurn(messages: PlaygroundUIMessage[], starterProvider: string | undefined): PlaygroundTurn {
+    const lastMessage = messages.at(-1);
     const isFirstTurn = !messages.some((message) => message.role === 'assistant' && message.parts.length > 0);
+    const typedFirstMessage = isFirstTurn && lastMessage?.role === 'user' && !lastMessage.metadata?.hidden && !starterProvider ? lastMessage : undefined;
+    const prompt = typedFirstMessage?.parts
+        .map((part) => (part.type === 'text' ? part.text : ''))
+        .join('')
+        .slice(0, MAX_TRACKED_PROMPT_LENGTH);
 
     return {
         isFirstTurn,
-        ...(starterProvider ? { starterProvider } : {})
+        ...(starterProvider ? { starterProvider } : {}),
+        ...(prompt ? { prompt } : {})
     };
 }
 

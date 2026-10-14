@@ -109,7 +109,7 @@ describe('trackPlaygroundTurn', () => {
             },
             sessionId: 'session-1',
             chatId: 'chat-1',
-            turn: { isFirstTurn: true, starterProvider: 'linear' },
+            turn: { isFirstTurn: true, prompt: 'List my open Linear issues' },
             outcome: 'aborted',
             steps: [step({ input: 1_000, output: 10 })]
         });
@@ -126,7 +126,7 @@ describe('trackPlaygroundTurn', () => {
             agent_session_id: 'session-1',
             chat_id: 'chat-1',
             is_first_turn: true,
-            starter_provider: 'linear',
+            prompt: 'List my open Linear issues',
             environment_id: 7,
             is_production: false,
             is_success: true,
