@@ -225,6 +225,19 @@ description: 'Access the Informa D&B (Spain) company reports API in 2 minutes ðŸ
 
     ---
 
+    ### Pre-built actions
+
+    | Action | Endpoint | Purpose |
+    | - | - | - |
+    | `get-product` | `GET /product` | Fetch a product by CIF (`/api/get-product`). |
+    | `get-companies` | `GET /companies` | Search companies by denomination. |
+    | `get-admin` | `GET /admin` | Search administrators / related companies. |
+    | `get-tables` | `GET /tables` | Fetch decoding tables. |
+
+    Trigger with the [Actions API](/guides/functions/action-functions) / `nango.triggerAction('get-product', { product, cif })`. Source: `integration-templates/integrations/informa/actions/`.
+
+    ---
+
     ### Response shape (JSON)
 
     Successful bodies are nested Informa objects (`datosPeticion`, `datosProducto`, `informacionComercial`, financial/risk modules, etc.).
