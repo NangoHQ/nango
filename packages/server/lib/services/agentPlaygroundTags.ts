@@ -1,4 +1,4 @@
-import type { AgentSession, Tags } from '@nangohq/types';
+import type { AgentSession } from '@nangohq/types';
 
 export const PLAYGROUND_USER_TAG_KEY = 'nango/playground_user';
 
@@ -9,8 +9,4 @@ export function sessionOwner(session: Pick<AgentSession, 'metaTools'>): string |
 
 export function isPlaygroundSession(session: Pick<AgentSession, 'metaTools'>): boolean {
     return sessionOwner(session) !== undefined;
-}
-
-export function isPlaygroundConnection(connection: { tags: Tags }): boolean {
-    return Object.hasOwn(connection.tags, PLAYGROUND_USER_TAG_KEY);
 }

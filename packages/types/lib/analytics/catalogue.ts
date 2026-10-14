@@ -9,8 +9,7 @@ import type { UsageMetric } from '../usage/index.js';
 import type { AnalyticsEventName, AnalyticsSurface } from './taxonomy.js';
 
 export interface AnalyticsEventDefinition {
-    // Several surfaces only for one fact seen from both sides. Insights on it filter by `surface`.
-    surface: AnalyticsSurface | readonly AnalyticsSurface[];
+    surface: AnalyticsSurface;
     insight: string;
     fires: string;
     properties: z.ZodType;
@@ -201,15 +200,14 @@ export const analyticsEventCatalogue = defineCatalogue({
         properties: z.object({ provider: z.string() })
     },
     'connections:connection_create': {
-        surface: ['web', 'server'],
-        insight:
-            'Which integrations fail most often during auth started from the dashboard, and how many accounts create connections outside the Agent Playground',
-        fires: 'When a connect flow in the dashboard or the Agent Playground finishes, and on the server after any connection is created',
+        surface: 'web',
+        insight: 'Which integrations fail most often during auth started from the dashboard or the Agent Playground',
+        fires: 'When a connect flow started from the dashboard or the Agent Playground finishes',
         properties: z.union([
-            z.object({ provider: z.string(), is_legacy_flow: z.boolean().optional(), is_playground: z.boolean().optional(), is_success: z.literal(true) }),
+            z.object({ provider: z.string(), is_legacy_flow: z.boolean(), is_playground: z.boolean().optional(), is_success: z.literal(true) }),
             z.object({
                 provider: z.string(),
-                is_legacy_flow: z.boolean().optional(),
+                is_legacy_flow: z.boolean(),
                 is_playground: z.boolean().optional(),
                 is_success: z.literal(false),
                 error_code: z.string()
@@ -401,10 +399,8 @@ export const analyticsEventCatalogue = defineCatalogue({
 type AnalyticsEventCatalogue = typeof analyticsEventCatalogue;
 type AnalyticsEventKey = keyof AnalyticsEventCatalogue;
 
-type SurfacesOf<E extends AnalyticsEventKey> = AnalyticsEventCatalogue[E]['surface'] extends readonly (infer S)[] ? S : AnalyticsEventCatalogue[E]['surface'];
-
 export type AnalyticsEventNameFor<S extends AnalyticsSurface> = {
-    [E in AnalyticsEventKey]: S extends SurfacesOf<E> ? E : never;
+    [E in AnalyticsEventKey]: S extends AnalyticsEventCatalogue[E]['surface'] ? E : never;
 }[AnalyticsEventKey];
 
 export type AnalyticsEventProperties<E extends AnalyticsEventKey> = z.infer<AnalyticsEventCatalogue[E]['properties']>;
