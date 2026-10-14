@@ -38,7 +38,8 @@ export function toolsetSummary(
             {
                 connected: Object.hasOwn(resolvedConnections, integrationId),
                 tools_pinned: integration.pinned.length,
-                tools_searchable: integration.searchable.length
+                tools_searchable: integration.searchable.length,
+                ...(integration.mcpServer ? { mcp_server: integration.mcpServer } : {})
             }
         ])
     );

@@ -86,6 +86,7 @@ export interface BaseProvider {
     authorization_code_param_in_webhook?: string;
     docs: string;
     docs_connect?: string;
+    mcp_endpoint?: string;
     setup_guide_url?: string;
     token_expiration_buffer?: number; // In seconds.
     webhook_routing_script?: string;

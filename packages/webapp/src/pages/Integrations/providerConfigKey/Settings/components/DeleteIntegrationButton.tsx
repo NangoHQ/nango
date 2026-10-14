@@ -36,8 +36,7 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
             <PermissionGate condition={canDeleteIntegration} asChild>
                 {(allowed) => (
                     <Button
-                        variant="danger"
-                        size="md"
+                        variant="link-danger"
                         loading={isPending}
                         disabled={!allowed}
                         onClick={() =>
@@ -52,7 +51,7 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
                         }
                     >
                         <Trash2 />
-                        Delete integration
+                        Delete
                     </Button>
                 )}
             </PermissionGate>

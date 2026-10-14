@@ -73,6 +73,29 @@ describe('resolveRunnableTool', () => {
         expect(result).toEqual({ kind: 'deployed', config: deployed });
         expect(mockGetSyncConfigRaw).toHaveBeenCalledWith({ environmentId: 1, config_id: 9, name: 'create-issue', isAction: true });
         expect(mockGetCatalogTool).not.toHaveBeenCalled();
+        expect(mockHasCatalogTools).not.toHaveBeenCalled();
+    });
+
+    it('reports a disabled deployed action as enabled when tools-catalog is on', async () => {
+        const deployed = { id: 44, sync_name: 'create-issue', enabled: false } as DBSyncConfig;
+        mockGetSyncConfigRaw.mockResolvedValue(deployed);
+
+        const result = await resolveRunnableTool({ accountUuid: 'account-uuid', environmentId: 1, integration: config, name: 'create-issue' });
+
+        expect(result).toEqual({ kind: 'deployed', config: { ...deployed, enabled: true } });
+        expect(mockHasCatalogTools).toHaveBeenCalledWith('account-uuid');
+        expect(mockGetCatalogTool).not.toHaveBeenCalled();
+    });
+
+    it('keeps a disabled deployed action disabled when tools-catalog is off', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const deployed = { id: 44, sync_name: 'create-issue', enabled: false } as DBSyncConfig;
+        mockGetSyncConfigRaw.mockResolvedValue(deployed);
+
+        const result = await resolveRunnableTool({ accountUuid: 'account-uuid', environmentId: 1, integration: config, name: 'create-issue' });
+
+        expect(result).toEqual({ kind: 'deployed', config: deployed });
+        expect(mockGetCatalogTool).not.toHaveBeenCalled();
     });
 
     it('returns the catalog tool when the name is not deployed', async () => {

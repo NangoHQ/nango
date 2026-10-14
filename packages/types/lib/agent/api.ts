@@ -4,6 +4,7 @@ import type { Tags } from '../db.js';
 import type { AgentSessionUnknownPinnedConnectionsPayload } from './connections.js';
 import type { AgentSessionCreateConnectionConfig, AgentSessionEndedReason } from './session.js';
 import type {
+    AgentSessionMcpServerStatus,
     AgentSessionToolsNotInToolsetPayload,
     AgentSessionUnknownIntegrationsPayload,
     AgentSessionUnknownToolsPayload,
@@ -47,6 +48,7 @@ export interface AgentSessionToolsetSummary {
     connected: boolean;
     tools_pinned: number;
     tools_searchable: number;
+    mcp_server?: AgentSessionMcpServerStatus;
 }
 
 export interface AgentSessionMetaToolsSummary {

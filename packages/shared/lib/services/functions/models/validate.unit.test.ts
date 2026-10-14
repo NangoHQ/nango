@@ -11,6 +11,7 @@ const version = {
     id: 1,
     function_config_id: 1,
     description: 'Test function',
+    tags: {},
     file_location: 'functions/github/test',
     version: '1',
     source: 'repo',

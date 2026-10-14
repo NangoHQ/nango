@@ -728,6 +728,14 @@
     {
       "source": "/guides/functions/tool-calling",
       "destination": "/guides/agent-sessions"
+    },
+    {
+      "source": "/integrations/all/lattice",
+      "destination": "/api-integrations/lattice"
+    },
+    {
+      "source": "/integrations/all/lattice/connect",
+      "destination": "/api-integrations/lattice/connect"
     }
   ],
   "navigation": {
@@ -1346,8 +1354,10 @@
               "api-integrations/freepik",
               "integrations/all/freshbooks",
               "api-integrations/freshdesk",
+              "api-integrations/freshdesk-mcp",
               "api-integrations/freshsales",
               "integrations/all/freshservice",
+              "api-integrations/freshservice-mcp",
               "integrations/all/freshteam",
               "api-integrations/freshworks",
               "integrations/all/front",
@@ -1508,7 +1518,7 @@
               "integrations/all/kustomer",
               "integrations/all/lagrowthmachine",
               "integrations/all/lastpass",
-              "integrations/all/lattice",
+              "api-integrations/lattice",
               "api-integrations/leadfeeder",
               "integrations/all/leadmagic",
               "api-integrations/leapsome",
@@ -1567,6 +1577,7 @@
               "integrations/all/microsoft-ads",
               "integrations/all/microsoft-business-central",
               "api-integrations/microsoft-dataverse",
+              "api-integrations/microsoft-defender-cc",
               "api-integrations/microsoft-dynamics-365-finance-and-operations",
               "api-integrations/microsoft-dynamics-365-finance-and-operations-cc",
               "integrations/all/microsoft-entra-id",
@@ -1745,6 +1756,7 @@
               "api-integrations/raindrop-mcp",
               "integrations/all/ramp",
               "integrations/all/ramp-sandbox",
+              "api-integrations/rapid7",
               "integrations/all/rapidapi",
               "integrations/all/razorpay",
               "api-integrations/read-ai",

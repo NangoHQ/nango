@@ -1,6 +1,6 @@
 ---
-title: Lattice - How do I link my account?
-sidebarTitle: Lattice
+title: 'Lattice - How do I link my account?'
+sidebarTitle: 'Lattice'
 ---
 
 
@@ -34,7 +34,7 @@ This guide will walk you through generating your API key within Lattice.
 
 4. On the API Keys page you can generate the API key by clicking the `Generate API Key` button in the top right corner.
 
-<img src="/integrations/all/lattice/lattice.png" />
+<img src="/api-integrations/lattice/lattice.png" />
 
 5. After the key is generated, click `Copy`.
 
@@ -43,10 +43,19 @@ This guide will walk you through generating your API key within Lattice.
 
 <Tip>The SCIM API can be enabled on the Lattice integrations page by navigating to Admin > Settings > Platform > Integrations > Enable SCIM.</Tip>
 
-#### Step 2: Connect Your Lattice Account
+#### Step 2: Choosing your data residency
 
-To authenticate using your API credentials, navigate to the Lattice authentication form.
-Enter your credentials as follows:
-- API Key: Your API key
+In the **Data residency** dropdown, select `api.latticehq.com` for US-hosted accounts, or `api.emea.latticehq.com` for EMEA-hosted accounts. If you're unsure of your account's data residency, reach out to [customercare@lattice.com](mailto:customercare@lattice.com).
 
-Click "Connect" to complete the authentication.
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **API Key**:
+
+1. Open the form where you need to authenticate with Lattice.
+2. Enter the **API Key** in the field provided.
+3. Select the **Data residency** you chose in step 2.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/lattice/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Lattice.

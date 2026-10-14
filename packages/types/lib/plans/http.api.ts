@@ -1,4 +1,4 @@
-import type { ApiEndpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { ApiBillingUsageMetrics, BillingCustomer, BillingInvoicingDetails, BreakdownDimensions } from '../billing/types.js';
 import type { MetricUsageSummary, UsageMetric } from '../usage/index.js';
@@ -234,6 +234,8 @@ export type GetSpendAlert = ApiEndpoint<{
              * or no Orb subscription yet; otherwise set even when the threshold is null.
              */
             currency: string | null;
+            /** A threshold has to be above this. Null when the plan gets no spend alerts. */
+            floorInCents: number | null;
         };
     };
 }>;
@@ -244,6 +246,7 @@ export type PutSpendAlert = ApiEndpoint<{
     Path: '/api/v1/plans/billing/spend-alert';
     Querystring: { env: string };
     Body: { thresholdInCents: number };
+    Error: ApiError<'threshold_below_floor'>;
     Success: {
         data: {
             thresholdInCents: number;

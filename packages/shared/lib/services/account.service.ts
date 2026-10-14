@@ -30,7 +30,8 @@ import type {
     DBTeam,
     DBUser,
     PersistAuthContext,
-    Result
+    Result,
+    SignupAcquisition
 } from '@nangohq/types';
 
 const hashLocalCache = new FixedSizeMap<string, string>(10_000);
@@ -259,11 +260,11 @@ class AccountService {
         return account[0].uuid;
     }
 
-    async getOrCreateAccount(name: string): Promise<DBTeam | null> {
+    async getOrCreateAccount(name: string, acquisition?: SignupAcquisition): Promise<DBTeam | null> {
         const account = await db.knex.select('*').from<DBTeam>(`_nango_accounts`).where({ name });
 
         if (account == null || account.length == 0 || !account[0]) {
-            return await this.createAccount({ name });
+            return await this.createAccount({ name, acquisition });
         }
 
         return account[0];
@@ -277,12 +278,14 @@ class AccountService {
         name,
         email,
         foundUs = '',
-        isSignup = true
+        isSignup = true,
+        acquisition
     }: {
         name: string;
         email?: string | undefined;
         foundUs?: string | undefined;
         isSignup?: boolean;
+        acquisition?: SignupAcquisition | undefined;
     }): Promise<DBTeam | null> {
         const account = await db.knex.transaction(async (trx) => {
             const emailTeamName = emailToTeamName({ email });
@@ -316,7 +319,10 @@ class AccountService {
 
         // After the transaction, so a rolled-back account is never counted.
         if (account && isSignup) {
-            productTracking.track({ name: 'auth:account_create', team: account });
+            productTracking.track({ name: 'auth:account_create', team: account, ...(acquisition ? { eventProperties: { ...acquisition } } : {}) });
+            if (acquisition) {
+                productTracking.identifyAccountGroup(account.id, acquisition);
+            }
         }
 
         return account;

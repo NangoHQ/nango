@@ -37,7 +37,7 @@ export async function signout({ expired = false }: { expired?: boolean } = {}) {
     }
     signingOut = true;
 
-    // Read before the first await. Once React re-renders, PrivateRoute has already moved the page to /signin.
+    // Read before the first await. Once the queries clear, PrivateRoute can move the page to /signin.
     const target = expired ? signinPathWithNext(window.location, { expired: true }) : '/signin';
 
     storage.clearSession();

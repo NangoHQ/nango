@@ -135,6 +135,7 @@ import { getUser } from './controllers/v1/user/getUser.js';
 import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
 import authMiddleware from './middleware/access.middleware.js';
+import { agentPlaygroundRateLimit } from './middleware/agentPlaygroundRateLimit.middleware.js';
 import {
     auditAccountApiKeyCreated,
     auditAccountApiKeyDeleted,
@@ -383,7 +384,7 @@ web.route('/user/password').put(webAuth, auditAppAuthPasswordChanged, putUserPas
 
 // Plain (in-app support chat)
 web.route('/plain').get(webAuth, getPlainHmac);
-web.route('/agent-playground/chat').post(webAuth, can('environment:agent_sessions:write'), postAgentPlaygroundChat);
+web.route('/agent-playground/chat').post(webAuth, can('environment:agent_sessions:write'), agentPlaygroundRateLimit, postAgentPlaygroundChat);
 
 // Sync / Flows
 web.route('/sync').get(webAuth, can('environment:syncs:read'), getConnectionSyncs);
