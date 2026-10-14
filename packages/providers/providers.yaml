@@ -25706,6 +25706,7 @@ tenable:
             type: string
             title: Access Key
             description: Your Tenable API access key.
+            secret: true
             example: b31e0f97****************************************************86f7
             pattern: '^[a-f0-9]{64}$'
             doc_section: '#step-1-generating-your-api-keys'
