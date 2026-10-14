@@ -380,13 +380,11 @@ export const router = sentryCreateBrowserRouter([
                             { index: true, element: null },
                             {
                                 path: 'agent',
-                                element: <AgentPlayground />,
-                                handle: { breadcrumb: 'Agent' } as BreadcrumbHandle
+                                element: <AgentPlayground />
                             },
                             {
                                 path: 'functions',
-                                element: <FunctionPlayground />,
-                                handle: { breadcrumb: 'Functions' } as BreadcrumbHandle
+                                element: <FunctionPlayground />
                             }
                         ]
                     },

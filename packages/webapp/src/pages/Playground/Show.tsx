@@ -7,7 +7,6 @@ import { SegmentedNav } from '@/components/ui/SegmentedNav';
 import { trackPlaygroundOpened } from '@/features/Playground/analytics';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
-import { cn } from '@/utils/utils';
 import { usePlaygroundTabs } from './usePlaygroundTabs';
 
 import type { PlaygroundTab } from './usePlaygroundTabs';
@@ -62,11 +61,11 @@ export const PlaygroundShow: React.FC = () => {
     }
 
     return (
-        <DashboardLayout fullWidth className="h-full">
+        <DashboardLayout fullWidth className="h-full" title="Playground">
             <Helmet>
                 <title>Playground - Nango</title>
             </Helmet>
-            <div className={cn('flex h-full flex-col', tab === 'functions' ? 'gap-10' : 'gap-6')}>
+            <div className="flex h-full flex-col gap-6">
                 <div className="flex flex-col gap-4">
                     {back && (
                         <Link
