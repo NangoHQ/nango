@@ -172,7 +172,7 @@ export const analyticsEventCatalogue = defineCatalogue({
             environment_id: z.number(),
             is_first_turn: z.boolean(),
             starter_provider: z.string().optional(),
-            // Free text, so only a typed first message is sent, capped: what people try is the insight, not the conversation.
+            // Free text. Send only the first typed message, capped, never the rest of the chat.
             prompt: z.string().optional(),
             is_success: z.boolean(),
             error_code: z.string().optional(),
