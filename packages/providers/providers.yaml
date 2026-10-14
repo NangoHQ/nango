@@ -13083,6 +13083,7 @@ ironclad:
                 - na1
                 - demo
                 - eu1
+                - preview
             doc_section: '#step-1-finding-your-subdomain'
 
 ironclad-cc:
@@ -13109,6 +13110,7 @@ ironclad-cc:
                 - na1
                 - demo
                 - eu1
+                - preview
             order: 1
         userEmail:
             type: string
