@@ -39,7 +39,7 @@ const inputGroupVariants = cva(
                 // Hug-content — for in-popover search fields. Pair with `size="auto"` on the inner InputGroupInput.
                 auto: 'h-auto',
                 composer: [
-                    'h-auto items-end rounded-ds-lg border-border-default bg-surface-panel hover:border-border-strong',
+                    'h-auto items-end border-border-default bg-surface-panel hover:border-border-strong',
                     '[&>textarea]:max-h-48 [&>textarea]:min-h-24 [&>textarea]:px-4 [&>textarea]:pt-4 [&>textarea]:[field-sizing:content] [&>[data-align=inline-end]]:pr-3 [&>[data-align=inline-end]]:pb-3',
                     'shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.12)]',
                     // The composer keeps focus for the whole conversation, so a darker border marks focus instead of the ring.
