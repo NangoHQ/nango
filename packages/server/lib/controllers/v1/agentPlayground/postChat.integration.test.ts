@@ -488,7 +488,7 @@ describe('POST /api/v1/agent-playground/chat', () => {
             .from('agent_sessions')
             .where({ id: first.sessionId })
             .update({ expires_at: new Date(Date.now() - 60_000) });
-        await agentSessionService.expireAgentSessions(db.knex, { limit: 100 });
+        await agentSessionService.endAgentSession(db.knex, { id: first.sessionId ?? '', accountId: account.id, environmentId: env.id, reason: 'expired' });
         const again = await chat(session, { sessionId: first.sessionId, messages: [userMessage('hi'), userMessage('and now?')] });
 
         expect(again.status).toBe(200);
