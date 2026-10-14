@@ -1756,6 +1756,7 @@
               "api-integrations/raindrop-mcp",
               "integrations/all/ramp",
               "integrations/all/ramp-sandbox",
+              "api-integrations/rapid7",
               "integrations/all/rapidapi",
               "integrations/all/razorpay",
               "api-integrations/read-ai",
