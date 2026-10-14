@@ -13,7 +13,6 @@ interface StoredChat {
 export const AGENT_PLAYGROUND_CHAT_IDLE_MS = 24 * 60 * 60 * 1000;
 
 const CHAT_PREFIX = 'nango_agent_playground_chat:';
-// Kept in sessionStorage for this tab and in localStorage for the next tab opened in the env.
 const LAST_CHAT_PREFIX = 'nango_agent_playground_last_chat:';
 
 function readChat(chatId: string): StoredChat | undefined {
@@ -110,6 +109,7 @@ export function saveAgentPlaygroundChat({
         }
         const chat: StoredChat = { userId, messages, lastMessageAt: lastMessageAt(readChat(chatId), userId, messages, now) };
         localStorage.setItem(CHAT_PREFIX + chatId, JSON.stringify(chat));
+        // A reload reopens this tab's chat. A new tab opens the environment's latest one.
         sessionStorage.setItem(LAST_CHAT_PREFIX + env, chatId);
         localStorage.setItem(LAST_CHAT_PREFIX + env, chatId);
     } catch {
