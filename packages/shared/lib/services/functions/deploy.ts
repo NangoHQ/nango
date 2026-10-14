@@ -169,6 +169,7 @@ export async function deployBundle({
                 name: artifact.name,
                 version: {
                     description: artifact.description,
+                    tags: artifact.tags ?? {},
                     file_location: fileLocation,
                     version,
                     source: 'repo' as const,

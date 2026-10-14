@@ -9,6 +9,16 @@ const schemaReference = z.string().regex(/^#\/definitions\/[a-zA-Z0-9_-]+$/);
 const nullableSchemaReference = schemaReference.nullable();
 const jsonSchema = z.custom<JSONSchema7>((value) => typeof value === 'object' && value !== null && !Array.isArray(value), 'Expected a JSON Schema object');
 const debounceKeySource = z.union([z.object({ body: z.string() }).strict(), z.object({ header: z.string() }).strict()]);
+const tagKey = z
+    .string()
+    .regex(/^[a-z][a-z0-9_\-./]*$/, {
+        message: 'Tag keys must start with a lowercase letter and contain only lowercase letters, digits, underscores, hyphens, periods, or slashes'
+    })
+    .max(64);
+const tagValue = z.string().max(1024);
+const tags = z
+    .record(tagKey, z.union([tagValue, z.array(tagValue).max(64)]))
+    .refine((tags) => Object.keys(tags).length <= 32, { message: 'Functions cannot contain more than 32 tags' });
 const trigger = z.discriminatedUnion('kind', [
     z.object({ kind: z.literal('none') }).strict(),
     z.object({ kind: z.literal('schedule'), frequency: z.string(), autoStart: z.boolean().optional() }).strict(),
@@ -82,6 +92,7 @@ const functionConfig = z
         name: scriptNameSchema,
         integrationId: providerConfigKeySchema,
         description: z.string().max(2000),
+        tags: tags.default({}),
         trigger,
         requires,
         capabilities,
