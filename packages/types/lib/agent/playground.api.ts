@@ -28,7 +28,7 @@ export interface AgentPlaygroundMessageMetadata {
     integrationSetup?: AgentPlaygroundIntegrationSetup;
     sessionCreated?: AgentPlaygroundSessionCreated;
     usage?: AgentPlaygroundUsage;
-    // Sits on the reply, or on the user's message when the request failed before a reply started.
+    // Marks a reply that was stopped or failed, so the chat can still show that after a reload.
     replyOutcome?: AgentPlaygroundReplyOutcome;
 }
 
