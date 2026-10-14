@@ -3,7 +3,7 @@ import utc from 'dayjs/plugin/utc.js';
 import knexFactory from 'knex';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { dropExpiredPartitions, ensurePartitions } from './partitions.js';
+import { dropExpiredDailyPartitions, ensureDailyPartitions } from './partitions.js';
 
 import type { Knex } from 'knex';
 
@@ -27,8 +27,8 @@ async function partitions(): Promise<string[]> {
 
 /** What the daemon does on each tick, at a given time. */
 async function tick(now: Date, retentionDays = 90): Promise<{ dropped: number; skipped: number }> {
-    (await ensurePartitions({ knex, schema, table, dates: [now, dayjs(now).utc().add(1, 'day').toDate()] })).unwrap();
-    return (await dropExpiredPartitions({ knex, schema, table, retentionDays, now })).unwrap();
+    (await ensureDailyPartitions({ knex, schema, table, dates: [now, dayjs(now).utc().add(1, 'day').toDate()] })).unwrap();
+    return (await dropExpiredDailyPartitions({ knex, schema, table, retentionDays, now })).unwrap();
 }
 
 beforeAll(async () => {
@@ -52,7 +52,7 @@ beforeEach(async () => {
     }
 });
 
-describe('partition lifecycle', () => {
+describe('daily partition lifecycle', () => {
     it('creates today and tomorrow across the UTC year boundary, and is idempotent', async () => {
         await tick(new Date('2026-12-31T23:30:00Z'));
         expect(await partitions()).toEqual([name('20261231'), name('20270101')]);
@@ -62,7 +62,7 @@ describe('partition lifecycle', () => {
     });
 
     it('covers its whole day and neither of the neighbouring ones', async () => {
-        (await ensurePartitions({ knex, schema, table, dates: [new Date('2026-10-09T12:00:00Z')] })).unwrap();
+        (await ensureDailyPartitions({ knex, schema, table, dates: [new Date('2026-10-09T12:00:00Z')] })).unwrap();
         const insert = (ts: string) => knex.withSchema(schema).table(table).insert({ ts, value: 1 });
         await expect(insert('2026-10-09T00:00:00.000Z')).resolves.toBeDefined();
         await expect(insert('2026-10-09T23:59:59.999Z')).resolves.toBeDefined();
@@ -80,7 +80,7 @@ describe('partition lifecycle', () => {
             table
         ]);
 
-        expect((await ensurePartitions({ knex, schema, table, dates: [today.toDate(), today.add(1, 'day').toDate()] })).isErr()).toBe(true);
+        expect((await ensureDailyPartitions({ knex, schema, table, dates: [today.toDate(), today.add(1, 'day').toDate()] })).isErr()).toBe(true);
         expect(await partitions()).toEqual([name('20261001')]);
 
         await knex.raw('DROP TABLE IF EXISTS ??.??', [schema, overlapping]);
@@ -101,9 +101,9 @@ describe('partition lifecycle', () => {
     });
 
     it('refuses a retention that would drop the partition holding live data', async () => {
-        (await ensurePartitions({ knex, schema, table, dates: [new Date('2026-01-01T00:00:00Z'), new Date('2026-10-09T00:00:00Z')] })).unwrap();
+        (await ensureDailyPartitions({ knex, schema, table, dates: [new Date('2026-01-01T00:00:00Z'), new Date('2026-10-09T00:00:00Z')] })).unwrap();
         for (const retentionDays of [-1, 0, 1.5]) {
-            expect((await dropExpiredPartitions({ knex, schema, table, retentionDays, now: new Date('2026-10-09T12:00:00Z') })).isErr()).toBe(true);
+            expect((await dropExpiredDailyPartitions({ knex, schema, table, retentionDays, now: new Date('2026-10-09T12:00:00Z') })).isErr()).toBe(true);
         }
         expect(await partitions()).toHaveLength(2);
     });
@@ -118,7 +118,7 @@ describe('partition lifecycle', () => {
             table
         ]);
 
-        const res = await dropExpiredPartitions({ knex, schema, table, retentionDays: 90, now: new Date('2026-10-09T12:00:00Z') });
+        const res = await dropExpiredDailyPartitions({ knex, schema, table, retentionDays: 90, now: new Date('2026-10-09T12:00:00Z') });
         expect(res.isOk() && res.value).toEqual({ dropped: 0, skipped: 0 });
     });
 });

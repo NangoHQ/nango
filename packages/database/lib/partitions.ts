@@ -22,7 +22,7 @@ function partitionName(table: string, day: dayjs.Dayjs): string {
 }
 
 /** One partition per UTC day: 2026-09-30 holds FROM '2026-09-30T00:00:00Z' TO '2026-10-01T00:00:00Z', upper bound excluded. */
-export async function ensurePartitions({ knex, schema, table, dates }: PartitionedTable & { dates: Date[] }): Promise<Result<string[]>> {
+export async function ensureDailyPartitions({ knex, schema, table, dates }: PartitionedTable & { dates: Date[] }): Promise<Result<string[]>> {
     const ensured: string[] = [];
     let failure: Error | undefined;
     for (const date of dates) {
@@ -42,7 +42,7 @@ export async function ensurePartitions({ knex, schema, table, dates }: Partition
     return failure ? Err(failure) : Ok(ensured);
 }
 
-export async function dropExpiredPartitions({
+export async function dropExpiredDailyPartitions({
     knex,
     schema,
     table,
@@ -92,7 +92,7 @@ export async function dropExpiredPartitions({
 }
 
 /** Makes sure there is a partition for today and tomorrow, and removes the ones holding expired data. */
-export function startPartitionDaemon({
+export function startDailyPartitionDaemon({
     knex,
     schema,
     table,
@@ -107,14 +107,14 @@ export function startPartitionDaemon({
                 try {
                     const today = new Date();
                     const tomorrow = dayjs(today).utc().add(1, 'day').toDate();
-                    const ensured = await ensurePartitions({ knex, schema, table, dates: [today, tomorrow] });
+                    const ensured = await ensureDailyPartitions({ knex, schema, table, dates: [today, tomorrow] });
                     if (ensured.isErr()) {
                         span?.addTags({ error: stringifyError(ensured.error, { cause: true }) });
                         logger.error(`${label} failed to ensure partitions`, ensured.error);
                     } else {
                         span?.addTags({ ensured: ensured.value.join(',') });
                     }
-                    const drop = await dropExpiredPartitions({ knex, schema, table, retentionDays, now: today });
+                    const drop = await dropExpiredDailyPartitions({ knex, schema, table, retentionDays, now: today });
                     if (drop.isErr()) {
                         span?.addTags({ error: stringifyError(drop.error, { cause: true }) });
                         logger.error(`${label} failed to drop expired partitions`, drop.error);

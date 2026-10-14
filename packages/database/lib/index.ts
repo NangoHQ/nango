@@ -71,7 +71,7 @@ export const dbNamespace = '_nango_';
 export type { Knex };
 
 export { migrateSchema, migrationsLocation } from './schemaMigrations.js';
-export { dropExpiredPartitions, ensurePartitions, startPartitionDaemon } from './partitions.js';
+export { dropExpiredDailyPartitions, ensureDailyPartitions, startDailyPartitionDaemon } from './partitions.js';
 
 export const multipleMigrations = async (): Promise<void> => {
     try {
