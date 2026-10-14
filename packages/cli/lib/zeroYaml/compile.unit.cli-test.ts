@@ -159,6 +159,8 @@ describe('tools', () => {
         if (result.isErr()) {
             throw result.error;
         }
+        expect(result.value).toContain('createFunction(toolToFunctionProps(');
+        expect(result.value).not.toContain('function createTool(');
         const module = { exports: {} as Record<string, any> };
         vm.runInNewContext(result.value, { module, exports: module.exports, require: () => z });
         const tool = module.exports['default'];
@@ -215,6 +217,36 @@ describe('tools', () => {
             expect(invalid.isErr()).toBe(true);
             if (invalid.isErr()) {
                 expect(invalid.error.message).toContain('reserved');
+            }
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it.each([
+        { filename: 'get_issue', name: undefined, valid: true },
+        { filename: 'get.issue', name: undefined, valid: false },
+        { filename: 'a'.repeat(65), name: undefined, valid: false },
+        { filename: 'get.issue', name: 'get_issue', valid: true }
+    ])('validates the resolved tool name ($filename, explicit name: $name)', async ({ filename, name, valid }) => {
+        const dir = await getTestDirectory(`resolved_tool_name_${filename}_${name}`);
+        await fs.promises.mkdir(path.join(dir, 'github', 'tools'), { recursive: true });
+        await fs.promises.mkdir(path.join(dir, 'node_modules'));
+        await fs.promises.symlink(path.dirname(fileURLToPath(import.meta.resolve('zod'))), path.join(dir, 'node_modules', 'zod'), 'dir');
+        const filePath = path.join(dir, 'github', 'tools', `${filename}.js`);
+        try {
+            await fs.promises.writeFile(path.join(dir, 'index.ts'), `import './github/tools/${filename}.js';`);
+            await fs.promises.writeFile(
+                filePath.replace(/\.js$/, '.ts'),
+                `import { createTool } from 'nango'; import * as z from 'zod'; export default createTool({ ${name === undefined ? '' : `name: '${name}',`} description: 'Get an issue', input: z.object({}), output: z.object({}), exec: async () => ({}) });`
+            );
+            (await compileFunction({ entryPoint: filePath, projectRootPath: dir })).unwrap();
+            const parsed = await parseIntegrationDefinitions({ fullPath: dir, debug: false });
+            expect(parsed.isOk()).toBe(valid);
+            if (parsed.isErr()) {
+                expect(parsed.error.message).toContain('invalid name');
+            } else {
+                expect(parsed.value.functions[0]?.name).toBe(name ?? filename);
             }
         } finally {
             await fs.promises.rm(dir, { recursive: true, force: true });

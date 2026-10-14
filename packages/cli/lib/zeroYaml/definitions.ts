@@ -242,11 +242,11 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
             case 'function': {
                 const toolDefinition = moduleContent.default.__nangoToolDefinition as CreateToolProps | undefined;
                 if (toolDefinition) {
-                    const validationRes = validateTool({ params: toolDefinition, filePath: realPath });
+                    const name = toolDefinition.name ?? basename;
+                    const validationRes = validateTool({ params: { ...toolDefinition, name }, filePath: realPath });
                     if (validationRes.isErr()) {
                         return Err(validationRes.error);
                     }
-                    const name = toolDefinition.name ?? basename;
                     if (parsed.functions.some((fn) => fn.integrationId === integrationId && fn.name === name)) {
                         return Err(
                             new Error(`Tool '${realPath}' is named '${name}', which is already used. Tool and function names must be unique per integration.`)

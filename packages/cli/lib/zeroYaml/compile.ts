@@ -221,8 +221,8 @@ export async function bundleFile({
                 {
                     name: 'nango-plugin',
                     setup(build: any) {
-                        build.onResolve({ filter: /^nango:compiled-tool$/ }, () => ({
-                            path: fileURLToPath(new URL('tool.js', import.meta.resolve('@nangohq/runner-sdk')))
+                        build.onResolve({ filter: /^nango:compiled-(function|tool)$/ }, (args: { path: string }) => ({
+                            path: fileURLToPath(new URL(args.path.endsWith('function') ? 'function.js' : 'tool.js', import.meta.resolve('@nangohq/runner-sdk')))
                         }));
                         build.onLoad({ filter: /\.ts$/ }, async (args: any) => {
                             const source = await fs.promises.readFile(args.path, 'utf8');
@@ -542,7 +542,7 @@ type AugmentedExportDefault = babel.types.ExportDefaultDeclaration & { __transfo
  * Initially, I didn't want to remove this but because our codebase is ESM and node.vm only compiles CJS
  * it was annoying to have to compile the code twice. And have mixed code when publishing.
  * Most wrappers only type the exports and can be removed. createTool also normalizes
- * its props, so its SDK helper is bundled to produce the same function definition.
+ * its props, so we bundle the shared mapper and createFunction to produce its definition.
  */
 function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const proxyLines: number[] = [];
@@ -586,10 +586,16 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         if (!program?.isProgram()) {
             throw new Error('Tool definition must be inside a program');
         }
-        const helper = program.scope.generateUidIdentifier('createTool');
-        const importDeclaration = t.importDeclaration([t.importSpecifier(helper, t.identifier('createTool'))], t.stringLiteral('nango:compiled-tool'));
-        injectedImports.add(importDeclaration);
-        program.unshiftContainer('body', importDeclaration);
+        const createFunction = program.scope.generateUidIdentifier('createFunction');
+        const mapper = program.scope.generateUidIdentifier('toolToFunctionProps');
+        for (const [local, imported, source] of [
+            [createFunction, 'createFunction', 'nango:compiled-function'],
+            [mapper, 'toolToFunctionProps', 'nango:compiled-tool']
+        ] as const) {
+            const importDeclaration = t.importDeclaration([t.importSpecifier(local, t.identifier(imported))], t.stringLiteral(source));
+            injectedImports.add(importDeclaration);
+            program.unshiftContainer('body', importDeclaration);
+        }
 
         // Retain the original props for CLI validation; the default export is a normalized function.
         const definition = program.scope.generateUidIdentifier('toolDefinition');
@@ -597,7 +603,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         const exported = t.exportNamedDeclaration(null, [t.exportSpecifier(definition, t.identifier('__nangoToolDefinition'))]);
         (exported as AugmentedExport).__transformedByRemoveCreateWrappers = true;
         astPath.insertBefore([declaration, exported]);
-        return t.callExpression(helper, [t.assignmentExpression('=', definition, arg)]);
+        return t.callExpression(createFunction, [t.callExpression(mapper, [t.assignmentExpression('=', definition, arg)])]);
     }
 
     const needsAwait = [
