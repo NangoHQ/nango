@@ -2,10 +2,12 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
+
+const logger = getLogger('database');
 
 export interface SchemaMigration {
     name: string;
@@ -69,6 +71,7 @@ export async function migrateSchema({
         });
         return Ok(undefined);
     } catch (err) {
+        logger.error(`Failed to migrate schema ${schema}`, err);
         return Err(new Error(`Failed to migrate schema ${schema}`, { cause: err }));
     }
 }

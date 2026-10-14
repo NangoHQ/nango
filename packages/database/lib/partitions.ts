@@ -24,7 +24,7 @@ function partitionName(table: string, day: dayjs.Dayjs): string {
 /** One partition per UTC day: 2026-09-30 holds FROM '2026-09-30T00:00:00Z' TO '2026-10-01T00:00:00Z', upper bound excluded. */
 export async function ensureDailyPartitions({ knex, schema, table, dates }: PartitionedTable & { dates: Date[] }): Promise<Result<string[]>> {
     const ensured: string[] = [];
-    let failure: Error | undefined;
+    const failed: { name: string; err: unknown }[] = [];
     for (const date of dates) {
         const day = dayjs(date).utc().startOf('day');
         const name = partitionName(table, day);
@@ -36,10 +36,13 @@ export async function ensureDailyPartitions({ knex, schema, table, dates }: Part
             ensured.push(name);
         } catch (err) {
             // One day failing must not cost the others: tomorrow's partition is what keeps inserts working at midnight.
-            failure ??= new Error(`Failed to ensure partition ${schema}.${name}`, { cause: err });
+            failed.push({ name, err });
         }
     }
-    return failure ? Err(failure) : Ok(ensured);
+    if (failed.length > 0) {
+        return Err(new Error(`Failed to ensure partitions ${failed.map((f) => `${schema}.${f.name}`).join(', ')}`, { cause: failed[0]?.err }));
+    }
+    return Ok(ensured);
 }
 
 export async function dropExpiredDailyPartitions({
@@ -76,7 +79,15 @@ export async function dropExpiredDailyPartitions({
                 if (!lock.rows[0]?.held) {
                     return false;
                 }
-                await trx.raw(`DROP TABLE IF EXISTS ??.??`, [schema, relname]);
+                // The replica that held the lock before us may have dropped it already.
+                const exists = await trx.raw<{ rows: { oid: string | null }[] }>(`SELECT to_regclass(format('%I.%I', ?::text, ?::text)) AS oid`, [
+                    schema,
+                    relname
+                ]);
+                if (!exists.rows[0]?.oid) {
+                    return false;
+                }
+                await trx.raw(`DROP TABLE ??.??`, [schema, relname]);
                 return true;
             });
             if (held) {

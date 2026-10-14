@@ -70,18 +70,19 @@ describe('daily partition lifecycle', () => {
         await expect(insert('2026-10-10T00:00:00.000Z')).rejects.toThrow(/no partition of relation/);
     });
 
-    it('still ensures the other days when one of them cannot be created', async () => {
+    it('still ensures the other days when some cannot be created, and names every one that failed', async () => {
         const today = dayjs('2026-09-30T12:00:00Z').utc().startOf('day');
         const overlapping = `${table}_manual`;
-        await knex.raw(`CREATE TABLE ??.?? PARTITION OF ??.?? FOR VALUES FROM ('${today.toISOString()}') TO ('${today.add(1, 'day').toISOString()}')`, [
+        await knex.raw(`CREATE TABLE ??.?? PARTITION OF ??.?? FOR VALUES FROM ('${today.toISOString()}') TO ('${today.add(2, 'day').toISOString()}')`, [
             schema,
             overlapping,
             schema,
             table
         ]);
 
-        expect((await ensureDailyPartitions({ knex, schema, table, dates: [today.toDate(), today.add(1, 'day').toDate()] })).isErr()).toBe(true);
-        expect(await partitions()).toEqual([name('20261001')]);
+        const res = await ensureDailyPartitions({ knex, schema, table, dates: [today.toDate(), today.add(1, 'day').toDate(), today.add(2, 'day').toDate()] });
+        expect(res.isErr() && res.error.message).toBe(`Failed to ensure partitions ${schema}.${name('20260930')}, ${schema}.${name('20261001')}`);
+        expect(await partitions()).toEqual([name('20261002')]);
 
         await knex.raw('DROP TABLE IF EXISTS ??.??', [schema, overlapping]);
     });
