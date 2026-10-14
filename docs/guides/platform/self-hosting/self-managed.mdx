@@ -385,9 +385,9 @@ The runner boundary has the same set of variables prefixed with `NANGO_CUSTOMER_
 
 #### Function code is not sandboxed
 
-Runners execute function code with Node's `vm` module, which is not a security boundary. Treat deployed function code as running with the runner process's own privileges: it can read the runner's environment variables and filesystem, and reach anything on the runner's network.
+Runners execute function code with Node's `vm` module, which is not a security boundary. Treat deployed function code as running with the runner process's own privileges: it can read the runner's environment variables and filesystem, and make any network connection the runner process can, bypassing the outbound URL policy.
 
-Anyone who can deploy functions to your instance can therefore run arbitrary code on your runners. Grant deploy access only to people you'd trust with shell access to the runner, and isolate runners from internal systems they don't need to reach.
+Anyone who can deploy functions to your instance can therefore run arbitrary code on your runners.
 
 #### Proxy base URL override hardening
 
