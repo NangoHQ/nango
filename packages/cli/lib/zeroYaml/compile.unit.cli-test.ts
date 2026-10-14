@@ -8,7 +8,7 @@ import vm from 'node:vm';
 import { assert, describe, expect, it, vi } from 'vitest';
 import * as z from 'zod';
 
-import { createTool } from '@nangohq/runner-sdk';
+import { createTool, deriveFunctionCapabilities } from '@nangohq/runner-sdk';
 
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 import { bundleFile, compileAllFunctions, compileFunction, detectFeatures } from './compile.js';
@@ -161,18 +161,19 @@ describe('tools', () => {
         if (result.isErr()) {
             throw result.error;
         }
-        expect(result.value).toContain('createFunction({');
+        expect(result.value).not.toContain('createFunction(');
+        expect(result.value).not.toContain('deriveFunctionCapabilities');
         expect(result.value).not.toContain('toolToFunctionProps');
         expect(result.value).not.toContain('function createTool(');
         const module = { exports: {} as Record<string, any> };
         vm.runInNewContext(result.value, { module, exports: module.exports, require: () => z });
         const tool = module.exports['default'];
-        expect(tool).toEqual(createTool(module.exports['__nangoToolDefinition']));
+        expect({ ...tool, capabilities: deriveFunctionCapabilities(tool) }).toEqual(createTool(module.exports['__nangoToolDefinition']));
+        expect(tool).not.toHaveProperty('capabilities');
         expect(tool).toMatchObject({
             type: 'function',
             trigger: { kind: 'http' },
-            tags: { instructions: 'Use it to check an issue', required_scopes: ['repo'] },
-            capabilities: { usesRecords: false, usesCheckpoints: false, usesMetadata: false, usesOutbound: true, usesInvoke: false }
+            tags: { instructions: 'Use it to check an issue', required_scopes: ['repo'] }
         });
         expect(tool).not.toHaveProperty('tool');
         expect(tool).not.toHaveProperty('meta');
@@ -200,9 +201,43 @@ describe('tools', () => {
             const code = (await bundleFile({ entryPoint: filePath, projectRootPath: dir })).unwrap();
             const module = { exports: {} as Record<string, any> };
             vm.runInNewContext(code, { module, exports: module.exports, require: () => z });
-            expect(module.exports['default']).toEqual(createTool(module.exports['__nangoToolDefinition']));
+            const tool = module.exports['default'];
+            expect({ ...tool, capabilities: deriveFunctionCapabilities(tool) }).toEqual(createTool(module.exports['__nangoToolDefinition']));
+            expect(code).not.toContain('createFunction(');
+            expect(code).not.toContain('deriveFunctionCapabilities');
             expect(code).not.toContain('toolToFunctionProps');
             expect(code).not.toContain('function createTool(');
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it('preserves surrounding bindings and evaluates tool arguments once', async () => {
+        const dir = await getTestDirectory('normalized_tool_evaluation');
+        await fs.promises.mkdir(dir, { recursive: true });
+        const filePath = path.join(dir, 'tool.js');
+        try {
+            await fs.promises.writeFile(
+                filePath.replace(/\.js$/, '.ts'),
+                `
+                import { createTool } from 'nango';
+                import * as z from 'zod';
+                let calls = 0;
+                const description = 'Get an issue', tool = createTool({
+                    description,
+                    input: z.object({}),
+                    output: z.object({ calls: z.number() }),
+                    meta: (() => { calls += 1; return { tags: { domain: 'issues' } }; })(),
+                    exec: async () => ({ calls })
+                });
+                export default tool;
+            `
+            );
+            const code = (await bundleFile({ entryPoint: filePath, projectRootPath: dir })).unwrap();
+            const module = { exports: {} as Record<string, any> };
+            vm.runInNewContext(code, { module, exports: module.exports, require: () => z });
+            expect(module.exports['default'].description).toBe('Get an issue');
+            expect(await module.exports['default'].exec()).toEqual({ calls: 1 });
         } finally {
             await fs.promises.rm(dir, { recursive: true, force: true });
         }

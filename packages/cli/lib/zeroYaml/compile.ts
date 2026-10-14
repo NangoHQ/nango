@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import * as babel from '@babel/core';
 import chalk from 'chalk';
@@ -14,6 +13,7 @@ import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
 import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
 import { parseIntegrationDefinitions } from './definitions.js';
+import { normalizeToolDefinition } from './normalize-tool.js';
 import { badExportCompilerError, CompileError, fileErrorToText, ReadableError, tsDiagnosticToText } from './utils.js';
 
 // import type { BabelErrorType } from './constants.js';
@@ -221,13 +221,12 @@ export async function bundleFile({
                 {
                     name: 'nango-plugin',
                     setup(build: any) {
-                        build.onResolve({ filter: /^nango:compiled-function$/ }, () => ({
-                            path: fileURLToPath(new URL('function.js', import.meta.resolve('@nangohq/runner-sdk')))
-                        }));
                         build.onLoad({ filter: /\.ts$/ }, async (args: any) => {
                             const source = await fs.promises.readFile(args.path, 'utf8');
-                            const result = await babel.transformAsync(source, {
+                            const normalized = normalizeToolDefinition({ source, filename: args.path, entryPoint });
+                            const result = await babel.transformFromAstAsync(normalized, source, {
                                 filename: args.path,
+                                cloneInputAst: false,
                                 plugins: [plugin],
                                 parserOpts: { sourceType: 'module', plugins: ['typescript'] },
                                 generatorOpts: { decoratorsBeforeExport: true }
@@ -541,8 +540,8 @@ type AugmentedExportDefault = babel.types.ExportDefaultDeclaration & { __transfo
  *
  * Initially, I didn't want to remove this but because our codebase is ESM and node.vm only compiles CJS
  * it was annoying to have to compile the code twice. And have mixed code when publishing.
- * Most wrappers only type the exports and can be removed. createTool also normalizes
- * its props, so the compiler maps them inline and bundles createFunction to produce its definition.
+ * Tool declarations are normalized first. This plugin removes the create wrappers
+ * and adds the script type to their definitions.
  */
 function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const proxyLines: number[] = [];
@@ -579,49 +578,6 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         return Object.hasOwn(allowedExports, name);
     }
 
-    const injectedImports = new WeakSet<babel.types.ImportDeclaration>();
-
-    function normalizeTool(astPath: babel.NodePath, arg: babel.types.ObjectExpression, t: typeof babel.types): babel.types.SequenceExpression {
-        const program = astPath.findParent((parent) => parent.isProgram());
-        if (!program?.isProgram()) {
-            throw new Error('Tool definition must be inside a program');
-        }
-        const createFunction = program.scope.generateUidIdentifier('createFunction');
-        const importDeclaration = t.importDeclaration(
-            [t.importSpecifier(createFunction, t.identifier('createFunction'))],
-            t.stringLiteral('nango:compiled-function')
-        );
-        injectedImports.add(importDeclaration);
-        program.unshiftContainer('body', importDeclaration);
-
-        // Retain the original props for CLI validation; the default export is a normalized function.
-        const definition = program.scope.generateUidIdentifier('toolDefinition');
-        const declaration = t.variableDeclaration('let', [t.variableDeclarator(definition)]);
-        const exported = t.exportNamedDeclaration(null, [t.exportSpecifier(definition, t.identifier('__nangoToolDefinition'))]);
-        (exported as AugmentedExport).__transformedByRemoveCreateWrappers = true;
-        astPath.insertBefore([declaration, exported]);
-        const functionProps = babel.template.expression(`
-            ({
-                description: DEFINITION.description,
-                input: DEFINITION.input,
-                output: DEFINITION.output,
-                trigger: { kind: 'http' },
-                tags: {
-                    ...DEFINITION.meta?.tags,
-                    ...(DEFINITION.meta?.instructions !== undefined
-                        ? { instructions: DEFINITION.meta.instructions }
-                        : {}),
-                    ...(DEFINITION.meta?.requiredScopes !== undefined
-                        ? { required_scopes: DEFINITION.meta.requiredScopes }
-                        : {})
-                },
-                exec: DEFINITION.exec
-            })
-        `)({ DEFINITION: definition });
-
-        return t.sequenceExpression([t.assignmentExpression('=', definition, arg), t.callExpression(createFunction, [functionProps])]);
-    }
-
     const needsAwait = [
         'batchDelete',
         'batchSave',
@@ -654,9 +610,6 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
             return {
                 visitor: {
                     ImportDeclaration(path) {
-                        if (injectedImports.has(path.node)) {
-                            return;
-                        }
                         const lineNumber = path.node.loc?.start.line || 0;
                         const source = path.node.source.value;
                         const kind = path.node.importKind;
@@ -874,14 +827,11 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             const mapping = allowedExports[calleeName];
                             const varName = mapping.varName;
 
-                            // Normalize tools; other wrappers only need their type discriminator.
-                            const definition = calleeName === 'createTool' ? normalizeTool(astPath, arg, t) : arg;
-                            if (calleeName !== 'createTool') {
-                                arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(mapping.type)), ...arg.properties];
-                            }
+                            // Inject type property.
+                            arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(mapping.type)), ...arg.properties];
                             // Insert: export const <varName> = <arg>;
                             const exportConst = t.exportNamedDeclaration(
-                                t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), definition)]),
+                                t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), arg)]),
                                 []
                             );
                             // Insert: export default <varName>;
@@ -908,12 +858,9 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                 throw new CompileError('nango_invalid_function_param', lineNumber, 'Invalid function parameter, should be an object');
                             }
 
-                            // Normalize tools; other wrappers only need their type discriminator.
-                            const definition = calleeName === 'createTool' ? normalizeTool(binding.path.parentPath!, arg, t) : arg;
-                            if (calleeName !== 'createTool') {
-                                arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(allowedExports[calleeName].type)), ...arg.properties];
-                            }
-                            binding.path.get('init').replaceWith(definition);
+                            // Inject type property.
+                            arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(allowedExports[calleeName].type)), ...arg.properties];
+                            binding.path.get('init').replaceWith(arg);
                             return;
                         } else {
                             throw new CompileError('nango_unsupported_export', lineNumber, badExportCompilerError);
