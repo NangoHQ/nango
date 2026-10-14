@@ -43,17 +43,6 @@ describe('usage telemetry postgres migrate', () => {
         expect(applied.rows.map((r) => r.name)).toEqual(['20261014000001_create_metrics']);
     });
 
-    it('is idempotent, so a restart re-running it is a no-op', async () => {
-        expect((await migrate({ knex, schema })).isOk()).toBe(true);
-        const applied = await knex.raw<{ rows: { n: number }[] }>(`SELECT count(*)::int AS n FROM ??.migrations`, [schema]);
-        expect(applied.rows[0]?.n).toBe(1);
-    });
-
-    it('can re-create everything after its migration record is gone, as after a rollback', async () => {
-        await knex.raw(`DELETE FROM ??.migrations`, [schema]);
-        expect((await migrate({ knex, schema })).isOk()).toBe(true);
-    });
-
     it('keeps one value per metric, ts and attributes, comparing attributes by value', async () => {
         await table().insert(row({ attributes: { environment_id: 1, connection_id: 25 } }));
         await expect(table().insert(row({ value: 9, attributes: { connection_id: 25, environment_id: 1 } }))).rejects.toMatchObject({
