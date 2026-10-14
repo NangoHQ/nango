@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1052
+Provider count: 1053
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -917,6 +917,7 @@ URL patterns:
 | `teamwork` | Teamwork | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/teamwork.md) |  |  | productivity, ticketing |
 | `telegram` | Telegram | API_KEY | [docs](https://nango.dev/docs/api-integrations/telegram.md) | [connect](https://nango.dev/docs/api-integrations/telegram/connect.md) |  | communication |
 | `tempo` | Tempo | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/tempo.md) | [connect](https://nango.dev/docs/api-integrations/tempo/connect.md) | [setup](https://nango.dev/docs/api-integrations/tempo/how-to-register-your-own-tempo-api-oauth-app.md) | productivity |
+| `tenable` | Tenable | BASIC | [docs](https://nango.dev/docs/api-integrations/tenable.md) | [connect](https://nango.dev/docs/api-integrations/tenable/connect.md) |  | other |
 | `terraform` | Terraform | API_KEY | [docs](https://nango.dev/docs/integrations/all/terraform.md) | [connect](https://nango.dev/docs/integrations/all/terraform/connect.md) |  | dev-tools |
 | `textus` | TextUs | API_KEY | [docs](https://nango.dev/docs/api-integrations/textus.md) | [connect](https://nango.dev/docs/api-integrations/textus/connect.md) |  | communication, marketing |
 | `the-swarm` | The Swarm | API_KEY | [docs](https://nango.dev/docs/api-integrations/the-swarm.md) | [connect](https://nango.dev/docs/api-integrations/the-swarm/connect.md) |  | crm |
