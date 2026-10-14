@@ -1,4 +1,4 @@
-import { ArrowUpRight, BarChart3, Blocks, Box, Cog, List, Plug, Sprout, X } from 'lucide-react';
+import { ArrowUpRight, BarChart3, Blocks, Cog, List, MessageSquareCode, Plug, Sprout, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -63,7 +63,7 @@ export const AppSidebar: React.FC = () => {
         };
 
         return [
-            showPlayground ? { title: 'Playground', url: `/${env}/playground`, icon: Box } : null,
+            showPlayground ? { title: 'Playground', url: `/${env}/playground`, icon: MessageSquareCode } : null,
             meta && showGettingStarted && !meta.gettingStartedClosed ? gettingStarted : null,
             { title: 'Integrations', url: `/${env}/integrations`, icon: Blocks },
             { title: 'Connections', url: `/${env}/connections`, icon: Plug },
