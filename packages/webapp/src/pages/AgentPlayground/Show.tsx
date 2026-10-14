@@ -55,26 +55,12 @@ function providerName(provider: string): string {
 export const AgentPlayground: React.FC = () => {
     const env = useStore((state) => state.env);
     const toolbarSlot = usePlaygroundToolbarSlot();
-    const [newChat, setNewChat] = useState<{ env: string; count: number }>();
-    const newChats = newChat?.env === env ? newChat.count : 0;
+    const [chatKey, setChatKey] = useState(0);
 
-    return (
-        <Chat
-            key={`${env}-${newChats}`}
-            env={env}
-            toolbarSlot={toolbarSlot}
-            startNew={newChats > 0}
-            onNewChat={() => setNewChat({ env, count: newChats + 1 })}
-        />
-    );
+    return <Chat key={`${env}-${chatKey}`} env={env} toolbarSlot={toolbarSlot} onNewChat={() => setChatKey((key) => key + 1)} />;
 };
 
-const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; startNew: boolean; onNewChat: () => void }> = ({
-    env,
-    toolbarSlot,
-    startNew,
-    onNewChat
-}) => {
+const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({ env, toolbarSlot, onNewChat }) => {
     const sessionId = useRef<string | undefined>(undefined);
     const transport = useMemo(
         () =>
@@ -91,7 +77,7 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; startNew: b
     const { user } = useUser();
     const userId = user?.uuid;
     const [{ chatId, messages: storedMessages }] = useState(() =>
-        userId && !startNew ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
+        userId ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
     );
     const onReset = () => {
         deleteAgentPlaygroundChat(chatId);

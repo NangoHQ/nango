@@ -85,6 +85,17 @@ describe('agent playground chat storage', () => {
         expect(openAgentPlaygroundChat('dev', 'user', now).chatId).toBe('b');
     });
 
+    it('starts empty in a tab whose chat was deleted, even when the environment has a newer one', () => {
+        save('a', [message()]);
+        save('b', [message()]);
+        tab.store.set('nango_agent_playground_last_chat:dev', 'a');
+        deleteAgentPlaygroundChat('a');
+
+        const opened = openAgentPlaygroundChat('dev', 'user', now);
+        expect(opened.messages).toBeUndefined();
+        expect(opened.chatId).not.toBe('b');
+    });
+
     it("keeps each environment's chat apart", () => {
         save('a', [message()], now, 'dev');
         save('b', [message()], now, 'prod');
@@ -137,6 +148,7 @@ describe('agent playground chat storage', () => {
 
         save('a', [message()], now, 'dev');
         save('b', [message()], now, 'prod');
+        tab.store.set('nango_agent_playground_chat', '{}');
         clearAgentPlaygroundChats();
         expect(local.store.size).toBe(0);
         expect(tab.store.size).toBe(0);

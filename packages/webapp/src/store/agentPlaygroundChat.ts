@@ -45,11 +45,11 @@ export function removeIdleAgentPlaygroundChats(now = Date.now()): void {
 export function openAgentPlaygroundChat(env: string, userId: string, now = Date.now()): { chatId: string; messages?: PlaygroundMessage[] } {
     try {
         removeIdleAgentPlaygroundChats(now);
-        for (const chatId of [sessionStorage.getItem(LAST_CHAT_PREFIX + env), localStorage.getItem(LAST_CHAT_PREFIX + env)]) {
-            const chat = chatId ? readChat(chatId) : undefined;
-            if (chatId && chat?.userId === userId) {
-                return { chatId, messages: chat.messages.map(settleAnsweredApprovals) };
-            }
+        // Only a tab with no chat of its own picks up the environment's latest, so New chat stays empty after a reload.
+        const chatId = sessionStorage.getItem(LAST_CHAT_PREFIX + env) ?? localStorage.getItem(LAST_CHAT_PREFIX + env);
+        const chat = chatId ? readChat(chatId) : undefined;
+        if (chatId && chat?.userId === userId) {
+            return { chatId, messages: chat.messages.map(settleAnsweredApprovals) };
         }
     } catch {}
     return { chatId: crypto.randomUUID() };
@@ -131,5 +131,7 @@ export function clearAgentPlaygroundChats(): void {
                 storage.removeItem(key);
             }
         }
+        // Tabs opened before chats moved to localStorage still hold their chat here.
+        sessionStorage.removeItem('nango_agent_playground_chat');
     } catch {}
 }
