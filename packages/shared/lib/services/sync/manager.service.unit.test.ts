@@ -49,6 +49,30 @@ describe('syncManager batch deletion', () => {
         expect(deleteSyncs).not.toHaveBeenCalled();
     });
 
+    it('deleteSyncsByProviderConfig chunks the DB operations but unschedules in a single orchestrator call', async () => {
+        const syncIds = Array.from({ length: 2500 }, (_, i) => `sync-${i}`);
+        vi.spyOn(syncService, 'getSyncsByProviderConfigKey').mockResolvedValue(makeSyncs(syncIds));
+        vi.spyOn(syncService, 'softDeleteSyncs').mockResolvedValue(Ok(syncIds));
+        vi.spyOn(errorNotificationService.sync, 'clearBySyncIds').mockResolvedValue(undefined);
+        vi.spyOn(db.knex, 'transaction').mockImplementation((async (cb: (trx: unknown) => Promise<unknown>) => cb({})) as typeof db.knex.transaction);
+
+        const deleteSyncs = vi.fn().mockResolvedValue(Ok(undefined));
+        const orchestrator = { deleteSyncs } as unknown as Pick<Orchestrator, 'deleteSyncs'>;
+
+        await syncManager.deleteSyncsByProviderConfig(1, 'github', orchestrator);
+
+        expect(deleteSyncs).toHaveBeenCalledTimes(1);
+        expect(deleteSyncs).toHaveBeenCalledWith({ syncIds, environmentId: 1 });
+
+        expect(syncService.softDeleteSyncs).toHaveBeenCalledTimes(3);
+        expect(syncService.softDeleteSyncs).toHaveBeenNthCalledWith(1, syncIds.slice(0, 1000), expect.anything());
+        expect(syncService.softDeleteSyncs).toHaveBeenNthCalledWith(2, syncIds.slice(1000, 2000), expect.anything());
+        expect(syncService.softDeleteSyncs).toHaveBeenNthCalledWith(3, syncIds.slice(2000, 2500), expect.anything());
+
+        expect(errorNotificationService.sync.clearBySyncIds).toHaveBeenCalledTimes(3);
+        expect(errorNotificationService.sync.clearBySyncIds).toHaveBeenNthCalledWith(3, { sync_ids: syncIds.slice(2000, 2500), trx: expect.anything() });
+    });
+
     it('softDeleteSyncsByConnection unschedules all syncs in a single orchestrator call, not one per sync', async () => {
         const syncIds = ['sync-1', 'sync-2'];
         vi.spyOn(syncService, 'getSyncsByConnectionId').mockResolvedValue(makeSyncs(syncIds));

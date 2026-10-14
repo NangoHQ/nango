@@ -295,17 +295,19 @@ export class SyncManagerService {
     }
 
     private async batchSoftDeleteSyncs(syncIds: string[], environmentId: number, orchestrator: Pick<Orchestrator, 'deleteSyncs'>) {
-        const unscheduled = await orchestrator.deleteSyncs({ syncIds, environmentId });
-        if (unscheduled.isErr()) {
-            throw unscheduled.error;
-        }
+        await orchestrator.deleteSyncs({ syncIds, environmentId });
 
+        const chunkSize = 1000;
         await db.knex.transaction(async (trx) => {
-            const deleted = await softDeleteSyncs(syncIds, trx);
-            if (deleted.isErr()) {
-                throw deleted.error;
+            for (let i = 0; i < syncIds.length; i += chunkSize) {
+                const batch = syncIds.slice(i, i + chunkSize);
+
+                const deleted = await softDeleteSyncs(batch, trx);
+                if (deleted.isErr()) {
+                    throw deleted.error;
+                }
+                await errorNotificationService.sync.clearBySyncIds({ sync_ids: batch, trx });
             }
-            await errorNotificationService.sync.clearBySyncIds({ sync_ids: syncIds, trx });
         });
     }
 
