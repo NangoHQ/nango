@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { INTERRUPTED_CALL } from '../../store/agentPlaygroundChat.js';
-import { hasReplyContent, hasVisibleContent, markStopped, setReplyOutcome, stoppedLastToolCall } from './replyOutcome.js';
+import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome.js';
 
 import type { PlaygroundMessage } from '../../store/agentPlaygroundChat.js';
 
@@ -60,19 +60,29 @@ describe('markStopped', () => {
     });
 });
 
-describe('stoppedLastToolCall', () => {
+describe('outcomeDisplay', () => {
+    const stopped = { ...emptyReply, metadata: { replyOutcome: { kind: 'stopped' } } } satisfies PlaygroundMessage;
     const finished = { ...running, state: 'output-available', output: {} } as const;
     const interrupted = { ...running, state: 'output-error', errorText: INTERRUPTED_CALL } as const;
 
-    it('finds a tool call that is the last thing shown and never finished', () => {
-        expect(stoppedLastToolCall({ ...emptyReply, parts: [{ type: 'text', text: 'Looking' }, running, { type: 'text', text: '' }] })).toBe(running);
-        expect(stoppedLastToolCall({ ...emptyReply, parts: [interrupted] })).toBe(interrupted);
+    it('shows a stop on the tool call it cut short', () => {
+        expect(outcomeDisplay({ ...stopped, parts: [{ type: 'text', text: 'Looking' }, running, { type: 'text', text: '' }] })).toEqual({
+            notice: undefined,
+            stoppedToolCall: running
+        });
+        expect(outcomeDisplay({ ...stopped, parts: [interrupted] })).toEqual({ notice: undefined, stoppedToolCall: interrupted });
     });
 
-    it('finds nothing when text follows the tool call, or the tool call finished', () => {
-        expect(stoppedLastToolCall({ ...emptyReply, parts: [running, { type: 'text', text: 'Done' }] })).toBeUndefined();
-        expect(stoppedLastToolCall({ ...emptyReply, parts: [finished] })).toBeUndefined();
-        expect(stoppedLastToolCall(emptyReply)).toBeUndefined();
+    it('shows a notice when text follows the tool call, or the tool call finished', () => {
+        expect(outcomeDisplay({ ...stopped, parts: [running, { type: 'text', text: 'Done' }] }).notice).toEqual({ kind: 'stopped' });
+        expect(outcomeDisplay({ ...stopped, parts: [finished] }).notice).toEqual({ kind: 'stopped' });
+    });
+
+    it('always shows a failure as a notice', () => {
+        expect(outcomeDisplay({ ...emptyReply, parts: [running], metadata: { replyOutcome: { kind: 'failed', error: 'boom' } } })).toEqual({
+            notice: { kind: 'failed', error: 'boom' },
+            stoppedToolCall: undefined
+        });
     });
 });
 

@@ -32,7 +32,7 @@ import { cn } from '@/utils/utils';
 import { describeChatError } from './chatError';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
-import { hasReplyContent, hasVisibleContent, markStopped, setReplyOutcome, stoppedLastToolCall } from './replyOutcome';
+import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize } from './toolDisplay';
 
@@ -256,10 +256,9 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
                 className="flex min-h-0 flex-1 flex-col gap-8 overflow-auto pt-4 pb-6 [mask-image:linear-gradient(to_bottom,transparent,black_16px,black_calc(100%-16px),transparent)]"
             >
                 {messages.map((message, index) => {
-                    const replyOutcome = message.metadata?.replyOutcome;
                     const onRetry = message.id === lastMessage?.id && !busy ? retry : undefined;
-                    const stoppedToolCall = replyOutcome?.kind === 'stopped' ? stoppedLastToolCall(message) : undefined;
-                    const outcome = replyOutcome && !stoppedToolCall && <ReplyOutcomeNotice outcome={replyOutcome} onRetry={onRetry} onReset={onReset} />;
+                    const { notice, stoppedToolCall } = outcomeDisplay(message);
+                    const outcome = notice && <ReplyOutcomeNotice outcome={notice} onRetry={onRetry} onReset={onReset} />;
                     if (message.role === 'user') {
                         return (
                             <Fragment key={message.id}>

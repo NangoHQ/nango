@@ -39,12 +39,21 @@ export function markStopped(messages: PlaygroundMessage[]): PlaygroundMessage[] 
     return setReplyOutcome(settled, { kind: 'stopped' });
 }
 
-export function stoppedLastToolCall(message: PlaygroundMessage): DynamicToolUIPart | undefined {
+function stoppedLastToolCall(message: PlaygroundMessage): DynamicToolUIPart | undefined {
     const last = message.parts.filter(isShown).at(-1);
     if (last?.type !== 'dynamic-tool') {
         return undefined;
     }
     return isUnfinished(last) || (last.state === 'output-error' && last.errorText === INTERRUPTED_CALL) ? last : undefined;
+}
+
+export function outcomeDisplay(message: PlaygroundMessage): {
+    notice: AgentPlaygroundReplyOutcome | undefined;
+    stoppedToolCall: DynamicToolUIPart | undefined;
+} {
+    const outcome = message.metadata?.replyOutcome;
+    const stoppedToolCall = outcome?.kind === 'stopped' ? stoppedLastToolCall(message) : undefined;
+    return { notice: stoppedToolCall ? undefined : outcome, stoppedToolCall };
 }
 
 export function hasVisibleContent(message: PlaygroundMessage): boolean {
