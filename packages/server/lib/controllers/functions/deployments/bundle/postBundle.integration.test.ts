@@ -338,6 +338,7 @@ describe('function deployment bundle endpoints', () => {
                 throw new Error('Expected function version to be created');
             }
             expect(initialVersion.version).toBeSha256();
+            expect(initialVersion.tags).toEqual({});
 
             uploadSpy.mockClear();
             const unchanged = await deployRequest({ reconciliationScope: { kind: 'environment' }, functions: [validFunction] });

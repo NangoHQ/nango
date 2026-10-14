@@ -54,6 +54,7 @@ function deployedFunction({
             id: versionId,
             function_config_id: id,
             description: artifact.description,
+            tags: {},
             file_location: `functions/${versionId}`,
             version: version ?? functionVersionHash(artifact).unwrap(),
             source: 'repo',

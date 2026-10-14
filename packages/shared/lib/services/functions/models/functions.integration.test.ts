@@ -15,6 +15,7 @@ function functionVersion(
 ): Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> {
     return {
         description: `Function ${version}`,
+        tags: {},
         file_location: `functions/${version}`,
         version,
         source: 'repo',
@@ -47,7 +48,7 @@ describe(search, () => {
                 environmentId: environment.id,
                 integrationId: firstIntegration.unique_key,
                 name: 'firstFunction',
-                version: functionVersion('first-version')
+                version: { ...functionVersion('first-version'), tags: { category: 'crm', entities: ['contacts', 'companies'] } }
             }
         ]);
         await upsert(db.knex, [
@@ -70,7 +71,7 @@ describe(search, () => {
         expect(functions[0]).toMatchObject({
             integration: { id: firstIntegration.id, unique_key: firstIntegration.unique_key, provider: firstIntegration.provider },
             config: { nango_config_id: firstIntegration.id, name: 'firstFunction' },
-            currentVersion: { version: 'first-version' }
+            currentVersion: { version: 'first-version', tags: { category: 'crm', entities: ['contacts', 'companies'] } }
         });
     });
 
