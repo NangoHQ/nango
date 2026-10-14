@@ -1180,6 +1180,7 @@
               "api-integrations/cerby",
               "integrations/all/certn",
               "integrations/all/certn-partner",
+              "api-integrations/chameleoni",
               "integrations/all/chargebee",
               "api-integrations/charliehr",
               "api-integrations/chartboost",

@@ -4906,6 +4906,32 @@ certn-partner:
                 - /api/v2/teams
     docs: https://nango.dev/docs/integrations/all/certn-partner
 
+chameleoni:
+    display_name: Chameleon-i
+    categories:
+        - ats
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://chiapi.chameleoni.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /users/list
+    docs: https://nango.dev/docs/api-integrations/chameleoni
+    docs_connect: https://nango.dev/docs/api-integrations/chameleoni/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Chameleon-i API key.
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            example: 0BDA****-****-****-****-************-********-****-****-****-********F6E3
+            secret: true
+            doc_section: '#step-1-get-your-api-key'
+
 chargebee:
     display_name: Chargebee
     categories:
