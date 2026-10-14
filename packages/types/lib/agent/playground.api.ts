@@ -28,7 +28,11 @@ export interface AgentPlaygroundMessageMetadata {
     integrationSetup?: AgentPlaygroundIntegrationSetup;
     sessionCreated?: AgentPlaygroundSessionCreated;
     usage?: AgentPlaygroundUsage;
+    // Sits on the user's message when the reply ended before any of it arrived.
+    replyOutcome?: AgentPlaygroundReplyOutcome;
 }
+
+export type AgentPlaygroundReplyOutcome = { kind: 'stopped' } | { kind: 'failed'; error: string };
 
 export type AgentPlaygroundErrorCode = 'feature_disabled' | 'session_creation_failed' | 'model_error' | 'model_unavailable' | 'too_many_request';
 
