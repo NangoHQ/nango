@@ -201,9 +201,17 @@ export const analyticsEventCatalogue = defineCatalogue({
 
     'auth:account_create': {
         surface: 'server',
-        insight: 'How many accounts sign up each week, and is that growing?',
+        insight: 'How many accounts sign up each week, and which website sources they first came from',
         fires: 'After a signup creates a new account, whichever way the person signed up',
-        properties: none
+        properties: z.object({
+            acquisition_utm_source: z.string().optional(),
+            acquisition_utm_medium: z.string().optional(),
+            acquisition_utm_campaign: z.string().optional(),
+            acquisition_utm_content: z.string().optional(),
+            acquisition_utm_term: z.string().optional(),
+            acquisition_referring_domain: z.string().optional(),
+            acquisition_landing_path: z.string().optional()
+        })
     },
     'auth:user_create': {
         surface: 'server',
@@ -334,7 +342,8 @@ export const analyticsEventCatalogue = defineCatalogue({
             meta_tool: stringOf<AgentSessionMetaTool>().optional(),
             is_pinned: z.boolean().optional(),
             integration_id: z.string().optional(),
-            underlying_error_code: z.string().optional()
+            underlying_error_code: z.string().optional(),
+            is_mcp_tool: z.boolean().optional()
         })
     },
     'agents:proxy_request_complete': {
