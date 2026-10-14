@@ -21,7 +21,6 @@ export interface AgentPlaygroundSessionCreated {
 
 export interface AgentPlaygroundMessageMetadata {
     sessionId?: string;
-    sessionExpiresAt?: string;
     hidden?: boolean;
     connectedIntegrations?: string[];
     starterProvider?: string;
