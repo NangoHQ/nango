@@ -96,6 +96,8 @@ Nango provisions a customer-managed encryption key in your account — KMS on AW
 
 The most sensitive thing Nango stores is your end users' connection credentials (OAuth tokens, API keys) for the integrations you connect — encrypted at rest using that DEK, inside your own Postgres. See [Security](/guides/platform/security) for the full encryption model.
 
+Deployed function code runs with the runner's own privileges, so scope who on your team can deploy functions accordingly. See [Function code is not sandboxed](/guides/platform/self-hosting/self-managed#function-code-is-not-sandboxed).
+
 ## Observability & support
 
 You keep full visibility into your own instance: the dashboard, the audit trail, your own logs (ElasticSearch/OpenSearch, which you own), and your cloud provider's monitoring and audit logs (CloudWatch, Cloud Monitoring or Azure Monitor; CloudTrail, Cloud Audit Logs or the Azure Activity Log) for anything the deployment identity does.
