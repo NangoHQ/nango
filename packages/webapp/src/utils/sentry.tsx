@@ -52,8 +52,7 @@ function redactSensitiveEvent<TEvent extends Sentry.Event>(event: TEvent): TEven
 // replays, no console breadcrumbs, no serialized non-Error throw payloads.
 Sentry.init({
     dsn: globalEnv.publicSentryKey,
-    // Without an environment, Sentry files events under `production`.
-    enabled: !import.meta.env.DEV && Boolean(globalEnv.environment),
+    enabled: !import.meta.env.DEV,
     environment: globalEnv.environment,
     ignoreErrors: sentryIgnoreErrors,
     integrations: [

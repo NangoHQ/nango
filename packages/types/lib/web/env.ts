@@ -8,8 +8,7 @@ export interface WindowEnv {
     publicUrl: string;
     connectUrl: string;
     gitHash: string | undefined;
-    /** Optional because a server older than the dashboard doesn't send it. */
-    environment?: 'development' | 'staging' | 'production';
+    environment: 'development' | 'staging' | 'production';
     publicSentryKey: string;
     publicPosthogKey: string;
     publicPosthogHost: string;
