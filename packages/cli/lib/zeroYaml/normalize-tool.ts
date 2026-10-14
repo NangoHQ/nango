@@ -57,17 +57,15 @@ export function normalizeToolDefinition(ast: babel.types.File): void {
                 throw new Error('Tool definition must be inside a program');
             }
 
-            // Keep the original props for CLI validation without changing when they are evaluated.
+            // Initialize the original props immediately before the tool, preserving declaration order.
             const definition = program.scope.generateUidIdentifier('toolDefinition');
-            const variable = t.variableDeclaration('let', [t.variableDeclarator(definition)]);
+            const variable = t.variableDeclaration('const', [t.variableDeclarator(definition, arg)]);
             const exported = t.exportNamedDeclaration(null, [t.exportSpecifier(definition, t.identifier('__nangoToolDefinition'))]);
             (exported as babel.types.ExportNamedDeclaration & { __transformedByRemoveCreateWrappers?: boolean }).__transformedByRemoveCreateWrappers = true;
-            const statement = callPath.getStatementParent();
-            statement?.insertBefore([variable, exported]);
 
             const functionProps = babel.template.expression(`
                 ({
-                    description: DESCRIPTION,
+                    description: DEFINITION.description,
                     input: DEFINITION.input,
                     output: DEFINITION.output,
                     trigger: { kind: 'http' },
@@ -83,11 +81,25 @@ export function normalizeToolDefinition(ast: babel.types.File): void {
                     exec: DEFINITION.exec
                 })
             `)({
-                DEFINITION: definition,
-                DESCRIPTION: t.memberExpression(t.assignmentExpression('=', definition, arg), t.identifier('description'))
+                DEFINITION: definition
             });
             const normalized = t.callExpression(t.identifier('createFunction'), [functionProps]);
             callPath.replaceWith(normalized);
+            const declaratorPath = callPath.parentPath;
+            const declarationPath = declaratorPath.parentPath;
+            if (declaratorPath.isVariableDeclarator() && declarationPath?.isVariableDeclaration()) {
+                const declarations = declarationPath.node.declarations;
+                const index = declarations.indexOf(declaratorPath.node);
+                const preceding = declarations.slice(0, index);
+                declarationPath.replaceWithMultiple([
+                    ...(preceding.length > 0 ? [t.variableDeclaration(declarationPath.node.kind, preceding)] : []),
+                    variable,
+                    exported,
+                    t.variableDeclaration(declarationPath.node.kind, declarations.slice(index))
+                ]);
+            } else {
+                callPath.getStatementParent()?.insertBefore([variable, exported]);
+            }
             callPath.stop();
         }
     });

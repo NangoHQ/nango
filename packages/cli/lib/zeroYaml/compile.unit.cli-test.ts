@@ -176,6 +176,8 @@ describe('tools', () => {
         if (result.isErr()) {
             throw result.error;
         }
+        expect(result.value).toContain('var _toolDefinition = {');
+        expect(result.value).toContain('description: _toolDefinition.description');
         expect(result.value).not.toContain('createFunction(');
         expect(result.value).not.toContain('deriveFunctionCapabilities');
         expect(result.value).not.toContain('toolToFunctionProps');
@@ -238,13 +240,14 @@ describe('tools', () => {
                 import { createTool } from 'nango';
                 import * as z from 'zod';
                 let calls = 0;
-                const description = 'Get an issue', tool = createTool({
+                const order = [];
+                const description = (order.push('before'), 'Get an issue'), tool = createTool({
                     description,
                     input: z.object({}),
-                    output: z.object({ calls: z.number() }),
-                    meta: (() => { calls += 1; return { tags: { domain: 'issues' } }; })(),
-                    exec: async () => ({ calls })
-                });
+                    output: z.object({ calls: z.number(), order: z.array(z.string()) }),
+                    meta: (() => { calls += 1; order.push('meta'); return { tags: { domain: 'issues' } }; })(),
+                    exec: async () => ({ calls, order })
+                }), after = (order.push('after'), tool.description);
                 export default tool;
             `
             );
@@ -252,7 +255,7 @@ describe('tools', () => {
             const module = { exports: {} as Record<string, any> };
             vm.runInNewContext(code, { module, exports: module.exports, require: () => z });
             expect(module.exports['default'].description).toBe('Get an issue');
-            expect(await module.exports['default'].exec()).toEqual({ calls: 1 });
+            expect(await module.exports['default'].exec()).toEqual({ calls: 1, order: ['before', 'meta', 'after'] });
         } finally {
             await fs.promises.rm(dir, { recursive: true, force: true });
         }
