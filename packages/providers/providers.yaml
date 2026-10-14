@@ -15944,6 +15944,8 @@ microsoft-defender-cc:
     token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
     token_params:
         grant_type: client_credentials
+    default_scopes:
+        - https://api.securitycenter.microsoft.com/.default
     proxy:
         base_url: https://api.security.microsoft.com
     docs: https://nango.dev/docs/api-integrations/microsoft-defender-cc
