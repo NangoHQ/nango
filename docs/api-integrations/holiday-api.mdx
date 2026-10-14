@@ -21,7 +21,7 @@ Connect to Holiday API with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/countries" \
+            curl "https://api.nango.dev/proxy/v1/countries" \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to Holiday API with Nango and see data flow in 2 minutes.
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/countries',
+            endpoint: '/v1/countries',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
