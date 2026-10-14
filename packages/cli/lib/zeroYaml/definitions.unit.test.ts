@@ -150,13 +150,16 @@ describe('parseFunction', () => {
         basenameClean: 'fetchIssues'
     };
     const params = {
-        description: 'A function'
+        description: 'A function',
+        tags: { team: 'platform' }
     };
 
     it('normalizes an invoke-only connection-bound function', () => {
         const fn = parseFunction({ ...common, params });
 
         expect(fn).toMatchObject({
+            description: params.description,
+            tags: params.tags,
             trigger: { kind: 'none' },
             requires: { connection: true, outbound: true, invoke: false },
             limits: { concurrency: { perConnection: 'max' } },
@@ -246,6 +249,42 @@ describe('validateFunction trigger input', () => {
     it.each(['schedule', 'event'] as const)('rejects input on a %s trigger', (kind) => {
         const trigger = kind === 'schedule' ? { kind, frequency: 'every hour' } : { kind, events: ['validate-connection'] as ['validate-connection'] };
         const result = validateFunction({ ...base, params: { trigger, input: z.string() } });
+        expect(result.isErr()).toBe(true);
+    });
+});
+
+describe('validateFunction tags', () => {
+    const base = { integrationId: 'github', basename: 'onConnection' };
+
+    it.each([
+        { reason: 'string values', tags: { team: 'platform', 'cost-center': 'eng.42' } },
+        { reason: 'array values', tags: { owners: ['platform', 'growth'] } },
+        { reason: 'all allowed key characters', tags: { 'a-z0-9_./': 'ok' } },
+        { reason: 'empty', tags: {} }
+    ])('accepts valid tags: $reason', ({ tags }) => {
+        const result = validateFunction({ ...base, params: { tags } });
+        expect(result.isOk()).toBe(true);
+    });
+
+    it.each([
+        { reason: 'key starting with an uppercase letter', tags: { Team: 'platform' } },
+        { reason: 'key starting with a digit', tags: { '1team': 'platform' } },
+        { reason: 'key with uppercase characters', tags: { myTeam: 'platform' } },
+        { reason: 'key with invalid characters', tags: { 'team name': 'platform' } },
+        { reason: 'key is too long', tags: { ['a'.repeat(65)]: 'platform' } },
+        { reason: 'non-string value', tags: { team: 42 } },
+        { reason: 'null value', tags: { team: null } },
+        { reason: 'string value is too long', tags: { team: 'a'.repeat(1025) } },
+        { reason: 'array with a non-string element', tags: { team: ['platform', 42] } },
+        { reason: 'array is too long', tags: { team: Array.from({ length: 65 }, (_, i) => `v${i}`) } }
+    ])('rejects invalid tags: $reason', ({ tags }) => {
+        const result = validateFunction({ ...base, params: { tags: tags as never } });
+        expect(result.isErr()).toBe(true);
+    });
+
+    it('rejects too many tags', () => {
+        const tags = Object.fromEntries(Array.from({ length: 33 }, (_, i) => [`tag${i}`, 'value']));
+        const result = validateFunction({ ...base, params: { tags } });
         expect(result.isErr()).toBe(true);
     });
 });
