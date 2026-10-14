@@ -2,7 +2,7 @@ import { createFunction } from './function.js';
 
 import type { CreateFunctionProps, CreateFunctionResponse, Nango } from './function.js';
 import type { ZodModel } from './types.js';
-import type { FunctionTags, MaybePromise, Trigger } from '@nangohq/types';
+import type { FunctionTags, MaybePromise, ToolTags, Trigger } from '@nangohq/types';
 import type * as z from 'zod';
 
 type ToolModels = Record<never, ZodModel>;
@@ -73,15 +73,15 @@ export function toolToFunctionProps<TInput extends z.ZodTypeAny, TOutput extends
     };
 }
 
-export const reservedToolTagKeys = ['instructions', 'required_scopes'] as const;
+export const reservedToolTagKeys = ['instructions', 'required_scopes'] as const satisfies readonly (keyof ToolTags)[];
 
-export function toolMetaToTags(meta: ToolMeta | undefined): FunctionTags {
-    const tags: FunctionTags = { ...meta?.tags };
+export function toolMetaToTags(meta: ToolMeta | undefined): ToolTags {
+    const tags: ToolTags = { ...meta?.tags };
     if (meta?.instructions !== undefined) {
-        tags['instructions'] = meta.instructions;
+        tags.instructions = meta.instructions;
     }
     if (meta?.requiredScopes !== undefined) {
-        tags['required_scopes'] = meta.requiredScopes;
+        tags.required_scopes = meta.requiredScopes;
     }
     return tags;
 }
