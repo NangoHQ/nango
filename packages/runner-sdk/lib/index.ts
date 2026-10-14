@@ -9,6 +9,8 @@ export * from './scripts.js';
 export * from './checkpoint.js';
 export { createFunction, deriveFunctionCapabilities } from './function.js';
 export type { CreateFunctionProps, CreateFunctionResponse, FunctionRequires, FunctionTriggerDefinition } from './function.js';
+export { createTool, reservedToolTagKeys, toolMetaToTags, toolToFunctionProps } from './tool.js';
+export type { CreateToolProps, CreateToolResponse, ToolMeta } from './tool.js';
 export { executeUncontrolledFetch } from './uncontrolledFetch.js';
 export type { UncontrolledFetchOptions, UncontrolledFetchRedirect } from './uncontrolledFetch.js';
 export { isBaseUrlOverridePolicyEnabledFromEnv, resolveProxyBaseUrlOverrideDenylist } from './baseUrlOverrideDenylist.js';

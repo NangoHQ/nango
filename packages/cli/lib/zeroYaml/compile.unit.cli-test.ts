@@ -61,7 +61,7 @@ describe('compileAll', () => {
         expect(github).not.toHaveProperty('functions');
 
         const functionsJson = JSON.parse(await fs.promises.readFile(path.join(dir, '.nango', 'functions.json'), 'utf8'));
-        expect(functionsJson).toHaveLength(2);
+        expect(functionsJson).toHaveLength(3);
         expect(functionsJson[0]).toMatchObject({
             name: 'fetchIssues',
             integrationId: 'github',
@@ -80,6 +80,24 @@ describe('compileAll', () => {
         expect(functionsJson[0].json_schema.definitions).toHaveProperty('FunctionInput_github_fetchIssues');
         expect(functionsJson[0].json_schema.definitions).toHaveProperty('FunctionOutput_github_fetchIssues');
         expect(functionsJson[1]).toMatchObject({
+            name: 'get_issue',
+            integrationId: 'github',
+            filePath: './github/tools/getIssue.ts',
+            description: 'Get a GitHub issue',
+            tags: {
+                domain: 'issues',
+                instructions: 'Use it to read a single issue. Search first when you only know the title.',
+                required_scopes: ['repo']
+            },
+            trigger: { kind: 'http' },
+            requires: { connection: true, outbound: true, invoke: false },
+            capabilities: { usesRecords: false, usesOutbound: true, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+            input_schema_ref: '#/definitions/FunctionInput_github_getissue',
+            output_schema_ref: '#/definitions/FunctionOutput_github_getissue',
+            metadata_schema_ref: null,
+            checkpoint_schema_ref: null
+        });
+        expect(functionsJson[2]).toMatchObject({
             name: 'fetchIssues',
             integrationId: 'github.js',
             filePath: './github.js/functions/fetchIssues.ts'
@@ -127,6 +145,21 @@ describe('experimental functions', () => {
         expect(result.isOk()).toBe(true);
         // the nango/experimental import must not trip the disallowed-import guard
         expect(result.value).not.toContain('disallowed_import');
+    });
+});
+
+describe('tools', () => {
+    it('should bundle a createTool into a function', async () => {
+        const result = await bundleFile({
+            entryPoint: path.join(fixturesPath, 'zero/cases/createTool.valid.js'),
+            projectRootPath: fixturesPath
+        });
+        if (result.isErr()) {
+            throw result.error;
+        }
+        expect(result.value).toContain('type: "function"');
+        expect(result.value).toContain('tool: true');
+        expect(result.value).not.toContain('createTool(');
     });
 });
 

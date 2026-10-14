@@ -39,7 +39,7 @@ export type CompileErrorType =
     | 'disallowed_import';
 
 // createFunction intentionally omitted from this message while experimental. Add on GA
-export const badExportCompilerError = 'Invalid default export: should be createAction(), createSync() or createOnEvent()';
+export const badExportCompilerError = 'Invalid default export: should be createAction(), createSync(), createOnEvent() or createTool()';
 
 export abstract class ReadableError extends Error {
     abstract toText(): string;

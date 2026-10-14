@@ -4,7 +4,7 @@ import { pathToFileURL } from 'url';
 import * as z from 'zod';
 
 import { getInterval } from '@nangohq/nango-yaml';
-import { deriveFunctionCapabilities } from '@nangohq/runner-sdk';
+import { deriveFunctionCapabilities, reservedToolTagKeys, toolToFunctionProps } from '@nangohq/runner-sdk';
 
 import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
@@ -26,6 +26,7 @@ import type {
     CreateFunctionResponse,
     CreateOnEventResponse,
     CreateSyncResponse,
+    CreateToolProps,
     FunctionRequires,
     FunctionTriggerDefinition
 } from '@nangohq/runner-sdk';
@@ -94,6 +95,29 @@ export const functionTagsSchema = z
         message: 'Functions cannot have more than 32 tags'
     }) satisfies z.ZodType<FunctionTags>;
 
+const maxToolInstructionsLength = 1024;
+const toolMetaSchema = z
+    .object({
+        instructions: z.string().max(maxToolInstructionsLength).optional(),
+        requiredScopes: z.array(functionTagStringSchema).max(64).optional(),
+        tags: functionTagsSchema
+            .refine((tags) => reservedToolTagKeys.every((key) => !(key in tags)), {
+                message: `Tag keys ${reservedToolTagKeys.map((key) => `'${key}'`).join(', ')} are reserved`
+            })
+            .optional()
+    })
+    .strict()
+    .refine((meta) => Object.keys(meta.tags ?? {}).length + (meta.instructions !== undefined ? 1 : 0) + (meta.requiredScopes !== undefined ? 1 : 0) <= 32, {
+        message: 'Tools cannot have more than 32 tags, including instructions and requiredScopes'
+    });
+const toolNameSchema = z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]+$/, { message: 'Tool names can only contain letters, digits, underscores, or hyphens' })
+    .max(64);
+
+// A compiled `createTool` export: the tool's own props, tagged by the compiler.
+type CompiledTool = CreateToolProps & { type: 'function'; tool: true };
+
 interface FunctionDefinition {
     description: string;
     trigger?: FunctionTriggerDefinition | undefined;
@@ -109,12 +133,13 @@ export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'> & { fi
 
 export interface ParsedIntegrationDefinitions extends NangoYamlParsed {
     functions: FunctionConfig[];
+    hasExperimentalFunctions: boolean;
 }
 
 const allowed = ['action', 'sync', 'onEvent', 'function'];
 
 export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<ParsedIntegrationDefinitions>> {
-    const parsed: ParsedIntegrationDefinitions = { yamlVersion: 'v2', integrations: [], models: new Map(), functions: [] };
+    const parsed: ParsedIntegrationDefinitions = { yamlVersion: 'v2', integrations: [], models: new Map(), functions: [], hasExperimentalFunctions: false };
 
     printDebug('Rebuilding parsed from js files', debug);
 
@@ -141,7 +166,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
         }
         if (!moduleContent.default.default.type || !allowed.includes(moduleContent.default.default.type)) {
             // createFunction intentionally omitted from this message while experimental. Add on GA
-            return Err(new Error(`Script should be declared using utility function (createSync, createAction, createOnEvent) ${modulePath}`));
+            return Err(new Error(`Script should be declared using utility function (createSync, createAction, createOnEvent, createTool) ${modulePath}`));
         }
 
         printDebug(`Parsing ${filePath}`, debug);
@@ -150,7 +175,8 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
             | CreateSyncResponse<Record<string, ZodModel>, ZodMetadata, ZodCheckpoint>
             | CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>
             | CreateOnEventResponse
-            | CreateFunctionResponse;
+            | CreateFunctionResponse
+            | CompiledTool;
 
         const basename = path.basename(filePath, '.js');
         const realPath = filePath.replace(/\.js$/, '.ts');
@@ -216,6 +242,30 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 break;
             }
             case 'function': {
+                if ('tool' in script) {
+                    const validationRes = validateTool({ params: script, filePath: realPath });
+                    if (validationRes.isErr()) {
+                        return Err(validationRes.error);
+                    }
+                    const name = script.name ?? basename;
+                    if (parsed.functions.some((fn) => fn.integrationId === integrationId && fn.name === name)) {
+                        return Err(
+                            new Error(`Tool '${realPath}' is named '${name}', which is already used. Tool and function names must be unique per integration.`)
+                        );
+                    }
+                    parsed.functions.push({
+                        ...parseFunction({
+                            params: toolToFunctionProps(script),
+                            integrationId,
+                            integrationIdClean,
+                            basename: name,
+                            basenameClean: name.replaceAll(/[^a-zA-Z0-9]/g, '')
+                        }),
+                        filePath: realPath
+                    });
+                    break;
+                }
+
                 const validationRes = validateFunction({ params: script, integrationId, basename });
                 if (validationRes.isErr()) {
                     return Err(validationRes.error);
@@ -229,6 +279,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                     ...parseFunction({ params: script, integrationId, integrationIdClean, basename, basenameClean }),
                     filePath: realPath
                 });
+                parsed.hasExperimentalFunctions = true;
                 break;
             }
         }
@@ -448,6 +499,27 @@ export function validateFunction({
     }
 
     return Ok(undefined);
+}
+
+export function validateTool({ params, filePath }: { params: Pick<CreateToolProps, 'name' | 'meta'>; filePath: string }): Result<void> {
+    if (params.name !== undefined) {
+        const nameValidation = toolNameSchema.safeParse(params.name);
+        if (!nameValidation.success) {
+            return Err(new Error(`Tool '${filePath}' has an invalid name: ${formatIssues(nameValidation.error.issues)}`));
+        }
+    }
+    if (params.meta !== undefined) {
+        const metaValidation = toolMetaSchema.safeParse(params.meta);
+        if (!metaValidation.success) {
+            return Err(new Error(`Tool '${filePath}' has invalid meta: ${formatIssues(metaValidation.error.issues)}`));
+        }
+    }
+
+    return Ok(undefined);
+}
+
+function formatIssues(issues: z.core.$ZodIssue[]): string {
+    return issues.map((issue) => `${issue.path.length > 0 ? `${issue.path.map((key) => JSON.stringify(key)).join('')}: ` : ''}${issue.message}`).join('; ');
 }
 
 export function parseFunction({

@@ -113,7 +113,7 @@ export async function compileAllFunctions({
             }
         }
 
-        if (def.value.functions.length > 0) {
+        if (def.value.hasExperimentalFunctions) {
             console.warn(
                 chalk.yellow(
                     `Warning: createFunction is experimental and not production ready. Do NOT use it in production, its API may change or be removed without notice.`
@@ -563,14 +563,24 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         createAction: { type: 'action', varName: 'action' },
         createSync: { type: 'sync', varName: 'sync' },
         createOnEvent: { type: 'onEvent', varName: 'onEvent' },
-        createFunction: { type: 'function', varName: 'func' }
-    } as const satisfies Record<string, { type: string; varName: string }>;
+        createFunction: { type: 'function', varName: 'func' },
+        createTool: { type: 'function', varName: 'tool', tool: true }
+    } as const satisfies Record<string, { type: string; varName: string; tool?: true }>;
 
     type AllowedExportName = keyof typeof allowedExports;
 
     function isAllowedExport(name: string): name is AllowedExportName {
         // Use hasOwn rather than `in` so inherited prototype names (toString, constructor, …) are not accepted.
         return Object.hasOwn(allowedExports, name);
+    }
+
+    function injectedProperties(t: typeof babel.types, name: AllowedExportName): babel.types.ObjectProperty[] {
+        const mapping = allowedExports[name];
+        const properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(mapping.type))];
+        if ('tool' in mapping) {
+            properties.push(t.objectProperty(t.identifier('tool'), t.booleanLiteral(true)));
+        }
+        return properties;
     }
 
     const needsAwait = [
@@ -823,7 +833,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             const varName = mapping.varName;
 
                             // Inject type property
-                            arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(mapping.type)), ...arg.properties];
+                            arg.properties = [...injectedProperties(t, calleeName), ...arg.properties];
                             // Insert: export const <varName> = <arg>;
                             const exportConst = t.exportNamedDeclaration(
                                 t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), arg)]),
@@ -854,7 +864,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             }
 
                             // Inject type property (mutate the object literal)
-                            arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(allowedExports[calleeName].type)), ...arg.properties];
+                            arg.properties = [...injectedProperties(t, calleeName), ...arg.properties];
                             // Replace the variable's initializer with the object literal
                             binding.path.get('init').replaceWith(arg);
                             return;
