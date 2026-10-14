@@ -126,3 +126,13 @@ export class TrackDeletesDefinitionError extends DefinitionError {
         super(`Track deletes is not supported for incremental syncs`, filePath, property);
     }
 }
+
+export class UnusedCheckpointDefinitionError extends DefinitionError {
+    constructor(filePath: string, property: string[]) {
+        super(
+            `A 'checkpoint' schema is declared but never used. Call 'saveCheckpoint()', 'getCheckpoint()', or 'clearCheckpoint()' in your function, or remove the 'checkpoint' option -- declaring it alone does not persist or resume any state.`,
+            filePath,
+            property
+        );
+    }
+}

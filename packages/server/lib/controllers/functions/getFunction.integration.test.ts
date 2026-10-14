@@ -14,6 +14,7 @@ let api: Awaited<ReturnType<typeof runServer>>;
 
 const version = {
     description: 'Fetch an issue',
+    tags: { category: 'crm', entities: ['contacts', 'companies'] },
     file_location: 'github/functions/fetchIssue.js',
     version: 'test-version',
     source: 'repo',
@@ -79,6 +80,7 @@ describe(`GET ${route}`, () => {
             provider: 'github',
             name: 'fetchIssue',
             description: 'Fetch an issue',
+            tags: { category: 'crm', entities: ['contacts', 'companies'] },
             state: 'enabled',
             source: 'repo',
             trigger: { kind: 'http' },
