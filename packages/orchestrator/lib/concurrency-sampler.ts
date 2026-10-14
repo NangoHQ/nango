@@ -1,5 +1,6 @@
 import { cancellableDaemon, metrics, stringifyError } from '@nangohq/utils';
 
+import { GROUP_PREFIX_SEPARATOR } from './scheduler-config.js';
 import { logger } from './utils.js';
 
 import type { Scheduler } from '@nangohq/scheduler';
@@ -9,6 +10,13 @@ interface ConcurrencySamplerOptions {
     tickIntervalMs: number;
     queryTimeoutMs: number;
     onError: (err: Error) => void;
+}
+
+export function environmentIdFromGroupKey(groupKey: string): number | null {
+    const segments = groupKey.split(GROUP_PREFIX_SEPARATOR);
+    const index = segments.indexOf('environment');
+    const id = index === -1 ? undefined : segments[index + 1];
+    return id && /^\d+$/.test(id) ? Number(id) : null;
 }
 
 export class ConcurrencySampler {
@@ -46,13 +54,20 @@ export class ConcurrencySampler {
 
     async run(): Promise<void> {
         const startedAt = performance.now();
-        const res = await this.scheduler.monitoring.concurrency({ queryTimeoutMs: this.queryTimeoutMs });
+        const res = await this.scheduler.monitoring.concurrencyPerGroup({ queryTimeoutMs: this.queryTimeoutMs });
         metrics.duration(metrics.Types.ORCH_CONCURRENCY_SAMPLING_DURATION_MS, performance.now() - startedAt, { success: String(res.isOk()) });
         if (res.isErr()) {
             logger.error(`ConcurrencySampler: ${stringifyError(res.error)}`);
             return;
         }
-        for (const { environmentId, concurrency } of res.value) {
+        const perEnvironment = new Map<number, number>();
+        for (const [groupKey, count] of res.value) {
+            const environmentId = environmentIdFromGroupKey(groupKey);
+            if (environmentId !== null) {
+                perEnvironment.set(environmentId, (perEnvironment.get(environmentId) ?? 0) + count);
+            }
+        }
+        for (const [environmentId, concurrency] of perEnvironment) {
             metrics.distribution(metrics.Types.ORCH_CONCURRENCY_ACTIVE, concurrency, { environmentId });
         }
     }

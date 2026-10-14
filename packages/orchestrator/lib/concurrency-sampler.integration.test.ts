@@ -42,12 +42,18 @@ describe('ConcurrencySampler', () => {
         for (let i = 0; i < 3; i++) {
             await immediate(scheduler, { groupKey: `sync:environment:${env1}` });
         }
+        await immediate(scheduler, { groupKey: `action:environment:${env1}` });
 
         const env2 = env1 + 1;
-        await immediate(scheduler, { groupKey: `action:environment:${env2}` });
+        await immediate(scheduler, { groupKey: `webhook:environment:${env2}` });
+
+        // no `environment:<id>` segment, so it is left out
+        await immediate(scheduler, { groupKey: 'no-environment' });
 
         (await scheduler.dequeue({ groupKeyPattern: `sync:environment:${env1}`, limit: 2 })).unwrap();
-        (await scheduler.dequeue({ groupKeyPattern: `action:environment:${env2}`, limit: 1 })).unwrap();
+        (await scheduler.dequeue({ groupKeyPattern: `action:environment:${env1}`, limit: 1 })).unwrap();
+        (await scheduler.dequeue({ groupKeyPattern: `webhook:environment:${env2}`, limit: 1 })).unwrap();
+        (await scheduler.dequeue({ groupKeyPattern: 'no-environment', limit: 1 })).unwrap();
 
         const distribution = vi.spyOn(metrics, 'distribution').mockImplementation(() => {});
         const duration = vi.spyOn(metrics, 'duration').mockImplementation(() => {});
@@ -57,14 +63,14 @@ describe('ConcurrencySampler', () => {
 
         const calls = distribution.mock.calls.filter((call) => call[0] === metrics.Types.ORCH_CONCURRENCY_ACTIVE);
         expect(calls.sort((a, b) => Number(a[2]?.['environmentId']) - Number(b[2]?.['environmentId']))).toEqual([
-            [metrics.Types.ORCH_CONCURRENCY_ACTIVE, 2, { environmentId: env1 }],
+            [metrics.Types.ORCH_CONCURRENCY_ACTIVE, 3, { environmentId: env1 }],
             [metrics.Types.ORCH_CONCURRENCY_ACTIVE, 1, { environmentId: env2 }]
         ]);
         expect(duration).toHaveBeenCalledWith(metrics.Types.ORCH_CONCURRENCY_SAMPLING_DURATION_MS, expect.any(Number), { success: 'true' });
     });
 
     it('should not emit samples when the count fails', async () => {
-        vi.spyOn(scheduler.monitoring, 'concurrency').mockResolvedValue(Err(new Error('statement timeout')));
+        vi.spyOn(scheduler.monitoring, 'concurrencyPerGroup').mockResolvedValue(Err(new Error('statement timeout')));
         const distribution = vi.spyOn(metrics, 'distribution').mockImplementation(() => {});
         const duration = vi.spyOn(metrics, 'duration').mockImplementation(() => {});
         const sampler = new ConcurrencySampler({ scheduler, tickIntervalMs: 1000, queryTimeoutMs: 1000, onError: () => {} });

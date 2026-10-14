@@ -193,9 +193,8 @@ export class Scheduler {
             }
             return Ok(res.value.map(({ group_key, queued }) => ({ groupKey: group_key, queued })));
         },
-        concurrency: async ({ queryTimeoutMs }: { queryTimeoutMs: number }): Promise<Result<{ environmentId: number; concurrency: number }[]>> => {
-            const res = await tasks.countStartedTasksByEnvironment(this.db, { queryTimeoutMs });
-            return res.map((rows) => rows.map((row) => ({ environmentId: row.environmentId, concurrency: row.count })));
+        concurrencyPerGroup: async ({ queryTimeoutMs }: { queryTimeoutMs: number }): Promise<Result<Map<string, number>>> => {
+            return tasks.concurrencyPerGroup(this.db, { queryTimeoutMs });
         }
     };
 
