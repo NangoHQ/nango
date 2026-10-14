@@ -149,7 +149,13 @@ describe('trackPlaygroundTurn', () => {
         });
 
         const [payload] = capture.mock.calls[0] ?? [];
-        expect(payload?.properties).toMatchObject({ is_success: false, error_code: 'model_error', is_stopped: false, input_tokens: 1_000 });
+        expect(payload?.properties).toMatchObject({
+            is_first_turn: false,
+            is_success: false,
+            error_code: 'model_error',
+            is_stopped: false,
+            input_tokens: 1_000
+        });
         expect(payload?.properties).not.toHaveProperty('cost_usd');
     });
 
