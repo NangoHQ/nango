@@ -8,6 +8,8 @@ import vm from 'node:vm';
 import { assert, describe, expect, it, vi } from 'vitest';
 import * as z from 'zod';
 
+import { createTool } from '@nangohq/runner-sdk';
+
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 import { bundleFile, compileAllFunctions, compileFunction, detectFeatures } from './compile.js';
 import { getIntegrationId, parseIntegrationDefinitions, validateFunction } from './definitions.js';
@@ -159,11 +161,13 @@ describe('tools', () => {
         if (result.isErr()) {
             throw result.error;
         }
-        expect(result.value).toContain('createFunction(toolToFunctionProps(');
+        expect(result.value).toContain('createFunction({');
+        expect(result.value).not.toContain('toolToFunctionProps');
         expect(result.value).not.toContain('function createTool(');
         const module = { exports: {} as Record<string, any> };
         vm.runInNewContext(result.value, { module, exports: module.exports, require: () => z });
         const tool = module.exports['default'];
+        expect(tool).toEqual(createTool(module.exports['__nangoToolDefinition']));
         expect(tool).toMatchObject({
             type: 'function',
             trigger: { kind: 'http' },
@@ -176,6 +180,32 @@ describe('tools', () => {
         const log = vi.fn();
         expect(await tool.exec({ log }, { kind: 'http', input: { id: '123' } })).toEqual({ ok: true });
         expect(log).toHaveBeenCalledWith('running for 123');
+    });
+
+    it.each([
+        { reason: 'no metadata', meta: undefined },
+        { reason: 'empty metadata', meta: {} },
+        { reason: 'custom tags', meta: { tags: { domain: 'issues', owners: ['platform'] } } },
+        { reason: 'instructions and scopes', meta: { instructions: 'Use this tool', requiredScopes: ['repo'], tags: { domain: 'issues' } } },
+        { reason: 'empty instructions and scopes', meta: { instructions: '', requiredScopes: [] } }
+    ])('matches SDK normalization with $reason', async ({ meta }) => {
+        const dir = await getTestDirectory('inline_tool_parity');
+        await fs.promises.mkdir(dir, { recursive: true });
+        const filePath = path.join(dir, 'tool.js');
+        try {
+            await fs.promises.writeFile(
+                filePath.replace(/\.js$/, '.ts'),
+                `import { createTool } from 'nango'; import * as z from 'zod'; export default createTool({ description: 'Get an issue', input: z.object({ id: z.string() }), output: z.object({}), meta: ${JSON.stringify(meta)}, exec: async () => ({}) });`
+            );
+            const code = (await bundleFile({ entryPoint: filePath, projectRootPath: dir })).unwrap();
+            const module = { exports: {} as Record<string, any> };
+            vm.runInNewContext(code, { module, exports: module.exports, require: () => z });
+            expect(module.exports['default']).toEqual(createTool(module.exports['__nangoToolDefinition']));
+            expect(code).not.toContain('toolToFunctionProps');
+            expect(code).not.toContain('function createTool(');
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
     });
 
     it.each([false, true])('normalizes tools and validates their original metadata (constant export: %s)', async (constantExport) => {
