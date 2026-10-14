@@ -512,6 +512,17 @@ describe('parse', () => {
         expect(() => parseEnvs(ENVS, { NANGO_LOGS_PROVIDER: 'not-a-provider' })).toThrow();
     });
 
+    it('should default NANGO_USAGE_TELEMETRY_POSTGRES_RETENTION_DAYS to 90', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_USAGE_TELEMETRY_POSTGRES_RETENTION_DAYS).toBe(90);
+    });
+
+    it('should refuse a NANGO_USAGE_TELEMETRY_POSTGRES_RETENTION_DAYS below the 45-day floor', () => {
+        expect(parseEnvs(ENVS, { NANGO_USAGE_TELEMETRY_POSTGRES_RETENTION_DAYS: '45' }).NANGO_USAGE_TELEMETRY_POSTGRES_RETENTION_DAYS).toBe(45);
+        expect(() => parseEnvs(ENVS, { NANGO_USAGE_TELEMETRY_POSTGRES_RETENTION_DAYS: '44' })).toThrow();
+        expect(() => parseEnvs(ENVS, { NANGO_USAGE_TELEMETRY_POSTGRES_RETENTION_DAYS: '0' })).toThrow();
+    });
+
     it('should default NANGO_LOGS_ES_RETENTION_DAYS to 15', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_LOGS_ES_RETENTION_DAYS).toBe(15);
