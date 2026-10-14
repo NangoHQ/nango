@@ -12688,6 +12688,43 @@ infor-cc:
             doc_section: '#step-1-finding-your-credentials'
             order: 4
 
+informa:
+    display_name: Informa
+    categories:
+        - other
+    auth_mode: BASIC
+    # Contracted Informa D&B API EMPRESAS.
+    # Proxy paths: GET /api/get-product, /api/get-companies, /api/get-admin, /api/get-tables
+    # get-product reports: INFORME_ABREVIADO|COMERCIAL|FINANCIERO|MAYOR|PERSONALIZADO
+    # get-product modular: FICHA, EVALUACION_CREDITO, EVOLUCION_EVALUACION_CREDITO, ACTOS_BORME,
+    #   DETALLE_ACTOS_BORME, PUBLICACIONES_PRENSA, INFORMACION_JUDICIAL, DETALLE_INFORMACION_JUDICIAL,
+    #   ADMINISTRADORES, ACCIONISTAS, PARTICIPACIONES, BALANCES, DETALLE_BALANCE
+    # Query: product, cif, formato (json|pdf), optional rai/morosidad
+    proxy:
+        base_url: https://services.informa.es
+        headers:
+            # Informa authenticates via custom username/password headers (not HTTP Basic).
+            # Override the default BASIC Authorization header so only those headers are sent.
+            authorization: ''
+            username: ${credentials.username}
+            password: ${credentials.password}
+            content-type: application/json
+    docs: https://nango.dev/docs/integrations/all/informa
+    docs_connect: https://nango.dev/docs/integrations/all/informa/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Informa API EMPRESAS username (from your Informa contract).
+            example: '840224'
+            doc_section: '#step-1-obtaining-your-informa-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Informa API EMPRESAS password.
+            secret: true
+            doc_section: '#step-1-obtaining-your-informa-credentials'
+
 ingenious-build:
     display_name: INGENIOUS.BUILD
     categories:

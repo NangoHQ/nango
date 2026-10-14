@@ -1,0 +1,282 @@
+---
+title: 'Informa'
+sidebarTitle: 'Informa'
+description: 'Access the Informa D&B (Spain) company reports API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Informa_.
+      </Step>
+      <Step title="Authorize Informa">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Informa API username and password. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Informa API">
+        Fetch a financial report (JSON). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/api/get-product?product=INFORME_FINANCIERO&formato=json&cif=B12345678" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            // Financial report only (INFORME_FINANCIERO). Do not fall back to INFORME_COMERCIAL.
+            const res = await nango.get({
+                endpoint: '/api/get-product',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>',
+                params: {
+                    product: 'INFORME_FINANCIERO',
+                    formato: 'json',
+                    cif: 'B12345678'
+                }
+            });
+
+            console.log(res.data);
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/guides/primitives/auth) in your app to let your users connect their Informa accounts.
+    </Tip>
+  </Tab>
+  <Tab title="📚 API reference">
+    This provider proxies Informa D&amp;B **API EMPRESAS** at `https://services.informa.es`.
+    Official overview: [API EMPRESAS](https://www.informa.es/necesidades/api-empresas) · [Product catalogue](https://www.informa.es/necesidades/api-empresas/catalogo-api) · [Manual API (PDF)](https://www.informa.es/documentos/Manual_API_corporativo.pdf) · [Data dictionary (PDF)](https://www.informa.es/documentos/Diccionario_Datos_API.pdf).
+
+    Access is contract-based: your username can only request products enabled on the account (`10002` if not permitted).
+
+    ### Services (endpoints)
+
+    | Method | Path | Purpose |
+    | - | - | - |
+    | `GET` | `/api/get-product` | Packaged reports and modular products by CIF/NIF. |
+    | `GET` | `/api/get-companies` | Company search by name / denomination (`lista_empresas`). |
+    | `GET` | `/api/get-admin` | Administrator search (person → related companies). |
+    | `GET` | `/api/get-tables` | Decoding tables for coded fields (`tablaVida`, etc.). |
+
+    Auth: custom headers `username` and `password` (Nango injects them from the connection).
+
+    ---
+
+    ### `GET /api/get-product`
+
+    | Query param | Required | Description |
+    | - | - | - |
+    | `product` | Yes | Product code (see tables below). |
+    | `cif` | Yes* | Spanish company/autónomo tax ID (NIF/CIF). |
+    | `formato` | No | `json` (default) or `pdf` (when the product supports it). |
+    | `rai` | No | Include RAI delinquency data when contracted (`true` / `false`). |
+    | `morosidad` | No | Include additional delinquency modules when contracted. |
+
+    \*Some search-oriented flows use other params (e.g. denomination) via `get-companies` / `get-admin`.
+
+    #### Product reports (`product`)
+
+    | Code | Marketing name |
+    | - | - |
+    | `INFORME_ABREVIADO` | Informe abreviado |
+    | `INFORME_COMERCIAL` | Informe comercial |
+    | `INFORME_FINANCIERO` | Informe financiero |
+    | `INFORME_MAYOR` | Informe mayor (fuller company report) |
+    | `INFORME_PERSONALIZADO` | Informe personalizado (fields chosen in your contract) |
+
+    The public catalogue also lists **Informe estratégico** and **Informe investigado**. Those names are packaging/marketing; use the product code Informa assigned on your contract if it differs from the table above.
+
+    #### Modular products (`product`)
+
+    | Code | Purpose |
+    | - | - |
+    | `FICHA` | Company fact sheet |
+    | `EVALUACION_CREDITO` | Credit appraisal / rating |
+    | `EVOLUCION_EVALUACION_CREDITO` | Credit appraisal evolution |
+    | `ACTOS_BORME` | BORME acts |
+    | `DETALLE_ACTOS_BORME` | BORME act detail |
+    | `PUBLICACIONES_PRENSA` | Press publications |
+    | `INFORMACION_JUDICIAL` | Judicial information |
+    | `DETALLE_INFORMACION_JUDICIAL` | Judicial information detail |
+    | `ADMINISTRADORES` | Directors / officers |
+    | `ACCIONISTAS` | Shareholders |
+    | `PARTICIPACIONES` | Holdings / participations |
+    | `BALANCES` | Balance sheets |
+    | `DETALLE_BALANCE` | Balance sheet detail |
+
+    Your contract may expose additional custom products. Undocumented codes fail at runtime.
+
+    #### Examples
+
+    Financial report (JSON):
+
+    ```typescript
+    const res = await nango.get({
+        endpoint: '/api/get-product',
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>',
+        params: { product: 'INFORME_FINANCIERO', formato: 'json', cif: 'B12345678' }
+    });
+    ```
+
+    Abbreviated / major / modular:
+
+    ```typescript
+    await nango.get({
+        endpoint: '/api/get-product',
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>',
+        params: { product: 'INFORME_ABREVIADO', formato: 'json', cif: 'B12345678' }
+    });
+
+    await nango.get({
+        endpoint: '/api/get-product',
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>',
+        params: { product: 'INFORME_MAYOR', formato: 'json', cif: 'B12345678' }
+    });
+
+    await nango.get({
+        endpoint: '/api/get-product',
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>',
+        params: { product: 'FICHA', formato: 'json', cif: 'B12345678' }
+    });
+
+    await nango.get({
+        endpoint: '/api/get-product',
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>',
+        params: { product: 'EVALUACION_CREDITO', formato: 'json', cif: 'B12345678' }
+    });
+
+    await nango.get({
+        endpoint: '/api/get-product',
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>',
+        params: { product: 'BALANCES', formato: 'json', cif: 'B12345678' }
+    });
+    ```
+
+    PDF (when supported for that product):
+
+    ```typescript
+    const res = await nango.get({
+        endpoint: '/api/get-product',
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>',
+        params: { product: 'INFORME_FINANCIERO', formato: 'pdf', cif: 'B12345678' },
+        responseType: 'arraybuffer'
+    });
+    ```
+
+    ---
+
+    ### `GET /api/get-companies`
+
+    Search companies by denomination / name (response product typically `lista_empresas`). Pass the search parameters Informa documents for your contract (e.g. `denominacion`).
+
+    ```typescript
+    const res = await nango.get({
+        endpoint: '/api/get-companies',
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>',
+        params: { denominacion: 'ACME' }
+    });
+    ```
+
+    ### `GET /api/get-admin`
+
+    Search administrators by name; returns related companies where the person appears as administrator.
+
+    ### `GET /api/get-tables`
+
+    Returns decoding tables for coded fields (`tablaDecodificacion` + `valor` pairs in product JSON).
+
+    ```typescript
+    const tables = await nango.get({
+        endpoint: '/api/get-tables',
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>'
+    });
+    ```
+
+    ---
+
+    ### Response shape (JSON)
+
+    Successful bodies are nested Informa objects (`datosPeticion`, `datosProducto`, `informacionComercial`, financial/risk modules, etc.).
+    The product returned is often under `datosPeticion.productoSolicitado`.
+    See the [data dictionary](https://www.informa.es/documentos/Diccionario_Datos_API.pdf).
+
+    ### Error codes
+
+    | Code | Meaning | Suggested handling |
+    | - | - | - |
+    | `0` | OK | — |
+    | `10001` | Invalid user/password | Fix credentials |
+    | `10002` | No permission for that product | Product not on contract |
+    | `10003` | Password expired | Rotate password with Informa |
+    | `11000` | Data source unavailable | Retry later |
+    | `11001` | Product not available for that CIF | Surface as unavailable; do **not** silently fall back unless your product requires it |
+    | `11002` | Minimum quality requirements not met | Treat as unavailable / incomplete |
+    | `11003` | CIF/NIF not in census | Unknown company/autónomo |
+    | `11005` | Company temporarily blocked (update) | Retry later |
+    | `12000` | Incomplete request parameters | Fix query params |
+    | `12001` | Internal server error | Retry / support |
+
+    Error payloads typically include `campoCodificadoRespuesta.valor`.
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Informa using Connect UI](/integrations/all/informa/connect) |
+    | General | [Informa D&amp;B website](https://www.informa.es/) |
+    | | [API EMPRESAS overview](https://www.informa.es/necesidades/api-empresas) |
+    | | [API product catalogue](https://www.informa.es/necesidades/api-empresas/catalogo-api) |
+    | Developer | [Manual API (PDF)](https://www.informa.es/documentos/Manual_API_corporativo.pdf) |
+    | | [Data dictionary (PDF)](https://www.informa.es/documentos/Diccionario_Datos_API.pdf) |
+    | | [Data Insights (PDF)](https://www.informa.es/documentos/DATA_INSIGHTS_ES.pdf) |
+    | | Base URL: `https://services.informa.es` |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/informa.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Informa authenticates with custom HTTP headers `username` and `password` (not `Authorization: Basic`). Nango clears `Authorization` and sets those headers.
+    - Base URL is fixed: `https://services.informa.es`.
+    - `/api/get-product` calls are typically billable — avoid using them as a cheap credential check.
+    - Prefer an explicit product code. For financial risk use cases, prefer `INFORME_FINANCIERO` and treat `11001` as “unavailable” rather than auto-switching products unless your product requires it.
+    - Product codes are usually uppercase with underscores (`INFORME_FINANCIERO`). Some sample payloads use lowercase (`informe_mayor`); prefer the uppercase codes from the API manual / your contract.
+    - PDF responses (`formato=pdf`) are binary; configure your HTTP client accordingly. Error responses may still be JSON even when `formato=pdf` was requested.
+    - Decode coded fields with `/api/get-tables` (`tablaDecodificacion` + `valor`).
+    - This integration targets contracted `services.informa.es`. It is not the same surface as the public [eInforma developers portal](https://developers.einforma.com/).
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/informa.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
