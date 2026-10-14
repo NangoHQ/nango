@@ -9,7 +9,8 @@ import type { UsageMetric } from '../usage/index.js';
 import type { AnalyticsEventName, AnalyticsSurface } from './taxonomy.js';
 
 export interface AnalyticsEventDefinition {
-    surface: AnalyticsSurface;
+    // Several surfaces only for one fact seen from both sides. Insights on it filter by `surface`.
+    surface: AnalyticsSurface | readonly AnalyticsSurface[];
     insight: string;
     fires: string;
     properties: z.ZodType;
@@ -27,6 +28,11 @@ const outcome = {
     is_success: z.boolean(),
     log_operation_id: z.string().optional(),
     error_code: z.string().optional()
+};
+
+const agentSession = {
+    agent_session_id: z.string(),
+    is_playground: z.boolean()
 };
 
 function defineCatalogue<const C extends Record<string, AnalyticsEventDefinition>>(catalogue: C & Record<Exclude<keyof C, AnalyticsEventName>, never>): C {
@@ -158,11 +164,14 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'playground:agent_turn_complete': {
         surface: 'server',
-        insight: 'What the Agent Playground costs per account, in tokens and dollars, and how often turns fail or get stopped',
+        insight: 'What the Agent Playground costs per account, how often turns fail or get stopped, and how chats start',
         fires: 'When an Agent Playground turn finishes, fails or is stopped',
         properties: z.object({
             agent_session_id: z.string(),
+            chat_id: z.string().optional(),
             environment_id: z.number(),
+            is_first_turn: z.boolean(),
+            starter_provider: z.string().optional(),
             is_success: z.boolean(),
             error_code: z.string().optional(),
             is_stopped: z.boolean(),
@@ -180,8 +189,8 @@ export const analyticsEventCatalogue = defineCatalogue({
     'connections:create_button_click': {
         surface: 'web',
         insight: 'How many people start creating a connection, and for which provider',
-        fires: 'When someone starts creating a connection from the dashboard',
-        properties: z.object({ provider: z.string() })
+        fires: 'When someone starts creating a connection from the dashboard or the Agent Playground',
+        properties: z.object({ provider: z.string(), is_playground: z.boolean().optional() })
     },
     'connections:share_link_button_click': {
         surface: 'web',
@@ -190,12 +199,19 @@ export const analyticsEventCatalogue = defineCatalogue({
         properties: z.object({ provider: z.string() })
     },
     'connections:connection_create': {
-        surface: 'web',
-        insight: 'Which integrations fail most often during auth started from the dashboard',
-        fires: 'When the connect flow started from the dashboard finishes',
+        surface: ['web', 'server'],
+        insight:
+            'Which integrations fail most often during auth started from the dashboard, and how many accounts create connections outside the Agent Playground',
+        fires: 'When a connect flow in the dashboard or the Agent Playground finishes, and on the server after any connection is created',
         properties: z.union([
-            z.object({ provider: z.string(), is_legacy_flow: z.boolean(), is_success: z.literal(true) }),
-            z.object({ provider: z.string(), is_legacy_flow: z.boolean(), is_success: z.literal(false), error_code: z.string() })
+            z.object({ provider: z.string(), is_legacy_flow: z.boolean().optional(), is_playground: z.boolean().optional(), is_success: z.literal(true) }),
+            z.object({
+                provider: z.string(),
+                is_legacy_flow: z.boolean().optional(),
+                is_playground: z.boolean().optional(),
+                is_success: z.literal(false),
+                error_code: z.string()
+            })
         ])
     },
 
@@ -317,7 +333,7 @@ export const analyticsEventCatalogue = defineCatalogue({
         insight: 'How many accounts create agent sessions each week, and which meta tools they turn on',
         fires: 'After an agent session is created',
         properties: z.object({
-            agent_session_id: z.string(),
+            ...agentSession,
             integration_count: z.number(),
             is_tool_search_enabled: z.boolean(),
             is_execute_enabled: z.boolean(),
@@ -329,14 +345,14 @@ export const analyticsEventCatalogue = defineCatalogue({
         surface: 'server',
         insight: 'How long do agent sessions last?',
         fires: 'After an agent session is terminated. Expired sessions send nothing',
-        properties: z.object({ agent_session_id: z.string(), session_duration_ms: z.number() })
+        properties: z.object({ ...agentSession, session_duration_ms: z.number() })
     },
     'agents:tool_call_complete': {
         surface: 'server',
         insight: 'Which tools do agents call most, and which fail most often?',
         fires: 'When a tool call in an agent session returns',
         properties: z.object({
-            agent_session_id: z.string(),
+            ...agentSession,
             ...outcome,
             tool_name: z.string().optional(),
             meta_tool: stringOf<AgentSessionMetaTool>().optional(),
@@ -351,7 +367,7 @@ export const analyticsEventCatalogue = defineCatalogue({
         insight: 'Which integration APIs agents call through the proxy, and how often those requests fail',
         fires: 'When a proxy request from an agent session returns',
         properties: z.object({
-            agent_session_id: z.string(),
+            ...agentSession,
             meta_tool: z.literal('nango_proxy'),
             ...outcome,
             integration_id: z.string().optional(),
@@ -366,7 +382,7 @@ export const analyticsEventCatalogue = defineCatalogue({
         insight: 'How often does tool search return a tool the agent then uses?',
         fires: 'When a tool search in an agent session returns',
         properties: z.object({
-            agent_session_id: z.string(),
+            ...agentSession,
             meta_tool: z.literal('nango_tool_search'),
             ...outcome,
             query: z.string().optional(),
@@ -383,8 +399,10 @@ export const analyticsEventCatalogue = defineCatalogue({
 type AnalyticsEventCatalogue = typeof analyticsEventCatalogue;
 type AnalyticsEventKey = keyof AnalyticsEventCatalogue;
 
+type SurfacesOf<E extends AnalyticsEventKey> = AnalyticsEventCatalogue[E]['surface'] extends readonly (infer S)[] ? S : AnalyticsEventCatalogue[E]['surface'];
+
 export type AnalyticsEventNameFor<S extends AnalyticsSurface> = {
-    [E in AnalyticsEventKey]: S extends AnalyticsEventCatalogue[E]['surface'] ? E : never;
+    [E in AnalyticsEventKey]: S extends SurfacesOf<E> ? E : never;
 }[AnalyticsEventKey];
 
 export type AnalyticsEventProperties<E extends AnalyticsEventKey> = z.infer<AnalyticsEventCatalogue[E]['properties']>;

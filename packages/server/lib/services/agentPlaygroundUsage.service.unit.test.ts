@@ -108,6 +108,8 @@ describe('trackPlaygroundTurn', () => {
                 user: { id: 3 } as DBUser
             },
             sessionId: 'session-1',
+            chatId: 'chat-1',
+            turn: { isFirstTurn: true, starterProvider: 'linear' },
             outcome: 'aborted',
             steps: [step({ input: 1_000, output: 10 })]
         });
@@ -122,6 +124,9 @@ describe('trackPlaygroundTurn', () => {
         expect(payload.groups).toStrictEqual({ company: '42' });
         expect(payload.properties).toMatchObject({
             agent_session_id: 'session-1',
+            chat_id: 'chat-1',
+            is_first_turn: true,
+            starter_provider: 'linear',
             environment_id: 7,
             is_production: false,
             is_success: true,
@@ -138,6 +143,7 @@ describe('trackPlaygroundTurn', () => {
         trackPlaygroundTurn({
             ctx: { account: { id: 42 } as DBTeam, environment: { id: 7 } as DBEnvironment, plan: null, user: { id: 3 } as DBUser },
             sessionId: 'session-1',
+            turn: { isFirstTurn: false },
             outcome: 'error',
             steps: [step({ modelId: 'gpt-unknown', input: 1_000 })]
         });
@@ -151,6 +157,7 @@ describe('trackPlaygroundTurn', () => {
         trackPlaygroundTurn({
             ctx: { account: { id: 42 } as DBTeam, environment: { id: 7 } as DBEnvironment, plan: null, user: { id: 3 } as DBUser },
             sessionId: 'session-1',
+            turn: { isFirstTurn: false },
             outcome: 'error',
             steps: [],
             errorCategory: 'quota'

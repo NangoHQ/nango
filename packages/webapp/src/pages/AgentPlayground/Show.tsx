@@ -61,6 +61,12 @@ export const AgentPlayground: React.FC = () => {
 };
 
 const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({ env, toolbarSlot, onNewChat }) => {
+    const { user } = useUser();
+    const userId = user?.uuid;
+    const [{ chatId, messages: storedMessages }] = useState(() =>
+        userId ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
+    );
+
     const sessionId = useRef<string | undefined>(undefined);
     const transport = useMemo(
         () =>
@@ -68,16 +74,10 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
                 api: new URL(`/api/v1/agent-playground/chat?env=${env}`, globalEnv.dashboardApiUrl).toString(),
                 credentials: 'include',
                 prepareSendMessagesRequest: ({ messages }) => ({
-                    body: { messages, sessionId: sessionId.current, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }
+                    body: { messages, sessionId: sessionId.current, chatId, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }
                 })
             }),
-        [env]
-    );
-
-    const { user } = useUser();
-    const userId = user?.uuid;
-    const [{ chatId, messages: storedMessages }] = useState(() =>
-        userId ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
+        [env, chatId]
     );
     const onReset = () => {
         deleteAgentPlaygroundChat(chatId);

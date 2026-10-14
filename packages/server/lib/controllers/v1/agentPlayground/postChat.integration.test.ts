@@ -193,6 +193,38 @@ describe('POST /api/v1/agent-playground/chat', () => {
         });
     });
 
+    it("attributes the session's tool events to the user and account, marked as the playground's", async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { account, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        modelOverride.current = () => twoStepModel([{ type: 'finish', finishReason: { unified: 'stop', raw: undefined }, usage: stepUsage }]);
+        const capture = vi.fn<(payload: { event: string; distinctId: string; properties: Record<string, unknown>; groups?: Record<string, string> }) => void>();
+        const realClient = productTracking.client;
+        productTracking.client = { capture, groupIdentify: vi.fn() } as unknown as typeof productTracking.client;
+        const chatId = crypto.randomUUID();
+
+        try {
+            await chat(session, { chatId, messages: [userMessage('Find my calendar events')] });
+
+            await vi.waitFor(() => {
+                const byName = (name: string) => capture.mock.calls.find(([payload]) => payload.event === name)?.[0];
+                for (const name of ['agents:session_start', 'agents:tool_search_complete']) {
+                    expect(byName(name)).toMatchObject({
+                        distinctId: String(user.id),
+                        groups: { company: String(account.id) },
+                        properties: { is_playground: true }
+                    });
+                }
+                expect(byName('playground:agent_turn_complete')?.properties).toMatchObject({
+                    chat_id: chatId,
+                    is_first_turn: true
+                });
+            });
+        } finally {
+            productTracking.client = realClient;
+        }
+    });
+
     it('tracks a turn that fails mid-stream once, as a failure, with the failing step', async () => {
         vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();

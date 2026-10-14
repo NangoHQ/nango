@@ -12,6 +12,7 @@ import {
     getServerOutboundUrlPolicy,
     makeDataTransferEvent,
     NangoError,
+    productTracking,
     ProxyRequest,
     pubsub,
     syncManager
@@ -20,6 +21,7 @@ import { Err, isHosted, Ok, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 import { envs } from '../env.js';
+import { isPlaygroundConnection } from '../services/agentPlaygroundTags.js';
 import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
@@ -101,6 +103,15 @@ export const connectionCreated = async (
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true }
 ): Promise<void> => {
     const { connection, environment, auth_mode, endUser, operation } = createdConnectionPayload;
+
+    if (operation === 'creation') {
+        productTracking.track({
+            name: 'connections:connection_create',
+            team: account,
+            environment,
+            eventProperties: { provider: providerConfig.provider, is_playground: isPlaygroundConnection(connection), is_success: true }
+        });
+    }
 
     try {
         await errorNotificationService.auth.clear({ connection_id: connection.id });

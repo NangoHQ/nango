@@ -13,11 +13,13 @@ import { getOrchestrator } from '../utils/utils.js';
 import { buildInstructions } from './agentPlayground.instructions.js';
 import { createPlaygroundModel } from './agentPlaygroundModel.service.js';
 import { modelErrorCategory, modelUnavailableError } from './agentPlaygroundModelError.js';
+import { PLAYGROUND_USER_TAG_KEY, sessionOwner } from './agentPlaygroundTags.js';
 import { trackPlaygroundTurn } from './agentPlaygroundUsage.service.js';
 import * as agentSessionService from './agentSession.service.js';
+import { trackAgentSessionCreated } from './agentSessionAnalytics.service.js';
 
 import type { ModelErrorCategory } from './agentPlaygroundModelError.js';
-import type { PlaygroundStep, PlaygroundTurnOutcome } from './agentPlaygroundUsage.service.js';
+import type { PlaygroundStep, PlaygroundTurn, PlaygroundTurnOutcome } from './agentPlaygroundUsage.service.js';
 import type {
     AgentPlaygroundIntegrationSetup,
     AgentPlaygroundMessageMetadata,
@@ -45,8 +47,6 @@ export const PLAYGROUND_INTEGRATION_PREFIX = 'pg-';
 export function playgroundIntegrationId(provider: string): string {
     return `${PLAYGROUND_INTEGRATION_PREFIX}${provider}`;
 }
-
-export const PLAYGROUND_USER_TAG_KEY = 'nango/playground_user';
 
 export type PlaygroundUIMessage = UIMessage<AgentPlaygroundMessageMetadata>;
 
@@ -172,11 +172,6 @@ async function createWithNangoOAuthApp(environment: DBEnvironment, providerName:
     return winner.unique_key;
 }
 
-// The owner is read from the create-connection tags, so those tags must stay per user.
-export function sessionOwner(session: Pick<AgentSession, 'metaTools'>): string | undefined {
-    return session.metaTools.nangoCreateConnection.tags[PLAYGROUND_USER_TAG_KEY];
-}
-
 // A session fixes its toolset and pinned connections when created, so any change since then needs a new session.
 export function sessionChange(
     session: Pick<AgentSession, 'compiledToolset' | 'resolvedConnections'>,
@@ -271,6 +266,7 @@ async function getOrCreateSession(
     if (created.isErr()) {
         return Err(new AgentPlaygroundError('session_creation_failed', created.error.message, { cause: created.error }));
     }
+    trackAgentSessionCreated(created.value.session);
     return Ok({ session: created.value.session, created: { request, ...(reason ? { reason } : {}) } });
 }
 
@@ -348,24 +344,35 @@ function parseTextContent(content: { type: string; text?: string }[]): unknown {
     }
 }
 
+export function describeTurn(messages: PlaygroundUIMessage[], starterProvider: string | undefined): PlaygroundTurn {
+    const isFirstTurn = !messages.some((message) => message.role === 'assistant' && message.parts.length > 0);
+
+    return {
+        isFirstTurn,
+        ...(starterProvider ? { starterProvider } : {})
+    };
+}
+
 export async function startTurn({
     ctx,
     sessionId,
+    chatId,
     messages,
     timeZone,
     abortSignal
 }: {
     ctx: PlaygroundContext;
     sessionId: string | undefined;
+    chatId?: string | undefined;
     messages: PlaygroundUIMessage[];
     timeZone: string;
     abortSignal?: AbortSignal;
 }): Promise<Result<ReadableStream<UIMessageChunk<AgentPlaygroundMessageMetadata>>, AgentPlaygroundError>> {
     const lastMessage = messages.at(-1);
-    // The provider comes from the browser, so only the playground's own providers are set up.
-    const starterProvider = lastMessage?.role === 'user' ? lastMessage.metadata?.starterProvider : undefined;
-    const integrationSetup =
-        starterProvider && PLAYGROUND_PROVIDERS.includes(starterProvider) ? await setUpStarterIntegration(ctx.environment, starterProvider) : undefined;
+    const requestedStarter = lastMessage?.role === 'user' ? lastMessage.metadata?.starterProvider : undefined;
+    // The provider comes from the browser, so only the playground's own providers are set up or tracked.
+    const starterProvider = requestedStarter && PLAYGROUND_PROVIDERS.includes(requestedStarter) ? requestedStarter : undefined;
+    const integrationSetup = starterProvider ? await setUpStarterIntegration(ctx.environment, starterProvider) : undefined;
     if (integrationSetup && integrationSetup.outcome !== 'created' && integrationSetup.outcome !== 'existing') {
         return Ok(setupOnlyReply({ integrationSetup }));
     }
@@ -491,7 +498,15 @@ export async function startTurn({
                 } else if (failed || outcome.status === 'failed') {
                     turnOutcome = 'error';
                 }
-                trackPlaygroundTurn({ ctx, sessionId: session.id, outcome: turnOutcome, steps, errorCategory: failedCategory });
+                trackPlaygroundTurn({
+                    ctx,
+                    sessionId: session.id,
+                    chatId,
+                    turn: describeTurn(messages, starterProvider),
+                    outcome: turnOutcome,
+                    steps,
+                    errorCategory: failedCategory
+                });
             }
         })
     );

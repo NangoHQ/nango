@@ -11,15 +11,17 @@ import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionSer
 import { postAgentSessionsBodySchema } from '../controllers/agent/postSessions.js';
 import {
     buildMcpTools,
+    describeTurn,
     existingIntegrationFor,
     newestConnectionPerIntegration,
     playgroundConnectionTags,
     playgroundSessionRequest,
     sessionChange,
-    sessionOwner,
     toolNeedsApproval
 } from './agentPlayground.service.js';
+import { sessionOwner } from './agentPlaygroundTags.js';
 
+import type { PlaygroundUIMessage } from './agentPlayground.service.js';
 import type { AgentSession } from '@nangohq/types';
 
 const executeAction = vi.hoisted(() => vi.fn());
@@ -57,6 +59,35 @@ describe('sessionOwner', () => {
 
     it('has no owner for a session the playground did not create', () => {
         expect(sessionOwner({ metaTools: { ...session().metaTools, nangoCreateConnection: { enabled: false, tags: {} } } })).toBeUndefined();
+    });
+});
+
+describe('describeTurn', () => {
+    const userMessage = (text: string, metadata?: PlaygroundUIMessage['metadata']): PlaygroundUIMessage => ({
+        id: text,
+        role: 'user',
+        parts: [{ type: 'text', text }],
+        ...(metadata ? { metadata } : {})
+    });
+    const reply: PlaygroundUIMessage = { id: 'reply', role: 'assistant', parts: [{ type: 'text', text: 'Done.' }] };
+
+    it('names the starter', () => {
+        expect(describeTurn([userMessage('Show my calendar', { starterProvider: 'google-calendar' })], 'google-calendar')).toStrictEqual({
+            isFirstTurn: true,
+            starterProvider: 'google-calendar'
+        });
+    });
+
+    it('still treats the first typed message as first after an empty setup-only reply', () => {
+        const setupOnly: PlaygroundUIMessage = { id: 'setup', role: 'assistant', parts: [] };
+
+        expect(describeTurn([userMessage('Show my calendar'), setupOnly, userMessage('List my issues')], undefined)).toStrictEqual({ isFirstTurn: true });
+    });
+
+    it('marks a later turn', () => {
+        expect(describeTurn([userMessage('List my issues'), reply, userMessage('Now close the first one')], undefined)).toStrictEqual({
+            isFirstTurn: false
+        });
     });
 });
 

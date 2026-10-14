@@ -102,15 +102,24 @@ export function sumTurnUsage(steps: PlaygroundStep[]): PlaygroundTurnUsage {
     return total;
 }
 
+export interface PlaygroundTurn {
+    isFirstTurn: boolean;
+    starterProvider?: string;
+}
+
 export function trackPlaygroundTurn({
     ctx,
     sessionId,
+    chatId,
+    turn,
     outcome,
     steps,
     errorCategory = null
 }: {
     ctx: { account: DBTeam; environment: DBEnvironment; plan: DBPlan | null; user: DBUser };
     sessionId: string;
+    chatId?: string | undefined;
+    turn: PlaygroundTurn;
     outcome: PlaygroundTurnOutcome;
     steps: PlaygroundStep[];
     errorCategory?: ModelErrorCategory | null;
@@ -129,7 +138,10 @@ export function trackPlaygroundTurn({
         plan: ctx.plan,
         eventProperties: {
             agent_session_id: sessionId,
+            ...(chatId ? { chat_id: chatId } : {}),
             environment_id: ctx.environment.id,
+            is_first_turn: turn.isFirstTurn,
+            ...(turn.starterProvider ? { starter_provider: turn.starterProvider } : {}),
             is_success: outcome !== 'error',
             ...(outcome === 'error' ? { error_code: 'model_error', ...(errorCategory ? { error_category: errorCategory } : {}) } : {}),
             is_stopped: outcome === 'aborted',
