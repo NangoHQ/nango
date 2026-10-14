@@ -28,7 +28,7 @@ export interface AgentPlaygroundMessageMetadata {
     integrationSetup?: AgentPlaygroundIntegrationSetup;
     sessionCreated?: AgentPlaygroundSessionCreated;
     usage?: AgentPlaygroundUsage;
-    // Sits on the user's message when the reply ended before any of it arrived.
+    // Sits on the user's message when the request failed before a reply started.
     replyOutcome?: AgentPlaygroundReplyOutcome;
 }
 

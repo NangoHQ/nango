@@ -3,7 +3,7 @@ import { LocalStorageKeys } from '../utils/local-storage';
 import type { AgentPlaygroundMessageMetadata } from '@nangohq/types';
 import type { UIMessage } from 'ai';
 
-type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
+export type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
 
 interface StoredChat {
     env: string;
@@ -40,7 +40,7 @@ export function loadAgentPlaygroundChat(env: string, userId: string, now = Date.
 export const INTERRUPTED_CALL = 'Interrupted before it finished. It may or may not have run.';
 
 // An approved request may already have run, so asking again could make the change twice.
-function settleAnsweredApprovals(message: PlaygroundMessage): PlaygroundMessage {
+export function settleAnsweredApprovals(message: PlaygroundMessage): PlaygroundMessage {
     return {
         ...message,
         parts: message.parts.map((part) => {

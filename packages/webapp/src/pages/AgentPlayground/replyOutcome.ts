@@ -1,7 +1,8 @@
-import type { AgentPlaygroundMessageMetadata, AgentPlaygroundReplyOutcome } from '@nangohq/types';
-import type { DynamicToolUIPart, UIMessage } from 'ai';
+import { INTERRUPTED_CALL, settleAnsweredApprovals } from '../../store/agentPlaygroundChat';
 
-type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
+import type { PlaygroundMessage } from '../../store/agentPlaygroundChat';
+import type { AgentPlaygroundMessageMetadata, AgentPlaygroundReplyOutcome } from '@nangohq/types';
+import type { DynamicToolUIPart } from 'ai';
 
 export function setReplyOutcome(messages: PlaygroundMessage[], outcome: AgentPlaygroundReplyOutcome | undefined): PlaygroundMessage[] {
     const last = messages.at(-1);
@@ -32,9 +33,18 @@ export function isUnfinished(part: DynamicToolUIPart): boolean {
     );
 }
 
-export function unfinishedLastToolCall(message: PlaygroundMessage): DynamicToolUIPart | undefined {
+export function markStopped(messages: PlaygroundMessage[]): PlaygroundMessage[] {
+    const last = messages.at(-1);
+    const settled = last ? [...messages.slice(0, -1), settleAnsweredApprovals(last)] : messages;
+    return setReplyOutcome(settled, { kind: 'stopped' });
+}
+
+export function stoppedLastToolCall(message: PlaygroundMessage): DynamicToolUIPart | undefined {
     const last = message.parts.filter(isShown).at(-1);
-    return last?.type === 'dynamic-tool' && isUnfinished(last) ? last : undefined;
+    if (last?.type !== 'dynamic-tool') {
+        return undefined;
+    }
+    return isUnfinished(last) || (last.state === 'output-error' && last.errorText === INTERRUPTED_CALL) ? last : undefined;
 }
 
 export function hasVisibleContent(message: PlaygroundMessage): boolean {

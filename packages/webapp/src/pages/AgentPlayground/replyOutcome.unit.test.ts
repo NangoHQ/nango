@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { hasReplyContent, hasVisibleContent, setReplyOutcome, unfinishedLastToolCall } from './replyOutcome.js';
+import { INTERRUPTED_CALL } from '../../store/agentPlaygroundChat.js';
+import { hasReplyContent, hasVisibleContent, markStopped, setReplyOutcome, stoppedLastToolCall } from './replyOutcome.js';
 
-import type { AgentPlaygroundMessageMetadata } from '@nangohq/types';
-import type { UIMessage } from 'ai';
+import type { PlaygroundMessage } from '../../store/agentPlaygroundChat.js';
 
-const userMessage: UIMessage<AgentPlaygroundMessageMetadata> = { id: 'user', role: 'user', parts: [{ type: 'text', text: 'Hi' }] };
-const emptyReply: UIMessage<AgentPlaygroundMessageMetadata> = {
+const userMessage: PlaygroundMessage = { id: 'user', role: 'user', parts: [{ type: 'text', text: 'Hi' }] };
+const emptyReply: PlaygroundMessage = {
     id: 'reply',
     role: 'assistant',
     parts: [{ type: 'step-start' }],
@@ -48,18 +48,31 @@ describe('hasReplyContent', () => {
     });
 });
 
-describe('unfinishedLastToolCall', () => {
-    const running = { type: 'dynamic-tool', toolName: 'nango_proxy', toolCallId: 'call', state: 'input-available', input: {} } as const;
+const running = { type: 'dynamic-tool', toolName: 'nango_proxy', toolCallId: 'call', state: 'input-available', input: {} } as const;
+const approved = { ...running, state: 'approval-responded', approval: { id: 'approval', approved: true } } as const;
+
+describe('markStopped', () => {
+    it('marks an approved call that never reported back as interrupted, so it is not sent again', () => {
+        const [reply] = markStopped([{ ...emptyReply, parts: [approved] }]);
+
+        expect(reply?.parts[0]).toMatchObject({ state: 'output-error', errorText: INTERRUPTED_CALL });
+        expect(reply?.metadata?.replyOutcome).toEqual({ kind: 'stopped' });
+    });
+});
+
+describe('stoppedLastToolCall', () => {
     const finished = { ...running, state: 'output-available', output: {} } as const;
+    const interrupted = { ...running, state: 'output-error', errorText: INTERRUPTED_CALL } as const;
 
     it('finds a tool call that is the last thing shown and never finished', () => {
-        expect(unfinishedLastToolCall({ ...emptyReply, parts: [{ type: 'text', text: 'Looking' }, running, { type: 'text', text: '' }] })).toBe(running);
+        expect(stoppedLastToolCall({ ...emptyReply, parts: [{ type: 'text', text: 'Looking' }, running, { type: 'text', text: '' }] })).toBe(running);
+        expect(stoppedLastToolCall({ ...emptyReply, parts: [interrupted] })).toBe(interrupted);
     });
 
     it('finds nothing when text follows the tool call, or the tool call finished', () => {
-        expect(unfinishedLastToolCall({ ...emptyReply, parts: [running, { type: 'text', text: 'Done' }] })).toBeUndefined();
-        expect(unfinishedLastToolCall({ ...emptyReply, parts: [finished] })).toBeUndefined();
-        expect(unfinishedLastToolCall(emptyReply)).toBeUndefined();
+        expect(stoppedLastToolCall({ ...emptyReply, parts: [running, { type: 'text', text: 'Done' }] })).toBeUndefined();
+        expect(stoppedLastToolCall({ ...emptyReply, parts: [finished] })).toBeUndefined();
+        expect(stoppedLastToolCall(emptyReply)).toBeUndefined();
     });
 });
 

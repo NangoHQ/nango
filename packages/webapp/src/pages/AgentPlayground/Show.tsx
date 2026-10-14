@@ -32,19 +32,12 @@ import { cn } from '@/utils/utils';
 import { describeChatError } from './chatError';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
-import { hasVisibleContent, setReplyOutcome, unfinishedLastToolCall } from './replyOutcome';
+import { hasReplyContent, hasVisibleContent, markStopped, setReplyOutcome, stoppedLastToolCall } from './replyOutcome';
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize } from './toolDisplay';
 
-import type {
-    AgentPlaygroundIntegrationSetup,
-    AgentPlaygroundMessageMetadata,
-    AgentPlaygroundReplyOutcome,
-    AgentPlaygroundSessionCreated
-} from '@nangohq/types';
-import type { UIMessage } from 'ai';
-
-type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
+import type { PlaygroundMessage } from '@/store/agentPlaygroundChat';
+import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundReplyOutcome, AgentPlaygroundSessionCreated } from '@nangohq/types';
 
 const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
     { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
@@ -103,10 +96,12 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
             failure.current = err.message;
         },
         onFinish: ({ isAbort, isError }) => {
+            const error = failure.current ?? '';
+            failure.current = undefined;
             if (isAbort) {
-                setMessages((current) => setReplyOutcome(current, { kind: 'stopped' }));
+                setMessages(markStopped);
             } else if (isError) {
-                setMessages((current) => setReplyOutcome(current, { kind: 'failed', error: failure.current ?? '' }));
+                setMessages((current) => setReplyOutcome(current, { kind: 'failed', error }));
             }
         }
     });
@@ -159,6 +154,9 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
         }
         // Regenerating would replace the assistant message, and with it every tool call that already ran.
         if (lastMessage?.role === 'assistant') {
+            if (!hasReplyContent(lastMessage)) {
+                setMessages((current) => setReplyOutcome(current, undefined));
+            }
             void sendMessage({ text: 'Continue.', metadata: { hidden: true } });
         } else {
             setMessages((current) => setReplyOutcome(current, undefined));
@@ -260,7 +258,7 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
                 {messages.map((message, index) => {
                     const replyOutcome = message.metadata?.replyOutcome;
                     const onRetry = message.id === lastMessage?.id && !busy ? retry : undefined;
-                    const stoppedToolCall = replyOutcome?.kind === 'stopped' ? unfinishedLastToolCall(message) : undefined;
+                    const stoppedToolCall = replyOutcome?.kind === 'stopped' ? stoppedLastToolCall(message) : undefined;
                     const outcome = replyOutcome && !stoppedToolCall && <ReplyOutcomeNotice outcome={replyOutcome} onRetry={onRetry} onReset={onReset} />;
                     if (message.role === 'user') {
                         return (
