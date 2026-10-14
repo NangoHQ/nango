@@ -224,7 +224,7 @@ async function renderLlmsFullTxt(routes: string[], catalog: CatalogEntry[]): Pro
 
     for (const route of routes) {
         const meta = await readPageMeta(route);
-        const rawContent = await fs.readFile(meta.filePath, 'utf-8');
+        const rawContent = (await fs.readFile(meta.filePath, 'utf-8')).replaceAll('\r\n', '\n');
         const content = stripMdxBoilerplate(rawContent).trim();
 
         lines.push(`## ${meta.title}`);
@@ -357,7 +357,7 @@ function renderCatalogTable(catalog: CatalogEntry[]): string {
 
 async function readPageMeta(route: string): Promise<PageMeta> {
     const filePath = routeToFilePath(route);
-    const raw = await fs.readFile(filePath, 'utf-8');
+    const raw = (await fs.readFile(filePath, 'utf-8')).replaceAll('\r\n', '\n');
     const frontmatter = parseFrontmatter(raw);
     const fallbackTitle = titleFromRoute(route);
 
