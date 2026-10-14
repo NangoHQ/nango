@@ -67,6 +67,7 @@ describe('hasVisibleContent', () => {
     it('hides a reply that carries only metadata and step markers', () => {
         expect(hasVisibleContent(emptyReply)).toBe(false);
         expect(hasVisibleContent({ ...emptyReply, parts: [{ type: 'text', text: '' }] })).toBe(false);
+        expect(hasVisibleContent({ ...emptyReply, parts: [{ type: 'text', text: '\n' }] })).toBe(false);
     });
 
     it('shows a reply that ended without content', () => {

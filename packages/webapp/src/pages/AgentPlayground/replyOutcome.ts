@@ -16,7 +16,7 @@ export function setReplyOutcome(messages: PlaygroundMessage[], outcome: AgentPla
 }
 
 function isShown(part: PlaygroundMessage['parts'][number]): boolean {
-    return (part.type === 'text' && part.text !== '') || part.type === 'dynamic-tool';
+    return (part.type === 'text' && part.text.trim() !== '') || part.type === 'dynamic-tool';
 }
 
 export function hasReplyContent(message: PlaygroundMessage): boolean {
