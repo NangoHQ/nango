@@ -55,10 +55,17 @@ function providerName(provider: string): string {
 export const AgentPlayground: React.FC = () => {
     const env = useStore((state) => state.env);
     const toolbarSlot = usePlaygroundToolbarSlot();
-    const [chatKey, setChatKey] = useState(0);
+    const [newChat, setNewChat] = useState<{ env: string; count: number }>();
+    const newChats = newChat?.env === env ? newChat.count : 0;
 
     return (
-        <Chat key={`${env}-${chatKey}`} env={env} toolbarSlot={toolbarSlot} startNew={chatKey > 0} onNewChat={() => setChatKey((key) => key + 1)} />
+        <Chat
+            key={`${env}-${newChats}`}
+            env={env}
+            toolbarSlot={toolbarSlot}
+            startNew={newChats > 0}
+            onNewChat={() => setNewChat({ env, count: newChats + 1 })}
+        />
     );
 };
 
