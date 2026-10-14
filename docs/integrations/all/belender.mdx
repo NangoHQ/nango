@@ -168,6 +168,26 @@ description: 'Access the Belender API in 2 minutes 💨'
     ### Packages
 
     Most create-request calls require a Belender `package_id` (UUID) assigned to your account for each product pack. Obtain package IDs from Belender (they differ between QA and production).
+
+    ### Pre-built actions
+
+    JSON flows and document retrieval (multipart certificate / video-id / digital-power stay on the proxy):
+
+    | Action | Group | Purpose |
+    | - | - | - |
+    | `check-clave-pin-service` | Clave PIN | Check Cl@ve PIN availability. |
+    | `create-clave-pin-request` | Clave PIN | Start Cl@ve PIN request. |
+    | `accept-clave-pin-terms` | Clave PIN | Accept terms. |
+    | `submit-clave-pin-otp` | Clave PIN | Submit OTP. |
+    | `resend-clave-pin-otp` | Clave PIN | Resend OTP. |
+    | `create-sms-request` | SMS | Start SMS verification. |
+    | `accept-sms-terms` | SMS | Accept terms. |
+    | `submit-sms-otp` | SMS | Submit OTP. |
+    | `resend-sms-otp` | SMS | Resend OTP. |
+    | `get-fast-json` | Documents | Fetch standardized JSON. |
+    | `get-document` | Documents | Download a request document. |
+
+    Trigger with the [Actions API](/guides/functions/action-functions) / `nango.triggerAction(...)`. Source: `integration-templates/integrations/belender/actions/`.
   </Tab>
   <Tab title="🔗 Useful links">
     | Topic | Links |
