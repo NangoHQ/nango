@@ -1914,6 +1914,7 @@
               "integrations/all/teamwork",
               "api-integrations/telegram",
               "api-integrations/tempo",
+              "api-integrations/tenable",
               "integrations/all/terraform",
               "api-integrations/textus",
               "api-integrations/the-swarm",

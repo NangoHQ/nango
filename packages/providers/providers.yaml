@@ -25686,6 +25686,38 @@ tempo:
             doc_section: '#step-2-find-your-api-subdomain'
             order: 1
 
+tenable:
+    display_name: Tenable
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://cloud.tenable.com
+        headers:
+            x-apikeys: 'accessKey=${credentials.username}; secretKey=${credentials.password};'
+        verification:
+            method: GET
+            endpoints:
+                - /scans
+    docs: https://nango.dev/docs/api-integrations/tenable
+    docs_connect: https://nango.dev/docs/api-integrations/tenable/connect
+    credentials:
+        username:
+            type: string
+            title: Access Key
+            description: Your Tenable API access key.
+            example: b31e0f97****************************************************86f7
+            pattern: '^[a-f0-9]{64}$'
+            doc_section: '#step-1-generating-your-api-keys'
+        password:
+            type: string
+            title: Secret Key
+            description: Your Tenable API secret key.
+            secret: true
+            example: f584b7b4****************************************************c9a7
+            pattern: '^[a-f0-9]{64}$'
+            doc_section: '#step-1-generating-your-api-keys'
+
 the-swarm:
     display_name: The Swarm
     categories:
