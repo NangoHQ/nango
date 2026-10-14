@@ -59,20 +59,6 @@ export function useHostedSigninAPI() {
     };
 }
 
-export function useGetHmacAPI(env: string) {
-    return async (providerConfigKey: string, connectionId: string) => {
-        try {
-            const res = await apiFetch(`/api/v1/environment/hmac?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
-                method: 'GET'
-            });
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
 export class APIError extends Error {
     json;
     res;

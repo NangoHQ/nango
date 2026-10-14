@@ -3,7 +3,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { APIError, apiFetch } from '../utils/api';
 import { metaQueryKey } from './useMeta';
 
-import type { GetEnvironment, PatchEnvironment, PatchWebhook, PostEnvironment, PostEnvironmentVariables, PostRotateWebhookSigningKey } from '@nangohq/types';
+import type { SlackAdminAuth } from '../utils/slack-connection';
+import type {
+    ApiError,
+    GetEnvironment,
+    PatchEnvironment,
+    PatchWebhook,
+    PostEnvironment,
+    PostEnvironmentVariables,
+    PostRotateWebhookSigningKey
+} from '@nangohq/types';
 
 export const environmentQueryKey = (env: string) => [env, 'environment'] as const;
 
@@ -42,6 +51,47 @@ export function usePatchEnvironment(env: string) {
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) });
+        }
+    });
+}
+
+export function useConnectionHmac(env: string, providerConfigKey: string | undefined, connectionId: string, enabled: boolean) {
+    return useQuery<string, APIError>({
+        enabled: enabled && Boolean(env && providerConfigKey && connectionId),
+        queryKey: [env, 'environment', 'hmac', providerConfigKey, connectionId],
+        queryFn: async () => {
+            const res = await apiFetch(`/api/v1/environment/hmac?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`);
+
+            const json = (await res.json()) as { hmac_digest: string | null } | ApiError<string>;
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json.hmac_digest ?? '';
+        }
+    });
+}
+
+export function useSlackAdminAuth(env: string) {
+    return useMutation<SlackAdminAuth, APIError, { connectionId: string }>({
+        mutationFn: async ({ connectionId }) => {
+            const res = await apiFetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}&env=${env}`);
+
+            const json = (await res.json()) as SlackAdminAuth | ApiError<string>;
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        }
+    });
+}
+
+export function useDisconnectSlack(env: string) {
+    return useMutation<void, APIError, { connectionId: string }>({
+        mutationFn: async ({ connectionId }) => {
+            const res = await apiFetch(`/api/v1/connections/admin/${connectionId}?env=${env}`, { method: 'DELETE' });
+            if (res.status !== 204) {
+                throw new APIError({ res, json: (await res.json().catch(() => ({}))) as Record<string, unknown> });
+            }
         }
     });
 }
