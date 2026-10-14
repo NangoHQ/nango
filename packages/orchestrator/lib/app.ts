@@ -112,8 +112,12 @@ try {
         logger.info('Closing...');
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         api.close(async () => {
-            await backpressureMonitor.stop();
-            await concurrencySampler?.stop();
+            const stoppedDaemons = await Promise.allSettled([backpressureMonitor.stop(), concurrencySampler?.stop()]);
+            for (const res of stoppedDaemons) {
+                if (res.status === 'rejected') {
+                    logger.error(`Failed to stop a daemon: ${stringifyError(res.reason)}`);
+                }
+            }
             await scheduler.stop();
             await eventsHandler.disconnect();
             await immediateRateLimiter.destroy();

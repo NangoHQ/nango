@@ -529,13 +529,11 @@ export interface GroupBackpressure {
  */
 export async function concurrencyPerGroup(db: knex.Knex, { queryTimeoutMs }: { queryTimeoutMs: number }): Promise<Result<Map<string, number>>> {
     try {
-        const rows = await db.transaction(async (trx) => {
-            await trx.raw("SELECT set_config('statement_timeout', ?, true)", [String(queryTimeoutMs)]);
-            const { rows } = await trx.raw<{ rows: { groupKey: string; count: number }[] }>(
-                `SELECT group_key AS "groupKey", count(*)::int AS count FROM ${TASKS_TABLE} WHERE state = 'STARTED' GROUP BY group_key`
-            );
-            return rows;
-        });
+        const { rows } = await db
+            .raw<{
+                rows: { groupKey: string; count: number }[];
+            }>(`SELECT group_key AS "groupKey", count(*)::int AS count FROM ${TASKS_TABLE} WHERE state = 'STARTED' GROUP BY group_key`)
+            .timeout(queryTimeoutMs, { cancel: true });
         return Ok(new Map(rows.map((r) => [r.groupKey, r.count])));
     } catch (err) {
         return Err(new Error(`Error fetching concurrency per group: ${stringifyError(err)}`));
