@@ -20721,6 +20721,47 @@ ramp-sandbox:
         base_url: https://demo-api.ramp.com
     docs: https://nango.dev/docs/integrations/all/ramp-sandbox
 
+rapid7:
+    display_name: Rapid7
+    categories:
+        - iam
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.region}.api.insight.rapid7.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /validate
+    docs: https://nango.dev/docs/api-integrations/rapid7
+    docs_connect: https://nango.dev/docs/api-integrations/rapid7/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region code of your Rapid7 data.
+            enum:
+                - us
+                - us2
+                - us3
+                - eu
+                - ca
+                - au
+                - ap
+                - me1
+                - aps2
+            doc_section: '#step-1-find-your-region'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Rapid7 API key.
+            format: uuid
+            example: 3f2a****-****-****-****-********9c1e
+            doc_section: '#step-2-generate-an-api-key'
+
 rapidapi:
     display_name: RapidAPI
     categories:
