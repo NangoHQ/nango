@@ -86,10 +86,6 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
     string typed as a union defined elsewhere, such as `UsageMetric`, use `stringOf<UsageMetric>()`, not
     `z.custom`, so the test still sees a string.
 
-    `surface` takes an array, such as `['web', 'server']`, only when both sides send the same fact under one
-    name, like a connection being created. Every insight on that event then has to filter by `surface`, or
-    it counts the fact twice.
-
     The catalogue lives in `@nangohq/types`, so it can only import types from there. When a property's
     type lives in one service, don't move it into `@nangohq/types` by default:
     - If the values exist mainly for tracking, list them with `z.enum([...])` in the catalogue, and have the
