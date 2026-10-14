@@ -3618,7 +3618,9 @@ belender:
             title: API Hostname
             description: Belender API hostname without scheme. Use api.belender.net (prod) or api.qa.belender.net (QA).
             example: api.belender.net
-            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            enum:
+                - api.belender.net
+                - api.qa.belender.net
             prefix: https://
             order: 1
             doc_section: '#step-1-choosing-your-api-hostname'
