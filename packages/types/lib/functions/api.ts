@@ -246,6 +246,8 @@ export interface GetFunctionResponse {
     state: 'enabled' | 'disabled';
     source: FunctionSource;
     trigger: FunctionTriggerDefinition;
+    input_json_schema: JSONSchema7 | null;
+    output_json_schema: JSONSchema7 | null;
     created_at: string;
     updated_at: string;
 }
@@ -471,6 +473,30 @@ export type DeletePublicIntegrationFunction = ApiEndpoint<{
     Params: { uniqueKey: string; name: string };
     Error: ApiError<'function_managed_by_deploy' | 'invalid_request'>;
     Success: FunctionDeletionSuccess;
+}>;
+
+export interface GetToolResponse {
+    uuid: string;
+    integration_id: string;
+    provider: string;
+    name: string;
+    description: string;
+    input_json_schema: JSONSchema7 | null;
+    output_json_schema: JSONSchema7 | null;
+    source: FunctionSource;
+    meta: {
+        instructions?: string | undefined;
+        required_scopes?: string[] | undefined;
+        tags: FunctionTags;
+    };
+}
+
+export type GetTool = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/integrations/:uniqueKey/tools/:name';
+    Params: { uniqueKey: string; name: string };
+    Success: GetToolResponse;
 }>;
 
 export type GetPublicProviderTemplates = ApiEndpoint<{
