@@ -88,6 +88,7 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
     const userId = user?.uuid;
     const [storedMessages] = useState(() => (userId ? loadAgentPlaygroundChat(env, userId) : undefined));
     const failure = useRef<string | undefined>(undefined);
+    const leaving = useRef(false);
     const { messages, setMessages, sendMessage, regenerate, status, stop, clearError, addToolApprovalResponse } = useChat<PlaygroundMessage>({
         transport,
         ...(storedMessages ? { messages: storedMessages } : {}),
@@ -98,7 +99,7 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
         onFinish: ({ isAbort, isError }) => {
             const error = failure.current ?? '';
             failure.current = undefined;
-            if (isAbort) {
+            if (isAbort || leaving.current) {
                 setMessages(markStopped);
             } else if (isError) {
                 setMessages((current) => setReplyOutcome(current, { kind: 'failed', error }));
@@ -119,8 +120,22 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
 
     const busy = status === 'submitted' || status === 'streaming';
     useEffect(() => {
-        if (!busy && userId) {
-            saveAgentPlaygroundChat(env, userId, messages);
+        if (!busy) {
+            return;
+        }
+        leaving.current = false;
+        // Leaving the page cancels the request, and the SDK reports that as a network error.
+        // Chrome cancels it before `pagehide`, so only `beforeunload` comes early enough.
+        const onLeave = () => {
+            leaving.current = true;
+        };
+        window.addEventListener('beforeunload', onLeave);
+        return () => window.removeEventListener('beforeunload', onLeave);
+    }, [busy]);
+    useEffect(() => {
+        if (userId) {
+            // If the page closes mid-reply, the reload shows the reply as stopped.
+            saveAgentPlaygroundChat(env, userId, busy ? markStopped(messages) : messages);
         }
     }, [env, userId, messages, busy]);
 
