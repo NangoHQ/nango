@@ -3587,6 +3587,55 @@ beeline-vms:
             doc_section: '#step-1-getting-your-credentials-from-beeline'
             order: 3
 
+belender:
+    display_name: Belender
+    categories:
+        - legal
+        - other
+    auth_mode: TWO_STEP
+    body_format: json
+    # Login issues a bearer access_token. Documented proxy paths (see docs):
+    # POST /requests/client-certificate, /requests/videoid, /digital-power/send-job (multipart)
+    # POST /requests/clave-pin[/check-service|/terms|/otp|/resend-otp]
+    # POST /requests/sms[/terms|/otp|/resend-otp]
+    # GET  /requests/{id}/documents/{document_id}, /requests/{id}/fast-json
+    token_url: https://${connectionConfig.hostname}/login
+    token_params:
+        email: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: access_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/integrations/all/belender
+    docs_connect: https://nango.dev/docs/integrations/all/belender/connect
+    connection_config:
+        hostname:
+            type: string
+            title: API Hostname
+            description: Belender API hostname without scheme. Use api.belender.net (prod) or api.qa.belender.net (QA).
+            example: api.belender.net
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-choosing-your-api-hostname'
+    credentials:
+        username:
+            type: string
+            title: Email
+            description: Your Belender account email address.
+            example: user@example.com
+            doc_section: '#step-2-entering-your-belender-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Belender account password.
+            secret: true
+            doc_section: '#step-2-entering-your-belender-credentials'
+
 bettercontact:
     display_name: BetterContact
     categories:

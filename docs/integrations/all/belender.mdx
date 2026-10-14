@@ -1,0 +1,196 @@
+---
+title: 'Belender'
+sidebarTitle: 'Belender'
+description: 'Access the Belender API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Belender_.
+      </Step>
+      <Step title="Authorize Belender">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Belender API hostname, email, and password. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Belender API">
+        Fetch standardized document JSON for a request. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/requests/{request_id}/fast-json" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/requests/{request_id}/fast-json',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/guides/primitives/auth) in your app to let your users connect their Belender accounts.
+    </Tip>
+  </Tab>
+  <Tab title="📚 API reference">
+    Belender does not publish a full public OpenAPI catalogue. The endpoints below are the documented HTTP surface used for production integrations against `https://api.belender.net` (prod) and `https://api.qa.belender.net` (QA). Product overview: [belender.eu](https://belender.eu/).
+
+    Auth (`POST /login`) is handled by Nango’s `TWO_STEP` flow when you create a connection. Proxy calls receive an `Authorization: Bearer` header with the stored access token.
+
+    ### Authentication
+
+    | Method | Path | Body | Notes |
+    | - | - | - | - |
+    | `POST` | `/login` | `{ "email", "password" }` | Returns `access_token`. Used by Nango on connect; you normally do not call this via the proxy. |
+
+    ### Document / certificate flows (multipart)
+
+    These create Belender requests that collect end-user consent and later deliver official documents (CIRBE, tax, social security, etc.).
+
+    | Method | Path | Content-Type | Purpose |
+    | - | - | - | - |
+    | `POST` | `/requests/client-certificate` | `multipart/form-data` | Legal-entity flow with ID document images + company data. |
+    | `POST` | `/requests/videoid` | `multipart/form-data` | Natural-person video-ID flow. |
+    | `POST` | `/digital-power/send-job` | `multipart/form-data` | Digital power of attorney job for a company CIF. |
+
+    Common multipart fields (vary by flow): `user_id`, `package_id`, `name`, `first_surname`, `second_surname`, `email_copy`, `phone`, `document_number`, `company_name`, `cif`, `power_activate`, `document_front`, `document_back`, `type` (`legal` / `natural`).
+
+    ```typescript
+    // Example: start a digital-power job (multipart)
+    const res = await nango.post({
+        endpoint: '/digital-power/send-job',
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>',
+        headers: { 'Content-Type': 'multipart/form-data' },
+        data: formData // FormData with package_id, cif, type=legal, ...
+    });
+    ```
+
+    ### Cl@ve PIN flow (JSON)
+
+    | Method | Path | Purpose |
+    | - | - | - |
+    | `POST` | `/requests/clave-pin/check-service` | Check whether the person has Cl@ve PIN (`document_number`, `document_expiration_date`, optional `document_support` for NIE). |
+    | `POST` | `/requests/clave-pin` | Create Cl@ve PIN request (`package_id`, `check_legal`, document fields). |
+    | `POST` | `/requests/clave-pin/terms` | Accept terms (`request_id`, `terms_and_conditions`). |
+    | `POST` | `/requests/clave-pin/otp` | Submit OTP (`request_id`, `code`). |
+    | `POST` | `/requests/clave-pin/resend-otp` | Resend OTP (`request_id`). |
+
+    ```typescript
+    const check = await nango.post({
+        endpoint: '/requests/clave-pin/check-service',
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>',
+        data: {
+            document_number: '12345678Z',
+            document_expiration_date: '2030-01-15'
+        }
+    });
+
+    const created = await nango.post({
+        endpoint: '/requests/clave-pin',
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>',
+        data: {
+            document_number: '12345678Z',
+            document_expiration_date: '2030-01-15',
+            package_id: '<PACKAGE-UUID>',
+            check_legal: true
+        }
+    });
+    ```
+
+    ### SMS flow (JSON)
+
+    | Method | Path | Purpose |
+    | - | - | - |
+    | `POST` | `/requests/sms` | Create SMS verification request (`document_number`, `phone`, `birth_date`, `package_id`, `check_legal`). |
+    | `POST` | `/requests/sms/terms` | Accept terms (`request_id`, `terms_and_conditions`). |
+    | `POST` | `/requests/sms/otp` | Submit OTP (`request_id`, `code`). |
+    | `POST` | `/requests/sms/resend-otp` | Resend OTP (`request_id`). |
+
+    ### Retrieve documents / data
+
+    | Method | Path | Purpose |
+    | - | - | - |
+    | `GET` | `/requests/{request_id}/documents/{document_id}` | Download a specific document produced by a request. |
+    | `GET` | `/requests/{request_id}/fast-json` | Fetch Belender’s standardized JSON payload for the request (e.g. AEAT / SS). |
+
+    ```typescript
+    const doc = await nango.get({
+        endpoint: `/requests/${requestId}/documents/${documentId}`,
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>'
+    });
+
+    const fastJson = await nango.get({
+        endpoint: `/requests/${requestId}/fast-json`,
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>'
+    });
+    ```
+
+    ### Async lifecycle (webhooks)
+
+    Belender notifies progress via webhooks (configure the callback URL with Belender). Typical `status_code` / `document_status_code` values include:
+
+    `terms_and_conditions`, `waiting_password`, `waiting_otp`, `waiting_video`, `approved_terms_digital_power`, `waiting_acceptance_file_signed`, `cert_approved`, `waiting_certificate`, `consent_process_completed`, `certificate_created`, `approved_digital_power`, `waiting_documents`, `fast_json_ss`, `fast_json_aeat`, `downloaded`, `all_documents_downloaded`, `declined_terms_digital_power`, `rejected_identity`, `rejected_rmc_validation`, `failed_without_retry`, `failed_download`.
+
+    After relevant statuses, pull documents with `GET /requests/{id}/documents/{document_id}` and/or `GET /requests/{id}/fast-json`.
+
+    ### Packages
+
+    Most create-request calls require a Belender `package_id` (UUID) assigned to your account for each product pack. Obtain package IDs from Belender (they differ between QA and production).
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Belender using Connect UI](/integrations/all/belender/connect) |
+    | General | [Belender website](https://belender.eu/) |
+    | Developer | Production API: `https://api.belender.net` |
+    | | QA API: `https://api.qa.belender.net` |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/belender.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Belender issues a bearer `access_token` via `POST /login` with JSON `{ email, password }`. Nango stores that token and injects `Authorization: Bearer …` on proxy calls.
+    - Use hostname `api.belender.net` for production and `api.qa.belender.net` for QA (connection config `hostname`, no scheme).
+    - Multipart endpoints (`/requests/client-certificate`, `/requests/videoid`, `/digital-power/send-job`) require a real `multipart/form-data` body when calling through the proxy.
+    - Cl@ve PIN and SMS step endpoints are JSON (`/terms`, `/otp`, `/resend-otp`) and need the Belender `request_id` from the create-request response.
+    - `package_id` is environment-specific; do not reuse production package IDs against QA.
+    - Document download and consent completion are asynchronous — drive the flow from Belender webhooks, then fetch documents / fast-json.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/belender.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
