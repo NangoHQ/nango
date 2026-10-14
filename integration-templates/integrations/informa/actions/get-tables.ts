@@ -2,15 +2,16 @@ import { createAction } from 'nango';
 import { z } from 'zod';
 
 const InputSchema = z.object({
-    params: z
-        .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
-        .optional()
-        .describe('Optional Informa query params to select decoding tables.')
+    params: z.record(z.string(), z.string()).optional().describe('Optional Informa query params.')
 });
 
+type Input = z.infer<typeof InputSchema>;
+
 const OutputSchema = z.object({
-    data: z.unknown().describe('Raw Informa decoding tables payload.')
+    data: z.unknown()
 });
+
+type Output = z.infer<typeof OutputSchema>;
 
 const action = createAction({
     description: 'Fetches Informa decoding tables for coded fields (get-tables).',
@@ -19,7 +20,7 @@ const action = createAction({
     input: InputSchema,
     output: OutputSchema,
 
-    exec: async (nango, input): Promise<z.infer<typeof OutputSchema>> => {
+    exec: async (nango, input: Input): Promise<Output> => {
         const response = await nango.get({
             endpoint: '/api/get-tables',
             params: input.params ?? {},

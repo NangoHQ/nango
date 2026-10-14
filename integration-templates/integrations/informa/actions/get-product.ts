@@ -2,23 +2,23 @@ import { createAction } from 'nango';
 import { z } from 'zod';
 
 const InputSchema = z.object({
-    product: z
-        .string()
-        .describe(
-            'Informa product code (e.g. INFORME_FINANCIERO, INFORME_ABREVIADO, FICHA, BALANCES). Must be enabled on the contract.'
-        ),
+    product: z.string().describe('Informa product code (e.g. INFORME_FINANCIERO).'),
     cif: z.string().describe('Spanish company/autónomo tax ID (NIF/CIF).'),
     formato: z.enum(['json', 'pdf']).optional().describe('Response format. Defaults to json.'),
     rai: z.boolean().optional().describe('Include RAI delinquency data when contracted.'),
     morosidad: z.boolean().optional().describe('Include additional delinquency modules when contracted.')
 });
 
+type Input = z.infer<typeof InputSchema>;
+
 const OutputSchema = z.object({
     product: z.string(),
     cif: z.string(),
     formato: z.string(),
-    data: z.unknown().describe('Raw Informa product payload (JSON object or PDF bytes when formato=pdf).')
+    data: z.unknown()
 });
+
+type Output = z.infer<typeof OutputSchema>;
 
 const action = createAction({
     description:
@@ -28,21 +28,20 @@ const action = createAction({
     input: InputSchema,
     output: OutputSchema,
 
-    exec: async (nango, input): Promise<z.infer<typeof OutputSchema>> => {
+    exec: async (nango, input: Input): Promise<Output> => {
         const formato = input.formato ?? 'json';
-        const params: Record<string, string | boolean> = {
+        const params: Record<string, string> = {
             product: input.product,
             cif: input.cif,
             formato
         };
         if (input.rai !== undefined) {
-            params.rai = input.rai;
+            params['rai'] = String(input.rai);
         }
         if (input.morosidad !== undefined) {
-            params.morosidad = input.morosidad;
+            params['morosidad'] = String(input.morosidad);
         }
 
-        // https://www.informa.es/necesidades/api-empresas
         const response = await nango.get({
             endpoint: '/api/get-product',
             params,

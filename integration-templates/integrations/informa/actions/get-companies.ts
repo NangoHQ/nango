@@ -3,15 +3,16 @@ import { z } from 'zod';
 
 const InputSchema = z.object({
     denominacion: z.string().describe('Company name / denomination search string.'),
-    extra: z
-        .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
-        .optional()
-        .describe('Additional Informa query params allowed by your contract.')
+    extra: z.record(z.string(), z.string()).optional().describe('Additional Informa query params as strings.')
 });
 
+type Input = z.infer<typeof InputSchema>;
+
 const OutputSchema = z.object({
-    data: z.unknown().describe('Raw Informa lista_empresas (or contract-specific) response.')
+    data: z.unknown()
 });
+
+type Output = z.infer<typeof OutputSchema>;
 
 const action = createAction({
     description: 'Searches Informa companies by denomination / name (get-companies).',
@@ -20,8 +21,8 @@ const action = createAction({
     input: InputSchema,
     output: OutputSchema,
 
-    exec: async (nango, input): Promise<z.infer<typeof OutputSchema>> => {
-        const params: Record<string, string | number | boolean> = {
+    exec: async (nango, input: Input): Promise<Output> => {
+        const params: Record<string, string> = {
             denominacion: input.denominacion,
             ...(input.extra ?? {})
         };
