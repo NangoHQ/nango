@@ -5,15 +5,16 @@ import db from '@nangohq/database';
 import { functionConfigService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
+import { scriptNameSchema } from '../../../../helpers/validation.js';
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { toGetToolResponse } from '../../../functions/formatter.js';
+import { functionIntegrationIdSchema } from '../../../functions/validation.js';
 
 import type { GetTool } from '@nangohq/types';
 
 const paramsSchema = z
     .object({
-        uniqueKey: providerConfigKeySchema,
+        uniqueKey: functionIntegrationIdSchema,
         name: scriptNameSchema
     })
     .strict();
