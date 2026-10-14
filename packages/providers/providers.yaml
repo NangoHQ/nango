@@ -23763,6 +23763,35 @@ stripe-api-key:
             pattern: '^acct_[A-Za-z0-9]{16}(\/acct_[A-Za-z0-9]{16})?$'
             doc_section: '#step-2-finding-your-stripe-context'
 
+stripe-link:
+    display_name: Stripe Link
+    categories:
+        - payment
+    auth_mode: OAUTH2
+    authorization_url: https://login.link.com/auth
+    token_url: https://login.link.com/auth/token
+    authorization_params:
+        response_type: code
+        key: ${connectionConfig.publishableKey}
+    token_params:
+        grant_type: authorization_code
+    connection_config:
+        publishableKey:
+            type: string
+            title: Stripe Publishable Key
+            description: The Stripe publishable key associated with your Link OAuth client. Sent as the `key` parameter on the authorization request.
+            example: pk_live_xxxxxxxxxxxxxxxxxxxxxxxx
+            pattern: '^pk_(live|test)_[a-zA-Z0-9]+$'
+            order: 1
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - payment_methods.agentic
+        - userinfo:read
+    proxy:
+        base_url: https://api.link.com
+    docs: https://nango.dev/docs/integrations/all/stripe-link
+
 supabase:
     display_name: Supabase
     categories:

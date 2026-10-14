@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1007
+Provider count: 1008
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -857,6 +857,7 @@ URL patterns:
 | `stripe-app` | Stripe App | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/stripe-app.md) |  |  | payment, popular |
 | `stripe-app-sandbox` | Stripe App (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/stripe-app-sandbox.md) | [connect](https://nango.dev/docs/integrations/all/stripe-app-sandbox/connect.md) |  | payment |
 | `stripe-express` | Stripe Express | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/stripe-express.md) |  |  | payment |
+| `stripe-link` | Stripe Link | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/stripe-link.md) |  |  | payment |
 | `supabase` | Supabase | API_KEY | [docs](https://nango.dev/docs/api-integrations/supabase.md) | [connect](https://nango.dev/docs/api-integrations/supabase/connect.md) |  | dev-tools, storage |
 | `supabase-mcp` | Supabase (MCP) | API_KEY | [docs](https://nango.dev/docs/api-integrations/supabase-mcp.md) | [connect](https://nango.dev/docs/api-integrations/supabase-mcp/connect.md) |  | dev-tools, mcp |
 | `supabase-mcp-oauth` | Supabase (MCP OAuth) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/supabase-mcp-oauth.md) | [connect](https://nango.dev/docs/api-integrations/supabase-mcp-oauth/connect.md) |  | dev-tools, mcp |

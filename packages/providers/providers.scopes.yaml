@@ -11430,6 +11430,54 @@ stripe-express:
     - read_only
     - read_write
 
+# source: https://login.link.com/.well-known/oauth-authorization-server
+stripe-link:
+    - read_email
+    - read_phone
+    - read_name
+    - read_avatar
+    - read_is_verified
+    - read_last_verified_at
+    - read_dob
+    - read_address
+    - read_id_number
+    - read_id_document
+    - write_dob
+    - write_address
+    - write_id_number
+    - write_id_document
+    - payment_methods.cards:save
+    - read_has_purchases
+    - share_full_name
+    - share_email
+    - share_dob
+    - share_address
+    - share_id_number
+    - share_id_document
+    - share_additional_documents
+    - share_questionnaire_answers
+    - share_is_verified
+    - share_last_verified_at
+    - crypto:ramp
+    - payment_methods.agentic
+    - spend_requests:approve
+    - financial_insights.sources.read
+    - financial_insights.balances.read
+    - financial_insights.transactions.read
+    - userinfo.core:read
+    - userinfo:read
+    - userinfo.addresses:read
+    - kyc.status:read
+    - kyc.status:share
+    - kyc:read
+    - kyc:write
+    - kyc:share
+    - auth.persist_login:read
+    - payment_methods:read
+    - payment_methods.bank_accounts:read
+    - payment_methods.bank_accounts:share
+    - payment_methods:save
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 surecontact: []
 
