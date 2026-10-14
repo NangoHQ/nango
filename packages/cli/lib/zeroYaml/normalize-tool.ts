@@ -91,11 +91,14 @@ export function normalizeToolDefinition(ast: babel.types.File): void {
                 const declarations = declarationPath.node.declarations;
                 const index = declarations.indexOf(declaratorPath.node);
                 const preceding = declarations.slice(0, index);
-                declarationPath.replaceWithMultiple([
-                    ...(preceding.length > 0 ? [t.variableDeclaration(declarationPath.node.kind, preceding)] : []),
+                const statementPath = declarationPath.parentPath?.isExportNamedDeclaration() ? declarationPath.parentPath : declarationPath;
+                const preserveExport = (declaration: babel.types.VariableDeclaration) =>
+                    statementPath.isExportNamedDeclaration() ? t.exportNamedDeclaration(declaration, []) : declaration;
+                statementPath.replaceWithMultiple([
+                    ...(preceding.length > 0 ? [preserveExport(t.variableDeclaration(declarationPath.node.kind, preceding))] : []),
                     variable,
                     exported,
-                    t.variableDeclaration(declarationPath.node.kind, declarations.slice(index))
+                    preserveExport(t.variableDeclaration(declarationPath.node.kind, declarations.slice(index)))
                 ]);
             } else {
                 callPath.getStatementParent()?.insertBefore([variable, exported]);

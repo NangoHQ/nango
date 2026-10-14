@@ -229,8 +229,8 @@ describe('tools', () => {
         }
     });
 
-    it('preserves surrounding bindings and evaluates tool arguments once', async () => {
-        const dir = await getTestDirectory('normalized_tool_evaluation');
+    it.each([false, true])('preserves declaration order and named exports (named export: %s)', async (namedExport) => {
+        const dir = await getTestDirectory(`normalized_tool_evaluation_${namedExport}`);
         await fs.promises.mkdir(dir, { recursive: true });
         const filePath = path.join(dir, 'tool.js');
         try {
@@ -241,14 +241,14 @@ describe('tools', () => {
                 import * as z from 'zod';
                 let calls = 0;
                 const order = [];
-                const description = (order.push('before'), 'Get an issue'), tool = createTool({
-                    description,
+                ${namedExport ? 'export ' : ''}const createAction = (order.push('before'), 'Get an issue'), createFunction = createTool({
+                    description: createAction,
                     input: z.object({}),
                     output: z.object({ calls: z.number(), order: z.array(z.string()) }),
                     meta: (() => { calls += 1; order.push('meta'); return { tags: { domain: 'issues' } }; })(),
                     exec: async () => ({ calls, order })
-                }), after = (order.push('after'), tool.description);
-                export default tool;
+                }), createSync = (order.push('after'), createFunction.description);
+                export default createFunction;
             `
             );
             const code = (await bundleFile({ entryPoint: filePath, projectRootPath: dir })).unwrap();
@@ -256,6 +256,11 @@ describe('tools', () => {
             vm.runInNewContext(code, { module, exports: module.exports, require: () => z });
             expect(module.exports['default'].description).toBe('Get an issue');
             expect(await module.exports['default'].exec()).toEqual({ calls: 1, order: ['before', 'meta', 'after'] });
+            if (namedExport) {
+                expect(module.exports['createFunction']).toBe(module.exports['default']);
+                expect(module.exports['createAction']).toBe('Get an issue');
+                expect(module.exports['createSync']).toBe('Get an issue');
+            }
         } finally {
             await fs.promises.rm(dir, { recursive: true, force: true });
         }
