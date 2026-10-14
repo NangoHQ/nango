@@ -13,7 +13,7 @@ import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
 import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
 import { parseIntegrationDefinitions } from './definitions.js';
-import { normalizeToolDefinition } from './normalize-tool.js';
+import { hasToolDefinition, normalizeToolDefinition } from './normalize-tool.js';
 import { badExportCompilerError, CompileError, fileErrorToText, ReadableError, tsDiagnosticToText } from './utils.js';
 
 // import type { BabelErrorType } from './constants.js';
@@ -207,6 +207,7 @@ export async function bundleFile({
     const friendlyPath = entryPoint.replace(/\.js$/, '.ts').replace(projectRootPath, '.');
     try {
         const { plugin, bag } = nangoPlugin({ entryPoint });
+        const realEntryPoint = fs.realpathSync(path.resolve(entryPoint.replace(/\.js$/, '.ts')));
         const res = await build({
             entryPoints: [entryPoint],
             bundle: true,
@@ -223,8 +224,14 @@ export async function bundleFile({
                     setup(build: any) {
                         build.onLoad({ filter: /\.ts$/ }, async (args: any) => {
                             const source = await fs.promises.readFile(args.path, 'utf8');
-                            const normalized = normalizeToolDefinition({ source, filename: args.path, entryPoint });
-                            const result = await babel.transformFromAstAsync(normalized, source, {
+                            const ast = await babel.parseAsync(source, { filename: args.path, parserOpts: { sourceType: 'module', plugins: ['typescript'] } });
+                            if (!ast) {
+                                return { contents: source, loader: 'ts' };
+                            }
+                            if (args.path === realEntryPoint && hasToolDefinition(ast)) {
+                                normalizeToolDefinition(ast);
+                            }
+                            const result = await babel.transformFromAstAsync(ast, source, {
                                 filename: args.path,
                                 cloneInputAst: false,
                                 plugins: [plugin],
@@ -540,8 +547,7 @@ type AugmentedExportDefault = babel.types.ExportDefaultDeclaration & { __transfo
  *
  * Initially, I didn't want to remove this but because our codebase is ESM and node.vm only compiles CJS
  * it was annoying to have to compile the code twice. And have mixed code when publishing.
- * Tool declarations are normalized first. This plugin removes the create wrappers
- * and adds the script type to their definitions.
+ * Since the wrapper is only used to stringly type the exports, we can remove it.
  */
 function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const proxyLines: number[] = [];
@@ -827,7 +833,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             const mapping = allowedExports[calleeName];
                             const varName = mapping.varName;
 
-                            // Inject type property.
+                            // Inject type property
                             arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(mapping.type)), ...arg.properties];
                             // Insert: export const <varName> = <arg>;
                             const exportConst = t.exportNamedDeclaration(
@@ -858,8 +864,9 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                 throw new CompileError('nango_invalid_function_param', lineNumber, 'Invalid function parameter, should be an object');
                             }
 
-                            // Inject type property.
+                            // Inject type property (mutate the object literal)
                             arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(allowedExports[calleeName].type)), ...arg.properties];
+                            // Replace the variable's initializer with the object literal
                             binding.path.get('init').replaceWith(arg);
                             return;
                         } else {

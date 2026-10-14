@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import vm from 'node:vm';
 
+import { parseSync } from '@babel/core';
 import { assert, describe, expect, it, vi } from 'vitest';
 import * as z from 'zod';
 
@@ -13,6 +14,7 @@ import { createTool, deriveFunctionCapabilities } from '@nangohq/runner-sdk';
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 import { bundleFile, compileAllFunctions, compileFunction, detectFeatures } from './compile.js';
 import { getIntegrationId, parseIntegrationDefinitions, validateFunction } from './definitions.js';
+import { hasToolDefinition } from './normalize-tool.js';
 import { CompileError } from './utils.js';
 
 import type { FunctionTriggerDefinition } from '@nangohq/types';
@@ -153,6 +155,19 @@ describe('experimental functions', () => {
 });
 
 describe('tools', () => {
+    it.each([
+        { source: 'export default createTool({});', expected: true },
+        { source: 'const tool = createTool({}); export default tool;', expected: true },
+        { source: 'const name = "tool", tool = createTool({ name }); export default tool;', expected: true },
+        { source: 'export default createAction({});', expected: false },
+        { source: 'const tool = createAction({ description: "createTool" }); export default tool;', expected: false },
+        { source: 'const tool = createAction({}); function other() { const tool = createTool({}); } export default tool;', expected: false }
+    ])('detects whether the exported declaration needs normalization: $source', ({ source, expected }) => {
+        const ast = parseSync(source, { sourceType: 'module' });
+        assert(ast);
+        expect(hasToolDefinition(ast)).toBe(expected);
+    });
+
     it('should bundle a createTool into a function', async () => {
         const result = await bundleFile({
             entryPoint: path.join(fixturesPath, 'zero/cases/createTool.valid.js'),
