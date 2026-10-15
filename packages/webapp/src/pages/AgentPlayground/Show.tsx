@@ -336,7 +336,7 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
                         GPT-6 Luna
                     </span>
                     {busy ? (
-                        <InputGroupButton label="Stop" variant="secondary" size="icon-sm" onClick={onStop}>
+                        <InputGroupButton label="Stop" variant="primary" size="icon-sm" onClick={onStop}>
                             <Square className="size-3 fill-current" />
                         </InputGroupButton>
                     ) : (
