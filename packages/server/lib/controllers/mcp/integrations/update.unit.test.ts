@@ -62,6 +62,7 @@ describe('updateIntegrationsTool', () => {
                     display_name: 'GitHub Renamed',
                     logo: `${basePublicUrl}/images/template-logos/github.svg`,
                     forward_webhooks: false,
+                    missing_fields: [],
                     created_at: '2026-01-01T00:00:00.000Z',
                     updated_at: '2026-01-02T00:00:00.000Z'
                 }

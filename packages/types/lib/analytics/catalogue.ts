@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import type { AgentPlaygroundIntegrationSetup } from '../agent/playground.api.js';
 import type { AgentSessionMetaTool, AgentSessionToolSearchHit } from '../agent/session.js';
 import type { BreakdownDimensions } from '../billing/types.js';
 import type { CliTelemetryCommand } from '../cli/api.js';
@@ -27,6 +28,19 @@ const outcome = {
     is_success: z.boolean(),
     log_operation_id: z.string().optional(),
     error_code: z.string().optional()
+};
+
+const agentSession = {
+    agent_session_id: z.string(),
+    is_playground: z.boolean()
+};
+
+const playgroundApproval = {
+    chat_id: z.string(),
+    agent_session_id: z.string().optional(),
+    tool_name: z.string(),
+    integration: z.string().optional(),
+    http_method: z.string().optional()
 };
 
 function defineCatalogue<const C extends Record<string, AnalyticsEventDefinition>>(catalogue: C & Record<Exclude<keyof C, AnalyticsEventName>, never>): C {
@@ -156,13 +170,42 @@ export const analyticsEventCatalogue = defineCatalogue({
         fires: 'When someone cancels a running Playground run',
         properties: z.object({ function_type: z.string(), integration: z.string() })
     },
+    'playground:approval_view': {
+        surface: 'web',
+        insight: 'How many changes the Agent Playground agent asks people to approve, and on which tools',
+        fires: 'When an Agent Playground reply finishes waiting for the user to approve a tool call',
+        properties: z.object(playgroundApproval)
+    },
+    'playground:approval_button_click': {
+        surface: 'web',
+        insight: 'How often people approve or deny the changes the Agent Playground agent asks for',
+        fires: 'When someone clicks Approve or Deny on a tool call in the Agent Playground',
+        properties: z.object({ ...playgroundApproval, is_approved: z.boolean() })
+    },
+    'playground:integration_create': {
+        surface: 'server',
+        insight: "How often an Agent Playground starter can't run because its integration can't be set up, and for which provider",
+        fires: "When an Agent Playground starter creates its integration, reuses one, or can't set one up",
+        properties: z.union([
+            z.object({ provider: z.string(), is_existing: z.boolean(), is_success: z.literal(true) }),
+            z.object({
+                provider: z.string(),
+                is_existing: z.boolean(),
+                is_success: z.literal(false),
+                error_code: stringOf<Exclude<AgentPlaygroundIntegrationSetup['outcome'], 'created' | 'existing'>>()
+            })
+        ])
+    },
     'playground:agent_turn_complete': {
         surface: 'server',
-        insight: 'What the Agent Playground costs per account, in tokens and dollars, and how often turns fail or get stopped',
+        insight: 'What the Agent Playground costs per account, how often turns fail or get stopped, and whether first chats start from a starter',
         fires: 'When an Agent Playground turn finishes, fails or is stopped',
         properties: z.object({
             agent_session_id: z.string(),
+            chat_id: z.string().optional(),
             environment_id: z.number(),
+            is_first_turn: z.boolean(),
+            starter_provider: z.string().optional(),
             is_success: z.boolean(),
             error_code: z.string().optional(),
             is_stopped: z.boolean(),
@@ -180,8 +223,8 @@ export const analyticsEventCatalogue = defineCatalogue({
     'connections:create_button_click': {
         surface: 'web',
         insight: 'How many people start creating a connection, and for which provider',
-        fires: 'When someone starts creating a connection from the dashboard',
-        properties: z.object({ provider: z.string() })
+        fires: 'When someone starts creating a connection from the dashboard or the Agent Playground',
+        properties: z.object({ provider: z.string(), is_playground: z.boolean().optional() })
     },
     'connections:share_link_button_click': {
         surface: 'web',
@@ -191,12 +234,92 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'connections:connection_create': {
         surface: 'web',
-        insight: 'Which integrations fail most often during auth started from the dashboard',
-        fires: 'When the connect flow started from the dashboard finishes',
+        insight: 'Which integrations fail most often during auth started from the dashboard or the Agent Playground',
+        fires: 'When a connect flow started from the dashboard or the Agent Playground finishes',
         properties: z.union([
-            z.object({ provider: z.string(), is_legacy_flow: z.boolean(), is_success: z.literal(true) }),
-            z.object({ provider: z.string(), is_legacy_flow: z.boolean(), is_success: z.literal(false), error_code: z.string() })
+            z.object({ provider: z.string(), is_legacy_flow: z.boolean(), is_playground: z.boolean().optional(), is_success: z.literal(true) }),
+            z.object({
+                provider: z.string(),
+                is_legacy_flow: z.boolean(),
+                is_playground: z.boolean().optional(),
+                is_success: z.literal(false),
+                error_code: z.string()
+            })
         ])
+    },
+
+    'connections:connection_delete': {
+        surface: 'server',
+        insight: 'How many accounts manage connections from the dashboard each week',
+        fires: 'After someone deletes a connection from the dashboard',
+        properties: none
+    },
+
+    'integrations:integration_create': {
+        surface: 'server',
+        insight: 'How many accounts create integrations each week, and how many of those come from the Agent Playground',
+        fires: 'After an integration is created from the dashboard or by an Agent Playground starter',
+        properties: z.object({ provider: z.string(), is_playground: z.boolean() })
+    },
+    'integrations:integration_update': {
+        surface: 'server',
+        insight: 'How many accounts change integration settings from the dashboard each week',
+        fires: "After someone saves an integration's settings in the dashboard",
+        properties: z.object({ provider: z.string() })
+    },
+    'integrations:integration_delete': {
+        surface: 'server',
+        insight: 'How many accounts delete integrations from the dashboard each week',
+        fires: 'After someone deletes an integration from the dashboard',
+        properties: z.object({ provider: z.string() })
+    },
+
+    'environments:environment_update': {
+        surface: 'server',
+        insight: 'How many accounts change environment settings each week, and which section',
+        fires: 'After someone saves environment settings, webhooks, variables or secret keys in the dashboard',
+        properties: z.object({ section: z.enum(['settings', 'webhooks', 'variables', 'api_keys']) })
+    },
+
+    'team:user_invite': {
+        surface: 'server',
+        insight: 'How many accounts invite teammates each week',
+        fires: 'After someone invites people to the account from the dashboard',
+        properties: z.object({ role: z.string(), invite_count: z.number() })
+    },
+    'team:user_update': {
+        surface: 'server',
+        insight: "How many accounts change their teammates' roles each week",
+        fires: "After someone changes a teammate's role",
+        properties: z.object({ previous_role: z.string(), role: z.string() })
+    },
+    'team:user_remove': {
+        surface: 'server',
+        insight: 'How many accounts remove teammates each week',
+        fires: 'After someone removes a teammate from the account',
+        properties: none
+    },
+
+    'functions:sync_command_submit': {
+        surface: 'server',
+        insight: "How many accounts run, pause or resume their connections' syncs from the dashboard each week",
+        fires: 'After the dashboard sends a command to a sync and the server accepts it',
+        properties: z.object({ command: z.enum(['run', 'full_resync', 'pause', 'resume', 'cancel']) })
+    },
+
+    'logs:filter_update': {
+        surface: 'web',
+        insight: 'How many accounts search or filter their logs each week, and with which filter',
+        fires: 'When someone searches the logs or changes a logs filter',
+        properties: z.object({
+            filter: z.enum(['search', 'status', 'type', 'integration', 'connection', 'script', 'agent_session', 'period'])
+        })
+    },
+    'logs:operation_view': {
+        surface: 'web',
+        insight: 'How many accounts open a log operation each week',
+        fires: 'When someone opens an operation from the logs list',
+        properties: none
     },
 
     'auth:account_create': {
@@ -317,7 +440,7 @@ export const analyticsEventCatalogue = defineCatalogue({
         insight: 'How many accounts create agent sessions each week, and which meta tools they turn on',
         fires: 'After an agent session is created',
         properties: z.object({
-            agent_session_id: z.string(),
+            ...agentSession,
             integration_count: z.number(),
             is_tool_search_enabled: z.boolean(),
             is_execute_enabled: z.boolean(),
@@ -329,14 +452,14 @@ export const analyticsEventCatalogue = defineCatalogue({
         surface: 'server',
         insight: 'How long do agent sessions last?',
         fires: 'After an agent session is terminated. Expired sessions send nothing',
-        properties: z.object({ agent_session_id: z.string(), session_duration_ms: z.number() })
+        properties: z.object({ ...agentSession, session_duration_ms: z.number() })
     },
     'agents:tool_call_complete': {
         surface: 'server',
         insight: 'Which tools do agents call most, and which fail most often?',
         fires: 'When a tool call in an agent session returns',
         properties: z.object({
-            agent_session_id: z.string(),
+            ...agentSession,
             ...outcome,
             tool_name: z.string().optional(),
             meta_tool: stringOf<AgentSessionMetaTool>().optional(),
@@ -351,7 +474,7 @@ export const analyticsEventCatalogue = defineCatalogue({
         insight: 'Which integration APIs agents call through the proxy, and how often those requests fail',
         fires: 'When a proxy request from an agent session returns',
         properties: z.object({
-            agent_session_id: z.string(),
+            ...agentSession,
             meta_tool: z.literal('nango_proxy'),
             ...outcome,
             integration_id: z.string().optional(),
@@ -366,7 +489,7 @@ export const analyticsEventCatalogue = defineCatalogue({
         insight: 'How often does tool search return a tool the agent then uses?',
         fires: 'When a tool search in an agent session returns',
         properties: z.object({
-            agent_session_id: z.string(),
+            ...agentSession,
             meta_tool: z.literal('nango_tool_search'),
             ...outcome,
             query: z.string().optional(),

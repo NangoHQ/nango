@@ -150,7 +150,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functions
                 className={selectTriggerClassName}
                 value={playgroundIntegration || ''}
                 onValueChange={handleIntegrationChange}
-                placeholder="Pick integration"
+                placeholder="Select integration"
                 disabled={running}
                 options={integrationOptions}
                 searchPlaceholder="Search integrations"
@@ -160,7 +160,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functions
                     <div className="flex items-center justify-between gap-3">
                         <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">Need a new integration?</span>
                         <Button type="button" variant="outline" size="sm" onClick={() => void navigate(`/${env}/integrations/create`)}>
-                            <Plus /> Add
+                            <Plus /> Create
                         </Button>
                     </div>
                 }
@@ -224,7 +224,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functions
                     <div className="flex items-center gap-3">
                         <span className="text-body-small-regular text-text-secondary">{functionsError}</span>
                         <Button type="button" variant="outline" size="sm" onClick={onRetryFunctions}>
-                            Retry
+                            Try again
                         </Button>
                     </div>
                 </>
