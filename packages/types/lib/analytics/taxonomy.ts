@@ -30,6 +30,7 @@ export interface AnalyticsObjects {
     usage: "The Usage page's metrics and charts";
     playground: 'The dashboard Playground panel';
     agent_turn: 'One message and its reply in an Agent Playground chat';
+    approval: 'A tool call in an Agent Playground chat that waits for the user to approve or deny it';
     two_factor: "A user's two-factor authentication";
     recovery_codes: "A user's two-factor recovery codes";
     password: "A user's password";

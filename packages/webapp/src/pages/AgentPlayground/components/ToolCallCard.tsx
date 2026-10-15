@@ -15,6 +15,7 @@ import { isUnfinished } from '../replyOutcome';
 import { describeTool, humanize, providerFor, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
 
+import type { PendingApproval } from '../approvalTracking';
 import type { ToolDisplay } from '../toolDisplay';
 import type { BadgeProps } from '@nangohq/design-system';
 import type { DynamicToolUIPart } from 'ai';
@@ -26,7 +27,7 @@ interface ToolCallCardProps {
     connectedIntegrations: ReadonlySet<string>;
     onConnected: (integrationId: string) => void;
     onRequestNewLink: (integrationId: string) => void;
-    onApprove: (approvalId: string, approved: boolean) => void;
+    onApprove: (part: PendingApproval, approved: boolean) => void;
     onRetryInterrupted: ((title: string) => void) | undefined;
     onTryAgain: (() => void) | undefined;
 }
@@ -157,7 +158,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     }
 
     if (awaitingApproval && part.state === 'approval-requested') {
-        return <ApprovalCard part={part} display={display} onApprove={onApprove} approvalId={part.approval.id} />;
+        return <ApprovalCard part={part} display={display} onApprove={onApprove} />;
     }
 
     const searchOutput =
@@ -264,11 +265,10 @@ const InterruptedCard: React.FC<{ display: ToolDisplay; onRetry: ((title: string
 };
 
 const ApprovalCard: React.FC<{
-    part: DynamicToolUIPart;
+    part: PendingApproval;
     display: ToolDisplay;
-    onApprove: (approvalId: string, approved: boolean) => void;
-    approvalId: string;
-}> = ({ part, display, onApprove, approvalId }) => {
+    onApprove: (part: PendingApproval, approved: boolean) => void;
+}> = ({ part, display, onApprove }) => {
     const [open, setOpen] = useState(false);
     const bottom = useRef<HTMLDivElement>(null);
 
@@ -300,10 +300,10 @@ const ApprovalCard: React.FC<{
                     </span>
                 </button>
                 <div className="flex shrink-0 items-center gap-2">
-                    <Button size="sm" variant="outline" onClick={() => onApprove(approvalId, false)}>
+                    <Button size="sm" variant="outline" onClick={() => onApprove(part, false)}>
                         Deny
                     </Button>
-                    <Button size="sm" onClick={() => onApprove(approvalId, true)}>
+                    <Button size="sm" onClick={() => onApprove(part, true)}>
                         Approve
                     </Button>
                     <button

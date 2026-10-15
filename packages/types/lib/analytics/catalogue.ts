@@ -35,6 +35,14 @@ const agentSession = {
     is_playground: z.boolean()
 };
 
+const playgroundApproval = {
+    chat_id: z.string(),
+    agent_session_id: z.string().optional(),
+    tool_name: z.string(),
+    integration: z.string().optional(),
+    http_method: z.string().optional()
+};
+
 function defineCatalogue<const C extends Record<string, AnalyticsEventDefinition>>(catalogue: C & Record<Exclude<keyof C, AnalyticsEventName>, never>): C {
     return catalogue;
 }
@@ -161,6 +169,18 @@ export const analyticsEventCatalogue = defineCatalogue({
         insight: 'How often people give up on a Playground run before it finishes',
         fires: 'When someone cancels a running Playground run',
         properties: z.object({ function_type: z.string(), integration: z.string() })
+    },
+    'playground:approval_view': {
+        surface: 'web',
+        insight: 'How many changes the Agent Playground agent asks people to approve, and on which tools',
+        fires: 'When an Agent Playground reply finishes waiting for the user to approve a tool call',
+        properties: z.object(playgroundApproval)
+    },
+    'playground:approval_button_click': {
+        surface: 'web',
+        insight: 'How often people approve or deny the changes the Agent Playground agent asks for',
+        fires: 'When someone clicks Approve or Deny on a tool call in the Agent Playground',
+        properties: z.object({ ...playgroundApproval, is_approved: z.boolean() })
     },
     'playground:integration_create': {
         surface: 'server',
