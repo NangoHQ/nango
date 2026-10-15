@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1050
+Provider count: 1054
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -170,6 +170,7 @@ URL patterns:
 | `cerby` | Cerby | API_KEY | [docs](https://nango.dev/docs/api-integrations/cerby.md) | [connect](https://nango.dev/docs/api-integrations/cerby/connect.md) |  | iam |
 | `certn` | Certn | API_KEY | [docs](https://nango.dev/docs/integrations/all/certn.md) | [connect](https://nango.dev/docs/integrations/all/certn/connect.md) |  | legal |
 | `certn-partner` | Certn Partner | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/certn-partner.md) |  |  | legal |
+| `chameleoni` | Chameleon-i | API_KEY | [docs](https://nango.dev/docs/api-integrations/chameleoni.md) | [connect](https://nango.dev/docs/api-integrations/chameleoni/connect.md) |  | ats, crm |
 | `chargebee` | Chargebee | BASIC | [docs](https://nango.dev/docs/integrations/all/chargebee.md) | [connect](https://nango.dev/docs/integrations/all/chargebee/connect.md) |  | payment |
 | `charliehr` | CharlieHR | BASIC | [docs](https://nango.dev/docs/api-integrations/charliehr.md) | [connect](https://nango.dev/docs/api-integrations/charliehr/connect.md) |  | hr |
 | `chartboost` | Chartboost | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/chartboost.md) | [connect](https://nango.dev/docs/api-integrations/chartboost/connect.md) |  | marketing, gaming |
@@ -566,6 +567,7 @@ URL patterns:
 | `microsoft-ads` | Microsoft Ads | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-ads.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | marketing |
 | `microsoft-business-central` | Microsoft Business Central | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/microsoft-business-central.md) | [connect](https://nango.dev/docs/integrations/all/microsoft-business-central/connect.md) |  | erp |
 | `microsoft-dataverse` | Microsoft Dataverse (Dynamics 365 CRM) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/microsoft-dataverse.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-dataverse/connect.md) | [setup](https://nango.dev/docs/api-integrations/microsoft-dataverse/how-to-register-your-own-microsoft-dataverse-api-oauth-app.md) | crm |
+| `microsoft-defender-cc` | Microsoft Defender (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/microsoft-defender-cc.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-defender-cc/connect.md) |  | iam |
 | `microsoft-dynamics-365-finance-and-operations` | Microsoft Dynamics 365 Finance and Operations | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations/connect.md) | [setup](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations/how-to-register-your-own-microsoft-dynamics-365-finance-and-operations-api-oauth-app.md) | erp |
 | `microsoft-dynamics-365-finance-and-operations-cc` | Microsoft Dynamics 365 Finance and Operations (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations-cc.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations-cc/connect.md) |  | erp |
 | `microsoft-entra-id` | Microsoft Entra ID | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-entra-id.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | iam |
@@ -744,6 +746,7 @@ URL patterns:
 | `raindrop-mcp` | Raindrop (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/raindrop-mcp.md) |  |  | dev-tools, mcp |
 | `ramp` | Ramp | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ramp.md) |  |  | banking |
 | `ramp-sandbox` | Ramp (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ramp-sandbox.md) |  |  | banking |
+| `rapid7` | Rapid7 | API_KEY | [docs](https://nango.dev/docs/api-integrations/rapid7.md) | [connect](https://nango.dev/docs/api-integrations/rapid7/connect.md) |  | iam |
 | `rapidapi` | RapidAPI | API_KEY | [docs](https://nango.dev/docs/integrations/all/rapidapi.md) |  |  | dev-tools |
 | `razorpay` | Razorpay | BASIC | [docs](https://nango.dev/docs/integrations/all/razorpay.md) | [connect](https://nango.dev/docs/integrations/all/razorpay/connect.md) |  | payment |
 | `read-ai` | Read.ai | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/read-ai.md) |  | [setup](https://nango.dev/docs/api-integrations/read-ai/how-to-register-your-own-read-ai-oauth-app.md) | productivity, video |
@@ -915,6 +918,7 @@ URL patterns:
 | `teamwork` | Teamwork | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/teamwork.md) |  |  | productivity, ticketing |
 | `telegram` | Telegram | API_KEY | [docs](https://nango.dev/docs/api-integrations/telegram.md) | [connect](https://nango.dev/docs/api-integrations/telegram/connect.md) |  | communication |
 | `tempo` | Tempo | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/tempo.md) | [connect](https://nango.dev/docs/api-integrations/tempo/connect.md) | [setup](https://nango.dev/docs/api-integrations/tempo/how-to-register-your-own-tempo-api-oauth-app.md) | productivity |
+| `tenable` | Tenable | BASIC | [docs](https://nango.dev/docs/api-integrations/tenable.md) | [connect](https://nango.dev/docs/api-integrations/tenable/connect.md) |  | other |
 | `terraform` | Terraform | API_KEY | [docs](https://nango.dev/docs/integrations/all/terraform.md) | [connect](https://nango.dev/docs/integrations/all/terraform/connect.md) |  | dev-tools |
 | `textus` | TextUs | API_KEY | [docs](https://nango.dev/docs/api-integrations/textus.md) | [connect](https://nango.dev/docs/api-integrations/textus/connect.md) |  | communication, marketing |
 | `the-swarm` | The Swarm | API_KEY | [docs](https://nango.dev/docs/api-integrations/the-swarm.md) | [connect](https://nango.dev/docs/api-integrations/the-swarm/connect.md) |  | crm |

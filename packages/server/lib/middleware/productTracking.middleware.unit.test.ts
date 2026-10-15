@@ -21,7 +21,7 @@ function handleRequest(resolve: (locals: Partial<RequestLocals>) => void): void 
     const res = { locals: {} } as Response<any, Partial<RequestLocals>>;
     const next: NextFunction = () => {
         resolve(res.locals);
-        productTracking.track({ name: 'billing:plan_submit' });
+        productTracking.track({ name: 'agents:session_end', eventProperties: { agent_session_id: 'session-1', session_duration_ms: 1 } });
     };
 
     productTrackingMiddleware({} as Request, res, next);
@@ -96,7 +96,7 @@ describe('productTrackingMiddleware', () => {
             res.locals.authType = 'session';
             res.locals.account = { id: 42 } as DBTeam;
             res.locals.user = { id: 3 } as DBUser;
-            productTracking.track({ name: 'billing:plan_submit' });
+            productTracking.track({ name: 'auth:account_create' });
         });
 
         expect(capture).not.toHaveBeenCalled();

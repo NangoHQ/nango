@@ -1,4 +1,5 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
+import type { PostAgentSessionsBody } from './api.js';
 
 export interface AgentPlaygroundUsage {
     inputTokens: number;
@@ -11,6 +12,13 @@ export interface AgentPlaygroundIntegrationSetup {
     outcome: 'created' | 'existing' | 'missing_credentials' | 'not_created';
 }
 
+export type AgentPlaygroundSessionChange = 'integrations_changed' | 'connections_changed';
+
+export interface AgentPlaygroundSessionCreated {
+    request: PostAgentSessionsBody;
+    reason?: AgentPlaygroundSessionChange | 'expired';
+}
+
 export interface AgentPlaygroundMessageMetadata {
     sessionId?: string;
     sessionExpiresAt?: string;
@@ -18,6 +26,7 @@ export interface AgentPlaygroundMessageMetadata {
     connectedIntegrations?: string[];
     starterProvider?: string;
     integrationSetup?: AgentPlaygroundIntegrationSetup;
+    sessionCreated?: AgentPlaygroundSessionCreated;
     usage?: AgentPlaygroundUsage;
 }
 

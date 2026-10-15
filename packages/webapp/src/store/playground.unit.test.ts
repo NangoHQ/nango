@@ -65,9 +65,8 @@ describe('usePlaygroundStore', () => {
     });
 
     describe('reset', () => {
-        it('clears all state and keeps isOpen=true by default', () => {
+        it('clears all state', () => {
             usePlaygroundStore.setState({
-                isOpen: true,
                 integration: 'github',
                 connection: 'c',
                 function: 'fn',
@@ -80,7 +79,6 @@ describe('usePlaygroundStore', () => {
             });
             usePlaygroundStore.getState().reset();
             const s = usePlaygroundStore.getState();
-            expect(s.isOpen).toBe(true);
             expect(s.integration).toBeNull();
             expect(s.connection).toBeNull();
             expect(s.function).toBeNull();
@@ -90,12 +88,6 @@ describe('usePlaygroundStore', () => {
             expect(s.pendingOperationId).toBeNull();
             expect(s.running).toBe(false);
             expect(s.inputErrors).toEqual({});
-        });
-
-        it('closes the sheet when keepOpen=false', () => {
-            usePlaygroundStore.setState({ isOpen: true });
-            usePlaygroundStore.getState().reset(false);
-            expect(usePlaygroundStore.getState().isOpen).toBe(false);
         });
     });
 
@@ -145,9 +137,8 @@ describe('usePlaygroundStore', () => {
             expect(persisted.pendingOperationId).toBe('op-99');
         });
 
-        it('never persists running, result, inputErrors, connectionSearch, or isOpen=true', () => {
+        it('never persists running, result, inputErrors, or connectionSearch', () => {
             usePlaygroundStore.setState({
-                isOpen: true,
                 running: true,
                 result: { success: true, data: 'x', durationMs: 100 },
                 inputErrors: { x: 'err' },
@@ -156,7 +147,6 @@ describe('usePlaygroundStore', () => {
             const raw = localStore['nango_playground'];
             if (!raw) return;
             const persisted = JSON.parse(raw).state;
-            expect(persisted.isOpen).toBe(false);
             expect(persisted.running).toBe(false);
             expect(persisted.result).toBeNull();
             expect(persisted.inputErrors).toEqual({});

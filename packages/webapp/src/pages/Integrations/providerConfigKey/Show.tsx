@@ -14,7 +14,7 @@ import { usePathNavigation } from '@/hooks/usePathNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
-import { openPlaygroundWithContext } from '@/utils/playground';
+import { useCanOpenPlaygroundFunctions, useOpenPlaygroundWithContext } from '@/utils/playground';
 import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
 import { FunctionsTab } from './Functions/Tab';
 import { SettingsTab } from './Settings/Tab';
@@ -32,6 +32,8 @@ export const ShowIntegration: React.FC = () => {
 
     const { can } = usePermissions();
     const canCreateTestConnection = can('environment:connections:update');
+    const openPlaygroundWithContext = useOpenPlaygroundWithContext();
+    const canOpenPlayground = useCanOpenPlaygroundFunctions();
 
     const { data, isLoading: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
     const integration = data?.data;
@@ -118,9 +120,11 @@ export const ShowIntegration: React.FC = () => {
                             Connections <ExternalLink className="size-3.5" />
                         </Link>
                     </TabsTrigger>
-                    <TabsTrigger value="playground" className={integrationTabClassName}>
-                        Playground <ExternalLink className="size-3.5" />
-                    </TabsTrigger>
+                    {canOpenPlayground && (
+                        <TabsTrigger value="playground" className={integrationTabClassName}>
+                            Playground <ExternalLink className="size-3.5" />
+                        </TabsTrigger>
+                    )}
                 </TabsList>
                 <TabsContent value="functions">
                     <FunctionsTab integration={integration.integration} />
