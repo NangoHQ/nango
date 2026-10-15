@@ -8,19 +8,21 @@ description: 'Access the Belender API in 2 minutes 💨'
   <Tab title="🚀 Quickstart">
     <Steps>
       <Step title="Create an integration">
-        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Belender_.
+        In Nango ([free signup](https://app.nango.dev)), go to **Integrations** → _Configure New Integration_ → _Belender_.
       </Step>
       <Step title="Authorize Belender">
-        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Belender API hostname, email, and password. Later, you'll let your users do the same directly from your app.
+        Go to **Connections** → _Add Test Connection_ → _Authorize_, then enter your Belender API hostname, email, and password. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call the Belender API">
-        Fetch standardized document JSON for a request. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Fetch standardized document JSON for a Belender request. `request_id` is returned when you create a request (for example via `POST /requests/clave-pin` or `POST /requests/sms`) or from Belender webhooks. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, connection ID, and that `request_id`:
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
-                curl "https://api.nango.dev/proxy/requests/{request_id}/fast-json" \
-                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                REQUEST_ID="00000000-0000-0000-0000-000000000000"
+
+                curl "https://api.nango.dev/proxy/requests/${REQUEST_ID}/fast-json" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
                 ```
@@ -34,10 +36,11 @@ description: 'Access the Belender API in 2 minutes 💨'
             ```typescript
             import { Nango } from '@nangohq/node';
 
-            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+            const requestId = '00000000-0000-0000-0000-000000000000';
 
             const res = await nango.get({
-                endpoint: '/requests/{request_id}/fast-json',
+                endpoint: `/requests/${requestId}/fast-json`,
                 providerConfigKey: '<INTEGRATION-ID>',
                 connectionId: '<CONNECTION-ID>'
             });
@@ -53,7 +56,7 @@ description: 'Access the Belender API in 2 minutes 💨'
       </Step>
     </Steps>
 
-    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
 
     <Tip>
     Next step: [Embed the auth flow](/guides/primitives/auth) in your app to let your users connect their Belender accounts.
@@ -84,12 +87,18 @@ description: 'Access the Belender API in 2 minutes 💨'
 
     ```typescript
     // Example: start a digital-power job (multipart)
+    const formData = new FormData();
+    formData.append('package_id', '<PACKAGE-ID>');
+    formData.append('cif', 'B12345678');
+    formData.append('type', 'legal');
+    // Append additional fields / file blobs required by the flow (document_front, document_back, ...).
+
     const res = await nango.post({
         endpoint: '/digital-power/send-job',
         providerConfigKey: '<INTEGRATION-ID>',
         connectionId: '<CONNECTION-ID>',
         headers: { 'Content-Type': 'multipart/form-data' },
-        data: formData // FormData with package_id, cif, type=legal, ...
+        data: formData
     });
     ```
 
@@ -187,7 +196,7 @@ description: 'Access the Belender API in 2 minutes 💨'
     | `get-fast-json` | Documents | Fetch standardized JSON. |
     | `get-document` | Documents | Download a request document. |
 
-    Trigger with the [Actions API](/guides/functions/action-functions) / `nango.triggerAction(...)`. Source: `integration-templates/integrations/belender/actions/`.
+    Trigger with the [Actions API](/guides/functions/action-functions) or Node SDK: `nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION-ID>', 'get-fast-json', { request_id: '00000000-0000-0000-0000-000000000000' })`. Source: `integration-templates/integrations/belender/actions/`.
   </Tab>
   <Tab title="🔗 Useful links">
     | Topic | Links |
