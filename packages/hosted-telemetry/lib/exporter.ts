@@ -27,7 +27,7 @@ export interface MetricRow {
 
 /** Stable key order, so the same attributes always serialize the same way. */
 export function serializeAttributes(attributes: MetricRow['attributes']): string {
-    return JSON.stringify(Object.fromEntries(Object.entries(attributes).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))));
+    return JSON.stringify(attributes, Object.keys(attributes).sort());
 }
 
 /**
