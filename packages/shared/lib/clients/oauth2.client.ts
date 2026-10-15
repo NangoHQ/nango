@@ -170,7 +170,6 @@ export async function getFreshOAuth2Credentials({
     } catch (err) {
         let nangoErr: NangoError;
         if (Boom.isBoom(err)) {
-            // Boom defaults `data` to null, which is the case for errors that carry no response (timeout, socket error, ...)
             const data: unknown = err.data;
             const rawPayload = data && typeof data === 'object' && 'payload' in data ? data.payload : undefined;
             const errorPayload = rawPayload instanceof Buffer ? rawPayload.toString() : rawPayload;
