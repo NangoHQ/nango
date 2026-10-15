@@ -47,7 +47,7 @@ describe('flatten', () => {
         const { rows, dropped } = flatten(
             batch([
                 {
-                    descriptor: descriptor('nango.functions.active_concurrency', InstrumentType.HISTOGRAM),
+                    descriptor: descriptor('nango.hosted_metric.active_concurrency', InstrumentType.HISTOGRAM),
                     aggregationTemporality: 1,
                     dataPointType: DataPointType.HISTOGRAM,
                     dataPoints: [
@@ -62,12 +62,12 @@ describe('flatten', () => {
             ])
         );
         expect(rows.map((r) => [r.metric, r.attributes['environment_id'], r.value])).toEqual([
-            ['nango.functions.active_concurrency.count', 7, 60],
-            ['nango.functions.active_concurrency.sum', 7, 612],
-            ['nango.functions.active_concurrency.min', 7, 7],
-            ['nango.functions.active_concurrency.max', 7, 14],
-            ['nango.functions.active_concurrency.count', 8, 0],
-            ['nango.functions.active_concurrency.sum', 8, 0]
+            ['nango.hosted_metric.active_concurrency.count', 7, 60],
+            ['nango.hosted_metric.active_concurrency.sum', 7, 612],
+            ['nango.hosted_metric.active_concurrency.min', 7, 7],
+            ['nango.hosted_metric.active_concurrency.max', 7, 14],
+            ['nango.hosted_metric.active_concurrency.count', 8, 0],
+            ['nango.hosted_metric.active_concurrency.sum', 8, 0]
         ]);
         expect(dropped).toEqual({});
     });
