@@ -16,7 +16,7 @@ function batch(metrics: MetricData[]): ResourceMetrics {
 
 describe('flatten', () => {
     it('writes one row per sum or gauge point, carrying the producer', () => {
-        const rows = flatten(
+        const { rows } = flatten(
             batch([
                 {
                     descriptor: descriptor('nango.functions.executions', InstrumentType.COUNTER),
@@ -44,7 +44,7 @@ describe('flatten', () => {
     });
 
     it('fans a histogram point out to count, sum, min and max, skipping what the window did not record', () => {
-        const rows = flatten(
+        const { rows, dropped } = flatten(
             batch([
                 {
                     descriptor: descriptor('nango.functions.active_concurrency', InstrumentType.HISTOGRAM),
@@ -69,10 +69,11 @@ describe('flatten', () => {
             ['nango.functions.active_concurrency.count', 8, 0],
             ['nango.functions.active_concurrency.sum', 8, 0]
         ]);
+        expect(dropped).toEqual({});
     });
 
-    it('drops a value the table would refuse instead of failing the whole export', () => {
-        const rows = flatten(
+    it('drops a value the table would refuse instead of failing the whole export, and counts it', () => {
+        const { rows, dropped } = flatten(
             batch([
                 {
                     descriptor: descriptor('nango.connections.count', InstrumentType.GAUGE),
@@ -87,5 +88,6 @@ describe('flatten', () => {
         );
         expect(rows).toHaveLength(1);
         expect(rows[0]?.attributes['environment_id']).toBe(8);
+        expect(dropped).toEqual({ 'nango.connections.count': 1 });
     });
 });

@@ -21,14 +21,24 @@ export interface MetricRow {
     value: number;
 }
 
-/** One row per sum or gauge point, four per histogram point: count, sum, min and max. */
-export function flatten(batch: ResourceMetrics): MetricRow[] {
+/**
+ * One row per sum or gauge point, four per histogram point: count, sum, min and max. A histogram window with no
+ * samples has no min or max and gets no row for them; a value that is not a finite number is a producer bug, counted
+ * in `dropped` so the export can say so.
+ */
+export function flatten(batch: ResourceMetrics): { rows: MetricRow[]; dropped: Record<string, number> } {
     const producerId = batch.resource.attributes[PRODUCER_ID_ATTRIBUTE];
     const rows: MetricRow[] = [];
+    const dropped: Record<string, number> = {};
     const push = (metric: string, attributes: MetricRow['attributes'], value: number | undefined) => {
-        if (value !== undefined && Number.isFinite(value)) {
-            rows.push({ metric, attributes, value });
+        if (value === undefined) {
+            return;
         }
+        if (!Number.isFinite(value)) {
+            dropped[metric] = (dropped[metric] ?? 0) + 1;
+            return;
+        }
+        rows.push({ metric, attributes, value });
     };
     for (const scope of batch.scopeMetrics) {
         for (const metric of scope.metrics) {
@@ -47,7 +57,7 @@ export function flatten(batch: ResourceMetrics): MetricRow[] {
             }
         }
     }
-    return rows;
+    return { rows, dropped };
 }
 
 /**
@@ -77,7 +87,12 @@ export class PostgresMetricExporter implements PushMetricExporter {
     }
 
     export(batch: ResourceMetrics, resultCallback: (result: ExportResult) => void): void {
-        void this.write(flatten(batch)).then(
+        const { rows, dropped } = flatten(batch);
+        const droppedMetrics = Object.entries(dropped);
+        if (droppedMetrics.length > 0) {
+            logger.warning(`Dropped values that are not finite numbers: ${droppedMetrics.map(([metric, count]) => `${metric} x${count}`).join(', ')}`);
+        }
+        void this.write(rows).then(
             () => resultCallback({ code: ExportResultCode.SUCCESS }),
             (err: unknown) => {
                 logger.error(`Dropped a hosted telemetry export: ${stringifyError(err, { cause: true })}`);
