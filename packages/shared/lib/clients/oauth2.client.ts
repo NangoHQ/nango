@@ -170,12 +170,12 @@ export async function getFreshOAuth2Credentials({
     } catch (err) {
         let nangoErr: NangoError;
         if (Boom.isBoom(err)) {
-            let errorPayload;
-            if ('data' in err && 'payload' in err.data) {
-                errorPayload = err.data.payload;
-            }
+            // Boom defaults `data` to null, which is the case for errors that carry no response (timeout, socket error, ...)
+            const data: unknown = err.data;
+            const rawPayload = data && typeof data === 'object' && 'payload' in data ? data.payload : undefined;
+            const errorPayload = rawPayload instanceof Buffer ? rawPayload.toString() : rawPayload;
             const payload = {
-                dataMessage: errorPayload instanceof Buffer ? errorPayload.toString() : errorPayload
+                dataMessage: errorPayload ?? err.message
             };
             void logCtx.http(`POST ${url}`, {
                 level: 'error',
@@ -186,7 +186,7 @@ export async function getFreshOAuth2Credentials({
                     headers: redactHeaders({ headers: simpleOAuth2ClientConfig.http.headers, valuesToFilter: [config.oauth_client_secret] })
                 },
                 response: { code: err.output.statusCode, headers: err.output.headers as Record<string, any> },
-                meta: { body: errorPayload instanceof Buffer ? errorPayload.toString() : errorPayload }
+                meta: { body: errorPayload ?? err.message }
             });
             nangoErr = new NangoError(`refresh_token_external_error`, payload);
         } else {
