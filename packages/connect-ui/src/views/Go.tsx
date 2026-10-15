@@ -501,7 +501,7 @@ export const Go: React.FC = () => {
                             {t('go.success')}
                         </h2>
                         <p className="text-center text-text-secondary">
-                            {t('go.successMessage', { provider: provider.display_name })}
+                            {t('go.successMessage', { provider: displayName })}
                             {isAuthLink ? ` ${t('go.closeTab')}` : ''}
                         </p>
                     </div>
