@@ -446,7 +446,7 @@ const IntegrationSetupNotice: React.FC<{ env: string; setup: AgentPlaygroundInte
             </AlertTitle>
             <AlertDescription>
                 {setup.outcome === 'missing_credentials'
-                    ? "It's missing its client ID or secret. Add them, then retry the prompt."
+                    ? "It's missing its client ID or secret. Add them, then try again."
                     : `This session needs a ${name} integration in this environment.`}
             </AlertDescription>
             <AlertActions>
@@ -465,7 +465,7 @@ const IntegrationSetupNotice: React.FC<{ env: string; setup: AgentPlaygroundInte
                 </AlertButton>
                 {onTryAgain && (
                     <AlertButton onClick={onTryAgain}>
-                        <RotateCcw /> Retry prompt
+                        <RotateCcw /> Try again
                     </AlertButton>
                 )}
             </AlertActions>
