@@ -1,5 +1,6 @@
 import { ExportResultCode } from '@opentelemetry/core';
 import { AggregationTemporality, AggregationType, DataPointType, InstrumentType } from '@opentelemetry/sdk-metrics';
+import tracer from 'dd-trace';
 
 import { getLogger, retry, stringifyError } from '@nangohq/utils';
 
@@ -90,18 +91,24 @@ export class PostgresMetricExporter implements PushMetricExporter {
     }
 
     export(batch: ResourceMetrics, resultCallback: (result: ExportResult) => void): void {
-        const { rows, dropped } = flatten(batch);
-        const droppedMetrics = Object.entries(dropped);
-        if (droppedMetrics.length > 0) {
-            logger.warning(`Dropped values that are not finite numbers: ${droppedMetrics.map(([metric, count]) => `${metric} x${count}`).join(', ')}`);
-        }
-        void this.write(rows).then(
-            () => resultCallback({ code: ExportResultCode.SUCCESS }),
-            (err: unknown) => {
-                logger.error(`Dropped a hosted telemetry export: ${stringifyError(err, { cause: true })}`);
-                resultCallback({ code: ExportResultCode.FAILED, error: err instanceof Error ? err : new Error(String(err)) });
+        void tracer.trace('nango.hosted_telemetry.export', async (span) => {
+            const { rows, dropped } = flatten(batch);
+            const droppedMetrics = Object.entries(dropped);
+            if (droppedMetrics.length > 0) {
+                logger.warning(`Dropped values that are not finite numbers: ${droppedMetrics.map(([metric, count]) => `${metric} x${count}`).join(', ')}`);
             }
-        );
+            span?.addTags({ rows: rows.length, dropped: droppedMetrics.reduce((sum, [, count]) => sum + count, 0) });
+            try {
+                await this.write(rows);
+                resultCallback({ code: ExportResultCode.SUCCESS });
+            } catch (err) {
+                span?.addTags({ error: stringifyError(err, { cause: true }) });
+                logger.error(`Dropped a hosted telemetry export of ${rows.length} rows: ${stringifyError(err, { cause: true })}`);
+                resultCallback({ code: ExportResultCode.FAILED, error: err instanceof Error ? err : new Error(String(err)) });
+            } finally {
+                span?.finish();
+            }
+        });
     }
 
     async write(rows: MetricRow[]): Promise<void> {
