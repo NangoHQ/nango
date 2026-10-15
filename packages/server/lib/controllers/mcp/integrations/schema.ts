@@ -96,6 +96,7 @@ export const mcpIntegrationSchema = z
         credentials_label: z.record(z.string(), z.string()).optional(),
         preconfigured_credentials: z.array(z.string()).optional(),
         forward_webhooks: z.boolean(),
+        missing_fields: z.array(z.string()),
         created_at: z.string(),
         updated_at: z.string()
     })
