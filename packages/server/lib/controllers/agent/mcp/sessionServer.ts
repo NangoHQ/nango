@@ -1,5 +1,8 @@
 import { fromJsonSchema, McpServer, ProtocolError, ProtocolErrorCode } from '@modelcontextprotocol/server';
 
+import { report } from '@nangohq/utils';
+
+import { findActionInputs } from '../../../services/agentSessionToolSearch.service.js';
 import { toJsonSchema202012 } from '../../mcp/utils.js';
 import { createConnectionTool } from './createConnection/createConnection.js';
 import { executeSessionTool, executeTool } from './execute/execute.js';
@@ -10,7 +13,7 @@ import { toolSearchTool } from './toolSearch/search.js';
 
 import type { AgentSessionCallableTool, AgentSessionMcpContext, AgentSessionMcpTool } from './sessionTool.js';
 import type { RegisteredTool, RequestId, Tool, ToolAnnotations } from '@modelcontextprotocol/server';
-import type { AgentSession } from '@nangohq/types';
+import type { AgentSession, AgentSessionToolInput } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export const TOOLS_PAGE_SIZE = 50;
@@ -29,14 +32,16 @@ const MAX_NAME_PART_LENGTH = 30;
 const UNSAFE_NAME_CHARACTERS = /[^a-zA-Z0-9_-]/g;
 
 const JSON_SCHEMA_2020_12 = 'https://json-schema.org/draft/2020-12/schema';
+const JSON_SCHEMA_DRAFT_07 = 'http://json-schema.org/draft-07/schema#';
+const DEFINITIONS_POINTER = '#/definitions/';
 
 type SessionTool = Tool & { description: string };
 
 const META_TOOLS: AgentSessionMcpTool[] = [toolSearchTool, executeTool, proxyTool, createConnectionTool];
 
 /**
- * The compiled toolset stores no argument schema for a deployed action, so a pinned action is listed
- * as accepting a free-form object. An MCP server tool is listed with the schema its server gave.
+ * The compiled toolset stores no argument schema for a deployed action, so tools/list reads the one it
+ * was deployed with. A free-form object stands in when that schema can't be read or isn't an object.
  */
 const PINNED_TOOL_INPUT_SCHEMA: Tool['inputSchema'] = {
     $schema: JSON_SCHEMA_2020_12,
@@ -55,6 +60,13 @@ const REGISTRATION_INPUT_SCHEMA = fromJsonSchema<Record<string, unknown>>({
     properties: {},
     additionalProperties: true
 });
+
+const NO_INPUT_SCHEMA: Tool['inputSchema'] = {
+    $schema: JSON_SCHEMA_2020_12,
+    type: 'object',
+    properties: {},
+    additionalProperties: false
+};
 
 const INTEGRATION_TOOL_METRIC = 'integration_tool';
 
@@ -75,7 +87,7 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
         }
     );
 
-    const { listed, callable } = buildSessionTools(session);
+    const { listed, callable, actions } = buildSessionTools(session);
     const context: AgentSessionMcpContext = { ...params, callable };
 
     for (const tool of META_TOOLS) {
@@ -141,18 +153,70 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
         );
     }
 
-    server.server.setRequestHandler('tools/list', (request) => {
+    server.server.setRequestHandler('tools/list', async (request) => {
         const offset = decodeCursor(request.params?.cursor);
         const page = listed.slice(offset, offset + TOOLS_PAGE_SIZE);
         const next = offset + page.length;
+        const tools = await withActionInputSchemas({ page, actions, environmentId: session.environmentId });
 
         return {
-            tools: page.map((tool) => ({ ...tool, execution: { taskSupport: 'forbidden' as const } })),
+            tools: tools.map((tool) => ({ ...tool, execution: { taskSupport: 'forbidden' as const } })),
             ...(next < listed.length ? { nextCursor: encodeCursor(next) } : {})
         };
     });
 
     return server;
+}
+
+/** A lookup that fails leaves the page with the free-form schema it was built with, so tools/list still answers. */
+async function withActionInputSchemas({
+    page,
+    actions,
+    environmentId
+}: {
+    page: SessionTool[];
+    actions: SessionTools['actions'];
+    environmentId: number;
+}): Promise<SessionTool[]> {
+    const onPage = page.flatMap((tool) => actions.get(tool.name) ?? []);
+    if (onPage.length === 0) {
+        return page;
+    }
+
+    try {
+        const inputs = await findActionInputs({ environmentId, actions: onPage });
+
+        return page.map((tool) => {
+            const action = actions.get(tool.name);
+            const input = action ? inputs.get(action.integrationId)?.get(action.name) : undefined;
+            return input ? { ...tool, inputSchema: actionInputSchemaOf(input) } : tool;
+        });
+    } catch (err) {
+        report(err);
+        return page;
+    }
+}
+
+/**
+ * MCP needs an object at the root of a tool's input, so the input model is inlined there with its
+ * definitions alongside to keep its pointers resolving. Any other root is reachable only through
+ * nango_execute, which carries the schema in tool search instead.
+ */
+export function actionInputSchemaOf(input: AgentSessionToolInput): Tool['inputSchema'] {
+    if (input.kind === 'none') {
+        return NO_INPUT_SCHEMA;
+    }
+    if (input.kind === 'unavailable' || !input.schema.$ref?.startsWith(DEFINITIONS_POINTER)) {
+        return PINNED_TOOL_INPUT_SCHEMA;
+    }
+
+    const definitions = input.schema.definitions ?? {};
+    const model = definitions[input.schema.$ref.slice(DEFINITIONS_POINTER.length)];
+    if (typeof model !== 'object' || model.type !== 'object') {
+        return PINNED_TOOL_INPUT_SCHEMA;
+    }
+
+    return { ...model, type: 'object', $schema: JSON_SCHEMA_DRAFT_07, definitions } as Tool['inputSchema'];
 }
 
 /**
@@ -199,6 +263,8 @@ interface SessionTools {
     listed: SessionTool[];
     /** Every integration tool, searchable ones included, so being listed and being callable stay separate. */
     callable: Map<string, AgentSessionCallableTool>;
+    /** Listed deployed actions by name, whose input schema is read when they are listed. */
+    actions: Map<string, { integrationId: string; name: string }>;
 }
 
 /** Names are claimed in one pass so no tool can take a name an earlier one answers to, and the stable order keeps an offset cursor valid. */
@@ -217,11 +283,15 @@ export function buildSessionTools(session: AgentSession): SessionTools {
 
     const integrations = Object.entries(session.compiledToolset).sort(([a], [b]) => a.localeCompare(b));
     const callable: SessionTools['callable'] = new Map();
+    const actions: SessionTools['actions'] = new Map();
 
     for (const [integrationId, integration] of integrations) {
         for (const tool of integration.pinned) {
             const name = claimToolName(qualifiedToolName(integrationId, tool.name), taken);
             callable.set(name, { integrationId, name: tool.name, description: tool.description, pinned: true });
+            if (!tool.mcp) {
+                actions.set(name, { integrationId, name: tool.name });
+            }
             listed.push({
                 name,
                 description: tool.description,
@@ -239,7 +309,7 @@ export function buildSessionTools(session: AgentSession): SessionTools {
         }
     }
 
-    return { listed, callable };
+    return { listed, callable, actions };
 }
 
 export function listSessionTools(session: AgentSession): SessionTool[] {

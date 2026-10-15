@@ -281,10 +281,21 @@ async function findToolInputs({
     environmentId: number;
     candidates: SearchCandidate[];
 }): Promise<Map<string, Map<string, AgentSessionToolInput>>> {
-    const rows = await legacyFunctionService.findActionInputSchemas({
+    return await findActionInputs({
         environmentId,
         actions: candidates.filter((candidate) => !candidate.input).map((candidate) => ({ integrationId: candidate.integration, name: candidate.action }))
     });
+}
+
+/** Inputs keyed by integration id, then action name. An action missing from the result is no longer deployed. */
+export async function findActionInputs({
+    environmentId,
+    actions
+}: {
+    environmentId: number;
+    actions: { integrationId: string; name: string }[];
+}): Promise<Map<string, Map<string, AgentSessionToolInput>>> {
+    const rows = await legacyFunctionService.findActionInputSchemas({ environmentId, actions });
 
     const inputs = new Map<string, Map<string, AgentSessionToolInput>>();
     for (const row of rows) {
