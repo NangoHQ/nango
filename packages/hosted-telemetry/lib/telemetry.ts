@@ -49,13 +49,22 @@ export function createHostedTelemetry(store?: { knex: Knex; schema?: string; exp
               ]
           })
         : undefined;
+    const noop = createNoopMeter();
+    const meters = new Map<string, HostedMeter>();
     const wrap = (meter: Meter): HostedMeter => ({
         createCounter: (metric, options) => meter.createCounter(metric, options),
         createHistogram: (metric, options) => meter.createHistogram(metric, options),
         createGauge: (metric, options) => meter.createGauge(metric, options)
     });
     return {
-        meter: (name) => wrap(provider ? provider.getMeter(name) : createNoopMeter()),
+        meter: (name) => {
+            let meter = meters.get(name);
+            if (!meter) {
+                meter = wrap(provider ? provider.getMeter(name) : noop);
+                meters.set(name, meter);
+            }
+            return meter;
+        },
         shutdown: async () => {
             await provider?.forceFlush();
             await provider?.shutdown();
