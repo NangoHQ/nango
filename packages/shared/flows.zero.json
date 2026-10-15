@@ -296495,7 +296495,7 @@
                 "output": ["ActionOutput_fireflies_gettranscript"],
                 "scopes": [],
                 "usedModels": ["ActionInput_fireflies_gettranscript", "ActionOutput_fireflies_gettranscript"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_fireflies_gettranscript": {
@@ -296566,7 +296566,7 @@
                                             "start_time": {
                                                 "anyOf": [
                                                     {
-                                                        "type": "string"
+                                                        "type": "number"
                                                     },
                                                     {
                                                         "type": "null"
@@ -296576,7 +296576,7 @@
                                             "end_time": {
                                                 "anyOf": [
                                                     {
-                                                        "type": "string"
+                                                        "type": "number"
                                                     },
                                                     {
                                                         "type": "null"
