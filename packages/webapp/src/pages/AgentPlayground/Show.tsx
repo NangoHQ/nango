@@ -42,7 +42,7 @@ type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
 
 const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
     { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
-    { prompt: 'Summarize my latest unread emails in Gmail', provider: 'google-mail', name: 'Gmail' },
+    { prompt: 'Summarize my 3 latest emails in Gmail', provider: 'google-mail', name: 'Gmail' },
     { prompt: "Star Nango's GitHub repo", provider: 'github', name: 'GitHub' },
     { prompt: 'Send me a Slack message saying "Hello, world!"', provider: 'slack', name: 'Slack' },
     { prompt: 'What Linear issues are assigned to me?', provider: 'linear', name: 'Linear' },

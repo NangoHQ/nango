@@ -1,10 +1,18 @@
 const INTEGRATION_TOOL_SEPARATOR = '__';
 
+export interface IntegrationLabel {
+    provider: string;
+    name: string;
+}
+
+export type IntegrationLabels = ReadonlyMap<string, IntegrationLabel>;
+
 export interface ToolDisplay {
     kind: 'search' | 'connect' | 'integration' | 'proxy' | 'other';
     title: string;
     subtitle?: string;
     integrationId?: string;
+    integration?: IntegrationLabel;
     method?: string;
     path?: string;
 }
@@ -24,6 +32,19 @@ export function humanize(name: string): string {
         .join(' ');
 }
 
+export function integrationLabels(integrations: readonly { unique_key: string; provider: string; meta: { displayName: string } }[]): IntegrationLabels {
+    return new Map(
+        integrations.map((integration) => [
+            integration.unique_key,
+            { provider: integration.provider, name: integration.meta.displayName.replace(/\s*\([^)]*\)$/, '') }
+        ])
+    );
+}
+
+export function labelFor(integrationId: string, labels: IntegrationLabels | undefined): IntegrationLabel {
+    return labels?.get(integrationId) ?? { provider: providerFor(integrationId), name: humanize(integrationId) };
+}
+
 function integrationTool(qualifiedName: string): { integrationId: string; action: string } | null {
     const index = qualifiedName.indexOf(INTEGRATION_TOOL_SEPARATOR);
     if (index <= 0) {
@@ -32,8 +53,10 @@ function integrationTool(qualifiedName: string): { integrationId: string; action
     return { integrationId: qualifiedName.slice(0, index), action: qualifiedName.slice(index + INTEGRATION_TOOL_SEPARATOR.length) };
 }
 
-export function describeTool(toolName: string, input: unknown): ToolDisplay {
+export function describeTool(toolName: string, input: unknown, labels?: IntegrationLabels): ToolDisplay {
     const args = (input ?? {}) as Record<string, unknown>;
+    const withIntegration = (integrationId: string | undefined): Pick<ToolDisplay, 'integrationId' | 'integration'> =>
+        integrationId ? { integrationId, integration: labelFor(integrationId, labels) } : {};
 
     if (toolName === 'nango_tool_search') {
         const query = typeof args['query'] === 'string' ? args['query'] : undefined;
@@ -45,25 +68,27 @@ export function describeTool(toolName: string, input: unknown): ToolDisplay {
     }
     if (toolName === 'nango_create_connection') {
         const integrationId = typeof args['integration'] === 'string' ? args['integration'] : undefined;
-        return { kind: 'connect', title: `Connect ${integrationId ? humanize(integrationId) : 'an app'}`, ...(integrationId ? { integrationId } : {}) };
+        const integration = withIntegration(integrationId);
+        return { kind: 'connect', title: `Connect ${integration.integration?.name ?? 'an app'}`, ...integration };
     }
     if (toolName === 'nango_proxy') {
         const method = typeof args['method'] === 'string' ? args['method'].toUpperCase() : '';
         const path = typeof args['path'] === 'string' ? args['path'] : '';
         const integrationId = typeof args['integration'] === 'string' ? args['integration'] : undefined;
+        const integration = withIntegration(integrationId);
         return {
             kind: 'proxy',
-            title: `Calling the ${integrationId ? humanize(integrationId) : ''} API directly`.replace('  ', ' '),
+            title: `Calling the ${integration.integration?.name ?? ''} API directly`.replace('  ', ' '),
             ...(method ? { method } : {}),
             ...(path ? { path } : {}),
-            ...(integrationId ? { integrationId } : {})
+            ...integration
         };
     }
 
     const qualified = toolName === 'nango_execute' && typeof args['tool'] === 'string' ? args['tool'] : toolName;
     const parsed = integrationTool(qualified);
     if (parsed) {
-        return { kind: 'integration', title: humanize(parsed.action), integrationId: parsed.integrationId };
+        return { kind: 'integration', title: humanize(parsed.action), ...withIntegration(parsed.integrationId) };
     }
     return { kind: 'other', title: humanize(qualified) };
 }

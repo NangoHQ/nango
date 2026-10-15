@@ -1,5 +1,5 @@
 import { Braces, CheckCircle2, ChevronDown, ChevronUp, CircleSlash, RotateCcw, Table2, Wrench, XCircle } from 'lucide-react';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { Badge, Button } from '@nangohq/design-system';
 
@@ -9,9 +9,11 @@ import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Spinner } from '@/components/ui/Spinner';
+import { useListIntegrations } from '@/hooks/useIntegration';
+import { useStore } from '@/store';
 import { INTERRUPTED_CALL } from '@/store/agentPlaygroundChat';
 import { cn } from '@/utils/utils';
-import { describeTool, humanize, providerFor, toolArguments } from '../toolDisplay';
+import { describeTool, integrationLabels, labelFor, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
 
 import type { ToolDisplay } from '../toolDisplay';
@@ -82,12 +84,12 @@ const Subtitle: React.FC<{ display: ToolDisplay }> = ({ display }) => {
             </span>
         );
     }
-    const text = display.subtitle ?? (display.integrationId && humanize(display.integrationId));
+    const text = display.subtitle ?? display.integration?.name;
     return text ? <span className="truncate text-body-small-regular text-text-secondary">{text}</span> : null;
 };
 
 const ToolIcon: React.FC<{ display: ToolDisplay }> = ({ display }) => {
-    const provider = display.integrationId ? providerFor(display.integrationId) : undefined;
+    const provider = display.integration?.provider;
     if (provider) {
         // Keyed so a logo that 404'd on a half-streamed id retries once the full id arrives.
         return <IntegrationLogo key={provider} provider={provider} className="size-6 shrink-0 border-0 bg-transparent p-0" />;
@@ -122,7 +124,10 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     onApprove,
     onRetryInterrupted
 }) => {
-    const display = describeTool(part.toolName, part.input);
+    const env = useStore((state) => state.env);
+    const { data: integrations } = useListIntegrations(env);
+    const labels = useMemo(() => (integrations ? integrationLabels(integrations.data) : undefined), [integrations]);
+    const display = describeTool(part.toolName, part.input, labels);
     const awaitingApproval = part.state === 'approval-requested' && !part.approval.isAutomatic;
     const unfinished =
         part.state === 'input-streaming' ||
@@ -139,10 +144,12 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     if (display.kind === 'connect' && part.state === 'output-available') {
         const output = part.output as { connect_url?: string; expires_at?: string; integration?: string; provider?: string };
         if (output.connect_url && output.integration) {
+            const label = labelFor(output.integration, labels);
             return (
                 <ConnectCard
                     integrationId={output.integration}
-                    provider={output.provider ?? providerFor(output.integration)}
+                    provider={output.provider ?? label.provider}
+                    name={label.name}
                     connectUrl={output.connect_url}
                     expiresAt={output.expires_at}
                     connected={connectedIntegrations.has(output.integration)}
@@ -276,8 +283,8 @@ const ApprovalCard: React.FC<{
                         <span className="text-body-medium-medium text-text-strong">The agent wants to make a change</span>
                         <Subtitle
                             display={
-                                display.kind === 'integration' && display.integrationId
-                                    ? { ...display, subtitle: `${display.title} · ${humanize(display.integrationId)}` }
+                                display.kind === 'integration' && display.integration
+                                    ? { ...display, subtitle: `${display.title} · ${display.integration.name}` }
                                     : display
                             }
                         />

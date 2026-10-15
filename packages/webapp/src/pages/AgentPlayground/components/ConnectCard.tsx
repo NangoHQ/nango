@@ -10,13 +10,13 @@ import { useEnvironment } from '@/hooks/useEnvironment';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
-import { humanize } from '../toolDisplay';
 
 import type { ConnectUI } from '@nangohq/frontend';
 
 interface ConnectCardProps {
     integrationId: string;
     provider: string;
+    name: string;
     connectUrl: string;
     expiresAt: string | undefined;
     connected: boolean;
@@ -31,6 +31,7 @@ function hasExpired(expiresAt: string | undefined): boolean {
 export const ConnectCard: React.FC<ConnectCardProps> = ({
     integrationId,
     provider,
+    name,
     connectUrl,
     expiresAt,
     connected: alreadyConnected,
@@ -55,8 +56,6 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({
         const timer = setTimeout(() => setExpired(true), Math.max(0, Date.parse(expiresAt) - Date.now()));
         return () => clearTimeout(timer);
     }, [expired, expiresAt]);
-
-    const name = humanize(integrationId);
 
     const connect = () => {
         if (hasExpired(expiresAt)) {
