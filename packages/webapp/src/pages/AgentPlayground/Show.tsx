@@ -225,7 +225,7 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
             {toolbarSlot &&
                 createPortal(
                     <div className="ml-auto">
-                        <Button variant="outline" size="lg" onClick={onReset}>
+                        <Button onClick={onReset}>
                             <Plus /> New chat
                         </Button>
                     </div>,
