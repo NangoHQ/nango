@@ -9,19 +9,15 @@ import { PostgresMetricExporter, PRODUCER_ID_ATTRIBUTE } from './exporter.js';
 import { HOSTED_TELEMETRY_SCHEMA } from './postgres/schema.js';
 
 import type { HostedMetricName } from './catalog.js';
-import type { Counter, Gauge, Histogram, Meter, MetricOptions } from '@opentelemetry/api';
+import type { Counter, Gauge, Histogram, MetricOptions } from '@opentelemetry/api';
 import type { Knex } from 'knex';
 
 const EXPORT_INTERVAL_MS = 60_000;
 
-export interface HostedMeter {
+export interface HostedTelemetry {
     createCounter(name: HostedMetricName, options?: MetricOptions): Counter;
     createHistogram(name: HostedMetricName, options?: MetricOptions): Histogram;
     createGauge(name: HostedMetricName, options?: MetricOptions): Gauge;
-}
-
-export interface HostedTelemetry {
-    meter(name: string): HostedMeter;
     /** Exports what the current window holds before the process goes, so a rollout does not lose the last minute. */
     shutdown(): Promise<void>;
 }
@@ -50,22 +46,11 @@ export function createHostedTelemetry(store?: { knex: Knex; schema?: string; exp
               ]
           })
         : undefined;
-    const noop = createNoopMeter();
-    const meters = new Map<string, HostedMeter>();
-    const wrap = (meter: Meter): HostedMeter => ({
-        createCounter: (metric, options) => meter.createCounter(metric, options),
-        createHistogram: (metric, options) => meter.createHistogram(metric, options),
-        createGauge: (metric, options) => meter.createGauge(metric, options)
-    });
+    const meter = provider ? provider.getMeter('hosted-telemetry') : createNoopMeter();
     return {
-        meter: (name) => {
-            let meter = meters.get(name);
-            if (!meter) {
-                meter = wrap(provider ? provider.getMeter(name) : noop);
-                meters.set(name, meter);
-            }
-            return meter;
-        },
+        createCounter: (name, options) => meter.createCounter(name, options),
+        createHistogram: (name, options) => meter.createHistogram(name, options),
+        createGauge: (name, options) => meter.createGauge(name, options),
         shutdown: async () => {
             await provider?.forceFlush();
             await provider?.shutdown();
