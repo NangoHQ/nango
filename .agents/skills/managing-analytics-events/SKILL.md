@@ -45,7 +45,8 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
     | Interaction, such as clicks, views and abandoned flows    | A web event                |
 
     Never move a web event to the server to get around ad blockers. Analytics is not for monitoring errors:
-    don't send an event just to report an API error.
+    don't send an event just to report an API error. If an insight will compare this event with another,
+    fire both from the same surface.
 
 4. **Name it `category:object_action`.** Lowercase, `snake_case`, present tense, built only from the values
    in `taxonomy.ts`. The surface is a property, never part of the name. A UI element object ends in
@@ -131,6 +132,10 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
   stay out of the catalogue, but a property we add to one still follows the property rules.
 - **Most insights count accounts, not people.** Aggregate by the `company` group. CLI events have no
   group, because the telemetry call carries no key.
+- **Don't divide a web count by a server count.** Ad blockers drop web events but never server ones, so a
+  ratio across surfaces, such as clicks per server outcome, is skewed. When an insight compares two steps,
+  send both from the same surface. A funnel that follows each person through the steps is fine, because
+  blocked people just drop out of it.
 
 ## Review Checklist
 
