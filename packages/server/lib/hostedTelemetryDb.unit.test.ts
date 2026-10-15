@@ -4,8 +4,6 @@ import { flags } from '@nangohq/utils';
 
 import { destroyHostedTelemetryDb, hostedTelemetryDb } from './hostedTelemetryDb.js';
 
-import type { Knex } from 'knex';
-
 const envs = vi.hoisted(() => ({
     NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL: undefined as string | undefined,
     NANGO_HOSTED_TELEMETRY_POSTGRES_SSL: false,
@@ -14,8 +12,17 @@ const envs = vi.hoisted(() => ({
 }));
 vi.mock('./env.js', () => ({ envs }));
 
-const main = { main: true } as unknown as Knex;
-vi.mock('@nangohq/database', () => ({ default: { knex: { main: true } } }));
+vi.mock('@nangohq/database', () => ({
+    getDbConfig: () => ({
+        client: 'pg',
+        connection: { connectionString: 'postgres://main:x@db:5432/nango', application_name: 'main' },
+        pool: { min: 2, max: 30 }
+    })
+}));
+
+function connection(db: ReturnType<typeof hostedTelemetryDb>): { connectionString: string } {
+    return db?.client.config.connection as { connectionString: string };
+}
 
 describe('hostedTelemetryDb', () => {
     afterEach(async () => {
@@ -29,17 +36,18 @@ describe('hostedTelemetryDb', () => {
         expect(hostedTelemetryDb()).toBeUndefined();
     });
 
-    it('uses the main database by default', () => {
+    it('gets its own pool to the main database by default', () => {
         flags.hasHostedTelemetry = true;
-        expect(hostedTelemetryDb()).toEqual(main);
+        const db = hostedTelemetryDb();
+        expect(connection(db).connectionString).toBe('postgres://main:x@db:5432/nango');
+        expect(db?.client.config.pool).toEqual({ min: 0, max: 5 });
     });
 
-    it('uses its own pool when a URL moves it, and keeps that pool across calls', () => {
+    it('uses the URL when one moves it, and keeps that pool across calls', () => {
         flags.hasHostedTelemetry = true;
         envs.NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL = 'postgres://telemetry:x@db:5432/telemetry';
         const first = hostedTelemetryDb();
-        expect(first).not.toEqual(main);
-        expect((first?.client.config.connection as { connectionString: string }).connectionString).toBe('postgres://telemetry:x@db:5432/telemetry');
+        expect(connection(first).connectionString).toBe('postgres://telemetry:x@db:5432/telemetry');
         expect(hostedTelemetryDb()).toBe(first);
     });
 });
