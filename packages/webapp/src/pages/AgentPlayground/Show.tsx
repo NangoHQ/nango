@@ -34,7 +34,7 @@ import { describeChatError } from './chatError';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
 import { hideTrailingLink } from './streamingMarkdown';
-import { humanize, integrationLabels } from './toolDisplay';
+import { humanize, integrationLabels, labelFor } from './toolDisplay';
 
 import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata, AgentPlaygroundSessionCreated } from '@nangohq/types';
 import type { UIMessage } from 'ai';
@@ -148,6 +148,10 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
         }
     };
 
+    const { data: integrations } = useListIntegrations(env);
+    const labels = useMemo(() => (integrations ? integrationLabels(integrations.data) : undefined), [integrations]);
+    const integrationNames = useCallback((ids: string[]) => ids.map((id) => labelFor(id, labels).integrationName).join(' and '), [labels]);
+
     const [pendingConnections, setPendingConnections] = useState<string[]>([]);
     const onConnected = useCallback((integrationId: string) => {
         setPendingConnections((ids) => (ids.includes(integrationId) ? ids : [...ids, integrationId]));
@@ -157,13 +161,11 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
         if (pendingConnections.length > 0 && !busy && !awaitingApproval) {
             setPendingConnections([]);
             void sendMessage({
-                text: `I've connected ${pendingConnections.map(humanize).join(' and ')}.`,
+                text: `I've connected ${integrationNames(pendingConnections)}.`,
                 metadata: { hidden: true, connectedIntegrations: pendingConnections }
             });
         }
-    }, [pendingConnections, busy, awaitingApproval, sendMessage]);
-    const { data: integrations } = useListIntegrations(env);
-    const labels = useMemo(() => (integrations ? integrationLabels(integrations.data) : undefined), [integrations]);
+    }, [pendingConnections, busy, awaitingApproval, sendMessage, integrationNames]);
     const connectedIntegrations = useMemo(
         () => new Set([...pendingConnections, ...messages.flatMap((message) => message.metadata?.connectedIntegrations ?? [])]),
         [pendingConnections, messages]
@@ -177,11 +179,11 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
         if (newLinkRequests.length > 0 && !busy && !awaitingApproval) {
             setNewLinkRequests([]);
             void sendMessage({
-                text: `My link to connect ${newLinkRequests.map(humanize).join(' and ')} expired. Give me a new Connect button, and don't put the link in your reply.`,
+                text: `My link to connect ${integrationNames(newLinkRequests)} expired. Give me a new Connect button, and don't put the link in your reply.`,
                 metadata: { hidden: true }
             });
         }
-    }, [newLinkRequests, busy, awaitingApproval, sendMessage]);
+    }, [newLinkRequests, busy, awaitingApproval, sendMessage, integrationNames]);
 
     const [retryRequests, setRetryRequests] = useState<string[]>([]);
     const onRetryInterrupted = useCallback((title: string) => {
