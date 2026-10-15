@@ -330,10 +330,12 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
                     placeholder={awaitingApproval ? 'Approve or deny the change to continue…' : 'Ask the agent to do something…'}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                        // Safari sends the key that ends an IME composition with isComposing false and keyCode 229.
+                        const composing = e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229;
+                        if (e.key === 'Enter' && !e.shiftKey && !composing) {
                             e.preventDefault();
                             submit();
-                        } else if (e.key === 'Escape' && busy && !e.nativeEvent.isComposing) {
+                        } else if (e.key === 'Escape' && busy && !composing) {
                             e.preventDefault();
                             onStop();
                         }
