@@ -1,6 +1,7 @@
 import * as z from 'zod';
 
 import { isEnvironmentScopeSelector } from '@nangohq/authz';
+import { productTracking } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
@@ -34,5 +35,8 @@ export const createApiKey = asyncWrapperWithEnvironment<CreateApiKey>(async (req
     const { environment, account } = res.locals;
     const { display_name: displayName, scopes } = valBody.data;
 
-    await handleCreateApiKey({ res, accountId: account.id, environmentId: environment.id, displayName, scopes });
+    const created = await handleCreateApiKey({ res, accountId: account.id, environmentId: environment.id, displayName, scopes });
+    if (created) {
+        productTracking.track({ name: 'environments:environment_update', eventProperties: { section: 'api_keys' } });
+    }
 });

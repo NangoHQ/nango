@@ -248,6 +248,80 @@ export const analyticsEventCatalogue = defineCatalogue({
         ])
     },
 
+    'connections:connection_delete': {
+        surface: 'server',
+        insight: 'How many accounts manage connections from the dashboard each week',
+        fires: 'After someone deletes a connection from the dashboard',
+        properties: none
+    },
+
+    'integrations:integration_create': {
+        surface: 'server',
+        insight: 'How many accounts create integrations each week, and how many of those come from the Agent Playground',
+        fires: 'After an integration is created from the dashboard or by an Agent Playground starter',
+        properties: z.object({ provider: z.string(), is_playground: z.boolean() })
+    },
+    'integrations:integration_update': {
+        surface: 'server',
+        insight: 'How many accounts change integration settings from the dashboard each week',
+        fires: "After someone saves an integration's settings in the dashboard",
+        properties: z.object({ provider: z.string() })
+    },
+    'integrations:integration_delete': {
+        surface: 'server',
+        insight: 'How many accounts delete integrations from the dashboard each week',
+        fires: 'After someone deletes an integration from the dashboard',
+        properties: z.object({ provider: z.string() })
+    },
+
+    'environments:environment_update': {
+        surface: 'server',
+        insight: 'How many accounts change environment settings each week, and which section',
+        fires: 'After someone saves environment settings, webhooks, variables or secret keys in the dashboard',
+        properties: z.object({ section: z.enum(['settings', 'webhooks', 'variables', 'api_keys']) })
+    },
+
+    'team:user_invite': {
+        surface: 'server',
+        insight: 'How many accounts invite teammates each week',
+        fires: 'After someone invites people to the account from the dashboard',
+        properties: z.object({ role: z.string(), invite_count: z.number() })
+    },
+    'team:user_update': {
+        surface: 'server',
+        insight: "How many accounts change their teammates' roles each week",
+        fires: "After someone changes a teammate's role",
+        properties: z.object({ previous_role: z.string(), role: z.string() })
+    },
+    'team:user_remove': {
+        surface: 'server',
+        insight: 'How many accounts remove teammates each week',
+        fires: 'After someone removes a teammate from the account',
+        properties: none
+    },
+
+    'functions:sync_command_submit': {
+        surface: 'server',
+        insight: "How many accounts run, pause or resume their connections' syncs from the dashboard each week",
+        fires: 'After the dashboard sends a command to a sync and the server accepts it',
+        properties: z.object({ command: z.enum(['run', 'full_resync', 'pause', 'resume', 'cancel']) })
+    },
+
+    'logs:filter_update': {
+        surface: 'web',
+        insight: 'How many accounts search or filter their logs each week, and with which filter',
+        fires: 'When someone searches the logs or changes a logs filter',
+        properties: z.object({
+            filter: z.enum(['search', 'status', 'type', 'integration', 'connection', 'script', 'agent_session', 'period'])
+        })
+    },
+    'logs:operation_view': {
+        surface: 'web',
+        insight: 'How many accounts open a log operation each week',
+        fires: 'When someone opens an operation from the logs list',
+        properties: none
+    },
+
     'auth:account_create': {
         surface: 'server',
         insight: 'How many accounts sign up each week, and which website sources they first came from',

@@ -120,6 +120,16 @@ export function trackStarterIntegrationSetup(
         plan: ctx.plan,
         eventProperties: isUsableOutcome(outcome) ? { ...base, is_success: true } : { ...base, is_success: false, error_code: outcome }
     });
+    if (outcome === 'created') {
+        productTracking.track({
+            name: 'integrations:integration_create',
+            team: ctx.account,
+            environment: ctx.environment,
+            user: ctx.user,
+            plan: ctx.plan,
+            eventProperties: { provider: setup.provider, is_playground: true }
+        });
+    }
 }
 
 export interface PlaygroundTurn {

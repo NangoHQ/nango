@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { productTracking } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
@@ -27,5 +28,8 @@ export const deleteApiKey = asyncWrapperWithEnvironment<DeleteApiKey>(async (req
     const { keyId } = valParams.data;
     const { environment } = res.locals;
 
-    await handleDeleteApiKey({ res, environmentId: environment.id, keyId });
+    const deleted = await handleDeleteApiKey({ res, environmentId: environment.id, keyId });
+    if (deleted) {
+        productTracking.track({ name: 'environments:environment_update', eventProperties: { section: 'api_keys' } });
+    }
 });

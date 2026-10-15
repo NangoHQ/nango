@@ -9,6 +9,10 @@ export interface AnalyticsCategories {
     functions: 'Writing, deploying and running syncs and actions, including from the CLI';
     billing: 'Plans, usage and payment';
     agents: 'Agent sessions and the tools agents call through them';
+    integrations: 'Creating and configuring integrations';
+    environments: 'Environments and their settings';
+    team: 'The people in an account and their roles';
+    logs: 'Searching and reading operation logs';
 }
 
 export interface AnalyticsObjects {
@@ -36,6 +40,9 @@ export interface AnalyticsObjects {
     password: "A user's password";
     join_request: 'A request to join an existing account';
     export: 'A file of records produced for download, such as the audit trail';
+    sync_command: "A run, full resync, pause, resume or cancel sent to a connection's sync";
+    operation: 'One entry in the logs, such as a sync run or an auth attempt';
+    filter: 'A search or filter on a dashboard list';
 }
 
 export interface AnalyticsUiElements {
