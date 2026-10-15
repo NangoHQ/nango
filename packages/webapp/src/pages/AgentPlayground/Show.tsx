@@ -327,6 +327,9 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
                         if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
                             e.preventDefault();
                             submit();
+                        } else if (e.key === 'Escape' && busy) {
+                            e.preventDefault();
+                            onStop();
                         }
                     }}
                 />
@@ -338,7 +341,7 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
                     </span>
                     {/* Separate keys: a reused element turns into the submit button mid-click and sends the draft. */}
                     {busy ? (
-                        <InputGroupButton key="stop" label="Stop" variant="primary" size="icon-sm" onClick={onStop}>
+                        <InputGroupButton key="stop" label="Stop (Esc)" variant="primary" size="icon-sm" onClick={onStop}>
                             <Square className="size-3 fill-current" />
                         </InputGroupButton>
                     ) : (
