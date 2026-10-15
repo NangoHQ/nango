@@ -90,6 +90,22 @@ export function buildFlags(client: FeatureFlagsClient) {
         },
         isAgentPlaygroundEnabled(accountUuid: string) {
             return client.isEnabled('agent-playground', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether the deprecated `search` query param on GET /connections is still honored for this
+         * account. Default `false`: only accounts explicitly allowlisted in Unleash (the known existing
+         * users of this param) should have it enabled.
+         */
+        isConnectionsSearchParamEnabled(accountUuid: string) {
+            return client.isEnabled('connections-search-param', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether the deprecated `/v1/*` passthrough (legacy custom endpoint routing for syncs and
+         * actions) is still reachable for this account. Default `false`: only accounts explicitly
+         * allowlisted in Unleash (the known existing users of this passthrough) should have it enabled.
+         */
+        isV1PassthroughEnabled(accountUuid: string) {
+            return client.isEnabled('v1-passthrough', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }
