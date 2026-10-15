@@ -172,7 +172,7 @@ export async function getFreshOAuth2Credentials({
         if (Boom.isBoom(err)) {
             const data: unknown = err.data;
             const rawPayload = data && typeof data === 'object' && 'payload' in data ? data.payload : undefined;
-            const errorPayload = rawPayload instanceof Buffer ? rawPayload.toString() : rawPayload;
+            const errorPayload = (rawPayload instanceof Buffer ? rawPayload.toString() : rawPayload) || err.message;
             const payload = {
                 dataMessage: errorPayload ?? err.message
             };
