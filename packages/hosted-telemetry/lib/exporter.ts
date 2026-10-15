@@ -1,7 +1,7 @@
 import { ExportResultCode } from '@opentelemetry/core';
 import { AggregationTemporality, AggregationType, DataPointType, InstrumentType } from '@opentelemetry/sdk-metrics';
 
-import { getLogger, stringifyError } from '@nangohq/utils';
+import { getLogger, retry, stringifyError } from '@nangohq/utils';
 
 import { HOSTED_TELEMETRY_TABLE } from './postgres/schema.js';
 
@@ -14,6 +14,8 @@ const logger = getLogger('hosted-telemetry');
 export const PRODUCER_ID_ATTRIBUTE = 'producer_id';
 
 const INSERT_BATCH_SIZE = 1000;
+const INSERT_ATTEMPTS = 2;
+const INSERT_RETRY_DELAY_MS = 500;
 
 export interface MetricRow {
     metric: string;
@@ -105,11 +107,7 @@ export class PostgresMetricExporter implements PushMetricExporter {
         if (rows.length === 0) {
             return;
         }
-        try {
-            await this.insert(rows);
-        } catch {
-            await this.insert(rows);
-        }
+        await retry(() => this.insert(rows), { maxAttempts: INSERT_ATTEMPTS, delayMs: INSERT_RETRY_DELAY_MS });
     }
 
     private async insert(rows: MetricRow[]): Promise<void> {
