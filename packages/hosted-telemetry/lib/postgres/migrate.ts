@@ -4,39 +4,39 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
-import { USAGE_TELEMETRY_MIGRATIONS_TABLE, USAGE_TELEMETRY_SCHEMA } from './schema.js';
+import { HOSTED_TELEMETRY_MIGRATIONS_TABLE, HOSTED_TELEMETRY_SCHEMA } from './schema.js';
 
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
-const logger = getLogger('usage-telemetry');
+const logger = getLogger('hosted-telemetry');
 
 const migrationsDir = path.join(fileURLToPath(import.meta.url), '..', 'migrations');
 const migrationsExt = import.meta.url.endsWith('.ts') ? '.ts' : '.js';
 
-interface UsageTelemetryMigration {
+interface HostedTelemetryMigration {
     name: string;
     up: (knex: Knex, schema: string) => Promise<void>;
 }
 
-class UsageTelemetryMigrationSource implements Knex.MigrationSource<UsageTelemetryMigration> {
+class HostedTelemetryMigrationSource implements Knex.MigrationSource<HostedTelemetryMigration> {
     constructor(private readonly schema: string) {}
 
-    async getMigrations(): Promise<UsageTelemetryMigration[]> {
+    async getMigrations(): Promise<HostedTelemetryMigration[]> {
         const files = (await fs.readdir(migrationsDir)).filter((file) => file.endsWith(migrationsExt)).sort();
         return await Promise.all(
             files.map(async (file) => {
-                const module = (await import(pathToFileURL(path.join(migrationsDir, file)).href)) as Pick<UsageTelemetryMigration, 'up'>;
+                const module = (await import(pathToFileURL(path.join(migrationsDir, file)).href)) as Pick<HostedTelemetryMigration, 'up'>;
                 return { name: path.basename(file, migrationsExt), up: module.up };
             })
         );
     }
 
-    getMigrationName(migration: UsageTelemetryMigration): string {
+    getMigrationName(migration: HostedTelemetryMigration): string {
         return migration.name;
     }
 
-    getMigration(migration: UsageTelemetryMigration): Promise<Knex.Migration> {
+    getMigration(migration: HostedTelemetryMigration): Promise<Knex.Migration> {
         return Promise.resolve({
             up: (knex: Knex) => migration.up(knex, this.schema),
             down: () => Promise.resolve()
@@ -44,17 +44,17 @@ class UsageTelemetryMigrationSource implements Knex.MigrationSource<UsageTelemet
     }
 }
 
-export async function migrate({ knex, schema = USAGE_TELEMETRY_SCHEMA }: { knex: Knex; schema?: string }): Promise<Result<void>> {
+export async function migrate({ knex, schema = HOSTED_TELEMETRY_SCHEMA }: { knex: Knex; schema?: string }): Promise<Result<void>> {
     try {
         await knex.raw('CREATE SCHEMA IF NOT EXISTS ??', [schema]);
         await knex.migrate.latest({
-            migrationSource: new UsageTelemetryMigrationSource(schema),
+            migrationSource: new HostedTelemetryMigrationSource(schema),
             schemaName: schema,
-            tableName: USAGE_TELEMETRY_MIGRATIONS_TABLE
+            tableName: HOSTED_TELEMETRY_MIGRATIONS_TABLE
         });
         return Ok(undefined);
     } catch (err) {
-        logger.error('usage telemetry postgres migration failed', err);
+        logger.error('hosted telemetry postgres migration failed', err);
         return Err(err instanceof Error ? err : new Error(String(err)));
     }
 }

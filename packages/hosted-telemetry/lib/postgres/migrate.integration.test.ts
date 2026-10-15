@@ -3,11 +3,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { migrate } from './migrate.js';
 import { ensurePartitions } from './partitions.js';
-import { USAGE_TELEMETRY_TABLE } from './schema.js';
+import { HOSTED_TELEMETRY_TABLE } from './schema.js';
 
 import type { Knex } from 'knex';
 
-const schema = 'usage_telemetry_migrate_test';
+const schema = 'hosted_telemetry_migrate_test';
 const PG_UNIQUE_VIOLATION = '23505';
 const PG_CHECK_VIOLATION = '23514';
 const PG_NOT_NULL_VIOLATION = '23502';
@@ -22,7 +22,7 @@ const row = (overrides: Record<string, unknown> = {}) => ({
     attributes: { environment_id: 1 },
     ...overrides
 });
-const table = () => knex.withSchema(schema).table(USAGE_TELEMETRY_TABLE);
+const table = () => knex.withSchema(schema).table(HOSTED_TELEMETRY_TABLE);
 
 beforeAll(async () => {
     const url = `postgres://${process.env['NANGO_DB_USER']}:${process.env['NANGO_DB_PASSWORD']}@${process.env['NANGO_DB_HOST']}:${process.env['NANGO_DB_PORT']}`;
@@ -37,8 +37,8 @@ afterAll(async () => {
     await knex.destroy();
 });
 
-describe('usage telemetry postgres migrate', () => {
-    it('creates the schema and applies only the usage telemetry set', async () => {
+describe('hosted telemetry postgres migrate', () => {
+    it('creates the schema and applies only the hosted telemetry set', async () => {
         const applied = await knex.raw<{ rows: { name: string }[] }>(`SELECT name FROM ??.migrations ORDER BY name`, [schema]);
         expect(applied.rows.map((r) => r.name)).toEqual(['20261014000001_create_metrics']);
     });
@@ -61,13 +61,13 @@ describe('usage telemetry postgres migrate', () => {
         });
         await table().insert(row({ attributes: { environment_id: 2 } }));
         await table().insert(row({ metric: 'nango.other' }));
-        await knex.raw('TRUNCATE ??.??', [schema, USAGE_TELEMETRY_TABLE]);
+        await knex.raw('TRUNCATE ??.??', [schema, HOSTED_TELEMETRY_TABLE]);
     });
 
     it('defaults attributes to an empty object, which is unique like any other', async () => {
         await table().insert({ ts, value: 1, metric: 'nango.no_attributes' });
         await expect(table().insert({ ts, value: 2, metric: 'nango.no_attributes' })).rejects.toMatchObject({ code: PG_UNIQUE_VIOLATION });
-        await knex.raw('TRUNCATE ??.??', [schema, USAGE_TELEMETRY_TABLE]);
+        await knex.raw('TRUNCATE ??.??', [schema, HOSTED_TELEMETRY_TABLE]);
     });
 
     it('refuses values that are not finite', async () => {
@@ -79,7 +79,7 @@ describe('usage telemetry postgres migrate', () => {
     it('refuses attributes too large to sit in the key', async () => {
         await expect(table().insert(row({ attributes: { environment_id: 1, note: 'x'.repeat(1024) } }))).rejects.toMatchObject({ code: PG_CHECK_VIOLATION });
         await table().insert(row({ attributes: { environment_id: 1, note: 'x'.repeat(900) } }));
-        await knex.raw('TRUNCATE ??.??', [schema, USAGE_TELEMETRY_TABLE]);
+        await knex.raw('TRUNCATE ??.??', [schema, HOSTED_TELEMETRY_TABLE]);
     });
 
     it('refuses null and non-object attributes', async () => {

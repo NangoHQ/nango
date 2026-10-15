@@ -1,3 +1,3 @@
 export { migrate } from './postgres/migrate.js';
 export { dropExpiredPartitions, ensurePartitions, startPartitionDaemon } from './postgres/partitions.js';
-export { USAGE_TELEMETRY_SCHEMA, USAGE_TELEMETRY_TABLE } from './postgres/schema.js';
+export { HOSTED_TELEMETRY_SCHEMA, HOSTED_TELEMETRY_TABLE } from './postgres/schema.js';

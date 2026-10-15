@@ -5,15 +5,15 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { migrate } from './migrate.js';
 import { dropExpiredPartitions, ensurePartitions } from './partitions.js';
-import { USAGE_TELEMETRY_TABLE } from './schema.js';
+import { HOSTED_TELEMETRY_TABLE } from './schema.js';
 
 import type { Knex } from 'knex';
 
 dayjs.extend(utc);
 
-const schema = 'usage_telemetry_partitions_test';
+const schema = 'hosted_telemetry_partitions_test';
 const foreignSchema = `${schema}_foreign`;
-const name = (date: string) => `${USAGE_TELEMETRY_TABLE}_${date}`;
+const name = (date: string) => `${HOSTED_TELEMETRY_TABLE}_${date}`;
 
 let knex: Knex;
 
@@ -21,7 +21,7 @@ async function partitions(): Promise<string[]> {
     const { rows } = await knex.raw<{ rows: { relname: string }[] }>(
         `SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
          WHERE n.nspname = ? AND c.relkind = 'r' AND c.relname ~ ? ORDER BY c.relname`,
-        [schema, `^${USAGE_TELEMETRY_TABLE}_[0-9]{8}$`]
+        [schema, `^${HOSTED_TELEMETRY_TABLE}_[0-9]{8}$`]
     );
     return rows.map((r) => r.relname);
 }
@@ -52,7 +52,7 @@ beforeEach(async () => {
     }
 });
 
-describe('usage telemetry partition lifecycle', () => {
+describe('hosted telemetry partition lifecycle', () => {
     it('creates today and tomorrow across the UTC year boundary, and is idempotent', async () => {
         await tick(new Date('2026-12-31T23:30:00Z'));
         expect(await partitions()).toEqual([name('20261231'), name('20270101')]);
@@ -63,7 +63,7 @@ describe('usage telemetry partition lifecycle', () => {
 
     it('covers its whole day and neither of the neighbouring ones', async () => {
         await ensurePartitions({ knex, schema, dates: [new Date('2026-10-09T12:00:00Z')] });
-        const insert = (ts: string) => knex.withSchema(schema).table(USAGE_TELEMETRY_TABLE).insert({ ts, value: 1, metric: 'test.metric' });
+        const insert = (ts: string) => knex.withSchema(schema).table(HOSTED_TELEMETRY_TABLE).insert({ ts, value: 1, metric: 'test.metric' });
         await expect(insert('2026-10-09T00:00:00.000Z')).resolves.toBeDefined();
         await expect(insert('2026-10-09T23:59:59.999Z')).resolves.toBeDefined();
         await expect(insert('2026-10-08T23:59:59.999Z')).rejects.toThrow(/no partition of relation/);
@@ -99,7 +99,7 @@ describe('usage telemetry partition lifecycle', () => {
             foreignSchema,
             name('20260101'),
             schema,
-            USAGE_TELEMETRY_TABLE
+            HOSTED_TELEMETRY_TABLE
         ]);
 
         const res = await dropExpiredPartitions({ knex, schema, retentionDays: 90, now: new Date('2026-10-09T12:00:00Z') });
