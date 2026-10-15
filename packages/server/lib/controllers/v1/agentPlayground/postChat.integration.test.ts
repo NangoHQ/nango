@@ -1,4 +1,4 @@
-import { simulateReadableStream } from 'ai';
+import { APICallError, simulateReadableStream } from 'ai';
 import { MockLanguageModelV4 } from 'ai/test';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -6,12 +6,14 @@ import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
 import { productTracking, seeders } from '@nangohq/shared';
 
+import { playgroundConnectionTags } from '../../../services/agentPlayground.service.js';
 import * as agentSessionService from '../../../services/agentSession.service.js';
+import { AGENT_SESSION_TAG_KEY } from '../../../services/agentSessionConnections.service.js';
 import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 import type * as ModelService from '../../../services/agentPlaygroundModel.service.js';
 import type { LanguageModelV4StreamPart } from '@ai-sdk/provider';
-import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata } from '@nangohq/types';
+import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata, AgentPlaygroundSessionCreated } from '@nangohq/types';
 import type { LanguageModel } from 'ai';
 import type { MockInstance } from 'vitest';
 
@@ -25,7 +27,7 @@ vi.mock('../../../services/agentPlaygroundModel.service.js', async (importOrigin
 
 const stepUsage = { inputTokens: { total: 1_000, noCache: 1_000, cacheRead: 0, cacheWrite: 0 }, outputTokens: { total: 10, text: 10, reasoning: 0 } };
 
-function twoStepModel(secondStep: LanguageModelV4StreamPart[] | 'until-aborted' | 'throws'): LanguageModel {
+function twoStepModel(secondStep: LanguageModelV4StreamPart[] | 'until-aborted' | 'throws' | Error): LanguageModel {
     let calls = 0;
     return new MockLanguageModelV4({
         modelId: 'gpt-6-luna',
@@ -43,6 +45,9 @@ function twoStepModel(secondStep: LanguageModelV4StreamPart[] | 'until-aborted' 
             }
             if (secondStep === 'throws') {
                 return Promise.reject(new Error('429 Too Many Requests'));
+            }
+            if (secondStep instanceof Error) {
+                return Promise.reject(secondStep);
             }
             if (secondStep === 'until-aborted') {
                 return Promise.resolve({
@@ -74,7 +79,13 @@ const userMessage = (text: string, metadata?: AgentPlaygroundMessageMetadata) =>
 async function chat(
     session: string,
     body: Record<string, unknown>
-): Promise<{ status: number; sessionId: string | undefined; integrationSetup: AgentPlaygroundIntegrationSetup | undefined; text: string }> {
+): Promise<{
+    status: number;
+    sessionId: string | undefined;
+    integrationSetup: AgentPlaygroundIntegrationSetup | undefined;
+    sessionCreated: AgentPlaygroundSessionCreated | undefined;
+    text: string;
+}> {
     const res = await fetch(`${api.url}/api/v1/agent-playground/chat?env=dev`, {
         method: 'POST',
         headers: { cookie: session, 'content-type': 'application/json' },
@@ -86,7 +97,7 @@ async function chat(
         .filter((line) => line.startsWith('data: {'))
         .map((line) => JSON.parse(line.slice('data: '.length)) as { type: string; messageMetadata?: AgentPlaygroundMessageMetadata });
     const start = chunks.find((chunk) => chunk.type === 'start')?.messageMetadata;
-    return { status: res.status, sessionId: start?.sessionId, integrationSetup: start?.integrationSetup, text };
+    return { status: res.status, sessionId: start?.sessionId, integrationSetup: start?.integrationSetup, sessionCreated: start?.sessionCreated, text };
 }
 
 async function integrationsIn(environmentId: number): Promise<{ unique_key: string; shared_credentials_id: number | null }[]> {
@@ -218,6 +229,39 @@ describe('POST /api/v1/agent-playground/chat', () => {
         });
     });
 
+    it('tells the client the model is unavailable when the credit is spent, and tracks why', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        modelOverride.current = () =>
+            twoStepModel(
+                new APICallError({
+                    message: 'You exceeded your current quota',
+                    url: 'https://api.openai.com/v1/responses',
+                    requestBodyValues: {},
+                    statusCode: 429,
+                    responseBody: JSON.stringify({
+                        error: { message: 'You exceeded your current quota', type: 'insufficient_quota', code: 'insufficient_quota' }
+                    }),
+                    isRetryable: false
+                })
+            );
+        const track = vi.spyOn(productTracking, 'track');
+
+        const turn = await chat(session, { messages: [userMessage("What's on my calendar today?")] });
+
+        const errorChunk = turn.text
+            .split('\n')
+            .filter((line) => line.startsWith('data: {'))
+            .map((line) => JSON.parse(line.slice('data: '.length)) as { type: string; errorText?: string })
+            .find((chunk) => chunk.type === 'error');
+        expect(JSON.parse(errorChunk?.errorText ?? '{}')).toEqual({ error: { code: 'model_unavailable', retryable: false } });
+        expect(turn.text).not.toContain('You exceeded your current quota');
+        await vi.waitFor(() => {
+            expect(playgroundTurnEvents(track)).toEqual([expect.objectContaining({ is_success: false, error_code: 'model_error', error_category: 'quota' })]);
+        });
+    });
+
     it('tracks a stopped turn once, with the steps that finished', async () => {
         vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();
@@ -267,6 +311,7 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(turn.status).toBe(200);
         expect(turn.integrationSetup).toEqual({ provider: 'google-calendar', integrationId: 'pg-google-calendar', outcome: 'created' });
         expect(turn.text).toContain('Mock reply');
+        expect(turn.sessionCreated?.request.toolset).toBe('*');
         const integrations = await integrationsIn(env.id);
         expect(integrations.map(({ unique_key }) => unique_key)).toEqual(['pg-google-calendar']);
         expect(integrations[0]?.shared_credentials_id).not.toBeNull();
@@ -282,7 +327,8 @@ describe('POST /api/v1/agent-playground/chat', () => {
 
         expect(turn.status).toBe(200);
         expect(turn.integrationSetup).toEqual({ provider: 'google-calendar', integrationId: 'my-calendar', outcome: 'missing_credentials' });
-        expect(turn.sessionId).toBeUUID();
+        expect(turn.sessionId).toBeUndefined();
+        expect(turn.sessionCreated).toBeUndefined();
         expect(turn.text).not.toContain('Mock reply');
         expect((await integrationsIn(env.id)).map(({ unique_key }) => unique_key)).toEqual(['my-calendar']);
     });
@@ -296,7 +342,8 @@ describe('POST /api/v1/agent-playground/chat', () => {
 
         expect(turn.status).toBe(200);
         expect(turn.integrationSetup).toEqual({ provider: 'hubspot', outcome: 'not_created' });
-        expect(turn.sessionId).toBeUUID();
+        expect(turn.sessionId).toBeUndefined();
+        expect(turn.sessionCreated).toBeUndefined();
         expect(turn.text).not.toContain('Mock reply');
         expect(await integrationsIn(env.id)).toEqual([]);
     });
@@ -345,6 +392,9 @@ describe('POST /api/v1/agent-playground/chat', () => {
         const borrowed = await chat(teammateSession, { sessionId: first.sessionId, messages: [userMessage('hi')] });
 
         expect(again.sessionId).toBe(first.sessionId);
+        expect(first.sessionCreated?.request.tenant.connections).toEqual({ any: [{ tags: { end_user_email: user.email } }] });
+        expect(JSON.stringify(first.sessionCreated)).not.toMatch(/token/i);
+        expect(again.sessionCreated).toBeUndefined();
         expect(borrowed.status).toBe(200);
         expect(borrowed.sessionId).toBeUUID();
         expect(borrowed.sessionId).not.toBe(first.sessionId);
@@ -362,6 +412,8 @@ describe('POST /api/v1/agent-playground/chat', () => {
 
         expect(unchanged.sessionId).toBe(first.sessionId);
         expect(added.sessionId).not.toBe(first.sessionId);
+        expect(unchanged.sessionCreated).toBeUndefined();
+        expect(added.sessionCreated?.reason).toBe('integrations_changed');
         const created = (
             await agentSessionService.getAgentSession(db.knex, { id: added.sessionId ?? '', accountId: account.id, environmentId: env.id })
         ).unwrap();
@@ -379,10 +431,72 @@ describe('POST /api/v1/agent-playground/chat', () => {
         const again = await chat(session, { sessionId: first.sessionId, messages: [userMessage('hi')] });
 
         expect(again.sessionId).not.toBe(first.sessionId);
+        expect(again.sessionCreated?.reason).toBe('connections_changed');
         const created = (
             await agentSessionService.getAgentSession(db.knex, { id: again.sessionId ?? '', accountId: account.id, environmentId: env.id })
         ).unwrap();
         expect(created.resolvedConnections['my-notion']?.connectionId).toBe('from-dashboard');
+    });
+
+    it('keeps the session when the user connects an app from the chat', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user, env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'my-notion', 'notion');
+        const session = await authenticateUser(api, user);
+
+        const first = await chat(session, { messages: [userMessage('hi')] });
+        await seeders.createConnectionSeed({
+            env,
+            provider: 'my-notion',
+            connectionId: 'from-chat',
+            tags: { end_user_email: user.email, [AGENT_SESSION_TAG_KEY]: first.sessionId ?? '' }
+        });
+        const again = await chat(session, { sessionId: first.sessionId, messages: [userMessage("I've connected Notion.")] });
+
+        expect(again.sessionId).toBe(first.sessionId);
+        expect(again.sessionCreated).toBeUndefined();
+    });
+
+    it('starts a new session without calling it expired when the last one was terminated', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { account, user, env } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+
+        const first = await chat(session, { messages: [userMessage('hi')] });
+        (await agentSessionService.terminateAgentSession({ account, environment: env, sessionId: first.sessionId ?? '' })).unwrap();
+        const again = await chat(session, { sessionId: first.sessionId, messages: [userMessage('hi')] });
+
+        expect(again.sessionId).not.toBe(first.sessionId);
+        expect(again.sessionCreated).toBeDefined();
+        expect(again.sessionCreated?.reason).toBeUndefined();
+    });
+
+    it('continues on a new session once the old one expires, with the connections made in it', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { account, user, env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'my-notion', 'notion');
+        const session = await authenticateUser(api, user);
+
+        const first = await chat(session, { messages: [userMessage('hi')] });
+        await seeders.createConnectionSeed({
+            env,
+            provider: 'my-notion',
+            connectionId: 'made-in-chat',
+            tags: { ...playgroundConnectionTags(user), [AGENT_SESSION_TAG_KEY]: first.sessionId ?? '' }
+        });
+        await db.knex
+            .from('agent_sessions')
+            .where({ id: first.sessionId })
+            .update({ expires_at: new Date(Date.now() - 60_000) });
+        await agentSessionService.endAgentSession(db.knex, { id: first.sessionId ?? '', accountId: account.id, environmentId: env.id, reason: 'expired' });
+        const again = await chat(session, { sessionId: first.sessionId, messages: [userMessage('hi'), userMessage('and now?')] });
+
+        expect(again.status).toBe(200);
+        expect(again.sessionId).not.toBe(first.sessionId);
+        const created = (
+            await agentSessionService.getAgentSession(db.knex, { id: again.sessionId ?? '', accountId: account.id, environmentId: env.id })
+        ).unwrap();
+        expect(created.resolvedConnections['my-notion']?.connectionId).toBe('made-in-chat');
     });
 
     it("starts a new session once the user's email no longer matches it", async () => {

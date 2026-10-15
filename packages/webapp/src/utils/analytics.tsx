@@ -1,15 +1,10 @@
 import posthog from 'posthog-js';
 import { usePostHog } from 'posthog-js/react';
 
-import type { AnalyticsEvents } from './analyticsEvents';
-import type { AccountGroupProperties, ApiUser } from '@nangohq/types';
+import type { AccountGroupProperties, AnalyticsEventNameFor, AnalyticsEventPropertiesArgs, ApiUser } from '@nangohq/types';
 
-/**
- * Typed, catalog-checked event tracking. Uses the `posthog` singleton so it works inside and
- * outside React components. The event name and properties are validated against
- * {@link AnalyticsEvents} at compile time.
- */
-export function track<E extends keyof AnalyticsEvents>(event: E, properties: AnalyticsEvents[E]) {
+/** Uses the `posthog` singleton so it works outside React components too. */
+export function track<E extends AnalyticsEventNameFor<'web'>>(event: E, ...[properties]: AnalyticsEventPropertiesArgs<E>) {
     posthog?.capture(event, { ...properties, surface: 'web' });
 }
 

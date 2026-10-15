@@ -1,6 +1,7 @@
 import { productTracking } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
+import type { ModelErrorCategory } from './agentPlaygroundModelError.js';
 import type { DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 import type { LanguageModelUsage } from 'ai';
 
@@ -105,12 +106,14 @@ export function trackPlaygroundTurn({
     ctx,
     sessionId,
     outcome,
-    steps
+    steps,
+    errorCategory = null
 }: {
     ctx: { account: DBTeam; environment: DBEnvironment; plan: DBPlan | null; user: DBUser };
     sessionId: string;
     outcome: PlaygroundTurnOutcome;
     steps: PlaygroundStep[];
+    errorCategory?: ModelErrorCategory | null;
 }): void {
     const usage = sumTurnUsage(steps);
     if (usage.costUsd === null && usage.model && !unpricedModelsWarned.has(usage.model)) {
@@ -128,7 +131,7 @@ export function trackPlaygroundTurn({
             agent_session_id: sessionId,
             environment_id: ctx.environment.id,
             is_success: outcome !== 'error',
-            ...(outcome === 'error' ? { error_code: 'model_error' } : {}),
+            ...(outcome === 'error' ? { error_code: 'model_error', ...(errorCategory ? { error_category: errorCategory } : {}) } : {}),
             is_stopped: outcome === 'aborted',
             ...(usage.model ? { model: usage.model } : {}),
             step_count: usage.steps,

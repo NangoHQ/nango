@@ -4906,6 +4906,32 @@ certn-partner:
                 - /api/v2/teams
     docs: https://nango.dev/docs/integrations/all/certn-partner
 
+chameleoni:
+    display_name: Chameleon-i
+    categories:
+        - ats
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://chiapi.chameleoni.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /users/list
+    docs: https://nango.dev/docs/api-integrations/chameleoni
+    docs_connect: https://nango.dev/docs/api-integrations/chameleoni/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Chameleon-i API key.
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            example: 0BDA****-****-****-****-************-********-****-****-****-********F6E3
+            secret: true
+            doc_section: '#step-1-get-your-api-key'
+
 chargebee:
     display_name: Chargebee
     categories:
@@ -13083,6 +13109,7 @@ ironclad:
                 - na1
                 - demo
                 - eu1
+                - preview
             doc_section: '#step-1-finding-your-subdomain'
 
 ironclad-cc:
@@ -13109,6 +13136,7 @@ ironclad-cc:
                 - na1
                 - demo
                 - eu1
+                - preview
             order: 1
         userEmail:
             type: string
@@ -15935,6 +15963,30 @@ microsoft-dynamics-365-finance-and-operations-cc:
             prefix: https://
             doc_section: '#step-2-finding-your-environment-url'
             order: 2
+
+microsoft-defender-cc:
+    display_name: Microsoft Defender (Client Credentials)
+    categories:
+        - iam
+    auth_mode: OAUTH2_CC
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+    default_scopes:
+        - https://api.securitycenter.microsoft.com/.default
+    proxy:
+        base_url: https://api.security.microsoft.com
+    docs: https://nango.dev/docs/api-integrations/microsoft-defender-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-defender-cc/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: Your Microsoft Entra tenant ID.
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-register-an-app-in-microsoft-entra-id'
+            order: 1
 
 microsoft-dataverse:
     display_name: Microsoft Dataverse (Dynamics 365 CRM)
@@ -20720,6 +20772,47 @@ ramp-sandbox:
     proxy:
         base_url: https://demo-api.ramp.com
     docs: https://nango.dev/docs/integrations/all/ramp-sandbox
+
+rapid7:
+    display_name: Rapid7
+    categories:
+        - iam
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.region}.api.insight.rapid7.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /validate
+    docs: https://nango.dev/docs/api-integrations/rapid7
+    docs_connect: https://nango.dev/docs/api-integrations/rapid7/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region code of your Rapid7 data.
+            enum:
+                - us
+                - us2
+                - us3
+                - eu
+                - ca
+                - au
+                - ap
+                - me1
+                - aps2
+            doc_section: '#step-1-find-your-region'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Rapid7 API key.
+            format: uuid
+            example: 3f2a****-****-****-****-********9c1e
+            doc_section: '#step-2-generate-an-api-key'
 
 rapidapi:
     display_name: RapidAPI
@@ -25834,6 +25927,39 @@ tempo:
                 - api.us
             doc_section: '#step-2-find-your-api-subdomain'
             order: 1
+
+tenable:
+    display_name: Tenable
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://cloud.tenable.com
+        headers:
+            x-apikeys: 'accessKey=${credentials.username}; secretKey=${credentials.password};'
+        verification:
+            method: GET
+            endpoints:
+                - /scans
+    docs: https://nango.dev/docs/api-integrations/tenable
+    docs_connect: https://nango.dev/docs/api-integrations/tenable/connect
+    credentials:
+        username:
+            type: string
+            title: Access Key
+            description: Your Tenable API access key.
+            secret: true
+            example: b31e0f97****************************************************86f7
+            pattern: '^[a-f0-9]{64}$'
+            doc_section: '#step-1-generating-your-api-keys'
+        password:
+            type: string
+            title: Secret Key
+            description: Your Tenable API secret key.
+            secret: true
+            example: f584b7b4****************************************************c9a7
+            pattern: '^[a-f0-9]{64}$'
+            doc_section: '#step-1-generating-your-api-keys'
 
 the-swarm:
     display_name: The Swarm

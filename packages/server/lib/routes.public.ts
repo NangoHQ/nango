@@ -94,7 +94,7 @@ import { postPublicSyncStart } from './controllers/sync/postSyncStart.js';
 import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
 import { postPublicTrigger } from './controllers/sync/postTrigger.js';
 import { putSyncConnectionFrequency } from './controllers/sync/putSyncConnectionFrequency.js';
-import { allPublicV1 } from './controllers/v1/getV1.js';
+import { allPublicV1, requireV1Passthrough } from './controllers/v1/getV1.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
 import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
@@ -500,7 +500,7 @@ publicAPI.route('/session/:sessionId/mcp').get(agentSessionAuth, getAgentSession
 
 // V1 passthrough (deprecated) — scope checks are inline in allPublicV1 after action/model resolution
 publicAPI.use('/v1', jsonContentTypeMiddleware);
-publicAPI.route('/v1/*splat').all(envAuth, withEnvironmentTarget, allPublicV1);
+publicAPI.route('/v1/*splat').all(envAuth, requireV1Passthrough, withEnvironmentTarget, allPublicV1);
 
 // Proxy
 publicAPI.route('/proxy{/*splat}').all(envAuth, can('environment:proxy'), upload.any(), allPublicProxy);
