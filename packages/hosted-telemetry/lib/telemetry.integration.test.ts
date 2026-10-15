@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { migrate } from './postgres/migrate.js';
 import { ensurePartitions } from './postgres/partitions.js';
 import { HOSTED_TELEMETRY_TABLE } from './postgres/schema.js';
-import { getMeter, initHostedTelemetry, producerId, shutdownHostedTelemetry } from './provider.js';
+import { createHostedTelemetry, hostedTelemetry, producerId } from './telemetry.js';
 
 import type { Knex } from 'knex';
 
@@ -38,20 +38,19 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await shutdownHostedTelemetry();
     await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [schema]);
     await knex.destroy();
 });
 
 describe('hosted telemetry producer', () => {
-    it('records nothing until initialised', async () => {
-        getMeter('test').createCounter('nango.functions.active_concurrency').add(1, { environment_id: 7 });
+    it('is a no-op on an installation that has not turned it on', async () => {
+        hostedTelemetry.meter('test').createCounter('nango.functions.active_concurrency').add(1, { environment_id: 7 });
         expect(await rows()).toEqual([]);
     });
 
     it('writes the aggregation of each metric for the window, stamped with the producer and the window', async () => {
-        initHostedTelemetry({ knex, schema, exportIntervalMs: windowMs });
-        const meter = getMeter('test');
+        const telemetry = createHostedTelemetry({ knex, schema, exportIntervalMs: windowMs });
+        const meter = telemetry.meter('test');
         const counter = meter.createCounter('nango.functions.active_concurrency');
         counter.add(2, { environment_id: 7 });
         counter.add(3, { environment_id: 7 });
@@ -61,7 +60,7 @@ describe('hosted telemetry producer', () => {
         }
         meter.createGauge('nango.functions.active_concurrency').record(1283, { account_id: 3, environment_id: 9, integration_id: 'hubspot' });
 
-        await shutdownHostedTelemetry();
+        await telemetry.shutdown();
 
         const producer = producerId();
         expect(await rows()).toEqual([
@@ -80,9 +79,9 @@ describe('hosted telemetry producer', () => {
     });
 
     it('replaces a window that is exported twice with the later export', async () => {
-        initHostedTelemetry({ knex, schema, exportIntervalMs: windowMs });
-        getMeter('test').createCounter('nango.functions.active_concurrency').add(4, { environment_id: 7 });
-        await shutdownHostedTelemetry();
+        const telemetry = createHostedTelemetry({ knex, schema, exportIntervalMs: windowMs });
+        telemetry.meter('test').createCounter('nango.functions.active_concurrency').add(4, { environment_id: 7 });
+        await telemetry.shutdown();
 
         const counter = (await rows()).find((r) => r.metric === 'nango.functions.active_concurrency' && r.attributes['environment_id'] === 7);
         expect(counter?.value).toBe(4);

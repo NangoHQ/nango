@@ -14,6 +14,7 @@
         "directory": "packages/hosted-telemetry"
     },
     "dependencies": {
+        "@nangohq/database": "file:../database",
         "@nangohq/utils": "file:../utils",
         "@opentelemetry/api": "1.9.1",
         "@opentelemetry/core": "2.10.0",
