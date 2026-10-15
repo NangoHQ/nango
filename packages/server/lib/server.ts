@@ -89,14 +89,14 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await migrateFleets();
     await tasks.migrate();
     await migrateAuditDb();
-    await migrateHostedTelemetryDb({ main: db.knex });
+    await migrateHostedTelemetryDb();
     await db.destroy();
 } else {
     logger.info('Not migrating database');
 }
 
 const auditPartitions = startAuditPartitions();
-const hostedTelemetryPartitions = startHostedTelemetryPartitions({ main: db.knex });
+const hostedTelemetryPartitions = startHostedTelemetryPartitions();
 
 // Preload providers
 getProviders();

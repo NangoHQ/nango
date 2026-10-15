@@ -15,6 +15,7 @@ const envs = vi.hoisted(() => ({
 vi.mock('./env.js', () => ({ envs }));
 
 const main = { main: true } as unknown as Knex;
+vi.mock('@nangohq/database', () => ({ default: { knex: { main: true } } }));
 
 describe('hostedTelemetryDb', () => {
     afterEach(async () => {
@@ -25,20 +26,20 @@ describe('hostedTelemetryDb', () => {
 
     it('is off without the flag, whatever the URL says', () => {
         envs.NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL = 'postgres://telemetry:x@db:5432/telemetry';
-        expect(hostedTelemetryDb({ main })).toBeUndefined();
+        expect(hostedTelemetryDb()).toBeUndefined();
     });
 
     it('uses the main database by default', () => {
         flags.hasHostedTelemetry = true;
-        expect(hostedTelemetryDb({ main })).toBe(main);
+        expect(hostedTelemetryDb()).toEqual(main);
     });
 
     it('uses its own pool when a URL moves it, and keeps that pool across calls', () => {
         flags.hasHostedTelemetry = true;
         envs.NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL = 'postgres://telemetry:x@db:5432/telemetry';
-        const first = hostedTelemetryDb({ main });
-        expect(first).not.toBe(main);
+        const first = hostedTelemetryDb();
+        expect(first).not.toEqual(main);
         expect((first?.client.config.connection as { connectionString: string }).connectionString).toBe('postgres://telemetry:x@db:5432/telemetry');
-        expect(hostedTelemetryDb({ main })).toBe(first);
+        expect(hostedTelemetryDb()).toBe(first);
     });
 });

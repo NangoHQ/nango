@@ -16,7 +16,7 @@ await records.migrate();
 await tasks.migrate();
 await migrateAuditDb();
 await destroyAuditDb();
-await migrateHostedTelemetryDb({ main: db.knex });
+await migrateHostedTelemetryDb();
 await destroyHostedTelemetryDb();
 
 process.exit(0);
