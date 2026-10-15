@@ -11,6 +11,7 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Spinner } from '@/components/ui/Spinner';
 import { INTERRUPTED_CALL } from '@/store/agentPlaygroundChat';
 import { cn } from '@/utils/utils';
+import { isUnfinished } from '../replyOutcome';
 import { describeTool, humanize, providerFor, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
 
@@ -27,6 +28,7 @@ interface ToolCallCardProps {
     onRequestNewLink: (integrationId: string) => void;
     onApprove: (approvalId: string, approved: boolean) => void;
     onRetryInterrupted: ((title: string) => void) | undefined;
+    onTryAgain: (() => void) | undefined;
 }
 
 type PayloadView = 'table' | 'json';
@@ -120,15 +122,12 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     onConnected,
     onRequestNewLink,
     onApprove,
-    onRetryInterrupted
+    onRetryInterrupted,
+    onTryAgain
 }) => {
     const display = describeTool(part.toolName, part.input);
     const awaitingApproval = part.state === 'approval-requested' && !part.approval.isAutomatic;
-    const unfinished =
-        part.state === 'input-streaming' ||
-        part.state === 'input-available' ||
-        part.state === 'approval-responded' ||
-        (part.state === 'approval-requested' && !awaitingApproval);
+    const unfinished = isUnfinished(part);
     // An approved call waits a moment for its request to start, so the chat being idle doesn't mean it stopped.
     const stopped = unfinished && !chatActive && !(part.state === 'approval-responded' && approvalSending);
     const running = unfinished && !stopped;
@@ -176,22 +175,35 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
             {duration !== null && part.state !== 'output-denied' && <span className="tabular-nums">{formatDuration(duration)}</span>}
             {stopped && <span>Stopped</span>}
             <StatusIcon running={running} stopped={stopped} failed={failed} />
-            <ChevronDown className="size-4 transition-transform group-data-[state=open]/card:rotate-180" />
         </>
+    );
+    const tryAgain = stopped && onTryAgain && (
+        <Button variant="outline" size="sm" onClick={onTryAgain}>
+            Try again
+        </Button>
+    );
+    const chevron = (
+        <CollapsibleTrigger tabIndex={-1} aria-hidden className="cursor-pointer self-stretch">
+            <ChevronDown className="size-4 transition-transform group-data-[state=open]/card:rotate-180" />
+        </CollapsibleTrigger>
     );
 
     if (display.kind === 'search') {
         return (
             <Collapsible className="group/card">
-                <CollapsibleTrigger className="flex min-h-7 w-full items-center gap-2 py-1 pr-[17px] text-left text-body-medium-regular text-text-secondary hover:text-text-default">
-                    <LogoInverted className="size-4 shrink-0 text-text-strong" />
-                    <span className={cn('shrink-0', running && 'animate-pulse')}>{display.title}</span>
-                    {display.subtitle && <span className="min-w-0 truncate text-text-muted">{display.subtitle}</span>}
-                    <span className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-body-small-regular">
-                        {searchOutput && <span>{searchSummary(searchOutput.matches?.length ?? 0, searchOutput.related?.length ?? 0)}</span>}
-                        {meta}
-                    </span>
-                </CollapsibleTrigger>
+                <div className="flex min-h-7 items-center gap-2 pr-[17px] text-body-medium-regular text-text-secondary hover:text-text-default">
+                    <CollapsibleTrigger className="flex min-w-0 flex-1 items-center gap-2 py-1 text-left">
+                        <LogoInverted className="size-4 shrink-0 text-text-strong" />
+                        <span className={cn('shrink-0', running && 'animate-pulse')}>{display.title}</span>
+                        {display.subtitle && <span className="min-w-0 truncate text-text-muted">{display.subtitle}</span>}
+                        <span className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-body-small-regular">
+                            {searchOutput && <span>{searchSummary(searchOutput.matches?.length ?? 0, searchOutput.related?.length ?? 0)}</span>}
+                            {meta}
+                        </span>
+                    </CollapsibleTrigger>
+                    {tryAgain}
+                    {chevron}
+                </div>
                 <CollapsibleContent className="pt-3">
                     <div className="rounded-ds-xs border border-border-muted bg-surface-panel p-3">{payload}</div>
                 </CollapsibleContent>
@@ -201,14 +213,18 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
 
     return (
         <Collapsible className="group/card rounded-ds-xs border border-border-muted bg-surface-panel">
-            <CollapsibleTrigger className="flex w-full items-center gap-3 px-4 py-3 text-left">
-                <ToolIcon display={display} />
-                <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate text-body-medium-medium text-text-strong">{display.title}</span>
-                    <Subtitle display={display} />
-                </div>
-                <div className="flex shrink-0 items-center gap-2 text-body-small-regular text-text-secondary">{meta}</div>
-            </CollapsibleTrigger>
+            <div className="flex items-center gap-2 pr-4 text-text-secondary">
+                <CollapsibleTrigger className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-4 text-left">
+                    <ToolIcon display={display} />
+                    <div className="flex min-w-0 flex-1 flex-col">
+                        <span className="truncate text-body-medium-medium text-text-strong">{display.title}</span>
+                        <Subtitle display={display} />
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2 text-body-small-regular">{meta}</div>
+                </CollapsibleTrigger>
+                {tryAgain}
+                {chevron}
+            </div>
             <CollapsibleContent className="border-t border-border-muted">
                 <div className="p-3">{payload}</div>
             </CollapsibleContent>

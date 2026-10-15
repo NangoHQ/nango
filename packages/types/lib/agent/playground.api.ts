@@ -28,7 +28,11 @@ export interface AgentPlaygroundMessageMetadata {
     integrationSetup?: AgentPlaygroundIntegrationSetup;
     sessionCreated?: AgentPlaygroundSessionCreated;
     usage?: AgentPlaygroundUsage;
+    // Marks a reply that was stopped or failed, so the chat can still show that after a reload.
+    replyOutcome?: AgentPlaygroundReplyOutcome;
 }
+
+export type AgentPlaygroundReplyOutcome = { kind: 'stopped' } | { kind: 'failed'; error: string };
 
 export type AgentPlaygroundErrorCode = 'feature_disabled' | 'session_creation_failed' | 'model_error' | 'model_unavailable' | 'too_many_request';
 

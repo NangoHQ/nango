@@ -5,12 +5,12 @@ export interface ChatErrorDisplay {
 }
 
 // A failed request carries the response body as its message, so the API's error code is inside it.
-export function describeChatError(error: Error): ChatErrorDisplay {
+export function describeChatError(message: string): ChatErrorDisplay {
     let code: string | undefined;
-    let detail = error.message;
+    let detail = message;
     let retryable = true;
     try {
-        const body = JSON.parse(error.message) as { error?: { code?: unknown; message?: unknown; retryable?: unknown } };
+        const body = JSON.parse(message) as { error?: { code?: unknown; message?: unknown; retryable?: unknown } };
         code = typeof body.error?.code === 'string' ? body.error.code : undefined;
         detail = typeof body.error?.message === 'string' ? body.error.message : code ? '' : detail;
         retryable = body.error?.retryable !== false;
