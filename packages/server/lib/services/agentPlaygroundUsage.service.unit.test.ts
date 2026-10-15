@@ -191,4 +191,17 @@ describe('trackStarterIntegrationSetup', () => {
         const [payload] = capture.mock.calls[0] ?? [];
         expect(payload?.properties).toMatchObject({ provider: 'hubspot', is_success: false, error_code: 'missing_credentials', is_existing: true });
     });
+
+    it('counts a new integration as a playground integration create', () => {
+        trackStarterIntegrationSetup(ctx, { provider: 'github', integrationId: 'pg-github', outcome: 'created' });
+
+        expect(capture.mock.calls.map(([payload]) => payload.event)).toEqual(['playground:integration_create', 'integrations:integration_create']);
+        expect(capture.mock.calls[1]?.[0].properties).toMatchObject({ provider: 'github', is_playground: true });
+    });
+
+    it('sends no integration create for a reused integration', () => {
+        trackStarterIntegrationSetup(ctx, { provider: 'google-calendar', integrationId: 'my-calendar', outcome: 'existing' });
+
+        expect(capture.mock.calls.map(([payload]) => payload.event)).toEqual(['playground:integration_create']);
+    });
 });

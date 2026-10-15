@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { environmentService } from '@nangohq/shared';
+import { environmentService, productTracking } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
@@ -36,5 +36,6 @@ export const postEnvironmentVariables = asyncWrapperWithEnvironment<PostEnvironm
         return;
     }
 
+    productTracking.track({ name: 'environments:environment_update', eventProperties: { section: 'variables' } });
     res.status(200).send({ success: true });
 });
