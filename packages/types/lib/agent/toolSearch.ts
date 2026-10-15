@@ -1,10 +1,9 @@
+import type { JSONSchema7 } from 'json-schema';
+
 export type AgentSessionToolConnectionState = { readonly status: 'connected'; readonly connection_id: string } | { readonly status: 'not_connected' };
 
 /** `schema` carries the arguments, `none` means there are none, `unavailable` means they could not be read. */
-export type AgentSessionToolInput =
-    | { readonly kind: 'schema'; readonly schema: Record<string, unknown> }
-    | { readonly kind: 'none' }
-    | { readonly kind: 'unavailable' };
+export type AgentSessionToolInput = { readonly kind: 'schema'; readonly schema: JSONSchema7 } | { readonly kind: 'none' } | { readonly kind: 'unavailable' };
 
 export interface AgentSessionToolMatch {
     /** What to pass to nango_execute. Names are sanitised and clipped, so use it as given. */

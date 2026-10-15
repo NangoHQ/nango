@@ -229,30 +229,12 @@ function row(input: string | null, definitions?: Record<string, JSONSchema7>) {
 }
 
 describe('toolInputOf', () => {
-    it('roots the deployed document at the input model, as 2020-12', () => {
+    it('roots the deployed document at the input model, labelled draft-07', () => {
         const schema: JSONSchema7 = { type: 'object', properties: { title: { type: 'string' } }, required: ['title'] };
 
         expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: schema }))).toStrictEqual({
             kind: 'schema',
-            schema: { $schema: 'https://json-schema.org/draft/2020-12/schema', $defs: { UpsertDocInput: schema }, $ref: '#/$defs/UpsertDocInput' }
-        });
-    });
-
-    it('repoints refs between models at $defs', () => {
-        const input = toolInputOf(
-            row('UpsertDocInput', {
-                UpsertDocInput: { type: 'object', properties: { parent: { $ref: '#/definitions/Page' } } },
-                Page: { type: 'object' }
-            })
-        );
-
-        expect(input).toStrictEqual({
-            kind: 'schema',
-            schema: {
-                $schema: 'https://json-schema.org/draft/2020-12/schema',
-                $defs: { UpsertDocInput: { type: 'object', properties: { parent: { $ref: '#/$defs/Page' } } }, Page: { type: 'object' } },
-                $ref: '#/$defs/UpsertDocInput'
-            }
+            schema: { $schema: 'http://json-schema.org/draft-07/schema#', definitions: { UpsertDocInput: schema }, $ref: '#/definitions/UpsertDocInput' }
         });
     });
 
@@ -282,7 +264,7 @@ describe('toolInputOf', () => {
         for (const schema of roots) {
             expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: schema }))).toStrictEqual({
                 kind: 'schema',
-                schema: { $schema: 'https://json-schema.org/draft/2020-12/schema', $defs: { UpsertDocInput: schema }, $ref: '#/$defs/UpsertDocInput' }
+                schema: { $schema: 'http://json-schema.org/draft-07/schema#', definitions: { UpsertDocInput: schema }, $ref: '#/definitions/UpsertDocInput' }
             });
         }
     });
@@ -297,7 +279,7 @@ describe('toolInputOf', () => {
             })
         );
 
-        expect(input.kind === 'schema' && Object.keys(input.schema['$defs'] as object).sort()).toStrictEqual(['Icon', 'Page', 'UpsertDocInput']);
+        expect(input.kind === 'schema' && Object.keys(input.schema['definitions'] as object).sort()).toStrictEqual(['Icon', 'Page', 'UpsertDocInput']);
     });
 
     it('terminates on a model that references itself', () => {
@@ -316,31 +298,38 @@ describe('toolInputOf', () => {
 });
 
 describe('objectRootedToolInputSchema', () => {
-    const defs = { UpsertDocInput: { type: 'object', properties: { parent: { $ref: '#/$defs/Page' } } }, Page: { type: 'object' } };
+    const defs: Record<string, JSONSchema7> = {
+        UpsertDocInput: { type: 'object', properties: { parent: { $ref: '#/definitions/Page' } } },
+        Page: { type: 'object' }
+    };
 
     it('inlines the input model at the root and keeps the definitions it points at', () => {
-        expect(objectRootedToolInputSchema({ $defs: defs, $ref: '#/$defs/UpsertDocInput' })).toStrictEqual({
-            $schema: 'https://json-schema.org/draft/2020-12/schema',
+        expect(objectRootedToolInputSchema({ definitions: defs, $ref: '#/definitions/UpsertDocInput' })).toStrictEqual({
+            $schema: 'http://json-schema.org/draft-07/schema#',
             type: 'object',
-            properties: { parent: { $ref: '#/$defs/Page' } },
-            $defs: defs
+            properties: { parent: { $ref: '#/definitions/Page' } },
+            definitions: defs
         });
     });
 
     it('keeps definitions nested in the model resolving from the new root', () => {
-        const model = { type: 'object', properties: { child: { $ref: '#/$defs/__schema0' } }, $defs: { __schema0: { type: 'string' } } };
+        const model: JSONSchema7 = {
+            type: 'object',
+            properties: { child: { $ref: '#/definitions/__schema0' } },
+            definitions: { __schema0: { type: 'string' } }
+        };
 
-        expect(objectRootedToolInputSchema({ $defs: { UpsertDocInput: model }, $ref: '#/$defs/UpsertDocInput' })?.['$defs']).toStrictEqual({
+        expect(objectRootedToolInputSchema({ definitions: { UpsertDocInput: model }, $ref: '#/definitions/UpsertDocInput' })?.['definitions']).toStrictEqual({
             UpsertDocInput: model,
             __schema0: { type: 'string' }
         });
     });
 
-    it.each([
-        { $defs: { UpsertDocInput: { type: 'array' } }, $ref: '#/$defs/UpsertDocInput' },
-        { $defs: { UpsertDocInput: { oneOf: [{ type: 'object' }, { type: 'string' }] } }, $ref: '#/$defs/UpsertDocInput' },
-        { $defs: defs, $ref: '#/$defs/Missing' },
-        { $defs: defs },
+    it.each<JSONSchema7>([
+        { definitions: { UpsertDocInput: { type: 'array' } }, $ref: '#/definitions/UpsertDocInput' },
+        { definitions: { UpsertDocInput: { oneOf: [{ type: 'object' }, { type: 'string' }] } }, $ref: '#/definitions/UpsertDocInput' },
+        { definitions: defs, $ref: '#/definitions/Missing' },
+        { definitions: defs },
         { type: 'object' }
     ])('has no object form for an input that is not an object model', (schema) => {
         expect(objectRootedToolInputSchema(schema)).toBeUndefined();

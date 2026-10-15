@@ -9,6 +9,7 @@ import { actionInputSchemaOf, buildSessionTools, createAgentSessionMcpServer, li
 
 import type * as ToolSearchService from '../../../services/agentSessionToolSearch.service.js';
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionMetaTools, AgentSessionToolInput } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 
 const executeAction = vi.hoisted(() => vi.fn());
 vi.mock('../../../services/action.service.js', () => ({ executeAction }));
@@ -79,7 +80,9 @@ describe('createAgentSessionMcpServer', () => {
     it('lists a pinned deployed action with the input schema it was deployed with', async () => {
         const model = { type: 'object', properties: { title: { type: 'string' } }, required: ['title'] };
         findActionInputs.mockResolvedValue(
-            new Map([['notion', new Map([['read_doc', { kind: 'schema', schema: { $defs: { ReadDocInput: model }, $ref: '#/$defs/ReadDocInput' } }]])]])
+            new Map([
+                ['notion', new Map([['read_doc', { kind: 'schema', schema: { definitions: { ReadDocInput: model }, $ref: '#/definitions/ReadDocInput' } }]])]
+            ])
         );
 
         const tools = await listTools({
@@ -88,9 +91,9 @@ describe('createAgentSessionMcpServer', () => {
 
         expect(findActionInputs).toHaveBeenCalledWith({ environmentId: 1, actions: [{ integrationId: 'notion', name: 'read_doc' }] });
         expect(tools.find((listed) => listed.name === 'notion__read_doc')?.inputSchema).toStrictEqual({
-            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            $schema: 'http://json-schema.org/draft-07/schema#',
             ...model,
-            $defs: { ReadDocInput: model }
+            definitions: { ReadDocInput: model }
         });
     });
 
@@ -416,15 +419,15 @@ describe('listSessionTools', () => {
 });
 
 describe('actionInputSchemaOf', () => {
-    const model = { type: 'object', properties: { title: { type: 'string' } } };
+    const model: JSONSchema7 = { type: 'object', properties: { title: { type: 'string' } } };
 
     it('lists the input model as the object at the root', () => {
         expect(
             actionInputSchemaOf({
                 kind: 'schema',
-                schema: { $schema: 'https://json-schema.org/draft/2020-12/schema', $defs: { ReadDocInput: model }, $ref: '#/$defs/ReadDocInput' }
+                schema: { $schema: 'http://json-schema.org/draft-07/schema#', definitions: { ReadDocInput: model }, $ref: '#/definitions/ReadDocInput' }
             })
-        ).toStrictEqual({ $schema: 'https://json-schema.org/draft/2020-12/schema', ...model, $defs: { ReadDocInput: model } });
+        ).toStrictEqual({ $schema: 'http://json-schema.org/draft-07/schema#', ...model, definitions: { ReadDocInput: model } });
     });
 
     it('lists an action with no input as taking an empty object', () => {
@@ -433,7 +436,7 @@ describe('actionInputSchemaOf', () => {
 
     it.each<AgentSessionToolInput>([
         { kind: 'unavailable' },
-        { kind: 'schema', schema: { $defs: { ReadDocInput: { type: 'array' } }, $ref: '#/$defs/ReadDocInput' } }
+        { kind: 'schema', schema: { definitions: { ReadDocInput: { type: 'array' } }, $ref: '#/definitions/ReadDocInput' } }
     ])('falls back to a free-form object when the input has no object form', (input) => {
         expect(actionInputSchemaOf(input)).toStrictEqual(OPEN_INPUT_SCHEMA);
     });

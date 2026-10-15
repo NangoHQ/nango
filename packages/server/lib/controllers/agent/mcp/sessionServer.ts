@@ -1,6 +1,6 @@
 import { fromJsonSchema, McpServer, ProtocolError, ProtocolErrorCode } from '@modelcontextprotocol/server';
 
-import { JSON_SCHEMA_2020_12, report } from '@nangohq/utils';
+import { report } from '@nangohq/utils';
 
 import { findActionInputs, objectRootedToolInputSchema } from '../../../services/agentSessionToolSearch.service.js';
 import { toJsonSchema202012 } from '../../mcp/utils.js';
@@ -30,6 +30,8 @@ export const TOOL_META_KEY = 'nango/tool';
 
 const MAX_NAME_PART_LENGTH = 30;
 const UNSAFE_NAME_CHARACTERS = /[^a-zA-Z0-9_-]/g;
+
+const JSON_SCHEMA_2020_12 = 'https://json-schema.org/draft/2020-12/schema';
 
 type SessionTool = Tool & { description: string };
 
