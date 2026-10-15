@@ -6,6 +6,7 @@ import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
 import { productTracking, seeders } from '@nangohq/shared';
 
+import { playgroundConnectionTags } from '../../../services/agentPlayground.service.js';
 import * as agentSessionService from '../../../services/agentSession.service.js';
 import { AGENT_SESSION_TAG_KEY } from '../../../services/agentSessionConnections.service.js';
 import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
@@ -468,6 +469,34 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(again.sessionId).not.toBe(first.sessionId);
         expect(again.sessionCreated).toBeDefined();
         expect(again.sessionCreated?.reason).toBeUndefined();
+    });
+
+    it('continues on a new session once the old one expires, with the connections made in it', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { account, user, env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'my-notion', 'notion');
+        const session = await authenticateUser(api, user);
+
+        const first = await chat(session, { messages: [userMessage('hi')] });
+        await seeders.createConnectionSeed({
+            env,
+            provider: 'my-notion',
+            connectionId: 'made-in-chat',
+            tags: { ...playgroundConnectionTags(user), [AGENT_SESSION_TAG_KEY]: first.sessionId ?? '' }
+        });
+        await db.knex
+            .from('agent_sessions')
+            .where({ id: first.sessionId })
+            .update({ expires_at: new Date(Date.now() - 60_000) });
+        await agentSessionService.endAgentSession(db.knex, { id: first.sessionId ?? '', accountId: account.id, environmentId: env.id, reason: 'expired' });
+        const again = await chat(session, { sessionId: first.sessionId, messages: [userMessage('hi'), userMessage('and now?')] });
+
+        expect(again.status).toBe(200);
+        expect(again.sessionId).not.toBe(first.sessionId);
+        const created = (
+            await agentSessionService.getAgentSession(db.knex, { id: again.sessionId ?? '', accountId: account.id, environmentId: env.id })
+        ).unwrap();
+        expect(created.resolvedConnections['my-notion']?.connectionId).toBe('made-in-chat');
     });
 
     it("starts a new session once the user's email no longer matches it", async () => {

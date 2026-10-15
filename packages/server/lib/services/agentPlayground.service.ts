@@ -386,7 +386,7 @@ export async function startTurn({
         return Err(sessionResult.error);
     }
     const { session, created: sessionCreated } = sessionResult.value;
-    const sessionMetadata = { sessionId: session.id, sessionExpiresAt: session.expiresAt.toISOString() };
+    const sessionMetadata = { sessionId: session.id };
     const startMetadata: AgentPlaygroundMessageMetadata = { ...sessionMetadata };
     if (integrationSetup) {
         startMetadata.integrationSetup = integrationSetup;

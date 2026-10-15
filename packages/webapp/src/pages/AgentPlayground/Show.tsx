@@ -26,7 +26,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useUser } from '@/hooks/useUser';
 import { usePlaygroundToolbarSlot } from '@/pages/Playground/Show';
 import { useStore } from '@/store';
-import { clearAgentPlaygroundChat, loadAgentPlaygroundChat, saveAgentPlaygroundChat } from '@/store/agentPlaygroundChat';
+import { deleteAgentPlaygroundChat, openAgentPlaygroundChat, saveAgentPlaygroundChat } from '@/store/agentPlaygroundChat';
 import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
 import { describeChatError } from './chatError';
@@ -57,20 +57,10 @@ export const AgentPlayground: React.FC = () => {
     const toolbarSlot = usePlaygroundToolbarSlot();
     const [chatKey, setChatKey] = useState(0);
 
-    return (
-        <Chat
-            key={`${env}-${chatKey}`}
-            env={env}
-            toolbarSlot={toolbarSlot}
-            onReset={() => {
-                clearAgentPlaygroundChat();
-                setChatKey((key) => key + 1);
-            }}
-        />
-    );
+    return <Chat key={`${env}-${chatKey}`} env={env} toolbarSlot={toolbarSlot} onNewChat={() => setChatKey((key) => key + 1)} />;
 };
 
-const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: () => void }> = ({ env, toolbarSlot, onReset }) => {
+const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({ env, toolbarSlot, onNewChat }) => {
     const sessionId = useRef<string | undefined>(undefined);
     const transport = useMemo(
         () =>
@@ -86,7 +76,13 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
 
     const { user } = useUser();
     const userId = user?.uuid;
-    const [storedMessages] = useState(() => (userId ? loadAgentPlaygroundChat(env, userId) : undefined));
+    const [{ chatId, messages: storedMessages }] = useState(() =>
+        userId ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
+    );
+    const onReset = () => {
+        deleteAgentPlaygroundChat(chatId);
+        onNewChat();
+    };
     const failure = useRef<string | undefined>(undefined);
     const leaving = useRef(false);
     const { messages, setMessages, sendMessage, regenerate, status, stop, clearError, addToolApprovalResponse } = useChat<PlaygroundMessage>({
@@ -135,9 +131,9 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
     useEffect(() => {
         if (userId) {
             // If the page closes mid-reply, the reload shows the reply as stopped.
-            saveAgentPlaygroundChat(env, userId, busy ? markStopped(messages) : messages);
+            saveAgentPlaygroundChat({ chatId, env, userId, messages: busy ? markStopped(messages) : messages });
         }
-    }, [env, userId, messages, busy]);
+    }, [chatId, env, userId, messages, busy]);
 
     const lastMessage = messages.at(-1);
     // A new turn would drop the pending tool call, so the change is never approved or denied.
