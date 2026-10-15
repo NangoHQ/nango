@@ -317,11 +317,17 @@ class AccountService {
                 throw createdEnvs.error;
             }
 
-            if (isSignup && consent && process.env['ADVERTISING_CONSENT_ENABLED'] === 'true') {
+            if (isSignup && consent && envs.ADVERTISING_CONSENT_ENABLED) {
                 try {
                     await bindSignupAdvertisingConsent(trx, result[0].id, consent);
-                } catch {
-                    logger.warning('Optional signup consent storage unavailable');
+                } catch (err) {
+                    // SQL error messages can contain bindings, including consent and click IDs.
+                    logger.warning('Optional signup consent storage unavailable', {
+                        err: {
+                            name: err instanceof Error ? err.name : 'UnknownError',
+                            code: err && typeof err === 'object' && 'code' in err ? String(err.code) : undefined
+                        }
+                    });
                 }
             }
             metrics.increment(metrics.Types.ACCOUNT_CREATED, 1, { accountId: result[0].id });

@@ -3,7 +3,9 @@ import { randomUUID } from 'node:crypto';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
+import { ENVS, parseEnvs } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { createAccount } from '../seeders/account.seeder.js';
 import {
     bindSignupAdvertisingConsent,
@@ -17,7 +19,7 @@ import {
 } from './advertisingConsent.js';
 import userService from './user.service.js';
 
-import type { AdvertisingConsentChoice } from '@nangohq/types';
+import type { AdvertisingConsentChoice, SignupAdvertisingContext } from '@nangohq/types';
 
 const grant = {
     preferences: false,
@@ -28,17 +30,20 @@ const grant = {
     regulations: { gdprApplies: true, lgpdApplies: false, ccpaApplies: false }
 };
 const lifetimeMs = 60000;
+const originalEnabled = envs.ADVERTISING_CONSENT_ENABLED;
 
 beforeAll(async () => {
     await multipleMigrations();
 });
 afterEach(() => {
+    envs.ADVERTISING_CONSENT_ENABLED = originalEnabled;
     vi.unstubAllEnvs();
 });
 
 describe('stored advertising consent', () => {
     async function signup(internal = false, complete = true, choice: AdvertisingConsentChoice = grant) {
         vi.stubEnv('ADVERTISING_CONSENT_ENABLED', 'true');
+        envs.ADVERTISING_CONSENT_ENABLED = true;
         const ownerHash = consentOwnerHash(randomUUID());
         await recordAdvertisingConsent({ ownerHash, choice, expectedRevision: null, clickIds: { gclid: 'test-click' }, lifetimeMs });
         const consent = await readAdvertisingConsent(ownerHash);
@@ -80,6 +85,16 @@ describe('stored advertising consent', () => {
             )?.click_context
         ).toEqual({});
         await recordAdvertisingConsent({ ownerHash, choice: grant, expectedRevision: withdrawn?.revision ?? null, clickIds: {}, lifetimeMs });
+        expect(await getSignupAdvertisingPermission(account.id)).toBeNull();
+    });
+
+    it('uses the parsed enable flag for creator binding and permission checks', async () => {
+        const { account, reference, user } = await signup(false, false);
+        vi.stubEnv('ADVERTISING_CONSENT_ENABLED', 'yes');
+        envs.ADVERTISING_CONSENT_ENABLED = parseEnvs(ENVS, { ADVERTISING_CONSENT_ENABLED: 'yes' }).ADVERTISING_CONSENT_ENABLED;
+        await completeSignupAdvertisingConsent(account.id, user.id, reference);
+        expect((await getSignupAdvertisingPermission(account.id))?.context.google?.ids).toEqual({ gclid: 'test-click' });
+        envs.ADVERTISING_CONSENT_ENABLED = false;
         expect(await getSignupAdvertisingPermission(account.id)).toBeNull();
     });
 
@@ -189,6 +204,7 @@ describe('stored advertising consent', () => {
             .update({ expires_at: new Date(0) });
         expect(await getSignupAdvertisingPermission(account.id)).toBeNull();
         vi.stubEnv('ADVERTISING_CONSENT_ENABLED', 'false');
+        envs.ADVERTISING_CONSENT_ENABLED = false;
         expect(await getSignupAdvertisingPermission(account.id)).toBeNull();
     });
 
@@ -203,13 +219,33 @@ describe('stored advertising consent', () => {
         const { ownerHash, account, reference } = await signup();
         const before = await readAdvertisingConsent(ownerHash);
         await invalidateAdvertisingPermissions();
-        await deleteExpiredAdvertisingConsents(new Date());
         const after = await readAdvertisingConsent(ownerHash);
         expect(after?.choice).toEqual(grant);
         expect(after?.expires_at).toEqual(before?.expires_at);
         expect(after?.click_context).toEqual({});
         expect(await getSignupAdvertisingPermission(account.id)).toBeNull();
         await recordAdvertisingConsent({ ownerHash, choice: grant, expectedRevision: reference.revision, clickIds: {}, lifetimeMs });
+        expect(await getSignupAdvertisingPermission(account.id)).toBeNull();
+        const binding = await db
+            .knex<{ account_id: number; click_context: SignupAdvertisingContext; consent_revision: number }>('signup_advertising_consents')
+            .where({ account_id: account.id })
+            .first();
+        expect(binding).toBeDefined();
+        if (!binding) throw new Error('Missing retained signup binding');
+        expect(binding.click_context).toEqual({});
+        expect(binding.consent_revision).toBe(reference.revision);
+        expect((await readAdvertisingConsent(ownerHash))?.revision).toBeGreaterThan(binding.consent_revision);
+    });
+
+    it('does not renew expired consent on a returning visit', async () => {
+        const { ownerHash, account, reference } = await signup();
+        const expiredAt = new Date(Date.now() - 1000);
+        await db.knex('advertising_consents').where({ id: reference.id }).update({ expires_at: expiredAt });
+        const before = await readAdvertisingConsent(ownerHash);
+        expect(
+            await recordAdvertisingConsent({ ownerHash, choice: grant, expectedRevision: reference.revision, clickIds: { gclid: 'new-click' }, lifetimeMs })
+        ).toBeNull();
+        expect(await readAdvertisingConsent(ownerHash)).toEqual(before);
         expect(await getSignupAdvertisingPermission(account.id)).toBeNull();
     });
 

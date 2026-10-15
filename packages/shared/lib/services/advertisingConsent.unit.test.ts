@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 
+import { envs } from '../env.js';
 import {
     advertisingPermissionBasis,
     consentOwnerHash,
@@ -21,6 +22,7 @@ const grant = {
     regulations: { gdprApplies: true, lgpdApplies: false, ccpaApplies: false }
 };
 const now = new Date('2026-10-14T12:00:00Z');
+const originalEnabled = envs.ADVERTISING_CONSENT_ENABLED;
 const previous: StoredAdvertisingConsent = {
     id: 'context',
     owner_hash: 'hash',
@@ -33,6 +35,7 @@ const previous: StoredAdvertisingConsent = {
 };
 
 afterEach(() => {
+    envs.ADVERTISING_CONSENT_ENABLED = originalEnabled;
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
 });
@@ -130,9 +133,15 @@ describe('advertising consent policy', () => {
         ).toEqual(previous.click_context);
     });
 
-    it('does not revive old signup permission or IDs after expiry and regrant', () => {
+    it('rejects an unchanged expired grant even with a current revision and new ad IDs', () => {
         const expired = { ...previous, expires_at: now };
-        expect(nextAdvertisingConsent(expired, { choice: grant, expectedRevision: 3, clickIds: {} }, now)).toEqual({
+        expect(nextAdvertisingConsent(expired, { choice: grant, expectedRevision: 3, clickIds: {} }, now)).toBeNull();
+        expect(nextAdvertisingConsent(expired, { choice: grant, expectedRevision: 3, clickIds: { gclid: 'new-ad' } }, now)).toBeNull();
+    });
+
+    it('accepts withdrawal after expiry and a subsequent changed choice without old IDs', () => {
+        const expired = { ...previous, expires_at: now };
+        expect(nextAdvertisingConsent(expired, { choice: { ...grant, marketing: false }, expectedRevision: 1, clickIds: {} }, now)).toEqual({
             revision: 4,
             changed: true,
             context: {}
@@ -157,13 +166,17 @@ describe('advertising consent policy', () => {
 
     it('does not query or allow reporting when disabled', async () => {
         vi.stubEnv('ADVERTISING_CONSENT_ENABLED', 'false');
+        envs.ADVERTISING_CONSENT_ENABLED = false;
         expect(await getSignupAdvertisingPermission(42)).toBeNull();
     });
 
     it('fails closed when storage is unavailable', async () => {
-        vi.stubEnv('ADVERTISING_CONSENT_ENABLED', 'true');
+        // Use the parsed flag even when the raw value is a different accepted spelling.
+        vi.stubEnv('ADVERTISING_CONSENT_ENABLED', 'yes');
+        envs.ADVERTISING_CONSENT_ENABLED = true;
         // A missing table/connection is not evidence of permission. No connection is attempted here.
-        vi.spyOn(db.knex.client, 'acquireConnection').mockRejectedValueOnce(new Error('offline'));
+        const acquire = vi.spyOn(db.knex.client, 'acquireConnection').mockRejectedValueOnce(new Error('offline'));
         expect(await getSignupAdvertisingPermission(42)).toBeNull();
+        expect(acquire).toHaveBeenCalledOnce();
     });
 });

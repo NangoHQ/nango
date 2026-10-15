@@ -2,6 +2,8 @@ import { createHash, randomUUID } from 'node:crypto';
 
 import db from '@nangohq/database';
 
+import { envs } from '../env.js';
+
 import type {
     AdvertisingClickIds,
     AdvertisingConsentChoice,
@@ -64,6 +66,8 @@ export function nextAdvertisingConsent(
 ): { revision: number; context: SignupAdvertisingContext; changed: boolean } | null {
     const permits = permitsAdvertising(input.choice);
     if (permits && input.expectedRevision !== (previous.revision || null)) return null;
+    // A normal visit cannot renew an expired grant by replaying the same CMP choice.
+    if (permits && previous.revision > 0 && previous.expires_at <= now && sameAdvertisingChoice(previous.choice, input.choice)) return null;
     const changed = previous.expires_at <= now || previous.invalidated_at !== null || !sameAdvertisingChoice(previous.choice, input.choice);
     const context: SignupAdvertisingContext = permits && !changed ? { ...previous.click_context } : {};
     if (permits) {
@@ -163,7 +167,7 @@ export async function bindSignupAdvertisingConsent(trx: Knex.Transaction, accoun
 
 /** Bind only the creator from the request which inserted this account's signup record. */
 export async function completeSignupAdvertisingConsent(accountId: number, userId: number, reference: SignupConsentReference | undefined): Promise<void> {
-    if (!reference || process.env['ADVERTISING_CONSENT_ENABLED'] !== 'true') return;
+    if (!reference || !envs.ADVERTISING_CONSENT_ENABLED) return;
     try {
         const user = await db.knex<DBUser>('_nango_users').where({ id: userId, account_id: accountId }).first().timeout(1000, { cancel: true });
         if (!user) return;
@@ -180,7 +184,7 @@ export async function completeSignupAdvertisingConsent(accountId: number, userId
 
 /** Read immediately before dispatch, never cache this result in a queue. Null means do not send. */
 export async function getSignupAdvertisingPermission(accountId: number): Promise<SignupAdvertisingPermission | null> {
-    if (process.env['ADVERTISING_CONSENT_ENABLED'] !== 'true') return null;
+    if (!envs.ADVERTISING_CONSENT_ENABLED) return null;
     try {
         const result = await db
             .knex('signup_advertising_consents as signup')

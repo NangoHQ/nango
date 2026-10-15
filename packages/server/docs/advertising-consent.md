@@ -35,6 +35,8 @@ The lookup requires the actual signup creator to be verified, non-suspended and 
 
 A changed choice increments the revision and clears stored ad IDs, including signup snapshots. A later grant cannot revive that old signup. A stale tab cannot replace a newer revision with its old grant. Denials can always reduce permission.
 
+Reposting an unchanged expired grant is rejected, even with its current revision or a new ad click. The current API cannot distinguish a fresh acceptance of identical categories from an ordinary visit, so it does not renew that grant. A changed CMP choice can create a new revision; it never revives an old signup binding.
+
 The website listens for CMP events and checks local CMP state once per second because Cookiebot has no documented dedicated withdrawal event. Unchanged state sends no request. Failed writes retry the current choice with bounded backoff; a conflicting grant is not retried automatically.
 
 Withdrawal is effective on the server once the update arrives. Offline browsers, cleared cookies, blocked requests and other devices can prevent that link. This does not retract conversions already delivered. Test actual CMP behavior before enabling senders; do not claim universal or instantaneous revocation.
@@ -65,11 +67,11 @@ Before release:
 
 ## Local verification, October 15
 
-The latest revision passes the full monorepo TypeScript build, targeted lint and 44 backend unit tests (consent policy, session continuation, OAuth state and existing acquisition behavior). Those include 7 API boundary tests. The updated website bridge passed 10 tests plus website typecheck and lint.
+The review fixes pass 65 targeted unit/API tests covering consent policy, session continuation, Google redirect destinations, OAuth state, existing acquisition behavior and API boundaries. The website bridge previously passed 10 tests plus website typecheck and lint and is unchanged in this revision.
 
-All 11 database integration tests passed on October 15 using Docker Desktop 4.95.0 on this Apple Silicon laptop. The suite applied migrations to a disposable local PostgreSQL database and checked withdrawal, stale grants, regional defaults/GPC, rollback retention, exact creator binding, internal creators with external teammates, verification timing, savepoint failure and cleanup. It completed in 45.65 seconds, including service startup.
+All 13 database integration tests passed on October 15 using disposable local Docker services. They cover withdrawal, expired-grant replay, parsed enable settings, regional defaults/GPC, retained rollback bindings, exact creator binding, internal creators, verification timing, savepoint failure and cleanup. The run completed in 24.47 seconds, including service startup.
 
-Docker provides 10 CPUs and about 8 GB of memory. The test command used the existing user socket through command-scoped `DOCKER_HOST` and `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE`; no global socket or shell configuration was changed. No Dev or production database was used. Nothing has been pushed or enabled. Next: coordinate Dev testing with the actual CMP and supported host routing.
+Docker provides 10 CPUs and about 8 GB of memory. The test command used the existing user socket through command-scoped `DOCKER_HOST` and `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE`; no global socket or shell configuration was changed. No Dev or production database was used. Draft PRs are open; the feature is not enabled. Next: coordinate Dev testing with the actual CMP and supported host routing.
 
 ## Rollback
 

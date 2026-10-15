@@ -37,7 +37,7 @@ export const postManagedSignup = asyncWrapper<PostManagedSignup>(async (req, res
 
     const body: PostManagedSignup['Body'] = val.data;
 
-    const consentNonce = body.token || body.returnTo ? undefined : await prepareManagedSignupConsent(req);
+    const consentNonce = body.token ? undefined : await prepareManagedSignupConsent(req);
     const workos = getWorkOSClient();
     const oAuthUrl = workos.userManagement.getAuthorizationUrl({
         clientId: process.env['WORKOS_CLIENT_ID'] || '',
