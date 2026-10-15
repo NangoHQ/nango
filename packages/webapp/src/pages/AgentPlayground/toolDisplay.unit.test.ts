@@ -3,21 +3,32 @@ import { describe, expect, it } from 'vitest';
 import { describeTool, integrationLabels, labelFor } from './toolDisplay.js';
 
 const labels = integrationLabels([
-    { unique_key: 'github-getting-started', provider: 'github', meta: { displayName: 'GitHub (User OAuth)' } },
-    { unique_key: 'pg-google-calendar', provider: 'google-calendar', meta: { displayName: 'Google Calendar' } }
+    { unique_key: 'github-getting-started', provider: 'github', display_name: 'Github (Getting Started)', meta: { displayName: 'GitHub (User OAuth)' } },
+    { unique_key: 'github-app', provider: 'github-app', display_name: null, meta: { displayName: 'GitHub (App)' } },
+    { unique_key: 'pg-google-calendar', provider: 'google-calendar', display_name: null, meta: { displayName: 'Google Calendar' } }
 ]);
 
+const gettingStarted = { provider: 'github', name: 'GitHub', integrationName: 'Github (Getting Started)' };
+
 describe('labelFor', () => {
-    it('uses the provider and its display name for an integration in the list', () => {
-        expect(labelFor('github-getting-started', labels)).toEqual({ provider: 'github', name: 'GitHub' });
+    it('uses the provider, its display name and the integration name for an integration in the list', () => {
+        expect(labelFor('github-getting-started', labels)).toEqual(gettingStarted);
+    });
+
+    it('falls back to the provider display name when the integration has no name of its own', () => {
+        expect(labelFor('github-app', labels)).toEqual({ provider: 'github-app', name: 'GitHub', integrationName: 'GitHub (App)' });
     });
 
     it('guesses from the id while the list is loading', () => {
-        expect(labelFor('pg-google-calendar', undefined)).toEqual({ provider: 'google-calendar', name: 'Google Calendar' });
+        expect(labelFor('pg-google-calendar', undefined)).toEqual({
+            provider: 'google-calendar',
+            name: 'Google Calendar',
+            integrationName: 'Google Calendar'
+        });
     });
 
     it('guesses from the id when the integration is not in the list', () => {
-        expect(labelFor('my-hubspot', labels)).toEqual({ provider: 'my-hubspot', name: 'My Hubspot' });
+        expect(labelFor('my-hubspot', labels)).toEqual({ provider: 'my-hubspot', name: 'My Hubspot', integrationName: 'My Hubspot' });
     });
 });
 
@@ -31,7 +42,7 @@ describe('describeTool', () => {
             method: 'GET',
             path: '/user',
             integrationId: 'github-getting-started',
-            integration: { provider: 'github', name: 'GitHub' }
+            integration: gettingStarted
         });
     });
 
@@ -42,7 +53,7 @@ describe('describeTool', () => {
             kind: 'integration',
             title: 'List Repos',
             integrationId: 'github-getting-started',
-            integration: { provider: 'github', name: 'GitHub' }
+            integration: gettingStarted
         });
     });
 

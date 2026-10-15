@@ -3,6 +3,7 @@ const INTEGRATION_TOOL_SEPARATOR = '__';
 export interface IntegrationLabel {
     provider: string;
     name: string;
+    integrationName: string;
 }
 
 export type IntegrationLabels = ReadonlyMap<string, IntegrationLabel>;
@@ -32,17 +33,24 @@ export function humanize(name: string): string {
         .join(' ');
 }
 
-export function integrationLabels(integrations: readonly { unique_key: string; provider: string; meta: { displayName: string } }[]): IntegrationLabels {
+export function integrationLabels(
+    integrations: readonly { unique_key: string; provider: string; display_name: string | null; meta: { displayName: string } }[]
+): IntegrationLabels {
     return new Map(
         integrations.map((integration) => [
             integration.unique_key,
-            { provider: integration.provider, name: integration.meta.displayName.replace(/\s*\([^)]*\)$/, '') }
+            {
+                provider: integration.provider,
+                name: integration.meta.displayName.replace(/\s*\([^)]*\)$/, ''),
+                integrationName: integration.display_name || integration.meta.displayName
+            }
         ])
     );
 }
 
 export function labelFor(integrationId: string, labels: IntegrationLabels | undefined): IntegrationLabel {
-    return labels?.get(integrationId) ?? { provider: providerFor(integrationId), name: humanize(integrationId) };
+    const name = humanize(integrationId);
+    return labels?.get(integrationId) ?? { provider: providerFor(integrationId), name, integrationName: name };
 }
 
 function integrationTool(qualifiedName: string): { integrationId: string; action: string } | null {

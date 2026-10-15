@@ -83,7 +83,7 @@ const Subtitle: React.FC<{ display: ToolDisplay }> = ({ display }) => {
             </span>
         );
     }
-    const text = display.subtitle ?? display.integration?.name;
+    const text = display.subtitle ?? display.integration?.integrationName;
     return text ? <span className="truncate text-body-small-regular text-text-secondary">{text}</span> : null;
 };
 
@@ -281,7 +281,7 @@ const ApprovalCard: React.FC<{
                         <Subtitle
                             display={
                                 display.kind === 'integration' && display.integration
-                                    ? { ...display, subtitle: `${display.title} · ${display.integration.name}` }
+                                    ? { ...display, subtitle: `${display.title} · ${display.integration.integrationName}` }
                                     : display
                             }
                         />
