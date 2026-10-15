@@ -8,7 +8,8 @@ import { flatten } from './exporter.js';
 import type { MetricData, ResourceMetrics } from '@opentelemetry/sdk-metrics';
 
 const descriptor = (name: string, type: InstrumentType) => ({ name, description: '', unit: '', type, valueType: ValueType.DOUBLE });
-const time = { startTime: [0, 0] as [number, number], endTime: [60, 0] as [number, number] };
+const start = new Date('2026-10-15T10:00:00.000Z');
+const time = { startTime: [start.getTime() / 1000, 0] as [number, number], endTime: [start.getTime() / 1000 + 60, 0] as [number, number] };
 
 function batch(metrics: MetricData[]): ResourceMetrics {
     return { resource: resourceFromAttributes({ producer_id: 'pod-a' }), scopeMetrics: [{ scope: { name: 'test' }, metrics }] };
@@ -37,9 +38,9 @@ describe('flatten', () => {
             ])
         );
         expect(rows).toEqual([
-            { metric: 'nango.functions.executions', attributes: { environment_id: 7, producer_id: 'pod-a' }, value: 47 },
-            { metric: 'nango.functions.executions', attributes: { environment_id: 8, producer_id: 'pod-a' }, value: 2 },
-            { metric: 'nango.connections.count', attributes: { environment_id: 7, integration_id: 'hubspot', producer_id: 'pod-a' }, value: 1283 }
+            { ts: start, metric: 'nango.functions.executions', attributes: { environment_id: 7, producer_id: 'pod-a' }, value: 47 },
+            { ts: start, metric: 'nango.functions.executions', attributes: { environment_id: 8, producer_id: 'pod-a' }, value: 2 },
+            { ts: start, metric: 'nango.connections.count', attributes: { environment_id: 7, integration_id: 'hubspot', producer_id: 'pod-a' }, value: 1283 }
         ]);
     });
 
@@ -107,7 +108,7 @@ describe('flatten', () => {
             ])
         );
         expect(rows).toEqual([
-            { metric: 'nango.connections.count', attributes: { integration_id: 'hubspot', environment_id: 8, producer_id: 'pod-a' }, value: 3 }
+            { ts: start, metric: 'nango.connections.count', attributes: { integration_id: 'hubspot', environment_id: 8, producer_id: 'pod-a' }, value: 3 }
         ]);
         expect(dropped).toEqual({ 'nango.connections.count': 1 });
     });

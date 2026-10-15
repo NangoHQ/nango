@@ -36,11 +36,7 @@ export function createHostedTelemetry(store?: { knex: Knex; schema?: string; exp
               resource: resourceFromAttributes({ [PRODUCER_ID_ATTRIBUTE]: PRODUCER_ID }),
               readers: [
                   new PeriodicExportingMetricReader({
-                      exporter: new PostgresMetricExporter({
-                          knex: store.knex,
-                          schema: store.schema ?? HOSTED_TELEMETRY_SCHEMA,
-                          exportIntervalMs: store.exportIntervalMs
-                      }),
+                      exporter: new PostgresMetricExporter({ knex: store.knex, schema: store.schema ?? HOSTED_TELEMETRY_SCHEMA }),
                       exportIntervalMillis: store.exportIntervalMs
                   })
               ]

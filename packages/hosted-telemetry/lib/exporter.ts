@@ -1,4 +1,4 @@
-import { ExportResultCode } from '@opentelemetry/core';
+import { ExportResultCode, hrTimeToMilliseconds } from '@opentelemetry/core';
 import { AggregationTemporality, AggregationType, DataPointType, InstrumentType } from '@opentelemetry/sdk-metrics';
 import tracer from 'dd-trace';
 
@@ -19,6 +19,7 @@ const INSERT_ATTEMPTS = 2;
 const INSERT_RETRY_DELAY_MS = 500;
 
 export interface MetricRow {
+    ts: Date;
     metric: string;
     attributes: Record<string, string | number | boolean>;
     value: number;
@@ -34,12 +35,15 @@ export function serializeAttributes(attributes: MetricRow['attributes']): string
  * samples has no min or max and gets no row for them. A value that is not a finite number, or attributes the table
  * would refuse, is a producer bug: counted in `dropped` so the export can say so, instead of failing every row with
  * it. Two points with the same key, which only happens when one name is used as two instrument kinds, keep the last.
+ *
+ * A row is stamped with the point's start time: with delta temporality that is the previous collection, so one
+ * producer's exports never share a key, and a retry of the same export rewrites the same rows.
  */
 export function flatten(batch: ResourceMetrics): { rows: MetricRow[]; dropped: Record<string, number> } {
     const producerId = batch.resource.attributes[PRODUCER_ID_ATTRIBUTE];
     const rows = new Map<string, MetricRow>();
     const dropped: Record<string, number> = {};
-    const push = (metric: string, attributes: MetricRow['attributes'], value: number | undefined) => {
+    const push = (ts: Date, metric: string, attributes: MetricRow['attributes'], value: number | undefined) => {
         if (value === undefined) {
             return;
         }
@@ -48,21 +52,22 @@ export function flatten(batch: ResourceMetrics): { rows: MetricRow[]; dropped: R
             dropped[metric] = (dropped[metric] ?? 0) + 1;
             return;
         }
-        rows.set(`${metric} ${serialized}`, { metric, attributes, value });
+        rows.set(`${ts.getTime()} ${metric} ${serialized}`, { ts, metric, attributes, value });
     };
     for (const scope of batch.scopeMetrics) {
         for (const metric of scope.metrics) {
             const name = metric.descriptor.name;
             for (const dataPoint of metric.dataPoints) {
+                const ts = new Date(hrTimeToMilliseconds(dataPoint.startTime));
                 const attributes = { ...dataPoint.attributes, [PRODUCER_ID_ATTRIBUTE]: producerId } as MetricRow['attributes'];
                 if (metric.dataPointType === DataPointType.SUM || metric.dataPointType === DataPointType.GAUGE) {
-                    push(name, attributes, dataPoint.value as number);
+                    push(ts, name, attributes, dataPoint.value as number);
                 } else {
                     const value = dataPoint.value as { count: number; sum?: number; min?: number; max?: number };
-                    push(`${name}.count`, attributes, value.count);
-                    push(`${name}.sum`, attributes, value.sum);
-                    push(`${name}.min`, attributes, value.min);
-                    push(`${name}.max`, attributes, value.max);
+                    push(ts, `${name}.count`, attributes, value.count);
+                    push(ts, `${name}.sum`, attributes, value.sum);
+                    push(ts, `${name}.min`, attributes, value.min);
+                    push(ts, `${name}.max`, attributes, value.max);
                 }
             }
         }
@@ -70,20 +75,13 @@ export function flatten(batch: ResourceMetrics): { rows: MetricRow[]; dropped: R
     return { rows: [...rows.values()], dropped };
 }
 
-/**
- * Writes each export as one upsert per window. The window's timestamp comes from the Postgres clock, so every
- * producer labels the same minute the same way, and a second export into a window replaces the first.
- */
 export class PostgresMetricExporter implements PushMetricExporter {
     private readonly knex: Knex;
     private readonly schema: string;
-    private readonly windowSeconds: number;
 
-    /** `exportIntervalMs` is the reader's cadence: a window is one export, so its timestamp rounds to it. */
-    constructor({ knex, schema, exportIntervalMs }: { knex: Knex; schema: string; exportIntervalMs: number }) {
+    constructor({ knex, schema }: { knex: Knex; schema: string }) {
         this.knex = knex;
         this.schema = schema;
-        this.windowSeconds = exportIntervalMs / 1000;
     }
 
     /** Delta: the SDK resets every instrument after each export, so a row describes its own window, never a running total. */
@@ -130,19 +128,11 @@ export class PostgresMetricExporter implements PushMetricExporter {
         await this.knex.transaction(async (trx) => {
             for (let offset = 0; offset < rows.length; offset += INSERT_BATCH_SIZE) {
                 const chunk = rows.slice(offset, offset + INSERT_BATCH_SIZE);
-                const values = chunk.map(() => '(?, ?::jsonb, ?::double precision)').join(', ');
+                const values = chunk.map(() => '(?, ?, ?::jsonb, ?::double precision)').join(', ');
                 await trx.raw(
-                    `WITH w AS (SELECT to_timestamp(floor(extract(epoch FROM transaction_timestamp()) / ?) * ?) AS ts)
-                     INSERT INTO ??.?? (ts, metric, attributes, value)
-                     SELECT w.ts, v.metric, v.attributes, v.value FROM w CROSS JOIN (VALUES ${values}) AS v(metric, attributes, value)
+                    `INSERT INTO ??.?? (ts, metric, attributes, value) VALUES ${values}
                      ON CONFLICT (metric, ts, attributes) DO UPDATE SET value = EXCLUDED.value`,
-                    [
-                        this.windowSeconds,
-                        this.windowSeconds,
-                        this.schema,
-                        HOSTED_TELEMETRY_TABLE,
-                        ...chunk.flatMap((row) => [row.metric, serializeAttributes(row.attributes), row.value])
-                    ]
+                    [this.schema, HOSTED_TELEMETRY_TABLE, ...chunk.flatMap((row) => [row.ts, row.metric, serializeAttributes(row.attributes), row.value])]
                 );
             }
         });
