@@ -79,6 +79,7 @@ export class PostgresMetricExporter implements PushMetricExporter {
         this.windowSeconds = exportIntervalMs / 1000;
     }
 
+    /** Delta: the SDK resets every instrument after each export, so a row describes its own window, never a running total. */
     selectAggregationTemporality(): AggregationTemporality {
         return AggregationTemporality.DELTA;
     }
