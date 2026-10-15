@@ -3,6 +3,7 @@ import * as z from 'zod';
 import { baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { getWorkOSClient } from '../../../../clients/workos.client.js';
+import { prepareManagedSignupConsent } from '../../../../services/advertisingConsent.service.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { signupAcquisitionSchema } from '../../../../utils/signupAcquisition.js';
 import { encodeManagedAuthState } from './auth.js';
@@ -18,7 +19,7 @@ const validation = z
     })
     .strict();
 
-export const postManagedSignup = asyncWrapper<PostManagedSignup>((req, res) => {
+export const postManagedSignup = asyncWrapper<PostManagedSignup>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
 
     if (emptyQuery) {
@@ -36,12 +37,13 @@ export const postManagedSignup = asyncWrapper<PostManagedSignup>((req, res) => {
 
     const body: PostManagedSignup['Body'] = val.data;
 
+    const consentNonce = body.token || body.returnTo ? undefined : await prepareManagedSignupConsent(req);
     const workos = getWorkOSClient();
     const oAuthUrl = workos.userManagement.getAuthorizationUrl({
         clientId: process.env['WORKOS_CLIENT_ID'] || '',
         provider: body.provider,
         redirectUri: `${baseUrl}/api/v1/login/callback`,
-        state: encodeManagedAuthState({ token: body.token, returnTo: body.returnTo, acquisition: body.acquisition })
+        state: encodeManagedAuthState({ token: body.token, returnTo: body.returnTo, acquisition: body.acquisition, consentNonce })
     });
 
     res.send({ data: { url: oAuthUrl } });

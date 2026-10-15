@@ -115,3 +115,5 @@ export {
     syncManager,
     userService
 };
+
+export * from './services/advertisingConsent.js';

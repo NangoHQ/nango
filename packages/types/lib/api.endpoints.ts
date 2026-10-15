@@ -1,3 +1,4 @@
+import type { GetAdvertisingConsent, PostAdvertisingConsent } from './account/advertisingConsent.js';
 import type {
     ConfirmEmail,
     CreateAccountApiKey,
@@ -364,7 +365,7 @@ export type PrivateApiEndpoints =
     | GetPlainHmac
     | PostAgentPlaygroundChat;
 
-export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
+export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints | GetAdvertisingConsent | PostAdvertisingConsent;
 
 /**
  * Automatically narrow endpoints type with Method + Path

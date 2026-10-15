@@ -1,9 +1,18 @@
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService, validateInvitation } from '@nangohq/shared';
+import {
+    acceptInvitation,
+    accountService,
+    completeSignupAdvertisingConsent,
+    expirePreviousInvitations,
+    getInvitation,
+    userService,
+    validateInvitation
+} from '@nangohq/shared';
 import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { identifyAccountMembership } from '../../../../services/accountAnalytics.service.js';
+import { consumeManagedSignupConsent } from '../../../../services/advertisingConsent.service.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { signupAcquisitionSchema } from '../../../../utils/signupAcquisition.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
@@ -42,6 +51,7 @@ export interface InviteAccountState {
     token?: string | undefined;
     returnTo?: string | undefined;
     acquisition?: SignupAcquisition | undefined;
+    consentNonce?: string | undefined;
 }
 
 const MAX_MANAGED_AUTH_STATE_LENGTH = 16384;
@@ -56,6 +66,8 @@ export function encodeManagedAuthState(state: InviteAccountState): string {
     const continuation: InviteAccountState = {};
     if (state.token) continuation.token = state.token;
     else if (state.returnTo) continuation.returnTo = state.returnTo;
+
+    if (state.consentNonce) continuation.consentNonce = state.consentNonce;
 
     if (state.acquisition) {
         const withAcquisition = encodeBoundedState({ ...continuation, acquisition: state.acquisition });
@@ -77,6 +89,7 @@ export function parseManagedAuthState(state: string): InviteAccountState | null 
         const result: InviteAccountState = {};
         if (typeof candidate['token'] === 'string') result.token = candidate['token'];
         else if (typeof candidate['returnTo'] === 'string') result.returnTo = safeReturnTo(candidate['returnTo']);
+        if (typeof candidate['consentNonce'] === 'string' && /^[a-f0-9]{64}$/.test(candidate['consentNonce'])) result.consentNonce = candidate['consentNonce'];
         const acquisition = signupAcquisitionSchema.parse(candidate['acquisition']);
         if (acquisition) result.acquisition = acquisition;
         return Object.keys(result).length ? result : null;
@@ -155,6 +168,7 @@ export async function finalizeManagedAuthentication({
     responseMode = 'redirect'
 }: FinalizeManagedAuthParams): Promise<void> {
     const state = parseManagedAuthState(encodedState || '');
+    const consent = await consumeManagedSignupConsent(req, state?.consentNonce);
     let invitation: DBInvitation | null = null;
     if (state?.token) {
         const validatedInvitation = validateInvitation(await getInvitation(state.token), authorizedUser.email);
@@ -199,7 +213,7 @@ export async function finalizeManagedAuthentication({
         } else if (organizationId) {
             const organization = await workos.organizations.getOrganization(organizationId);
 
-            const resAccount = await accountService.getOrCreateAccount(organization.name, state?.acquisition);
+            const resAccount = await accountService.getOrCreateAccount(organization.name, state?.acquisition, consent);
             if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;
@@ -213,7 +227,7 @@ export async function finalizeManagedAuthentication({
                 return;
             }
 
-            const resAccount = await accountService.createAccount({ name, email: authorizedUser.email, acquisition: state?.acquisition });
+            const resAccount = await accountService.createAccount({ name, email: authorizedUser.email, acquisition: state?.acquisition, consent });
             if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;
@@ -236,6 +250,7 @@ export async function finalizeManagedAuthentication({
             res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });
             return;
         }
+        if (!invitation) await completeSignupAdvertisingConsent(account.id, user.id, consent);
         void identifyAccountMembership(account.id);
 
         if (isNewTeam && flagHasUsage) {
