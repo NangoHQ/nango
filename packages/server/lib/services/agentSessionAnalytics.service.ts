@@ -1,5 +1,7 @@
 import { productTracking } from '@nangohq/shared';
 
+import { isPlaygroundSession } from './agentPlaygroundTags.js';
+
 import type { AgentSession, AgentSessionMetaTool, AgentSessionToolSearchHit, HTTP_METHOD } from '@nangohq/types';
 
 interface Outcome {
@@ -48,7 +50,7 @@ export function trackAgentSessionCreated(session: AgentSession): void {
     productTracking.track({
         name: 'agents:session_start',
         eventProperties: {
-            agent_session_id: session.id,
+            ...sessionProperties(session),
             integration_count: Object.keys(session.compiledToolset).length,
             is_tool_search_enabled: session.metaTools.nangoToolSearch,
             is_execute_enabled: session.metaTools.nangoExecute,
@@ -63,7 +65,7 @@ export function trackAgentSessionTerminated(session: AgentSession): void {
     productTracking.track({
         name: 'agents:session_end',
         eventProperties: {
-            agent_session_id: session.id,
+            ...sessionProperties(session),
             session_duration_ms: (session.endedAt ?? new Date()).getTime() - session.createdAt.getTime()
         }
     });
@@ -82,7 +84,7 @@ export function trackAgentSessionToolCall({
     productTracking.track({
         name: 'agents:tool_call_complete',
         eventProperties: {
-            agent_session_id: session.id,
+            ...sessionProperties(session),
             ...outcomeProperties(outcome),
             ...(toolName ? { tool_name: toolName } : {}),
             ...(metaTool ? { meta_tool: metaTool } : {}),
@@ -98,7 +100,7 @@ export function trackAgentSessionProxyRequest({ session, integrationId, provider
     productTracking.track({
         name: 'agents:proxy_request_complete',
         eventProperties: {
-            agent_session_id: session.id,
+            ...sessionProperties(session),
             meta_tool: 'nango_proxy',
             ...outcomeProperties(outcome),
             ...(integrationId ? { integration_id: integrationId } : {}),
@@ -119,7 +121,7 @@ export function trackAgentSessionToolSearch({ session, query, matches, related, 
     productTracking.track({
         name: 'agents:tool_search_complete',
         eventProperties: {
-            agent_session_id: session.id,
+            ...sessionProperties(session),
             meta_tool: 'nango_tool_search',
             ...(query === undefined ? {} : { query }),
             match_count: matches.length,
@@ -130,6 +132,10 @@ export function trackAgentSessionToolSearch({ session, query, matches, related, 
             related
         }
     });
+}
+
+function sessionProperties(session: AgentSession): { agent_session_id: string; is_playground: boolean } {
+    return { agent_session_id: session.id, is_playground: isPlaygroundSession(session) };
 }
 
 /** One event per call, so whether it worked is a property and the code says why it did not. */

@@ -27,8 +27,10 @@ import { useUser } from '@/hooks/useUser';
 import { usePlaygroundToolbarSlot } from '@/pages/Playground/Show';
 import { useStore } from '@/store';
 import { deleteAgentPlaygroundChat, openAgentPlaygroundChat, saveAgentPlaygroundChat } from '@/store/agentPlaygroundChat';
+import { track } from '@/utils/analytics';
 import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
+import { approvalProperties, pendingApprovals } from './approvalTracking';
 import { describeChatError } from './chatError';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
@@ -36,6 +38,7 @@ import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setRep
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize } from './toolDisplay';
 
+import type { PendingApproval } from './approvalTracking';
 import type { PlaygroundMessage } from '@/store/agentPlaygroundChat';
 import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundReplyOutcome, AgentPlaygroundSessionCreated } from '@nangohq/types';
 
@@ -61,6 +64,12 @@ export const AgentPlayground: React.FC = () => {
 };
 
 const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({ env, toolbarSlot, onNewChat }) => {
+    const { user } = useUser();
+    const userId = user?.uuid;
+    const [{ chatId, messages: storedMessages }] = useState(() =>
+        userId ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
+    );
+
     const sessionId = useRef<string | undefined>(undefined);
     const transport = useMemo(
         () =>
@@ -68,16 +77,10 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
                 api: new URL(`/api/v1/agent-playground/chat?env=${env}`, globalEnv.dashboardApiUrl).toString(),
                 credentials: 'include',
                 prepareSendMessagesRequest: ({ messages }) => ({
-                    body: { messages, sessionId: sessionId.current, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }
+                    body: { messages, sessionId: sessionId.current, chatId, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }
                 })
             }),
-        [env]
-    );
-
-    const { user } = useUser();
-    const userId = user?.uuid;
-    const [{ chatId, messages: storedMessages }] = useState(() =>
-        userId ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
+        [env, chatId]
     );
     const onReset = () => {
         deleteAgentPlaygroundChat(chatId);
@@ -92,19 +95,26 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
         onError: (err) => {
             failure.current = err.message;
         },
-        onFinish: ({ isAbort, isError }) => {
+        onFinish: ({ message, isAbort, isError }) => {
             const error = failure.current ?? '';
             failure.current = undefined;
             if (isAbort || leaving.current) {
                 setMessages(markStopped);
             } else if (isError) {
                 setMessages((current) => setReplyOutcome(current, { kind: 'failed', error }));
+            } else {
+                for (const part of pendingApprovals(message)) {
+                    track('playground:approval_view', approvalProperties(part, chatId, message.metadata?.sessionId ?? sessionId.current));
+                }
             }
         }
     });
     const onApprove = useCallback(
-        (approvalId: string, approved: boolean) => void addToolApprovalResponse({ id: approvalId, approved }),
-        [addToolApprovalResponse]
+        (part: PendingApproval, approved: boolean) => {
+            track('playground:approval_button_click', { ...approvalProperties(part, chatId, sessionId.current), is_approved: approved });
+            void addToolApprovalResponse({ id: part.approval.id, approved });
+        },
+        [addToolApprovalResponse, chatId]
     );
 
     useEffect(() => {
@@ -137,9 +147,7 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
 
     const lastMessage = messages.at(-1);
     // A new turn would drop the pending tool call, so the change is never approved or denied.
-    const awaitingApproval =
-        lastMessage?.role === 'assistant' &&
-        lastMessage.parts.some((part) => part.type === 'dynamic-tool' && part.state === 'approval-requested' && !part.approval.isAutomatic);
+    const awaitingApproval = lastMessage?.role === 'assistant' && pendingApprovals(lastMessage).length > 0;
     const answeredApprovalPending =
         lastMessage?.role === 'assistant' && lastMessage.parts.some((part) => part.type === 'dynamic-tool' && part.state === 'approval-responded');
     const send = (text: string, starterProvider?: string): boolean => {

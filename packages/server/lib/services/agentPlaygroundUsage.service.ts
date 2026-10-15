@@ -2,7 +2,7 @@ import { productTracking } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import type { ModelErrorCategory } from './agentPlaygroundModelError.js';
-import type { DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
+import type { AgentPlaygroundIntegrationSetup, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 import type { LanguageModelUsage } from 'ai';
 
 const logger = getLogger('AgentPlayground');
@@ -102,15 +102,44 @@ export function sumTurnUsage(steps: PlaygroundStep[]): PlaygroundTurnUsage {
     return total;
 }
 
+export function isUsableOutcome(outcome: AgentPlaygroundIntegrationSetup['outcome']): outcome is 'created' | 'existing' {
+    return outcome === 'created' || outcome === 'existing';
+}
+
+export function trackStarterIntegrationSetup(
+    ctx: { account: DBTeam; environment: DBEnvironment; plan: DBPlan | null; user: DBUser },
+    setup: AgentPlaygroundIntegrationSetup
+): void {
+    const { outcome } = setup;
+    const base = { provider: setup.provider, is_existing: outcome === 'existing' || outcome === 'missing_credentials' };
+    productTracking.track({
+        name: 'playground:integration_create',
+        team: ctx.account,
+        environment: ctx.environment,
+        user: ctx.user,
+        plan: ctx.plan,
+        eventProperties: isUsableOutcome(outcome) ? { ...base, is_success: true } : { ...base, is_success: false, error_code: outcome }
+    });
+}
+
+export interface PlaygroundTurn {
+    isFirstTurn: boolean;
+    starterProvider?: string;
+}
+
 export function trackPlaygroundTurn({
     ctx,
     sessionId,
+    chatId,
+    turn,
     outcome,
     steps,
     errorCategory = null
 }: {
     ctx: { account: DBTeam; environment: DBEnvironment; plan: DBPlan | null; user: DBUser };
     sessionId: string;
+    chatId?: string | undefined;
+    turn: PlaygroundTurn;
     outcome: PlaygroundTurnOutcome;
     steps: PlaygroundStep[];
     errorCategory?: ModelErrorCategory | null;
@@ -129,7 +158,10 @@ export function trackPlaygroundTurn({
         plan: ctx.plan,
         eventProperties: {
             agent_session_id: sessionId,
+            ...(chatId ? { chat_id: chatId } : {}),
             environment_id: ctx.environment.id,
+            is_first_turn: turn.isFirstTurn,
+            ...(turn.starterProvider ? { starter_provider: turn.starterProvider } : {}),
             is_success: outcome !== 'error',
             ...(outcome === 'error' ? { error_code: 'model_error', ...(errorCategory ? { error_category: errorCategory } : {}) } : {}),
             is_stopped: outcome === 'aborted',
