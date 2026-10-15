@@ -2,12 +2,12 @@ import tracer from 'dd-trace';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { functionConfigService } from '@nangohq/shared';
+import { configService, functionConfigService, resolveRunnableTool } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { scriptNameSchema } from '../../../../helpers/validation.js';
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
-import { toGetToolResponse } from '../../../functions/formatter.js';
+import { actionToGetToolResponse, toGetToolResponse } from '../../../functions/formatter.js';
 import { functionIntegrationIdSchema } from '../../../functions/validation.js';
 
 import type { GetTool } from '@nangohq/types';
@@ -46,10 +46,32 @@ export const getTool = asyncWrapperWithEnvironment<GetTool>(async (req, res) => 
     }
 
     const fn = result.value[0];
-    if (!fn) {
-        res.status(404).send({ error: { code: 'not_found', message: `Tool '${name}' for integration ${uniqueKey} was not found` } });
+    if (fn) {
+        res.status(200).send(toGetToolResponse(fn));
         return;
     }
 
-    res.status(200).send(toGetToolResponse(fn));
+    try {
+        const integration = await configService.getProviderConfig(uniqueKey, environment.id);
+        if (!integration) {
+            res.status(404).send({ error: { code: 'not_found', message: `Tool '${name}' for integration ${uniqueKey} was not found` } });
+            return;
+        }
+        const resolved = await resolveRunnableTool({
+            accountUuid: res.locals.account.uuid,
+            environmentId: environment.id,
+            integration,
+            name
+        });
+        if (resolved.kind !== 'missing' && (resolved.kind === 'catalog' || resolved.config.enabled)) {
+            res.status(200).send(actionToGetToolResponse(resolved, integration));
+            return;
+        }
+    } catch (err) {
+        tracer.scope().active()?.setTag('error', err);
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch tool' } });
+        return;
+    }
+
+    res.status(404).send({ error: { code: 'not_found', message: `Tool '${name}' for integration ${uniqueKey} was not found` } });
 });
