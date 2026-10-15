@@ -1,8 +1,8 @@
 import { fromJsonSchema, McpServer, ProtocolError, ProtocolErrorCode } from '@modelcontextprotocol/server';
 
-import { report } from '@nangohq/utils';
+import { JSON_SCHEMA_2020_12, report } from '@nangohq/utils';
 
-import { findActionInputs } from '../../../services/agentSessionToolSearch.service.js';
+import { findActionInputs, objectRootedToolInputSchema } from '../../../services/agentSessionToolSearch.service.js';
 import { toJsonSchema202012 } from '../../mcp/utils.js';
 import { createConnectionTool } from './createConnection/createConnection.js';
 import { executeSessionTool, executeTool } from './execute/execute.js';
@@ -30,10 +30,6 @@ export const TOOL_META_KEY = 'nango/tool';
 
 const MAX_NAME_PART_LENGTH = 30;
 const UNSAFE_NAME_CHARACTERS = /[^a-zA-Z0-9_-]/g;
-
-const JSON_SCHEMA_2020_12 = 'https://json-schema.org/draft/2020-12/schema';
-const JSON_SCHEMA_DRAFT_07 = 'http://json-schema.org/draft-07/schema#';
-const DEFINITIONS_POINTER = '#/definitions/';
 
 type SessionTool = Tool & { description: string };
 
@@ -197,26 +193,13 @@ async function withActionInputSchemas({
     }
 }
 
-/**
- * MCP needs an object at the root of a tool's input, so the input model is inlined there with its
- * definitions alongside to keep its pointers resolving. Any other root is reachable only through
- * nango_execute, which carries the schema in tool search instead.
- */
 export function actionInputSchemaOf(input: AgentSessionToolInput): Tool['inputSchema'] {
     if (input.kind === 'none') {
         return NO_INPUT_SCHEMA;
     }
-    if (input.kind === 'unavailable' || !input.schema.$ref?.startsWith(DEFINITIONS_POINTER)) {
-        return PINNED_TOOL_INPUT_SCHEMA;
-    }
 
-    const definitions = input.schema.definitions ?? {};
-    const model = definitions[input.schema.$ref.slice(DEFINITIONS_POINTER.length)];
-    if (typeof model !== 'object' || model.type !== 'object') {
-        return PINNED_TOOL_INPUT_SCHEMA;
-    }
-
-    return { ...model, type: 'object', $schema: JSON_SCHEMA_DRAFT_07, definitions } as Tool['inputSchema'];
+    const schema = input.kind === 'schema' ? objectRootedToolInputSchema(input.schema) : undefined;
+    return schema ? (schema as Tool['inputSchema']) : PINNED_TOOL_INPUT_SCHEMA;
 }
 
 /**

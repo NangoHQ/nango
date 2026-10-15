@@ -2,7 +2,7 @@ import Fuse from 'fuse.js';
 
 import { logContextGetter } from '@nangohq/logs';
 import { legacyFunctionService } from '@nangohq/shared';
-import { filterJsonSchemaForModels, report } from '@nangohq/utils';
+import { draft07ToDraft202012, filterJsonSchemaForModels, JSON_SCHEMA_2020_12, report } from '@nangohq/utils';
 
 import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuidance.js';
 import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
@@ -19,9 +19,8 @@ import type {
     DBEnvironment,
     DBTeam
 } from '@nangohq/types';
-import type { JSONSchema7 } from 'json-schema';
 
-const DEFINITIONS_POINTER = '#/definitions/';
+const DEFS_POINTER = '#/$defs/';
 
 const FUSE_OPTIONS: NonNullable<ConstructorParameters<typeof Fuse<SearchCandidate>>[1]> = {
     includeScore: true,
@@ -253,7 +252,7 @@ function buildSearchCandidateList({ session, slugOf }: { session: AgentSession; 
                           description: tool.description,
                           connection,
                           listed,
-                          ...(tool.mcp ? { input: { kind: 'schema', schema: tool.mcp.inputSchema as JSONSchema7 } as const } : {})
+                          ...(tool.mcp ? { input: { kind: 'schema', schema: tool.mcp.inputSchema } as const } : {})
                       }
                   ]
                 : [];
@@ -312,9 +311,9 @@ export async function findActionInputs({
 }
 
 /**
- * An action's arguments are the schema it was deployed with, rooted at its input model. The document
- * is handed over as it is stored, pointers and all, which is the same shape the function input
- * validator compiles, so search cannot advertise a schema execution would reject.
+ * An action's arguments are the schema it was deployed with, rooted at its input model. It is stored
+ * as draft-07, the dialect the function input validator compiles, and handed over as 2020-12, the
+ * dialect MCP defaults to. The rewrite changes keywords, not what the schema accepts.
  */
 export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
     if (!row.input) {
@@ -331,7 +330,32 @@ export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
         return { kind: 'unavailable' };
     }
 
-    return { kind: 'schema', schema: { ...filtered.value, $ref: `${DEFINITIONS_POINTER}${row.input}` } };
+    const converted = draft07ToDraft202012(filtered.value) as Record<string, unknown>;
+    return { kind: 'schema', schema: { $schema: JSON_SCHEMA_2020_12, ...converted, $ref: `${DEFS_POINTER}${row.input}` } };
+}
+
+/**
+ * MCP needs an object at the root of a tool's input, so the input model is inlined there with the
+ * definitions it points at. Any other root has no object form and is reachable only through
+ * nango_execute.
+ */
+export function objectRootedToolInputSchema(schema: Record<string, unknown>): Record<string, unknown> | undefined {
+    const ref = schema['$ref'];
+    const defs = schema['$defs'] as Record<string, unknown> | undefined;
+    if (typeof ref !== 'string' || !ref.startsWith(DEFS_POINTER) || !defs) {
+        return undefined;
+    }
+
+    const model = defs[ref.slice(DEFS_POINTER.length)];
+    if (typeof model !== 'object' || model === null || (model as Record<string, unknown>)['type'] !== 'object') {
+        return undefined;
+    }
+
+    return {
+        $schema: JSON_SCHEMA_2020_12,
+        ...model,
+        $defs: { ...defs, ...((model as Record<string, unknown>)['$defs'] as Record<string, unknown> | undefined) }
+    };
 }
 
 /** Only what identifies a tool, since a full match carries a description and an input schema. */
