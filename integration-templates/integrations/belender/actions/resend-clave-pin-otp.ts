@@ -1,7 +1,7 @@
 import { createAction } from 'nango';
 import { z } from 'zod';
 
-const InputSchema = z.object({ request_id: z.string() });
+const InputSchema = z.object({ request_id: z.union([z.string(), z.number()]) });
 type Input = z.infer<typeof InputSchema>;
 const OutputSchema = z.object({ data: z.unknown() });
 type Output = z.infer<typeof OutputSchema>;
@@ -15,8 +15,7 @@ const action = createAction({
     exec: async (nango, input: Input): Promise<Output> => {
         const response = await nango.post({
             endpoint: '/requests/clave-pin/resend-otp',
-            data: input,
-            retries: 3
+            data: input
         });
         return { data: response.data };
     }

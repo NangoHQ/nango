@@ -1,5 +1,6 @@
 <!-- BEGIN GENERATED CONTENT -->
 # Get Document
+<!-- END GENERATED CONTENT -->
 
 See `get-document.ts` and Belender docs at `docs/integrations/all/belender.mdx`.
 

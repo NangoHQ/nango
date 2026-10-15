@@ -1,14 +1,16 @@
 import { createAction } from 'nango';
 import { z } from 'zod';
 
+const BelenderId = z.union([z.string(), z.number()]);
+
 const InputSchema = z.object({
-    request_id: z.string(),
-    document_id: z.string()
+    request_id: BelenderId,
+    document_id: BelenderId
 });
 type Input = z.infer<typeof InputSchema>;
 const OutputSchema = z.object({
-    request_id: z.string(),
-    document_id: z.string(),
+    request_id: BelenderId,
+    document_id: BelenderId,
     data: z.unknown()
 });
 type Output = z.infer<typeof OutputSchema>;
@@ -20,8 +22,11 @@ const action = createAction({
     input: InputSchema,
     output: OutputSchema,
     exec: async (nango, input: Input): Promise<Output> => {
+        const requestId = String(input.request_id);
+        const documentId = String(input.document_id);
         const response = await nango.get({
-            endpoint: `/requests/${input.request_id}/documents/${input.document_id}`,
+            endpoint: `/requests/${requestId}/documents/${documentId}`,
+            responseType: 'arraybuffer',
             retries: 3
         });
         return {

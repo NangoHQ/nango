@@ -1,5 +1,6 @@
 <!-- BEGIN GENERATED CONTENT -->
 # Check Clave Pin Service
+<!-- END GENERATED CONTENT -->
 
 See `check-clave-pin-service.ts` and Belender docs at `docs/integrations/all/belender.mdx`.
 

@@ -23,8 +23,7 @@ const action = createAction({
         const { extra, ...rest } = input;
         const response = await nango.post({
             endpoint: '/requests/clave-pin',
-            data: { ...rest, ...(extra ?? {}) },
-            retries: 3
+            data: { ...(extra ?? {}), ...rest }
         });
         return { data: response.data };
     }

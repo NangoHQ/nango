@@ -1,5 +1,6 @@
 <!-- BEGIN GENERATED CONTENT -->
 # Resend Sms Otp
+<!-- END GENERATED CONTENT -->
 
 See `resend-sms-otp.ts` and Belender docs at `docs/integrations/all/belender.mdx`.
 

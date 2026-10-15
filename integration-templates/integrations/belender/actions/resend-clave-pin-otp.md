@@ -1,5 +1,6 @@
 <!-- BEGIN GENERATED CONTENT -->
 # Resend Clave Pin Otp
+<!-- END GENERATED CONTENT -->
 
 See `resend-clave-pin-otp.ts` and Belender docs at `docs/integrations/all/belender.mdx`.
 

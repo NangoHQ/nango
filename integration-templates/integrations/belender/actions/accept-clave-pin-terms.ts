@@ -2,7 +2,7 @@ import { createAction } from 'nango';
 import { z } from 'zod';
 
 const InputSchema = z.object({
-    request_id: z.string(),
+    request_id: z.union([z.string(), z.number()]),
     terms_and_conditions: z.boolean()
 });
 type Input = z.infer<typeof InputSchema>;
@@ -18,8 +18,7 @@ const action = createAction({
     exec: async (nango, input: Input): Promise<Output> => {
         const response = await nango.post({
             endpoint: '/requests/clave-pin/terms',
-            data: input,
-            retries: 3
+            data: input
         });
         return { data: response.data };
     }

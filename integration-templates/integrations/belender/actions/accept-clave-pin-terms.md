@@ -1,5 +1,6 @@
 <!-- BEGIN GENERATED CONTENT -->
 # Accept Clave Pin Terms
+<!-- END GENERATED CONTENT -->
 
 See `accept-clave-pin-terms.ts` and Belender docs at `docs/integrations/all/belender.mdx`.
 
