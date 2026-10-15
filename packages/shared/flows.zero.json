@@ -126929,6 +126929,7 @@
         "symLinkTargetName": null
     },
 
+
     {
         "providerConfigKey": "belender",
         "actions": [
@@ -127079,7 +127080,14 @@
                             "type": "object",
                             "properties": {
                                 "request_id": {
-                                    "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
                                 },
                                 "terms_and_conditions": {
                                     "type": "boolean"
@@ -127130,7 +127138,14 @@
                             "type": "object",
                             "properties": {
                                 "request_id": {
-                                    "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
                                 },
                                 "code": {
                                     "type": "string"
@@ -127181,7 +127196,14 @@
                             "type": "object",
                             "properties": {
                                 "request_id": {
-                                    "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
                                 }
                             },
                             "required": [
@@ -127297,7 +127319,14 @@
                             "type": "object",
                             "properties": {
                                 "request_id": {
-                                    "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
                                 },
                                 "terms_and_conditions": {
                                     "type": "boolean"
@@ -127348,7 +127377,14 @@
                             "type": "object",
                             "properties": {
                                 "request_id": {
-                                    "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
                                 },
                                 "code": {
                                     "type": "string"
@@ -127399,7 +127435,14 @@
                             "type": "object",
                             "properties": {
                                 "request_id": {
-                                    "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
                                 }
                             },
                             "required": [
@@ -127446,7 +127489,14 @@
                             "type": "object",
                             "properties": {
                                 "request_id": {
-                                    "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
                                 }
                             },
                             "required": [
@@ -127458,7 +127508,14 @@
                             "type": "object",
                             "properties": {
                                 "request_id": {
-                                    "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
                                 },
                                 "data": {}
                             },
@@ -127497,10 +127554,24 @@
                             "type": "object",
                             "properties": {
                                 "request_id": {
-                                    "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
                                 },
                                 "document_id": {
-                                    "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
                                 }
                             },
                             "required": [
@@ -127513,10 +127584,24 @@
                             "type": "object",
                             "properties": {
                                 "request_id": {
-                                    "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
                                 },
                                 "document_id": {
-                                    "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
                                 },
                                 "data": {}
                             },
