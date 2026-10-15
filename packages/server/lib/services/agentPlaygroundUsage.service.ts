@@ -2,7 +2,7 @@ import { productTracking } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import type { ModelErrorCategory } from './agentPlaygroundModelError.js';
-import type { DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
+import type { AgentPlaygroundIntegrationSetup, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 import type { LanguageModelUsage } from 'ai';
 
 const logger = getLogger('AgentPlayground');
@@ -100,6 +100,31 @@ export function sumTurnUsage(steps: PlaygroundStep[]): PlaygroundTurnUsage {
         total.costUsd = cost === null || total.costUsd === null ? null : total.costUsd + cost;
     }
     return total;
+}
+
+export function isUsableOutcome(outcome: AgentPlaygroundIntegrationSetup['outcome']): outcome is 'created' | 'existing' {
+    return outcome === 'created' || outcome === 'existing';
+}
+
+export function trackStarterIntegrationSetup(
+    ctx: { account: DBTeam; environment: DBEnvironment; plan: DBPlan | null; user: DBUser },
+    setup: AgentPlaygroundIntegrationSetup
+): void {
+    const { outcome } = setup;
+    const isSuccess = isUsableOutcome(outcome);
+    productTracking.track({
+        name: 'playground:integration_create',
+        team: ctx.account,
+        environment: ctx.environment,
+        user: ctx.user,
+        plan: ctx.plan,
+        eventProperties: {
+            provider: setup.provider,
+            is_success: isSuccess,
+            ...(isSuccess ? {} : { error_code: outcome }),
+            is_existing: outcome === 'existing' || outcome === 'missing_credentials'
+        }
+    });
 }
 
 export interface PlaygroundTurn {

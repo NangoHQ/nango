@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { productTracking } from '@nangohq/shared';
 
-import { stepCostUsd, sumTurnUsage, trackPlaygroundTurn } from './agentPlaygroundUsage.service.js';
+import { stepCostUsd, sumTurnUsage, trackPlaygroundTurn, trackStarterIntegrationSetup } from './agentPlaygroundUsage.service.js';
 
 import type { PlaygroundStep } from './agentPlaygroundUsage.service.js';
 import type { DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
@@ -170,5 +170,25 @@ describe('trackPlaygroundTurn', () => {
 
         const [payload] = capture.mock.calls[0] ?? [];
         expect(payload?.properties).toMatchObject({ is_success: false, error_code: 'model_error', error_category: 'quota' });
+    });
+});
+
+describe('trackStarterIntegrationSetup', () => {
+    const ctx = { account: { id: 42 } as DBTeam, environment: { id: 7 } as DBEnvironment, plan: null, user: { id: 3 } as DBUser };
+
+    it('counts a reused integration as a success', () => {
+        trackStarterIntegrationSetup(ctx, { provider: 'google-calendar', integrationId: 'my-calendar', outcome: 'existing' });
+
+        const [payload] = capture.mock.calls[0] ?? [];
+        expect(payload?.event).toBe('playground:integration_create');
+        expect(payload?.properties).toMatchObject({ provider: 'google-calendar', is_success: true, is_existing: true });
+        expect(payload?.properties).not.toHaveProperty('error_code');
+    });
+
+    it('names why the integration could not be set up', () => {
+        trackStarterIntegrationSetup(ctx, { provider: 'hubspot', integrationId: 'my-hubspot', outcome: 'missing_credentials' });
+
+        const [payload] = capture.mock.calls[0] ?? [];
+        expect(payload?.properties).toMatchObject({ provider: 'hubspot', is_success: false, error_code: 'missing_credentials', is_existing: true });
     });
 });

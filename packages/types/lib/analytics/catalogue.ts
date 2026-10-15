@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import type { AgentPlaygroundIntegrationSetup } from '../agent/playground.api.js';
 import type { AgentSessionMetaTool, AgentSessionToolSearchHit } from '../agent/session.js';
 import type { BreakdownDimensions } from '../billing/types.js';
 import type { CliTelemetryCommand } from '../cli/api.js';
@@ -160,6 +161,17 @@ export const analyticsEventCatalogue = defineCatalogue({
         insight: 'How often people give up on a Playground run before it finishes',
         fires: 'When someone cancels a running Playground run',
         properties: z.object({ function_type: z.string(), integration: z.string() })
+    },
+    'playground:integration_create': {
+        surface: 'server',
+        insight: "How often an Agent Playground starter can't run because its integration can't be set up, and for which provider",
+        fires: "When an Agent Playground starter creates its integration, reuses one, or can't set one up",
+        properties: z.object({
+            provider: z.string(),
+            is_success: z.boolean(),
+            error_code: stringOf<Exclude<AgentPlaygroundIntegrationSetup['outcome'], 'created' | 'existing'>>().optional(),
+            is_existing: z.boolean()
+        })
     },
     'playground:agent_turn_complete': {
         surface: 'server',

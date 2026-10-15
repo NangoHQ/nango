@@ -14,7 +14,7 @@ import { buildInstructions } from './agentPlayground.instructions.js';
 import { createPlaygroundModel } from './agentPlaygroundModel.service.js';
 import { modelErrorCategory, modelUnavailableError } from './agentPlaygroundModelError.js';
 import { PLAYGROUND_USER_TAG_KEY, sessionOwner } from './agentPlaygroundTags.js';
-import { trackPlaygroundTurn } from './agentPlaygroundUsage.service.js';
+import { isUsableOutcome, trackPlaygroundTurn, trackStarterIntegrationSetup } from './agentPlaygroundUsage.service.js';
 import * as agentSessionService from './agentSession.service.js';
 import { trackAgentSessionCreated } from './agentSessionAnalytics.service.js';
 
@@ -373,7 +373,10 @@ export async function startTurn({
     // The provider comes from the browser, so only the playground's own providers are set up or tracked.
     const starterProvider = requestedStarter && PLAYGROUND_PROVIDERS.includes(requestedStarter) ? requestedStarter : undefined;
     const integrationSetup = starterProvider ? await setUpStarterIntegration(ctx.environment, starterProvider) : undefined;
-    if (integrationSetup && integrationSetup.outcome !== 'created' && integrationSetup.outcome !== 'existing') {
+    if (integrationSetup) {
+        trackStarterIntegrationSetup(ctx, integrationSetup);
+    }
+    if (integrationSetup && !isUsableOutcome(integrationSetup.outcome)) {
         return Ok(setupOnlyReply({ integrationSetup }));
     }
 
