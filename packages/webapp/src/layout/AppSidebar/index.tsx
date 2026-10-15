@@ -63,8 +63,8 @@ export const AppSidebar: React.FC = () => {
         };
 
         return [
-            showPlayground ? { title: 'Playground', url: `/${env}/playground`, icon: MessageSquareCode } : null,
             meta && showGettingStarted && !meta.gettingStartedClosed ? gettingStarted : null,
+            showPlayground ? { title: 'Playground', url: `/${env}/playground`, icon: MessageSquareCode } : null,
             { title: 'Integrations', url: `/${env}/integrations`, icon: Blocks },
             { title: 'Connections', url: `/${env}/connections`, icon: Plug },
             { title: 'Logs', url: `/${env}/logs`, icon: List },
