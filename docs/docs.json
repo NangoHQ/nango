@@ -2002,6 +2002,7 @@
               "integrations/all/vimeo-basic",
               "api-integrations/vincere",
               "api-integrations/vtex",
+              "api-integrations/vwo",
               "integrations/all/wakatime",
               "api-integrations/walmart",
               "api-integrations/wappalyzer",
