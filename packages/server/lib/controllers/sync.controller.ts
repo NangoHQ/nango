@@ -100,7 +100,6 @@ class SyncController {
                 return;
             }
 
-            // The Playground cancels its own runs here; those count as Playground use, not Syncs.
             if (is_playground !== true) {
                 productTracking.track({ name: 'functions:sync_command_submit', eventProperties: { command: trackedSyncCommand[command as SyncCommand] } });
             }
