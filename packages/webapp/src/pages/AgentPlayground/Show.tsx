@@ -336,12 +336,13 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
                         <img src="/images/template-logos/openai.svg" alt="" className="size-4.5" />
                         GPT-6 Luna
                     </span>
+                    {/* Separate keys: a reused element turns into the submit button mid-click and sends the draft. */}
                     {busy ? (
-                        <InputGroupButton label="Stop" variant="primary" size="icon-sm" onClick={onStop}>
+                        <InputGroupButton key="stop" label="Stop" variant="primary" size="icon-sm" onClick={onStop}>
                             <Square className="size-3 fill-current" />
                         </InputGroupButton>
                     ) : (
-                        <InputGroupButton label="Send" type="submit" variant="primary" size="icon-sm" disabled={!input.trim() || awaitingApproval}>
+                        <InputGroupButton key="send" label="Send" type="submit" variant="primary" size="icon-sm" disabled={!input.trim() || awaitingApproval}>
                             <ArrowUp />
                         </InputGroupButton>
                     )}
