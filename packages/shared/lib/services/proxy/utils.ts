@@ -912,6 +912,14 @@ export function buildProxyHeaders({
         headers = { ...headers, ...signedHeaders };
     }
 
+    // Empty proxy.headers values (e.g. authorization: '') suppress auto-generated headers
+    // such as BASIC Authorization instead of sending an empty header to the provider.
+    for (const [key, value] of Object.entries(headers)) {
+        if (value === '') {
+            Reflect.deleteProperty(headers, key);
+        }
+    }
+
     return headers;
 }
 

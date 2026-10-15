@@ -12704,7 +12704,7 @@ informa:
         base_url: https://services.informa.es
         headers:
             # Informa authenticates via custom username/password headers (not HTTP Basic).
-            # Override the default BASIC Authorization header so only those headers are sent.
+            # Empty authorization suppresses the default BASIC Authorization header entirely.
             authorization: ''
             username: ${credentials.username}
             password: ${credentials.password}

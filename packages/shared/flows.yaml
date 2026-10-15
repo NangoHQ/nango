@@ -9115,11 +9115,14 @@ integrations:
                 data: any
             InformaGetCompaniesInput:
                 denominacion: string
-                extra?: object
+                extra?:
+                    __string: string
             InformaGetAdminInput:
-                params: object
+                params:
+                    __string: string
             InformaGetTablesInput:
-                params?: object
+                params?:
+                    __string: string
             InformaProxyOutput:
                 data: any
     instantly:

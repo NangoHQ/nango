@@ -23,8 +23,8 @@ const action = createAction({
 
     exec: async (nango, input: Input): Promise<Output> => {
         const params: Record<string, string> = {
-            denominacion: input.denominacion,
-            ...(input.extra ?? {})
+            ...(input.extra ?? {}),
+            denominacion: input.denominacion
         };
 
         const response = await nango.get({

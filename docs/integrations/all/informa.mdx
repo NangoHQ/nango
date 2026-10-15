@@ -8,19 +8,19 @@ description: 'Access the Informa D&B (Spain) company reports API in 2 minutes ðŸ
   <Tab title="ðŸš€ Quickstart">
     <Steps>
       <Step title="Create an integration">
-        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Informa_.
+        In Nango ([free signup](https://app.nango.dev)), go to **Integrations** â†’ _Configure New Integration_ â†’ _Informa_.
       </Step>
       <Step title="Authorize Informa">
-        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Informa API username and password. Later, you'll let your users do the same directly from your app.
+        Go to **Connections** â†’ _Add Test Connection_ â†’ _Authorize_, then enter your Informa API username and password. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call the Informa API">
-        Fetch a financial report (JSON). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Fetch a financial report (JSON). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
                 curl "https://api.nango.dev/proxy/api/get-product?product=INFORME_FINANCIERO&formato=json&cif=B12345678" \
-                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
                 ```
@@ -34,7 +34,7 @@ description: 'Access the Informa D&B (Spain) company reports API in 2 minutes ðŸ
             ```typescript
             import { Nango } from '@nangohq/node';
 
-            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
             // Financial report only (INFORME_FINANCIERO). Do not fall back to INFORME_COMERCIAL.
             const res = await nango.get({
@@ -59,7 +59,7 @@ description: 'Access the Informa D&B (Spain) company reports API in 2 minutes ðŸ
       </Step>
     </Steps>
 
-    âœ… You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    âœ… You're connected! Check the **Logs** tab in Nango to inspect requests.
 
     <Tip>
     Next step: [Embed the auth flow](/guides/primitives/auth) in your app to let your users connect their Informa accounts.
@@ -234,7 +234,7 @@ description: 'Access the Informa D&B (Spain) company reports API in 2 minutes ðŸ
     | `get-admin` | `GET /admin` | Search administrators / related companies. |
     | `get-tables` | `GET /tables` | Fetch decoding tables. |
 
-    Trigger with the [Actions API](/guides/functions/action-functions) / `nango.triggerAction('get-product', { product, cif })`. Source: `integration-templates/integrations/informa/actions/`.
+    Trigger with the [Actions API](/guides/functions/action-functions) or Node SDK: `nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION-ID>', 'get-product', { product: 'INFORME_FINANCIERO', cif: 'B12345678' })`. Source: `integration-templates/integrations/informa/actions/`.
 
     ---
 

@@ -458344,6 +458344,263 @@
         "symLinkTargetName": null
     },
     {
+        "providerConfigKey": "informa",
+        "actions": [
+            {
+                "type": "action",
+                "description": "Fetches an Informa EMPRESAS product by CIF (packaged reports or modular products). Does not fall back to another product if the request fails.",
+                "endpoint": {
+                    "method": "GET",
+                    "path": "/product",
+                    "group": "Products"
+                },
+                "input": "ActionInput_informa_getproduct",
+                "name": "get-product",
+                "output": [
+                    "ActionOutput_informa_getproduct"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_informa_getproduct",
+                    "ActionOutput_informa_getproduct"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_informa_getproduct": {
+                            "type": "object",
+                            "properties": {
+                                "product": {
+                                    "type": "string",
+                                    "description": "Informa product code (e.g. INFORME_FINANCIERO)."
+                                },
+                                "cif": {
+                                    "type": "string",
+                                    "description": "Spanish company/autónomo tax ID (NIF/CIF)."
+                                },
+                                "formato": {
+                                    "description": "Response format. Defaults to json.",
+                                    "type": "string",
+                                    "enum": [
+                                        "json",
+                                        "pdf"
+                                    ]
+                                },
+                                "rai": {
+                                    "description": "Include RAI delinquency data when contracted.",
+                                    "type": "boolean"
+                                },
+                                "morosidad": {
+                                    "description": "Include additional delinquency modules when contracted.",
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": [
+                                "product",
+                                "cif"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_informa_getproduct": {
+                            "type": "object",
+                            "properties": {
+                                "product": {
+                                    "type": "string"
+                                },
+                                "cif": {
+                                    "type": "string"
+                                },
+                                "formato": {
+                                    "type": "string"
+                                },
+                                "data": {}
+                            },
+                            "required": [
+                                "product",
+                                "cif",
+                                "formato",
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Searches Informa companies by denomination / name (get-companies).",
+                "endpoint": {
+                    "method": "GET",
+                    "path": "/companies",
+                    "group": "Search"
+                },
+                "input": "ActionInput_informa_getcompanies",
+                "name": "get-companies",
+                "output": [
+                    "ActionOutput_informa_getcompanies"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_informa_getcompanies",
+                    "ActionOutput_informa_getcompanies"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_informa_getcompanies": {
+                            "type": "object",
+                            "properties": {
+                                "denominacion": {
+                                    "type": "string",
+                                    "description": "Company name / denomination search string."
+                                },
+                                "extra": {
+                                    "description": "Additional Informa query params as strings.",
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "required": [
+                                "denominacion"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_informa_getcompanies": {
+                            "type": "object",
+                            "properties": {
+                                "data": {}
+                            },
+                            "required": [
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Searches Informa administrators and related companies (get-admin).",
+                "endpoint": {
+                    "method": "GET",
+                    "path": "/admin",
+                    "group": "Search"
+                },
+                "input": "ActionInput_informa_getadmin",
+                "name": "get-admin",
+                "output": [
+                    "ActionOutput_informa_getadmin"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_informa_getadmin",
+                    "ActionOutput_informa_getadmin"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_informa_getadmin": {
+                            "type": "object",
+                            "properties": {
+                                "params": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "description": "Informa administrator search query params."
+                                }
+                            },
+                            "required": [
+                                "params"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_informa_getadmin": {
+                            "type": "object",
+                            "properties": {
+                                "data": {}
+                            },
+                            "required": [
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Fetches Informa decoding tables for coded fields (get-tables).",
+                "endpoint": {
+                    "method": "GET",
+                    "path": "/tables",
+                    "group": "Reference"
+                },
+                "input": "ActionInput_informa_gettables",
+                "name": "get-tables",
+                "output": [
+                    "ActionOutput_informa_gettables"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_informa_gettables",
+                    "ActionOutput_informa_gettables"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_informa_gettables": {
+                            "type": "object",
+                            "properties": {
+                                "params": {
+                                    "description": "Optional Informa query params.",
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_informa_gettables": {
+                            "type": "object",
+                            "properties": {
+                                "data": {}
+                            },
+                            "required": [
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            }
+        ],
+        "syncs": [],
+        "onEventScripts": {
+            "post-connection-creation": [],
+            "pre-connection-deletion": [],
+            "validate-connection": []
+        },
+        "sdkVersion": "0.71.12",
+        "symLinkTargetName": null
+    },
+    {
         "providerConfigKey": "ingenious-build",
         "actions": [
             {
