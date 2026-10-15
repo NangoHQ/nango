@@ -186,12 +186,15 @@ export const analyticsEventCatalogue = defineCatalogue({
         surface: 'server',
         insight: "How often an Agent Playground starter can't run because its integration can't be set up, and for which provider",
         fires: "When an Agent Playground starter creates its integration, reuses one, or can't set one up",
-        properties: z.object({
-            provider: z.string(),
-            is_success: z.boolean(),
-            error_code: stringOf<Exclude<AgentPlaygroundIntegrationSetup['outcome'], 'created' | 'existing'>>().optional(),
-            is_existing: z.boolean()
-        })
+        properties: z.union([
+            z.object({ provider: z.string(), is_existing: z.boolean(), is_success: z.literal(true) }),
+            z.object({
+                provider: z.string(),
+                is_existing: z.boolean(),
+                is_success: z.literal(false),
+                error_code: stringOf<Exclude<AgentPlaygroundIntegrationSetup['outcome'], 'created' | 'existing'>>()
+            })
+        ])
     },
     'playground:agent_turn_complete': {
         surface: 'server',

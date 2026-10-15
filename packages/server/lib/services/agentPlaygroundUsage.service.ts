@@ -111,19 +111,14 @@ export function trackStarterIntegrationSetup(
     setup: AgentPlaygroundIntegrationSetup
 ): void {
     const { outcome } = setup;
-    const isSuccess = isUsableOutcome(outcome);
+    const base = { provider: setup.provider, is_existing: outcome === 'existing' || outcome === 'missing_credentials' };
     productTracking.track({
         name: 'playground:integration_create',
         team: ctx.account,
         environment: ctx.environment,
         user: ctx.user,
         plan: ctx.plan,
-        eventProperties: {
-            provider: setup.provider,
-            is_success: isSuccess,
-            ...(isSuccess ? {} : { error_code: outcome }),
-            is_existing: outcome === 'existing' || outcome === 'missing_credentials'
-        }
+        eventProperties: isUsableOutcome(outcome) ? { ...base, is_success: true } : { ...base, is_success: false, error_code: outcome }
     });
 }
 
