@@ -1,5 +1,5 @@
 import { Braces, CheckCircle2, ChevronDown, ChevronUp, CircleSlash, RotateCcw, Table2, Wrench, XCircle } from 'lucide-react';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Badge, Button } from '@nangohq/design-system';
 
@@ -9,19 +9,18 @@ import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Spinner } from '@/components/ui/Spinner';
-import { useListIntegrations } from '@/hooks/useIntegration';
-import { useStore } from '@/store';
 import { INTERRUPTED_CALL } from '@/store/agentPlaygroundChat';
 import { cn } from '@/utils/utils';
-import { describeTool, integrationLabels, labelFor, toolArguments } from '../toolDisplay';
+import { describeTool, labelFor, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
 
-import type { ToolDisplay } from '../toolDisplay';
+import type { IntegrationLabels, ToolDisplay } from '../toolDisplay';
 import type { BadgeProps } from '@nangohq/design-system';
 import type { DynamicToolUIPart } from 'ai';
 
 interface ToolCallCardProps {
     part: DynamicToolUIPart;
+    labels: IntegrationLabels | undefined;
     chatActive: boolean;
     approvalSending: boolean;
     connectedIntegrations: ReadonlySet<string>;
@@ -116,6 +115,7 @@ const StatusIcon: React.FC<{ running: boolean; stopped: boolean; failed: boolean
 
 export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     part,
+    labels,
     chatActive,
     approvalSending,
     connectedIntegrations,
@@ -124,9 +124,6 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     onApprove,
     onRetryInterrupted
 }) => {
-    const env = useStore((state) => state.env);
-    const { data: integrations } = useListIntegrations(env);
-    const labels = useMemo(() => (integrations ? integrationLabels(integrations.data) : undefined), [integrations]);
     const display = describeTool(part.toolName, part.input, labels);
     const awaitingApproval = part.state === 'approval-requested' && !part.approval.isAutomatic;
     const unfinished =

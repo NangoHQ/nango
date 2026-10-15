@@ -24,6 +24,7 @@ import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
+import { useListIntegrations } from '@/hooks/useIntegration';
 import { useUser } from '@/hooks/useUser';
 import { usePlaygroundToolbarSlot } from '@/pages/Playground/Show';
 import { useStore } from '@/store';
@@ -33,7 +34,7 @@ import { describeChatError } from './chatError';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
 import { hideTrailingLink } from './streamingMarkdown';
-import { humanize } from './toolDisplay';
+import { humanize, integrationLabels } from './toolDisplay';
 
 import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata, AgentPlaygroundSessionCreated } from '@nangohq/types';
 import type { UIMessage } from 'ai';
@@ -161,6 +162,8 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
             });
         }
     }, [pendingConnections, busy, awaitingApproval, sendMessage]);
+    const { data: integrations } = useListIntegrations(env);
+    const labels = useMemo(() => (integrations ? integrationLabels(integrations.data) : undefined), [integrations]);
     const connectedIntegrations = useMemo(
         () => new Set([...pendingConnections, ...messages.flatMap((message) => message.metadata?.connectedIntegrations ?? [])]),
         [pendingConnections, messages]
@@ -269,6 +272,7 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
                                         <ToolCallCard
                                             key={part.toolCallId}
                                             part={part}
+                                            labels={labels}
                                             chatActive={message === lastMessage && busy}
                                             approvalSending={message === lastMessage && status === 'ready'}
                                             connectedIntegrations={connectedIntegrations}
