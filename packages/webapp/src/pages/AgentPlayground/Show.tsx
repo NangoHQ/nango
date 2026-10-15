@@ -537,7 +537,7 @@ const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced
 const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string, provider: string) => void }> = ({ composer, onPick }) => {
     return (
         <div className="flex flex-1 flex-col items-center text-center">
-            {/* basis-0 makes the 2:3 split ignore content height, so the composer stays just above centre. */}
+            {/* basis-0 makes the 2:3 split ignore content height. */}
             <div className="flex w-full flex-[2] basis-0 flex-col items-center justify-end pb-6">
                 <LogoWolf
                     aria-hidden
