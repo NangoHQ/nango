@@ -96,7 +96,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 }
 
 const auditPartitions = startAuditPartitions();
-const hostedTelemetryPartitions = startHostedTelemetryPartitions();
+const hostedTelemetryPartitions = startHostedTelemetryPartitions({ main: db.knex });
 
 // Preload providers
 getProviders();

@@ -15,7 +15,6 @@ const envs = vi.hoisted(() => ({
 vi.mock('./env.js', () => ({ envs }));
 
 const main = { main: true } as unknown as Knex;
-vi.mock('@nangohq/database', () => ({ default: { knex: { main: true } } }));
 
 describe('hostedTelemetryDb', () => {
     afterEach(async () => {
@@ -32,7 +31,6 @@ describe('hostedTelemetryDb', () => {
     it('uses the main database by default', () => {
         flags.hasHostedTelemetry = true;
         expect(hostedTelemetryDb({ main })).toBe(main);
-        expect(hostedTelemetryDb()).toEqual({ main: true });
     });
 
     it('uses its own pool when a URL moves it, and keeps that pool across calls', () => {

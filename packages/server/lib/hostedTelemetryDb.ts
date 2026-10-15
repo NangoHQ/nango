@@ -1,6 +1,5 @@
 import knex from 'knex';
 
-import db from '@nangohq/database';
 import { migrate, startPartitionDaemon } from '@nangohq/hosted-telemetry';
 import { flags } from '@nangohq/utils';
 
@@ -11,7 +10,7 @@ import type { Knex } from 'knex';
 let dedicated: Knex | undefined;
 
 /** Self-hosted and BYOC turn hosted telemetry on with a flag. It lives in the main database unless a URL moves it. */
-export function hostedTelemetryDb({ main = db.knex }: { main?: Knex } = {}): Knex | undefined {
+export function hostedTelemetryDb({ main }: { main: Knex }): Knex | undefined {
     if (!flags.hasHostedTelemetry) {
         return undefined;
     }
@@ -38,8 +37,8 @@ export async function migrateHostedTelemetryDb({ main }: { main: Knex }): Promis
     }
 }
 
-export function startHostedTelemetryPartitions(): { abort: () => Promise<void> } | null {
-    const target = hostedTelemetryDb();
+export function startHostedTelemetryPartitions({ main }: { main: Knex }): { abort: () => Promise<void> } | null {
+    const target = hostedTelemetryDb({ main });
     if (!target) {
         return null;
     }
