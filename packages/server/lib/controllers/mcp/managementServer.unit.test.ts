@@ -1313,6 +1313,7 @@ describe('createManagementMcpServer', () => {
                 display_name: 'Algolia MCP',
                 logo: 'https://example.com/algolia.svg',
                 forward_webhooks: true,
+                missing_fields: [],
                 created_at: '2026-01-01T00:00:00.000Z',
                 updated_at: '2026-01-01T00:00:00.000Z'
             }

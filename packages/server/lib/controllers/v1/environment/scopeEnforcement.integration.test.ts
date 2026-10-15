@@ -1,6 +1,7 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 
 import { authenticateUser, isSuccess, runServer } from '../../../utils/tests.js';
@@ -50,6 +51,10 @@ describe('Scope enforcement on public API routes', () => {
 
     afterAll(() => {
         api.server.close();
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     // ── Integrations ────────────────────────────────────────────────
@@ -290,6 +295,7 @@ describe('Scope enforcement on public API routes', () => {
 
     describe('POST /v1/* (action via legacy passthrough)', () => {
         it('should allow with actions:execute scope', async () => {
+            vi.spyOn(getFlags(), 'isV1PassthroughEnabled').mockResolvedValue(true);
             const { secret, env } = await createKeyWithScopesAndEnv(['environment:actions:execute']);
             const config = await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github', connectionId: 'v1-action-allow' });
@@ -314,6 +320,7 @@ describe('Scope enforcement on public API routes', () => {
         });
 
         it('should deny without actions:execute scope', async () => {
+            vi.spyOn(getFlags(), 'isV1PassthroughEnabled').mockResolvedValue(true);
             const { secret, env } = await createKeyWithScopesAndEnv([WRONG_SCOPE]);
             const config = await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github', connectionId: 'v1-action-deny' });
@@ -340,6 +347,7 @@ describe('Scope enforcement on public API routes', () => {
 
     describe('GET /v1/* (records via legacy passthrough)', () => {
         it('should allow with records:read scope', async () => {
+            vi.spyOn(getFlags(), 'isV1PassthroughEnabled').mockResolvedValue(true);
             const { secret, env } = await createKeyWithScopesAndEnv(['environment:records:read']);
             const config = await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github', connectionId: 'v1-records-allow' });
@@ -364,6 +372,7 @@ describe('Scope enforcement on public API routes', () => {
         });
 
         it('should deny without records:read scope', async () => {
+            vi.spyOn(getFlags(), 'isV1PassthroughEnabled').mockResolvedValue(true);
             const { secret, env } = await createKeyWithScopesAndEnv([WRONG_SCOPE]);
             const config = await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github', connectionId: 'v1-records-deny' });

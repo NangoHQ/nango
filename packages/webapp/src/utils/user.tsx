@@ -1,6 +1,6 @@
 import { userQueryKey } from '../hooks/useUser';
 import { queryClient } from '../store';
-import { clearAgentPlaygroundChat } from '../store/agentPlaygroundChat';
+import { clearAgentPlaygroundChats } from '../store/agentPlaygroundChat';
 import { resetPlayground } from '../store/playground';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
 import { resetAnalytics, useAnalyticsIdentify } from './analytics';
@@ -42,7 +42,7 @@ export async function signout({ expired = false }: { expired?: boolean } = {}) {
 
     storage.clearSession();
     resetPlayground(); // playground selections belong to the session's account/env
-    clearAgentPlaygroundChat();
+    clearAgentPlaygroundChats();
     resetAnalytics();
 
     try {

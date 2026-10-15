@@ -58,6 +58,11 @@ function integrationTool(qualifiedName: string): { integrationId: string; action
     return { integrationId: qualifiedName.slice(0, index), action: qualifiedName.slice(index + INTEGRATION_TOOL_SEPARATOR.length) };
 }
 
+export function qualifiedToolName(toolName: string, input: unknown): string {
+    const tool = (input as { tool?: unknown } | null | undefined)?.tool;
+    return toolName === 'nango_execute' && typeof tool === 'string' ? tool : toolName;
+}
+
 export function describeTool(toolName: string, input: unknown, labels?: IntegrationLabels): ToolDisplay {
     const args = (input ?? {}) as Record<string, unknown>;
     const withIntegration = (integrationId: string | undefined): Pick<ToolDisplay, 'integrationId' | 'integration'> =>
@@ -90,7 +95,7 @@ export function describeTool(toolName: string, input: unknown, labels?: Integrat
         };
     }
 
-    const qualified = toolName === 'nango_execute' && typeof args['tool'] === 'string' ? args['tool'] : toolName;
+    const qualified = qualifiedToolName(toolName, input);
     const parsed = integrationTool(qualified);
     if (parsed) {
         return { kind: 'integration', title: humanize(parsed.action), ...withIntegration(parsed.integrationId) };
