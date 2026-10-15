@@ -5,13 +5,14 @@ import { resourceFromAttributes } from '@opentelemetry/resources';
 import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 
 import { hostedTelemetryDb } from './db.js';
-import { envs } from './env.js';
 import { PostgresMetricExporter, PRODUCER_ID_ATTRIBUTE } from './exporter.js';
 import { HOSTED_TELEMETRY_SCHEMA } from './postgres/schema.js';
 
 import type { HostedMetricName } from './catalog.js';
 import type { Counter, Gauge, Histogram, Meter, MetricOptions } from '@opentelemetry/api';
 import type { Knex } from 'knex';
+
+const EXPORT_INTERVAL_MS = 60_000;
 
 export interface HostedMeter {
     createCounter(name: HostedMetricName, options?: MetricOptions): Counter;
@@ -73,4 +74,4 @@ export function createHostedTelemetry(store?: { knex: Knex; schema?: string; exp
 }
 
 const db = hostedTelemetryDb();
-export const hostedTelemetry = createHostedTelemetry(db && { knex: db, exportIntervalMs: envs.NANGO_HOSTED_TELEMETRY_EXPORT_INTERVAL_MS });
+export const hostedTelemetry = createHostedTelemetry(db && { knex: db, exportIntervalMs: EXPORT_INTERVAL_MS });
