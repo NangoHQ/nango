@@ -14954,7 +14954,7 @@ litmos:
         - hr
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.apiDomain}/v1.svc
+        base_url: https://${connectionConfig.apiDomain}
         headers:
             apikey: ${apiKey}
         query:
@@ -14963,7 +14963,7 @@ litmos:
         verification:
             method: GET
             endpoints:
-                - /users?limit=1
+                - /v1.svc/users?limit=1
     docs: https://nango.dev/docs/api-integrations/litmos
     docs_connect: https://nango.dev/docs/api-integrations/litmos/connect
     connection_config:
