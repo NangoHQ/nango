@@ -1,7 +1,7 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai';
 import { ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 
@@ -26,18 +26,18 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useUser } from '@/hooks/useUser';
 import { usePlaygroundToolbarSlot } from '@/pages/Playground/Show';
 import { useStore } from '@/store';
-import { clearAgentPlaygroundChat, loadAgentPlaygroundChat, saveAgentPlaygroundChat } from '@/store/agentPlaygroundChat';
+import { deleteAgentPlaygroundChat, openAgentPlaygroundChat, saveAgentPlaygroundChat } from '@/store/agentPlaygroundChat';
 import { globalEnv } from '@/utils/env';
+import { cn } from '@/utils/utils';
 import { describeChatError } from './chatError';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
+import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize } from './toolDisplay';
 
-import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata, AgentPlaygroundSessionCreated } from '@nangohq/types';
-import type { UIMessage } from 'ai';
-
-type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
+import type { PlaygroundMessage } from '@/store/agentPlaygroundChat';
+import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundReplyOutcome, AgentPlaygroundSessionCreated } from '@nangohq/types';
 
 const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
     { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
@@ -57,20 +57,10 @@ export const AgentPlayground: React.FC = () => {
     const toolbarSlot = usePlaygroundToolbarSlot();
     const [chatKey, setChatKey] = useState(0);
 
-    return (
-        <Chat
-            key={`${env}-${chatKey}`}
-            env={env}
-            toolbarSlot={toolbarSlot}
-            onReset={() => {
-                clearAgentPlaygroundChat();
-                setChatKey((key) => key + 1);
-            }}
-        />
-    );
+    return <Chat key={`${env}-${chatKey}`} env={env} toolbarSlot={toolbarSlot} onNewChat={() => setChatKey((key) => key + 1)} />;
 };
 
-const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: () => void }> = ({ env, toolbarSlot, onReset }) => {
+const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({ env, toolbarSlot, onNewChat }) => {
     const sessionId = useRef<string | undefined>(undefined);
     const transport = useMemo(
         () =>
@@ -86,11 +76,31 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
 
     const { user } = useUser();
     const userId = user?.uuid;
-    const [storedMessages] = useState(() => (userId ? loadAgentPlaygroundChat(env, userId) : undefined));
-    const { messages, sendMessage, regenerate, status, stop, error, clearError, addToolApprovalResponse } = useChat<PlaygroundMessage>({
+    const [{ chatId, messages: storedMessages }] = useState(() =>
+        userId ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
+    );
+    const onReset = () => {
+        deleteAgentPlaygroundChat(chatId);
+        onNewChat();
+    };
+    const failure = useRef<string | undefined>(undefined);
+    const leaving = useRef(false);
+    const { messages, setMessages, sendMessage, regenerate, status, stop, clearError, addToolApprovalResponse } = useChat<PlaygroundMessage>({
         transport,
         ...(storedMessages ? { messages: storedMessages } : {}),
-        sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses
+        sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
+        onError: (err) => {
+            failure.current = err.message;
+        },
+        onFinish: ({ isAbort, isError }) => {
+            const error = failure.current ?? '';
+            failure.current = undefined;
+            if (isAbort || leaving.current) {
+                setMessages(markStopped);
+            } else if (isError) {
+                setMessages((current) => setReplyOutcome(current, { kind: 'failed', error }));
+            }
+        }
     });
     const onApprove = useCallback(
         (approvalId: string, approved: boolean) => void addToolApprovalResponse({ id: approvalId, approved }),
@@ -106,10 +116,24 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
 
     const busy = status === 'submitted' || status === 'streaming';
     useEffect(() => {
-        if (!busy && userId) {
-            saveAgentPlaygroundChat(env, userId, messages);
+        if (!busy) {
+            return;
         }
-    }, [env, userId, messages, busy]);
+        leaving.current = false;
+        // Leaving the page cancels the request, and the SDK reports that as a network error.
+        // Chrome cancels it before `pagehide`, so only `beforeunload` comes early enough.
+        const onLeave = () => {
+            leaving.current = true;
+        };
+        window.addEventListener('beforeunload', onLeave);
+        return () => window.removeEventListener('beforeunload', onLeave);
+    }, [busy]);
+    useEffect(() => {
+        if (userId) {
+            // If the page closes mid-reply, the reload shows the reply as stopped.
+            saveAgentPlaygroundChat({ chatId, env, userId, messages: busy ? markStopped(messages) : messages });
+        }
+    }, [chatId, env, userId, messages, busy]);
 
     const lastMessage = messages.at(-1);
     // A new turn would drop the pending tool call, so the change is never approved or denied.
@@ -135,13 +159,18 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
         }
         // The SDK only sends an answered approval when the last message is still the assistant's.
         if (answeredApprovalPending) {
+            setMessages((current) => setReplyOutcome(current, undefined));
             void sendMessage();
             return;
         }
         // Regenerating would replace the assistant message, and with it every tool call that already ran.
         if (lastMessage?.role === 'assistant') {
+            if (!hasReplyContent(lastMessage)) {
+                setMessages((current) => setReplyOutcome(current, undefined));
+            }
             void sendMessage({ text: 'Continue.', metadata: { hidden: true } });
         } else {
+            setMessages((current) => setReplyOutcome(current, undefined));
             void regenerate();
         }
     };
@@ -206,7 +235,7 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
         if (pinnedToBottom.current) {
             bottom.current?.scrollIntoView({ block: 'end' });
         }
-    }, [messages, error]);
+    }, [messages]);
 
     const firstSessionMessageId = messages.find((message) => message.metadata?.sessionCreated)?.id;
 
@@ -237,16 +266,27 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
                 onScroll={onScroll}
                 className="flex min-h-0 flex-1 flex-col gap-8 overflow-auto pt-4 pb-6 [mask-image:linear-gradient(to_bottom,transparent,black_16px,black_calc(100%-16px),transparent)]"
             >
-                {messages.map((message) =>
-                    message.metadata?.hidden ? null : message.role === 'user' ? (
-                        <div
-                            key={message.id}
-                            className="max-w-[80%] self-end whitespace-pre-wrap rounded-ds-xs bg-surface-panel-inset px-4 py-2.5 text-body-medium-regular text-text-default"
-                        >
-                            {message.parts.map((part) => (part.type === 'text' ? part.text : '')).join('')}
-                        </div>
-                    ) : (
-                        <div key={message.id} className="flex flex-col gap-5">
+                {messages.map((message, index) => {
+                    const onRetry = message.id === lastMessage?.id && !busy ? retry : undefined;
+                    const { notice, stoppedToolCall } = outcomeDisplay(message);
+                    const outcome = notice && <ReplyOutcomeNotice outcome={notice} onRetry={onRetry} onReset={onReset} />;
+                    if (message.role === 'user') {
+                        return (
+                            <Fragment key={message.id}>
+                                {!message.metadata?.hidden && (
+                                    <div className="max-w-[80%] self-end whitespace-pre-wrap rounded-ds-xs bg-surface-panel-inset px-4 py-2.5 text-body-medium-regular text-text-default">
+                                        {message.parts.map((part) => (part.type === 'text' ? part.text : '')).join('')}
+                                    </div>
+                                )}
+                                {outcome}
+                            </Fragment>
+                        );
+                    }
+                    if (!hasVisibleContent(message)) {
+                        return null;
+                    }
+                    return (
+                        <div key={message.id} className={cn('flex flex-col gap-5', messages[index - 1]?.metadata?.hidden && '-mt-3')}>
                             {message.metadata?.integrationSetup && (
                                 <IntegrationSetupNotice
                                     env={env}
@@ -275,17 +315,18 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
                                             onRequestNewLink={onRequestNewLink}
                                             onApprove={onApprove}
                                             onRetryInterrupted={message === lastMessage ? onRetryInterrupted : undefined}
+                                            onTryAgain={part === stoppedToolCall ? onRetry : undefined}
                                         />
                                     );
                                 }
                                 return null;
                             })}
+                            {outcome}
                         </div>
-                    )
-                )}
+                    );
+                })}
 
                 {busy && <WorkingIndicator messages={messages} />}
-                {error && <ErrorNotice error={error} onRetry={retry} onReset={onReset} />}
                 <div ref={bottom} />
             </div>
 
@@ -350,15 +391,31 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
     );
 };
 
-const ErrorNotice: React.FC<{ error: Error; onRetry: () => void; onReset: () => void }> = ({ error, onRetry, onReset }) => {
-    const { title, detail, action } = describeChatError(error);
+const ReplyOutcomeNotice: React.FC<{
+    outcome: AgentPlaygroundReplyOutcome;
+    onRetry: (() => void) | undefined;
+    onReset: () => void;
+}> = ({ outcome, onRetry, onReset }) => {
+    if (outcome.kind === 'stopped') {
+        return (
+            <div className="flex items-center justify-between gap-3">
+                <span className="text-body-medium-regular text-text-secondary">Response stopped.</span>
+                {onRetry && (
+                    <Button variant="outline" size="sm" onClick={onRetry}>
+                        Continue
+                    </Button>
+                )}
+            </div>
+        );
+    }
 
+    const { title, detail, action } = describeChatError(outcome.error);
     return (
         <Alert variant="danger">
             <CircleAlert />
             <AlertTitle>{title}</AlertTitle>
             {detail && <AlertDescription>{detail}</AlertDescription>}
-            {action !== 'none' && (
+            {onRetry && action !== 'none' && (
                 <AlertActions>
                     {action === 'retry' ? (
                         <AlertButton onClick={onRetry}>
