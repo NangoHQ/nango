@@ -33,12 +33,12 @@ export function flatten(batch: ResourceMetrics): MetricRow[] {
     for (const scope of batch.scopeMetrics) {
         for (const metric of scope.metrics) {
             const name = metric.descriptor.name;
-            for (const point of metric.dataPoints) {
-                const attributes = { ...point.attributes, [PRODUCER_ID_ATTRIBUTE]: producerId } as MetricRow['attributes'];
+            for (const dataPoint of metric.dataPoints) {
+                const attributes = { ...dataPoint.attributes, [PRODUCER_ID_ATTRIBUTE]: producerId } as MetricRow['attributes'];
                 if (metric.dataPointType === DataPointType.SUM || metric.dataPointType === DataPointType.GAUGE) {
-                    push(name, attributes, point.value as number);
+                    push(name, attributes, dataPoint.value as number);
                 } else {
-                    const value = point.value as { count: number; sum?: number; min?: number; max?: number };
+                    const value = dataPoint.value as { count: number; sum?: number; min?: number; max?: number };
                     push(`${name}.count`, attributes, value.count);
                     push(`${name}.sum`, attributes, value.sum);
                     push(`${name}.min`, attributes, value.min);
