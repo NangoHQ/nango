@@ -1,4 +1,4 @@
-import { dropExpiredDailyPartitions, ensureDailyPartitions, startDailyPartitionDaemon } from '@nangohq/database';
+import { dropExpiredDailyPartitions, ensureDailyPartitions, startDailyPartitionDaemon } from '@nangohq/migrations';
 
 import { AUDIT_EVENTS_TABLE, AUDIT_SCHEMA } from './schema.js';
 

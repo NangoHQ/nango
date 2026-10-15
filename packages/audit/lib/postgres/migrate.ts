@@ -1,4 +1,4 @@
-import { migrateSchema, migrationsLocation } from '@nangohq/database';
+import { migrateSchema, migrationsLocation } from '@nangohq/migrations';
 
 import { AUDIT_MIGRATIONS_TABLE, AUDIT_SCHEMA } from './schema.js';
 

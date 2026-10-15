@@ -1,4 +1,4 @@
-import { migrateSchema, migrationsLocation } from '@nangohq/database';
+import { migrateSchema, migrationsLocation } from '@nangohq/migrations';
 
 import { HOSTED_TELEMETRY_MIGRATIONS_TABLE, HOSTED_TELEMETRY_SCHEMA } from './schema.js';
 

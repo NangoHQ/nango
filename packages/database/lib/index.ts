@@ -70,9 +70,6 @@ export const dbNamespace = '_nango_';
 
 export type { Knex };
 
-export { migrateSchema, migrationsLocation } from './schemaMigrations.js';
-export { dropExpiredDailyPartitions, ensureDailyPartitions, startDailyPartitionDaemon } from './partitions.js';
-
 export const multipleMigrations = async (): Promise<void> => {
     try {
         await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);

@@ -1,4 +1,4 @@
-import { dropExpiredDailyPartitions, ensureDailyPartitions, startDailyPartitionDaemon } from '@nangohq/database';
+import { dropExpiredDailyPartitions, ensureDailyPartitions, startDailyPartitionDaemon } from '@nangohq/migrations';
 
 import { HOSTED_TELEMETRY_SCHEMA, HOSTED_TELEMETRY_TABLE } from './schema.js';
 

@@ -9,7 +9,7 @@ import type { Knex } from 'knex';
 
 dayjs.extend(utc);
 
-const logger = getLogger('database');
+const logger = getLogger('migrations');
 
 interface PartitionedTable {
     knex: Knex;
@@ -114,7 +114,7 @@ export function startDailyPartitionDaemon({
     return cancellableDaemon({
         tickIntervalMs,
         tick: async (): Promise<void> => {
-            return tracer.trace('nango.database.daemon.daily_partitions', { tags: { schema, table } }, async (span) => {
+            return tracer.trace('nango.migrations.daemon.daily_partitions', { tags: { schema, table } }, async (span) => {
                 try {
                     const today = new Date();
                     const tomorrow = dayjs(today).utc().add(1, 'day').toDate();

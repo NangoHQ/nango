@@ -7,7 +7,7 @@ import { Err, getLogger, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
-const logger = getLogger('database');
+const logger = getLogger('migrations');
 
 export interface SchemaMigration {
     name: string;

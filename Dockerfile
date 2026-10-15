@@ -51,6 +51,7 @@ COPY packages/feature-flags/package.json ./packages/feature-flags/package.json
 COPY packages/metering/package.json ./packages/metering/package.json
 COPY packages/audit/package.json ./packages/audit/package.json
 COPY packages/hosted-telemetry/package.json ./packages/hosted-telemetry/package.json
+COPY packages/migrations/package.json ./packages/migrations/package.json
 COPY package*.json  ./
 
 # Install every dependencies

@@ -9,7 +9,7 @@
             "path": "../clickhouse-migrations"
         },
         {
-            "path": "../database"
+            "path": "../migrations"
         },
         {
             "path": "../pubsub"

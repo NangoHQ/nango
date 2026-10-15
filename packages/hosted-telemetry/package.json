@@ -14,7 +14,7 @@
         "directory": "packages/hosted-telemetry"
     },
     "dependencies": {
-        "@nangohq/database": "file:../database",
+        "@nangohq/migrations": "file:../migrations",
         "@nangohq/utils": "file:../utils",
         "dayjs": "1.11.19",
         "dd-trace": "5.117.0",
