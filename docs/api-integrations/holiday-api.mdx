@@ -1,0 +1,80 @@
+---
+title: 'Holiday API'
+sidebarTitle: 'Holiday API'
+description: 'Integrate your application with Holiday API'
+---
+
+## 🚀 Quickstart
+
+Connect to Holiday API with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Holiday API_.
+    </Step>
+    <Step id="authorize-holiday-api" title="Authorize Holiday API">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-holiday-api" title="Call Holiday API">
+    Let's make your first request to Holiday API (list available countries). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/countries" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/countries',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Holiday API integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/holiday-api/connect)
+Copy the API key from your Holiday API account and connect it to Nango
+
+Official docs: [Holiday API documentation](https://holidayapi.com/docs)
+
+## 🧩 Pre-built syncs & actions for Holiday API
+
+Explore Nango-provided actions in your dashboard. [Extend and customize them](/guides/functions/functions-guide) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/holiday-api/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

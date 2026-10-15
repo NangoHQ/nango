@@ -1477,6 +1477,7 @@
               "api-integrations/hitpay",
               "integrations/all/holded",
               "api-integrations/holded-v2",
+              "api-integrations/holiday-api",
               "integrations/all/hover",
               "api-integrations/hubspot",
               "api-integrations/hubspot-mcp",

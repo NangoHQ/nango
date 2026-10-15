@@ -12342,6 +12342,34 @@ holded-v2:
             pattern: '^pat_[a-f0-9]{24}_[a-f0-9]{64}$'
             example: pat_************************_************************************************************24d4
 
+holiday-api:
+    display_name: Holiday API
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://holidayapi.com
+        query:
+            key: ${apiKey}
+        headers:
+            content-type: application/json
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/countries
+    docs: https://nango.dev/docs/api-integrations/holiday-api
+    docs_connect: https://nango.dev/docs/api-integrations/holiday-api/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Holiday API account
+            example: 00000000-0000-0000-0000-000000000000
+            format: uuid
+            doc_section: '#step-1-copy-your-api-key'
+
 hover:
     display_name: Hover
     categories:
