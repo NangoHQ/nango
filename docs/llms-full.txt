@@ -8219,6 +8219,19 @@ NANGO_FEATURE_FLAG_MFA=true
 
 Once the server restarts, users can turn it on from their profile settings by pairing an authenticator app and saving their backup codes. Nango then asks them for a code at login.
 
+#### OAuth state cookie enforcement
+
+When an OAuth flow starts, Nango sets a cookie in the user's browser that is tied to that flow. By default, a callback that arrives without this cookie is still accepted. To reject it instead, so the flow can only be completed by the browser that started it, set these on the server service:
+
+```bash
+NANGO_FLAG_PROVIDER=env
+NANGO_FEATURE_FLAG_OAUTH_STATE_COOKIE_ENFORCEMENT=true
+```
+
+With the flag on, a callback that is forwarded from your backend or replayed with `fetch` fails with a `state_cookie_err` error, because it does not carry the cookie. Make sure the callback reaches Nango as a redirect in the same browser that opened the authorization page.
+
+The check covers OAuth 2 based flows, including MCP OAuth. It does not apply to App, OAuth 1, or plugin install flows.
+
 ### Server URL, callback URL, and custom domains
 
 Add server environment variables for the instance URL and port in the `.env` file or directly in your hosting provider:
