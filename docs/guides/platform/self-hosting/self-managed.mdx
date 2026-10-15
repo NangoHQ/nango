@@ -255,7 +255,7 @@ NANGO_FLAG_PROVIDER=env
 NANGO_FEATURE_FLAG_OAUTH_STATE_COOKIE_ENFORCEMENT=true
 ```
 
-With the flag on, a callback that is forwarded from your backend or replayed with `fetch` fails with a `state_cookie_err` error, because it does not carry the cookie. Make sure the callback reaches Nango as a redirect in the same browser that opened the authorization page.
+With the flag on, a callback forwarded from your backend or sent by a `fetch` request without the state cookie fails with a `state_cookie_err` error. Make sure the callback reaches Nango as a redirect in the same browser that opened the authorization page.
 
 The check covers OAuth 2 based flows, including MCP OAuth. It does not apply to App, OAuth 1, or plugin install flows.
 
