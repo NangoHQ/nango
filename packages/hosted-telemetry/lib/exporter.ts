@@ -4,7 +4,7 @@ import tracer from 'dd-trace';
 
 import { getLogger, retry, stringifyError } from '@nangohq/utils';
 
-import { HOSTED_TELEMETRY_TABLE } from './postgres/schema.js';
+import { HOSTED_TELEMETRY_ATTRIBUTES_MAX_BYTES, HOSTED_TELEMETRY_TABLE } from './postgres/schema.js';
 
 import type { ExportResult } from '@opentelemetry/core';
 import type { AggregationOption, PushMetricExporter, ResourceMetrics } from '@opentelemetry/sdk-metrics';
@@ -24,24 +24,31 @@ export interface MetricRow {
     value: number;
 }
 
+/** Stable key order, so the same attributes always serialize the same way. */
+export function serializeAttributes(attributes: MetricRow['attributes']): string {
+    return JSON.stringify(Object.fromEntries(Object.entries(attributes).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))));
+}
+
 /**
  * One row per sum or gauge point, four per histogram point: count, sum, min and max. A histogram window with no
- * samples has no min or max and gets no row for them; a value that is not a finite number is a producer bug, counted
- * in `dropped` so the export can say so.
+ * samples has no min or max and gets no row for them. A value that is not a finite number, or attributes the table
+ * would refuse, is a producer bug: counted in `dropped` so the export can say so, instead of failing every row with
+ * it. Two points with the same key, which only happens when one name is used as two instrument kinds, keep the last.
  */
 export function flatten(batch: ResourceMetrics): { rows: MetricRow[]; dropped: Record<string, number> } {
     const producerId = batch.resource.attributes[PRODUCER_ID_ATTRIBUTE];
-    const rows: MetricRow[] = [];
+    const rows = new Map<string, MetricRow>();
     const dropped: Record<string, number> = {};
     const push = (metric: string, attributes: MetricRow['attributes'], value: number | undefined) => {
         if (value === undefined) {
             return;
         }
-        if (!Number.isFinite(value)) {
+        const serialized = serializeAttributes(attributes);
+        if (!Number.isFinite(value) || Buffer.byteLength(serialized) > HOSTED_TELEMETRY_ATTRIBUTES_MAX_BYTES) {
             dropped[metric] = (dropped[metric] ?? 0) + 1;
             return;
         }
-        rows.push({ metric, attributes, value });
+        rows.set(`${metric} ${serialized}`, { metric, attributes, value });
     };
     for (const scope of batch.scopeMetrics) {
         for (const metric of scope.metrics) {
@@ -60,7 +67,7 @@ export function flatten(batch: ResourceMetrics): { rows: MetricRow[]; dropped: R
             }
         }
     }
-    return { rows, dropped };
+    return { rows: [...rows.values()], dropped };
 }
 
 /**
@@ -96,7 +103,7 @@ export class PostgresMetricExporter implements PushMetricExporter {
             const { rows, dropped } = flatten(batch);
             const droppedMetrics = Object.entries(dropped);
             if (droppedMetrics.length > 0) {
-                logger.warning(`Dropped values that are not finite numbers: ${droppedMetrics.map(([metric, count]) => `${metric} x${count}`).join(', ')}`);
+                logger.warning(`Dropped values the table would refuse: ${droppedMetrics.map(([metric, count]) => `${metric} x${count}`).join(', ')}`);
             }
             span?.addTags({ rows: rows.length, dropped: droppedMetrics.reduce((sum, [, count]) => sum + count, 0) });
             try {
@@ -125,7 +132,7 @@ export class PostgresMetricExporter implements PushMetricExporter {
                 const chunk = rows.slice(offset, offset + INSERT_BATCH_SIZE);
                 const values = chunk.map(() => '(?, ?::jsonb, ?::double precision)').join(', ');
                 await trx.raw(
-                    `WITH w AS (SELECT to_timestamp(floor(extract(epoch FROM clock_timestamp()) / ?) * ?) AS ts)
+                    `WITH w AS (SELECT to_timestamp(floor(extract(epoch FROM transaction_timestamp()) / ?) * ?) AS ts)
                      INSERT INTO ??.?? (ts, metric, attributes, value)
                      SELECT w.ts, v.metric, v.attributes, v.value FROM w CROSS JOIN (VALUES ${values}) AS v(metric, attributes, value)
                      ON CONFLICT (metric, ts, attributes) DO UPDATE SET value = EXCLUDED.value`,
@@ -134,7 +141,7 @@ export class PostgresMetricExporter implements PushMetricExporter {
                         this.windowSeconds,
                         this.schema,
                         HOSTED_TELEMETRY_TABLE,
-                        ...chunk.flatMap((row) => [row.metric, JSON.stringify(row.attributes), row.value])
+                        ...chunk.flatMap((row) => [row.metric, serializeAttributes(row.attributes), row.value])
                     ]
                 );
             }

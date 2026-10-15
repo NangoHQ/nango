@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { migrate } from './postgres/migrate.js';
 import { ensurePartitions } from './postgres/partitions.js';
 import { HOSTED_TELEMETRY_TABLE } from './postgres/schema.js';
-import { createHostedTelemetry, hostedTelemetry, producerId } from './telemetry.js';
+import { createHostedTelemetry, producerId } from './telemetry.js';
 
 import type { Knex } from 'knex';
 
@@ -43,8 +43,10 @@ afterAll(async () => {
 });
 
 describe('hosted telemetry producer', () => {
-    it('is a no-op on an installation that has not turned it on', async () => {
-        hostedTelemetry.increment('nango.hosted_metric.active_concurrency', 1, { environment_id: 7 });
+    it('is a no-op without a store', async () => {
+        const telemetry = createHostedTelemetry();
+        telemetry.increment('nango.hosted_metric.active_concurrency', 1, { environment_id: 7 });
+        await expect(telemetry.shutdown()).resolves.toBeUndefined();
         expect(await rows()).toEqual([]);
     });
 
@@ -76,11 +78,14 @@ describe('hosted telemetry producer', () => {
     });
 
     it('replaces a window that is exported twice with the later export', async () => {
-        const telemetry = createHostedTelemetry({ knex, schema, exportIntervalMs: windowMs });
-        telemetry.increment('nango.hosted_metric.active_concurrency', 4, { environment_id: 7 });
-        await telemetry.shutdown();
+        await knex.raw('TRUNCATE ??.??', [schema, HOSTED_TELEMETRY_TABLE]);
+        const first = createHostedTelemetry({ knex, schema, exportIntervalMs: windowMs });
+        first.increment('nango.hosted_metric.active_concurrency', 2, { environment_id: 7 });
+        await first.shutdown();
+        const second = createHostedTelemetry({ knex, schema, exportIntervalMs: windowMs });
+        second.increment('nango.hosted_metric.active_concurrency', 4, { environment_id: 7 });
+        await second.shutdown();
 
-        const counter = (await rows()).find((r) => r.metric === 'nango.hosted_metric.active_concurrency' && r.attributes['environment_id'] === 7);
-        expect(counter?.value).toBe(4);
+        expect((await rows()).map((r) => r.value)).toEqual([4]);
     });
 });

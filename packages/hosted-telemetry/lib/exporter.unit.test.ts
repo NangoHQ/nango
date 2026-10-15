@@ -90,4 +90,25 @@ describe('flatten', () => {
         expect(rows[0]?.attributes['environment_id']).toBe(8);
         expect(dropped).toEqual({ 'nango.connections.count': 1 });
     });
+
+    it('drops attributes the table would refuse, and keeps the last of two points with one key', () => {
+        const { rows, dropped } = flatten(
+            batch([
+                {
+                    descriptor: descriptor('nango.connections.count', InstrumentType.GAUGE),
+                    aggregationTemporality: 1,
+                    dataPointType: DataPointType.GAUGE,
+                    dataPoints: [
+                        { ...time, attributes: { environment_id: 7, note: 'x'.repeat(1100) }, value: 1 },
+                        { ...time, attributes: { environment_id: 8, integration_id: 'hubspot' }, value: 2 },
+                        { ...time, attributes: { integration_id: 'hubspot', environment_id: 8 }, value: 3 }
+                    ]
+                }
+            ])
+        );
+        expect(rows).toEqual([
+            { metric: 'nango.connections.count', attributes: { integration_id: 'hubspot', environment_id: 8, producer_id: 'pod-a' }, value: 3 }
+        ]);
+        expect(dropped).toEqual({ 'nango.connections.count': 1 });
+    });
 });
