@@ -147,7 +147,7 @@ paths:
                                 credentials:
                                     $ref: '#/components/schemas/IntegrationCredentialsInput'
                                     description: >
-                                        Optional. Developer app credentials for the integration. Omit them to create the
+                                        Developer app credentials for the integration. Omit them to create the
                                         integration without credentials and provide them later, either with an update
                                         request or per connection at connection time.
                                 integration_config:
