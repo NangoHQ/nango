@@ -572,8 +572,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         createAction: { type: 'action', varName: 'action' },
         createSync: { type: 'sync', varName: 'sync' },
         createOnEvent: { type: 'onEvent', varName: 'onEvent' },
-        createFunction: { type: 'function', varName: 'func' },
-        createTool: { type: 'function', varName: 'tool' }
+        createFunction: { type: 'function', varName: 'func' }
     } as const satisfies Record<string, { type: string; varName: string }>;
 
     type AllowedExportName = keyof typeof allowedExports;

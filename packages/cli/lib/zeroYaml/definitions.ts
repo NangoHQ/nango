@@ -88,28 +88,26 @@ const functionTagValueSchema = z.union([functionTagStringSchema, z.array(functio
         return `Expected string or string[], received ${got}`;
     }
 });
-export const functionTagsSchema = z
-    .record(functionTagKeySchema, functionTagValueSchema, {
-        error: (iss) => (iss.code === 'invalid_key' ? iss.issues[0]?.message : undefined)
-    })
-    .refine((tags) => Object.keys(tags).length <= 32, {
-        message: 'Functions cannot have more than 32 tags'
-    }) satisfies z.ZodType<FunctionTags>;
+const functionTagsRecordSchema = z.record(functionTagKeySchema, functionTagValueSchema, {
+    error: (iss) => (iss.code === 'invalid_key' ? iss.issues[0]?.message : undefined)
+});
+export const functionTagsSchema = functionTagsRecordSchema.refine((tags) => Object.keys(tags).length <= 32, {
+    message: 'Functions cannot have more than 32 tags'
+}) satisfies z.ZodType<FunctionTags>;
 
-const maxToolInstructionsLength = 1024;
 const toolMetaSchema = z
     .object({
-        instructions: z.string().max(maxToolInstructionsLength).optional(),
+        instructions: z.string().max(1024).optional(),
         requiredScopes: z.array(functionTagStringSchema).max(64).optional(),
-        tags: functionTagsSchema
+        tags: functionTagsRecordSchema
             .refine((tags) => reservedToolTagKeys.every((key) => !(key in tags)), {
                 message: `Tag keys ${reservedToolTagKeys.map((key) => `'${key}'`).join(', ')} are reserved`
             })
             .optional()
     })
     .strict()
-    .refine((meta) => Object.keys(meta.tags ?? {}).length + (meta.instructions !== undefined ? 1 : 0) + (meta.requiredScopes !== undefined ? 1 : 0) <= 32, {
-        message: 'Tools cannot have more than 32 tags, including instructions and requiredScopes'
+    .refine((meta) => Object.keys(meta.tags ?? {}).length <= 30, {
+        message: 'Tools cannot have more than 30 tags'
     });
 const toolNameSchema = z
     .string()

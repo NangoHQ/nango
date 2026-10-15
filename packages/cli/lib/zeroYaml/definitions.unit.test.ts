@@ -347,15 +347,34 @@ describe('validateFunction tags', () => {
         expect(result.isErr()).toBe(true);
     });
 
-    it('rejects too many tags', () => {
-        const tags = Object.fromEntries(Array.from({ length: 33 }, (_, i) => [`tag${i}`, 'value']));
-        const result = validateFunction({ ...base, params: { tags } });
+    it('limits functions to 32 total tags', () => {
+        const tags = Object.fromEntries(Array.from({ length: 32 }, (_, i) => [`tag${i}`, 'value']));
+        expect(validateFunction({ ...base, params: { tags } }).isOk()).toBe(true);
+        const result = validateFunction({ ...base, params: { tags: { ...tags, instructions: 'Use this function' } } });
         expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toContain('Functions cannot have more than 32 tags');
+        }
     });
 });
 
 describe('validateTool', () => {
     const filePath = './github/tools/getIssue.ts';
+
+    it.each([
+        { reserved: {}, customTags: 30 },
+        { reserved: { instructions: 'Use this tool' }, customTags: 30 },
+        { reserved: { requiredScopes: ['repo'] }, customTags: 30 },
+        { reserved: { instructions: 'Use this tool', requiredScopes: ['repo'] }, customTags: 30 }
+    ])('allows $customTags custom tags with metadata $reserved', ({ reserved, customTags }) => {
+        const tags = Object.fromEntries(Array.from({ length: customTags }, (_, i) => [`tag${i}`, 'value']));
+        expect(validateTool({ filePath, params: { meta: { ...reserved, tags } } }).isOk()).toBe(true);
+        const result = validateTool({ filePath, params: { meta: { ...reserved, tags: { ...tags, extra: 'value' } } } });
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toContain('Tools cannot have more than 30 tags');
+        }
+    });
 
     it.each([
         { reason: 'no name or meta', params: {} },
@@ -379,7 +398,7 @@ describe('validateTool', () => {
         { reason: 'the reserved required_scopes tag', params: { meta: { tags: { required_scopes: 'repo' } } } },
         { reason: 'an unknown meta field', params: { meta: { hints: {} } } },
         {
-            reason: 'more than 32 tags including instructions',
+            reason: 'more than 30 custom tags',
             params: { meta: { instructions: 'x', tags: Object.fromEntries(Array.from({ length: 32 }, (_, i) => [`tag${i}`, 'value'])) } }
         }
     ])('rejects $reason', ({ params }) => {

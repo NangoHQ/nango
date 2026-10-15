@@ -12,7 +12,7 @@ type ToolRequires = { outbound: true; connection: true };
 export interface ToolMeta {
     // How and when an agent should use the tool. Can be long.
     instructions?: string;
-    // Provider scopes the connection needs for the tool to work.
+    // Provider scopes the connection needs. Currently indicative only; not enforced.
     requiredScopes?: string[];
     tags?: FunctionTags;
 }
@@ -38,7 +38,7 @@ export type CreateToolResponse<TInput extends z.ZodTypeAny = z.ZodTypeAny, TOutp
 > & { name?: string };
 
 /**
- * Create a tool an agent can call. A tool is a function with an http trigger.
+ * Create a callable tool. A tool is a function with an http trigger.
  *
  * @example
  * ```ts
