@@ -219,7 +219,7 @@ describe('POST /api/v1/agent-playground/chat', () => {
                     chat_id: chatId,
                     is_first_turn: true
                 });
-                expect(byName('playground:agent_turn_complete')?.properties).not.toHaveProperty('prompt');
+                expect(JSON.stringify(capture.mock.calls)).not.toContain('Find my calendar events');
             });
         } finally {
             productTracking.client = realClient;
