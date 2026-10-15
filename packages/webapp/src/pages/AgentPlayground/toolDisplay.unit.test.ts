@@ -5,7 +5,8 @@ import { describeTool, integrationLabels, labelFor } from './toolDisplay.js';
 const labels = integrationLabels([
     { unique_key: 'github-getting-started', provider: 'github', display_name: 'Github (Getting Started)', meta: { displayName: 'GitHub (User OAuth)' } },
     { unique_key: 'github-app', provider: 'github-app', display_name: null, meta: { displayName: 'GitHub (App)' } },
-    { unique_key: 'pg-google-calendar', provider: 'google-calendar', display_name: null, meta: { displayName: 'Google Calendar' } }
+    { unique_key: 'pg-google-calendar', provider: 'google-calendar', display_name: null, meta: { displayName: 'Google Calendar' } },
+    { unique_key: 'pg-github', provider: 'github', display_name: null, meta: { displayName: 'GitHub (User OAuth)' } }
 ]);
 
 const gettingStarted = { provider: 'github', name: 'GitHub', integrationName: 'Github (Getting Started)' };
@@ -17,6 +18,10 @@ describe('labelFor', () => {
 
     it('falls back to the provider display name when the integration has no name of its own', () => {
         expect(labelFor('github-app', labels)).toEqual({ provider: 'github-app', name: 'GitHub', integrationName: 'GitHub (App)' });
+    });
+
+    it('drops the auth variant from an integration the playground created', () => {
+        expect(labelFor('pg-github', labels)).toEqual({ provider: 'github', name: 'GitHub', integrationName: 'GitHub' });
     });
 
     it('guesses from the id while the list is loading', () => {

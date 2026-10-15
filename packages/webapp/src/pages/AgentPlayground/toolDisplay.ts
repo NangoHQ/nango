@@ -37,14 +37,11 @@ export function integrationLabels(
     integrations: readonly { unique_key: string; provider: string; display_name: string | null; meta: { displayName: string } }[]
 ): IntegrationLabels {
     return new Map(
-        integrations.map((integration) => [
-            integration.unique_key,
-            {
-                provider: integration.provider,
-                name: integration.meta.displayName.replace(/\s*\([^)]*\)$/, ''),
-                integrationName: integration.display_name || integration.meta.displayName
-            }
-        ])
+        integrations.map((integration) => {
+            const name = integration.meta.displayName.replace(/\s*\([^)]*\)$/, '');
+            const catalogueName = integration.unique_key.startsWith(PLAYGROUND_INTEGRATION_PREFIX) ? name : integration.meta.displayName;
+            return [integration.unique_key, { provider: integration.provider, name, integrationName: integration.display_name || catalogueName }];
+        })
     );
 }
 
