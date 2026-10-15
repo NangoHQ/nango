@@ -36,6 +36,7 @@ import { ToolCallCard } from './components/ToolCallCard';
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize, integrationLabels, labelFor } from './toolDisplay';
 
+import type { IntegrationLabels } from './toolDisplay';
 import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata, AgentPlaygroundSessionCreated } from '@nangohq/types';
 import type { UIMessage } from 'ai';
 
@@ -257,6 +258,7 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onReset: ()
                                 <IntegrationSetupNotice
                                     env={env}
                                     setup={message.metadata.integrationSetup}
+                                    labels={labels}
                                     onTryAgain={message.id === lastMessage?.id && !busy ? () => void regenerate() : undefined}
                                 />
                             )}
@@ -429,12 +431,13 @@ const WorkingIndicator: React.FC<{ messages: PlaygroundMessage[] }> = ({ message
     );
 };
 
-const IntegrationSetupNotice: React.FC<{ env: string; setup: AgentPlaygroundIntegrationSetup; onTryAgain?: (() => void) | undefined }> = ({
-    env,
-    setup,
-    onTryAgain
-}) => {
-    const name = providerName(setup.provider);
+const IntegrationSetupNotice: React.FC<{
+    env: string;
+    setup: AgentPlaygroundIntegrationSetup;
+    labels: IntegrationLabels | undefined;
+    onTryAgain?: (() => void) | undefined;
+}> = ({ env, setup, labels, onTryAgain }) => {
+    const name = (setup.integrationId && labels?.get(setup.integrationId)?.integrationName) || providerName(setup.provider);
     const href = setup.integrationId ? `/${env}/integrations/${setup.integrationId}` : `/${env}/integrations/create/${setup.provider}`;
 
     if (setup.outcome === 'created' || setup.outcome === 'existing') {
