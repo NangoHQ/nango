@@ -39,7 +39,8 @@ export function integrationLabels(
     return new Map(
         integrations.map((integration) => {
             const name = integration.meta.displayName.replace(/\s*\([^)]*\)$/, '');
-            const catalogueName = integration.unique_key.startsWith(PLAYGROUND_INTEGRATION_PREFIX) ? name : integration.meta.displayName;
+            const playgroundCreated = integration.unique_key === `${PLAYGROUND_INTEGRATION_PREFIX}${integration.provider}`;
+            const catalogueName = playgroundCreated ? name : integration.meta.displayName;
             return [integration.unique_key, { provider: integration.provider, name, integrationName: integration.display_name || catalogueName }];
         })
     );

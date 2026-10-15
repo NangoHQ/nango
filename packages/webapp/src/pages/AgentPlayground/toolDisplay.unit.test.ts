@@ -6,7 +6,8 @@ const labels = integrationLabels([
     { unique_key: 'github-getting-started', provider: 'github', display_name: 'Github (Getting Started)', meta: { displayName: 'GitHub (User OAuth)' } },
     { unique_key: 'github-app', provider: 'github-app', display_name: null, meta: { displayName: 'GitHub (App)' } },
     { unique_key: 'pg-google-calendar', provider: 'google-calendar', display_name: null, meta: { displayName: 'Google Calendar' } },
-    { unique_key: 'pg-github', provider: 'github', display_name: null, meta: { displayName: 'GitHub (User OAuth)' } }
+    { unique_key: 'pg-github', provider: 'github', display_name: null, meta: { displayName: 'GitHub (User OAuth)' } },
+    { unique_key: 'pg-github-team', provider: 'github', display_name: null, meta: { displayName: 'GitHub (User OAuth)' } }
 ]);
 
 const gettingStarted = { provider: 'github', name: 'GitHub', integrationName: 'Github (Getting Started)' };
@@ -22,6 +23,10 @@ describe('labelFor', () => {
 
     it('drops the auth variant from an integration the playground created', () => {
         expect(labelFor('pg-github', labels)).toEqual({ provider: 'github', name: 'GitHub', integrationName: 'GitHub' });
+    });
+
+    it('keeps the auth variant for a user-created integration that only starts with pg-', () => {
+        expect(labelFor('pg-github-team', labels).integrationName).toBe('GitHub (User OAuth)');
     });
 
     it('guesses from the id while the list is loading', () => {
