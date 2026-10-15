@@ -71,10 +71,11 @@ export class PostgresMetricExporter implements PushMetricExporter {
     private readonly schema: string;
     private readonly windowSeconds: number;
 
-    constructor({ knex, schema, windowMs }: { knex: Knex; schema: string; windowMs: number }) {
+    /** `exportIntervalMs` is the reader's cadence: a window is one export, so its timestamp rounds to it. */
+    constructor({ knex, schema, exportIntervalMs }: { knex: Knex; schema: string; exportIntervalMs: number }) {
         this.knex = knex;
         this.schema = schema;
-        this.windowSeconds = windowMs / 1000;
+        this.windowSeconds = exportIntervalMs / 1000;
     }
 
     selectAggregationTemporality(): AggregationTemporality {
