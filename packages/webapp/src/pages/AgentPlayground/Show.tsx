@@ -19,6 +19,7 @@ import {
 } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
+import { LogoWolf } from '@/assets/LogoWolf';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
@@ -524,17 +525,16 @@ const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced
 const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string, provider: string) => void }> = ({ composer, onPick }) => {
     return (
         <div className="flex flex-1 flex-col items-center text-center">
-            {/* Equal-basis halves above and below keep the composer centred, whatever sits around it. */}
-            <div className="flex w-full flex-1 basis-0 flex-col items-center justify-end pb-6">
-                {/* Relies on LogoInverted's path order: hides the disc and eye, fills the wolf. */}
-                <LogoInverted
+            {/* basis-0 makes the 2:3 split ignore content height, so the composer stays just above centre. */}
+            <div className="flex w-full flex-[2] basis-0 flex-col items-center justify-end pb-6">
+                <LogoWolf
                     aria-hidden
-                    className="pointer-events-none -mb-28 size-96 text-text-strong opacity-[0.06] [mask-image:linear-gradient(to_bottom,black_30%,transparent_70%)] [&_path:nth-child(-n+2)]:hidden [&_path:nth-child(3)]:fill-current"
+                    className="pointer-events-none -mb-28 h-auto w-[337px] text-text-strong opacity-[0.06] [mask-image:linear-gradient(to_bottom,black_45px,transparent_199px)]"
                 />
                 <h2 className="relative text-heading-medium text-text-strong">Explore how Nango works with an agent</h2>
             </div>
             {composer}
-            <div className="grid w-full flex-1 basis-0 auto-rows-min grid-cols-2 gap-3 pt-6">
+            <div className="grid w-full flex-[3] basis-0 auto-rows-min grid-cols-2 gap-3 pt-6">
                 {STARTER_PROMPTS.map(({ prompt, provider }) => (
                     <button
                         key={prompt}
