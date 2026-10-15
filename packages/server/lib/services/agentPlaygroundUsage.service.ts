@@ -105,7 +105,6 @@ export function sumTurnUsage(steps: PlaygroundStep[]): PlaygroundTurnUsage {
 export interface PlaygroundTurn {
     isFirstTurn: boolean;
     starterProvider?: string;
-    prompt?: string;
 }
 
 export function trackPlaygroundTurn({
@@ -143,7 +142,6 @@ export function trackPlaygroundTurn({
             environment_id: ctx.environment.id,
             is_first_turn: turn.isFirstTurn,
             ...(turn.starterProvider ? { starter_provider: turn.starterProvider } : {}),
-            ...(turn.prompt ? { prompt: turn.prompt } : {}),
             is_success: outcome !== 'error',
             ...(outcome === 'error' ? { error_code: 'model_error', ...(errorCategory ? { error_category: errorCategory } : {}) } : {}),
             is_stopped: outcome === 'aborted',

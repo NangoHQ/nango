@@ -163,7 +163,7 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'playground:agent_turn_complete': {
         surface: 'server',
-        insight: 'What the Agent Playground costs per account, how often turns fail or get stopped, and what people first ask it to do',
+        insight: 'What the Agent Playground costs per account, how often turns fail or get stopped, and whether first chats start from a starter',
         fires: 'When an Agent Playground turn finishes, fails or is stopped',
         properties: z.object({
             agent_session_id: z.string(),
@@ -171,8 +171,6 @@ export const analyticsEventCatalogue = defineCatalogue({
             environment_id: z.number(),
             is_first_turn: z.boolean(),
             starter_provider: z.string().optional(),
-            // Free text. Send only the first typed message, capped, never the rest of the chat.
-            prompt: z.string().optional(),
             is_success: z.boolean(),
             error_code: z.string().optional(),
             is_stopped: z.boolean(),
