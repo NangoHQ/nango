@@ -331,7 +331,7 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
                         if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
                             e.preventDefault();
                             submit();
-                        } else if (e.key === 'Escape' && busy) {
+                        } else if (e.key === 'Escape' && busy && !e.nativeEvent.isComposing) {
                             e.preventDefault();
                             onStop();
                         }
