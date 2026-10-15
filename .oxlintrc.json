@@ -72,7 +72,6 @@
                 "ignoreArrowShorthand": true
             }
         ],
-        "typescript/no-meaningless-void-operator": "off",
         "typescript/no-floating-promises": "warn",
         "typescript/no-unsafe-assignment": "warn",
         "typescript/no-non-null-assertion": "warn",
