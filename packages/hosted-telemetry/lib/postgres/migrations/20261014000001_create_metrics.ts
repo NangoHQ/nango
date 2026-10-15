@@ -1,4 +1,4 @@
-import { USAGE_TELEMETRY_TABLE } from '../schema.js';
+import { HOSTED_TELEMETRY_TABLE } from '../schema.js';
 
 import type { Knex } from 'knex';
 
@@ -13,6 +13,10 @@ export async function up(knex: Knex, schema: string): Promise<void> {
             CONSTRAINT metrics_attributes_size CHECK (octet_length(attributes::text) <= 1024),
             PRIMARY KEY (metric, ts, attributes)
         ) PARTITION BY RANGE (ts)`,
-        [schema, USAGE_TELEMETRY_TABLE]
+        [schema, HOSTED_TELEMETRY_TABLE]
     );
+
+    // Reads across all metrics over a time range cannot use the primary key, which starts from a metric. Rows
+    // arrive in ts order, so a BRIN index narrows such a read to the window's block ranges for a few kB.
+    await knex.raw(`CREATE INDEX IF NOT EXISTS ?? ON ??.?? USING brin (ts)`, [`${HOSTED_TELEMETRY_TABLE}_ts_brin_idx`, schema, HOSTED_TELEMETRY_TABLE]);
 }

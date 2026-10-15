@@ -116,7 +116,7 @@
             "path": "packages/usage"
         },
         {
-            "path": "packages/usage-telemetry"
+            "path": "packages/hosted-telemetry"
         },
         {
             "path": "packages/email"
