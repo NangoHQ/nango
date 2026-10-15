@@ -7,14 +7,14 @@ import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk
 import { PostgresMetricExporter, PRODUCER_ID_ATTRIBUTE } from './exporter.js';
 import { HOSTED_TELEMETRY_SCHEMA } from './postgres/schema.js';
 
-import type { HostedAttributes, HostedMetricName } from './catalog.js';
+import type { HostedMetricName } from './catalog.js';
 import type { Counter, Gauge, Histogram, MetricOptions } from '@opentelemetry/api';
 import type { Knex } from 'knex';
 
 export interface HostedMeter {
-    createCounter(name: HostedMetricName, options?: MetricOptions): Counter<HostedAttributes>;
-    createHistogram(name: HostedMetricName, options?: MetricOptions): Histogram<HostedAttributes>;
-    createGauge(name: HostedMetricName, options?: MetricOptions): Gauge<HostedAttributes>;
+    createCounter(name: HostedMetricName, options?: MetricOptions): Counter;
+    createHistogram(name: HostedMetricName, options?: MetricOptions): Histogram;
+    createGauge(name: HostedMetricName, options?: MetricOptions): Gauge;
 }
 
 let provider: MeterProvider | undefined;
@@ -53,9 +53,9 @@ export function initHostedTelemetry({
 export function getMeter(name: string): HostedMeter {
     const meter = (provider ?? { getMeter: createNoopMeter }).getMeter(name);
     return {
-        createCounter: (metric, options) => meter.createCounter<HostedAttributes>(metric, options),
-        createHistogram: (metric, options) => meter.createHistogram<HostedAttributes>(metric, options),
-        createGauge: (metric, options) => meter.createGauge<HostedAttributes>(metric, options)
+        createCounter: (metric, options) => meter.createCounter(metric, options),
+        createHistogram: (metric, options) => meter.createHistogram(metric, options),
+        createGauge: (metric, options) => meter.createGauge(metric, options)
     };
 }
 

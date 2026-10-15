@@ -1,4 +1,4 @@
-export type { HostedAttributeKey, HostedAttributes, HostedMetricName } from './catalog.js';
+export type { HostedMetricName } from './catalog.js';
 export { PostgresMetricExporter, PRODUCER_ID_ATTRIBUTE } from './exporter.js';
 export { migrate } from './postgres/migrate.js';
 export { dropExpiredPartitions, ensurePartitions, startPartitionDaemon } from './postgres/partitions.js';
