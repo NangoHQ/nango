@@ -134,8 +134,8 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
   group, because the telemetry call carries no key.
 - **Don't divide a web count by a server count.** Ad blockers drop web events but never server ones, so a
   ratio across surfaces, such as clicks per server outcome, is skewed. When an insight compares two steps,
-  send both from the same surface. A funnel that follows each person through the steps is fine, because
-  blocked people just drop out of it.
+  send both from the same surface. In a funnel, only the first step may be a web event: blocked people
+  then never enter it, but a blocked web step later on counts them as not converting.
 
 ## Review Checklist
 
