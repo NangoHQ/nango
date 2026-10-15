@@ -591,7 +591,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         injectedImports.add(importDeclaration);
         program.unshiftContainer('body', importDeclaration);
 
-        // Retain the original props for CLI validation; the default export is a normalized function.
+        // Export the original tool props for validation when parsing the compiled module.
         const definition = program.scope.generateUidIdentifier('toolDefinition');
         const declaration = t.variableDeclaration('let', [t.variableDeclarator(definition)]);
         const exported = t.exportNamedDeclaration(null, [t.exportSpecifier(definition, t.identifier('__nangoToolDefinition'))]);
