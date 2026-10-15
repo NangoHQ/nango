@@ -9,15 +9,15 @@ import { PostgresMetricExporter, PRODUCER_ID_ATTRIBUTE } from './exporter.js';
 import { HOSTED_TELEMETRY_SCHEMA } from './postgres/schema.js';
 
 import type { HostedMetricName } from './catalog.js';
-import type { Counter, Gauge, Histogram, MetricOptions } from '@opentelemetry/api';
+import type { Attributes, Counter, Gauge, Histogram } from '@opentelemetry/api';
 import type { Knex } from 'knex';
 
 const EXPORT_INTERVAL_MS = 60_000;
 
 export interface HostedTelemetry {
-    createCounter(name: HostedMetricName, options?: MetricOptions): Counter;
-    createHistogram(name: HostedMetricName, options?: MetricOptions): Histogram;
-    createGauge(name: HostedMetricName, options?: MetricOptions): Gauge;
+    increment(name: HostedMetricName, value?: number, attributes?: Attributes): void;
+    gauge(name: HostedMetricName, value: number, attributes?: Attributes): void;
+    histogram(name: HostedMetricName, value: number, attributes?: Attributes): void;
     /** Exports what the current window holds before the process goes, so a rollout does not lose the last minute. */
     shutdown(): Promise<void>;
 }
@@ -47,10 +47,21 @@ export function createHostedTelemetry(store?: { knex: Knex; schema?: string; exp
           })
         : undefined;
     const meter = provider ? provider.getMeter('hosted-telemetry') : createNoopMeter();
+    const counters = new Map<string, Counter>();
+    const gauges = new Map<string, Gauge>();
+    const histograms = new Map<string, Histogram>();
+    const instrument = <T>(cache: Map<string, T>, name: string, create: () => T): T => {
+        let found = cache.get(name);
+        if (!found) {
+            found = create();
+            cache.set(name, found);
+        }
+        return found;
+    };
     return {
-        createCounter: (name, options) => meter.createCounter(name, options),
-        createHistogram: (name, options) => meter.createHistogram(name, options),
-        createGauge: (name, options) => meter.createGauge(name, options),
+        increment: (name, value = 1, attributes) => instrument(counters, name, () => meter.createCounter(name)).add(value, attributes),
+        gauge: (name, value, attributes) => instrument(gauges, name, () => meter.createGauge(name)).record(value, attributes),
+        histogram: (name, value, attributes) => instrument(histograms, name, () => meter.createHistogram(name)).record(value, attributes),
         shutdown: async () => {
             await provider?.forceFlush();
             await provider?.shutdown();

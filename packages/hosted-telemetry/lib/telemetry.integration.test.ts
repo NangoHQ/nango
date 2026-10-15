@@ -44,20 +44,18 @@ afterAll(async () => {
 
 describe('hosted telemetry producer', () => {
     it('is a no-op on an installation that has not turned it on', async () => {
-        hostedTelemetry.createCounter('nango.hosted_metric.active_concurrency').add(1, { environment_id: 7 });
+        hostedTelemetry.increment('nango.hosted_metric.active_concurrency', 1, { environment_id: 7 });
         expect(await rows()).toEqual([]);
     });
 
     it('writes the aggregation of each metric for the window, stamped with the producer and the window', async () => {
         const telemetry = createHostedTelemetry({ knex, schema, exportIntervalMs: windowMs });
-        const counter = telemetry.createCounter('nango.hosted_metric.active_concurrency');
-        counter.add(2, { environment_id: 7 });
-        counter.add(3, { environment_id: 7 });
-        const histogram = telemetry.createHistogram('nango.hosted_metric.active_concurrency');
+        telemetry.increment('nango.hosted_metric.active_concurrency', 2, { environment_id: 7 });
+        telemetry.increment('nango.hosted_metric.active_concurrency', 3, { environment_id: 7 });
         for (const sample of [7, 12, 14]) {
-            histogram.record(sample, { environment_id: 8 });
+            telemetry.histogram('nango.hosted_metric.active_concurrency', sample, { environment_id: 8 });
         }
-        telemetry.createGauge('nango.hosted_metric.active_concurrency').record(1283, { account_id: 3, environment_id: 9, integration_id: 'hubspot' });
+        telemetry.gauge('nango.hosted_metric.active_concurrency', 1283, { account_id: 3, environment_id: 9, integration_id: 'hubspot' });
 
         await telemetry.shutdown();
 
@@ -79,7 +77,7 @@ describe('hosted telemetry producer', () => {
 
     it('replaces a window that is exported twice with the later export', async () => {
         const telemetry = createHostedTelemetry({ knex, schema, exportIntervalMs: windowMs });
-        telemetry.createCounter('nango.hosted_metric.active_concurrency').add(4, { environment_id: 7 });
+        telemetry.increment('nango.hosted_metric.active_concurrency', 4, { environment_id: 7 });
         await telemetry.shutdown();
 
         const counter = (await rows()).find((r) => r.metric === 'nango.hosted_metric.active_concurrency' && r.attributes['environment_id'] === 7);
