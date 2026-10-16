@@ -82,6 +82,9 @@ export function nextAdvertisingConsent(
         }
         if (ids.fbclid && ids.fbclid !== context.meta?.fbclid) context.meta = { fbclid: ids.fbclid, observedAt, source: 'landing_query' };
         if (ids.msclkid && ids.msclkid !== context.microsoft?.msclkid) context.microsoft = { msclkid: ids.msclkid, observedAt, source: 'landing_query' };
+        if (ids.oppref && ids.oppref !== context.chatgpt?.oppref) context.chatgpt = { oppref: ids.oppref, observedAt, source: 'landing_query' };
+        if (ids.twclid && ids.twclid !== context.x?.twclid) context.x = { twclid: ids.twclid, observedAt, source: 'landing_query' };
+        if (ids.rdt_cid && ids.rdt_cid !== context.reddit?.rdt_cid) context.reddit = { rdt_cid: ids.rdt_cid, observedAt, source: 'landing_query' };
     }
     return { revision: previous.revision + (changed ? 1 : 0), context, changed };
 }
@@ -157,7 +160,9 @@ export async function bindSignupAdvertisingConsent(trx: Knex.Transaction, accoun
                 account_id: accountId,
                 consent_id: consent.id,
                 consent_revision: consent.revision,
-                click_context: permitsAdvertising(consent.choice) ? consent.click_context : {},
+                click_context: permitsAdvertising(consent.choice)
+                    ? { ...consent.click_context, ...(reference.browser ? { browser: reference.browser } : {}) }
+                    : {},
                 signup_id: reference.signupId,
                 expires_at: consent.expires_at
             })

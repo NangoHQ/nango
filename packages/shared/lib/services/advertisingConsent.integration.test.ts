@@ -45,11 +45,22 @@ describe('stored advertising consent', () => {
         vi.stubEnv('ADVERTISING_CONSENT_ENABLED', 'true');
         envs.ADVERTISING_CONSENT_ENABLED = true;
         const ownerHash = consentOwnerHash(randomUUID());
-        await recordAdvertisingConsent({ ownerHash, choice, expectedRevision: null, clickIds: { gclid: 'test-click' }, lifetimeMs });
+        await recordAdvertisingConsent({
+            ownerHash,
+            choice,
+            expectedRevision: null,
+            clickIds: { gclid: 'test-click', oppref: 'chatgpt-click', twclid: 'x-click', rdt_cid: 'reddit-click' },
+            lifetimeMs
+        });
         const consent = await readAdvertisingConsent(ownerHash);
         if (!consent) throw new Error('Missing consent');
         const account = await createAccount();
-        const reference = { id: consent.id, revision: consent.revision, signupId: randomUUID() };
+        const reference = {
+            id: consent.id,
+            revision: consent.revision,
+            signupId: randomUUID(),
+            browser: { userAgent: 'Signup browser', sourceUrl: 'https://app.nango.dev/signup' }
+        };
         await db.knex.transaction(async (trx) => {
             await bindSignupAdvertisingConsent(trx, account.id, reference);
         });
@@ -68,6 +79,12 @@ describe('stored advertising consent', () => {
     it('invalidates a queued signup after withdrawal and does not restore it on regrant', async () => {
         const { ownerHash, account, reference } = await signup();
         expect((await getSignupAdvertisingPermission(account.id))?.context.google?.ids).toEqual({ gclid: 'test-click' });
+        expect((await getSignupAdvertisingPermission(account.id))?.context).toMatchObject({
+            chatgpt: { oppref: 'chatgpt-click' },
+            x: { twclid: 'x-click' },
+            reddit: { rdt_cid: 'reddit-click' },
+            browser: reference.browser
+        });
         const withdrawn = await recordAdvertisingConsent({
             ownerHash,
             choice: { ...grant, marketing: false },
@@ -86,6 +103,20 @@ describe('stored advertising consent', () => {
         ).toEqual({});
         await recordAdvertisingConsent({ ownerHash, choice: grant, expectedRevision: withdrawn?.revision ?? null, clickIds: {}, lifetimeMs });
         expect(await getSignupAdvertisingPermission(account.id)).toBeNull();
+    });
+
+    it('keeps signup browser context and click IDs unchanged by later visits and never stores them on rejection', async () => {
+        const { ownerHash, account, reference } = await signup();
+        const before = (await getSignupAdvertisingPermission(account.id))?.context;
+        await recordAdvertisingConsent({ ownerHash, choice: grant, expectedRevision: reference.revision, clickIds: { oppref: 'later' }, lifetimeMs });
+        expect((await getSignupAdvertisingPermission(account.id))?.context).toEqual(before);
+        const rejected = await signup(false, true, { ...grant, marketing: false });
+        const row = await db
+            .knex<{ click_context: SignupAdvertisingContext }>('signup_advertising_consents')
+            .where({ account_id: rejected.account.id })
+            .first();
+        expect(row?.click_context).toEqual({});
+        expect(await getSignupAdvertisingPermission(rejected.account.id)).toBeNull();
     });
 
     it('uses the parsed enable flag for creator binding and permission checks', async () => {

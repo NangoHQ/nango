@@ -9,12 +9,13 @@ const state = vi.hoisted(() => ({
     read: vi.fn()
 }));
 vi.mock('../env.js', () => ({ envs: state.envs }));
-vi.mock('@nangohq/utils', () => ({ isLocal: false }));
+vi.mock('@nangohq/utils', () => ({ isLocal: false, basePublicUrl: 'https://app.nango.dev', baseUrl: 'https://api.nango.dev' }));
 vi.mock('@nangohq/shared', () => ({ consentOwnerHash: (token: string) => `hashed-${token}`, readAdvertisingConsent: state.read }));
 
-function request() {
+function request(headers: Record<string, string> = { 'User-Agent': 'Signup browser', Origin: 'https://app.nango.dev' }) {
     return {
         cookies: { '__Host-nango_ad_consent': 'a'.repeat(64) },
+        get: (name: string) => headers[name],
         session: { save: vi.fn((callback: (err?: Error) => void) => callback()) }
     } as unknown as Request;
 }
@@ -26,6 +27,22 @@ beforeEach(() => {
 });
 
 describe('signup consent continuation', () => {
+    it('binds only a bounded browser UA and an allowed app route', async () => {
+        expect((await signupConsentFromRequest(request(), '/signup'))?.browser).toEqual({
+            userAgent: 'Signup browser',
+            sourceUrl: 'https://app.nango.dev/signup'
+        });
+        expect(
+            (await signupConsentFromRequest(request({ Origin: 'https://pr-7933.app.nango.dev', 'User-Agent': 'Preview' }), '/signin'))?.browser?.sourceUrl
+        ).toBe('https://pr-7933.app.nango.dev/signin');
+        for (const origin of ['https://app.nango.dev.attacker.test', 'https://app.nango.dev/?token=secret', 'https://user:secret@app.nango.dev', 'null']) {
+            expect((await signupConsentFromRequest(request({ Origin: origin }), '/signup'))?.browser).toEqual({});
+        }
+        for (const userAgent of ['a'.repeat(1025), 'agent\nsecret', '']) {
+            expect((await signupConsentFromRequest(request({ 'User-Agent': userAgent }), '/signup'))?.browser).toEqual({});
+        }
+        expect((await signupConsentFromRequest(request()))?.browser?.sourceUrl).toBeUndefined();
+    });
     it('requires explicit configuration and exact HTTPS origins', () => {
         expect(advertisingConsentConfig()).not.toBeNull();
         state.envs.ADVERTISING_CONSENT_ORIGINS = '*';
@@ -51,11 +68,13 @@ describe('signup consent continuation', () => {
     });
     it('binds Google continuation to the initiating session and consumes it once', async () => {
         const req = request();
-        const nonce = await prepareManagedSignupConsent(req);
+        const nonce = await prepareManagedSignupConsent(req, '/signup');
         expect(nonce).toMatch(/^[a-f0-9]{64}$/);
         expect(await consumeManagedSignupConsent(request(), nonce)).toBeUndefined();
+        vi.spyOn(req, 'get').mockReturnValue('Callback browser');
         const reference = await consumeManagedSignupConsent(req, nonce);
         expect(reference).toMatchObject({ id: 'context', revision: 2 });
+        expect(reference?.browser).toEqual({ userAgent: 'Signup browser', sourceUrl: 'https://app.nango.dev/signup' });
         expect(reference?.signupId).toMatch(/^[a-f0-9-]{36}$/);
         expect(await consumeManagedSignupConsent(req, nonce)).toBeUndefined();
     });

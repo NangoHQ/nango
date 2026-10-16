@@ -15,6 +15,11 @@ const clickId = z
     .min(1)
     .max(512)
     .regex(/^[A-Za-z0-9_.~-]+$/);
+const opaqueClickId = z
+    .string()
+    .min(1)
+    .max(512)
+    .regex(/^[\x21-\x7e]+$/);
 export const advertisingConsentBody = z
     .object({
         expectedRevision: z.number().int().min(1).nullable(),
@@ -36,7 +41,10 @@ export const advertisingConsentBody = z
                 gbraid: clickId.optional(),
                 wbraid: clickId.optional(),
                 fbclid: clickId.optional(),
-                msclkid: clickId.optional()
+                msclkid: clickId.optional(),
+                oppref: opaqueClickId.optional(),
+                twclid: opaqueClickId.optional(),
+                rdt_cid: opaqueClickId.optional()
             })
             .strict()
             .optional()
@@ -82,7 +90,7 @@ advertisingConsentAPI.get('/api/v1/advertising-consent', rateLimiterMiddleware, 
         res.sendStatus(503);
     }
 });
-advertisingConsentAPI.post('/api/v1/advertising-consent', rateLimiterMiddleware, express.json({ limit: '4kb' }), async (req, res) => {
+advertisingConsentAPI.post('/api/v1/advertising-consent', rateLimiterMiddleware, express.json({ limit: '8kb' }), async (req, res) => {
     const input = advertisingConsentBody.safeParse(req.body);
     if (!input.success) {
         res.status(400).send({ error: { code: 'invalid_body' } });

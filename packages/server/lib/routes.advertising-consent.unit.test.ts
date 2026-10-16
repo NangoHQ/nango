@@ -56,6 +56,38 @@ beforeEach(() => {
 });
 
 describe('advertising consent API boundaries', () => {
+    it('accepts bounded platform IDs unchanged, including a full set of maximum-length IDs', async () => {
+        const clickIds = {
+            gclid: 'g'.repeat(512),
+            gbraid: 'b'.repeat(512),
+            wbraid: 'w'.repeat(512),
+            fbclid: 'f'.repeat(512),
+            msclkid: 'm'.repeat(512),
+            oppref: 'opaque+/=',
+            twclid: 'x'.repeat(512),
+            rdt_cid: 'r'.repeat(512)
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { Origin: 'https://nango.dev', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...body, clickIds })
+        });
+        expect(response.status).toBe(200);
+        expect(state.record).toHaveBeenCalledWith(expect.objectContaining({ clickIds }));
+        for (const key of ['oppref', 'twclid', 'rdt_cid']) {
+            for (const value of ['a'.repeat(513), 'bad\nvalue', 'bad value']) {
+                expect(
+                    (
+                        await fetch(url, {
+                            method: 'POST',
+                            headers: { Origin: 'https://nango.dev', 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ ...body, clickIds: { [key]: value } })
+                        })
+                    ).status
+                ).toBe(400);
+            }
+        }
+    });
     it('is off unless configured and rejects absent or untrusted origins', async () => {
         expect((await fetch(url)).status).toBe(403);
         expect((await fetch(url, { headers: { Origin: 'https://nango.dev.attacker.test' } })).status).toBe(403);

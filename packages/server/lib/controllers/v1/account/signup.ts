@@ -31,6 +31,7 @@ const validation = z
         name: z.string(),
         token: z.string().uuid().optional(),
         foundUs: z.string().optional(),
+        signupPath: z.enum(['/signup', '/signin']).optional(),
         acquisition: signupAcquisitionSchema
     })
     .strict();
@@ -98,7 +99,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         }
 
         // Regular account
-        consent = await signupConsentFromRequest(req);
+        consent = await signupConsentFromRequest(req, val.data.signupPath);
         account = await accountService.createAccount({ name, email, foundUs, acquisition, consent });
         if (!account) {
             res.status(500).send({

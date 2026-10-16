@@ -20,12 +20,12 @@ beforeEach(() => {
 
 describe('Google signup consent capture', () => {
     it.each([undefined, '/team/billing', '/onboarding'])('keeps consent with return destination %s', async (returnTo) => {
-        const req = { body: { provider: 'GoogleOAuth', ...(returnTo ? { returnTo } : {}) }, query: {} } as Request;
+        const req = { body: { provider: 'GoogleOAuth', signupPath: '/signup', ...(returnTo ? { returnTo } : {}) }, query: {} } as Request;
         const res = { send: vi.fn() } as unknown as Response;
         const next = vi.fn() as NextFunction;
         await postManagedSignup(req, res, next);
         expect(next).not.toHaveBeenCalled();
-        expect(mocks.prepare).toHaveBeenCalledWith(req);
+        expect(mocks.prepare).toHaveBeenCalledWith(req, '/signup');
         expect(mocks.encode).toHaveBeenCalledWith(expect.objectContaining({ returnTo, consentNonce: 'a'.repeat(64) }));
         expect(res.send).toHaveBeenCalledWith({ data: { url: 'https://auth.example.com/authorize' } });
     });

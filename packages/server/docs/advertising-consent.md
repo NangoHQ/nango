@@ -17,7 +17,9 @@ This leaves the existing PostHog events and acquisition properties unchanged. It
 - `advertising_consents`: latest browser-reported choice, revision, observation time, expiry, owner hash and bounded ad click IDs.
 - `signup_advertising_consents`: account reference, exact signup creator, consent revision, signup-time ad context and expiry.
 
-Ad context is separate for Google, Meta and Microsoft. A later Google touch replaces the whole earlier Google identifier group, so an old `gclid` cannot be combined with a newer `wbraid`. Each touch carries its server observation time and `landing_query` source. Returning with no new click ID preserves the prior touch; this is not a visit history.
+Ad context is separate for Google, Meta, Microsoft, ChatGPT (`oppref`), X (`twclid`) and Reddit (`rdt_cid`). A later Google touch replaces the whole earlier Google identifier group, so an old `gclid` cannot be combined with a newer `wbraid`. Each touch carries its server observation time and `landing_query` source. Returning with no new click ID preserves the prior touch; this is not a visit history.
+
+The signup snapshot also holds a bounded browser user-agent and source URL built from the allowed app origin and reported `/signup` or `/signin` route. Queries, fragments and token paths are excluded. Google carries this context from initiation through the server session, not from the callback. Missing context stays missing; adapters must check their required fields. Withdrawal clears it with the click IDs. Existing records need no migration.
 
 The choice is browser-reported, not independently verified proof of a banner interaction. `observed_at` is when our server received it, not when the person originally chose it. This is a current-state record, not a full consent history.
 

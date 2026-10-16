@@ -52,6 +52,7 @@ export type PostSignup = ApiEndpoint<{
         password: string;
         token?: string | undefined;
         foundUs?: string | undefined;
+        signupPath?: '/signup' | '/signin' | undefined;
         acquisition?: SignupAcquisition | undefined;
     };
     Error:
@@ -184,6 +185,7 @@ export type PostManagedSignup = ApiEndpoint<{
     Path: '/api/v1/account/managed/signup';
     Body: {
         provider: 'GoogleOAuth';
+        signupPath?: '/signup' | '/signin' | undefined;
         acquisition?: SignupAcquisition | undefined;
         token?: string | undefined;
         returnTo?: string | undefined;

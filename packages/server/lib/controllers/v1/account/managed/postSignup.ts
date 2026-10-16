@@ -13,6 +13,7 @@ import type { PostManagedSignup } from '@nangohq/types';
 const validation = z
     .object({
         provider: z.enum(['GoogleOAuth']),
+        signupPath: z.enum(['/signup', '/signin']).optional(),
         token: z.string().uuid().optional(),
         returnTo: z.string().max(1024).optional(),
         acquisition: signupAcquisitionSchema
@@ -37,7 +38,7 @@ export const postManagedSignup = asyncWrapper<PostManagedSignup>(async (req, res
 
     const body: PostManagedSignup['Body'] = val.data;
 
-    const consentNonce = body.token ? undefined : await prepareManagedSignupConsent(req);
+    const consentNonce = body.token ? undefined : await prepareManagedSignupConsent(req, body.signupPath);
     const workos = getWorkOSClient();
     const oAuthUrl = workos.userManagement.getAuthorizationUrl({
         clientId: process.env['WORKOS_CLIENT_ID'] || '',

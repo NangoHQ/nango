@@ -4,8 +4,9 @@ import { consentOwnerHash, readAdvertisingConsent } from '@nangohq/shared';
 import { isLocal } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { isAllowedWebCorsOrigin } from '../utils/cors.js';
 
-import type { SignupConsentReference } from '@nangohq/types';
+import type { SignupBrowserContext, SignupConsentReference } from '@nangohq/types';
 import type { Request } from 'express';
 
 export const advertisingConsentCookie = isLocal ? 'nango_ad_consent_local' : '__Host-nango_ad_consent';
@@ -35,14 +36,31 @@ export function readConsentOwner(req: Request): string | undefined {
     return typeof token === 'string' && /^[a-f0-9]{64}$/.test(token) ? token : undefined;
 }
 
-export async function signupConsentFromRequest(req: Request): Promise<SignupConsentReference | undefined> {
+function signupBrowserContext(req: Request, signupPath: '/signup' | '/signin' | undefined): SignupBrowserContext {
+    const browser: SignupBrowserContext = {};
+    const userAgent = req.get('User-Agent');
+    if (userAgent && userAgent.length <= 1024 && /^[\x20-\x7e]+$/.test(userAgent)) browser.userAgent = userAgent;
+    const origin = req.get('Origin');
+    if (origin && signupPath && isAllowedWebCorsOrigin(origin)) {
+        try {
+            // Use only the trusted app origin and a known route, never tokens, queries or referrers.
+            const url = new URL(origin);
+            if (url.origin === origin) browser.sourceUrl = new URL(signupPath, url).href;
+        } catch {
+            // Missing browser context must not affect signup.
+        }
+    }
+    return browser;
+}
+
+export async function signupConsentFromRequest(req: Request, signupPath?: '/signup' | '/signin'): Promise<SignupConsentReference | undefined> {
     if (!advertisingConsentConfig()) return undefined;
     const owner = readConsentOwner(req);
     if (!owner) return undefined;
     try {
         const consent = await readAdvertisingConsent(consentOwnerHash(owner));
         if (consent && !consent.invalidated_at && consent.expires_at > new Date())
-            return { id: consent.id, revision: consent.revision, signupId: randomUUID() };
+            return { id: consent.id, revision: consent.revision, signupId: randomUUID(), browser: signupBrowserContext(req, signupPath) };
     } catch {
         /* Optional tracking must never block signup. */
     }
@@ -50,8 +68,8 @@ export async function signupConsentFromRequest(req: Request): Promise<SignupCons
 }
 
 /** Bind Google's optional continuation to this server session, not to client-supplied consent. */
-export async function prepareManagedSignupConsent(req: Request): Promise<string | undefined> {
-    const reference = await signupConsentFromRequest(req);
+export async function prepareManagedSignupConsent(req: Request, signupPath?: '/signup' | '/signin'): Promise<string | undefined> {
+    const reference = await signupConsentFromRequest(req, signupPath);
     if (!reference) return undefined;
     const now = Date.now();
     const pending = Object.fromEntries(

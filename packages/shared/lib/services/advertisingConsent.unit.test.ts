@@ -41,6 +41,25 @@ afterEach(() => {
 });
 
 describe('advertising consent policy', () => {
+    it('preserves independent ChatGPT, X and Reddit touches without refreshing repeated IDs', () => {
+        const clickIds = { oppref: 'opaque+/=', twclid: 'x-first', rdt_cid: 'reddit-first' };
+        const first = nextAdvertisingConsent(previous, { choice: grant, expectedRevision: 3, clickIds }, now);
+        if (!first) throw new Error('Missing granted context');
+        expect(first.context).toMatchObject({
+            chatgpt: { oppref: clickIds.oppref, observedAt: now.toISOString() },
+            x: { twclid: clickIds.twclid, observedAt: now.toISOString() },
+            reddit: { rdt_cid: clickIds.rdt_cid, observedAt: now.toISOString() }
+        });
+        const later = new Date(now.getTime() + 1000);
+        const stored = { ...previous, click_context: first.context };
+        expect(nextAdvertisingConsent(stored, { choice: grant, expectedRevision: 3, clickIds }, later)?.context).toEqual(first.context);
+        const next = nextAdvertisingConsent(stored, { choice: grant, expectedRevision: 3, clickIds: { twclid: 'x-new' } }, later);
+        if (!next) throw new Error('Missing returning context');
+        expect(next.context.x).toEqual({ twclid: 'x-new', observedAt: later.toISOString(), source: 'landing_query' });
+        expect(next.context.chatgpt).toEqual(first.context.chatgpt);
+        expect(next.context.reddit).toEqual(first.context.reddit);
+        expect(nextAdvertisingConsent(stored, { choice: { ...grant, marketing: false }, expectedRevision: 3, clickIds }, later)?.context).toEqual({});
+    });
     it('requires explicit opt-in in an opt-in region and never grants missing choices', () => {
         expect(permitsAdvertising(grant)).toBe(true);
         expect(permitsAdvertising({ ...grant, method: 'implied' })).toBe(false);

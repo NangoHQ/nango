@@ -16,6 +16,14 @@ export interface AdvertisingClickIds {
     wbraid?: string | undefined;
     fbclid?: string | undefined;
     msclkid?: string | undefined;
+    oppref?: string | undefined;
+    twclid?: string | undefined;
+    rdt_cid?: string | undefined;
+}
+
+export interface SignupBrowserContext {
+    userAgent?: string;
+    sourceUrl?: string;
 }
 
 /** Separate ad touches. Google identifiers from different visits are never merged. */
@@ -23,6 +31,11 @@ export interface SignupAdvertisingContext {
     google?: { ids: Pick<AdvertisingClickIds, 'gclid' | 'gbraid' | 'wbraid'>; observedAt: string; source: 'landing_query' };
     meta?: { fbclid: string; observedAt: string; source: 'landing_query' };
     microsoft?: { msclkid: string; observedAt: string; source: 'landing_query' };
+    chatgpt?: { oppref: string; observedAt: string; source: 'landing_query' };
+    x?: { twclid: string; observedAt: string; source: 'landing_query' };
+    reddit?: { rdt_cid: string; observedAt: string; source: 'landing_query' };
+    /** Captured only at signup, never from a later visit or OAuth callback. */
+    browser?: SignupBrowserContext;
 }
 
 export interface SignupAdvertisingPermission {
@@ -46,6 +59,7 @@ export interface SignupConsentReference {
     id: string;
     revision: number;
     signupId: string;
+    browser?: SignupBrowserContext;
 }
 
 export type GetAdvertisingConsent = ApiEndpoint<{
