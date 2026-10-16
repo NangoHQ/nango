@@ -124,7 +124,7 @@ interface FunctionDefinition {
     tags?: FunctionTags | undefined;
 }
 
-type CompiledTool = CreateToolProps & { type: 'function'; __nangoFactory: 'createTool' };
+type CompiledTool = CreateToolProps & { type: 'function'; _nangoFactory: 'tool' };
 
 export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'> & { filePath: string };
 
@@ -239,7 +239,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 break;
             }
             case 'function': {
-                const isTool = '__nangoFactory' in script && script.__nangoFactory === 'createTool';
+                const isTool = '_nangoFactory' in script && script._nangoFactory === 'tool';
                 let fnScript: FunctionDefinition = script;
                 let name = basename;
                 if (isTool) {
