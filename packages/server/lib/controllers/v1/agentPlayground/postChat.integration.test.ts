@@ -63,8 +63,12 @@ function twoStepModel(secondStep: LanguageModelV4StreamPart[] | 'until-aborted' 
     });
 }
 
+function eventsNamed(track: MockInstance<typeof productTracking.track>, name: string) {
+    return track.mock.calls.filter(([event]) => event.name === name).map(([event]) => event.eventProperties);
+}
+
 function playgroundTurnEvents(track: MockInstance<typeof productTracking.track>) {
-    return track.mock.calls.filter(([event]) => event.name === 'playground:agent_turn_complete').map(([event]) => event.eventProperties);
+    return eventsNamed(track, 'playground:agent_turn_complete');
 }
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -193,6 +197,39 @@ describe('POST /api/v1/agent-playground/chat', () => {
         });
     });
 
+    it("attributes the session's tool events to the user and account, marked as the playground's", async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { account, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        modelOverride.current = () => twoStepModel([{ type: 'finish', finishReason: { unified: 'stop', raw: undefined }, usage: stepUsage }]);
+        const capture = vi.fn<(payload: { event: string; distinctId: string; properties: Record<string, unknown>; groups?: Record<string, string> }) => void>();
+        const realClient = productTracking.client;
+        productTracking.client = { capture, groupIdentify: vi.fn() } as unknown as typeof productTracking.client;
+        const chatId = crypto.randomUUID();
+
+        try {
+            await chat(session, { chatId, messages: [userMessage('Find my calendar events')] });
+
+            await vi.waitFor(() => {
+                const byName = (name: string) => capture.mock.calls.find(([payload]) => payload.event === name)?.[0];
+                for (const name of ['agents:session_start', 'agents:tool_search_complete']) {
+                    expect(byName(name)).toMatchObject({
+                        distinctId: String(user.id),
+                        groups: { company: String(account.id) },
+                        properties: { is_playground: true }
+                    });
+                }
+                expect(byName('playground:agent_turn_complete')?.properties).toMatchObject({
+                    chat_id: chatId,
+                    is_first_turn: true
+                });
+                expect(JSON.stringify(capture.mock.calls)).not.toContain('Find my calendar events');
+            });
+        } finally {
+            productTracking.client = realClient;
+        }
+    });
+
     it('tracks a turn that fails mid-stream once, as a failure, with the failing step', async () => {
         vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();
@@ -306,10 +343,13 @@ describe('POST /api/v1/agent-playground/chat', () => {
         const { user, env } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
+        const track = vi.spyOn(productTracking, 'track');
+
         const turn = await chat(session, { messages: [userMessage("What's on my Google Calendar today?", { starterProvider: 'google-calendar' })] });
 
         expect(turn.status).toBe(200);
         expect(turn.integrationSetup).toEqual({ provider: 'google-calendar', integrationId: 'pg-google-calendar', outcome: 'created' });
+        expect(eventsNamed(track, 'playground:integration_create')).toEqual([{ provider: 'google-calendar', is_success: true, is_existing: false }]);
         expect(turn.text).toContain('Mock reply');
         expect(turn.sessionCreated?.request.toolset).toBe('*');
         const integrations = await integrationsIn(env.id);
@@ -338,6 +378,8 @@ describe('POST /api/v1/agent-playground/chat', () => {
         const { user, env } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
+        const track = vi.spyOn(productTracking, 'track');
+
         const turn = await chat(session, { messages: [userMessage('Show my 5 newest HubSpot contacts', { starterProvider: 'hubspot' })] });
 
         expect(turn.status).toBe(200);
@@ -346,6 +388,10 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(turn.sessionCreated).toBeUndefined();
         expect(turn.text).not.toContain('Mock reply');
         expect(await integrationsIn(env.id)).toEqual([]);
+        expect(eventsNamed(track, 'playground:integration_create')).toEqual([
+            { provider: 'hubspot', is_success: false, error_code: 'not_created', is_existing: false }
+        ]);
+        expect(playgroundTurnEvents(track)).toEqual([]);
     });
 
     it('ignores a pre-made prompt provider the playground does not offer', async () => {

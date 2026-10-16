@@ -9,14 +9,15 @@ import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
 import { globalEnv } from '@/utils/env';
-import { humanize } from '../toolDisplay';
 
 import type { ConnectUI } from '@nangohq/frontend';
 
 interface ConnectCardProps {
     integrationId: string;
     provider: string;
+    name: string;
     connectUrl: string;
     expiresAt: string | undefined;
     connected: boolean;
@@ -31,6 +32,7 @@ function hasExpired(expiresAt: string | undefined): boolean {
 export const ConnectCard: React.FC<ConnectCardProps> = ({
     integrationId,
     provider,
+    name,
     connectUrl,
     expiresAt,
     connected: alreadyConnected,
@@ -56,8 +58,6 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({
         return () => clearTimeout(timer);
     }, [expired, expiresAt]);
 
-    const name = humanize(integrationId);
-
     const connect = () => {
         if (hasExpired(expiresAt)) {
             setExpired(true);
@@ -76,6 +76,7 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({
 
         setStatus('waiting');
         setFailure(null);
+        track('connections:create_button_click', { provider, is_playground: true });
         connectUI.current = nango.openConnectUI({
             baseURL: globalEnv.connectUrl,
             apiURL: globalEnv.apiUrl,
@@ -84,10 +85,18 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({
             onEvent: (event) => {
                 if (event.type === 'connect') {
                     connected = true;
+                    track('connections:connection_create', { provider, is_legacy_flow: false, is_playground: true, is_success: true });
                     connectUI.current?.close();
                     setStatus('connected');
                     onConnected(integrationId);
                 } else if (event.type === 'error') {
+                    track('connections:connection_create', {
+                        provider,
+                        is_legacy_flow: false,
+                        is_playground: true,
+                        is_success: false,
+                        error_code: event.payload.errorType
+                    });
                     setFailure(event.payload.errorMessage);
                 } else if (event.type === 'close' && !connected) {
                     setStatus('idle');

@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1055
+Provider count: 1056
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -86,6 +86,7 @@ URL patterns:
 | `atlassian-service-account-api-token` | Atlassian Service Account (API Token) | BASIC | [docs](https://nango.dev/docs/api-integrations/atlassian-service-account-api-token.md) | [connect](https://nango.dev/docs/api-integrations/atlassian-service-account-api-token/connect.md) |  | dev-tools |
 | `atlassian-service-account-oauth2` | Atlassian Service Account (OAuth 2.0) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/atlassian-service-account-oauth2.md) | [connect](https://nango.dev/docs/api-integrations/atlassian-service-account-oauth2/connect.md) |  | dev-tools |
 | `attention` | Attention | API_KEY | [docs](https://nango.dev/docs/api-integrations/attention.md) | [connect](https://nango.dev/docs/api-integrations/attention/connect.md) |  | productivity |
+| `attentive-api-key` | Attentive (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/attentive-api-key.md) | [connect](https://nango.dev/docs/api-integrations/attentive-api-key/connect.md) |  | marketing, communication |
 | `attio` | Attio | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/attio.md) |  | [setup](https://nango.dev/docs/api-integrations/attio/how-to-register-your-own-attio-api-oauth-app.md) | crm, popular |
 | `attio-mcp` | Attio (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/attio-mcp.md) |  |  | crm, mcp |
 | `auth0` | Auth0 | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/auth0.md) |  |  | iam |
@@ -998,6 +999,7 @@ URL patterns:
 | `vimeo-basic` | Vimeo (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/vimeo-basic.md) |  |  | video |
 | `vincere` | Vincere | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/vincere.md) | [connect](https://nango.dev/docs/api-integrations/vincere/connect.md) | [setup](https://nango.dev/docs/api-integrations/vincere/how-to-register-your-own-vincere-api-oauth-app.md) | hr, ats |
 | `vtex` | VTEX | API_KEY | [docs](https://nango.dev/docs/api-integrations/vtex.md) | [connect](https://nango.dev/docs/api-integrations/vtex/connect.md) |  | e-commerce |
+| `vwo` | Wingify (VWO) | API_KEY | [docs](https://nango.dev/docs/api-integrations/vwo.md) | [connect](https://nango.dev/docs/api-integrations/vwo/connect.md) |  | marketing, analytics |
 | `wakatime` | Wakatime | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wakatime.md) |  |  | analytics, dev-tools |
 | `walmart` | Walmart Marketplace | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/walmart.md) |  | [setup](https://nango.dev/docs/api-integrations/walmart/how-to-register-your-own-walmart-marketplace-oauth-app.md) | e-commerce |
 | `wappalyzer` | Wappalyzer | API_KEY | [docs](https://nango.dev/docs/api-integrations/wappalyzer.md) | [connect](https://nango.dev/docs/api-integrations/wappalyzer/connect.md) |  | marketing, analytics |

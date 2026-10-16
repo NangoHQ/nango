@@ -844,6 +844,20 @@ const ENVS_SHAPE = z.object({
     DEPLOY_BATCH_SIZE: z.coerce.number().int().positive().optional().default(5),
     DEPLOY_LOCK_TTL_MS: z.coerce.number().int().positive().optional().default(600_000),
 
+    // Hosted telemetry
+    // Postgres storage for hosted telemetry on self-hosted and BYOC installations.
+    NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL: z.url().optional(),
+    NANGO_HOSTED_TELEMETRY_POSTGRES_POOL_MAX: z.coerce.number().int().positive().optional().default(5),
+    NANGO_HOSTED_TELEMETRY_POSTGRES_SSL: z.stringbool().optional().default(false),
+    // Floored so a configuration mistake cannot drop the data an invoice depends on: one month plus a dispute window.
+    NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: z.coerce.number().int().min(45).optional().default(90),
+    NANGO_HOSTED_TELEMETRY_POSTGRES_PARTITION_INTERVAL_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .max(6 * 3600 * 1000) // capped so tomorrow's partition is always created before midnight reaches it
+        .default(1 * 3600 * 1000),
+
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
     // The following are only considered in local, self-hosted and BYOC deployments that configure
