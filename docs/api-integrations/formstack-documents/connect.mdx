@@ -1,0 +1,49 @@
+---
+title: 'Formstack Documents - How do I link my account?'
+sidebarTitle: 'Formstack Documents'
+---
+
+## Overview
+
+To authenticate with Formstack Documents, you need:
+
+1. **API Key** - The key used as the Basic Auth username.
+2. **API Secret** - The secret used as the Basic Auth password.
+
+This guide walks through collecting both credentials from your Formstack Documents account. The developer portal still uses the legacy `Webmerge` branding.
+
+### Prerequisites
+
+- You must have access to a Formstack Documents account.
+
+#### Step 1: Generate your API key and secret
+
+1. Sign in to your Formstack Documents account.
+2. In the left-hand menu, click **API Access**.
+3. Click **New API Key**.
+4. Enter a name for the API key.
+5. Click **Create Key**.
+6. Copy the generated **API Key** and **API Secret**.
+
+<Note>
+Formstack Documents developer documentation is published at `webmerge.me`, and API requests use the legacy base URL `https://www.webmerge.me/api`.
+</Note>
+
+<Note>
+Nango uses these credentials for Basic Auth. Formstack Documents merge URLs can be configured to work without API credentials, but the REST API requires the API Key and API Secret.
+</Note>
+
+<Tip>
+Enable **Advanced Settings -> Require API Key for all merge requests (custom integrations only)** so custom integration merge requests consistently require API credentials.
+</Tip>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Key** and **API Secret**:
+
+1. Open the form where you need to authenticate with Formstack Documents.
+2. Enter the API Key in the **API Key** field.
+3. Enter the API Secret in the **API Secret** field.
+4. Submit the form to complete authentication.
+
+You are now connected to Formstack Documents.

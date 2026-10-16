@@ -9644,6 +9644,37 @@ float:
             description: The details of your app
             automated: true
 
+formstack-documents:
+    display_name: Formstack Documents
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://www.webmerge.me/api
+        verification:
+            method: GET
+            endpoints:
+                - /documents
+    docs: https://nango.dev/docs/api-integrations/formstack-documents
+    docs_connect: https://nango.dev/docs/api-integrations/formstack-documents/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Formstack Documents API key
+            pattern: '^[A-Za-z0-9]+$'
+            example: 3K83************************
+            secret: true
+            doc_section: '#step-1-generate-your-api-key-and-secret'
+        password:
+            type: string
+            title: API Secret
+            description: Your Formstack Documents API secret
+            pattern: '^[A-Za-z0-9]+$'
+            example: I51*****
+            secret: true
+            doc_section: '#step-1-generate-your-api-key-and-secret'
+
 folk:
     display_name: Folk
     categories:
