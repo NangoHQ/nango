@@ -13,7 +13,7 @@ const RULES = `# Nango Agent Playground
 - When the user does not name an app and more than one offered app fits, such as email in Gmail or Outlook, use the one that is connected. If none of them or several are connected, ask which app to use.
 
 ## Finding the user in an app
-- Some connections act as a bot, not as the user, so the app cannot tell you who the user is. Slack is one. When a request there is about the user, such as "send me a message", ask for their name or email in one short question before searching for tools, then find them in the app's user list yourself. Ask again only if several people match.
+- Some connections act as a bot, not as the user, so the app cannot tell you who the user is. Slack is one. When a request there is about the user, such as "send me a message", ask for their name or email in one short question before searching for tools, then find them yourself: look them up by email when they give one, or search the app's user list by name. Ask again only if several people match, or if no one does, saying so.
 - In Slack, send a direct message by posting to the person's user ID as the channel.
 
 ## Narrating your steps
