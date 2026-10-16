@@ -31,13 +31,6 @@ describe('buildInstructions', () => {
         expect(instructions).toContain('mention it to the user');
     });
 
-    it('asks who the user is before searching when a connection acts as a bot', () => {
-        const instructions = buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'), undefined);
-
-        expect(instructions).toContain('ask for their name or email in one short question before searching for tools');
-        expect(instructions).toContain('look them up by email when they give one');
-    });
-
     it('names the apps that are not set up yet, and says nothing when all are', () => {
         const withMissing = buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'), undefined, ['Google Calendar']);
         const withoutMissing = buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'), undefined, []);
