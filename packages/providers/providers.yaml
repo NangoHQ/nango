@@ -12526,7 +12526,7 @@ hubspot:
         - popular
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
-    token_url: https://api.hubapi.com/oauth/v1/token
+    token_url: https://api.hubapi.com/oauth/2026-09/token
     connection_configuration:
         - portalId
     post_connection_script: hubspotPostConnection
