@@ -8,8 +8,6 @@ import vm from 'node:vm';
 import { assert, describe, expect, it, vi } from 'vitest';
 import * as z from 'zod';
 
-import { createTool } from '@nangohq/runner-sdk';
-
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 import { bundleFile, compileAllFunctions, compileFunction, detectFeatures } from './compile.js';
 import { getIntegrationId, parseIntegrationDefinitions, validateFunction } from './definitions.js';
@@ -161,20 +159,20 @@ describe('tools', () => {
         if (result.isErr()) {
             throw result.error;
         }
-        expect(result.value).toContain('toolToFunctionProps');
+        expect(result.value).not.toContain('toolToFunctionProps');
         expect(result.value).not.toContain('require("nango")');
         const module = { exports: {} as Record<string, any> };
         vm.runInNewContext(result.value, { module, exports: module.exports, require: () => z });
         const tool = module.exports['default'];
-        expect(tool).toEqual(createTool(module.exports['__nangoToolDefinition']));
         expect(tool).toMatchObject({
             type: 'function',
-            trigger: { kind: 'http' },
-            tags: { instructions: 'Use it to check an issue', required_scopes: ['repo'] }
+            _kind: 'tool',
+            meta: { instructions: 'Use it to check an issue', requiredScopes: ['repo'] }
         });
         expect(tool).not.toHaveProperty('tool');
-        expect(tool).not.toHaveProperty('meta');
-        expect(module.exports['__nangoToolDefinition'].meta).toEqual({ instructions: 'Use it to check an issue', requiredScopes: ['repo'] });
+        expect(tool).not.toHaveProperty('trigger');
+        expect(tool).not.toHaveProperty('tags');
+        expect(module.exports).not.toHaveProperty('__nangoToolDefinition');
         const log = vi.fn();
         expect(await tool.exec({ log }, { kind: 'http', input: { id: '123' } })).toEqual({ ok: true });
         expect(log).toHaveBeenCalledWith('running for 123');
@@ -186,8 +184,8 @@ describe('tools', () => {
         { reason: 'custom tags', meta: { tags: { domain: 'issues', owners: ['platform'] } } },
         { reason: 'instructions and scopes', meta: { instructions: 'Use this tool', requiredScopes: ['repo'], tags: { domain: 'issues' } } },
         { reason: 'empty instructions and scopes', meta: { instructions: '', requiredScopes: [] } }
-    ])('matches SDK normalization with $reason', async ({ meta }) => {
-        const dir = await getTestDirectory('sdk_tool_parity');
+    ])('preserves original metadata with $reason', async ({ meta }) => {
+        const dir = await getTestDirectory('tool_metadata');
         await fs.promises.mkdir(dir, { recursive: true });
         const filePath = path.join(dir, 'tool.js');
         try {
@@ -199,7 +197,9 @@ describe('tools', () => {
             const module = { exports: {} as Record<string, any> };
             vm.runInNewContext(code, { module, exports: module.exports, require: () => z });
             const tool = module.exports['default'];
-            expect(tool).toEqual(createTool(module.exports['__nangoToolDefinition']));
+            expect(tool).toMatchObject({ type: 'function', _kind: 'tool' });
+            expect(tool.meta).toEqual(meta);
+            expect(tool).not.toHaveProperty('tags');
             expect(code).not.toContain('require("nango")');
         } finally {
             await fs.promises.rm(dir, { recursive: true, force: true });

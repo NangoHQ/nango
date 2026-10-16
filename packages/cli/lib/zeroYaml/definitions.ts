@@ -4,7 +4,7 @@ import { pathToFileURL } from 'url';
 import * as z from 'zod';
 
 import { getInterval } from '@nangohq/nango-yaml';
-import { deriveFunctionCapabilities, reservedToolTagKeys } from '@nangohq/runner-sdk';
+import { deriveFunctionCapabilities, reservedToolTagKeys, toolToFunctionProps } from '@nangohq/runner-sdk';
 
 import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
@@ -27,7 +27,6 @@ import type {
     CreateOnEventResponse,
     CreateSyncResponse,
     CreateToolProps,
-    CreateToolResponse,
     FunctionRequires,
     FunctionTriggerDefinition
 } from '@nangohq/runner-sdk';
@@ -125,6 +124,8 @@ interface FunctionDefinition {
     tags?: FunctionTags | undefined;
 }
 
+type CompiledTool = CreateToolProps & { type: 'function'; _kind: 'tool' };
+
 export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'> & { filePath: string };
 
 export interface ParsedIntegrationDefinitions extends NangoYamlParsed {
@@ -172,7 +173,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
             | CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>
             | CreateOnEventResponse
             | CreateFunctionResponse
-            | CreateToolResponse;
+            | CompiledTool;
 
         const basename = path.basename(filePath, '.js');
         const realPath = filePath.replace(/\.js$/, '.ts');
@@ -238,10 +239,9 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 break;
             }
             case 'function': {
-                const toolDefinition = moduleContent.default.__nangoToolDefinition as CreateToolProps | undefined;
-                if (toolDefinition) {
-                    const name = toolDefinition.name ?? basename;
-                    const validationRes = validateTool({ params: { ...toolDefinition, name }, filePath: realPath });
+                if ('_kind' in script && script._kind === 'tool') {
+                    const name = script.name ?? basename;
+                    const validationRes = validateTool({ params: { ...script, name }, filePath: realPath });
                     if (validationRes.isErr()) {
                         return Err(validationRes.error);
                     }
@@ -252,7 +252,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                     }
                     parsed.functions.push({
                         ...parseFunction({
-                            params: script,
+                            params: toolToFunctionProps(script),
                             integrationId,
                             integrationIdClean,
                             basename: name,

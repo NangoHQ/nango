@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import * as babel from '@babel/core';
 import chalk from 'chalk';
@@ -221,9 +220,6 @@ export async function bundleFile({
                 {
                     name: 'nango-plugin',
                     setup(build: any) {
-                        build.onResolve({ filter: /^nango:compiled-tool$/ }, () => ({
-                            path: fileURLToPath(new URL('tool.js', import.meta.resolve('@nangohq/runner-sdk')))
-                        }));
                         build.onLoad({ filter: /\.ts$/ }, async (args: any) => {
                             const source = await fs.promises.readFile(args.path, 'utf8');
                             const result = await babel.transformAsync(source, {
@@ -541,8 +537,7 @@ type AugmentedExportDefault = babel.types.ExportDefaultDeclaration & { __transfo
  *
  * Initially, I didn't want to remove this but because our codebase is ESM and node.vm only compiles CJS
  * it was annoying to have to compile the code twice. And have mixed code when publishing.
- * Most wrappers only type the exports and can be removed. createTool also normalizes
- * its props, so its SDK helper is bundled to produce the same function definition.
+ * Since the wrapper is only used to stringly type the exports, we can remove it.
  */
 function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const proxyLines: number[] = [];
@@ -579,27 +574,6 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         return Object.hasOwn(allowedExports, name);
     }
 
-    const injectedImports = new WeakSet<babel.types.ImportDeclaration>();
-
-    function normalizeTool(astPath: babel.NodePath, arg: babel.types.ObjectExpression, t: typeof babel.types): babel.types.CallExpression {
-        const program = astPath.findParent((parent) => parent.isProgram());
-        if (!program?.isProgram()) {
-            throw new Error('Tool definition must be inside a program');
-        }
-        const helper = program.scope.generateUidIdentifier('createTool');
-        const importDeclaration = t.importDeclaration([t.importSpecifier(helper, t.identifier('createTool'))], t.stringLiteral('nango:compiled-tool'));
-        injectedImports.add(importDeclaration);
-        program.unshiftContainer('body', importDeclaration);
-
-        // Export the original tool props for validation when parsing the compiled module.
-        const definition = program.scope.generateUidIdentifier('toolDefinition');
-        const declaration = t.variableDeclaration('let', [t.variableDeclarator(definition)]);
-        const exported = t.exportNamedDeclaration(null, [t.exportSpecifier(definition, t.identifier('__nangoToolDefinition'))]);
-        (exported as AugmentedExport).__transformedByRemoveCreateWrappers = true;
-        program.unshiftContainer('body', [declaration, exported]);
-        return t.callExpression(helper, [t.assignmentExpression('=', definition, arg)]);
-    }
-
     const needsAwait = [
         'batchDelete',
         'batchSave',
@@ -632,9 +606,6 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
             return {
                 visitor: {
                     ImportDeclaration(path) {
-                        if (injectedImports.has(path.node)) {
-                            return;
-                        }
                         const lineNumber = path.node.loc?.start.line || 0;
                         const source = path.node.source.value;
                         const kind = path.node.importKind;
@@ -852,13 +823,14 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             const mapping = allowedExports[calleeName];
                             const varName = mapping.varName;
 
-                            const definition = calleeName === 'createTool' ? normalizeTool(astPath, arg, t) : arg;
-                            if (calleeName !== 'createTool') {
-                                arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(mapping.type)), ...arg.properties];
-                            }
+                            arg.properties = [
+                                t.objectProperty(t.identifier('type'), t.stringLiteral(mapping.type)),
+                                ...(calleeName === 'createTool' ? [t.objectProperty(t.identifier('_kind'), t.stringLiteral('tool'))] : []),
+                                ...arg.properties
+                            ];
                             // Insert: export const <varName> = <arg>;
                             const exportConst = t.exportNamedDeclaration(
-                                t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), definition)]),
+                                t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), arg)]),
                                 []
                             );
                             // Insert: export default <varName>;
@@ -885,11 +857,12 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                 throw new CompileError('nango_invalid_function_param', lineNumber, 'Invalid function parameter, should be an object');
                             }
 
-                            const definition = calleeName === 'createTool' ? normalizeTool(astPath, arg, t) : arg;
-                            if (calleeName !== 'createTool') {
-                                arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(allowedExports[calleeName].type)), ...arg.properties];
-                            }
-                            binding.path.get('init').replaceWith(definition);
+                            arg.properties = [
+                                t.objectProperty(t.identifier('type'), t.stringLiteral(allowedExports[calleeName].type)),
+                                ...(calleeName === 'createTool' ? [t.objectProperty(t.identifier('_kind'), t.stringLiteral('tool'))] : []),
+                                ...arg.properties
+                            ];
+                            binding.path.get('init').replaceWith(arg);
                             return;
                         } else {
                             throw new CompileError('nango_unsupported_export', lineNumber, badExportCompilerError);
