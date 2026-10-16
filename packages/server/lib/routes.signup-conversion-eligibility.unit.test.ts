@@ -5,8 +5,11 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { signupConversionEligibilityAPI } from './routes.signup-conversion-eligibility.js';
 
+import type * as Utils from '@nangohq/utils';
+
 const state = vi.hoisted(() => ({
     lookup: vi.fn(),
+    error: vi.fn(),
     envs: {
         NANGO_CLOUD: true,
         NODE_ENV: 'production',
@@ -17,6 +20,10 @@ const state = vi.hoisted(() => ({
     }
 }));
 vi.mock('./env.js', () => ({ envs: state.envs }));
+vi.mock('@nangohq/utils', async (importOriginal) => ({
+    ...(await importOriginal<typeof Utils>()),
+    getLogger: () => ({ error: state.error })
+}));
 vi.mock('./services/signupConversions/eligibility.js', () => ({ getConversionEligibility: state.lookup }));
 vi.mock('./middleware/ratelimit.middleware.js', () => ({ rateLimiterMiddleware: (_req: unknown, _res: unknown, next: () => void) => next() }));
 
@@ -104,10 +111,15 @@ describe('conversion eligibility endpoint', () => {
         expect(state.lookup).toHaveBeenCalledWith(body, new Date(state.envs.SIGNUP_AD_ELIGIBILITY_START_AT));
     });
 
-    it('fails closed without leaking database errors', async () => {
-        state.lookup.mockRejectedValue(new Error('private database details'));
+    it.each(['ECONNRESET', 'private-code'])('fails closed with redacted diagnostics for %s', async (code) => {
+        state.lookup.mockRejectedValue(Object.assign(new Error('private database details'), { code }));
         const response = await post();
         expect(response.status).toBe(503);
         expect(await response.text()).not.toContain('private database details');
+        expect(state.error).toHaveBeenCalledWith('Signup conversion eligibility lookup failed', {
+            stage: 'eligibility',
+            errorCode: code === 'ECONNRESET' ? code : 'unknown'
+        });
+        expect(JSON.stringify(state.error.mock.calls)).not.toMatch(/private|accountId|creatorId|Bearer/);
     });
 });

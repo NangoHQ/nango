@@ -4,6 +4,7 @@ import { getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { createConversionAdapters } from '../services/signupConversions/adapters.js';
+import { conversionErrorCode } from '../services/signupConversions/diagnostics.js';
 import { deliverNextConversion, enqueueConversions } from '../services/signupConversions/worker.js';
 
 const logger = getLogger('cron.signupConversions');
@@ -32,11 +33,7 @@ export function signupConversionsCron(): void {
                         if (!(await deliverNextConversion(adapter, signupConversionsEnabled))) break;
                     }
                 } catch (err) {
-                    // Driver messages can contain query values. Log only known diagnostic codes.
-                    const code = err instanceof Error && 'code' in err ? err.code : undefined;
-                    const errorCode =
-                        typeof code === 'string' && ['ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', '57014', '40P01', '40001'].includes(code) ? code : 'unknown';
-                    logger.error('Signup conversion worker failed', { platform: adapter.platform, stage, errorCode });
+                    logger.error('Signup conversion worker failed', { platform: adapter.platform, stage, errorCode: conversionErrorCode(err) });
                 }
             }
         },

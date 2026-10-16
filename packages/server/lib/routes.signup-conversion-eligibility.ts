@@ -1,16 +1,18 @@
 import express from 'express';
 import { z } from 'zod';
 
-import { stringTimingSafeEqual } from '@nangohq/utils';
+import { getLogger, stringTimingSafeEqual } from '@nangohq/utils';
 
 import { envs } from './env.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
+import { conversionErrorCode } from './services/signupConversions/diagnostics.js';
 import { getConversionEligibility } from './services/signupConversions/eligibility.js';
 
 const body = z
     .object({ accountId: z.number().int().positive().safe(), creatorId: z.number().int().positive().safe(), platform: z.enum(['meta', 'chatgpt']) })
     .strict();
 const path = '/internal/signup-conversion-eligibility';
+const logger = getLogger('signupConversionEligibility');
 export const signupConversionEligibilityAPI = express.Router();
 
 signupConversionEligibilityAPI.post(
@@ -53,8 +55,8 @@ signupConversionEligibilityAPI.post(
         }
         try {
             res.json(await getConversionEligibility(parsed.data, new Date(envs.SIGNUP_AD_ELIGIBILITY_START_AT ?? '')));
-        } catch {
-            // No request context or credentials in errors or logs.
+        } catch (err) {
+            logger.error('Signup conversion eligibility lookup failed', { stage: 'eligibility', errorCode: conversionErrorCode(err) });
             res.sendStatus(503);
         }
     }

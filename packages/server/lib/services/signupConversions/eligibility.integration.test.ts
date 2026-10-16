@@ -66,18 +66,23 @@ async function fixture() {
     await completeSignupAdvertisingConsent(account.id, user.id, reference);
     const input = { accountId: account.id, creatorId: user.id, platform: 'meta' as const };
     const startAt = new Date(Date.now() - 60_000);
-    return { input, startAt, ownerHash, consent, reference };
+    return { input, startAt, ownerHash, consent, reference, signupAt: account.created_at.toISOString() };
 }
 
 describe('database-backed destination eligibility', () => {
     it('returns stable account identity and original time, with only the requested platform context', async () => {
         const f = await fixture();
         const first = await getConversionEligibility(f.input, f.startAt);
-        expect(first).toMatchObject({ eligible: true, eventId: `nango:account_create:${f.input.accountId}`, touch: { fbclid: 'local-meta' } });
+        expect(first).toMatchObject({
+            eligible: true,
+            eventId: `nango:account_create:${f.input.accountId}`,
+            signupAt: f.signupAt,
+            touch: { fbclid: 'local-meta' }
+        });
         expect(JSON.stringify(first)).not.toContain('local-chatgpt');
         expect(await getConversionEligibility(f.input, f.startAt)).toEqual(first);
         const chatgpt = await getConversionEligibility({ ...f.input, platform: 'chatgpt' }, f.startAt);
-        expect(chatgpt).toMatchObject({ eligible: true, touch: { oppref: 'local-chatgpt' } });
+        expect(chatgpt).toMatchObject({ eligible: true, signupAt: f.signupAt, touch: { oppref: 'local-chatgpt' } });
         expect(JSON.stringify(chatgpt)).not.toContain('local-meta');
     });
 
