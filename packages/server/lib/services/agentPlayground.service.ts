@@ -444,14 +444,15 @@ export async function startTurn({
 
     const result = streamText({
         model: createPlaygroundModel(),
-        instructions: buildInstructions(
+        instructions: buildInstructions({
             timeZone,
-            new Date(),
-            client.getInstructions(),
-            PLAYGROUND_PROVIDERS.filter((provider) => !Object.values(session.compiledToolset).some((integration) => integration.provider === provider)).map(
-                (provider) => getProvider(provider)?.display_name ?? provider
-            )
-        ),
+            now: new Date(),
+            sessionInstructions: client.getInstructions(),
+            environmentName: ctx.environment.name,
+            unavailable: PLAYGROUND_PROVIDERS.filter(
+                (provider) => !Object.values(session.compiledToolset).some((integration) => integration.provider === provider)
+            ).map((provider) => getProvider(provider)?.display_name ?? provider)
+        }),
         messages: modelMessages,
         tools,
         stopWhen: stepCountIs(MAX_STEPS),
