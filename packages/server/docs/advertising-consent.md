@@ -8,7 +8,7 @@ Local implementation for NAN-7218's Ads handoff. Disabled by default. No Ads des
 2. The server stores that choice and sets an opaque, host-only HttpOnly cookie. Only its hash is stored in the database.
 3. Email signup reads the cookie. Google signup saves a reference in the login session and puts only a random nonce in OAuth state. The nonce expires after 30 minutes.
 4. A new account gets a consent reference inside its creation transaction. Existing accounts and invitation joins do not get a new binding. Optional storage failures use a savepoint and do not abort account creation.
-5. A conversion sender must call `getSignupAdvertisingPermission(accountId)` immediately before dispatch. Null means skip. Do not put a cached permission result in the queue.
+5. The conversion sender calls `getSignupAdvertisingPermission(accountId)` immediately before dispatch. Null means skip. Do not put a cached permission result in the queue.
 
 This leaves the existing PostHog events and acquisition properties unchanged. It does not collect all visits or replace the attribution timeline.
 
@@ -31,7 +31,7 @@ Om approved replacing the global explicit-only rule on October 14. Eligibility f
 
 The helper returns `basis: explicit | regional_default` and mapping version `cookiebot-regional-marketing-v2`. Regional flags are CMP-reported evidence, not verified geography or a complete legal rules engine. The resolved Marketing state remains required; merely being outside the GDPR region does not grant permission. No banner, regional admin setting or existing PostHog behavior is changed. This route suppresses sends on GPC; it does not implement platform-specific restricted measurement for opted-out users.
 
-The lookup requires the actual signup creator to be verified, non-suspended and external. An external teammate cannot authorize a signup created internally. A server-generated signup ID prevents a later organization join from filling a missing creator. The result contains ad context, the original signup timestamp, the recorded choice and revision, and evaluated `adStorage`, `adUserData` and `adPersonalization` states under `cookiebot-regional-marketing-v2`. Platform adapters remain responsible for event identity, deduplication, platform requirements and whether a supported matching ID is present. Account creation happens before user creation and email verification, so the sender must defer/recheck pending signups within a bounded window rather than assume an immediate null result is permanent.
+The lookup requires the actual signup creator to be verified, non-suspended and external. An external teammate cannot authorize a signup created internally. A server-generated signup ID prevents a later organization join from filling a missing creator. The result contains ad context, the original account creation timestamp (`_nango_accounts.created_at`), the recorded choice and revision, and evaluated `adStorage`, `adUserData` and `adPersonalization` states under `cookiebot-regional-marketing-v2`. Platform adapters require a supported click ID and genuine signup browser context. Account creation happens before user creation and email verification, so the sender must defer/recheck pending signups within a bounded window rather than assume an immediate null result is permanent.
 
 ## Withdrawal and failure behavior
 
@@ -65,22 +65,36 @@ Before release:
 1. Run the database integration tests in a Docker-capable environment. They cover withdrawal, stale writes, rollback, savepoint failure, eligibility and cleanup.
 2. Choose the lifetime and arrange periodic `deleteExpiredAdvertisingConsents(new Date())` maintenance. Ordinary visits do not extend the existing context expiry. Expiry blocks sends immediately; physical deletion requires this maintenance.
 3. Coordinate shared Dev use in engineering. Verify accept, reject, withdraw, repeat visit, email signup and Google signup with the actual CMP and matching API host. Include a US regional default without a banner click, an opt-in region before/after acceptance, GPC and a regional change, plus email verification, an invitation and an existing organization. Confirm the actual CMP supplies the documented regional flags before interpreting a US runtime as eligible.
-4. Connect the Ads sender to the permission helper and verify its disabled/error paths. This change does not add a queue or sender.
+4. Configure and validate each conversion destination separately before enabling delivery. Keep the existing PostHog Meta test destination disabled to avoid two senders.
 
-## Local verification, October 15
+## Conversion delivery
 
-The review fixes pass 65 targeted unit/API tests covering consent policy, session continuation, Google redirect destinations, OAuth state, existing acquisition behavior and API boundaries. The website bridge previously passed 10 tests plus website typecheck and lint and is unchanged in this revision.
+The existing server cron checks committed signup bindings once a minute. `signup_ad_conversions` stores one delivery record per account/platform, with a stable event ID, destination, status and receipt. It stores no click IDs, email addresses, browser payloads or credentials. Records survive code rollback to prevent replay and are deleted with their account.
 
-All 13 database integration tests passed on October 15 using disposable local Docker services. They cover withdrawal, expired-grant replay, parsed enable settings, regional defaults/GPC, retained rollback bindings, exact creator binding, internal creators, verification timing, savepoint failure and cleanup. The run completed in 24.47 seconds, including service startup.
+Delivery requires all of: cloud production, consent capture enabled, `SIGNUP_AD_CONVERSIONS_ENABLED=true`, and valid `SIGNUP_AD_CONVERSIONS_CONFIG` server-secret JSON. Both new settings default to disabled/empty. Never put this configuration in frontend variables, source control or logs.
 
-Docker provides 10 CPUs and about 8 GB of memory. The test command used the existing user socket through command-scoped `DOCKER_HOST` and `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE`; no global socket or shell configuration was changed. No Dev or production database was used. Draft PRs are open; the feature is not enabled. Next: coordinate Dev testing with the actual CMP and supported host routing.
+The configuration is an array. Each entry requires `platform` and an explicit UTC `startAt` launch cutoff. Platform fields:
+
+- Meta: `pixelId`, `version`, `token`.
+- ChatGPT and Reddit: `pixelId`, `token`. Reddit needs a reviewed conversion token; expired credentials stop delivery.
+- Google: `accountId`, `loginAccountId`, `conversionId`, `clientId`, `clientSecret`, `refreshToken`, with Data Manager access. Google obtains an access token before the final consent check.
+
+X is unsupported until its current API contract and signup event are verified. Capturing `twclid` does not enable delivery. Microsoft and LinkedIn have no adapters in this release.
+
+Only new accounts after each destination's launch cutoff qualify. There are at most eight sends within 24 hours of account creation, limited further by consent expiry. Verification after that window is excluded. Every send/retry checks current permission; missing permission waits up to the same deadline. Only `https://app.nango.dev/signup` and `/signin` are eligible source URLs. Development, preview and internal creators are excluded.
+
+Google's initial request acknowledgement remains `submitted`. The worker polls its processing result for up to 24 hours after submission, without resending. Known temporary processing failures return to pending after three hours and must pass consent again. Duplicate transaction acknowledgements are terminal `duplicate`; unresolved receipts become `unconfirmed`. Other platforms' `accepted` means transport/ingestion acknowledgement. None of these statuses proves paid attribution.
+
+Tests use mocked ad APIs and disposable local databases. Platform credentials, approved test-mode requests, actual receipt/attribution checks and production enablement remain separate release steps. A real EU visit and first-time Google signup remain deferred live checks.
+
+Adapter contracts: [Google](https://developers.google.com/data-manager/api/reference/rest/v1/requestStatus/retrieve), [ChatGPT](https://developers.openai.com/ads/conversions-api), [Reddit](https://ads-api.reddit.com/docs/v3/guides/programs/capi/direct-integration), [Meta SDK](https://github.com/facebook/facebook-nodejs-business-sdk#conversions-api).
 
 ## Rollback
 
 1. Pause all conversion senders that depend on this feature and stop accepting new conversion jobs. Drain/cancel pending sends before continuing.
 2. Disable the website bridge and server flag in their deployments. The permission helper returns null while disabled.
 3. Run the explicit `invalidateAdvertisingPermissions()` maintenance operation before re-enabling reporting. It invalidates existing contexts, expires signup bindings and clears click IDs while preserving choices until their original expiry. This prevents old queued signups from becoming eligible again.
-4. Roll back code. The migration's `down` intentionally keeps both tables. Reapplying the migration is safe.
+4. Roll back code. The migrations' `down` intentionally keep consent and delivery tables. Reapplying the migration is safe.
 
 Keep cleanup operating while records remain. If the feature is permanently retired, remove records through a separate reviewed deletion. Do not treat retained grants as current permission after downtime.
 

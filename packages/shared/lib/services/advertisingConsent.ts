@@ -195,6 +195,7 @@ export async function getSignupAdvertisingPermission(accountId: number): Promise
             .knex('signup_advertising_consents as signup')
             .join('advertising_consents as consent', 'consent.id', 'signup.consent_id')
             .join('_nango_users as creator', 'creator.id', 'signup.creator_user_id')
+            .join('_nango_accounts as account', 'account.id', 'signup.account_id')
             .where('signup.account_id', accountId)
             .where('creator.account_id', accountId)
             .where('creator.email_verified', true)
@@ -205,7 +206,7 @@ export async function getSignupAdvertisingPermission(accountId: number): Promise
             .whereRaw('?? = ??', ['signup.consent_revision', 'consent.revision'])
             .where('signup.expires_at', '>', new Date())
             .where('consent.expires_at', '>', new Date())
-            .select('consent.choice', 'consent.revision', 'consent.observed_at', 'signup.click_context', 'signup.created_at')
+            .select('consent.choice', 'consent.revision', 'consent.observed_at', 'signup.click_context', 'account.created_at')
             .first<{ choice: AdvertisingConsentChoice; revision: number; observed_at: Date; click_context: SignupAdvertisingContext; created_at: Date }>()
             .timeout(1000, { cancel: true });
         if (!result) return null;

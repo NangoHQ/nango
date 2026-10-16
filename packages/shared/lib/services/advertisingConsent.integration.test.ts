@@ -112,7 +112,7 @@ describe('stored advertising consent', () => {
         expect((await getSignupAdvertisingPermission(account.id))?.context).toEqual(before);
         const rejected = await signup(false, true, { ...grant, marketing: false });
         const row = await db
-            .knex<{ click_context: SignupAdvertisingContext }>('signup_advertising_consents')
+            .knex<{ account_id: number; click_context: SignupAdvertisingContext }>('signup_advertising_consents')
             .where({ account_id: rejected.account.id })
             .first();
         expect(row?.click_context).toEqual({});
@@ -158,7 +158,8 @@ describe('stored advertising consent', () => {
         if (!binding) throw new Error('Missing signup binding');
         await db.knex('_nango_users').where({ id: user.id }).update({ email_verified: true });
         const permission = await getSignupAdvertisingPermission(account.id);
-        expect(permission?.signupAt).toEqual(binding.created_at);
+        const accountRow = await db.knex<{ id: number; created_at: Date }>('_nango_accounts').where({ id: account.id }).first();
+        expect(permission?.signupAt).toEqual(accountRow?.created_at);
         expect(permission?.consent).toMatchObject({
             choice: grant,
             revision: reference.revision,
