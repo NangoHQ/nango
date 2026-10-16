@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1056
+Provider count: 1057
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -327,6 +327,7 @@ URL patterns:
 | `figjam` | FigJam | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/figjam.md) |  |  | design, productivity |
 | `figma` | Figma | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/figma.md) |  |  | design, productivity |
 | `figma-scim` | Figma (SCIM) | API_KEY | [docs](https://nango.dev/docs/integrations/all/figma-scim.md) | [connect](https://nango.dev/docs/integrations/all/figma-scim/connect.md) |  | design, productivity |
+| `fiix` | Fiix | BASIC | [docs](https://nango.dev/docs/api-integrations/fiix.md) | [connect](https://nango.dev/docs/api-integrations/fiix/connect.md) |  | erp |
 | `fillout` | Fillout (Oauth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fillout.md) |  |  | surveys |
 | `fillout-api-key` | Fillout (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/fillout-api-key.md) | [connect](https://nango.dev/docs/integrations/all/fillout-api-key/connect.md) |  | surveys |
 | `findymail` | FindyMail | API_KEY | [docs](https://nango.dev/docs/integrations/all/findymail.md) | [connect](https://nango.dev/docs/integrations/all/findymail/connect.md) |  | marketing, crm |

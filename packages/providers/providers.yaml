@@ -9307,6 +9307,61 @@ falai:
             title: API Key
             description: The API key for your fal.ai account
 
+fiix:
+    display_name: Fiix
+    categories:
+        - erp
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.macmms.com
+        query:
+            service: cmms
+            appKey: ${connectionConfig.appKey}
+            accessKey: ${credentials.username}
+            signatureMethod: HmacSHA256
+            signatureVersion: '1'
+        headers:
+            content-type: text/plain
+            authorization: ${hmacSha256Hex(${host}${path}?${query}, ${credentials.password})}
+    credentials_verification_script: fiixCredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/fiix
+    docs_connect: https://nango.dev/docs/api-integrations/fiix/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Fiix URL.
+            pattern: '^[a-zA-Z0-9-]+$'
+            example: acme
+            prefix: https://
+            suffix: .macmms.com
+            doc_section: '#step-1-find-your-subdomain'
+            order: 1
+        appKey:
+            type: string
+            title: App Key
+            description: Your Fiix API application key.
+            pattern: '^macmmsackp[0-9a-fA-F]+$'
+            example: macmmsackp3a7c***********************************************9e2f
+            doc_section: '#step-2-create-an-api-application'
+            order: 2
+    credentials:
+        username:
+            type: string
+            title: Access Key
+            description: Your Fiix API access key.
+            pattern: '^macmmsaakp[0-9a-fA-F]+$'
+            example: macmmsaakp5b1d***********************************************c84a
+            doc_section: '#step-2-create-an-api-application'
+        password:
+            type: string
+            title: Secret Key
+            description: Your Fiix API secret key.
+            pattern: '^macmmsaskp[0-9a-fA-F]+$'
+            example: macmmsaskp7e0b***********************************************************1f6d
+            secret: true
+            doc_section: '#step-2-create-an-api-application'
+
 findymail:
     display_name: FindyMail
     categories:
