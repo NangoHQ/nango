@@ -1,6 +1,5 @@
 import tracer from 'dd-trace';
 
-import { connectionService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
@@ -12,7 +11,6 @@ import { defineAgentSessionMcpTool } from '../sessionTool.js';
 import { createConnectionInputSchema, createConnectionOutputSchema } from './schema.js';
 
 import type { CreateConnectionOutput } from './schema.js';
-import type { Tags } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
@@ -61,11 +59,32 @@ export const createConnectionTool = defineAgentSessionMcpTool({
             );
         }
 
-        let reconnectConnectionId: number | undefined;
-        let tags: Tags = { ...session.metaTools.nangoCreateConnection.tags, [AGENT_SESSION_TAG_KEY]: session.id };
-        if (existing) {
-            const connection = await connectionService.getConnectionById(existing.internalConnectionId);
-            if (!connection || connection.environment_id !== session.environmentId || connection.config_id !== existing.configId) {
+        return await tracer.trace<Promise<Result<CreateConnectionOutput>>>('server.mcp.agentSession.createConnection', async (span: Span) => {
+            span.setTag('nango.agentSessionId', session.id)
+                .setTag('nango.accountId', account.id)
+                .setTag('nango.environmentId', environment.id)
+                .setTag('nango.providerConfigKey', integrationId)
+                .setTag('nango.reconnect', Boolean(existing));
+
+            const created = await connectSessionService.createConnectSession({
+                account,
+                environment,
+                plan,
+                isPreview: false,
+                endUser: null,
+                integrationsConfigDefaults: undefined,
+                overrides: undefined,
+                webhookUrlOverride: undefined,
+                // A reconnect keeps the connection's own tags, which carry the session binding when the agent created it.
+                ...(existing
+                    ? { reconnect: { connectionId: existing.connectionId, integrationId } }
+                    : {
+                          tags: { ...session.metaTools.nangoCreateConnection.tags, [AGENT_SESSION_TAG_KEY]: session.id },
+                          allowedIntegrations: [integrationId]
+                      })
+            });
+
+            if (created.isErr() && created.error.code === 'connection_not_found') {
                 track('connection_deleted');
                 return Err(
                     new PublicMcpError(
@@ -74,32 +93,6 @@ export const createConnectionTool = defineAgentSessionMcpTool({
                     )
                 );
             }
-
-            reconnectConnectionId = connection.id;
-            // Reauthorising replaces the connection's tags with the connect session's, so it gets its own.
-            tags = connection.tags;
-        }
-
-        return await tracer.trace<Promise<Result<CreateConnectionOutput>>>('server.mcp.agentSession.createConnection', async (span: Span) => {
-            span.setTag('nango.agentSessionId', session.id)
-                .setTag('nango.accountId', account.id)
-                .setTag('nango.environmentId', environment.id)
-                .setTag('nango.providerConfigKey', integrationId)
-                .setTag('nango.reconnect', reconnectConnectionId !== undefined);
-
-            const created = await connectSessionService.createConnectSession({
-                account,
-                environment,
-                plan,
-                isPreview: false,
-                endUser: null,
-                tags,
-                allowedIntegrations: [integrationId],
-                integrationsConfigDefaults: undefined,
-                overrides: undefined,
-                webhookUrlOverride: undefined,
-                reconnectConnectionId
-            });
 
             if (created.isErr()) {
                 span.setTag('nango.error', created.error);
@@ -115,7 +108,7 @@ export const createConnectionTool = defineAgentSessionMcpTool({
             track();
 
             return Ok({
-                guidance: `Give this link to the user and wait. They open it and authorise ${integration.provider}, which is something only they can do. Once they say they are done, call the tool you wanted and it will run on the ${reconnectConnectionId !== undefined ? 'reauthorised' : 'new'} connection.`,
+                guidance: `Give this link to the user and wait. They open it and authorise ${integration.provider}, which is something only they can do. Once they say they are done, call the tool you wanted and it will run on the ${existing ? 'reauthorised' : 'new'} connection.`,
                 integration: integrationId,
                 provider: integration.provider,
                 connect_url: created.value.connectLink,
