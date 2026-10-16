@@ -75,10 +75,10 @@ export async function listActions({
 }: {
     environmentId: number;
     providerConfigKey: string;
-}): Promise<Result<ListedNangoActionFunction[], ListFunctionsError>> {
+}): Promise<Result<{ actions: ListedNangoActionFunction[]; provider: string }, ListFunctionsError>> {
     try {
-        const integrationId = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
-        if (!integrationId) {
+        const integration = await configService.getProviderConfig(providerConfigKey, environmentId);
+        if (!integration) {
             return Err(
                 new ListFunctionsError({
                     code: 'integration_not_found',
@@ -93,7 +93,10 @@ export async function listActions({
             return Err(mapped.error);
         }
 
-        return Ok(mapped.value.filter((row): row is ListedNangoActionFunction => row.type === 'action'));
+        return Ok({
+            actions: mapped.value.filter((row): row is ListedNangoActionFunction => row.type === 'action'),
+            provider: integration.provider
+        });
     } catch (err) {
         return Err(new ListFunctionsError({ code: 'list_failed', message: 'Failed to list functions', cause: err }));
     }
