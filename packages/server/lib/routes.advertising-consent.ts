@@ -59,7 +59,8 @@ advertisingConsentAPI.use('/api/v1/advertising-consent', (req, res, next) => {
         res.sendStatus(404);
         return;
     }
-    // Exact origins and JSON preflight protect writes. No wildcard or missing-origin fallback.
+    // Exact origins and JSON preflight prevent cross-origin browser writes, not forged non-browser requests.
+    // The recorded choice remains browser-reported, not independently verified CMP evidence.
     const origin = req.get('Origin');
     if (!origin || !config.origins.includes(origin)) {
         res.sendStatus(403);

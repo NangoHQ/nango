@@ -243,7 +243,12 @@ export async function deleteExpiredAdvertisingConsents(before: Date): Promise<vo
     });
 }
 
-/** Explicit rollback operation. Retains the choices but prevents replay if reporting is re-enabled. */
+/**
+ * Explicit rollback operation, never run on startup.
+ * Stop dependent senders and cancel pending sends, then disable website/server consent capture.
+ * Run this before reporting is re-enabled so retained grants cannot authorize old signups.
+ * Rollback keeps the consent tables and choices; continue expiry cleanup while they remain.
+ */
 export async function invalidateAdvertisingPermissions(): Promise<void> {
     await db.knex.transaction(async (trx) => {
         const now = new Date();

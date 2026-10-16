@@ -43,7 +43,7 @@ function signupBrowserContext(req: Request, signupPath: '/signup' | '/signin' | 
     const origin = req.get('Origin');
     if (origin && signupPath && isAllowedWebCorsOrigin(origin)) {
         try {
-            // Use only the trusted app origin and a known route, never tokens, queries or referrers.
+            // Limit the reported origin to an allowed app and known route; this does not attest a browser visit.
             const url = new URL(origin);
             if (url.origin === origin) browser.sourceUrl = new URL(signupPath, url).href;
         } catch {
