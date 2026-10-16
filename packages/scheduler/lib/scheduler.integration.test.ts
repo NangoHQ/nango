@@ -110,6 +110,22 @@ describe('Scheduler', () => {
         (await scheduler.fail({ taskId: task.id, error: { message: 'failure happened' } })).unwrap();
         expect(callbacks.FAILED).toHaveBeenCalledOnce();
     });
+    it('should call the FAILED callback only after the failure is committed', async () => {
+        const order: string[] = [];
+        const onQuery = (query: { sql: string }) => {
+            if (/^commit/i.test(query.sql)) order.push('commit');
+        };
+        callbacks.FAILED.mockImplementation(() => order.push('callback'));
+        const task = await immediate(scheduler);
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
+        dbClient.db.on('query', onQuery);
+        try {
+            (await scheduler.fail({ taskId: task.id, error: { message: 'failure happened' } })).unwrap();
+        } finally {
+            dbClient.db.removeListener('query', onQuery);
+        }
+        expect(order).toEqual(['commit', 'callback']);
+    });
     it('should call callback when task is succeeded', async () => {
         const task = await immediate(scheduler);
         (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
