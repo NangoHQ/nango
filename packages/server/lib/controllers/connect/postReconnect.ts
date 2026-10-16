@@ -1,17 +1,13 @@
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import * as keystore from '@nangohq/keystore';
-import { endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { buildTagsFromEndUser, configService, connectionService, EndUserMapper, getEndUser } from '@nangohq/shared';
-import { buildConnectUiSessionLink, flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { EndUserMapper } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { validateConnectionConfigDefaults } from '../../services/connectionConfigDefaults.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { mapDeprecatedConnectionConfigWebhookUrl } from './mapDeprecatedConnectionConfigWebhookUrl.js';
-import { checkIntegrationsExist, bodySchema as originalBodySchema } from './postSessions.js';
+import { createConnectSessionErrorToHttp, bodySchema as originalBodySchema, toIntegrationsConfigDefaults } from './postSessions.js';
 
 import type { PostPublicConnectSessionsReconnect } from '@nangohq/types';
 
@@ -27,11 +23,6 @@ const bodySchema = z
         tags: originalBodySchema.shape.tags
     })
     .strict();
-
-interface Reply {
-    status: number;
-    response: PostPublicConnectSessionsReconnect['Reply'];
-}
 
 export const postConnectSessionsReconnect = asyncWrapperWithEnvironment<PostPublicConnectSessionsReconnect>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -54,110 +45,28 @@ export const postConnectSessionsReconnect = asyncWrapperWithEnvironment<PostPubl
     }
     const body: PostPublicConnectSessionsReconnect['Body'] = mapped.body;
 
-    const { status, response }: Reply = await db.knex.transaction<Reply>(async (trx) => {
-        const connection = await connectionService.checkIfConnectionExists(trx, {
-            connectionId: body.connection_id,
-            providerConfigKey: body.integration_id,
-            environmentId: environment.id
-        });
-        if (!connection) {
-            return {
-                status: 400,
-                response: { error: { code: 'invalid_body', message: 'ConnectionID or IntegrationId does not exists' } }
-            };
-        }
-
-        let endUser = null;
-        if (connection.end_user_id) {
-            const endUserRes = await getEndUser(trx, { id: connection.end_user_id, accountId: account.id, environmentId: environment.id }, { forUpdate: true });
-            if (endUserRes.isErr()) {
-                return { status: 500, response: { error: { code: 'server_error', message: endUserRes.error.message } } };
-            }
-            endUser = endUserRes.value;
-        }
-        const endUserTags = buildTagsFromEndUser(body.end_user, body.organization);
-        const tags = { ...endUserTags, ...body.tags };
-
-        if (body.integrations_config_defaults || body.overrides) {
-            const integrations = await configService.listProviderConfigs(trx, environment.id);
-
-            // Enforce that integrations in `integrations_config_defaults` and `overrides` exist and that
-            // the connection config they preset is valid for the provider
-            const issues = [
-                ...(checkIntegrationsExist(body.integrations_config_defaults, integrations, ['integrations_config_defaults']) || []),
-                ...(checkIntegrationsExist(body.overrides, integrations, ['overrides']) || []),
-                ...validateConnectionConfigDefaults(
-                    Object.fromEntries(
-                        Object.entries(body.integrations_config_defaults || {}).map(([integrationId, value]) => [integrationId, value.connection_config])
-                    ),
-                    integrations
-                )
-            ];
-            if (issues.length > 0) {
-                return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues }) } } };
-            }
-
-            const canOverrideDocsConnectUrl = (flagHasPlan && plan?.can_override_docs_connect_url) ?? true;
-            const isOverridingDocsConnectUrl = Object.values(body.overrides || {}).some((value) => value.docs_connect);
-            if (isOverridingDocsConnectUrl && !canOverrideDocsConnectUrl) {
-                return {
-                    status: 403,
-                    response: { error: { code: 'forbidden', message: 'You are not allowed to override the docs connect url' } }
-                };
-            }
-        }
-
-        const logCtx = await logContextGetter.create(
-            { operation: { type: 'auth', action: 'create_connection' }, meta: { authType: 'unauth', connectSession: endUserToMeta(endUser) } },
-            { account, environment }
-        );
-
-        // create connect session
-        const createConnectSession = await connectSessionService.insertConnectSession(trx, {
-            endUserId: endUser?.id ?? null,
-            endUser: body.end_user ? EndUserMapper.apiToEndUser(body.end_user, body.organization) : null,
-            accountId: account.id,
-            environmentId: environment.id,
-            connectionId: connection.id,
-            allowedIntegrations: [body.integration_id],
-            integrationsConfigDefaults: body.integrations_config_defaults
-                ? Object.fromEntries(
-                      Object.entries(body.integrations_config_defaults).map(([key, value]) => [
-                          key,
-                          {
-                              user_scopes: value.user_scopes,
-                              authorization_params: value.authorization_params,
-                              connectionConfig: value.connection_config
-                          }
-                      ])
-                  )
-                : null,
-            operationId: logCtx.id,
-            overrides: body.overrides || null,
-            webhookUrlOverride: body.webhook_url_override || null,
-            tags
-        });
-        if (createConnectSession.isErr()) {
-            return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create connect session' } } };
-        }
-
-        // create a private key for the connect session
-        const createPrivateKey = await keystore.createPrivateKey(trx, {
-            displayName: '',
-            accountId: account.id,
-            environmentId: environment.id,
-            entityType: 'connect_session',
-            entityId: createConnectSession.value.id,
-            ttlInMs: 30 * 60 * 1000 // 30 minutes
-        });
-        if (createPrivateKey.isErr()) {
-            return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create session token' } } };
-        }
-
-        const [token, privateKey] = createPrivateKey.value;
-        const connect_link = buildConnectUiSessionLink(token);
-        return { status: 201, response: { data: { token, connect_link, expires_at: privateKey.expiresAt!.toISOString() } } };
+    const result = await connectSessionService.createConnectSession({
+        account,
+        environment,
+        plan,
+        endUser: body.end_user ? EndUserMapper.apiToEndUser(body.end_user, body.organization) : null,
+        tags: body.tags,
+        integrationsConfigDefaults: toIntegrationsConfigDefaults(body.integrations_config_defaults),
+        overrides: body.overrides,
+        webhookUrlOverride: body.webhook_url_override,
+        reconnect: { connectionId: body.connection_id, integrationId: body.integration_id }
     });
+    if (result.isErr()) {
+        const { status, response } = createConnectSessionErrorToHttp(result.error);
+        res.status(status).send(response);
+        return;
+    }
 
-    res.status(status).send(response);
+    res.status(201).send({
+        data: {
+            token: result.value.token,
+            connect_link: result.value.connectLink,
+            expires_at: result.value.expiresAt.toISOString()
+        }
+    });
 });
