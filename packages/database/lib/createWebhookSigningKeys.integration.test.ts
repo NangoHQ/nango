@@ -181,7 +181,7 @@ describe('copyWebhookSigningKeys', () => {
             const environmentId = await createEnvironment(accountId);
             await createKey({ accountId, environmentId });
             const highest = await db.knex('_nango_environments').max('id as max').first();
-            const missingId = Number(highest?.max ?? 0) + 1000;
+            const missingId = Number(highest?.['max'] ?? 0) + 1000;
             const unique = randomUUID();
             const [orphan] = await db
                 .knex('customer_keys')
