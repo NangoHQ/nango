@@ -7,7 +7,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema, providerNameSchema } from '../../helpers/validation.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
-import { toGetFunctionResponse } from './helpers.js';
+import { toGetFunctionResponse } from './formatter.js';
 
 import type { GetFunctions } from '@nangohq/types';
 

@@ -825,6 +825,7 @@ export function buildProxyHeaders({
             endpoint: config.endpoint,
             host: parsedUrl.host,
             path: endpointPath,
+            query: endpointQuery,
             ...(usesReplacer('params') && { params: buildCanonicalParams(config.method, config.data, endpointQuery) }),
             ...(usesReplacer('urlCanonicalParams') && { urlCanonicalParams: buildCanonicalParams('GET', undefined, endpointQuery) }),
             ...(usesReplacer('bodyCanonicalParams') && { bodyCanonicalParams: getRawBody(config.method, config.data) }),
