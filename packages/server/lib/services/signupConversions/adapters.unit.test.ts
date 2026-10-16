@@ -46,6 +46,16 @@ const googleConfig = {
     clientSecret: 'test-secret',
     refreshToken: 'test-refresh'
 };
+const xConfig = {
+    platform: 'x',
+    startAt: common.startAt,
+    pixelId: 'test-pixel',
+    eventId: 'signup-event',
+    consumerKey: 'local-consumer',
+    consumerSecret: 'local-consumer-secret',
+    accessToken: 'local-access',
+    accessTokenSecret: 'local-access-secret'
+};
 function required<T>(value: T | undefined): T {
     if (value === undefined) throw new Error('Missing test fixture');
     return value;
@@ -101,7 +111,7 @@ describe('conversion adapters', () => {
             expect(adapter(platform).prepare(42, browser)).toBeNull();
         }
     });
-    it('fails closed for unsupported X, duplicate destinations and invalid secrets without echoing configuration', () => {
+    it('fails closed for incomplete X credentials, duplicate destinations and invalid secrets without echoing configuration', () => {
         expect(() => createConversionAdapters('[]')).toThrow('Invalid signup conversion configuration');
         expect(() => createConversionAdapters(JSON.stringify([{ ...common, platform: 'x' }]))).toThrow('Invalid signup conversion configuration');
         expect(() =>
@@ -113,6 +123,63 @@ describe('conversion adapters', () => {
             )
         ).toThrow();
         expect(() => createConversionAdapters('local-test-secret')).toThrow('Invalid signup conversion configuration');
+    });
+    it('uses the configured X event, genuine click ID and stable account outcome', () => {
+        const x = required(createConversionAdapters(JSON.stringify([xConfig]))[0]);
+        const p = structuredClone(permission);
+        expect(x.prepare(42, p)).toBeNull();
+        p.context.x = { twclid: 'actual-x-click', observedAt: '2026-10-16T08:00:00Z', source: 'landing_query' };
+        expect(x.destination).toBe('test-pixel/signup-event');
+        expect(x.prepare(42, p)).toEqual({
+            conversions: [
+                {
+                    conversion_time: timestamp.toISOString(),
+                    event_id: 'signup-event',
+                    identifiers: [{ twclid: 'actual-x-click' }],
+                    conversion_id: 'nango:account_create:42'
+                }
+            ]
+        });
+        p.context.x.observedAt = '2026-10-17T08:00:00Z';
+        expect(x.prepare(42, p)).toBeNull();
+        p.context.x.observedAt = '2026-10-16T08:00:00Z';
+        p.context.x.twclid = 'invalid click';
+        expect(x.prepare(42, p)).toBeNull();
+    });
+    it('signs each X attempt with OAuth and requires one processed conversion', async () => {
+        const x = required(createConversionAdapters(JSON.stringify([xConfig]))[0]);
+        const fetcher = vi.fn<typeof fetch>().mockImplementation(() => Promise.resolve(response({ data: { conversions_processed: 1, debug_id: 'trace' } })));
+        vi.stubGlobal('fetch', fetcher);
+        const payload = { conversions: [{ conversion_id: 'nango:account_create:42' }] };
+        expect(await x.send(payload)).toEqual({ status: 'accepted', receiptId: 'trace' });
+        expect(await x.send(payload)).toEqual({ status: 'accepted', receiptId: 'trace' });
+        const first = required(fetcher.mock.calls[0]);
+        const second = required(fetcher.mock.calls[1]);
+        const firstOptions = required(first[1]);
+        const secondOptions = required(second[1]);
+        const authorization = new Headers(firstOptions.headers).get('Authorization');
+        expect(first[0]).toBe('https://ads-api.x.com/12/measurement/conversions/test-pixel');
+        expect(first[1]).toMatchObject({ method: 'POST', redirect: 'error', body: JSON.stringify(payload) });
+        expect(authorization).toMatch(/^OAuth /);
+        expect(authorization).toContain('oauth_signature_method="HMAC-SHA1"');
+        expect(authorization).toContain('oauth_token="local-access"');
+        expect(authorization).not.toContain('local-access-secret');
+        expect(authorization).not.toBe(new Headers(secondOptions.headers).get('Authorization'));
+        expect(secondOptions.body).toBe(firstOptions.body);
+        for (const body of [{}, { data: { conversions_processed: 0 } }, { data: { conversions_processed: 2 } }]) {
+            fetcher.mockResolvedValueOnce(response(body));
+            expect(await x.send(payload)).toEqual({ status: 'retry', reason: 'unconfirmed' });
+        }
+        fetcher.mockResolvedValueOnce(response({ errors: [{ code: 'INVALID_PARAMETER' }] }));
+        expect(await x.send(payload)).toEqual({ status: 'failed', reason: 'rejected' });
+        for (const [status, result] of [
+            [401, { status: 'failed', reason: 'configuration' }],
+            [429, { status: 'retry', reason: 'rate_limit' }],
+            [503, { status: 'retry', reason: 'server_error' }]
+        ] as const) {
+            fetcher.mockResolvedValueOnce(response({}, status));
+            expect(await x.send(payload)).toEqual(result);
+        }
     });
     it('requires an exact production source URL and a recent original outcome', () => {
         expect(isProductionSignup(permission, timestamp)).toBe(true);

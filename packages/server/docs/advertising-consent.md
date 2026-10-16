@@ -77,9 +77,10 @@ The configuration is an array. Each entry requires `platform` and an explicit UT
 
 - Meta: `pixelId`, `version`, `token`.
 - ChatGPT and Reddit: `pixelId`, `token`. Reddit needs a reviewed conversion token; expired credentials stop delivery.
+- X: `pixelId`, `eventId`, `consumerKey`, `consumerSecret`, `accessToken`, `accessTokenSecret`. Use an Ads API-approved OAuth app and an account admin/ad manager user token. The configured event must be the signup event, not a pageview.
 - Google: `accountId`, `loginAccountId`, `conversionId`, `clientId`, `clientSecret`, `refreshToken`, with Data Manager access. Google obtains an access token before the final consent check.
 
-X is unsupported until its current API contract and signup event are verified. Capturing `twclid` does not enable delivery. Microsoft and LinkedIn have no adapters in this release.
+X uses the preserved `twclid`, original account creation time and stable `conversion_id`. It requires exactly one processed conversion in the API response. Its signup event and OAuth credentials still need provisioning; the GTM Pixel token is not used by this backend. Microsoft and LinkedIn have no adapters in this release.
 
 Only new accounts after each destination's launch cutoff qualify. There are at most eight sends within 24 hours of account creation, limited further by consent expiry. Verification after that window is excluded. Every send/retry checks current permission; missing permission waits up to the same deadline. Only `https://app.nango.dev/signup` and `/signin` are eligible source URLs. Development, preview and internal creators are excluded.
 
@@ -87,7 +88,7 @@ Google's initial request acknowledgement remains `submitted`. The worker polls i
 
 Tests use mocked ad APIs and disposable local databases. Platform credentials, approved test-mode requests, actual receipt/attribution checks and production enablement remain separate release steps. A real EU visit and first-time Google signup remain deferred live checks.
 
-Adapter contracts: [Google](https://developers.google.com/data-manager/api/reference/rest/v1/requestStatus/retrieve), [ChatGPT](https://developers.openai.com/ads/conversions-api), [Reddit](https://ads-api.reddit.com/docs/v3/guides/programs/capi/direct-integration), [Meta SDK](https://github.com/facebook/facebook-nodejs-business-sdk#conversions-api).
+Adapter contracts: [Google](https://developers.google.com/data-manager/api/reference/rest/v1/requestStatus/retrieve), [ChatGPT](https://developers.openai.com/ads/conversions-api), [Reddit](https://ads-api.reddit.com/docs/v3/guides/programs/capi/direct-integration), [Meta SDK](https://github.com/facebook/facebook-nodejs-business-sdk#conversions-api), [X conversions](https://docs.x.com/x-ads-api/measurement/web-conversions), [X authentication](https://docs.x.com/x-ads-api/fundamentals/making-authenticated-requests).
 
 ## Rollback
 

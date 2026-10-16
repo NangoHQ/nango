@@ -1,3 +1,4 @@
+import oAuth1 from 'oauth';
 import { z } from 'zod';
 
 import { conversionEventId } from './worker.js';
@@ -17,6 +18,18 @@ const configSchema = z
             z
                 .object({
                     ...common,
+                    platform: z.literal('x'),
+                    pixelId: id,
+                    eventId: id,
+                    consumerKey: secret,
+                    consumerSecret: secret,
+                    accessToken: secret,
+                    accessTokenSecret: secret
+                })
+                .strict(),
+            z
+                .object({
+                    ...common,
                     platform: z.literal('google'),
                     accountId: id,
                     loginAccountId: id,
@@ -29,7 +42,7 @@ const configSchema = z
         ])
     )
     .min(1)
-    .max(4)
+    .max(5)
     .refine((items) => new Set(items.map((item) => item.platform)).size === items.length);
 
 const object = z.record(z.string(), z.unknown());
@@ -43,10 +56,10 @@ function validTouch(touch: { observedAt: string; source: string } | undefined, p
     return Number.isFinite(observedAt) && observedAt > 0 && observedAt <= permission.signupAt.getTime();
 }
 
-async function request(url: string, token: string, body?: unknown): Promise<{ response: Response; data: Record<string, unknown> }> {
+async function request(url: string, authorization: string, body?: unknown): Promise<{ response: Response; data: Record<string, unknown> }> {
     const response = await fetch(url, {
         method: body === undefined ? 'GET' : 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        headers: { Authorization: authorization, 'Content-Type': 'application/json' },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
         signal: AbortSignal.timeout(10_000),
         redirect: 'error'
@@ -76,6 +89,40 @@ export function createConversionAdapters(raw: string): ConversionAdapter[] {
         throw new Error('Invalid signup conversion configuration');
     }
     return configs.map((config): ConversionAdapter => {
+        if (config.platform === 'x') {
+            const url = `https://ads-api.x.com/12/measurement/conversions/${config.pixelId}`;
+            // Only signing is used; transport remains our bounded, non-redirecting fetch.
+            const oauth = new oAuth1.OAuth('', '', config.consumerKey, config.consumerSecret, '1.0', null, 'HMAC-SHA1');
+            return {
+                platform: 'x',
+                destination: `${config.pixelId}/${config.eventId}`,
+                startAt: config.startAt,
+                prepare(accountId, permission) {
+                    const touch = permission.context.x;
+                    if (!validTouch(touch, permission) || !opaqueId(touch?.twclid)) return null;
+                    return {
+                        conversions: [
+                            {
+                                conversion_time: permission.signupAt.toISOString(),
+                                event_id: config.eventId,
+                                identifiers: [{ twclid: touch.twclid }],
+                                conversion_id: conversionEventId(accountId)
+                            }
+                        ]
+                    };
+                },
+                async send(payload) {
+                    const authorization = oauth.authHeader(url, config.accessToken, config.accessTokenSecret, 'POST');
+                    const { response, data } = await request(url, authorization, payload);
+                    const failure = httpFailure(response);
+                    if (failure) return failure;
+                    if (data['errors']) return { status: 'failed', reason: 'rejected' };
+                    const result = z.object({ conversions_processed: z.literal(1), debug_id: receiptId.optional() }).safeParse(data['data']);
+                    if (!result.success) return { status: 'retry', reason: 'unconfirmed' };
+                    return { status: 'accepted', ...(result.data.debug_id ? { receiptId: result.data.debug_id } : {}) };
+                }
+            };
+        }
         if (config.platform === 'google') {
             let accessToken: string | undefined;
             let tokenExpiresAt = 0;
@@ -130,7 +177,7 @@ export function createConversionAdapters(raw: string): ConversionAdapter[] {
                 },
                 async send(payload) {
                     if (!accessToken) return { status: 'failed', reason: 'configuration' };
-                    const { response, data } = await request('https://datamanager.googleapis.com/v1/events:ingest', accessToken, payload);
+                    const { response, data } = await request('https://datamanager.googleapis.com/v1/events:ingest', `Bearer ${accessToken}`, payload);
                     const failure = httpFailure(response);
                     if (failure) return failure;
                     const parsed = receiptId.safeParse(data['requestId']);
@@ -140,7 +187,7 @@ export function createConversionAdapters(raw: string): ConversionAdapter[] {
                     if (!accessToken) return { status: 'failed', reason: 'configuration' };
                     const { response, data } = await request(
                         `https://datamanager.googleapis.com/v1/requestStatus:retrieve?requestId=${encodeURIComponent(requestId)}`,
-                        accessToken
+                        `Bearer ${accessToken}`
                     );
                     const failure = httpFailure(response);
                     if (failure) return failure;
@@ -246,7 +293,7 @@ export function createConversionAdapters(raw: string): ConversionAdapter[] {
                         : platform === 'chatgpt'
                           ? `https://bzr.openai.com/v1/events?pid=${encodeURIComponent(pixelId)}`
                           : `https://ads-api.reddit.com/api/v3/pixels/${pixelId}/conversion_events`;
-                const { response, data } = await request(url, token, payload);
+                const { response, data } = await request(url, `Bearer ${token}`, payload);
                 if (platform === 'meta' && z.object({ is_transient: z.literal(true) }).safeParse(data['error']).success)
                     return { status: 'retry', reason: 'server_error' };
                 const failure = httpFailure(response);

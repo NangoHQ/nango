@@ -7,7 +7,7 @@ import { seeders } from '@nangohq/shared';
 
 import { conversionEventId, deliverNextConversion, enqueueConversions } from './worker.js';
 
-import type { ConversionAdapter } from './worker.js';
+import type { ConversionAdapter, Platform } from './worker.js';
 import type { SignupAdvertisingPermission } from '@nangohq/types';
 
 const testAccounts: number[] = [];
@@ -25,7 +25,7 @@ afterEach(async () => {
     testConsents.length = 0;
 });
 
-async function fixture(destination: string = randomUUID()) {
+async function fixture(destination: string = randomUUID(), platform: Platform = 'meta') {
     const { account } = await seeders.seedAccountEnvAndUser();
     testAccounts.push(account.id);
     const now = new Date();
@@ -42,6 +42,7 @@ async function fixture(destination: string = randomUUID()) {
     };
     const context = {
         meta: { fbclid: 'local-test-id', observedAt: now.toISOString(), source: 'landing_query' as const },
+        x: { twclid: 'local-x-id', observedAt: now.toISOString(), source: 'landing_query' as const },
         browser: { sourceUrl: 'https://app.nango.dev/signup', userAgent: 'Test browser' }
     };
     await db.knex('advertising_consents').insert({
@@ -79,7 +80,7 @@ async function fixture(destination: string = randomUUID()) {
     };
     const send = vi.fn<ConversionAdapter['send']>().mockResolvedValue({ status: 'accepted', receiptId: 'local-receipt' });
     const adapter: ConversionAdapter = {
-        platform: 'meta',
+        platform,
         destination,
         startAt: now,
         prepare: (id, p) => ({ id: conversionEventId(id), time: p.signupAt.toISOString() }),
@@ -88,16 +89,28 @@ async function fixture(destination: string = randomUUID()) {
     // Only retire this test's earlier fixtures. The suite uses disposable local services.
     await db.knex('signup_ad_conversions').whereIn('account_id', testAccounts).where('status', 'pending').update({ status: 'skipped' });
     await enqueueConversions(adapter);
-    const row = () => db.knex('signup_ad_conversions').where({ account_id: account.id, platform: 'meta' }).first();
+    const row = () => db.knex('signup_ad_conversions').where({ account_id: account.id, platform }).first();
     const due = () =>
         db
             .knex('signup_ad_conversions')
-            .where({ account_id: account.id, platform: 'meta' })
+            .where({ account_id: account.id, platform })
             .update({ next_attempt_at: new Date(0) });
     return { account, permission, adapter, send, row, due };
 }
 
 describe('signup conversion delivery', () => {
+    it('queues X click context and waits for permission before sending', async () => {
+        const f = await fixture('pixel/signup-event', 'x');
+        const lookup = vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce(f.permission);
+        await deliverNextConversion(f.adapter, () => true, lookup);
+        expect(f.send).not.toHaveBeenCalled();
+        expect(await f.row()).toMatchObject({ platform: 'x', attempts: 0, reason: 'permission_unavailable' });
+        await f.due();
+        await deliverNextConversion(f.adapter, () => true, lookup);
+        expect(f.send).toHaveBeenCalledOnce();
+        expect(await f.row()).toMatchObject({ platform: 'x', status: 'accepted', attempts: 1 });
+    });
+
     it('stores the maximum Google destination length', async () => {
         const destination = `${'1'.repeat(100)}/${'2'.repeat(100)}`;
         const f = await fixture(destination);
