@@ -14982,8 +14982,8 @@ litmos:
             type: string
             title: API Key
             description: Your Litmos API key, found under My Profile & Settings.
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
             example: 7c1e****-****-****-****-********a04b
-            secret: true
             doc_section: '#step-2-find-your-api-key'
 
 liveswitch:
