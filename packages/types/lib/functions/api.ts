@@ -2,7 +2,7 @@ import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTags, FunctionTriggerDefinition } from '../function/config.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
-import type { FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
+import type { FunctionListSource, FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
@@ -246,6 +246,8 @@ export interface GetFunctionResponse {
     state: 'enabled' | 'disabled';
     source: FunctionSource;
     trigger: FunctionTriggerDefinition;
+    input_json_schema: JSONSchema7 | null;
+    output_json_schema: JSONSchema7 | null;
     created_at: string;
     updated_at: string;
 }
@@ -471,6 +473,30 @@ export type DeletePublicIntegrationFunction = ApiEndpoint<{
     Params: { uniqueKey: string; name: string };
     Error: ApiError<'function_managed_by_deploy' | 'invalid_request'>;
     Success: FunctionDeletionSuccess;
+}>;
+
+export interface GetToolResponse {
+    uuid: string | null;
+    integration_id: string;
+    provider: string;
+    name: string;
+    description: string;
+    input_json_schema: JSONSchema7 | null;
+    output_json_schema: JSONSchema7 | null;
+    source: FunctionListSource;
+    meta: {
+        instructions?: string | undefined;
+        required_scopes?: string[] | undefined;
+        tags: FunctionTags;
+    };
+}
+
+export type GetTool = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/integrations/:uniqueKey/tools/:name';
+    Params: { uniqueKey: string; name: string };
+    Success: GetToolResponse;
 }>;
 
 export type GetPublicProviderTemplates = ApiEndpoint<{

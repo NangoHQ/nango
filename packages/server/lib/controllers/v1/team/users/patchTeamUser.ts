@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { userService } from '@nangohq/shared';
+import { productTracking, userService } from '@nangohq/shared';
 import { requireEmptyQuery, roles, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -71,6 +71,9 @@ export const patchTeamUser = asyncWrapper<PatchTeamUser>(async (req, res) => {
     if (!updated) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to update user role' } });
         return;
+    }
+    if (user.role !== body.role) {
+        productTracking.track({ name: 'team:user_update', eventProperties: { previous_role: user.role, role: body.role } });
     }
 
     res.status(200).send({

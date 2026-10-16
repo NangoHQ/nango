@@ -34,6 +34,7 @@ import type {
     GetPublicProvider,
     GetPublicProviders,
     GetPublicProviderTemplates,
+    GetTool,
     NangoRecord,
     OAuth1Token,
     OpenAIFunction,
@@ -319,6 +320,21 @@ export class Nango {
         addQueryParams(url, queries as DeletePublicIntegrationFunction['Querystring']);
 
         const response = await this.http.delete(url.href, { headers: this.enrichHeaders(headers) });
+        return response.data;
+    }
+
+    /**
+     * Retrieves a tool of an integration
+     * @param uniqueKey - The unique key of the integration
+     * @param name - The name of the tool
+     * @returns A promise that resolves with the tool
+     */
+    public async getTool({ uniqueKey, name }: GetTool['Params']): Promise<GetTool['Success']> {
+        const headers = { 'Content-Type': 'application/json' };
+
+        const url = new URL(`${this.serverUrl}/integrations/${uniqueKey}/tools/${name}`);
+
+        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
         return response.data;
     }
 
