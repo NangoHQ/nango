@@ -1077,6 +1077,7 @@ airtable-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.airtable.com
         headers:
@@ -1481,6 +1482,7 @@ anarlog-mcp:
         - mcp
     auth_mode: MCP_OAUTH2_GENERIC
     mcp_server_url: https://api.anarlog.so/mcp
+    mcp_endpoint: /
     proxy:
         base_url: https://api.anarlog.so/mcp
         headers:
@@ -1585,6 +1587,7 @@ amplitude-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.amplitude.com
         headers:
@@ -1609,6 +1612,7 @@ amplitude-mcp-eu:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.eu.amplitude.com
         headers:
@@ -2001,6 +2005,7 @@ asana-mcp:
         grant_type: refresh_token
     default_scopes:
         - default
+    mcp_endpoint: /v2/mcp
     proxy:
         headers:
             accept: application/json,text/event-stream
@@ -2137,6 +2142,7 @@ astro-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /v1alpha1/astro/mcp
     proxy:
         base_url: https://api.astronomer.io
         headers:
@@ -2405,6 +2411,29 @@ attention:
             pattern: '^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$'
             doc_section: '#step-1-obtaining-your-api-key'
 
+attentive-api-key:
+    display_name: Attentive (API Key)
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.attentivemobile.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/me
+    docs: https://nango.dev/docs/api-integrations/attentive-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/attentive-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Attentive custom app API key.
+            doc_section: '#step-1-create-a-custom-app'
+
 attio:
     display_name: Attio
     categories:
@@ -2456,6 +2485,7 @@ attio-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.attio.com
         headers:
@@ -4724,6 +4754,7 @@ canva-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.canva.com
         headers:
@@ -4897,6 +4928,32 @@ certn-partner:
             endpoints:
                 - /api/v2/teams
     docs: https://nango.dev/docs/integrations/all/certn-partner
+
+chameleoni:
+    display_name: Chameleon-i
+    categories:
+        - ats
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://chiapi.chameleoni.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /users/list
+    docs: https://nango.dev/docs/api-integrations/chameleoni
+    docs_connect: https://nango.dev/docs/api-integrations/chameleoni/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Chameleon-i API key.
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            example: 0BDA****-****-****-****-************-********-****-****-****-********F6E3
+            secret: true
+            doc_section: '#step-1-get-your-api-key'
 
 chargebee:
     display_name: Chargebee
@@ -5285,6 +5342,7 @@ chili-piper-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /
     proxy:
         base_url: https://fire.chilipiper.com/api/fire-edge/v1/org/mcp
         headers:
@@ -5381,6 +5439,7 @@ circleback-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://app.circleback.ai/api/
         headers:
@@ -5509,6 +5568,7 @@ clay-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /v3/mcp
     proxy:
         base_url: https://api.clay.com
         headers:
@@ -5780,6 +5840,7 @@ cloudflare-mcp:
         - dev-tools
         - mcp
     auth_mode: MCP_OAUTH2_GENERIC
+    mcp_endpoint: /
     proxy:
         base_url: ${connectionConfig.mcp_server_url}
         headers:
@@ -7225,6 +7286,7 @@ digits-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://api.digits.com
     docs: https://nango.dev/docs/api-integrations/digits-mcp
@@ -7869,6 +7931,7 @@ dualentry-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://api.dualentry.com
     docs: https://nango.dev/docs/api-integrations/dualentry-mcp
@@ -9673,6 +9736,52 @@ freshdesk:
             prefix: https://
             doc_section: '#step-2-finding-your-freshdesk-domain'
 
+freshdesk-mcp:
+    display_name: FreshDesk (MCP)
+    categories:
+        - support
+        - mcp
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshdesk.com
+        headers:
+            content-type: application/json
+            authorization: ${apiKey}
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+                accept: application/json,text/event-stream
+            endpoints:
+                - /mcp
+            data:
+                {
+                    'jsonrpc': '2.0',
+                    'id': 1,
+                    'method': 'initialize',
+                    'params': { 'protocolVersion': '2024-11-05', 'capabilities': {}, 'clientInfo': { 'name': 'nango-client', 'version': '1.0.0' } }
+                }
+    docs: https://nango.dev/docs/api-integrations/freshdesk-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/freshdesk-mcp/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: FreshDesk Domain
+            description: The subdomain of your FreshDesk account
+            pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .freshdesk.com
+            prefix: https://
+            doc_section: '#step-2-finding-your-freshdesk-domain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key of your FreshDesk account
+            example: Xk9T************************************************_p4W
+            pattern: '^[A-Za-z0-9_]+$'
+            doc_section: '#step-1-finding-your-freshdesk-api-key'
+
 freshsales:
     display_name: Freshsales
     categories:
@@ -9759,6 +9868,52 @@ freshservice:
             # FreshService is using basic auth with an api key, the basic username/password was deprecated
             default_value: 'X'
             hidden: true
+
+freshservice-mcp:
+    display_name: Freshservice (MCP)
+    categories:
+        - support
+        - mcp
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshservice.com
+        headers:
+            content-type: application/json
+            authorization: ${apiKey}
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+                accept: application/json,text/event-stream
+            endpoints:
+                - /mcp
+            data:
+                {
+                    'jsonrpc': '2.0',
+                    'id': 1,
+                    'method': 'initialize',
+                    'params': { 'protocolVersion': '2024-11-05', 'capabilities': {}, 'clientInfo': { 'name': 'nango-client', 'version': '1.0.0' } }
+                }
+    docs: https://nango.dev/docs/api-integrations/freshservice-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/freshservice-mcp/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Freshservice subdomain
+            description: The subdomain of your Freshservice account
+            pattern: '^[a-z0-9_-]+$'
+            example: subdomain
+            suffix: .freshservice.com
+            prefix: https://
+            doc_section: '#step-2-finding-your-freshservice-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key of your Freshservice account
+            example: Xk9T************************************************_p4W
+            pattern: '^[A-Za-z0-9_]+$'
+            doc_section: '#step-1-finding-your-freshservice-api-key'
 
 freshteam:
     display_name: Freshteam
@@ -10174,6 +10329,7 @@ granola-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         headers:
             accept: application/json,text/event-stream
@@ -10848,6 +11004,7 @@ google-calendar-mcp:
         - productivity
         - mcp
     alias: google-calendar
+    mcp_endpoint: /v1
     proxy:
         base_url: https://calendarmcp.googleapis.com/mcp
         headers:
@@ -11771,6 +11928,7 @@ hail-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.hail.so
         headers:
@@ -11972,6 +12130,7 @@ hex-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://app.hex.tech
         headers:
@@ -12378,6 +12537,7 @@ hubspot-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /
     proxy:
         base_url: https://mcp.hubspot.com
     docs: https://nango.dev/docs/api-integrations/hubspot-mcp
@@ -13027,6 +13187,7 @@ ironclad:
                 - na1
                 - demo
                 - eu1
+                - preview
             doc_section: '#step-1-finding-your-subdomain'
 
 ironclad-cc:
@@ -13053,6 +13214,7 @@ ironclad-cc:
                 - na1
                 - demo
                 - eu1
+                - preview
             order: 1
         userEmail:
             type: string
@@ -14084,7 +14246,7 @@ lattice:
         - hr
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.latticehq.com/
+        base_url: https://${connectionConfig.hostname} || https://api.latticehq.com
         headers:
             authorization: Bearer ${apiKey}
             accept: application/json
@@ -14092,14 +14254,25 @@ lattice:
         retry:
             after:
                 - 'retry-after'
-    docs: https://nango.dev/docs/integrations/all/lattice
-    docs_connect: https://nango.dev/docs/integrations/all/lattice/connect
+    docs: https://nango.dev/docs/api-integrations/lattice
+    docs_connect: https://nango.dev/docs/api-integrations/lattice/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Data residency
+            description: Your Lattice data residency region.
+            format: hostname
+            enum:
+                - api.latticehq.com
+                - api.emea.latticehq.com
+            doc_section: '#step-2-choosing-your-data-residency'
+            order: 1
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Lattice account
-            doc_section: '#step-1-finding-lattice-api-key'
+            doc_section: '#step-1-how-to-generate-lattice-api-keys-for-public-and-scim-apis'
 
 leadmagic:
     display_name: LeadMagic
@@ -14404,6 +14577,11 @@ linear-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://mcp.linear.app
+        headers:
+            accept: application/json,text/event-stream
     docs: https://nango.dev/docs/api-integrations/linear-mcp
 
 linkedin:
@@ -14682,6 +14860,7 @@ lovable-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /
     proxy:
         headers:
             accept: application/json,text/event-stream
@@ -15097,6 +15276,11 @@ mcp-generic:
     categories:
         - mcp
     auth_mode: MCP_OAUTH2_GENERIC
+    mcp_endpoint: /
+    proxy:
+        base_url: ${connectionConfig.mcp_server_url}
+        headers:
+            accept: application/json,text/event-stream
     connection_config:
         mcp_server_url:
             type: string
@@ -15412,6 +15596,7 @@ meta-mcp:
     token_url: https://graph.facebook.com/v26.0/oauth/access_token
     authorization_params:
         response_type: code
+    mcp_endpoint: /ads
     proxy:
         base_url: https://mcp.facebook.com
         headers:
@@ -15856,6 +16041,30 @@ microsoft-dynamics-365-finance-and-operations-cc:
             prefix: https://
             doc_section: '#step-2-finding-your-environment-url'
             order: 2
+
+microsoft-defender-cc:
+    display_name: Microsoft Defender (Client Credentials)
+    categories:
+        - iam
+    auth_mode: OAUTH2_CC
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+    default_scopes:
+        - https://api.securitycenter.microsoft.com/.default
+    proxy:
+        base_url: https://api.security.microsoft.com
+    docs: https://nango.dev/docs/api-integrations/microsoft-defender-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-defender-cc/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: Your Microsoft Entra tenant ID.
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-register-an-app-in-microsoft-entra-id'
+            order: 1
 
 microsoft-dataverse:
     display_name: Microsoft Dataverse (Dynamics 365 CRM)
@@ -16837,6 +17046,7 @@ neon-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.neon.tech
         headers:
@@ -17486,6 +17696,7 @@ notion-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         headers:
             accept: application/json,text/event-stream
@@ -18548,6 +18759,7 @@ pandadoc-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /v1/mcp
     proxy:
         base_url: https://mcp.pandadoc.com
         headers:
@@ -18570,6 +18782,7 @@ pandadoc-mcp-eu:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /v1/mcp
     proxy:
         base_url: https://mcp.pandadoc.eu
         headers:
@@ -19798,6 +20011,7 @@ pleo-mcp:
         resource: https://mcp.pleo.io/
     default_scopes:
         - authenticated
+    mcp_endpoint: /mcp
     proxy:
         headers:
             accept: application/json,text/event-stream
@@ -20637,6 +20851,47 @@ ramp-sandbox:
         base_url: https://demo-api.ramp.com
     docs: https://nango.dev/docs/integrations/all/ramp-sandbox
 
+rapid7:
+    display_name: Rapid7
+    categories:
+        - iam
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.region}.api.insight.rapid7.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /validate
+    docs: https://nango.dev/docs/api-integrations/rapid7
+    docs_connect: https://nango.dev/docs/api-integrations/rapid7/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region code of your Rapid7 data.
+            enum:
+                - us
+                - us2
+                - us3
+                - eu
+                - ca
+                - au
+                - ap
+                - me1
+                - aps2
+            doc_section: '#step-1-find-your-region'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Rapid7 API key.
+            format: uuid
+            example: 3f2a****-****-****-****-********9c1e
+            doc_section: '#step-2-generate-an-api-key'
+
 rapidapi:
     display_name: RapidAPI
     categories:
@@ -20937,6 +21192,7 @@ render-mcp:
         - dev-tools
         - mcp
     auth_mode: API_KEY
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.render.com
         headers:
@@ -20969,6 +21225,7 @@ raindrop-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.raindrop.ai
         headers:
@@ -21459,6 +21716,7 @@ robinhood-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp/trading
     proxy:
         base_url: https://agent.robinhood.com
         headers:
@@ -22421,6 +22679,7 @@ sanity-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.sanity.io
         headers:
@@ -22871,6 +23130,7 @@ scrollstash-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.scrollstash.com
         headers:
@@ -24247,6 +24507,7 @@ slack-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.slack.com
         headers:
@@ -24774,6 +25035,7 @@ stitch-mcp:
     alias: google
     default_scopes:
         - https://www.googleapis.com/auth/cloud-platform
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://stitch.googleapis.com
         headers:
@@ -25131,6 +25393,7 @@ supabase-mcp:
         - dev-tools
         - mcp
     auth_mode: API_KEY
+    mcp_endpoint: /mcp?project_ref=${connectionConfig.projectRef}
     proxy:
         base_url: https://mcp.supabase.com
         headers:
@@ -25185,6 +25448,7 @@ supabase-mcp-oauth:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp?project_ref=${connectionConfig.projectRef}
     proxy:
         base_url: https://mcp.supabase.com
         headers:
@@ -25221,6 +25485,7 @@ superhuman-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.mail.superhuman.com
         headers:
@@ -25740,6 +26005,39 @@ tempo:
                 - api.us
             doc_section: '#step-2-find-your-api-subdomain'
             order: 1
+
+tenable:
+    display_name: Tenable
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://cloud.tenable.com
+        headers:
+            x-apikeys: 'accessKey=${credentials.username}; secretKey=${credentials.password};'
+        verification:
+            method: GET
+            endpoints:
+                - /scans
+    docs: https://nango.dev/docs/api-integrations/tenable
+    docs_connect: https://nango.dev/docs/api-integrations/tenable/connect
+    credentials:
+        username:
+            type: string
+            title: Access Key
+            description: Your Tenable API access key.
+            secret: true
+            example: b31e0f97****************************************************86f7
+            pattern: '^[a-f0-9]{64}$'
+            doc_section: '#step-1-generating-your-api-keys'
+        password:
+            type: string
+            title: Secret Key
+            description: Your Tenable API secret key.
+            secret: true
+            example: f584b7b4****************************************************c9a7
+            pattern: '^[a-f0-9]{64}$'
+            doc_section: '#step-1-generating-your-api-keys'
 
 the-swarm:
     display_name: The Swarm
@@ -26393,8 +26691,8 @@ perk:
     categories:
         - productivity
     auth_mode: OAUTH2
-    authorization_url: https://app.travelperk.com/oauth2/authorize/
-    token_url: https://app.travelperk.com/accounts/oauth2/token/
+    authorization_url: https://app.${connectionConfig.domain}/oauth2/authorize/ || https://app.travelperk.com/oauth2/authorize/
+    token_url: https://app.${connectionConfig.domain}/accounts/oauth2/token/ || https://app.travelperk.com/accounts/oauth2/token/
     disable_pkce: true
     scope_separator: ' '
     authorization_params:
@@ -26404,12 +26702,25 @@ perk:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api.travelperk.com
+        base_url: https://api.${connectionConfig.domain} || https://api.travelperk.com
         retry:
             after:
                 - 'retry-after'
     docs: https://nango.dev/docs/api-integrations/perk
+    docs_connect: https://nango.dev/docs/api-integrations/perk/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/perk/how-to-register-your-own-perk-api-oauth-app
+    connection_config:
+        domain:
+            type: string
+            title: Environment
+            description: Your Perk environment.
+            default_value: perk.com
+            format: hostname
+            enum:
+                - perk.com
+                - sandbox-perk.com
+            order: 1
+            doc_section: '#step-1-choosing-your-environment'
 
 tripletex:
     display_name: Tripletex
@@ -26556,6 +26867,7 @@ trigify-io-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
     proxy:
         base_url: https://api.trigify.io
         headers:
@@ -27652,6 +27964,7 @@ vercel-mcp:
         grant_type: refresh_token
     default_scopes:
         - offline_access
+    mcp_endpoint: /
     proxy:
         headers:
             accept: application/json,text/event-stream
@@ -28095,6 +28408,31 @@ vincere:
             doc_section: '#step-2-request-your-api-key'
             order: 2
 
+vwo:
+    display_name: Wingify (VWO)
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.wingify.com
+        headers:
+            token: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/accounts/current
+    docs: https://nango.dev/docs/api-integrations/vwo
+    docs_connect: https://nango.dev/docs/api-integrations/vwo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Wingify API token.
+            pattern: '^[0-9a-f]{64}$'
+            example: 7fe29f36****************************************************80f9
+            doc_section: '#step-1-generate-an-api-token'
+
 wappalyzer:
     display_name: Wappalyzer
     categories:
@@ -28431,6 +28769,7 @@ wordpress-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /v2/mcp/v1
     proxy:
         base_url: https://public-api.wordpress.com/wpcom
         headers:

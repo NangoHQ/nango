@@ -406,6 +406,12 @@ const ENVS_SHAPE = z.object({
     ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_BACKPRESSURE_MONITORING_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
     ORCHESTRATOR_BACKPRESSURE_MONITORING_TOP_N: z.coerce.number().optional().default(10),
+    ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS: z.coerce
+        .number()
+        .int()
+        .refine((ms) => ms === 0 || ms >= 1000, { message: 'must be 0 (disabled) or at least 1000' })
+        .default(0),
+    ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS: z.coerce.number().int().min(1000).max(5000).default(1000),
     ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
     ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: z.coerce.number().int().nonnegative().optional().default(0),
@@ -837,6 +843,20 @@ const ENVS_SHAPE = z.object({
     // Deploy
     DEPLOY_BATCH_SIZE: z.coerce.number().int().positive().optional().default(5),
     DEPLOY_LOCK_TTL_MS: z.coerce.number().int().positive().optional().default(600_000),
+
+    // Hosted telemetry
+    // Postgres storage for hosted telemetry on self-hosted and BYOC installations.
+    NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL: z.url().optional(),
+    NANGO_HOSTED_TELEMETRY_POSTGRES_POOL_MAX: z.coerce.number().int().positive().optional().default(5),
+    NANGO_HOSTED_TELEMETRY_POSTGRES_SSL: z.stringbool().optional().default(false),
+    // Floored so a configuration mistake cannot drop the data an invoice depends on: one month plus a dispute window.
+    NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: z.coerce.number().int().min(45).optional().default(90),
+    NANGO_HOSTED_TELEMETRY_POSTGRES_PARTITION_INTERVAL_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .max(6 * 3600 * 1000) // capped so tomorrow's partition is always created before midnight reaches it
+        .default(1 * 3600 * 1000),
 
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),

@@ -5,12 +5,15 @@ import ReactDOM from 'react-dom/client';
 import App from './app/App';
 import { Providers } from './app/providers';
 import { INVITE_PREFILL_PARAM } from './pages/Team/components/inviteForm';
+import { removeIdleAgentPlaygroundChats } from './store/agentPlaygroundChat';
 import { globalEnv } from './utils/env';
 import { maskCapturedNetworkRequest, redactSensitiveProperties } from './utils/sensitive-url';
 
 if (globalEnv.publicPosthogKey) {
     posthog.init(globalEnv.publicPosthogKey, {
         api_host: globalEnv.publicPosthogHost,
+        // The website shares the .nango.dev cookie; without this, a stale per-origin localStorage overrides it.
+        cookieWinsOnConflict: true,
         autocapture: false,
         capture_pageview: 'history_change',
         mask_personal_data_properties: true,
@@ -55,6 +58,8 @@ if (globalEnv.publicPosthogKey) {
         }
     });
 }
+
+removeIdleAgentPlaygroundChats();
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(

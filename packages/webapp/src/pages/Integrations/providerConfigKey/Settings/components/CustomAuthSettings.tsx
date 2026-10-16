@@ -1,7 +1,7 @@
 import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
-import { Alert, AlertDescription, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertDescription, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { CopyButton } from '@/components/ui/CopyButton';
@@ -13,6 +13,7 @@ import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/cloud.js';
 import { AppPrivateKeyInput } from './AppPrivateKeyInput';
+import { SettingsField } from './SettingsLayout';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 
@@ -70,40 +71,30 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
     };
 
     return (
-        <div className="flex flex-col gap-10">
-            {/* Callback URL */}
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="callback_url">Callback URL</FieldLabel>
-                <InputGroup>
-                    <InputGroupInput disabled value={callbackUrl} />
-                    <InputGroupAddon align="inline-end">
-                        <CopyButton text={callbackUrl} />
-                    </InputGroupAddon>
-                </InputGroup>
-            </div>
+        <>
+            <div className="flex flex-col gap-6">
+                <SettingsField label="Callback URL" htmlFor="callback_url">
+                    <InputGroup>
+                        <InputGroupInput disabled value={callbackUrl} />
+                        <InputGroupAddon align="inline-end">
+                            <CopyButton text={callbackUrl} />
+                        </InputGroupAddon>
+                    </InputGroup>
+                </SettingsField>
 
-            {/* App ID */}
-            <div className="flex flex-col gap-2">
-                <div className="flex gap-2 items-center">
-                    <FieldLabel htmlFor="app_id">App ID</FieldLabel>
-                    <InfoTooltip>Obtain the app id from the app page.</InfoTooltip>
-                </div>
-                <EditableInput initialValue={integration.custom?.app_id || ''} onSave={(value) => onSave({ appId: value })} validate={validateNotEmpty} />
-            </div>
+                <SettingsField label="App ID" htmlFor="app_id" info={<InfoTooltip size="sm">Obtain the app id from the app page.</InfoTooltip>}>
+                    <EditableInput initialValue={integration.custom?.app_id || ''} onSave={(value) => onSave({ appId: value })} validate={validateNotEmpty} />
+                </SettingsField>
 
-            {/* App Public Link */}
-            <div className="flex flex-col gap-2">
-                <div className="flex gap-2 items-center">
-                    <FieldLabel htmlFor="app_link">App Public Link</FieldLabel>
-                    <InfoTooltip>Obtain the app public link from the app page.</InfoTooltip>
-                </div>
-                <EditableInput initialValue={integration.app_link || ''} onSave={(value) => onSave({ appLink: value })} validate={validateUrl} />
-            </div>
+                <SettingsField
+                    label="App public link"
+                    htmlFor="app_link"
+                    info={<InfoTooltip size="sm">Obtain the app public link from the app page.</InfoTooltip>}
+                >
+                    <EditableInput initialValue={integration.app_link || ''} onSave={(value) => onSave({ appLink: value })} validate={validateUrl} />
+                </SettingsField>
 
-            {/* Client ID */}
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="client_id">Client ID</FieldLabel>
-                <>
+                <SettingsField label="Client ID" htmlFor="client_id">
                     <EditableInput
                         initialValue={integration.oauth_client_id || ''}
                         onSave={handleClientIdSave}
@@ -118,25 +109,20 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
                             </AlertDescription>
                         </Alert>
                     )}
-                </>
+                </SettingsField>
+
+                <SettingsField label="Client secret" htmlFor="client_secret">
+                    <EditableInput
+                        secret
+                        initialValue={integration.oauth_client_secret || ''}
+                        onSave={(value) => onSave({ clientSecret: value })}
+                        validate={validateNotEmpty}
+                    />
+                </SettingsField>
+
+                <AppPrivateKeyInput initialValue={integration.custom?.private_key || ''} onSave={(value) => onSave({ privateKey: value })} />
             </div>
-
-            {/* Client Secret */}
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="client_secret">Client Secret</FieldLabel>
-                <EditableInput
-                    secret
-                    initialValue={integration.oauth_client_secret || ''}
-                    onSave={(value) => onSave({ clientSecret: value })}
-                    validate={validateNotEmpty}
-                />
-            </div>
-
-            {/* App Private Key */}
-            <AppPrivateKeyInput initialValue={integration.custom?.private_key || ''} onSave={(value) => onSave({ privateKey: value })} />
-
-            {/* Confirmation Dialog */}
             {DialogComponent}
-        </div>
+        </>
     );
 };

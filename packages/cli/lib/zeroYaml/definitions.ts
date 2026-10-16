@@ -17,7 +17,8 @@ import {
     EndpointMismatchDefinitionError,
     InvalidIntervalDefinitionError,
     InvalidModelDefinitionError,
-    TrackDeletesDefinitionError
+    TrackDeletesDefinitionError,
+    UnusedCheckpointDefinitionError
 } from './utils.js';
 
 import type {
@@ -33,6 +34,7 @@ import type {
     DBFunctionConfigVersion,
     FunctionConcurrencyLimit,
     FunctionDeploymentArtifact,
+    FunctionTags,
     NangoYamlParsed,
     NangoYamlParsedIntegration,
     ParsedNangoAction,
@@ -40,6 +42,7 @@ import type {
     Result
 } from '@nangohq/types';
 
+// TODO: consolidate with the `server` schemas to have a single source of truth
 const debounceKeySourceSchema = z.union([z.object({ body: z.string() }).strict(), z.object({ header: z.string() }).strict()]);
 const functionTriggerDefinitionSchema = z.discriminatedUnion('kind', [
     z.object({ kind: z.literal('none') }).strict(),
@@ -70,6 +73,27 @@ const functionTriggerDefinitionSchema = z.discriminatedUnion('kind', [
         .strict()
 ]) satisfies z.ZodType<FunctionTriggerDefinition>;
 
+const functionTagStringSchema = z.string().max(64);
+const functionTagKeySchema = z
+    .string()
+    .regex(/^[a-z][a-z0-9_\-./]*$/, {
+        message: 'Tag keys must start with a lowercase letter and contain only lowercase letters, digits, underscores, hyphens, periods, or slashes'
+    })
+    .max(64);
+const functionTagValueSchema = z.union([functionTagStringSchema, z.array(functionTagStringSchema).max(64)], {
+    error: (iss) => {
+        const got = Array.isArray(iss.input) ? 'array' : iss.input === null ? 'null' : typeof iss.input;
+        return `Expected string or string[], received ${got}`;
+    }
+});
+export const functionTagsSchema = z
+    .record(functionTagKeySchema, functionTagValueSchema, {
+        error: (iss) => (iss.code === 'invalid_key' ? iss.issues[0]?.message : undefined)
+    })
+    .refine((tags) => Object.keys(tags).length <= 32, {
+        message: 'Functions cannot have more than 32 tags'
+    }) satisfies z.ZodType<FunctionTags>;
+
 interface FunctionDefinition {
     description: string;
     trigger?: FunctionTriggerDefinition | undefined;
@@ -78,6 +102,7 @@ interface FunctionDefinition {
     input?: z.ZodTypeAny | undefined;
     output?: z.ZodTypeAny | undefined;
     data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
+    tags?: FunctionTags | undefined;
 }
 
 export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'> & { filePath: string };
@@ -129,6 +154,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
 
         const basename = path.basename(filePath, '.js');
         const realPath = filePath.replace(/\.js$/, '.ts');
+        const absoluteRealPath = sourcePath.absolute.replace(/\.js$/, '.ts');
         const basenameClean = basename.replaceAll(/[^a-zA-Z0-9]/g, '');
         const integrationIdRes = getIntegrationId(filePath);
         if (integrationIdRes.isErr()) {
@@ -150,7 +176,14 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
 
         switch (script.type) {
             case 'sync': {
-                const parsedSyncRes = parseSync({ filePath: realPath, params: script, integrationIdClean, basename, basenameClean });
+                const parsedSyncRes = parseSync({
+                    filePath: realPath,
+                    absoluteFilePath: absoluteRealPath,
+                    params: script,
+                    integrationIdClean,
+                    basename,
+                    basenameClean
+                });
                 if (parsedSyncRes.isErr()) {
                     return Err(parsedSyncRes.error);
                 }
@@ -158,7 +191,18 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 break;
             }
             case 'action': {
-                integration.actions.push(parseAction({ filePath: realPath, params: script, integrationIdClean, basename, basenameClean }));
+                const parsedActionRes = parseAction({
+                    filePath: realPath,
+                    absoluteFilePath: absoluteRealPath,
+                    params: script,
+                    integrationIdClean,
+                    basename,
+                    basenameClean
+                });
+                if (parsedActionRes.isErr()) {
+                    return Err(parsedActionRes.error);
+                }
+                integration.actions.push(parsedActionRes.value);
                 break;
             }
             case 'onEvent': {
@@ -221,12 +265,14 @@ const regexModelName = /^[A-Z][a-zA-Z0-9_]+$/;
 
 export function parseSync({
     filePath,
+    absoluteFilePath,
     params,
     integrationIdClean,
     basename,
     basenameClean
 }: {
     filePath: string;
+    absoluteFilePath: string;
     params: CreateSyncResponse<Record<string, ZodModel>, ZodMetadata, ZodCheckpoint>;
     integrationIdClean: string;
     basename: string;
@@ -271,7 +317,12 @@ export function parseSync({
     const outputNames = Object.keys(params.models);
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
 
-    const features = detectFeatures({ entryPoint: filePath });
+    const featuresRes = detectFeatures({ entryPoint: absoluteFilePath });
+    const features = featuresRes.isOk() ? featuresRes.value : [];
+
+    if (featuresRes.isOk() && params.checkpoint !== undefined && !features.includes('checkpoints')) {
+        return Err(new UnusedCheckpointDefinitionError(filePath, ['createSync', 'checkpoint']));
+    }
 
     const sync: ParsedNangoSync = {
         type: 'sync',
@@ -289,7 +340,7 @@ export function parseSync({
         version: params.version || '',
         webhookSubscriptions: params.webhookSubscriptions || [],
         json_schema: jsonSchema,
-        features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
+        features
     };
 
     return Ok(sync);
@@ -297,17 +348,19 @@ export function parseSync({
 
 export function parseAction({
     filePath,
+    absoluteFilePath,
     params,
     integrationIdClean,
     basename,
     basenameClean
 }: {
     filePath: string;
+    absoluteFilePath: string;
     params: CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>;
     integrationIdClean: string;
     basename: string;
     basenameClean: string;
-}): ParsedNangoAction {
+}): Result<ParsedNangoAction> {
     const inputName = `ActionInput_${integrationIdClean}_${basenameClean}`;
     const outputName = `ActionOutput_${integrationIdClean}_${basenameClean}`;
 
@@ -318,9 +371,14 @@ export function parseAction({
 
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
 
-    const features = detectFeatures({ entryPoint: filePath });
+    const featuresRes = detectFeatures({ entryPoint: absoluteFilePath });
+    const features = featuresRes.isOk() ? featuresRes.value : [];
 
-    return {
+    if (featuresRes.isOk() && params.checkpoint !== undefined && !features.includes('checkpoints')) {
+        return Err(new UnusedCheckpointDefinitionError(filePath, ['createAction', 'checkpoint']));
+    }
+
+    return Ok({
         type: 'action' as const,
         description: params.description,
         endpoint: params.endpoint ?? null,
@@ -331,8 +389,8 @@ export function parseAction({
         usedModels: [inputName, outputName],
         version: params.version || '',
         json_schema: jsonSchema,
-        features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
-    };
+        features
+    });
 }
 
 export function validateFunction({
@@ -340,7 +398,7 @@ export function validateFunction({
     integrationId,
     basename
 }: {
-    params: Pick<FunctionDefinition, 'trigger' | 'input' | 'data' | 'requires'>;
+    params: Pick<FunctionDefinition, 'trigger' | 'input' | 'data' | 'requires' | 'tags'>;
     integrationId: string;
     basename: string;
 }): Result<void> {
@@ -378,6 +436,15 @@ export function validateFunction({
     }
     if (params.requires?.invoke === true) {
         return Err(new Error(`Function '${fnPath}' declares requires.invoke which is not supported yet.`));
+    }
+    if (params.tags !== undefined) {
+        const tagsValidation = functionTagsSchema.safeParse(params.tags);
+        if (!tagsValidation.success) {
+            const details = tagsValidation.error.issues
+                .map((issue) => `${issue.path.length > 0 ? `${issue.path.map((key) => `${JSON.stringify(key)}`).join('')}: ` : ''}${issue.message}`)
+                .join('; ');
+            return Err(new Error(`Function '${fnPath}' has invalid tags: ${details}`));
+        }
     }
 
     return Ok(undefined);
@@ -448,7 +515,8 @@ export function parseFunction({
         model_schema_refs: Object.keys(models || {}).map(toSchemaRef),
         metadata_schema_ref: toSchemaRefNullable(metadataName),
         checkpoint_schema_ref: toSchemaRefNullable(checkpointName),
-        json_schema: buildJsonSchemaDefinitionsFromZodModels(allZodModels)
+        json_schema: buildJsonSchemaDefinitionsFromZodModels(allZodModels),
+        tags: params.tags ?? {}
     };
 }
 

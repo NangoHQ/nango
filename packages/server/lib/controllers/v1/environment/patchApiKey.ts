@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { isEnvironmentScopeSelector } from '@nangohq/authz';
 import db from '@nangohq/database';
-import { CustomerKeyError, customerKeyService } from '@nangohq/shared';
+import { CustomerKeyError, customerKeyService, productTracking } from '@nangohq/shared';
 import { report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
@@ -67,5 +67,6 @@ export const patchApiKey = asyncWrapperWithEnvironment<PatchApiKey>(async (req, 
         }
     }
 
+    productTracking.track({ name: 'environments:environment_update', eventProperties: { section: 'api_keys' } });
     res.status(200).send({ success: true });
 });

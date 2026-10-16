@@ -5,12 +5,22 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { seeders } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
-import { buildSessionTools, createAgentSessionMcpServer, listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
+import { actionInputSchemaOf, buildSessionTools, createAgentSessionMcpServer, listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
 
-import type { AgentSession, AgentSessionCompiledToolset, AgentSessionMetaTools } from '@nangohq/types';
+import type * as ToolSearchService from '../../../services/agentSessionToolSearch.service.js';
+import type { AgentSession, AgentSessionCompiledToolset, AgentSessionMetaTools, AgentSessionToolInput } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 
 const executeAction = vi.hoisted(() => vi.fn());
 vi.mock('../../../services/action.service.js', () => ({ executeAction }));
+
+const findActionInputs = vi.hoisted(() => vi.fn());
+vi.mock('../../../services/agentSessionToolSearch.service.js', async (importOriginal) => ({
+    ...(await importOriginal<typeof ToolSearchService>()),
+    findActionInputs
+}));
+
+const OPEN_INPUT_SCHEMA = { $schema: 'https://json-schema.org/draft/2020-12/schema', type: 'object', properties: {}, additionalProperties: true };
 
 function session({
     compiledToolset = {},
@@ -43,6 +53,68 @@ function tool(name: string) {
 describe('createAgentSessionMcpServer', () => {
     beforeEach(() => {
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
+        findActionInputs.mockReset().mockResolvedValue(new Map());
+    });
+
+    async function listTools(compiledToolset: AgentSessionCompiledToolset) {
+        const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+        const server = createAgentSessionMcpServer({
+            account: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: null,
+            session: session({ compiledToolset })
+        });
+        const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+        await server.connect(serverTransport);
+        await client.connect(clientTransport);
+
+        try {
+            return (await client.listTools()).tools;
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    }
+
+    it('lists a pinned deployed action with the input schema it was deployed with', async () => {
+        const model = { type: 'object', properties: { title: { type: 'string' } }, required: ['title'] };
+        findActionInputs.mockResolvedValue(
+            new Map([
+                ['notion', new Map([['read_doc', { kind: 'schema', schema: { definitions: { ReadDocInput: model }, $ref: '#/definitions/ReadDocInput' } }]])]
+            ])
+        );
+
+        const tools = await listTools({
+            notion: { provider: 'notion', pinned: [tool('read_doc'), { ...tool('search'), mcp: { inputSchema: { type: 'object' } } }], searchable: [] }
+        });
+
+        expect(findActionInputs).toHaveBeenCalledWith({ environmentId: 1, actions: [{ integrationId: 'notion', name: 'read_doc' }] });
+        expect(tools.find((listed) => listed.name === 'notion__read_doc')?.inputSchema).toStrictEqual({
+            $schema: 'http://json-schema.org/draft-07/schema#',
+            ...model,
+            definitions: { ReadDocInput: model }
+        });
+    });
+
+    it('keeps the free-form schema for an action that is no longer deployed', async () => {
+        const tools = await listTools({ notion: { provider: 'notion', pinned: [tool('read_doc')], searchable: [] } });
+
+        expect(tools.find((listed) => listed.name === 'notion__read_doc')?.inputSchema).toStrictEqual(OPEN_INPUT_SCHEMA);
+    });
+
+    it('still lists tools when the schema lookup fails', async () => {
+        findActionInputs.mockRejectedValue(new Error('db down'));
+
+        const tools = await listTools({ notion: { provider: 'notion', pinned: [tool('read_doc')], searchable: [] } });
+
+        expect(tools.find((listed) => listed.name === 'notion__read_doc')?.inputSchema).toStrictEqual(OPEN_INPUT_SCHEMA);
+    });
+
+    it('skips the lookup when no deployed action is listed', async () => {
+        await listTools({ notion: { provider: 'notion', pinned: [], searchable: [tool('read_doc')] } });
+
+        expect(findActionInputs).not.toHaveBeenCalled();
     });
 
     it('advertises that its tool list does not change during a connection', async () => {
@@ -194,6 +266,32 @@ describe('listSessionTools', () => {
         ]);
     });
 
+    it('lists a pinned MCP server tool with the schema and annotations its server gave', () => {
+        const inputSchema = { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] };
+        const tools = listSessionTools(
+            session({
+                compiledToolset: {
+                    'linear-mcp': {
+                        provider: 'linear-mcp',
+                        pinned: [{ name: 'list_issues', description: 'List issues', mcp: { inputSchema, annotations: { readOnlyHint: true } } }],
+                        searchable: [],
+                        mcpServer: 'available'
+                    }
+                }
+            })
+        );
+
+        expect(tools.slice(2)).toStrictEqual([
+            {
+                name: 'linear-mcp__list_issues',
+                description: 'List issues',
+                inputSchema,
+                annotations: { readOnlyHint: true },
+                _meta: { 'nango/integration': 'linear-mcp', 'nango/tool': 'list_issues' }
+            }
+        ]);
+    });
+
     it('orders integrations by id so a cursor stays valid across list calls', () => {
         const toolset: AgentSessionCompiledToolset = {
             zendesk: { provider: 'zendesk', pinned: [tool('get_ticket')], searchable: [] },
@@ -317,5 +415,29 @@ describe('listSessionTools', () => {
         const tools = listSessionTools(session({ compiledToolset: { notion: { provider: 'notion', pinned, searchable: [] } } }));
 
         expect(tools).toHaveLength(TOOLS_PAGE_SIZE * 2 + 2);
+    });
+});
+
+describe('actionInputSchemaOf', () => {
+    const model: JSONSchema7 = { type: 'object', properties: { title: { type: 'string' } } };
+
+    it('lists the input model as the object at the root', () => {
+        expect(
+            actionInputSchemaOf({
+                kind: 'schema',
+                schema: { $schema: 'http://json-schema.org/draft-07/schema#', definitions: { ReadDocInput: model }, $ref: '#/definitions/ReadDocInput' }
+            })
+        ).toStrictEqual({ $schema: 'http://json-schema.org/draft-07/schema#', ...model, definitions: { ReadDocInput: model } });
+    });
+
+    it('lists an action with no input as taking an empty object', () => {
+        expect(actionInputSchemaOf({ kind: 'none' })).toStrictEqual({ ...OPEN_INPUT_SCHEMA, additionalProperties: false });
+    });
+
+    it.each<AgentSessionToolInput>([
+        { kind: 'unavailable' },
+        { kind: 'schema', schema: { definitions: { ReadDocInput: { type: 'array' } }, $ref: '#/definitions/ReadDocInput' } }
+    ])('falls back to a free-form object when the input has no object form', (input) => {
+        expect(actionInputSchemaOf(input)).toStrictEqual(OPEN_INPUT_SCHEMA);
     });
 });

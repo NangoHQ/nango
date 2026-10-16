@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { externalWebhookService } from '@nangohq/shared';
+import { externalWebhookService, productTracking } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { webhookUrlSchema } from '../../../../helpers/validation.js';
@@ -71,6 +71,7 @@ export const patchWebhook = asyncWrapperWithEnvironment<PatchWebhook>(async (req
     }
 
     await externalWebhookService.update(db.knex, { environment_id: environment.id, data: data });
+    productTracking.track({ name: 'environments:environment_update', eventProperties: { section: 'webhooks' } });
 
     res.status(200).send({ success: true });
 });

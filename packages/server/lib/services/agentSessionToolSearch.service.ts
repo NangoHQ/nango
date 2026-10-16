@@ -8,19 +8,21 @@ import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuida
 import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { trackAgentSessionToolSearch } from './agentSessionAnalytics.service.js';
 
-import type { AgentSessionToolSearchHit } from './agentSessionAnalytics.service.js';
 import type { ActionInputSchemaRow } from '@nangohq/shared';
 import type {
     AgentSession,
     AgentSessionToolConnectionState,
     AgentSessionToolInput,
     AgentSessionToolMatch,
+    AgentSessionToolSearchHit,
     AgentSessionToolSearchResult,
     DBEnvironment,
     DBTeam
 } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 
 const DEFINITIONS_POINTER = '#/definitions/';
+const JSON_SCHEMA_DRAFT_07 = 'http://json-schema.org/draft-07/schema#';
 
 const FUSE_OPTIONS: NonNullable<ConstructorParameters<typeof Fuse<SearchCandidate>>[1]> = {
     includeScore: true,
@@ -97,6 +99,7 @@ interface SearchCandidate {
     description: string;
     connection: AgentSessionToolConnectionState;
     listed: boolean;
+    input?: AgentSessionToolInput;
 }
 
 /** A candidate with the score it was ranked on, so how well a search did outlives the ranking. */
@@ -134,7 +137,9 @@ export async function searchSessionTools({
         const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
 
         // It's possible a tool was removed after the session compiled, so we set input as unavailable.
-        const matches = ranked.best.map((candidate) => toMatch(candidate, inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' }));
+        const matches = ranked.best.map((candidate) =>
+            toMatch(candidate, candidate.input ?? inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' })
+        );
         const related = ranked.related.map((candidate) => toMatch(candidate, undefined));
 
         await logCtx.enrichOperation({ meta: searchOperationMeta({ query, matches, related }) });
@@ -248,7 +253,8 @@ function buildSearchCandidateList({ session, slugOf }: { session: AgentSession; 
                           provider: compiled.provider,
                           description: tool.description,
                           connection,
-                          listed
+                          listed,
+                          ...(tool.mcp ? { input: { kind: 'schema', schema: tool.mcp.inputSchema as JSONSchema7 } as const } : {})
                       }
                   ]
                 : [];
@@ -276,10 +282,21 @@ async function findToolInputs({
     environmentId: number;
     candidates: SearchCandidate[];
 }): Promise<Map<string, Map<string, AgentSessionToolInput>>> {
-    const rows = await legacyFunctionService.findActionInputSchemas({
+    return await findActionInputs({
         environmentId,
-        actions: candidates.map((candidate) => ({ integrationId: candidate.integration, name: candidate.action }))
+        actions: candidates.filter((candidate) => !candidate.input).map((candidate) => ({ integrationId: candidate.integration, name: candidate.action }))
     });
+}
+
+/** Inputs keyed by integration id, then action name. An action missing from the result is no longer deployed. */
+export async function findActionInputs({
+    environmentId,
+    actions
+}: {
+    environmentId: number;
+    actions: { integrationId: string; name: string }[];
+}): Promise<Map<string, Map<string, AgentSessionToolInput>>> {
+    const rows = await legacyFunctionService.findActionInputSchemas({ environmentId, actions });
 
     const inputs = new Map<string, Map<string, AgentSessionToolInput>>();
     for (const row of rows) {
@@ -297,8 +314,8 @@ async function findToolInputs({
 
 /**
  * An action's arguments are the schema it was deployed with, rooted at its input model. The document
- * is handed over as it is stored, pointers and all, which is the same shape the function input
- * validator compiles, so search cannot advertise a schema execution would reject.
+ * is handed over as it is stored, pointers and all, which is the same draft-07 shape the function
+ * input validator compiles, so search cannot advertise a schema execution would reject.
  */
 export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
     if (!row.input) {
@@ -315,7 +332,26 @@ export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
         return { kind: 'unavailable' };
     }
 
-    return { kind: 'schema', schema: { ...filtered.value, $ref: `${DEFINITIONS_POINTER}${row.input}` } };
+    return { kind: 'schema', schema: { $schema: JSON_SCHEMA_DRAFT_07, ...filtered.value, $ref: `${DEFINITIONS_POINTER}${row.input}` } };
+}
+
+/**
+ * MCP needs an object at the root of a tool's input, so the input model is inlined there with the
+ * definitions it points at. Any other root has no object form and is reachable only through
+ * nango_execute.
+ */
+export function objectRootedToolInputSchema(schema: JSONSchema7): JSONSchema7 | undefined {
+    const { $ref, definitions } = schema;
+    if (!$ref?.startsWith(DEFINITIONS_POINTER) || !definitions) {
+        return undefined;
+    }
+
+    const model = definitions[$ref.slice(DEFINITIONS_POINTER.length)];
+    if (typeof model !== 'object' || model.type !== 'object') {
+        return undefined;
+    }
+
+    return { $schema: JSON_SCHEMA_DRAFT_07, ...model, definitions: { ...definitions, ...model.definitions } };
 }
 
 /** Only what identifies a tool, since a full match carries a description and an input schema. */
@@ -359,7 +395,7 @@ function guidanceFor({
 
     if (matches.length > 0) {
         lines.push(
-            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the tool of the one you want, exactly as given, and the input its schema describes. A schema is a JSON Schema document rooted at its \`$ref\`.`
+            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the tool of the one you want, exactly as given, and the input its schema describes. A schema is a JSON Schema document, rooted at its \`$ref\` when it has one.`
         );
 
         const takesNothing = matches.filter((match) => match.input?.kind === 'none');

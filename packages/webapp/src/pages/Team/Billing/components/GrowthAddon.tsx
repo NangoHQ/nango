@@ -6,7 +6,7 @@ import { track } from '@/utils/analytics';
 import { formatBillingDate } from '../billingPeriod.js';
 import { GROWTH_ADDON_COPY } from './planCardCopy.js';
 
-import type { GrowthAddonState } from '../planVisibility.js';
+import type { GrowthAddonState } from '@nangohq/types';
 
 export const GrowthAddon: React.FC<{ state: GrowthAddonState; endsAt?: string; onAdd: () => void; onRemove: () => void; lockedReason?: string }> = ({
     state,

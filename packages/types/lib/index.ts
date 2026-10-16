@@ -4,6 +4,8 @@ export type * from './api.endpoints.js';
 export type * from './audit-trail/api.js';
 export type * from './audit-trail/event.js';
 export type * from './audit-trail/metadata.js';
+export type * from './analytics/catalogue.js';
+export type * from './analytics/taxonomy.js';
 
 export type * from './gettingStarted/db.js';
 export type * from './gettingStarted/dto.js';
@@ -23,6 +25,7 @@ export type * from './agent/toolSearch.js';
 export type * from './agent/toolset.js';
 export type * from './admin/http.api.js';
 export type * from './account/api.js';
+export type * from './account/acquisition.js';
 export type * from './account/context.js';
 export type * from './user/api.js';
 export type * from './user/db.js';
