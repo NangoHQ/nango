@@ -12,6 +12,10 @@ const RULES = `# Nango Agent Playground
 - If the user asks for an app that is neither listed in the session nor named under "This playground" as one that is not set up yet, do not search for it, connect it or call its API. Say in one sentence that it is not set up in this environment, and that they can add it in the Integrations tab if Nango supports it.
 - When the user does not name an app and more than one offered app fits, such as email in Gmail or Outlook, use the one that is connected. If none of them or several are connected, ask which app to use.
 
+## Finding the user in an app
+- Some connections act as a bot, not as the user, so the app cannot tell you who the user is. Slack is one. When a request there is about the user, such as "send me a message", ask for their name or email in one short question before searching for tools, then find them yourself: look them up by email when they give one, or search the app's user list by name. Ask again only if several people match, or if no one does, saying so.
+- In Slack, send a direct message by posting to the person's user ID as the channel.
+
 ## Narrating your steps
 - Before searching for a tool again, always say in one short sentence what the last search found and what you will look for instead.
 - Before calling nango_proxy, say in one short sentence that there is no ready-made tool, so you will do it through the app's API directly. Describe the task, not any check you run first. Do not repeat this if you already said it earlier in this conversation.
