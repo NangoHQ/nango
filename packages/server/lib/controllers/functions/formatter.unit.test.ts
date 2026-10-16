@@ -66,6 +66,18 @@ describe('actionToGetToolResponse', () => {
     });
 });
 
+describe('listedActionToGetToolResponse meta', () => {
+    it.each([{ scopes: [] }, {}])('omits required_scopes when scopes are empty or absent: %j', async (overrides) => {
+        const { listedActionToGetToolResponse } = await import('./formatter.js');
+        const response = listedActionToGetToolResponse(
+            { name: 'fetchIssue', returns: [], json_schema: null, source: 'tools-catalog', ...overrides },
+            { unique_key: 'github-123', provider: 'github' }
+        );
+
+        expect(response.meta).toStrictEqual({ tags: {} });
+    });
+});
+
 describe('toGetToolResponse meta', () => {
     it.each<{ name: string; tags: FunctionTags; expected: GetToolResponse['meta'] }>([
         {

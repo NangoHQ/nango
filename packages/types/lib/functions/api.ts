@@ -491,6 +491,15 @@ export interface GetToolResponse {
     };
 }
 
+export type GetTools = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/integrations/:uniqueKey/tools';
+    Params: { uniqueKey: string };
+    Querystring: { cursor?: string | undefined; limit?: number | undefined };
+    Success: { data: GetToolResponse[]; next_cursor: string | null };
+}>;
+
 export type GetTool = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';

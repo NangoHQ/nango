@@ -102,6 +102,7 @@ import type {
     GetPublicIntegrationFunctions,
     GetPublicProviderTemplates,
     GetTool,
+    GetTools,
     PatchConnectionFunction,
     PatchFunction,
     PatchFunctionVariant,
@@ -250,6 +251,7 @@ export type PublicApiEndpoints =
     | GetPublicIntegrationFunctions
     | GetPublicIntegrationFunction
     | GetTool
+    | GetTools
     | DeletePublicIntegrationFunction
     | GetPublicProviderTemplates
     | PostPublicRotateWebhookSigningKey

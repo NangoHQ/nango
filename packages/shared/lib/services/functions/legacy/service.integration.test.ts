@@ -247,7 +247,8 @@ describe('listFunctions with catalog actions', () => {
         if (result.isErr()) {
             return;
         }
-        expect(result.value.map((action) => ({ name: action.name, source: action.source, enabled: action.enabled }))).toEqual([
+        expect(result.value.provider).toBe('github');
+        expect(result.value.actions.map((action) => ({ name: action.name, source: action.source, enabled: action.enabled }))).toEqual([
             { name: 'create-issue', source: 'tools-catalog', enabled: true },
             { name: 'delete-issue', source: 'repo', enabled: true }
         ]);
@@ -264,7 +265,7 @@ describe('listFunctions with catalog actions', () => {
         if (result.isErr()) {
             return;
         }
-        expect(result.value.map((action) => action.name)).toEqual(names);
+        expect(result.value.actions.map((action) => action.name)).toEqual(names);
     });
 });
 
