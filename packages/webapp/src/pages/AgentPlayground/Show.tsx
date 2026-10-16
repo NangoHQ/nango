@@ -396,7 +396,7 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
                 <InputGroupAddon align="inline-end">
                     {/* TODO: read the model from the server once the playground supports more than one. */}
                     <span className="mr-2 flex items-center gap-1 text-body-small-regular text-text-muted">
-                        <OpenAIIcon className="size-4" />
+                        <OpenAIIcon className="size-3.5" />
                         GPT-6 Luna
                     </span>
                     {/* Separate keys: a reused element turns into the submit button mid-click and sends the draft. */}
