@@ -9,7 +9,7 @@ export const createConnectionInputSchema = z
             .boolean()
             .optional()
             .describe(
-                'Set to true to have the user authorise an integration that is already connected again, for example when its permissions changed. It keeps the same connection.'
+                'Set to true to have the user authorise an integration that is already connected again, for example when it is missing a permission, or its credentials expired or ran out of refresh attempts. It keeps the same connection.'
             )
     })
     .strict();
