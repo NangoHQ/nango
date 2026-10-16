@@ -16,7 +16,7 @@ import { useGetIntegrationFunctionCode, useGetTemplateFunctionCode } from '@/hoo
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
-import { openPlaygroundWithContext } from '@/utils/playground';
+import { useCanOpenPlaygroundFunctions, useOpenPlaygroundWithContext } from '@/utils/playground';
 import { buildPullCommand, isSyncOrAction } from '@/utils/scripts';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
@@ -39,6 +39,8 @@ interface FunctionDetailsPanelProps {
 
 export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, integration, onDeleted }) => {
     const env = useStore((state) => state.env);
+    const openPlaygroundWithContext = useOpenPlaygroundWithContext();
+    const canOpenPlayground = useCanOpenPlaygroundFunctions();
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
     const [activeTab, setActiveTab] = useState<'input' | 'output' | 'code'>('input');
@@ -132,31 +134,33 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                             Delete function <Trash2 />
                         </Button>
                     )}
-                    <ConditionalTooltip
-                        condition={!canUsePlayground}
-                        content={listed ? 'Enable this function to use it in the Playground.' : 'Deploy this template to use it in the Playground.'}
-                        side="left"
-                        asChild
-                    >
-                        <span className="inline-flex">
-                            <Button
-                                variant="link-accent"
-                                size="xs"
-                                disabled={!canUsePlayground}
-                                onClick={() => {
-                                    if (!isListedFunction(fn) || !isSyncOrAction(fn)) return;
-                                    openPlaygroundWithContext({
-                                        source: 'function',
-                                        integration: integration.unique_key,
-                                        functionName: fn.name,
-                                        functionType: fn.type
-                                    });
-                                }}
-                            >
-                                View in playground <ArrowRight />
-                            </Button>
-                        </span>
-                    </ConditionalTooltip>
+                    {canOpenPlayground && (
+                        <ConditionalTooltip
+                            condition={!canUsePlayground}
+                            content={listed ? 'Enable this function to use it in the Playground.' : 'Deploy this template to use it in the Playground.'}
+                            side="left"
+                            asChild
+                        >
+                            <span className="inline-flex">
+                                <Button
+                                    variant="link-accent"
+                                    size="xs"
+                                    disabled={!canUsePlayground}
+                                    onClick={() => {
+                                        if (!isListedFunction(fn) || !isSyncOrAction(fn)) return;
+                                        openPlaygroundWithContext({
+                                            source: 'function',
+                                            integration: integration.unique_key,
+                                            functionName: fn.name,
+                                            functionType: fn.type
+                                        });
+                                    }}
+                                >
+                                    View in playground <ArrowRight />
+                                </Button>
+                            </span>
+                        </ConditionalTooltip>
+                    )}
                 </div>
             </div>
 

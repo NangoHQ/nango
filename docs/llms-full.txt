@@ -2824,8 +2824,6 @@ When the session is created, Nango lists the tools of each connected MCP server 
 
 The list is taken once, at creation. Tools the server adds or removes afterwards don't change the session, so create a new one to pick them up.
 
-If an action you deployed on the integration has the same name as a server tool, the session keeps the action and leaves the server's tool out.
-
 #### When a server can't be listed
 
 A server that fails or does not answer `tools/list` within 10 seconds does not fail session creation. The session is created without that server's tools, and the toolset summary says so with `mcp_server`:
@@ -8221,6 +8219,19 @@ NANGO_FEATURE_FLAG_MFA=true
 
 Once the server restarts, users can turn it on from their profile settings by pairing an authenticator app and saving their backup codes. Nango then asks them for a code at login.
 
+#### OAuth state cookie enforcement
+
+When an OAuth flow starts, Nango sets a cookie in the user's browser that is tied to that flow. By default, a callback that arrives without this cookie is still accepted. To reject it instead, so the flow can only be completed by the browser that started it, set these on the server service:
+
+```bash
+NANGO_FLAG_PROVIDER=env
+NANGO_FEATURE_FLAG_OAUTH_STATE_COOKIE_ENFORCEMENT=true
+```
+
+With the flag on, a callback forwarded from your backend or sent by a `fetch` request without the state cookie fails with a `state_cookie_err` error. Make sure the callback reaches Nango as a redirect in the same browser that opened the authorization page.
+
+The check covers OAuth 2 based flows, including MCP OAuth. It does not apply to App, OAuth 1, or plugin install flows.
+
 ### Server URL, callback URL, and custom domains
 
 Add server environment variables for the instance URL and port in the `.env` file or directly in your hosting provider:
@@ -10540,6 +10551,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/create.md
     "display_name": "Slack",
     "provider": "slack",
     "logo": "http://localhost:3003/images/template-logos/github.svg",
+    "missing_fields": [],
     "created_at": "2023-10-16T08:45:26.241Z",
     "updated_at": "2023-10-16T08:45:26.241Z",
   }
@@ -11352,170 +11364,6 @@ Source: https://nango.dev/docs/reference/backend/http-api/providers/templates.md
 
 Returns the template functions available in the catalog for a provider.
 
-## List connections (deprecated)
-
-Source: https://nango.dev/docs/reference/backend/http-api/connection/list.md
-
-<Info>
-  Requires an API key with one of: `environment:connections:list` or `environment:connections:list_credentials`. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
-</Info>
-
-<ResponseExample>
-  ```json Example Response
-{
-  "connections": [
-    {
-      "id": 1,
-      "connection_id": "test-1",
-      "provider": "slack",
-      "provider_config_key": "slack-nango-community",
-      "created": "2023-06-03T14:53:22.051Z",
-      "metadata": null,
-      "tags": {
-        "end_user_id": "your-internal-id",
-        "end_user_email": "user@example.com",
-        "organization_id": "user-organization-id"
-      },
-      "errors": [{ "type": "auth", "log_id": "VrnbtykXJFckCm3HP93t"}]
-    },
-    {
-      "id": 2,
-      "connection_id": "test-2",
-      "provider": "slack",
-      "provider_config_key": "slack-nango-community",
-      "created": "2023-06-03T15:00:14.945Z",
-      "metadata": {
-        "bot_id": "some-uuid"
-      },
-      "tags": {
-        "end_user_id": "your-internal-id",
-        "end_user_email": "user@example.com",
-        "organization_id": "user-organization-id"
-      },
-      "errors": []
-    }
-  ]
-}
-  ```
-</ResponseExample>
-
-## Get connection & credentials (deprecated)
-
-Source: https://nango.dev/docs/reference/backend/http-api/connection/get.md
-
-<Info>
-  Requires an API key with one of: `environment:connections:read` or `environment:connections:read_credentials`. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
-</Info>
-
-<Info>
-
-The response content depends on the API authentication type (e.g: OAuth 2, OAuth 1, API key, etc.).
-
-If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the [Proxy](/guides/platform/proxy-requests).
-
-</Info>
-
-<Tip>
-Every time you fetch the connection with this API endpoint, Nango will check if the access token has expired. If it has, it will refresh it.
-
-**We recommend you always fetch the token just before you use it to make sure it is fresh!**
-
-</Tip>
-
-## Import a connection (deprecated)
-
-Source: https://nango.dev/docs/reference/backend/http-api/connection/post.md
-
-<Info>
-  Requires an API key with the `environment:connections:create` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
-</Info>
-
-## When to use
-
-Use this API endpoint to import existing access tokens into Nango. It is mostly meant for one-off bulk imports when onboarding Nango, or for migrating existing connections when a provider introduced changes to its auth flow.
-
-If a connection with the same `connection_id` and `provider_config_key` already exists, the endpoint updates it with the provided credentials instead of creating a new one.
-
-To trigger OAuth flows with Nango, use the [Nango frontend SDK](/reference/frontend/frontend-sdk).
-
-## Request body
-
-You can use this endpoint to import OAuth 2, OAuth 1, API Keys, and Basic auth credentials.
-
-The required fields depend on the type of authentication of the _connections_ you are trying to import.
-
-## Set connection metadata (deprecated)
-
-Source: https://nango.dev/docs/reference/backend/http-api/connection/set-metadata.md
-
-<Info>
-  Requires an API key with the `environment:connections:update` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
-</Info>
-
-## Set _connection metadata_
-
-Nango uses the request body as the new metadata (it must be a JSON object). Note that this overrides any existing metadata. The connection_id must be passed in the body as well. Note that the connection_id can be a single string or an array of strings.
-
-## Fetching _connection metadata_
-
-To read the existing metadata of a _connection_, simply fetch the connection. Your custom metadata is included as part of the returned connection object.
-
-## Set connection metadata (deprecated)
-
-Source: https://nango.dev/docs/reference/backend/http-api/connection/set-metadata-legacy.md
-
-<Info>
-  Requires an API key with the `environment:connections:update` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
-</Info>
-
-## Set _connection metadata_
-
-Nango uses the request body as the new metadata (it must be a JSON object). Note that this overrides any existing metadata.
-
-## Fetching _connection metadata_
-
-To read the existing metadata of a _connection_, simply fetch the connection. Your custom metadata is included as part of the returned connection object.
-
-## Edit connection metadata (deprecated)
-
-Source: https://nango.dev/docs/reference/backend/http-api/connection/update-metadata.md
-
-<Info>
-  Requires an API key with the `environment:connections:update` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
-</Info>
-
-## Update _connection metadata_
-
-Nango uses the request body as the new metadata (it must be a JSON object). Note that this overrides specified properties, not the entire metadata. The connection_id must be passed in the body as well. Note that the connection_id can be a single string or an array of strings.
-
-## Fetching _connection metadata_
-
-To read the existing metadata of a _connection_, simply fetch the connection. Your custom metadata is included as part of the returned connection object.
-
-## Edit connection metadata (deprecated)
-
-Source: https://nango.dev/docs/reference/backend/http-api/connection/update-metadata-legacy.md
-
-<Info>
-  Requires an API key with the `environment:connections:update` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
-</Info>
-
-## Update _connection metadata_
-
-Nango uses the request body as the new metadata (it must be a JSON object).
-
-## Fetching _connection metadata_
-
-To read the existing metadata of a _connection_, simply fetch the connection. Your custom metadata is included as part of the returned connection object.
-
-## Delete a connection (deprecated)
-
-Source: https://nango.dev/docs/reference/backend/http-api/connection/delete.md
-
-<Info>
-  Requires an API key with the `environment:connections:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
-</Info>
-
 ## Node
 
 Source: https://nango.dev/docs/reference/backend/backend-sdk/node.md
@@ -11653,12 +11501,15 @@ await nango.getIntegration(<INTEGRATION-ID>);
         "provider": "slack",
         "logo": "http://localhost:3003/images/template-logos/slack.svg",
         "forward_webhooks": true,
+        "missing_fields": [],
         "created_at": "2023-10-16T08:45:26.241Z",
         "updated_at": "2023-10-16T08:45:26.241Z"
     }
 }
 ```
 </Expandable>
+
+`missing_fields` lists the credential fields the integration may need before connections can be created, for example `oauth_client_id`. It is empty once the integration is fully configured, when it uses a Nango-provided developer app, or when the auth mode collects everything at connection time.
 
 ### Create an integration
 
@@ -11684,7 +11535,7 @@ await nango.createIntegration({ provider: '<PROVIDER-ID>', unique_key: '<UNIQUE_
     </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
-        The credentials to include depend on the specific integration that you want to create.
+        For `OAUTH1`, `OAUTH2`, `TBA`, `APP`, and `CUSTOM` credentials, you can create an integration without credentials or with partial credentials, then provide missing credentials with an update call or as per-connection overrides.
     </ResponseField>
 
     <ResponseField name="integration_config" type="Record<string, string>">
@@ -11740,7 +11591,7 @@ await nango.updateIntegration({ uniqueKey: '<UNIQUE_KEY>' }, { display_name: 'Ne
     </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
-        The credentials to include depend on the specific integration that you want to update.
+        The credentials to include depend on the specific integration that you want to update. Only the fields you pass are updated; the ones you leave out keep their current value.
     </ResponseField>
 
     <ResponseField name="integration_config" type="Record<string, string>">
@@ -16062,6 +15913,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `atlassian-service-account-api-token` | Atlassian Service Account (API Token) | BASIC | [docs](https://nango.dev/docs/api-integrations/atlassian-service-account-api-token.md) | [connect](https://nango.dev/docs/api-integrations/atlassian-service-account-api-token/connect.md) |  | dev-tools |
 | `atlassian-service-account-oauth2` | Atlassian Service Account (OAuth 2.0) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/atlassian-service-account-oauth2.md) | [connect](https://nango.dev/docs/api-integrations/atlassian-service-account-oauth2/connect.md) |  | dev-tools |
 | `attention` | Attention | API_KEY | [docs](https://nango.dev/docs/api-integrations/attention.md) | [connect](https://nango.dev/docs/api-integrations/attention/connect.md) |  | productivity |
+| `attentive-api-key` | Attentive (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/attentive-api-key.md) | [connect](https://nango.dev/docs/api-integrations/attentive-api-key/connect.md) |  | marketing, communication |
 | `attio` | Attio | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/attio.md) |  | [setup](https://nango.dev/docs/api-integrations/attio/how-to-register-your-own-attio-api-oauth-app.md) | crm, popular |
 | `attio-mcp` | Attio (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/attio-mcp.md) |  |  | crm, mcp |
 | `auth0` | Auth0 | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/auth0.md) |  |  | iam |
@@ -16146,6 +15998,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `cerby` | Cerby | API_KEY | [docs](https://nango.dev/docs/api-integrations/cerby.md) | [connect](https://nango.dev/docs/api-integrations/cerby/connect.md) |  | iam |
 | `certn` | Certn | API_KEY | [docs](https://nango.dev/docs/integrations/all/certn.md) | [connect](https://nango.dev/docs/integrations/all/certn/connect.md) |  | legal |
 | `certn-partner` | Certn Partner | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/certn-partner.md) |  |  | legal |
+| `chameleoni` | Chameleon-i | API_KEY | [docs](https://nango.dev/docs/api-integrations/chameleoni.md) | [connect](https://nango.dev/docs/api-integrations/chameleoni/connect.md) |  | ats, crm |
 | `chargebee` | Chargebee | BASIC | [docs](https://nango.dev/docs/integrations/all/chargebee.md) | [connect](https://nango.dev/docs/integrations/all/chargebee/connect.md) |  | payment |
 | `charliehr` | CharlieHR | BASIC | [docs](https://nango.dev/docs/api-integrations/charliehr.md) | [connect](https://nango.dev/docs/api-integrations/charliehr/connect.md) |  | hr |
 | `chartboost` | Chartboost | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/chartboost.md) | [connect](https://nango.dev/docs/api-integrations/chartboost/connect.md) |  | marketing, gaming |
@@ -16542,6 +16395,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `microsoft-ads` | Microsoft Ads | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-ads.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | marketing |
 | `microsoft-business-central` | Microsoft Business Central | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/microsoft-business-central.md) | [connect](https://nango.dev/docs/integrations/all/microsoft-business-central/connect.md) |  | erp |
 | `microsoft-dataverse` | Microsoft Dataverse (Dynamics 365 CRM) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/microsoft-dataverse.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-dataverse/connect.md) | [setup](https://nango.dev/docs/api-integrations/microsoft-dataverse/how-to-register-your-own-microsoft-dataverse-api-oauth-app.md) | crm |
+| `microsoft-defender-cc` | Microsoft Defender (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/microsoft-defender-cc.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-defender-cc/connect.md) |  | iam |
 | `microsoft-dynamics-365-finance-and-operations` | Microsoft Dynamics 365 Finance and Operations | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations/connect.md) | [setup](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations/how-to-register-your-own-microsoft-dynamics-365-finance-and-operations-api-oauth-app.md) | erp |
 | `microsoft-dynamics-365-finance-and-operations-cc` | Microsoft Dynamics 365 Finance and Operations (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations-cc.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations-cc/connect.md) |  | erp |
 | `microsoft-entra-id` | Microsoft Entra ID | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-entra-id.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | iam |
@@ -16720,6 +16574,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `raindrop-mcp` | Raindrop (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/raindrop-mcp.md) |  |  | dev-tools, mcp |
 | `ramp` | Ramp | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ramp.md) |  |  | banking |
 | `ramp-sandbox` | Ramp (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ramp-sandbox.md) |  |  | banking |
+| `rapid7` | Rapid7 | API_KEY | [docs](https://nango.dev/docs/api-integrations/rapid7.md) | [connect](https://nango.dev/docs/api-integrations/rapid7/connect.md) |  | iam |
 | `rapidapi` | RapidAPI | API_KEY | [docs](https://nango.dev/docs/integrations/all/rapidapi.md) |  |  | dev-tools |
 | `razorpay` | Razorpay | BASIC | [docs](https://nango.dev/docs/integrations/all/razorpay.md) | [connect](https://nango.dev/docs/integrations/all/razorpay/connect.md) |  | payment |
 | `read-ai` | Read.ai | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/read-ai.md) |  | [setup](https://nango.dev/docs/api-integrations/read-ai/how-to-register-your-own-read-ai-oauth-app.md) | productivity, video |
@@ -16891,6 +16746,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `teamwork` | Teamwork | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/teamwork.md) |  |  | productivity, ticketing |
 | `telegram` | Telegram | API_KEY | [docs](https://nango.dev/docs/api-integrations/telegram.md) | [connect](https://nango.dev/docs/api-integrations/telegram/connect.md) |  | communication |
 | `tempo` | Tempo | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/tempo.md) | [connect](https://nango.dev/docs/api-integrations/tempo/connect.md) | [setup](https://nango.dev/docs/api-integrations/tempo/how-to-register-your-own-tempo-api-oauth-app.md) | productivity |
+| `tenable` | Tenable | BASIC | [docs](https://nango.dev/docs/api-integrations/tenable.md) | [connect](https://nango.dev/docs/api-integrations/tenable/connect.md) |  | other |
 | `terraform` | Terraform | API_KEY | [docs](https://nango.dev/docs/integrations/all/terraform.md) | [connect](https://nango.dev/docs/integrations/all/terraform/connect.md) |  | dev-tools |
 | `textus` | TextUs | API_KEY | [docs](https://nango.dev/docs/api-integrations/textus.md) | [connect](https://nango.dev/docs/api-integrations/textus/connect.md) |  | communication, marketing |
 | `the-swarm` | The Swarm | API_KEY | [docs](https://nango.dev/docs/api-integrations/the-swarm.md) | [connect](https://nango.dev/docs/api-integrations/the-swarm/connect.md) |  | crm |

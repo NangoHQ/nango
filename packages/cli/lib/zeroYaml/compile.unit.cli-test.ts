@@ -268,4 +268,8 @@ describe('detectFeatures', () => {
         const features = detectFeatures({ entryPoint: path.join(fixturesPath, 'zero/cases/features.none.ts') }).unwrap();
         expect(features).toEqual([]);
     });
+    it('should detect features used only inside a locally imported helper file', () => {
+        const features = detectFeatures({ entryPoint: path.join(fixturesPath, 'zero/cases/features.helper.ts') }).unwrap();
+        expect(features).toEqual(['checkpoints']);
+    });
 });

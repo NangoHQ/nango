@@ -1,6 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import path from 'node:path';
+
+import { assert, describe, expect, it } from 'vitest';
 import * as z from 'zod';
 
+import { fixturesPath } from '../tests/helpers.js';
 import { parseAction, parseFunction, parseSync, validateFunction } from './definitions.js';
 
 const syncParams = {
@@ -42,6 +45,7 @@ describe('parseSync', () => {
         const { endpoints, ...syncParamsWithoutEndpoints } = syncParams;
         const res = parseSync({
             filePath: './fetchIssues.ts',
+            absoluteFilePath: '/tmp/fetchIssues.ts',
             params: syncParamsWithoutEndpoints,
             basename: 'fetchIssues',
             basenameClean: 'fetchIssues',
@@ -58,6 +62,7 @@ describe('parseSync', () => {
     it('should return the parsed sync', () => {
         const res = parseSync({
             filePath: './fetchIssues.ts',
+            absoluteFilePath: '/tmp/fetchIssues.ts',
             params: syncParams,
             basename: 'fetchIssues',
             basenameClean: 'fetchIssues',
@@ -94,20 +99,50 @@ describe('parseSync', () => {
             }
         });
     });
+
+    it('should fail when a checkpoint schema is declared but the file never calls a checkpoint method', () => {
+        const unusedCheckpointFile = path.join(fixturesPath, 'zero/valid/github/syncs/fetchIssues.ts');
+        const res = parseSync({
+            filePath: './fetchIssues.ts',
+            absoluteFilePath: unusedCheckpointFile,
+            params: { ...syncParams, checkpoint: z.object({ cursor: z.string() }) },
+            basename: 'fetchIssues',
+            basenameClean: 'fetchIssues',
+            integrationIdClean: 'github'
+        });
+
+        assert(res.isErr(), 'Should be an error');
+        expect(res.error.message).toContain(`A 'checkpoint' schema is declared but never used`);
+    });
+
+    it('should not fail when a checkpoint schema is declared and the file calls a checkpoint method', () => {
+        const usedCheckpointFile = path.join(fixturesPath, 'zero/cases/features.ts');
+        const res = parseSync({
+            filePath: './features.ts',
+            absoluteFilePath: usedCheckpointFile,
+            params: { ...syncParams, checkpoint: z.object({ cursor: z.string() }) },
+            basename: 'features',
+            basenameClean: 'features',
+            integrationIdClean: 'github'
+        });
+
+        expect(res.isOk()).toBe(true);
+    });
 });
 
 describe('parseAction', () => {
     it('should return the parsed action without endpoint', () => {
         const { endpoint, ...actionParamsWithoutEndpoint } = actionParams;
-        const action = parseAction({
+        const res = parseAction({
             filePath: './createIssue.ts',
+            absoluteFilePath: '/tmp/createIssue.ts',
             params: actionParamsWithoutEndpoint,
             basename: 'createIssue',
             basenameClean: 'createIssue',
             integrationIdClean: 'github'
         });
 
-        expect(action).toMatchObject({
+        expect(res.unwrap()).toMatchObject({
             type: 'action',
             name: 'createIssue',
             endpoint: null
@@ -115,15 +150,16 @@ describe('parseAction', () => {
     });
 
     it('should return the parsed action', () => {
-        const action = parseAction({
+        const res = parseAction({
             filePath: './createIssue.ts',
+            absoluteFilePath: '/tmp/createIssue.ts',
             params: actionParams,
             basename: 'createIssue',
             basenameClean: 'createIssue',
             integrationIdClean: 'github'
         });
 
-        expect(action).toMatchObject({
+        expect(res.unwrap()).toMatchObject({
             type: 'action',
             name: 'createIssue',
             description: 'An action',
@@ -139,6 +175,35 @@ describe('parseAction', () => {
                 }
             }
         });
+    });
+
+    it('should not fail when a checkpoint schema is declared and the file calls a checkpoint method', () => {
+        const usedCheckpointFile = path.join(fixturesPath, 'zero/cases/features.ts');
+        const res = parseAction({
+            filePath: './features.ts',
+            absoluteFilePath: usedCheckpointFile,
+            params: { ...actionParams, checkpoint: z.object({ cursor: z.string() }) },
+            basename: 'features',
+            basenameClean: 'features',
+            integrationIdClean: 'github'
+        });
+
+        expect(res.isOk()).toBe(true);
+    });
+
+    it('should fail when a checkpoint schema is declared but the file never calls a checkpoint method', () => {
+        const unusedCheckpointFile = path.join(fixturesPath, 'zero/valid/github/actions/createIssue.ts');
+        const res = parseAction({
+            filePath: './createIssue.ts',
+            absoluteFilePath: unusedCheckpointFile,
+            params: { ...actionParams, checkpoint: z.object({ cursor: z.string() }) },
+            basename: 'createIssue',
+            basenameClean: 'createIssue',
+            integrationIdClean: 'github'
+        });
+
+        assert(res.isErr(), 'Should be an error');
+        expect(res.error.message).toContain(`A 'checkpoint' schema is declared but never used`);
     });
 });
 

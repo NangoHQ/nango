@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom/client';
 import App from './app/App';
 import { Providers } from './app/providers';
 import { INVITE_PREFILL_PARAM } from './pages/Team/components/inviteForm';
+import { removeIdleAgentPlaygroundChats } from './store/agentPlaygroundChat';
 import { globalEnv } from './utils/env';
 import { maskCapturedNetworkRequest, redactSensitiveProperties } from './utils/sensitive-url';
 
@@ -57,6 +58,8 @@ if (globalEnv.publicPosthogKey) {
         }
     });
 }
+
+removeIdleAgentPlaygroundChats();
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(

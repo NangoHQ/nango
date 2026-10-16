@@ -455,6 +455,7 @@ describe('/session/:sessionId/mcp', () => {
         expect(match?.input).toStrictEqual({
             kind: 'schema',
             schema: {
+                $schema: 'http://json-schema.org/draft-07/schema#',
                 definitions: { UpsertDocInput: { type: 'object', properties: { title: { type: 'string' } }, required: ['title'] } },
                 $ref: '#/definitions/UpsertDocInput'
             }
