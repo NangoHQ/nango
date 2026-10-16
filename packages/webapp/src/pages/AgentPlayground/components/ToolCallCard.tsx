@@ -12,21 +12,23 @@ import { Spinner } from '@/components/ui/Spinner';
 import { INTERRUPTED_CALL } from '@/store/agentPlaygroundChat';
 import { cn } from '@/utils/utils';
 import { isUnfinished } from '../replyOutcome';
-import { describeTool, humanize, providerFor, toolArguments } from '../toolDisplay';
+import { describeTool, labelFor, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
 
-import type { ToolDisplay } from '../toolDisplay';
+import type { PendingApproval } from '../approvalTracking';
+import type { IntegrationLabels, ToolDisplay } from '../toolDisplay';
 import type { BadgeProps } from '@nangohq/design-system';
 import type { DynamicToolUIPart } from 'ai';
 
 interface ToolCallCardProps {
     part: DynamicToolUIPart;
+    labels: IntegrationLabels | undefined;
     chatActive: boolean;
     approvalSending: boolean;
     connectedIntegrations: ReadonlySet<string>;
     onConnected: (integrationId: string) => void;
     onRequestNewLink: (integrationId: string) => void;
-    onApprove: (approvalId: string, approved: boolean) => void;
+    onApprove: (part: PendingApproval, approved: boolean) => void;
     onRetryInterrupted: ((title: string) => void) | undefined;
     onTryAgain: (() => void) | undefined;
 }
@@ -84,12 +86,12 @@ const Subtitle: React.FC<{ display: ToolDisplay }> = ({ display }) => {
             </span>
         );
     }
-    const text = display.subtitle ?? (display.integrationId && humanize(display.integrationId));
+    const text = display.subtitle ?? display.integration?.integrationName;
     return text ? <span className="truncate text-body-small-regular text-text-secondary">{text}</span> : null;
 };
 
 const ToolIcon: React.FC<{ display: ToolDisplay }> = ({ display }) => {
-    const provider = display.integrationId ? providerFor(display.integrationId) : undefined;
+    const provider = display.integration?.provider;
     if (provider) {
         // Keyed so a logo that 404'd on a half-streamed id retries once the full id arrives.
         return <IntegrationLogo key={provider} provider={provider} className="size-6 shrink-0 border-0 bg-transparent p-0" />;
@@ -116,6 +118,7 @@ const StatusIcon: React.FC<{ running: boolean; stopped: boolean; failed: boolean
 
 export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     part,
+    labels,
     chatActive,
     approvalSending,
     connectedIntegrations,
@@ -125,7 +128,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     onRetryInterrupted,
     onTryAgain
 }) => {
-    const display = describeTool(part.toolName, part.input);
+    const display = describeTool(part.toolName, part.input, labels);
     const awaitingApproval = part.state === 'approval-requested' && !part.approval.isAutomatic;
     const unfinished = isUnfinished(part);
     // An approved call waits a moment for its request to start, so the chat being idle doesn't mean it stopped.
@@ -138,10 +141,12 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     if (display.kind === 'connect' && part.state === 'output-available') {
         const output = part.output as { connect_url?: string; expires_at?: string; integration?: string; provider?: string };
         if (output.connect_url && output.integration) {
+            const label = labelFor(output.integration, labels);
             return (
                 <ConnectCard
                     integrationId={output.integration}
-                    provider={output.provider ?? providerFor(output.integration)}
+                    provider={output.provider ?? label.provider}
+                    name={label.name}
                     connectUrl={output.connect_url}
                     expiresAt={output.expires_at}
                     connected={connectedIntegrations.has(output.integration)}
@@ -157,7 +162,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     }
 
     if (awaitingApproval && part.state === 'approval-requested') {
-        return <ApprovalCard part={part} display={display} onApprove={onApprove} approvalId={part.approval.id} />;
+        return <ApprovalCard part={part} display={display} onApprove={onApprove} />;
     }
 
     const searchOutput =
@@ -264,11 +269,10 @@ const InterruptedCard: React.FC<{ display: ToolDisplay; onRetry: ((title: string
 };
 
 const ApprovalCard: React.FC<{
-    part: DynamicToolUIPart;
+    part: PendingApproval;
     display: ToolDisplay;
-    onApprove: (approvalId: string, approved: boolean) => void;
-    approvalId: string;
-}> = ({ part, display, onApprove, approvalId }) => {
+    onApprove: (part: PendingApproval, approved: boolean) => void;
+}> = ({ part, display, onApprove }) => {
     const [open, setOpen] = useState(false);
     const bottom = useRef<HTMLDivElement>(null);
 
@@ -292,18 +296,18 @@ const ApprovalCard: React.FC<{
                         <span className="text-body-medium-medium text-text-strong">The agent wants to make a change</span>
                         <Subtitle
                             display={
-                                display.kind === 'integration' && display.integrationId
-                                    ? { ...display, subtitle: `${display.title} · ${humanize(display.integrationId)}` }
+                                display.kind === 'integration' && display.integration
+                                    ? { ...display, subtitle: `${display.title} · ${display.integration.integrationName}` }
                                     : display
                             }
                         />
                     </span>
                 </button>
                 <div className="flex shrink-0 items-center gap-2">
-                    <Button size="sm" variant="outline" onClick={() => onApprove(approvalId, false)}>
+                    <Button size="sm" variant="outline" onClick={() => onApprove(part, false)}>
                         Deny
                     </Button>
-                    <Button size="sm" onClick={() => onApprove(approvalId, true)}>
+                    <Button size="sm" onClick={() => onApprove(part, true)}>
                         Approve
                     </Button>
                     <button

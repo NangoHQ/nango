@@ -240,7 +240,7 @@ curl -X PATCH "https://api.nango.dev/connections/metadata" \
   }'
 ```
 
-To do this in bulk, iterate over the [list connections](/reference/api/connection/list) response and [update the metadata](/reference/api/connection/update-metadata) for each one.
+To do this in bulk, iterate over the [list connections](/reference/backend/http-api/connections/list) response and [update the metadata](/reference/backend/http-api/connections/update-metadata) for each one.
 
 <Warning>
 If Nango cannot match the incoming webhook to a connection (because it can't find a matching hash/email in `connection_config` or `metadata`), the webhook will still be received but won't include a `connectionId` in the forwarded payload.

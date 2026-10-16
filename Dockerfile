@@ -50,6 +50,7 @@ COPY packages/email/package.json ./packages/email/package.json
 COPY packages/feature-flags/package.json ./packages/feature-flags/package.json
 COPY packages/metering/package.json ./packages/metering/package.json
 COPY packages/audit/package.json ./packages/audit/package.json
+COPY packages/hosted-telemetry/package.json ./packages/hosted-telemetry/package.json
 COPY package*.json  ./
 
 # Install every dependencies

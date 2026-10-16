@@ -2411,6 +2411,29 @@ attention:
             pattern: '^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$'
             doc_section: '#step-1-obtaining-your-api-key'
 
+attentive-api-key:
+    display_name: Attentive (API Key)
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.attentivemobile.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/me
+    docs: https://nango.dev/docs/api-integrations/attentive-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/attentive-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Attentive custom app API key.
+            doc_section: '#step-1-create-a-custom-app'
+
 attio:
     display_name: Attio
     categories:
@@ -28366,6 +28389,31 @@ vincere:
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-2-request-your-api-key'
             order: 2
+
+vwo:
+    display_name: Wingify (VWO)
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.wingify.com
+        headers:
+            token: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/accounts/current
+    docs: https://nango.dev/docs/api-integrations/vwo
+    docs_connect: https://nango.dev/docs/api-integrations/vwo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Wingify API token.
+            pattern: '^[0-9a-f]{64}$'
+            example: 7fe29f36****************************************************80f9
+            doc_section: '#step-1-generate-an-api-token'
 
 wappalyzer:
     display_name: Wappalyzer

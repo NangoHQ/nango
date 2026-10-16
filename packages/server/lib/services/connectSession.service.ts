@@ -4,6 +4,8 @@ import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@na
 import { buildTagsFromEndUser, configService, ConnectionCreationCappedError, connectionService, connectionTagsSchema } from '@nangohq/shared';
 import { buildConnectUiSessionLink, Err, Ok } from '@nangohq/utils';
 
+import { validateConnectionConfigDefaults } from './connectionConfigDefaults.js';
+
 import type { Knex } from '@nangohq/database';
 import type {
     ConnectSession,
@@ -17,6 +19,7 @@ import type {
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { SetOptional } from 'type-fest';
+import type * as z from 'zod';
 
 const CONNECT_SESSIONS_TABLE = 'connect_sessions';
 const CONNECT_SESSION_TTL_MS = 30 * 60 * 1000;
@@ -168,6 +171,7 @@ export async function insertConnectSession(
 export type CreateConnectSessionErrorCode =
     | 'resource_capped'
     | 'integration_not_found'
+    | 'invalid_connection_config'
     | 'docs_connect_override_forbidden'
     | 'session_creation_failed'
     | 'token_creation_failed';
@@ -183,22 +187,26 @@ export interface MissingConnectSessionIntegration {
 export class CreateConnectSessionError extends Error {
     public readonly code: CreateConnectSessionErrorCode;
     public readonly missingIntegrations?: MissingConnectSessionIntegration[] | undefined;
+    public readonly issues?: z.core.$ZodIssue[] | undefined;
 
     constructor({
         code,
         message,
         cause,
-        missingIntegrations
+        missingIntegrations,
+        issues
     }: {
         code: CreateConnectSessionErrorCode;
         message: string;
         cause?: unknown;
         missingIntegrations?: MissingConnectSessionIntegration[] | undefined;
+        issues?: z.core.$ZodIssue[] | undefined;
     }) {
         super(message, { cause });
         this.name = 'CreateConnectSessionError';
         this.code = code;
         this.missingIntegrations = missingIntegrations;
+        this.issues = issues;
     }
 }
 
@@ -233,16 +241,11 @@ export async function createConnectSession(params: CreateConnectSessionParams): 
             await connectionService.enforceCreationCap(params.environment.id);
         }
 
-        // Enforce that integrations in `integrationsConfigDefaults` and `overrides` exist
-        const missingIntegrations = await findMissingIntegrations(params);
-        if (missingIntegrations.length > 0) {
-            return Err(
-                new CreateConnectSessionError({
-                    code: 'integration_not_found',
-                    message: 'One or more integrations do not exist',
-                    missingIntegrations
-                })
-            );
+        // Enforce that integrations in `integrationsConfigDefaults` and `overrides` exist, and that the
+        // connection config they preset is valid for the provider
+        const integrationsError = await validateIntegrationReferences(params);
+        if (integrationsError) {
+            return Err(integrationsError);
         }
 
         const isOverridingDocsConnectUrl = Object.values(params.overrides || {}).some((value) => value.docs_connect);
@@ -329,7 +332,7 @@ export async function createConnectSession(params: CreateConnectSessionParams): 
     }
 }
 
-async function findMissingIntegrations(params: CreateConnectSessionParams): Promise<MissingConnectSessionIntegration[]> {
+async function validateIntegrationReferences(params: CreateConnectSessionParams): Promise<CreateConnectSessionError | null> {
     const references: MissingConnectSessionIntegration[] = [
         ...(params.allowedIntegrations || []).map((integrationId, index) => ({
             integrationId,
@@ -343,12 +346,33 @@ async function findMissingIntegrations(params: CreateConnectSessionParams): Prom
         ...Object.keys(params.overrides || {}).map((integrationId) => ({ integrationId, source: 'overrides' as const }))
     ];
     if (references.length === 0) {
-        return [];
+        return null;
     }
 
     const integrations = await configService.listProviderConfigs(db.knex, params.environment.id);
     const integrationIds = new Set(integrations.map((integration) => integration.unique_key));
-    return references.filter(({ integrationId }) => !integrationIds.has(integrationId));
+    const missingIntegrations = references.filter(({ integrationId }) => !integrationIds.has(integrationId));
+    if (missingIntegrations.length > 0) {
+        return new CreateConnectSessionError({
+            code: 'integration_not_found',
+            message: 'One or more integrations do not exist',
+            missingIntegrations
+        });
+    }
+
+    const issues = validateConnectionConfigDefaults(
+        Object.fromEntries(Object.entries(params.integrationsConfigDefaults || {}).map(([integrationId, value]) => [integrationId, value.connectionConfig])),
+        integrations
+    );
+    if (issues.length > 0) {
+        return new CreateConnectSessionError({
+            code: 'invalid_connection_config',
+            message: issues.map(({ message }) => message).join(', '),
+            issues
+        });
+    }
+
+    return null;
 }
 
 function buildTagsFromInternalEndUser(endUser: InternalEndUser | null): Tags {

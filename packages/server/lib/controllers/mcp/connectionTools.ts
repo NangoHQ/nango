@@ -1,11 +1,12 @@
 import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 import * as z from 'zod';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { connectionService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { asyncWrapper, asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { createConnectionToolsMcpServer } from './connectionToolsServer.js';
 
 import type { GetConnectionToolsMcp, PostConnectionToolsMcp } from '@nangohq/types';
@@ -16,6 +17,14 @@ export const validationHeaders = z
         'provider-config-key': providerConfigKeySchema
     })
     .strict();
+
+export const requireConnectionMcp = asyncWrapper<PostConnectionToolsMcp>(async (_req, res, next) => {
+    if (!(await getFlags().isConnectionMcpEnabled(res.locals.account.uuid))) {
+        res.status(404).send({ error: { code: 'not_found', message: 'Not found' } });
+        return;
+    }
+    next();
+});
 
 export const postConnectionToolsMcp = asyncWrapperWithEnvironment<PostConnectionToolsMcp>(async (req, res) => {
     const valHeaders = validationHeaders.safeParse({ 'connection-id': req.get('connection-id'), 'provider-config-key': req.get('provider-config-key') });
