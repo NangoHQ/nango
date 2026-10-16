@@ -48,7 +48,8 @@ export function buildSessionInstructions(session: AgentSession): string {
         sections.push(`## Connecting an integration
 - A tool of an integration that is not connected fails. Call nango_create_connection for that integration instead of giving up.
 - It returns a link only the user can open to authorise the app. Share the link, say in one sentence what they are connecting, and wait for them before trying again.
-- Once connected, the integration's tools work for the rest of the session.`);
+- Once connected, the integration's tools work for the rest of the session.
+- If a tool fails because the connection needs reconnecting or is missing a permission, call nango_create_connection for that integration with reconnect set to true, and share that link the same way.`);
     } else {
         sections.push(`## Connecting an integration
 - This session cannot connect an integration. If the task needs one that is not connected, tell the user they need to connect it, and carry on with what you can do.`);
