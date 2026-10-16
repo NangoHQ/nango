@@ -16,6 +16,7 @@ import { managementMcpAPI } from './routes.management-mcp.js';
 import { oauthServerAPI } from './routes.oauth.js';
 import { privateApi } from './routes.private.js';
 import { publicAPI } from './routes.public.js';
+import { signupConversionEligibilityAPI } from './routes.signup-conversion-eligibility.js';
 import { dirname } from './utils/utils.js';
 
 import type { ApiError } from '@nangohq/types';
@@ -45,6 +46,7 @@ router.get('/providers.json', rateLimiterMiddleware, getProvidersJSON);
 // Import main routers
 // Order is important because public API has no prefix
 router.use(advertisingConsentAPI);
+router.use(signupConversionEligibilityAPI);
 router.use(oauthServerAPI);
 router.use(managementMcpAPI);
 router.use('/api/v1', privateApi);
