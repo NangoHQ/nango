@@ -11,7 +11,7 @@ import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { usePermissions } from '@/hooks/usePermissions';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
-import { apiConnectSessions } from '../../../hooks/useConnect';
+import { useCreateConnectSession } from '../../../hooks/useConnect';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useListIntegrations } from '../../../hooks/useIntegration';
 import { GetUsageQueryKey, useApiGetUsage } from '../../../hooks/usePlan';
@@ -67,6 +67,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
     const { data: listIntegrationData, isLoading: listIntegrationPending } = useListIntegrations(env);
+    const { mutateAsync: createSession } = useCreateConnectSession(env);
 
     const { can } = usePermissions();
     const canCreateTestConnection = can('environment:connections:update');
@@ -130,7 +131,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                 : undefined;
         const connectionConfig = oauthConfigOverrides ? { ...oauthConfigOverrides } : undefined;
 
-        return await apiConnectSessions(env, {
+        return await createSession({
             allowed_integrations: integration ? [integration.unique_key] : undefined,
             end_user: testUser,
             integrations_config_defaults: integration
@@ -158,7 +159,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         overrideDocUrl,
         overrideWebhookUrl,
         defaultDocUrl,
-        env,
+        createSession,
         testUser,
         overrideAuthParams
     ]);
@@ -187,11 +188,12 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         // We defer the token creation so the iframe can open and display a loading screen
         //   instead of blocking the main loop and no visual clue for the end user
         setTimeout(async () => {
-            const res = await createConnectSession();
-            if ('error' in res.json) {
+            try {
+                const { data } = await createConnectSession();
+                connectUI.current!.setSessionToken(data.token);
+            } catch {
                 return;
             }
-            connectUI.current!.setSessionToken(res.json.data.token);
         }, 0);
     };
 
@@ -206,13 +208,15 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
 
         setIsShareLinkLoading(true);
         try {
-            const res = await createConnectSession();
-            if (!res.res.ok || 'error' in res.json) {
+            let session: Awaited<ReturnType<typeof createConnectSession>>;
+            try {
+                session = await createConnectSession();
+            } catch {
                 toast.toast({ title: 'Failed to create shareable link', variant: 'error' });
                 return;
             }
 
-            const { connect_link: connectLink, expires_at: expiresAt } = res.json.data;
+            const { connect_link: connectLink, expires_at: expiresAt } = session.data;
             const shareUrl = new URL(connectLink);
             shareUrl.searchParams.set('apiURL', globalEnv.apiUrl);
 

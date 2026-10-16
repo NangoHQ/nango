@@ -1,10 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
-import { apiConnectSessions } from '@/hooks/useConnect';
+import { postConnectSession } from '@/hooks/useConnect';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useStore } from '@/store';
-import { APIError } from '@/utils/api';
 import { createConnectUIPreviewIFrame } from '@/utils/connect-ui';
 import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
@@ -40,7 +39,7 @@ export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: st
         enabled: Boolean(env),
         queryKey: [env, 'preview-session-token'],
         queryFn: async () => {
-            const res = await apiConnectSessions(env, {
+            const { data } = await postConnectSession(env, {
                 is_preview: true,
                 end_user: {
                     id: 'previewUserId',
@@ -48,12 +47,7 @@ export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: st
                     display_name: 'Preview User'
                 }
             });
-
-            if (!res.res.ok || 'error' in res.json) {
-                throw new APIError({ res: res.res, json: res.json });
-            }
-
-            return res.json.data.token;
+            return data.token;
         },
         refetchInterval: 1000 * 60 * 5, // 5 minutes
         refetchIntervalInBackground: true,
