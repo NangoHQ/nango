@@ -157,11 +157,9 @@ describe('createConnectionTool', () => {
     });
 
     describe('reconnect', () => {
-        it('reauthorises the connection the session resolved, keeping its end user and tags', async () => {
+        it('reauthorises the connection the session resolved, keeping its tags', async () => {
             const createConnectSession = vi.spyOn(connectSessionService, 'createConnectSession').mockResolvedValue(Ok(CONNECT_SESSION));
-            vi.spyOn(connectionService, 'getConnectionById').mockResolvedValue(
-                storedConnection({ id: 10, config_id: 20, end_user_id: 7, tags: { organization_id: 'acme' } })
-            );
+            vi.spyOn(connectionService, 'getConnectionById').mockResolvedValue(storedConnection({ id: 10, config_id: 20, tags: { organization_id: 'acme' } }));
 
             const result = await callCreateConnection({ integration: 'notion', reconnect: true });
 
@@ -169,7 +167,7 @@ describe('createConnectionTool', () => {
             expect(createConnectSession).toHaveBeenCalledWith(
                 expect.objectContaining({
                     allowedIntegrations: ['notion'],
-                    reconnect: { connectionId: 10, endUserId: 7 },
+                    reconnectConnectionId: 10,
                     tags: { organization_id: 'acme' }
                 })
             );
@@ -187,7 +185,7 @@ describe('createConnectionTool', () => {
             expect(createConnectSession).toHaveBeenCalledWith(
                 expect.objectContaining({
                     allowedIntegrations: ['slack'],
-                    reconnect: { connectionId: 12, endUserId: null },
+                    reconnectConnectionId: 12,
                     tags: { 'nango/agent_session': 'session-1' }
                 })
             );
@@ -199,7 +197,9 @@ describe('createConnectionTool', () => {
 
             await callCreateConnection({ integration: 'slack', reconnect: true });
 
-            expect(createConnectSession).toHaveBeenCalledWith(expect.objectContaining({ reconnect: undefined, tags: { 'nango/agent_session': 'session-1' } }));
+            expect(createConnectSession).toHaveBeenCalledWith(
+                expect.objectContaining({ reconnectConnectionId: undefined, tags: { 'nango/agent_session': 'session-1' } })
+            );
         });
 
         it('refuses when the connection was deleted', async () => {
@@ -250,5 +250,5 @@ function mockSlackCreatedInSession() {
 }
 
 function storedConnection(connection: Pick<DBConnection, 'id' | 'config_id'> & Partial<DBConnection>): DBConnection {
-    return { environment_id: 42, end_user_id: null, tags: {}, ...connection } as DBConnection;
+    return { environment_id: 42, tags: {}, ...connection } as DBConnection;
 }

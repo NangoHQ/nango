@@ -19,7 +19,7 @@ import type { Span } from 'dd-trace';
 export const createConnectionTool = defineAgentSessionMcpTool({
     name: 'nango_create_connection',
     description:
-        "Start the connect flow for one of this session's integrations that has no connection yet. Returns a link for the user to open and authorise, after which the integration's tools work for the rest of the session. The user has to open it, you cannot complete this yourself. Pass reconnect to have the user authorise an integration that is already connected again, for example when it is missing a permission, and it keeps the same connection.",
+        "Start the connect flow for one of this session's integrations that has no connection yet. Returns a link for the user to open and authorise, after which the integration's tools work for the rest of the session. The user has to open it, you cannot complete this yourself. Pass reconnect to have the user authorise an integration that is already connected again, for example when it is missing a permission, or its credentials expired or ran out of refresh attempts, and it keeps the same connection.",
     inputSchema: createConnectionInputSchema,
     outputSchema: createConnectionOutputSchema,
     annotations: {
@@ -55,13 +55,13 @@ export const createConnectionTool = defineAgentSessionMcpTool({
             track('already_connected');
             return Err(
                 new PublicMcpError(
-                    `Integration '${integrationId}' is already connected in this session. You can already call its tools. If the user needs to authorise it again, for example because a tool is missing a permission, call this again with reconnect set to true.`,
+                    `Integration '${integrationId}' is already connected in this session. You can already call its tools. If the user needs to authorise it again, for example because a tool is missing a permission or its credentials expired, call this again with reconnect set to true.`,
                     { code: 'already_connected', integrationId }
                 )
             );
         }
 
-        let reconnect: connectSessionService.CreateConnectSessionParams['reconnect'];
+        let reconnectConnectionId: number | undefined;
         let tags: Tags = { ...session.metaTools.nangoCreateConnection.tags, [AGENT_SESSION_TAG_KEY]: session.id };
         if (existing) {
             const connection = await connectionService.getConnectionById(existing.internalConnectionId);
@@ -75,7 +75,7 @@ export const createConnectionTool = defineAgentSessionMcpTool({
                 );
             }
 
-            reconnect = { connectionId: connection.id, endUserId: connection.end_user_id };
+            reconnectConnectionId = connection.id;
             // Reauthorising replaces the connection's tags with the connect session's, so it gets its own.
             tags = connection.tags;
         }
@@ -85,7 +85,7 @@ export const createConnectionTool = defineAgentSessionMcpTool({
                 .setTag('nango.accountId', account.id)
                 .setTag('nango.environmentId', environment.id)
                 .setTag('nango.providerConfigKey', integrationId)
-                .setTag('nango.reconnect', Boolean(reconnect));
+                .setTag('nango.reconnect', reconnectConnectionId !== undefined);
 
             const created = await connectSessionService.createConnectSession({
                 account,
@@ -98,7 +98,7 @@ export const createConnectionTool = defineAgentSessionMcpTool({
                 integrationsConfigDefaults: undefined,
                 overrides: undefined,
                 webhookUrlOverride: undefined,
-                reconnect
+                reconnectConnectionId
             });
 
             if (created.isErr()) {
@@ -115,7 +115,7 @@ export const createConnectionTool = defineAgentSessionMcpTool({
             track();
 
             return Ok({
-                guidance: `Give this link to the user and wait. They open it and authorise ${integration.provider}, which is something only they can do. Once they say they are done, call the tool you wanted and it will run on the ${reconnect ? 'reauthorised' : 'new'} connection.`,
+                guidance: `Give this link to the user and wait. They open it and authorise ${integration.provider}, which is something only they can do. Once they say they are done, call the tool you wanted and it will run on the ${reconnectConnectionId !== undefined ? 'reauthorised' : 'new'} connection.`,
                 integration: integrationId,
                 provider: integration.provider,
                 connect_url: created.value.connectLink,
