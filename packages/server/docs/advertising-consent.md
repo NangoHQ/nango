@@ -69,7 +69,7 @@ Before release:
 
 ## Conversion delivery
 
-The existing server cron checks committed signup bindings once a minute. `signup_ad_conversions` stores one delivery record per account/platform, with a stable event ID, destination, status and receipt. It stores no click IDs, email addresses, browser payloads or credentials. Records survive code rollback to prevent replay and are deleted with their account.
+The existing server cron checks committed signup bindings once a minute. `signup_ad_conversions` stores one delivery record per account/platform, with its destination, status and receipt. Adapters derive a stable event ID from the account ID. It stores no click IDs, email addresses, browser payloads or credentials. Records survive code rollback to prevent replay and are deleted with their account.
 
 Delivery requires all of: cloud production, consent capture enabled, `SIGNUP_AD_CONVERSIONS_ENABLED=true`, and valid `SIGNUP_AD_CONVERSIONS_CONFIG` server-secret JSON. Both new settings default to disabled/empty. Never put this configuration in frontend variables, source control or logs.
 

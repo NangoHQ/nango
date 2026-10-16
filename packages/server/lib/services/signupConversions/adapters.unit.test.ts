@@ -102,6 +102,7 @@ describe('conversion adapters', () => {
         }
     });
     it('fails closed for unsupported X, duplicate destinations and invalid secrets without echoing configuration', () => {
+        expect(() => createConversionAdapters('[]')).toThrow('Invalid signup conversion configuration');
         expect(() => createConversionAdapters(JSON.stringify([{ ...common, platform: 'x' }]))).toThrow('Invalid signup conversion configuration');
         expect(() =>
             createConversionAdapters(

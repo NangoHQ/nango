@@ -7,7 +7,7 @@ exports.up = async function (knex) {
         table.integer('account_id').notNullable().references('id').inTable('_nango_accounts').onDelete('CASCADE');
         table.string('platform', 16).notNullable();
         table.primary(['account_id', 'platform']);
-        table.string('destination', 160).notNullable();
+        table.string('destination', 256).notNullable();
         table.string('status', 16).notNullable().defaultTo('pending');
         table.integer('attempts').notNullable().defaultTo(0);
         table.timestamp('signup_at', { useTz: true }).notNullable();

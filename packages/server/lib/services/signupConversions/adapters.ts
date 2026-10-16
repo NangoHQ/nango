@@ -28,6 +28,7 @@ const configSchema = z
                 .strict()
         ])
     )
+    .min(1)
     .max(4)
     .refine((items) => new Set(items.map((item) => item.platform)).size === items.length);
 

@@ -10,18 +10,28 @@ import { conversionEventId, deliverNextConversion, enqueueConversions } from './
 import type { ConversionAdapter } from './worker.js';
 import type { SignupAdvertisingPermission } from '@nangohq/types';
 
+const testAccounts: number[] = [];
+const testConsents: string[] = [];
+
 beforeAll(async () => {
     await multipleMigrations();
 });
-afterEach(() => {
+afterEach(async () => {
     vi.restoreAllMocks();
+    await db.knex('signup_ad_conversions').whereIn('account_id', testAccounts).delete();
+    await db.knex('signup_advertising_consents').whereIn('account_id', testAccounts).delete();
+    await db.knex('advertising_consents').whereIn('id', testConsents).delete();
+    testAccounts.length = 0;
+    testConsents.length = 0;
 });
 
-async function fixture() {
+async function fixture(destination: string = randomUUID()) {
     const { account } = await seeders.seedAccountEnvAndUser();
+    testAccounts.push(account.id);
     const now = new Date();
     await db.knex('_nango_accounts').where({ id: account.id }).update({ created_at: now });
     const consentId = randomUUID();
+    testConsents.push(consentId);
     const choice = {
         preferences: false,
         statistics: true,
@@ -70,13 +80,13 @@ async function fixture() {
     const send = vi.fn<ConversionAdapter['send']>().mockResolvedValue({ status: 'accepted', receiptId: 'local-receipt' });
     const adapter: ConversionAdapter = {
         platform: 'meta',
-        destination: randomUUID(),
+        destination,
         startAt: now,
         prepare: (id, p) => ({ id: conversionEventId(id), time: p.signupAt.toISOString() }),
         send
     };
-    // Isolate rows from previous tests and parallel crons. No real outbound requests are used.
-    await db.knex('signup_ad_conversions').where('status', 'pending').update({ status: 'skipped' });
+    // Only retire this test's earlier fixtures. The suite uses disposable local services.
+    await db.knex('signup_ad_conversions').whereIn('account_id', testAccounts).where('status', 'pending').update({ status: 'skipped' });
     await enqueueConversions(adapter);
     const row = () => db.knex('signup_ad_conversions').where({ account_id: account.id, platform: 'meta' }).first();
     const due = () =>
@@ -88,6 +98,12 @@ async function fixture() {
 }
 
 describe('signup conversion delivery', () => {
+    it('stores the maximum Google destination length', async () => {
+        const destination = `${'1'.repeat(100)}/${'2'.repeat(100)}`;
+        const f = await fixture(destination);
+        expect(await f.row()).toMatchObject({ destination, status: 'pending' });
+    });
+
     it('deduplicates enqueue and concurrent workers, and records acceptance only once', async () => {
         const f = await fixture();
         await Promise.all([enqueueConversions(f.adapter), enqueueConversions(f.adapter)]);
