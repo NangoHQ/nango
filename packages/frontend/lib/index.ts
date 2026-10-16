@@ -612,9 +612,9 @@ export default class Nango {
             for (const param in connectionConfig.authorization_params) {
                 const val = connectionConfig.authorization_params[param];
                 if (typeof val === 'string') {
-                    query.push(`authorization_params[${param}]=${val}`);
+                    query.push(`authorization_params[${encodeURIComponent(param)}]=${encodeURIComponent(val)}`);
                 } else if (val === undefined) {
-                    query.push(`authorization_params[${param}]=undefined`);
+                    query.push(`authorization_params[${encodeURIComponent(param)}]=undefined`);
                 }
             }
         }
