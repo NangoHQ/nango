@@ -574,6 +574,14 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         return Object.hasOwn(allowedExports, name);
     }
 
+    function addDefinitionProperties(arg: babel.types.ObjectExpression, calleeName: AllowedExportName, t: typeof babel.types): void {
+        arg.properties = [
+            t.objectProperty(t.identifier('type'), t.stringLiteral(allowedExports[calleeName].type)),
+            ...(calleeName === 'createTool' ? [t.objectProperty(t.identifier('__nangoFactory'), t.stringLiteral('createTool'))] : []),
+            ...arg.properties
+        ];
+    }
+
     const needsAwait = [
         'batchDelete',
         'batchSave',
@@ -823,11 +831,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             const mapping = allowedExports[calleeName];
                             const varName = mapping.varName;
 
-                            arg.properties = [
-                                t.objectProperty(t.identifier('type'), t.stringLiteral(mapping.type)),
-                                ...(calleeName === 'createTool' ? [t.objectProperty(t.identifier('_kind'), t.stringLiteral('tool'))] : []),
-                                ...arg.properties
-                            ];
+                            addDefinitionProperties(arg, calleeName, t);
                             // Insert: export const <varName> = <arg>;
                             const exportConst = t.exportNamedDeclaration(
                                 t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), arg)]),
@@ -857,11 +861,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                 throw new CompileError('nango_invalid_function_param', lineNumber, 'Invalid function parameter, should be an object');
                             }
 
-                            arg.properties = [
-                                t.objectProperty(t.identifier('type'), t.stringLiteral(allowedExports[calleeName].type)),
-                                ...(calleeName === 'createTool' ? [t.objectProperty(t.identifier('_kind'), t.stringLiteral('tool'))] : []),
-                                ...arg.properties
-                            ];
+                            addDefinitionProperties(arg, calleeName, t);
                             binding.path.get('init').replaceWith(arg);
                             return;
                         } else {

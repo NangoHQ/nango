@@ -166,7 +166,7 @@ describe('tools', () => {
         const tool = module.exports['default'];
         expect(tool).toMatchObject({
             type: 'function',
-            _kind: 'tool',
+            __nangoFactory: 'createTool',
             meta: { instructions: 'Use it to check an issue', requiredScopes: ['repo'] }
         });
         expect(tool).not.toHaveProperty('tool');
@@ -197,7 +197,7 @@ describe('tools', () => {
             const module = { exports: {} as Record<string, any> };
             vm.runInNewContext(code, { module, exports: module.exports, require: () => z });
             const tool = module.exports['default'];
-            expect(tool).toMatchObject({ type: 'function', _kind: 'tool' });
+            expect(tool).toMatchObject({ type: 'function', __nangoFactory: 'createTool' });
             expect(tool.meta).toEqual(meta);
             expect(tool).not.toHaveProperty('tags');
             expect(code).not.toContain('require("nango")');

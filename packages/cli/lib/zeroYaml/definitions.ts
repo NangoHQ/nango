@@ -4,7 +4,7 @@ import { pathToFileURL } from 'url';
 import * as z from 'zod';
 
 import { getInterval } from '@nangohq/nango-yaml';
-import { deriveFunctionCapabilities, reservedToolTagKeys, toolToFunctionProps } from '@nangohq/runner-sdk';
+import { createFunction, deriveFunctionCapabilities, reservedToolTagKeys, toolToFunctionProps } from '@nangohq/runner-sdk';
 
 import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
@@ -124,7 +124,7 @@ interface FunctionDefinition {
     tags?: FunctionTags | undefined;
 }
 
-type CompiledTool = CreateToolProps & { type: 'function'; _kind: 'tool' };
+type CompiledTool = CreateToolProps & { type: 'function'; __nangoFactory: 'createTool' };
 
 export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'> & { filePath: string };
 
@@ -239,44 +239,43 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 break;
             }
             case 'function': {
-                if ('_kind' in script && script._kind === 'tool') {
-                    const name = script.name ?? basename;
+                const isTool = '__nangoFactory' in script && script.__nangoFactory === 'createTool';
+                let fnScript: FunctionDefinition = script;
+                let name = basename;
+                if (isTool) {
+                    name = script.name ?? basename;
                     const validationRes = validateTool({ params: { ...script, name }, filePath: realPath });
                     if (validationRes.isErr()) {
                         return Err(validationRes.error);
                     }
-                    if (parsed.functions.some((fn) => fn.integrationId === integrationId && fn.name === name)) {
-                        return Err(
-                            new Error(`Tool '${realPath}' is named '${name}', which is already used. Tool and function names must be unique per integration.`)
-                        );
+                    fnScript = createFunction(toolToFunctionProps(script));
+                } else {
+                    const validationRes = validateFunction({ params: script, integrationId, basename });
+                    if (validationRes.isErr()) {
+                        return Err(validationRes.error);
                     }
-                    parsed.functions.push({
-                        ...parseFunction({
-                            params: toolToFunctionProps(script),
-                            integrationId,
-                            integrationIdClean,
-                            basename: name,
-                            basenameClean: name.replaceAll(/[^a-zA-Z0-9]/g, '')
-                        }),
-                        filePath: realPath
-                    });
-                    break;
+                    parsed.hasExperimentalFunctions = true;
                 }
 
-                const validationRes = validateFunction({ params: script, integrationId, basename });
-                if (validationRes.isErr()) {
-                    return Err(validationRes.error);
-                }
-                if (parsed.functions.some((fn) => fn.integrationId === integrationId && fn.name === basename)) {
+                if (parsed.functions.some((fn) => fn.integrationId === integrationId && fn.name === name)) {
                     return Err(
-                        new Error(`Function '${integrationId}/functions/${basename}.ts' is already defined. Function names must be unique per integration.`)
+                        new Error(
+                            isTool
+                                ? `Tool '${realPath}' is named '${name}', which is already used. Tool and function names must be unique per integration.`
+                                : `Function '${integrationId}/functions/${name}.ts' is already defined. Function names must be unique per integration.`
+                        )
                     );
                 }
                 parsed.functions.push({
-                    ...parseFunction({ params: script, integrationId, integrationIdClean, basename, basenameClean }),
+                    ...parseFunction({
+                        params: fnScript,
+                        integrationId,
+                        integrationIdClean,
+                        basename: name,
+                        basenameClean: name.replaceAll(/[^a-zA-Z0-9]/g, '')
+                    }),
                     filePath: realPath
                 });
-                parsed.hasExperimentalFunctions = true;
                 break;
             }
         }
