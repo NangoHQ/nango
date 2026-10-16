@@ -106,4 +106,22 @@ describe(`PATCH ${route}`, () => {
         const webhook = await db.knex('_nango_external_webhooks').where({ environment_id: env.id }).first();
         expect(webhook?.primary_url).toBe(primaryUrl);
     });
+
+    it('should update on_auth_override', async () => {
+        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+
+        const res = await api.fetch(route, {
+            method: 'PATCH',
+            query: { env: env.name },
+            session,
+            body: { on_auth_override: false }
+        });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+
+        const webhook = await db.knex('_nango_external_webhooks').where({ environment_id: env.id }).first();
+        expect(webhook?.on_auth_override).toBe(false);
+    });
 });
