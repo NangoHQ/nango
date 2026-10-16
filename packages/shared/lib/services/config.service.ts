@@ -224,7 +224,7 @@ class ConfigService {
         id: number;
         environmentId: number;
         providerConfigKey: string;
-        orchestrator: Pick<Orchestrator, 'deleteSync' | 'deleteFunctionSchedules'>;
+        orchestrator: Pick<Orchestrator, 'deleteSyncs' | 'deleteFunctionSchedules'>;
     }): Promise<boolean> {
         const functionsDeletion = await functionLifecycle.deleteForIntegration(db.knex, {
             integrationConfigId: id,

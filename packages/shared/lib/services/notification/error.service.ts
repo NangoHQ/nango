@@ -80,6 +80,12 @@ export const errorNotificationService = {
         clearBySyncId: async ({ sync_id, trx = db.knex }: Pick<SyncErrorNotification, 'sync_id'> & { trx?: Knex.Transaction | Knex }): Promise<void> => {
             await trx.from<ActiveLog>(DB_TABLE).where({ type: 'sync', sync_id }).delete();
         },
+        clearBySyncIds: async ({ sync_ids, trx = db.knex }: { sync_ids: string[]; trx?: Knex.Transaction | Knex }): Promise<void> => {
+            if (sync_ids.length === 0) {
+                return;
+            }
+            await trx.from<ActiveLog>(DB_TABLE).where({ type: 'sync' }).whereIn('sync_id', sync_ids).delete();
+        },
         /**
          * Clear By Sync Config Id
          * @description Clear all sync notifications by sync config id. This is used
