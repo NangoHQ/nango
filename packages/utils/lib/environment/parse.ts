@@ -242,6 +242,9 @@ const ENVS_SHAPE = z.object({
     ADVERTISING_CONSENT_LIFETIME_DAYS: z.coerce.number().int().min(1).max(365).optional(),
     SIGNUP_AD_CONVERSIONS_ENABLED: z.stringbool().optional().default(false),
     SIGNUP_AD_CONVERSIONS_CONFIG: z.string().optional().default(''),
+    SIGNUP_AD_ELIGIBILITY_ENABLED: z.stringbool().optional().default(false),
+    SIGNUP_AD_ELIGIBILITY_TOKEN: z.string().optional().default(''),
+    SIGNUP_AD_ELIGIBILITY_START_AT: z.iso.datetime().optional(),
     AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
     DEFAULT_USER_ROLE: z.enum(roles).optional().default('administrator'),
     AUTH_SHADOW_CACHE_TTL_MS: z.coerce.number().int().positive().optional().default(60_000), // 1 minute

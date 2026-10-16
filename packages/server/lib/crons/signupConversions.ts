@@ -24,13 +24,19 @@ export function signupConversionsCron(): void {
         async () => {
             for (const adapter of adapters) {
                 if (!signupConversionsEnabled()) return;
+                let stage = 'enqueue';
                 try {
                     await enqueueConversions(adapter);
+                    stage = 'delivery';
                     for (let count = 0; count < 20 && signupConversionsEnabled(); count++) {
                         if (!(await deliverNextConversion(adapter, signupConversionsEnabled))) break;
                     }
-                } catch {
-                    logger.error('Signup conversion worker failed', { platform: adapter.platform });
+                } catch (err) {
+                    // Driver messages can contain query values. Log only known diagnostic codes.
+                    const code = err instanceof Error && 'code' in err ? err.code : undefined;
+                    const errorCode =
+                        typeof code === 'string' && ['ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', '57014', '40P01', '40001'].includes(code) ? code : 'unknown';
+                    logger.error('Signup conversion worker failed', { platform: adapter.platform, stage, errorCode });
                 }
             }
         },

@@ -260,6 +260,16 @@ describe('signup conversion delivery', () => {
         await db.knex('signup_ad_conversions').where({ account_id: f.account.id }).delete();
         await enqueueConversions({ ...f.adapter, startAt: new Date(Date.now() + 60_000) });
         expect(await f.row()).toBeUndefined();
+        await db
+            .knex('signup_advertising_consents')
+            .where({ account_id: f.account.id })
+            .update({ expires_at: new Date(0) });
+        await enqueueConversions(f.adapter);
+        expect(await f.row()).toBeUndefined();
+        await db
+            .knex('signup_advertising_consents')
+            .where({ account_id: f.account.id })
+            .update({ expires_at: new Date(Date.now() + 60_000) });
         await db.knex('signup_advertising_consents').where({ account_id: f.account.id }).update({ click_context: {} });
         await enqueueConversions(f.adapter);
         expect(await f.row()).toBeUndefined();

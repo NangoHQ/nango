@@ -123,6 +123,10 @@ describe('conversion adapters', () => {
             )
         ).toThrow();
         expect(() => createConversionAdapters('local-test-secret')).toThrow('Invalid signup conversion configuration');
+        const invalidSecret = 'private-invalid-secret'.repeat(500);
+        expect(() => createConversionAdapters(JSON.stringify([{ ...common, platform: 'chatgpt', token: invalidSecret }]))).toThrow(
+            new Error('Invalid signup conversion configuration')
+        );
     });
     it('uses the configured X event, genuine click ID and stable account outcome', () => {
         const x = required(createConversionAdapters(JSON.stringify([xConfig]))[0]);
@@ -244,10 +248,12 @@ describe('conversion adapters', () => {
         const fetch = vi
             .fn<typeof globalThis.fetch>()
             .mockResolvedValueOnce(response({ access_token: 'local-access', expires_in: 3600 }))
+            .mockResolvedValueOnce(response({ requestStatusPerDestination: [{ requestStatus: 'SUCCESS' }] }))
             .mockResolvedValueOnce(response({ requestStatusPerDestination: [{ requestStatus: 'SUCCESS', eventsIngestionStatus: { recordCount: 2 } }] }));
         vi.stubGlobal('fetch', fetch);
         const google = required(createConversionAdapters(JSON.stringify([googleConfig]))[0]);
         await required(google.connect)();
+        expect(await required(google.checkReceipt)('request')).toEqual({ status: 'retry', reason: 'unconfirmed' });
         expect(await required(google.checkReceipt)('request')).toEqual({ status: 'retry', reason: 'unconfirmed' });
     });
 });

@@ -46,7 +46,7 @@ const leaseMs = 60_000;
 const maxAttempts = 8;
 export const conversionEventId = (accountId: number): string => `nango:account_create:${accountId}`;
 
-/** Only the production app's clean, genuine signup/signin URL is eligible. */
+/** Restrict browser-reported context to production app URLs. This does not attest its authenticity. */
 export function isProductionSignup(permission: SignupAdvertisingPermission, now = new Date()): boolean {
     const { sourceUrl, userAgent } = permission.context.browser ?? {};
     const age = now.getTime() - permission.signupAt.getTime();
