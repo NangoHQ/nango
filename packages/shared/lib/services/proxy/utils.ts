@@ -17,7 +17,9 @@ import {
 import { getProvider } from '../providers.js';
 import { signAwsSigV4Request } from './aws-sigv4.js';
 import { buildUnverifiedHttpsAgent } from './outbound-policy.js';
+import { interpolateProxyTemplate } from './telemetry.js';
 
+import type { ProxyTracking } from './telemetry.js';
 import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type {
     ApplicationConstructedProxyConfiguration,
@@ -39,6 +41,7 @@ type ProxyErrorCode =
     | 'unsupported_auth'
     | 'unknown_provider'
     | 'unsupported_provider'
+    | 'invalid_proxy_url'
     | 'invalid_query_params'
     | 'unknown_error'
     | 'failed_to_get_connection'
@@ -92,18 +95,20 @@ export function getAxiosConfiguration({
     proxyConfig,
     connection,
     integrationConfig,
-    outboundPolicy
+    outboundPolicy,
+    tracking
 }: {
     proxyConfig: ApplicationConstructedProxyConfiguration;
     connection: ConnectionForProxy;
     integrationConfig?: IntegrationConfigForProxy | undefined;
     outboundPolicy?: OutboundUrlPolicy | undefined;
+    tracking?: ProxyTracking | undefined;
 }): AxiosRequestConfig {
     if (proxyConfig.provider.integration_config) {
         proxyConfig = deriveIntegrationConfigProxy({ proxyConfig, integrationConfig });
     }
 
-    const url = buildProxyURL({ config: proxyConfig, connection });
+    const url = buildProxyURL({ config: proxyConfig, connection, tracking });
     if (proxyConfig.validateProxyRequestUrl) {
         proxyConfig.validateProxyRequestUrl({
             absoluteUrl: url,
@@ -117,7 +122,7 @@ export function getAxiosConfiguration({
     }
     // Merge proxy.body into proxyConfig.data before building headers so that any
     // body-signing headers (e.g. HMAC, AWS SigV4) are computed against the final body.
-    const injectedBody = buildProxyBody({ config: proxyConfig, connection });
+    const injectedBody = buildProxyBody({ config: proxyConfig, connection, tracking });
     if (injectedBody && methodDataAllowed.includes(proxyConfig.method)) {
         proxyConfig = { ...proxyConfig, data: mergeInjectedBody(proxyConfig.data, injectedBody) };
     }
@@ -297,6 +302,7 @@ export function getProxyConfiguration({
         provider,
         providerName,
         providerConfigKey,
+        ...(internalConfig.monitoringContext ? { monitoringContext: internalConfig.monitoringContext } : {}),
         headers: headersCleaned,
         data,
         retries: retries || 0,
@@ -431,7 +437,15 @@ export function enforceProxyOutboundUrlPolicy({
 /**
  * Construct URL
  */
-export function buildProxyURL({ config, connection }: { config: ApplicationConstructedProxyConfiguration; connection: ConnectionForProxy }) {
+export function buildProxyURL({
+    config,
+    connection,
+    tracking
+}: {
+    config: ApplicationConstructedProxyConfiguration;
+    connection: ConnectionForProxy;
+    tracking?: ProxyTracking | undefined;
+}) {
     const { provider: { proxy: { base_url: templateApiBase } = {} } = {}, endpoint: apiEndpoint } = config;
 
     let apiBase = config.baseUrlOverride || templateApiBase;
@@ -472,13 +486,23 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     const baseFormatted = interpolateProxyUrlParts(normalizedBase);
     const endpointFormatted = normalizedEndpoint ? interpolateProxyUrlParts(normalizedEndpoint) : '';
 
-    const combinedUrl = [baseFormatted, endpointFormatted].filter(Boolean).join('/');
-    const fullEndpoint = interpolateIfNeeded(combinedUrl, {
+    const replacers = {
         ...(connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>),
         ...connection.credentials
-    });
+    };
+    // Resolve the base independently: a fallback in the caller's endpoint must never discard it.
+    const resolvedBase = baseFormatted
+        ? config.baseUrlOverride
+            ? interpolateProxyTemplate(baseFormatted, replacers, config, connection, 'caller_base_url_override', tracking)
+            : interpolateIfNeeded(baseFormatted, replacers)
+        : '';
+    const resolvedEndpoint = endpointFormatted ? interpolateProxyTemplate(endpointFormatted, replacers, config, connection, 'caller_endpoint', tracking) : '';
+    const fullEndpoint = [resolvedBase, resolvedEndpoint].filter(Boolean).join('/');
 
     let url = new URL(fullEndpoint);
+    if (!resolvedBase || url.origin !== new URL(resolvedBase).origin) {
+        throw new ProxyError('invalid_proxy_url', 'Proxy request URL must match the configured base URL origin.');
+    }
     if (config.params) {
         if (typeof config.params === 'string') {
             if (fullEndpoint.includes('?')) {
@@ -510,7 +534,7 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
             if (typeof value !== 'string') {
                 continue;
             }
-            const interpolated = interpolateIfNeeded(value, replacers);
+            const interpolated = interpolateProxyTemplate(value, replacers, config, connection, 'provider_query', tracking);
             if (!interpolated.includes('${')) {
                 url.searchParams.set(key, interpolated);
             }
@@ -521,10 +545,12 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
 
 export function buildProxyBody({
     config,
-    connection
+    connection,
+    tracking
 }: {
     config: ApplicationConstructedProxyConfiguration;
     connection: ConnectionForProxy;
+    tracking?: ProxyTracking | undefined;
 }): Record<string, ProxyBodyValue> | null {
     if (!config.provider?.proxy?.body) {
         return null;
@@ -540,7 +566,7 @@ export function buildProxyBody({
     // (at any depth) any leaf whose placeholder didn't resolve, and any object left empty as a result.
     const buildValue = (value: unknown): ProxyBodyValue | null => {
         if (typeof value === 'string') {
-            const interpolated = interpolateIfNeeded(value, replacers);
+            const interpolated = interpolateProxyTemplate(value, replacers, config, connection, 'provider_body', tracking);
             return interpolated.includes('${') ? null : interpolated;
         }
 
@@ -830,7 +856,6 @@ export function buildProxyHeaders({
             ...(usesReplacer('bodyCanonicalParams') && { bodyCanonicalParams: getRawBody(config.method, config.data) }),
             contentType
         };
-
         for (const [key, value] of Object.entries(config.provider.proxy.headers) as [Lowercase<string>, string][]) {
             if (value.includes('connectionConfig')) {
                 const interpolated = interpolateIfNeeded(value, {

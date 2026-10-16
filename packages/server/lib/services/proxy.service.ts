@@ -28,7 +28,17 @@ import { connectionRefreshFailed, connectionRefreshSuccess } from '../hooks/hook
 import { capping } from '../utils/usage.js';
 
 import type { LogContext } from '@nangohq/logs';
-import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, InternalProxyConfiguration, OperationActor, ProxyFile, Result } from '@nangohq/types';
+import type {
+    ApiKeyPrincipal,
+    DBEnvironment,
+    DBPlan,
+    DBTeam,
+    HTTP_METHOD,
+    InternalProxyConfiguration,
+    OperationActor,
+    ProxyFile,
+    Result
+} from '@nangohq/types';
 import type { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 const MEMOIZED_CONNECTION_TTL = 60_000;
@@ -48,6 +58,7 @@ export interface ProxyServiceRequest {
     files?: ProxyFile[] | undefined;
     retries?: number | undefined;
     baseUrlOverride?: string | undefined;
+    apiKey?: ApiKeyPrincipal | undefined;
     decompress?: boolean | undefined;
     retryOn?: number[] | null | undefined;
     forwardHeadersOnRedirect?: boolean | undefined;
@@ -260,7 +271,10 @@ export class ProxyService {
                 connectionName: connection.connection_id
             });
 
-            const internalConfig: InternalProxyConfiguration = { providerName: integration.provider };
+            const internalConfig: InternalProxyConfiguration = {
+                providerName: integration.provider,
+                monitoringContext: { accountId: account.id, environmentId: environment.id, apiKey: params.apiKey, callsite: 'proxy' }
+            };
             const proxyConfig = getProxyConfiguration({
                 externalConfig: {
                     endpoint: params.endpoint,

@@ -24,11 +24,12 @@ export const proxyRequestTool: ManagementMcpTool<ProxyRequestOutput> = defineMan
         idempotentHint: false,
         openWorldHint: true
     },
-    async handler({ args, account, environment, plan }) {
+    async handler({ args, account, environment, plan, apiKeyPrincipal }) {
         const execution = await executeMcpProxyRequest({
             account,
             environment,
             plan,
+            ...(apiKeyPrincipal ? { apiKey: apiKeyPrincipal } : {}),
             integrationId: args.integration_id,
             connectionId: args.connection_id,
             method: args.method,
