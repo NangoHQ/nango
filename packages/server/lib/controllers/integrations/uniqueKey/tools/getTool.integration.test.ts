@@ -1,14 +1,47 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
 import { functionConfigService, seeders } from '@nangohq/shared';
 
 import { isError, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
-import type { DBFunctionConfigVersion } from '@nangohq/types';
+import type { DBFunctionConfigVersion, DBSyncConfig } from '@nangohq/types';
 
 const route = '/integrations/:uniqueKey/tools/:name';
 let api: Awaited<ReturnType<typeof runServer>>;
+
+async function seedAction() {
+    const seed = await seeders.seedAccountEnvAndUser();
+    const integration = await seeders.createConfigSeed(seed.env, 'github-123', 'github');
+    await db.knex.from<DBSyncConfig>('_nango_sync_configs').insert({
+        environment_id: seed.env.id,
+        nango_config_id: integration.id!,
+        sync_name: 'fetchIssue',
+        type: 'action',
+        file_location: 'file_location',
+        version: '0.0.1',
+        source: 'repo',
+        runs: null,
+        track_deletes: false,
+        auto_start: false,
+        webhook_subscriptions: [],
+        models: ['Issue'],
+        input: 'IssueInput',
+        models_json_schema: {
+            definitions: {
+                IssueInput: { type: 'object', properties: { id: { type: 'string' } } },
+                Issue: { type: 'object', properties: { title: { type: 'string' } } }
+            }
+        },
+        metadata: { description: 'Legacy action', scopes: ['repo'] },
+        active: true,
+        enabled: true,
+        deleted: false,
+        deleted_at: null
+    });
+    return seed;
+}
 
 const version = {
     description: 'Fetch an issue',
@@ -36,10 +69,68 @@ const version = {
 describe(`GET ${route}`, () => {
     beforeAll(async () => {
         api = await runServer();
+        vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(false);
     });
 
     afterAll(() => {
+        vi.restoreAllMocks();
         api.server.close();
+    });
+
+    it('falls back to an action', async () => {
+        const { apiKey } = await seedAction();
+        const response = await api.fetch(route, { method: 'GET', token: apiKey.secret, params: { uniqueKey: 'github-123', name: 'fetchIssue' } });
+
+        expect(response.res.status).toBe(200);
+        expect(response.json).toStrictEqual({
+            uuid: null,
+            integration_id: 'github-123',
+            provider: 'github',
+            name: 'fetchIssue',
+            description: 'Legacy action',
+            input_json_schema: {
+                $ref: '#/definitions/IssueInput',
+                definitions: { IssueInput: { type: 'object', properties: { id: { type: 'string' } } } }
+            },
+            output_json_schema: {
+                $ref: '#/definitions/Issue',
+                definitions: { Issue: { type: 'object', properties: { title: { type: 'string' } } } }
+            },
+            source: 'repo',
+            meta: { tags: {}, required_scopes: ['repo'] }
+        });
+    });
+
+    it('prefers a function over an action with the same name', async () => {
+        const { apiKey, env } = await seedAction();
+        const [fn] = (
+            await functionConfigService.upsert(db.knex, [{ environmentId: env.id, integrationId: 'github-123', name: 'fetchIssue', version }])
+        ).unwrap();
+
+        const response = await api.fetch(route, { method: 'GET', token: apiKey.secret, params: { uniqueKey: 'github-123', name: 'fetchIssue' } });
+        expect(response.res.status).toBe(200);
+        expect(response.json).toMatchObject({ uuid: fn!.config.uuid, description: version.description });
+    });
+
+    it.each(['disabled', 'scheduled'] as const)('falls back to an action when the function is %s', async (state) => {
+        const { apiKey, env } = await seedAction();
+        const [fn] = (
+            await functionConfigService.upsert(db.knex, [
+                {
+                    environmentId: env.id,
+                    integrationId: 'github-123',
+                    name: 'fetchIssue',
+                    version: state === 'scheduled' ? { ...version, trigger: { kind: 'schedule', frequency: '0 * * * *' } } : version
+                }
+            ])
+        ).unwrap();
+        if (state === 'disabled') {
+            await db.knex('function_configs').where({ id: fn!.config.id }).update({ enabled: false });
+        }
+
+        const response = await api.fetch(route, { method: 'GET', token: apiKey.secret, params: { uniqueKey: 'github-123', name: 'fetchIssue' } });
+        expect(response.res.status).toBe(200);
+        expect(response.json).toMatchObject({ uuid: null, description: 'Legacy action' });
     });
 
     it('requires authentication and the read scope', async () => {

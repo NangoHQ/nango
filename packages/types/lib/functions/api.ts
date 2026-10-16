@@ -2,7 +2,7 @@ import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTags, FunctionTriggerDefinition } from '../function/config.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
-import type { FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
+import type { FunctionListSource, FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
@@ -476,14 +476,14 @@ export type DeletePublicIntegrationFunction = ApiEndpoint<{
 }>;
 
 export interface GetToolResponse {
-    uuid: string;
+    uuid: string | null;
     integration_id: string;
     provider: string;
     name: string;
     description: string;
     input_json_schema: JSONSchema7 | null;
     output_json_schema: JSONSchema7 | null;
-    source: FunctionSource;
+    source: FunctionListSource;
     meta: {
         instructions?: string | undefined;
         required_scopes?: string[] | undefined;

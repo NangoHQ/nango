@@ -1,7 +1,7 @@
 import { filterJsonSchemaForModels } from '@nangohq/utils';
 
-import type { functionConfigService } from '@nangohq/shared';
-import type { FunctionTags, GetFunctionResponse, GetToolResponse } from '@nangohq/types';
+import type { functionConfigService, ResolveRunnableToolResult } from '@nangohq/shared';
+import type { FunctionTags, GetFunctionResponse, GetToolResponse, IntegrationConfig } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 export function toGetFunctionResponse(fn: functionConfigService.CurrentFunctionConfig): GetFunctionResponse {
@@ -33,6 +33,57 @@ export function toGetToolResponse(fn: functionConfigService.CurrentFunctionConfi
         output_json_schema: resolveSchemaRef(fn.currentVersion.json_schema, fn.currentVersion.output_schema_ref),
         source: fn.currentVersion.source,
         meta: toToolMeta(fn.currentVersion.tags)
+    };
+}
+
+export function actionToGetToolResponse(
+    resolved: Exclude<ResolveRunnableToolResult, { kind: 'missing' }>,
+    integration: Pick<IntegrationConfig, 'unique_key' | 'provider'>
+): GetToolResponse {
+    const action =
+        resolved.kind === 'deployed'
+            ? {
+                  name: resolved.config.sync_name,
+                  description: resolved.config.metadata?.description,
+                  scopes: resolved.config.metadata?.scopes,
+                  input: resolved.config.input,
+                  output: resolved.config.models ?? [],
+                  jsonSchema: resolved.config.models_json_schema,
+                  source: resolved.config.source
+              }
+            : {
+                  name: resolved.tool.name,
+                  description: resolved.tool.description,
+                  scopes: resolved.tool.scopes,
+                  input: resolved.tool.input,
+                  output: resolved.tool.output,
+                  jsonSchema: resolved.tool.jsonSchema,
+                  source: 'tools-catalog' as const
+              };
+    return {
+        uuid: null,
+        integration_id: integration.unique_key,
+        provider: integration.provider,
+        name: action.name,
+        description: action.description ?? '',
+        input_json_schema: resolveActionSchema(action.jsonSchema, action.input ? [action.input] : []),
+        output_json_schema: resolveActionSchema(action.jsonSchema, action.output),
+        source: action.source,
+        meta: { tags: {}, ...(action.scopes && { required_scopes: action.scopes }) }
+    };
+}
+
+function resolveActionSchema(jsonSchema: JSONSchema7 | null, models: string[]): JSONSchema7 | null {
+    if (!jsonSchema || models.length === 0 || models.some((model) => !Object.hasOwn(jsonSchema.definitions ?? {}, model))) {
+        return null;
+    }
+    const filtered = filterJsonSchemaForModels(jsonSchema, models);
+    if (filtered.isErr()) {
+        return null;
+    }
+    return {
+        ...filtered.value,
+        ...(models.length === 1 ? { $ref: `${SCHEMA_REF_PREFIX}${models[0]}` } : { anyOf: models.map((model) => ({ $ref: `${SCHEMA_REF_PREFIX}${model}` })) })
     };
 }
 

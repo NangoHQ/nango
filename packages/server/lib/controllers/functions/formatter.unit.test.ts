@@ -1,8 +1,70 @@
 import { describe, expect, it } from 'vitest';
 
 import type { functionConfigService } from '@nangohq/shared';
-import type { FunctionTags, GetToolResponse } from '@nangohq/types';
+import type { DBSyncConfig, FunctionTags, GetToolResponse } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
+
+describe('actionToGetToolResponse', () => {
+    const integration = { unique_key: 'github-123', provider: 'github' };
+    const definitions = {
+        Input: { type: 'object', properties: { model: { $ref: '#/definitions/Model' } } },
+        Output: { type: 'array', items: { $ref: '#/definitions/Model' } },
+        Model: { type: 'object', properties: { id: { type: 'string' } } },
+        Other: { type: 'string' }
+    } satisfies NonNullable<JSONSchema7['definitions']>;
+    const action: DBSyncConfig = {
+        id: 1,
+        nango_config_id: 1,
+        environment_id: 1,
+        file_location: 'fetchIssue.js',
+        version: '1.0.0',
+        active: true,
+        runs: null,
+        track_deletes: false,
+        auto_start: false,
+        attributes: {},
+        metadata: {},
+        sync_type: null,
+        webhook_subscriptions: [],
+        sdk_version: null,
+        features: [],
+        created_at: new Date(),
+        updated_at: new Date(),
+        type: 'action',
+        sync_name: 'fetchIssue',
+        enabled: true,
+        source: 'repo',
+        input: 'Input',
+        models: ['Output'],
+        models_json_schema: { definitions }
+    };
+
+    it('resolves schemas', async () => {
+        const { actionToGetToolResponse } = await import('./formatter.js');
+        const response = actionToGetToolResponse({ kind: 'deployed', config: action }, integration);
+        expect(response).toMatchObject({ uuid: null, description: '', source: 'repo', meta: { tags: {} } });
+        expect(response.input_json_schema).toStrictEqual({
+            $ref: '#/definitions/Input',
+            definitions: { Input: definitions.Input, Model: definitions.Model }
+        });
+        expect(response.output_json_schema).toStrictEqual({
+            $ref: '#/definitions/Output',
+            definitions: { Output: definitions.Output, Model: definitions.Model }
+        });
+    });
+
+    it.each<Partial<DBSyncConfig>>([
+        { models_json_schema: null },
+        { input: '', models: [] },
+        { input: 'Missing', models: ['Missing'] },
+        { models_json_schema: { definitions: { Input: { $ref: '#/definitions/Missing' }, Output: { $ref: '#/definitions/Missing' } } } }
+    ])('returns null for absent or unresolved schemas: %j', async (overrides) => {
+        const { actionToGetToolResponse } = await import('./formatter.js');
+        const response = actionToGetToolResponse({ kind: 'deployed', config: { ...action, ...overrides } }, integration);
+        expect(response.input_json_schema).toBeNull();
+        expect(response.output_json_schema).toBeNull();
+    });
+});
 
 describe('toGetToolResponse meta', () => {
     it.each<{ name: string; tags: FunctionTags; expected: GetToolResponse['meta'] }>([
