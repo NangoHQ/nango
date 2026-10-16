@@ -6,6 +6,7 @@ import { LogActionEnum } from '../models/Telemetry.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { productTracking } from '../utils/productTracking.js';
+import { bindSignupAdvertisingConsent } from './advertisingConsent.js';
 import environmentService from './environment.service.js';
 import { plansList } from './plans/definitions.js';
 import { createPlan } from './plans/plans.js';
@@ -31,7 +32,8 @@ import type {
     DBUser,
     PersistAuthContext,
     Result,
-    SignupAcquisition
+    SignupAcquisition,
+    SignupConsentReference
 } from '@nangohq/types';
 
 const hashLocalCache = new FixedSizeMap<string, string>(10_000);
@@ -260,11 +262,11 @@ class AccountService {
         return account[0].uuid;
     }
 
-    async getOrCreateAccount(name: string, acquisition?: SignupAcquisition): Promise<DBTeam | null> {
+    async getOrCreateAccount(name: string, acquisition?: SignupAcquisition, consent?: SignupConsentReference): Promise<DBTeam | null> {
         const account = await db.knex.select('*').from<DBTeam>(`_nango_accounts`).where({ name });
 
         if (account == null || account.length == 0 || !account[0]) {
-            return await this.createAccount({ name, acquisition });
+            return await this.createAccount({ name, acquisition, consent });
         }
 
         return account[0];
@@ -279,13 +281,15 @@ class AccountService {
         email,
         foundUs = '',
         isSignup = true,
-        acquisition
+        acquisition,
+        consent
     }: {
         name: string;
         email?: string | undefined;
         foundUs?: string | undefined;
         isSignup?: boolean;
         acquisition?: SignupAcquisition | undefined;
+        consent?: SignupConsentReference | undefined;
     }): Promise<DBTeam | null> {
         const account = await db.knex.transaction(async (trx) => {
             const emailTeamName = emailToTeamName({ email });
@@ -313,6 +317,19 @@ class AccountService {
                 throw createdEnvs.error;
             }
 
+            if (isSignup && consent && envs.ADVERTISING_CONSENT_ENABLED) {
+                try {
+                    await bindSignupAdvertisingConsent(trx, result[0].id, consent);
+                } catch (err) {
+                    // SQL error messages can contain bindings, including consent and click IDs.
+                    logger.warning('Optional signup consent storage unavailable', {
+                        err: {
+                            name: err instanceof Error ? err.name : 'UnknownError',
+                            code: err && typeof err === 'object' && 'code' in err ? String(err.code) : undefined
+                        }
+                    });
+                }
+            }
             metrics.increment(metrics.Types.ACCOUNT_CREATED, 1, { accountId: result[0].id });
             return result[0];
         });

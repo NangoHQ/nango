@@ -237,6 +237,9 @@ const ENVS_SHAPE = z.object({
     NANGO_DASHBOARD_USERNAME: z.string().optional(),
     NANGO_DASHBOARD_PASSWORD: z.string().optional(),
     LOCAL_NANGO_USER_ID: z.coerce.number().int().nonnegative().optional(),
+    ADVERTISING_CONSENT_ENABLED: z.stringbool().optional().default(false),
+    ADVERTISING_CONSENT_ORIGINS: z.string().optional().default(''),
+    ADVERTISING_CONSENT_LIFETIME_DAYS: z.coerce.number().int().min(1).max(365).optional(),
     AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
     DEFAULT_USER_ROLE: z.enum(roles).optional().default('administrator'),
     AUTH_SHADOW_CACHE_TTL_MS: z.coerce.number().int().positive().optional().default(60_000), // 1 minute

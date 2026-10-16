@@ -86,3 +86,16 @@ describe('managed authentication continuation state', () => {
         expect(parseManagedAuthState('not-base64-json')).toBeNull();
     });
 });
+
+// Consent state carries only a nonce. The server session owns the referenced record.
+describe('managed signup consent state', () => {
+    it('round trips a bounded nonce alongside acquisition without exposing a record ID', () => {
+        const consentNonce = 'a'.repeat(64);
+        const encoded = encodeManagedAuthState({ consentNonce, acquisition: { acquisition_utm_source: 'google' } });
+        expect(parseManagedAuthState(encoded)).toEqual({ consentNonce, acquisition: { acquisition_utm_source: 'google' } });
+    });
+    it('ignores malformed optional consent without losing an invitation', () => {
+        const encoded = Buffer.from(JSON.stringify({ token: 'invite-token', consentNonce: 'not-valid', consent: { id: 'forged' } })).toString('base64');
+        expect(parseManagedAuthState(encoded)).toEqual({ token: 'invite-token' });
+    });
+});

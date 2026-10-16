@@ -1,5 +1,6 @@
 import { apiFetch } from '../../utils/api';
 import { readSignupAcquisition } from '../../utils/signupAcquisition';
+import { readSignupPath } from '../../utils/signupContext';
 
 import type { PostManagedSignup } from '@nangohq/types';
 
@@ -19,7 +20,8 @@ export default function GoogleButton({ text, setServerErrorMessage, token, retur
                 provider: 'GoogleOAuth',
                 token,
                 returnTo: token ? undefined : returnTo,
-                acquisition: readSignupAcquisition()
+                acquisition: readSignupAcquisition(),
+                signupPath: readSignupPath()
             })
         });
 

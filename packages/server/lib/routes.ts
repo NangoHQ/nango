@@ -10,6 +10,7 @@ import { productTrackingMiddleware } from './middleware/productTracking.middlewa
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { securityMiddlewares } from './middleware/security.js';
 import { getReady } from './ready.js';
+import { advertisingConsentAPI } from './routes.advertising-consent.js';
 import { internalApi } from './routes.internal.js';
 import { managementMcpAPI } from './routes.management-mcp.js';
 import { oauthServerAPI } from './routes.oauth.js';
@@ -43,6 +44,7 @@ router.get('/providers.json', rateLimiterMiddleware, getProvidersJSON);
 
 // Import main routers
 // Order is important because public API has no prefix
+router.use(advertisingConsentAPI);
 router.use(oauthServerAPI);
 router.use(managementMcpAPI);
 router.use('/api/v1', privateApi);

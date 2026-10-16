@@ -3,17 +3,18 @@ import crypto from 'crypto';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, getInvitation, pbkdf2, userService, validateInvitation } from '@nangohq/shared';
+import { acceptInvitation, accountService, completeSignupAdvertisingConsent, getInvitation, pbkdf2, userService, validateInvitation } from '@nangohq/shared';
 import { flagHasUsage, PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { sendVerificationEmail } from '../../../helpers/email.js';
 import { identifyAccountMembership } from '../../../services/accountAnalytics.service.js';
+import { signupConsentFromRequest } from '../../../services/advertisingConsent.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
 import { signupAcquisitionSchema } from '../../../utils/signupAcquisition.js';
 
-import type { DBTeam, PostSignup, Role } from '@nangohq/types';
+import type { DBTeam, PostSignup, Role, SignupConsentReference } from '@nangohq/types';
 
 export const passwordSchema = z
     .string()
@@ -30,6 +31,7 @@ const validation = z
         name: z.string(),
         token: z.string().uuid().optional(),
         foundUs: z.string().optional(),
+        signupPath: z.enum(['/signup', '/signin']).optional(),
         acquisition: signupAcquisitionSchema
     })
     .strict();
@@ -72,6 +74,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     }
 
     let account: DBTeam | null;
+    let consent: SignupConsentReference | undefined;
     let invitationRole: Role = envs.DEFAULT_USER_ROLE;
     if (token) {
         // Invitation signup
@@ -96,7 +99,8 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         }
 
         // Regular account
-        account = await accountService.createAccount({ name, email, foundUs, acquisition });
+        consent = await signupConsentFromRequest(req, val.data.signupPath);
+        account = await accountService.createAccount({ name, email, foundUs, acquisition, consent });
         if (!account) {
             res.status(500).send({
                 error: { code: 'error_creating_account', message: 'There was a problem creating the account. Please reach out to support.' }
@@ -121,6 +125,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });
         return;
     }
+    if (!token) await completeSignupAdvertisingConsent(account.id, user.id, consent);
     void identifyAccountMembership(account.id);
 
     if (!token && flagHasUsage) {
