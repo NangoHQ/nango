@@ -577,8 +577,8 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     function addDefinitionProperties(arg: babel.types.ObjectExpression, calleeName: AllowedExportName, t: typeof babel.types): void {
         arg.properties = [
             t.objectProperty(t.identifier('type'), t.stringLiteral(allowedExports[calleeName].type)),
-            ...(calleeName === 'createTool' ? [t.objectProperty(t.identifier('_nangoFactory'), t.stringLiteral('tool'))] : []),
-            ...arg.properties
+            ...arg.properties,
+            ...(calleeName === 'createTool' ? [t.objectProperty(t.identifier('_nangoFactory'), t.stringLiteral('tool'))] : [])
         ];
     }
 

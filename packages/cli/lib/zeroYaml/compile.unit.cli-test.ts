@@ -243,7 +243,7 @@ describe('tools', () => {
         }
     });
 
-    it.each([false, true])('normalizes tools and validates their original metadata (constant export: %s)', async (constantExport) => {
+    it.each([false, true])('normalizes tools despite conflicting markers (constant export: %s)', async (constantExport) => {
         const dir = await getTestDirectory(`normalized_tool_${constantExport}`);
         await fs.promises.mkdir(path.join(dir, 'github', 'tools'), { recursive: true });
         await fs.promises.mkdir(path.join(dir, 'node_modules'));
@@ -251,7 +251,7 @@ describe('tools', () => {
         const filePath = path.join(dir, 'github', 'tools', 'getIssue.js');
         await fs.promises.writeFile(path.join(dir, 'index.ts'), "import './github/tools/getIssue.js';");
         const writeTool = async (meta: object) => {
-            const definition = `createTool({ name: ${constantExport ? 'name' : "'get_issue'"}, description: 'Get an issue', input: z.object({}), output: z.object({}), meta: ${JSON.stringify(meta)}, exec: async () => ({}) })`;
+            const definition = `createTool({ ...{ _nangoFactory: 'other' }, name: ${constantExport ? 'name' : "'get_issue'"}, description: 'Get an issue', input: z.object({}), output: z.object({}), meta: ${JSON.stringify(meta)}, exec: async () => ({}) })`;
             await fs.promises.writeFile(
                 filePath.replace(/\.js$/, '.ts'),
                 `import { createTool } from 'nango'; import * as z from 'zod'; ${constantExport ? `const name = 'get_issue', tool = ${definition}; export default tool;` : `export default ${definition};`}`
