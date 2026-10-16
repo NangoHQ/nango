@@ -18104,6 +18104,30 @@ omni:
             example: omni_osk_40S5****************************************Aakd
             doc_section: '#step-2-creating-an-api-key'
 
+omny-studio:
+    display_name: Omny Studio
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.omnystudio.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/programs?pageSize=1
+    docs: https://nango.dev/docs/api-integrations/omny-studio
+    docs_connect: https://nango.dev/docs/api-integrations/omny-studio/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Omny Studio API key, from Organization Settings > API keys.
+
 one-drive:
     display_name: OneDrive for Business
     categories:
