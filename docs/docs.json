@@ -1862,6 +1862,7 @@
               "integrations/all/sentry",
               "api-integrations/sentry-mcp",
               "integrations/all/sentry-oauth",
+              "api-integrations/serply",
               "integrations/all/servicem8",
               "api-integrations/servicenow",
               "api-integrations/servicenow-jwt",
