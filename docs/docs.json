@@ -1149,6 +1149,7 @@
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
               "api-integrations/beeline-vms",
+              "integrations/all/belender",
               "api-integrations/bettercontact",
               "api-integrations/bigchange",
               "api-integrations/bigcommerce",

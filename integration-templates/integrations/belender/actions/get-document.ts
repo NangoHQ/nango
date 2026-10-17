@@ -1,0 +1,40 @@
+import { createAction } from 'nango';
+import { z } from 'zod';
+
+const BelenderId = z.union([z.string(), z.number()]);
+
+const InputSchema = z.object({
+    request_id: BelenderId,
+    document_id: BelenderId
+});
+type Input = z.infer<typeof InputSchema>;
+const OutputSchema = z.object({
+    request_id: BelenderId,
+    document_id: BelenderId,
+    data: z.unknown()
+});
+type Output = z.infer<typeof OutputSchema>;
+
+const action = createAction({
+    description: 'Downloads a document produced by a Belender request.',
+    version: '1.0.0',
+    endpoint: { method: 'GET', path: '/requests/documents', group: 'Documents' },
+    input: InputSchema,
+    output: OutputSchema,
+    exec: async (nango, input: Input): Promise<Output> => {
+        const requestId = String(input.request_id);
+        const documentId = String(input.document_id);
+        const response = await nango.get({
+            endpoint: `/requests/${requestId}/documents/${documentId}`,
+            responseType: 'arraybuffer',
+            retries: 3
+        });
+        return {
+            request_id: input.request_id,
+            document_id: input.document_id,
+            data: response.data
+        };
+    }
+});
+export type NangoActionLocal = Parameters<(typeof action)['exec']>[0];
+export default action;
