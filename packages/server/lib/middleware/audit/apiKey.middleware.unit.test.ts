@@ -2,7 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { metrics, Ok } from '@nangohq/utils';
 
-import { auditAccountApiKeyCreated, auditApiKeyCreated, auditApiKeyDeleted, auditPublicApiKeyCreated, auditPublicApiKeyDeleted } from './apiKey.middleware.js';
+import {
+    auditAccountApiKeyCreated,
+    auditApiKeyCreated,
+    auditApiKeyDeleted,
+    auditPublicApiKeyCreated,
+    auditPublicApiKeyDeleted,
+    auditPublicApiKeyUpdated
+} from './apiKey.middleware.js';
 import {
     customerKeySearchMock,
     fakeReq,
@@ -156,6 +163,47 @@ describe('apiKey audit middleware (unit)', () => {
         expect(event).toMatchObject({ resource: 'api_key', action: 'created', accountId: 42 });
         expect(event?.environment).toBeNull();
         expect(getEnvironmentByUuidMock).not.toHaveBeenCalled();
+    });
+
+    it('public api key update: names the key and environment from the path, and records the requested changes', async () => {
+        const environmentUuid = '00000000-0000-4000-8000-000000000012';
+        const keyUuid = '00000000-0000-4000-8000-000000002551';
+        const invalidScopes = [23, { not: 'a scope' }, null];
+        const event = await runAudit(
+            auditPublicApiKeyUpdated,
+            fakeReq({ params: { environmentUuid, keyUuid }, body: { display_name: 'renamed', scopes: ['environment:deploy', ...invalidScopes] } }),
+            fakeRes(secretKeyLocals)
+        );
+        expect(event).toMatchObject({
+            resource: 'api_key',
+            action: 'updated',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: environmentUuid, display: 'prod' },
+            actor: { type: 'api_key', id: 'c0000000-0000-4000-8000-000000000005', display: 'ci-key' },
+            targets: [{ type: 'api_key', id: keyUuid, display: 'ci-key' }],
+            metadata: { displayName: 'renamed', scopes: ['environment:deploy'] } // invalid scopes are ignored
+        });
+        expect(customerKeySearchMock).toHaveBeenCalledWith(expect.anything(), { type: 'environment', environmentId: 12, accountId: 42, keyUuid });
+    });
+
+    it('public api key update: a denial still identifies the key and the attempted change', async () => {
+        const environmentUuid = '00000000-0000-4000-8000-000000000012';
+        const keyUuid = '00000000-0000-4000-8000-000000002551';
+        const event = await runAudit(
+            auditPublicApiKeyUpdated,
+            fakeReq({ params: { environmentUuid, keyUuid }, body: { scopes: ['environment:*'] } }),
+            fakeRes(secretKeyLocals, 403)
+        );
+        expect(event).toMatchObject({
+            resource: 'api_key',
+            action: 'updated',
+            outcome: 'denied',
+            accountId: 42,
+            environment: { id: environmentUuid, display: 'prod' },
+            targets: [{ type: 'api_key', id: keyUuid, display: 'ci-key' }],
+            metadata: { scopes: ['environment:*'] }
+        });
     });
 
     it('public api key delete: malformed UUIDs do not trigger audit lookups', async () => {

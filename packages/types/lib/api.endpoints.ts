@@ -76,6 +76,7 @@ import type {
     ListApiKeys,
     PatchApiKey,
     PatchEnvironment,
+    PatchPublicApiKey,
     PostEnvironment,
     PostPublicApiKey,
     PostPublicEnvironment,
@@ -260,6 +261,7 @@ export type PublicApiEndpoints =
     | GetPublicApiKey
     | GetPublicApiKeys
     | PostPublicApiKey
+    | PatchPublicApiKey
     | DeletePublicApiKey;
 
 export type PrivateApiEndpoints =
