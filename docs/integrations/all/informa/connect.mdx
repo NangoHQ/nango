@@ -1,0 +1,31 @@
+---
+title: Informa - How do I link my account?
+sidebarTitle: Informa
+---
+
+## Overview
+
+To authenticate with Informa, you will need:
+1. **Username** - Your Informa API EMPRESAS username.
+2. **Password** - Your Informa API EMPRESAS password.
+
+### Prerequisites:
+
+- You must be an Informa D&amp;B customer with API EMPRESAS access to `https://services.informa.es`.
+- Your contract must include the packaged products you intend to call (for example `INFORME_FINANCIERO`).
+
+### Instructions:
+
+#### Step 1: Obtaining your Informa credentials
+1. Sign up for / enable **API EMPRESAS** with Informa ([overview](https://www.informa.es/necesidades/api-empresas)).
+2. Obtain your API **username** and **password** from your Informa account administrator or contract.
+3. Keep the password secret; Nango stores it encrypted with the connection.
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your credentials:
+1. Open the Connect UI form for Informa.
+2. Enter your **Username** and **Password**.
+3. Submit the form. Nango will attach `username` and `password` headers on proxy requests to `https://services.informa.es`.
+
+You are now connected to Informa. Call `GET /api/get-product` through the Nango proxy (see the Informa integration docs for products, formats, and error handling).
