@@ -1,0 +1,84 @@
+---
+title: 'Dot'
+sidebarTitle: 'Dot'
+description: 'Integrate your application with the Dot API'
+---
+
+## 🚀 Quickstart
+
+Connect to Dot (getdot.ai) with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Dot_.
+    </Step>
+    <Step id="authorize-dot" title="Authorize Dot">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then select your region and enter your Dot API token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-dot-api" title="Call the Dot API">
+    Let's make your first request to the Dot API. It returns the Dot user the API token belongs to. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/auth/me" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/auth/me',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Dot integration guides
+
+- [How do I link my account?](/api-integrations/dot/connect)  
+Find your region and create an API token to connect your Dot account.
+
+Official docs: [Dot API](https://docs.getdot.ai/developers/api)
+
+## 🧩 Pre-built syncs & actions for Dot
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/dot/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango sends requests to `https://app.getdot.ai` (US) or `https://eu.getdot.ai` (EU), depending on the region of the connection. Endpoint paths start with `/api`, for example `/api/auth/me`.
+- An API token acts as the Dot user it was created for, with that user's data access. Admins create tokens in **Settings** > **Users** > **API Tokens**.
+- A token made for Dot's MCP server can't call the REST API: requests return `403`.
+- Endpoints that run expensive work, such as `/api/agentic`, are rate limited per organization and return `429` with a `Retry-After` header.
+
+---
