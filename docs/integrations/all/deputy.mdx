@@ -1,0 +1,61 @@
+---
+title: Deputy
+sidebarTitle: Deputy
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/deputy/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/deputy/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ | A Deputy account is required to reach the OAuth client registration screen. Whether a free trial suffices for production credentials is not documented. |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | Not documented. Deputy publishes an API support address (apisupport@deputy.com) but no partner programme page. |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+1. Sign in to your Deputy account.
+2. Go to [https://once.deputy.com/my/oauth_clients](https://once.deputy.com/my/oauth_clients) and create a new OAuth client.
+3. Set the redirect URI to `https://api.nango.dev/oauth/callback`.
+4. Note the **Client ID** and **Client Secret** and add them to your Nango integration.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/deputy.mdx)</Note>
+
+
+## Useful links
+
+-   [Using OAuth 2.0 with Deputy](https://developer.deputy.com/docs/using-oauth-20)
+-   [Getting started with the Deputy API](https://developer.deputy.com/docs/getting-started-with-the-deputy-api)
+-   [Deputy API reference](https://developer.deputy.com/deputy-docs/reference)
+-   [Register an OAuth client](https://once.deputy.com/my/oauth_clients)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/deputy.mdx)</Note>
+
+
+## API gotchas
+
+-   **Every install has its own host, and you only learn it after the token exchange.** Deputy's authorization and initial token endpoints are fixed on `once.deputy.com`, but the account's real API host is returned as `endpoint` in the token response (for example `{install}.au.deputy.com`) and is one-to-one with the access token. That value is captured as the `endpoint` connection config field and is what `proxy.base_url` resolves to, so it is not something the end user has to supply up front.
+-   **Refreshing uses a different host to the initial exchange.** The initial code exchange posts to `https://once.deputy.com/my/oauth/access_token`, but renewing an access token posts to `https://{install}.{geo}.deputy.com/oauth/access_token`. `refresh_url` is set explicitly for this reason; leaving it to default to `token_url` would send refreshes to the wrong host.
+-   **The scope is always `longlife_refresh_token`.** Deputy's documentation states this for the authorize request, the token request and the refresh request. Without it no refresh token is issued.
+-   **Refresh tokens are single use.** Renewing invalidates the refresh token you used, and the response carries a new one that must be stored for next time.
+-   API resources live under `/api/v1/` on the install host, for example `/api/v1/resource/Employee`.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/deputy.mdx)</Note>
+
+
+## Going further
+
+<Card title="Connect to Deputy" icon="link" href="/integrations/all/deputy/connect" horizontal>
+  Guide to connect to Deputy using Connect UI
+</Card>
