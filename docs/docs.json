@@ -1677,6 +1677,7 @@
               "integrations/all/okta-preview",
               "api-integrations/omni",
               "api-integrations/omnisend",
+              "api-integrations/omny-studio",
               "api-integrations/one-drive",
               "integrations/all/one-drive-personal",
               "integrations/all/one-note",
