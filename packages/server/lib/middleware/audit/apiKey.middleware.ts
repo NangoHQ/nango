@@ -3,7 +3,16 @@ import { Audit, auditable } from './auditable.js';
 import { nonEmptyString, omitUndefined } from './input.js';
 import { accountApiKeyTarget, apiKeyTarget, environmentFromUuid, publicEnvApiKeyTarget } from './lookups.js';
 
-import type { CreateAccountApiKey, CreateApiKey, DeleteAccountApiKey, DeleteApiKey, DeletePublicApiKey, PatchApiKey, PostPublicApiKey } from '@nangohq/types';
+import type {
+    CreateAccountApiKey,
+    CreateApiKey,
+    DeleteAccountApiKey,
+    DeleteApiKey,
+    DeletePublicApiKey,
+    PatchApiKey,
+    PatchPublicApiKey,
+    PostPublicApiKey
+} from '@nangohq/types';
 
 export const auditApiKeyCreated = auditable<CreateApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'environment' }),
@@ -33,6 +42,17 @@ export const auditAccountApiKeyCreated = auditable<CreateAccountApiKey>({
 export const auditApiKeyUpdated = auditable<PatchApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'updated', scope: 'environment' }),
     target: (req, locals) => apiKeyTarget(req.params.keyId, locals),
+    metadata: (req) =>
+        omitUndefined({
+            displayName: nonEmptyString(req.body.display_name),
+            scopes: Array.isArray(req.body.scopes) ? req.body.scopes.filter((s) => typeof s === 'string') : undefined
+        })
+});
+
+export const auditPublicApiKeyUpdated = auditable<PatchPublicApiKey>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'updated', scope: 'environment' }),
+    environment: (req, locals) => environmentFromUuid(req.params.environmentUuid, locals),
+    target: (req, locals) => publicEnvApiKeyTarget(req.params.keyUuid, req.params.environmentUuid, locals),
     metadata: (req) =>
         omitUndefined({
             displayName: nonEmptyString(req.body.display_name),
