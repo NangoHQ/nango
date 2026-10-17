@@ -264,6 +264,45 @@ describe('Public environment API key management', () => {
             isError(res.json);
             expect(res.json.error).toEqual({ code: 'not_found', message: 'Environment not found' });
         });
+
+        it('should create an environment API key with the requested scopes', async () => {
+            const { account, env } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:create']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys', {
+                method: 'POST',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid },
+                body: { display_name: 'scoped-ci', scopes: ['environment:deploy'] }
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json.data.scopes).toEqual(['environment:deploy']);
+        });
+
+        it.each([
+            { name: 'empty scopes', scopes: [] },
+            { name: 'an unknown scope', scopes: ['environment:not_a_scope'] },
+            { name: 'an account scope with wildcard', scopes: ['account:*'] },
+            { name: 'an account scope', scopes: ['account:environments:create'] },
+            { name: 'a non-string scope', scopes: [42] }
+        ])('should reject $name', async ({ scopes }) => {
+            const { account, env } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:create']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys', {
+                method: 'POST',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid },
+                // @ts-expect-error testing invalid scopes
+                body: { display_name: 'invalid-scopes', scopes }
+            });
+
+            expect(res.res.status).toBe(400);
+            isError(res.json);
+            expect(res.json.error.code).toBe('invalid_body');
+        });
     });
 
     describe('GET /environments/:environmentUuid/api-keys/:keyUuid', () => {

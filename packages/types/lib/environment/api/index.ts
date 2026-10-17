@@ -189,6 +189,7 @@ export type PostPublicApiKey = ApiEndpoint<{
     Params: { environmentUuid: string };
     Body: {
         display_name: string;
+        scopes?: ApiKeyScope[];
     };
     Success: {
         data: {

@@ -3084,6 +3084,14 @@ paths:
                                     minLength: 1
                                     maxLength: 255
                                     example: provisioned-ci
+                                scopes:
+                                    type: array
+                                    minItems: 1
+                                    items:
+                                        type: string
+                                    description: Environment scopes to grant the key, such as `environment:deploy` or `environment:*`. Defaults to `environment:*` (full access).
+                                    example:
+                                        - environment:deploy
             responses:
                 '200':
                     description: Successfully created an Environment API key
@@ -3120,9 +3128,9 @@ paths:
                                                 type: array
                                                 items:
                                                     type: string
-                                                description: Always `environment:*` for keys created by this endpoint.
+                                                description: Scopes granted to the key. `environment:*` when no scopes were specified.
                                                 example:
-                                                    - environment:*
+                                                    - environment:deploy
                                             secret:
                                                 type: string
                                                 description: The API key secret. Store it now; it is not returned again.
