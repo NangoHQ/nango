@@ -6,6 +6,7 @@ import {
     auditAccountApiKeyCreated,
     auditApiKeyCreated,
     auditApiKeyDeleted,
+    auditApiKeyUpdated,
     auditPublicApiKeyCreated,
     auditPublicApiKeyDeleted,
     auditPublicApiKeyUpdated
@@ -204,6 +205,35 @@ describe('apiKey audit middleware (unit)', () => {
             targets: [{ type: 'api_key', id: keyUuid, display: 'ci-key' }],
             metadata: { scopes: ['environment:*'] }
         });
+    });
+
+    const publicKeyParams = { environmentUuid: '00000000-0000-4000-8000-000000000012', keyUuid: '00000000-0000-4000-8000-000000002551' };
+    it.each([
+        { name: 'dashboard api key create', handler: auditApiKeyCreated, action: 'created', params: {}, res: locals },
+        {
+            name: 'public api key create',
+            handler: auditPublicApiKeyCreated,
+            action: 'created',
+            params: { environmentUuid: publicKeyParams.environmentUuid },
+            res: secretKeyLocals
+        },
+        { name: 'account api key create', handler: auditAccountApiKeyCreated, action: 'created', params: {}, res: locals },
+        { name: 'dashboard api key update', handler: auditApiKeyUpdated, action: 'updated', params: { keyId: '2551' }, res: locals },
+        { name: 'public api key update', handler: auditPublicApiKeyUpdated, action: 'updated', params: publicKeyParams, res: secretKeyLocals }
+    ])('$name: a missing body records the event without an enrichment failure', async ({ handler, action, params, res }) => {
+        const increment = vi.spyOn(metrics, 'increment');
+        const event = await runAudit(handler, fakeReq({ params, body: undefined }), fakeRes(res, 400));
+        expect(event).toMatchObject({ resource: 'api_key', action, outcome: 'failure', accountId: 42 });
+        expect(event?.metadata).toBeUndefined();
+        expect(increment).not.toHaveBeenCalledWith(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, expect.anything(), expect.anything());
+    });
+
+    it.each([
+        ['dashboard', auditApiKeyUpdated, { keyId: '2551' }, locals],
+        ['public', auditPublicApiKeyUpdated, publicKeyParams, secretKeyLocals]
+    ])('%s api key update: a missing body still names the key', async (_kind, handler, params, res) => {
+        const event = await runAudit(handler, fakeReq({ params, body: undefined }), fakeRes(res, 400));
+        expect(event?.targets).toMatchObject([{ type: 'api_key', display: 'ci-key' }]);
     });
 
     it('public api key delete: malformed UUIDs do not trigger audit lookups', async () => {

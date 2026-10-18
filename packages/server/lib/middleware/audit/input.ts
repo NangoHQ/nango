@@ -24,6 +24,10 @@ export function nonEmptyString(value: unknown): string | undefined {
     return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
+export function stringArray(value: unknown): string[] | undefined {
+    return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : undefined;
+}
+
 export function uuid(value: unknown): string | undefined {
     return typeof value === 'string' && isUuid(value) ? value : undefined;
 }
