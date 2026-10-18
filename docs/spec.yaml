@@ -3230,7 +3230,7 @@ paths:
                     $ref: '#/components/responses/ServerError'
         patch:
             summary: Update an environment API key
-            description: Change the display name and/or scopes of an Environment API key.
+            description: Change the display name and/or scopes of an Environment API key. Requires an Account API key with the `account:environments:api_keys:update` scope.
             parameters:
                 - name: environmentUuid
                   in: path
