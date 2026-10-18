@@ -25,7 +25,7 @@ export function nonEmptyString(value: unknown): string | undefined {
 }
 
 export function stringArray(value: unknown): string[] | undefined {
-    return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : undefined;
+    return Array.isArray(value) ? value.filter((item): item is string => nonEmptyString(item) !== undefined) : undefined;
 }
 
 export function uuid(value: unknown): string | undefined {

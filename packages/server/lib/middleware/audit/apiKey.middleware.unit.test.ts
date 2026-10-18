@@ -169,7 +169,7 @@ describe('apiKey audit middleware (unit)', () => {
     it('public api key update: names the key and environment from the path, and records the requested changes', async () => {
         const environmentUuid = '00000000-0000-4000-8000-000000000012';
         const keyUuid = '00000000-0000-4000-8000-000000002551';
-        const invalidScopes = [23, { not: 'a scope' }, null];
+        const invalidScopes = [23, { not: 'a scope' }, null, ''];
         const event = await runAudit(
             auditPublicApiKeyUpdated,
             fakeReq({ params: { environmentUuid, keyUuid }, body: { display_name: 'renamed', scopes: ['environment:deploy', ...invalidScopes] } }),
