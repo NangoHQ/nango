@@ -8,7 +8,7 @@ openapi: 'PATCH /environments/{environmentUuid}/api-keys/{keyUuid}'
 
 </Info>
 
-Updates an Environment API key. Changes the display name and/or scopes of an Environment API key. `scopes` replaces the key's current scopes. The secret does not change, so clients using the key keep working.
+Updates an Environment API key. Changes the display name and/or scopes of an Environment API key. `scopes` replaces the key's current scopes. The secret does not change, but removing a scope makes requests that need it fail with 403.
 
 `keyUuid` is the UUID returned when the key was [created](/reference/backend/http-api/environments/create-api-key).
 
