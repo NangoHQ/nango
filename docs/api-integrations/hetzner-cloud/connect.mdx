@@ -1,0 +1,39 @@
+---
+title: 'Hetzner Cloud - How do I link my account?'
+sidebarTitle: 'Hetzner Cloud'
+---
+
+## Overview
+
+To authenticate with Hetzner Cloud, you need:
+1. **API token** - A token that grants Nango access to 1 Hetzner Cloud project.
+
+This guide walks you through generating your API token in the Hetzner Console.
+
+### Prerequisites
+
+- A Hetzner account with a Cloud project.
+
+### Instructions
+
+#### Step 1: Generating your API token
+
+1. Log in to the [Hetzner Console](https://console.hetzner.com) and select the project you want to connect.
+2. Click **Security** in the left-hand menu, then open the **API tokens** tab.
+
+   <img src="/api-integrations/hetzner-cloud/hetzner_settings_api-tokens.png" alt="Hetzner Console API tokens tab with the Generate API token button" />
+3. Click **Generate API token**, enter a description, and choose 1 of the 2 permissions:
+   - **Read**
+   - **Read & Write**
+
+   <img src="/api-integrations/hetzner-cloud/hetzner_generate_api-token.png" alt="Generate API token dialog with a description field and the Read and Read & Write permissions" />
+4. Click **Generate API token**.
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API token**:
+1. Open the form where you need to authenticate with Hetzner Cloud.
+2. Enter your **API token** in its respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Hetzner Cloud.

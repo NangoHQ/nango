@@ -16293,6 +16293,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `heap` | Heap | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/heap.md) | [connect](https://nango.dev/docs/integrations/all/heap/connect.md) |  | other |
 | `helpscout-docs` | Help Scout Docs | BASIC | [docs](https://nango.dev/docs/integrations/all/helpscout-docs.md) | [connect](https://nango.dev/docs/integrations/all/helpscout-docs/connect.md) |  | knowledge-base, support |
 | `helpscout-mailbox` | Help Scout Mailbox | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/helpscout-mailbox.md) |  |  | support |
+| `hetzner-cloud` | Hetzner Cloud | API_KEY | [docs](https://nango.dev/docs/api-integrations/hetzner-cloud.md) | [connect](https://nango.dev/docs/api-integrations/hetzner-cloud/connect.md) |  | dev-tools |
 | `hex` | Hex | API_KEY | [docs](https://nango.dev/docs/api-integrations/hex.md) | [connect](https://nango.dev/docs/api-integrations/hex/connect.md) |  | analytics |
 | `hex-mcp` | Hex (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hex-mcp.md) |  |  | analytics, mcp |
 | `heygen` | HeyGen | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/heygen.md) |  | [setup](https://nango.dev/docs/api-integrations/heygen/how-to-register-your-own-heygen-oauth-app.md) | video |
