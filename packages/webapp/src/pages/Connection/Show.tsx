@@ -10,7 +10,7 @@ import { useGetIntegration } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
-import { openPlaygroundWithContext } from '@/utils/playground';
+import { useCanOpenPlaygroundFunctions, useOpenPlaygroundWithContext } from '@/utils/playground';
 import { IntegrationLogoWithProfile } from './components/IntegrationLogoWithProfile';
 
 import type { GetConnection, GetIntegration } from '@nangohq/types';
@@ -36,6 +36,8 @@ export const ConnectionShow = () => {
     const env = useStore((state) => state.env);
     const { connectionId, providerConfigKey } = useParams();
     const location = useLocation();
+    const openPlaygroundWithContext = useOpenPlaygroundWithContext();
+    const canOpenPlayground = useCanOpenPlaygroundFunctions();
     const {
         data: connectionResponse,
         error: connectionError,
@@ -123,20 +125,22 @@ export const ConnectionShow = () => {
                                 <Link to={`${basePath}/${tab.segment}`}>{tab.label}</Link>
                             </TabsTrigger>
                         ))}
-                        <button
-                            type="button"
-                            className={tabsTriggerClassName}
-                            onClick={() => {
-                                openPlaygroundWithContext({
-                                    source: 'connection',
-                                    integration: integrationData.integration.unique_key,
-                                    connection: connectionResponse.connection.connection_id
-                                });
-                            }}
-                        >
-                            Playground
-                            <ExternalLink className="size-4" />
-                        </button>
+                        {canOpenPlayground && (
+                            <button
+                                type="button"
+                                className={tabsTriggerClassName}
+                                onClick={() => {
+                                    openPlaygroundWithContext({
+                                        source: 'connection',
+                                        integration: integrationData.integration.unique_key,
+                                        connection: connectionResponse.connection.connection_id
+                                    });
+                                }}
+                            >
+                                Playground
+                                <ExternalLink className="size-4" />
+                            </button>
+                        )}
                     </TabsList>
                 </div>
 

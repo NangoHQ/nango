@@ -111,6 +111,8 @@ export enum Types {
     ORCH_TASKS_EXPIRED = 'nango.orch.tasks.expired',
     ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled',
     ORCH_QUEUE_BACKPRESSURE = 'nango.orch.queue.backpressure',
+    ORCH_CONCURRENCY_ACTIVE = 'nango.orch.concurrency.active',
+    ORCH_CONCURRENCY_SAMPLING_DURATION_MS = 'nango.orch.concurrency.sampling.duration_ms',
     ORCH_TASKS_DEQUEUED = 'nango.orch.tasks.dequeued',
 
     TASKS_ENQUEUED = 'nango.tasks.enqueued',
@@ -156,6 +158,8 @@ export enum Types {
     ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
     MCP_TOOL_CALLS = 'nango.mcp.tool_calls',
     MCP_CLIENT_ID_METHOD = 'nango.mcp.client_id_method',
+
+    AGENT_PLAYGROUND_MODEL_ERROR = 'nango.agentPlayground.modelError',
 
     BILLING_USAGE_CACHE = 'nango.billing.usage.cache',
     BILLING_USAGE_ORB_MS = 'nango.billing.usage.orb.ms',

@@ -1,115 +1,120 @@
 {
-    "name": "@nangohq/nango",
-    "type": "module",
-    "version": "0.71.10",
-    "workspaces": [
-        "packages/*",
-        "scripts"
+  "name": "@nangohq/nango",
+  "type": "module",
+  "version": "0.71.13",
+  "workspaces": [
+    "packages/*",
+    "scripts"
+  ],
+  "scripts": {
+    "create:migration": "cd packages/database/lib && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",
+    "undo:migration": "cd packages/database/lib && knex migrate:rollback --esm --knexfile ./knexfile.cjs",
+    "format": "prettier --config .prettierrc \"./**/*.{ts,tsx}\" --write",
+    "format:check": "prettier --config .prettierrc \"./**/*.{ts,tsx}\" --check",
+    "format:watch": "onchange './**/*.{ts,tsx}' -- prettier --write {{changed}}",
+    "lint": "oxlint -c .oxlintrc.json",
+    "lint:fix": "oxlint -c .oxlintrc.json --fix",
+    "ts-build": "tsc -b tsconfig.build.json",
+    "ts-build:docker": "tsc -b tsconfig.docker.json",
+    "ts-clean": "npx rimraf packages/*/tsconfig.tsbuildinfo packages/*/dist",
+    "webapp-build": "cd ./packages/webapp && npm run build && cd ../..",
+    "webapp-build:watch": "tsc -b -w packages/webapp/tsconfig.json",
+    "docker-build:unified": "./scripts/build_docker.sh",
+    "build:hosted": "npm ci && npm run ts-build && npm run webapp-build && npm run connect-ui:build",
+    "build:prod": "npm ci && npm run ts-build && npm run webapp-build",
+    "server:dev:watch": "cd ./packages/server && npm run dev",
+    "jobs:dev:watch": "npm run dev -w @nangohq/nango-jobs",
+    "persist:dev:watch": "npm run dev -w @nangohq/nango-persist",
+    "orchestrator:dev:watch": "npm run dev -w @nangohq/nango-orchestrator",
+    "metering:dev:watch": "npm run dev -w @nangohq/nango-metering",
+    "seed:clickhouse": "LOG_LEVEL=warn tsx -r dotenv/config scripts/seed-clickhouse.ts dotenv_config_path=.env",
+    "webapp:dev:watch": "cd ./packages/webapp && npm run dev",
+    "connect-ui:dev:watch": "cd ./packages/connect-ui && npm run dev",
+    "connect-ui:build": "npm run -w @nangohq/connect-ui build",
+    "prepare": "husky install",
+    "build:watch": "tsc -b -w --preserveWatchOutput tsconfig.build.json",
+    "dev:watch": "node api.js && npm run -w nango copy:files && npm run build:watch",
+    "watch:dev": "npm run dev:watch",
+    "dev:watch:apps": "node api.js && concurrently --names 'srv,web,job,prs,orc,met,con' --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\" \"npm run orchestrator:dev:watch\" \"npm run metering:dev:watch\" \"npm run connect-ui:dev:watch\"",
+    "dev:watch:headless": "node api.js && concurrently --names 'srv,job,prs,orc,met' --kill-others \"npm run server:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\" \"npm run orchestrator:dev:watch\" \"npm run metering:dev:watch\"",
+    "dev:watch:web": "node api.js && concurrently --names 'srv,web' --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run connect-ui:dev:watch\"",
+    "watch:dev:apps": "npm run dev:watch:apps",
+    "dw": "npm run dev:watch",
+    "dwa": "npm run dev:watch:apps",
+    "dwh": "npm run dev:watch:headless",
+    "test": "concurrently --kill-others \"npm run test:unit\" \"npm run test:integration\" \"npm run test:cli\"",
+    "test:unit": "vitest ${npm_config_dir:+--dir=$npm_config_dir}",
+    "test:integration": "vitest --config ./vite.integration.config.ts ${npm_config_dir:+--dir=$npm_config_dir}",
+    "test:cli": "vitest --config ./vite.cli.config.ts",
+    "test:cli:update-snapshots": "vitest --config ./vite.cli.config.ts --update",
+    "test:openapi": "npx @apidevtools/swagger-cli validate docs/spec.yaml && npx @redocly/cli lint docs/spec.yaml",
+    "update:providers:scopes:all": "npx tsx scripts/validation/providers/sync-scopes.ts --all --write --agent --force --session-timeout-minutes=0",
+    "update:providers:scopes:new": "npx tsx scripts/validation/providers/sync-scopes.ts --from-diff --write --agent --session-timeout-minutes=0",
+    "run:runner": "node api.js && cd ./packages/runner && npm run dev",
+    "test:providers": "npx tsx scripts/validation/providers/validate.ts",
+    "docs": "tsx scripts/docs-gen-snippets.ts && tsx scripts/docs-generate-llms.ts && cd ./docs && npx mintlify dev --port 3033",
+    "docs:generate": "tsx scripts/docs-gen-snippets.ts && tsx scripts/docs-generate-llms.ts",
+    "docs:generate:llms": "tsx scripts/docs-generate-llms.ts",
+    "storybook": "npm --prefix packages/design-system run storybook",
+    "nango": "cd ./packages/server && npm run nango",
+    "dev:docker": "node api.js && docker compose --file dev/docker-compose.dev.yaml up -d",
+    "internal-auth:key": "tsx scripts/generate-internal-auth-key.ts",
+    "changelog:providers": "tsx scripts/provider-changelog.ts",
+    "changelog:integrations": "tsx scripts/pre-built-integrations-changelog.ts"
+  },
+  "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "4.7.1",
+    "@testcontainers/elasticsearch": "12.0.2",
+    "@testcontainers/postgresql": "12.0.2",
+    "@types/node": "22.15.29",
+    "concurrently": "9.2.0",
+    "husky": "8.0.3",
+    "lint-staged": "15.5.1",
+    "onchange": "7.1.0",
+    "oxlint": "1.70.0",
+    "oxlint-tsgolint": "0.23.0",
+    "prettier": "3.6.2",
+    "@redocly/cli": "2.34.0",
+    "rimraf": "6.1.3",
+    "testcontainers": "12.2.0",
+    "tsx": "4.22.4",
+    "typescript": "5.8.3",
+    "vitest": "4.1.11"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,cjs,mjs}": [
+      "oxlint -c .oxlintrc.json --fix",
+      "prettier --config .prettierrc --write"
     ],
-    "scripts": {
-        "create:migration": "cd packages/database/lib && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",
-        "undo:migration": "cd packages/database/lib && knex migrate:rollback --esm --knexfile ./knexfile.cjs",
-        "format": "prettier --config .prettierrc \"./**/*.{ts,tsx}\" --write",
-        "format:check": "prettier --config .prettierrc \"./**/*.{ts,tsx}\" --check",
-        "format:watch": "onchange './**/*.{ts,tsx}' -- prettier --write {{changed}}",
-        "lint": "oxlint -c .oxlintrc.json",
-        "lint:fix": "oxlint -c .oxlintrc.json --fix",
-        "ts-build": "tsc -b tsconfig.build.json",
-        "ts-build:docker": "tsc -b tsconfig.docker.json",
-        "ts-clean": "npx rimraf packages/*/tsconfig.tsbuildinfo packages/*/dist",
-        "webapp-build": "cd ./packages/webapp && npm run build && cd ../..",
-        "webapp-build:watch": "tsc -b -w packages/webapp/tsconfig.json",
-        "docker-build:unified": "./scripts/build_docker.sh",
-        "build:hosted": "npm ci && npm run ts-build && npm run webapp-build && npm run connect-ui:build",
-        "build:prod": "npm ci && npm run ts-build && npm run webapp-build",
-        "server:dev:watch": "cd ./packages/server && npm run dev",
-        "jobs:dev:watch": "npm run dev -w @nangohq/nango-jobs",
-        "persist:dev:watch": "npm run dev -w @nangohq/nango-persist",
-        "orchestrator:dev:watch": "npm run dev -w @nangohq/nango-orchestrator",
-        "metering:dev:watch": "npm run dev -w @nangohq/nango-metering",
-        "seed:clickhouse": "LOG_LEVEL=warn tsx -r dotenv/config scripts/seed-clickhouse.ts dotenv_config_path=.env",
-        "webapp:dev:watch": "cd ./packages/webapp && npm run dev",
-        "connect-ui:dev:watch": "cd ./packages/connect-ui && npm run dev",
-        "connect-ui:build": "npm run -w @nangohq/connect-ui build",
-        "prepare": "husky install",
-        "build:watch": "tsc -b -w --preserveWatchOutput tsconfig.build.json",
-        "dev:watch": "npm run -w nango copy:files && npm run build:watch",
-        "watch:dev": "npm run dev:watch",
-        "dev:watch:apps": "concurrently --names 'srv,web,job,prs,orc,met,con' --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\" \"npm run orchestrator:dev:watch\" \"npm run metering:dev:watch\" \"npm run connect-ui:dev:watch\"",
-        "dev:watch:headless": "concurrently --names 'srv,job,prs,orc,met' --kill-others \"npm run server:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\" \"npm run orchestrator:dev:watch\" \"npm run metering:dev:watch\"",
-        "dev:watch:web": "concurrently --names 'srv,web' --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run connect-ui:dev:watch\"",
-        "watch:dev:apps": "npm run dev:watch:apps",
-        "dw": "npm run dev:watch",
-        "dwa": "npm run dev:watch:apps",
-        "dwh": "npm run dev:watch:headless",
-        "test": "concurrently --kill-others \"npm run test:unit\" \"npm run test:integration\" \"npm run test:cli\"",
-        "test:unit": "vitest ${npm_config_dir:+--dir=$npm_config_dir}",
-        "test:integration": "vitest --config ./vite.integration.config.ts ${npm_config_dir:+--dir=$npm_config_dir}",
-        "test:cli": "vitest --config ./vite.cli.config.ts",
-        "test:cli:update-snapshots": "vitest --config ./vite.cli.config.ts --update",
-        "test:openapi": "npx @apidevtools/swagger-cli validate docs/spec.yaml && npx @redocly/cli lint docs/spec.yaml",
-        "update:providers:scopes:all": "npx tsx scripts/validation/providers/sync-scopes.ts --all --write --agent --force --session-timeout-minutes=0",
-        "update:providers:scopes:new": "npx tsx scripts/validation/providers/sync-scopes.ts --from-diff --write --agent --session-timeout-minutes=0",
-        "run:runner": "cd ./packages/runner && npm run dev",
-        "test:providers": "npx tsx scripts/validation/providers/validate.ts",
-        "docs": "tsx scripts/docs-gen-snippets.ts && tsx scripts/docs-generate-llms.ts && cd ./docs && npx mintlify dev --port 3033",
-        "docs:generate": "tsx scripts/docs-gen-snippets.ts && tsx scripts/docs-generate-llms.ts",
-        "docs:generate:llms": "tsx scripts/docs-generate-llms.ts",
-        "storybook": "npm --prefix packages/design-system run storybook",
-        "nango": "cd ./packages/server && npm run nango",
-        "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d",
-        "changelog:providers": "tsx scripts/provider-changelog.ts",
-        "changelog:integrations": "tsx scripts/pre-built-integrations-changelog.ts"
+    "*.{html,css,json,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "overrides": {
+    "@radix-ui/react-dismissable-layer": "1.1.11",
+    "postcss": "8.5.26",
+    "js-cookie": "3.0.8",
+    "tmp": "0.2.7",
+    "protobufjs": "7.6.5",
+    "esbuild": "0.28.1",
+    "js-yaml": "4.3.2",
+    "@apidevtools/swagger-cli": {
+      "js-yaml": "3.15.2"
     },
-    "devDependencies": {
-        "@ianvs/prettier-plugin-sort-imports": "4.7.1",
-        "@testcontainers/elasticsearch": "12.0.2",
-        "@testcontainers/postgresql": "12.0.2",
-        "@types/node": "22.15.29",
-        "concurrently": "9.2.0",
-        "husky": "8.0.3",
-        "lint-staged": "15.5.1",
-        "onchange": "7.1.0",
-        "oxlint": "1.70.0",
-        "oxlint-tsgolint": "0.23.0",
-        "prettier": "3.6.2",
-        "@redocly/cli": "2.34.0",
-        "rimraf": "6.1.3",
-        "testcontainers": "12.0.2",
-        "tsx": "4.22.4",
-        "typescript": "5.8.3",
-        "vitest": "4.1.9"
+    "dd-trace": "5.117.0",
+    "@elastic/transport": {
+      "undici": "6.29.0"
     },
-    "lint-staged": {
-        "*.{js,jsx,ts,tsx,cjs,mjs}": [
-            "oxlint -c .oxlintrc.json --fix",
-            "prettier --config .prettierrc --write"
-        ],
-        "*.{html,css,json,yaml}": [
-            "prettier --write"
-        ]
+    "@tokens-studio/sd-transforms": {
+      "style-dictionary": "5.4.4"
     },
-    "engines": {
-        "node": ">=20.0.0"
-    },
-    "overrides": {
-        "@radix-ui/react-dismissable-layer": "1.1.11",
-        "postcss": "8.5.26",
-        "js-cookie": "3.0.8",
-        "tmp": "0.2.7",
-        "protobufjs": "7.6.5",
-        "esbuild": "0.28.1",
-        "js-yaml": "4.3.2",
-        "@apidevtools/swagger-cli": {
-            "js-yaml": "3.15.2"
-        },
-        "dd-trace": "5.117.0",
-        "@elastic/transport": {
-            "undici": "6.28.0"
-        },
-        "@tokens-studio/sd-transforms": {
-            "style-dictionary": "5.4.4"
-        },
-        "@xmldom/xmldom": "0.8.15"
-    }
+    "compression": "1.8.2",
+    "@xmldom/xmldom": "0.8.15",
+    "axios": "1.20.0",
+    "joi": "17.13.8",
+    "valibot": "1.5.0"
+  }
 }

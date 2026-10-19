@@ -59,12 +59,12 @@ export const patchFlowDisable = asyncWrapperWithEnvironment<PatchFlowDisable>(as
     }
 
     const updated = await disableScriptConfig({ id: valParams.data.id, environmentId: environment.id });
-    await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: valParams.data.id });
-
-    if (updated > 0) {
-        await syncManager.pauseSyncs({ syncConfigId: valParams.data.id, environmentId: environment.id, orchestrator });
-        res.status(200).send({ data: { success: true } });
-    } else {
-        res.status(400).send({ data: { success: false } });
+    if (updated === 0) {
+        res.status(400).send({ error: { code: 'unknown_sync_config' } });
+        return;
     }
+
+    await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: valParams.data.id, environment_id: environment.id });
+    await syncManager.pauseSyncs({ syncConfigId: valParams.data.id, environmentId: environment.id, orchestrator });
+    res.status(200).send({ data: { success: true } });
 });

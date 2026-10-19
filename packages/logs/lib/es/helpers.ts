@@ -9,7 +9,16 @@ import { createMessage } from '../models/messages.js';
 import { createOperation } from '../models/operations.js';
 import { client, logsStorage } from '../storage/client.js';
 import { logger } from '../utils.js';
-import { getDailyIndexPipeline, indexMessages, indexOperations, policyMessages, policyOperations } from './schema.js';
+import {
+    getDailyIndexPipeline,
+    getServerlessIndexTemplate,
+    getTimestampPipeline,
+    indexMessages,
+    indexOperations,
+    policyMessages,
+    policyOperations,
+    retentionMinAge
+} from './schema.js';
 
 import type { Result } from '@nangohq/utils';
 
@@ -66,24 +75,30 @@ export async function migrateMapping(): Promise<Result<void>> {
 }
 
 async function migrateIndexTemplatesAndPipelines(): Promise<void> {
+    const serverless = envs.NANGO_LOGS_PROVIDER === 'ec-serverless';
+
     for (const index of [indexMessages, indexOperations]) {
         logger.info(`Migrating index "${index.index}"...`);
 
         const existsTemplate = await client.indices.existsIndexTemplate({ name: `${index.index}-template` });
         logger.info(`  ${existsTemplate ? 'updating' : 'creating'} index template "${index.index}"...`);
 
-        await client.indices.putIndexTemplate({
-            name: `${index.index}-template`,
-            index_patterns: `${index.index}.*`,
-            template: {
-                settings: index.settings! as Record<string, unknown>,
-                mappings: index.mappings! as Record<string, unknown>,
-                aliases: { [index.index]: {} }
-            }
-        });
+        if (serverless) {
+            await client.indices.putIndexTemplate(getServerlessIndexTemplate(index));
+        } else {
+            await client.indices.putIndexTemplate({
+                name: `${index.index}-template`,
+                index_patterns: `${index.index}.*`,
+                template: {
+                    settings: index.settings! as Record<string, unknown>,
+                    mappings: index.mappings! as Record<string, unknown>,
+                    aliases: { [index.index]: {} }
+                }
+            });
+        }
 
         logger.info(`  Updating pipeline`);
-        await client.ingest.putPipeline(getDailyIndexPipeline(index.index));
+        await client.ingest.putPipeline(serverless ? getTimestampPipeline(index.index) : getDailyIndexPipeline(index.index));
 
         const existsAlias = await client.indices.exists({ index: index.index });
         if (!existsAlias) {
@@ -93,6 +108,10 @@ async function migrateIndexTemplatesAndPipelines(): Promise<void> {
             } else {
                 await createOperation(getFormattedOperation({ id: '-1', accountId: 0, operation: { type: 'sync', action: 'run' } }));
             }
+        }
+
+        if (serverless) {
+            await logsStorage.putDataStreamLifecycle(index.index, retentionMinAge);
         }
     }
 }

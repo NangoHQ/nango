@@ -162,7 +162,7 @@ const MFASettings: React.FC = () => {
         setDisableError(null);
         try {
             await disable.mutateAsync(credential);
-            track('web:2fa:disabled', {});
+            track('auth:two_factor_remove', {});
             toast({ title: 'Two-factor authentication is disabled', variant: 'success' });
             closeDisable();
         } catch (err) {
@@ -173,7 +173,7 @@ const MFASettings: React.FC = () => {
     const confirmRegen = async () => {
         try {
             const result = await regenerateRecoveryCodes.mutateAsync({ code });
-            track('web:2fa:recovery_codes_regenerated', {});
+            track('auth:recovery_codes_generate', {});
             closeRegen();
             setNewCodes(result.data.recoveryCodes);
         } catch (err) {

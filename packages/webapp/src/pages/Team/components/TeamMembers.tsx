@@ -1,4 +1,4 @@
-import { Ellipsis, ExternalLink, Trash2, TriangleAlert } from 'lucide-react';
+import { Ellipsis, ExternalLink, Trash2, TriangleAlert, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -22,6 +22,7 @@ import {
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Dot } from '@/components/ui/Dot';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
@@ -180,20 +181,36 @@ export const TeamMembers: React.FC = () => {
                                 <div className="inline-flex items-center gap-2">
                                     <RoleBadge role={user.role} />
                                     {!hasRBAC && user.role !== 'administrator' && (
-                                        <StatusWithIcon
-                                            variant="warning"
-                                            tooltipContent={
-                                                <span>
-                                                    RBAC is only available with the Growth add-on. This role is overwritten by &apos;Full access&apos;.{' '}
-                                                    <Button asChild variant="link-accent" size="sm">
-                                                        <Link to={`/team/billing#plans`}>Upgrade</Link>
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <button type="button" aria-label="Role access warning" className="focus-default rounded-ds-xs">
+                                                    <StatusWithIcon variant="warning">
+                                                        <TriangleAlert />
+                                                    </StatusWithIcon>
+                                                </button>
+                                            </PopoverTrigger>
+                                            <PopoverContent
+                                                side="bottom"
+                                                align="start"
+                                                className="flex w-72 flex-col gap-3 rounded-ds-sm border-ds-hairline border-border-muted bg-surface-overlay p-3 shadow-lg"
+                                            >
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <p className="text-body-medium-medium text-text-strong">Role access changed</p>
+                                                    <PopoverClose asChild>
+                                                        <IconButton variant="ghost" size="2xs" label="Close role access warning">
+                                                            <X />
+                                                        </IconButton>
+                                                    </PopoverClose>
+                                                </div>
+                                                <p className="text-body-small-regular text-text-secondary">
+                                                    This role is treated as Full access.{' '}
+                                                    <Button asChild variant="link-accent" size="xs">
+                                                        <Link to="/team/billing#plans">Add the Growth add-on</Link>
                                                     </Button>{' '}
-                                                    to reactivate role.
-                                                </span>
-                                            }
-                                        >
-                                            <TriangleAlert />
-                                        </StatusWithIcon>
+                                                    to apply this role.
+                                                </p>
+                                            </PopoverContent>
+                                        </Popover>
                                     )}
                                 </div>
                             </TableCell>

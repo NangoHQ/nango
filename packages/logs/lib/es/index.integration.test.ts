@@ -10,7 +10,7 @@ import { createOperation, getOperation, updateOperation } from '../models/operat
 import { putIsmPolicies } from '../opensearch/ismPolicies.js';
 import { client, logsStorage } from '../storage/client.js';
 import { deleteIndex, migrateMapping } from './helpers.js';
-import { indexOperations, policyMessages, policyOperations, retentionMinAge } from './schema.js';
+import { indexMessages, indexOperations, policyMessages, policyOperations, retentionMinAge } from './schema.js';
 
 import type { OperationRow } from '@nangohq/types';
 
@@ -111,15 +111,21 @@ describe('retention policy', () => {
 
     beforeAll(() => {
         const node = envs.NANGO_LOGS_ES_URL || 'http://localhost:9200';
-        const auth = { username: envs.NANGO_LOGS_ES_USER!, password: envs.NANGO_LOGS_ES_PWD! };
-        raw = envs.NANGO_LOGS_PROVIDER === 'opensearch' ? new OpenSearchClient({ node, auth }) : new ElasticsearchClient({ node, auth });
+        const basicAuth = { username: envs.NANGO_LOGS_ES_USER!, password: envs.NANGO_LOGS_ES_PWD! };
+        if (envs.NANGO_LOGS_PROVIDER === 'opensearch') {
+            raw = new OpenSearchClient({ node, auth: basicAuth });
+        } else if (envs.NANGO_LOGS_PROVIDER === 'ec-serverless') {
+            raw = new ElasticsearchClient({ node, auth: { apiKey: envs.NANGO_LOGS_ES_API_KEY! } });
+        } else {
+            raw = new ElasticsearchClient({ node, auth: basicAuth });
+        }
     });
 
     afterAll(async () => {
         await raw.close();
     });
 
-    it('sets the real min_age/min_index_age to NANGO_LOGS_ES_RETENTION_DAYS after migration', async () => {
+    it.skipIf(envs.NANGO_LOGS_PROVIDER === 'ec-serverless')('sets the real min_age/min_index_age to NANGO_LOGS_ES_RETENTION_DAYS after migration', async () => {
         await migrateMapping();
 
         if (envs.NANGO_LOGS_PROVIDER === 'opensearch') {
@@ -163,6 +169,17 @@ describe('retention policy', () => {
             expect(minIndexAgeOf(after)).toBe(retentionMinAge);
         } finally {
             await putIsmPolicies(openSearchRaw);
+        }
+    });
+
+    it.skipIf(envs.NANGO_LOGS_PROVIDER !== 'ec-serverless')('sets data stream data_retention to NANGO_LOGS_ES_RETENTION_DAYS after migration', async () => {
+        await migrateMapping();
+
+        const esRaw = raw as ElasticsearchClient;
+        for (const name of [indexMessages.index, indexOperations.index]) {
+            const res = await esRaw.indices.getDataLifecycle({ name });
+            const stream = res.data_streams.find((entry) => entry.name === name);
+            expect(stream?.lifecycle?.data_retention).toBe(retentionMinAge);
         }
     });
 

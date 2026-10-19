@@ -4,8 +4,15 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { nextUsageResetDate } from '@/pages/Team/Billing/billingPeriod';
 import { LocalStorageKeys } from '@/utils/local-storage';
 
-import type { GrowthAddonState } from '@/pages/Team/Billing/planVisibility';
-import type { ApiPlan, GetBillingPeriodCosts, GetOverdueInvoices, GetStripePaymentMethods, GetUpcomingInvoice, PlanDefinition } from '@nangohq/types';
+import type {
+    ApiPlan,
+    GetBillingPeriodCosts,
+    GetOverdueInvoices,
+    GetStripePaymentMethods,
+    GetUpcomingInvoice,
+    GrowthAddonState,
+    PlanDefinition
+} from '@nangohq/types';
 
 /** Simulated aggregate usage state, matching what `getAggregateUsageState` can return. */
 export type UsageLimitOverride = 'near' | 'over';

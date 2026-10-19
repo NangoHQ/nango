@@ -44,6 +44,7 @@ function functionVersion(
 ): Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> {
     return {
         description: artifact.description,
+        tags: {},
         file_location: `functions/${artifact.integrationId}/${artifact.name}`,
         version: functionVersionHash(artifact).unwrap(),
         source: 'repo',
@@ -141,18 +142,21 @@ describe('deployBundle instances', () => {
             });
         }
         expect(await other.instances()).toEqual([]);
+        const [functionConfig] = (
+            await search(db.knex, { environmentId: ctx.environment.id, filter: { integrationKey: 'github', name: scheduled.name } })
+        ).unwrap();
         expect(ctx.orchestrator.scheduleFunctions).toHaveBeenCalledWith(
             rows.map((instance) => ({
                 environmentId: ctx.environment.id,
                 instance,
+                functionUuid: functionConfig!.config.uuid,
                 connection: {
                     id: instance.nango_connection_id,
                     connection_id: [ctx.connection, second].find((connection) => connection.id === instance.nango_connection_id)!.connection_id,
                     provider_config_key: 'github',
                     environment_id: ctx.environment.id
                 },
-                frequencyFallback: 'every 5 minutes',
-                autoStart: true
+                frequencyFallback: 'every 5 minutes'
             }))
         );
         expect(other.orchestrator.scheduleFunctions).not.toHaveBeenCalled();
@@ -257,10 +261,11 @@ describe('deployBundle instances', () => {
         expect((await ctx.instances())[0]?.deleted_at).toBeInstanceOf(Date);
     });
 
-    it('respects autoStart when creating schedules', async () => {
+    it('creates disabled instances without schedules when autoStart is false', async () => {
         const ctx = await setup();
         (await ctx.deploy([{ ...scheduled, trigger: { kind: 'schedule', frequency: 'every 5 minutes', autoStart: false } }])).unwrap();
-        expect(ctx.orchestrator.scheduleFunctions.mock.calls[0]?.[0][0]?.autoStart).toBe(false);
+        expect((await ctx.instances()).map((instance) => instance.enabled)).toEqual([false]);
+        expect(ctx.orchestrator.scheduleFunctions).not.toHaveBeenCalled();
     });
 
     it('does not create instances or schedules when a disabled function becomes scheduled', async () => {

@@ -45,10 +45,20 @@ export async function deleteSyncConfigData({ syncConfigId, environmentId }: Dele
             logger,
             sleepMs,
             deleteFn: async () => {
-                const syncs = await db.knex.from<Sync>('_nango_syncs').select('id', 'nango_connection_id').where({ sync_config_id: version.id }).limit(limit);
+                const syncs = await db.knex
+                    .from<Sync>('_nango_syncs')
+                    .select('id', 'nango_connection_id', 'variant')
+                    .where({ sync_config_id: version.id })
+                    .limit(limit);
 
                 await deleteSyncs(
-                    syncs.map((sync) => ({ id: sync.id, nangoConnectionId: sync.nango_connection_id, environmentId, models: version.models })),
+                    syncs.map((sync) => ({
+                        id: sync.id,
+                        nangoConnectionId: sync.nango_connection_id,
+                        environmentId,
+                        models: version.models,
+                        variant: sync.variant
+                    })),
                     opts
                 );
 

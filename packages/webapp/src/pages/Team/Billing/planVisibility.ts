@@ -1,4 +1,4 @@
-import type { ApiPlan, DBPlan } from '@nangohq/types';
+import type { ApiPlan, DBPlan, GrowthAddonState } from '@nangohq/types';
 
 // Which plans are on the current usage model. Anything else is a legacy plan, measured with usage
 // metrics the app can no longer show. This is purely about the metrics: a custom or negotiated
@@ -155,8 +155,6 @@ export function planAccruesCharges(plan: ApiPlan | null | undefined): boolean {
 export function isRetiredPlan(code: DBPlan['name']): boolean {
     return PLAN_IS_RETIRED[code];
 }
-
-export type GrowthAddonState = 'none' | 'active' | 'pending-removal' | 'pending-activation';
 
 /** Scheduled transitions retain their current flag until their date, so the dates separate them from steady states. */
 export function growthAddonState(plan: ApiPlan | null | undefined): GrowthAddonState {

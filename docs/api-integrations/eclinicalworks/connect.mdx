@@ -1,0 +1,41 @@
+---
+title: 'eClinicalWorks (FHIR) - How do I connect a practice?'
+sidebarTitle: 'eClinicalWorks (FHIR)'
+---
+
+## Overview
+
+To authenticate with eClinicalWorks, you need:
+
+1. **FHIR Base URL** — the practice-specific FHIR R4 base URL, e.g. `fhir4.eclinicalworks.com/fhir/r4/<practice-code>`. Nango uses this as the base for all proxied API calls.
+2. **OAuth Server URL** — your practice-specific OAuth authorization server host, used to reach the token endpoint. Nango uses this to request access tokens.
+
+### Prerequisites
+
+- Your practice has approved and activated the developer application in the eClinicalWorks Dev Portal, and your administrator has mapped its Client ID to your practice.
+
+### Step 1: Finding your FHIR Base URL
+
+eClinicalWorks (or your practice's IT/eCW team) provides this when your practice activates the application — it's specific to your eClinicalWorks environment, e.g. `fhir4.eclinicalworks.com/fhir/r4/SANDBOX`.
+
+### Step 2: Finding your OAuth Server URL
+
+eClinicalWorks calls this the issuer URL. Once you have your FHIR Base URL, fetch its `.well-known/smart-configuration` document:
+
+```bash
+curl https://<your-fhir-base-url>/.well-known/smart-configuration
+```
+
+The response includes a `token_endpoint` field, e.g. `https://oauthserver.eclinicalworks.com/oauth/oauth2/token` — your OAuth Server URL is the host portion of that value (`oauthserver.eclinicalworks.com` in this example).
+
+### Step 3: Enter your details in the Connect UI
+
+Once you have both values:
+
+1. Open the form where you need to authenticate with eClinicalWorks.
+2. Enter your **FHIR Base URL** and **OAuth Server URL** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/eclinicalworks/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to eClinicalWorks.

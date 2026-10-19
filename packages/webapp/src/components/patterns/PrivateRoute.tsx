@@ -7,12 +7,12 @@ import { useUser } from '../../hooks/useUser';
 import PageEnvironmentUnauthorized from '../../pages/PageEnvironmentUnauthorized';
 import PageNotFound from '../../pages/PageNotFound';
 import { useStore } from '../../store';
-import { useAnalyticsIdentify } from '../../utils/analytics';
+import { resumeAnalytics, stopAnalytics, useAnalyticsIdentify } from '../../utils/analytics';
 import { isNonEnvPath, signinPathWithNext } from '../../utils/routes';
 
 export const PrivateRoute: React.FC = () => {
     const { user, loading: loadingUser, error: userError } = useUser();
-    const { data, error: metaError, isLoading: loadingMeta } = useMeta(!!user);
+    const { data } = useMeta(!!user);
     const meta = data?.data;
     const [notFoundEnv, setNotFoundEnv] = useState(false);
     const [unauthorizedEnv, setUnauthorizedEnv] = useState(false);
@@ -28,7 +28,7 @@ export const PrivateRoute: React.FC = () => {
     const setEnv = useStore((state) => state.setEnv);
 
     useEffect(() => {
-        if (!meta || metaError) {
+        if (!meta) {
             return;
         }
 
@@ -36,11 +36,11 @@ export const PrivateRoute: React.FC = () => {
         setBaseUrl(meta.baseUrl);
         setDebugMode(meta.debugMode);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [meta, metaError]);
+    }, [meta]);
 
     useEffect(() => {
         // The env check below reads the user's grants; deciding before they land bounces the user.
-        if (!meta || metaError || !user) {
+        if (!meta || !user) {
             return;
         }
 
@@ -85,18 +85,31 @@ export const PrivateRoute: React.FC = () => {
 
         // it's ready when datastore and path are finally reconciliated
         setReady(true);
-    }, [meta, loadingMeta, env, metaError, setEnv, can, user, location.pathname]);
+    }, [meta, env, setEnv, can, user, location.pathname]);
 
     useEffect(() => {
-        if (user && meta && !meta.debugMode) {
-            identify(user);
+        if (!user || !meta) {
+            return;
         }
+        if (meta.debugMode) {
+            stopAnalytics();
+            return;
+        }
+        resumeAnalytics();
+        identify(user, meta.accountGroup);
     }, [user, meta, identify]);
 
-    if (userError || metaError) {
-        return <Navigate to={signinPathWithNext(location)} replace />;
+    if (loadingUser) {
+        return null;
     }
-    if (loadingUser || loadingMeta || !ready) {
+    if (!user) {
+        if (userError) {
+            // Only a missing user goes to /signin. SignedOutRoute sends a loaded user straight back, and the two loop.
+            return <Navigate to={signinPathWithNext(location)} replace />;
+        }
+        return null;
+    }
+    if (!meta || !ready) {
         return null;
     }
 

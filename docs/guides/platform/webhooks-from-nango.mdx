@@ -212,6 +212,12 @@ Verify the signature with the **webhook signing key** from **Environment Setting
 
 Only accept a webhook if the `X-Nango-Hmac-Sha256` header value matches the webhook signature.
 
+### Rotating the webhook signing key
+
+Rotate the key from **Environment Settings > Webhooks > Signing key** with **Rotate key**, or with the [rotate webhook signing key](/reference/backend/http-api/environments/rotate-webhook-signing-key) API.
+
+For up to 5 minutes after a rotation, webhooks are signed with either the old or the new key. Accept both during that window, then drop the old key.
+
 ## Types of Nango webhooks
 
 <Warning>

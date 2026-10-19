@@ -2,6 +2,307 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.71.13] - 2026-10-14
+
+### Added
+
+- *(webapp)* Build the Agent Playground chat page (#7732) by @macko911
+- *(microsoft-teams)* Optionally mint Teams Dev Portal tokens (#7677) by @arctic-char
+- *(integrations)* Add support for Pleo MCP (#7767) by @arhaikal
+- *(webapp)* Keep the Agent Playground chat across page reloads (#7765) by @macko911
+- *(webhooks)* Only show allow unverified webhooks where signatures are enforced (NAN-7346) (#7757) by @agusayerza
+- *(integrations)* Add support for imanage (#7806) by @hassan254-prog
+- *(integrations)* Add support for netdocuments (#7808) by @hassan254-prog
+- Add Connection MCP migration guide (#7814) by @kaposke
+- Add API endpoint to create/delete/edit function variants (#7791) by @TBonnin
+- *(internal-auth)* Unify token shape (#7676) by @rossmcewan
+- *(integrations)* Add support for breathehr (#7813) by @hassan254-prog
+- *(integrations)* Add support for charliehr (#7815) by @hassan254-prog
+- *(integrations)* Add support for monday api key (#7830) by @hassan254-prog
+- *(utils)* Add new headers for redaction (#7836) by @rossmcewan
+- *(integrations)* Add support for checkbox.ai (#7825) by @mohsenari
+- *(providers)* Add Clarify (#7771) by @dillon-cordova
+- *(server)* Attribute server events to the logged-in user in PostHog (#7785) by @macko911
+- *(mcp)* List every action in connections MCP tools (#7853) by @kaposke
+- *(integrations)* Add opt-in option to skip TLS cert verification (#7793) by @hassan254-prog
+- *(webhooks)* Add support for intercom webhooks (#7838) by @hassan254-prog
+- *(server)* Set up the Agent Playground's pre-made prompts and their integrations (#7805) by @macko911
+- *(webapp)* Track dashboard page views with $pageview (#7820) by @macko911
+- *(server)* Hide the overdue invoices banner for Enterprise plans (#7866) by @macko911
+- *(integrations)* Add support for timocom (#7864) by @hassan254-prog
+- *(integrations)* Add support for sentry mcp (#7865) by @hassan254-prog
+- *(server)* Track Agent Playground model cost per account (#7868) by @macko911
+- *(agent-sessions)* Send session context through MCP server instructions (NAN-7501) (#7871) by @agusayerza
+- *(server)* Let the Agent Playground use the environment's own connections (#7849) by @macko911
+- *(server)* Harden the Agent Playground agent against misuse (#7877) by @macko911
+- Add tags column to function table (#7876) by @TBonnin
+- *(functions)* Treat every action as enabled when tools-catalog is on (#7833) by @kaposke
+- *(webapp)* Function list redesign (#7734) by @kaposke
+- *(webapp)* Show function details in side panel (#7735) by @kaposke
+- *(integrations)* Add eu for lattice (#7882) by @hassan254-prog
+- *(integrations)* Add sandbox environment support for Perk (#7883) by @hassan254-prog
+- *(agent-sessions)* Discover remote MCP tools when a session is created (NAN-7426) (#7822) by @agusayerza
+- *(agent-sessions)* Run remote MCP tools from agent sessions (NAN-7427) (#7823) by @agusayerza
+- *(integrations)* Add freshservice-mcp and freshdesk-mcp templates (#7784) by @chauhan176
+- *(analytics)* Preserve first visit source through signup (#7872) by @OmMistry25
+- Add FunctionTags (#7878) by @TBonnin
+- Add support for tags to deployment endpoint (#7880) by @TBonnin
+- Add tags to createFunction (#7888) by @TBonnin
+- *(server)* Block spend alerts at or below the plan's monthly floor (#7890) by @macko911
+- *(cli)* Warn when a sync or action declares a checkpoint schema but never uses it (#7639) by @hassan254-prog
+
+### Changed
+
+- Update version in manifest by @actions-user
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/b8e49829afbdc3b034f62d7e01d9701b8e541f57 by Victor Lang'at by @github-actions[bot]
+- *(webapp)* Upgrade posthog-js (#7798) by @macko911
+- BYOC supports Azure (#7797) by @pfreixes
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/6cfdaf648692eca18eb25af2a890802fd132305f by arctic-char by @github-actions[bot]
+- BYOC runs on Azure too (#7800) by @pfreixes
+- Update version in manifest by @actions-user
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/6283e595a7df390dee7e0acb0cdbd2ae7fef75d5 by Victor Lang'at by @github-actions[bot]
+- *(webapp)* Upgrade the webapp to zod 4 (#7809) by @macko911
+- *(agent-sessions)* Warn that nango_proxy bypasses toolset allow/deny (#7821) by @agusayerza
+- *(dev)* Stop local ClickHouse growing its system logs (#7827) by @macko911
+- Use function uuid in task payload instead of name (#7756) by @TBonnin
+- Changelog entries for late September and early October (#7839) by @sapnesh-nango
+- Update version in manifest by @actions-user
+- Rename the webhook signing key changelog entry (#7840) by @sapnesh-nango
+- Update version in manifest by @actions-user
+- Clarify dryrun sandbox token scopes (#7844) by @marcindobry
+- *(api)* Mark connections search param as deprecated (#7749) by @hassan254-prog
+- Document the webhook signing key rotation API (NAN-7494) (#7851) by @agusayerza
+- *(agent-sessions)* Move session creation into agentSession.service (NAN-6869) (#7706) by @agusayerza
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9782752c3989bbac1c5c37d0c07852471d9c161d by Victor Lang'at by @github-actions[bot]
+- Update version in manifest by @actions-user
+- *(skills)* Document PostHog setup for local stacks (#7826) by @macko911
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/581fb27397039a2beb931dc2c02179c21e7291c4 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/4e61bff484f0ab28810e3f252be8bff1f49928a9 by Taofeeq Oluderu by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/474eb90c257863cbff03cc929946cee3a5f36e6d by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/36eab417ae0e04013f0fab0ca2dfd032a05bef53 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/53cb24a11924d1d9c9a91aea452484986067b99c by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/43c1b6dda88311f549746c22e874ca2cc0673559 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/04ca5cf8d7946e9bba788d4a2c43da3afaffea99 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/25a51a308ad65bd435ad68effcc1aab37de55345 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/e55c6d314acc1a5120386bfe9cee2f14726422eb by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/52809239314d79fb2d74cac635f877f9c186bc6a by dillon-cordova by @github-actions[bot]
+- *(docs)* Update release cadence (#7885) by @rossmcewan
+- Updates with new catalog actions behaviors (#7859) by @kaposke
+- Clarify integration action guidance (#7870) by @kaposke
+- Describe catalog rows on FunctionAvailability (#7893) by @kaposke
+- Document MCP server tools in agent sessions (NAN-7428) (#7894) by @agusayerza
+- Drop the MCP tool name collision note (NAN-7428) (#7904) by @agusayerza
+
+### Fixed
+
+- *(linear-mcp)* Omit empty client_secret from token/refresh requests (#7769) by @hassan254-prog
+- *(orchestrator)* Revert "fix: dequeue query tweaks (#7743)" (#7772) by @TBonnin
+- *(release)* Fix managed manifest app version for 1.6.19 (#7775) by @agusayerza
+- *(actions)* Opt out of logging action input (#7770) by @rossmcewan
+- Vulns (#7790) by @rossmcewan
+- *(server)* Fix Agent Playground search and connect gaps (#7766) by @macko911
+- *(providers)* Widen atlassian-admin org id regex (#7799) by @rbwest
+- Vulns (#7803) by @rossmcewan
+- *(server)* Omit action input (#7804) by @rossmcewan
+- Control logging function output (#7810) by @rossmcewan
+- *(server)* Fix 500s on unhandled Orb webhook events (#7812) by @macko911
+- *(providers)* Rename Google Sheet to Google Sheets in the catalog (#7811) by @macko911
+- Vulnerabilities (#7828) by @rossmcewan
+- *(webhooks)* Skip disabled syncs when dispatching webhooks (NAN-5774) (#7774) by @agusayerza
+- *(integrations)* Loosen buildium regex pattern (#7832) by @hassan254-prog
+- *(oauth2)* Interpolate connection_config in refresh/token params before refresh (#7807) by @hassan254-prog
+- *(flows)* Scope flow disable to the caller's environment (#7715) by @hassan254-prog
+- *(analytics)* Fix the signup event for Google and invite signups (#7788) by @macko911
+- *(mcp)* Surface ActionError reason when payload has no error key (#7843) by @hassan254-prog
+- *(webapp)* Fix the plan change dialog hanging on a webhook (#7819) by @macko911
+- *(server)* Pass GraphQL error messages to the agent when an action fails (#7845) by @macko911
+- Stale github action to process oldest PR first (#7862) by @TBonnin
+- Upgrade node base image (#7863) by @rossmcewan
+- *(server)* Remove open redirect in GitHub App install/OAuth callback (#7485) by @hassan254-prog
+- *(webapp)* Fix the dashboard sign-in redirect loop (#7886) by @macko911
+- *(agent-playground)* Fix the playground chat getting stuck after Stop (#7787) by @macko911
+- *(webapp)* Stop noise in the dashboard's Sentry project (#7887) by @macko911
+
+## [v0.71.12] - 2026-10-02
+
+### Added
+
+- *(webapp)* Show startup-deal accounts the new billing metrics (#7566) by @macko911
+- *(kms)* Add Azure Key Vault as a DEK wrapping provider (#7717) by @pfreixes
+- *(sanity-sync)* Add integration templates sync (#7554) by @hassan254-prog
+- *(webhooks)* Add allow unverified webhooks integration option (NAN-7312) (#7726) by @agusayerza
+- *(integrations)* Add support for Discord Bot (#7678) by @arctic-char
+- *(integrations)* Add support for Slack app configuration tokens (#7669) by @arctic-char
+- *(server)* Add the Agent Playground chat API (#7697) by @macko911
+- *(integrations)* Add support for modmed-fhir (#7745) by @hassan254-prog
+- *(integrations)* Add Discogs OAuth1 and personal token providers (#7340) by @aquarazorda
+- *(integrations)* Add support for Mailtrap (#7150) by @mazu-rok
+- *(runner-sdk)* Support redirect error in nango.uncontrolledfetch (#7758) by @rbwest
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/e1f139a2b33d2e976c811c95a38c2dd2a413fe47 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/6d0f6e4e575cdf9f2f89e16086d2e2069fefbb1c by Victor Lang'at by @github-actions[bot]
+- Update version in manifest by @actions-user
+- *(webapp)* Rename the remaining webapp events to the taxonomy (#7720) by @macko911
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/73b6621f698206dbb7561601f031ab3af02c10e5 by Victor Lang'at by @github-actions[bot]
+- Update version in manifest by @actions-user
+- *(docs)* Free self-hosted should be single tenant (#7751) by @rossmcewan
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/900eb400acae4023ff10903315905207bc3a5dc7 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/fec2851c5d727f250db62f8b275603cd65c96996 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/3fce1c855f03b768a4a256cb6bac745b8296c3b6 by Victor Lang'at by @github-actions[bot]
+- Function invocation endpoint (#7724) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/5e38e8f0dfa1ea031ee2230f8d8d3204514667d4 by Victor Lang'at by @github-actions[bot]
+- Rename the server and CLI events to the taxonomy (#7753) by @macko911
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/23df553a789b6e30ba1640d4605cf5bfa7ca7cae by Victor Lang'at by @github-actions[bot]
+
+### Fixed
+
+- Allow cronjob to enable growth add-on for scale-legacy (#7731) by @ErickRDev
+- *(server)* Fix the dark OAuth success page in light mode (#7742) by @macko911
+- Upgrade @grpc/grpc-js (#7747) by @rossmcewan
+- *(plans)* Give Growth add-on customers the xl API rate limit (#7691) by @macko911
+- *(file)* Copy templates remotely whenever remote storage is on (#7752) by @pfreixes
+- *(server)* Fix tool search reporting a just-connected app as not connected (#7748) by @macko911
+- *(proxy)* Time out stalled requests and abort them on cancel (#7709) by @agusayerza
+- Dequeue query tweaks (#7743) by @TBonnin
+- *(microsoft-admin)* Stop double-encoding the client_credentials scope (#7712) by @arhaikal
+- *(mcp)* Protect credentials and confirm destructive actions (#7750) by @marcindobry
+- *(posthog)* Fix duplicate persons and internal filters in PostHog (#7716) by @macko911
+
+## [v0.71.11] - 2026-09-30
+
+### Added
+
+- Create/delete schedules if needed when connection is created/deleted (#7584) by @TBonnin
+- Delete functions/schedules when integrations are deleted (#7589) by @TBonnin
+- *(mcp)* Hook up OAuth to Management MCP (#7550) by @marcindobry
+- *(server)* Ask for environment before OAuth MCP queries (#7601) by @marcindobry
+- *(providers)* Add Anarlog MCP provider (#7303) by @ComputelessComputer
+- *(integrations)* Support MCP_OAUTH2 across create/update/get for static, dynamic, and cimd (#7464) by @hassan254-prog
+- *(webapp)* Redirect from sign in/up pages when user already authenticated (#7580) by @macko911
+- *(agent-sessions)* Add the nango_create_connection meta tool (#7592) by @agusayerza
+- *(mfa)* Allow a recovery code to disable 2FA (NAN-7154) (#7597) by @agusayerza
+- *(integrations)* Add support for Simpplr (#7548) by @SvabhuG
+- *(oauth2_cc)* Fall back to JWT exp for OAUTH2_CC token expiry (#7605) by @hassan254-prog
+- Delete functions as part of the retention deletion logic (#7602) by @TBonnin
+- *(mcp)* Add missing hints to Management MCP tools (#7608) by @marcindobry
+- Add NANGO_ADMIN_KEY to env example (#7619) by @rossmcewan
+- *(integrations)* Add pleo api key to the api key regex (#7623) by @hassan254-prog
+- *(halo-psa)* Add authenticated webhook routing (#7615) by @neelS-hah
+- *(authz)* Authorize public routes through grants (#7490) by @kaposke
+- *(integrations)* Add support for mailerlite (#7618) by @alex-onepage
+- *(webhooks)* Flag unverified webhooks in forwarded payloads (NAN-7212) (#7627) by @agusayerza
+- *(posthog)* Tag events with account, environment and is-prod (NAN-7113) (#7572) by @agusayerza
+- *(integrations)* Add support for clay mcp (#7617) by @hassan254-prog
+- *(posthog)* Emit agent session lifecycle and tool call events (NAN-7114) (#7574) by @agusayerza
+- *(integrations)* Add support for textus (#7620) by @hassan254-prog
+- *(integrations)* Add support for beeline-vms (#7622) by @hassan254-prog
+- *(integrations)* Add support for symplr-ctm (#7625) by @hassan254-prog
+- *(integrations)* Add support for ukg-pro-wfm-cc (#7636) by @hassan254-prog
+- *(integrations)* Add support for eway-crm (#7637) by @hassan254-prog
+- *(integrations)* Add support for jobnimbus (#7638) by @hassan254-prog
+- *(integrations)* Add support for posthog capture (#7645) by @hassan254-prog
+- *(server)* Add MCP titles and type action input (#7640) by @marcindobry
+- *(integrations)* Add MCP_OAUTH2_GENERIC integrations to the public API (#7529) by @hassan254-prog
+- *(CLI)* Accept on-events trigger for functions (#7634) by @TBonnin
+- *(webhooks)* Require a Nango webhook secret for unsigned providers (NAN-7213) (#7629) by @agusayerza
+- *(catalog)* Add live catalog reader and runnable resolver (NAN-6903) (#7611) by @kaposke
+- *(posthog)* Send tool search queries and results (NAN-6944) (#7585) by @agusayerza
+- *(functions)* List live catalog actions (NAN-6903) (#7612) by @kaposke
+- *(webhooks)* Verify salesforce webhooks with a Nango webhook secret (NAN-7214) (#7630) by @agusayerza
+- *(posthog)* Show the account in Billing Bot plan-change alerts again (#7651) by @macko911
+- *(integrations)* Add support for Tracify (#7507) by @murphy-con
+- *(integrations)* Add support for Omnisend (#7515) by @murphy-con
+- *(functions)* Run live catalog actions (NAN-6903) (#7613) by @kaposke
+- Add partial index to functions config for http trigger with subscriptions (#7656) by @TBonnin
+- *(integrations)* Add Billit Access Point (#7659) by @recepbayraktar
+- Add function uuid (#7662) by @TBonnin
+- *(logs)* Add support for Elastic Cloud Serverless (#7673) by @rossmcewan
+- Add /functions/:uuid (#7674) by @TBonnin
+- *(webhooks)* Validate Bot Framework JWTs on Microsoft Teams webhooks (NAN-6938) (#7661) by @agusayerza
+- Add GET /functions API endpoint (#7679) by @TBonnin
+- *(server)* Track Management MCP usage in PostHog (#7653) by @marcindobry
+- *(webapp)* List catalog actions in the playground (#7682) by @kaposke
+- *(integrations)* Add support for astro-mcp (#7695) by @hassan254-prog
+- *(integrations)* Add support for eclinicalworks (#7694) by @hassan254-prog
+- *(webapp)* Rotate the webhook signing key from the dashboard (NAN-6608) (#7680) by @agusayerza
+- *(posthog)* Count server-side events in account-level PostHog insights (#7687) by @macko911
+- *(integrations)* Add support for HitPay (#7684) by @kewcoder
+- Add PATCH /functions/:uuid to enable/disable (#7703) by @TBonnin
+- *(flags)* Gate catalog tools on the tools-catalog flag (#7699) by @kaposke
+- *(integrations)* Add support for weflow (#7711) by @hassan254-prog
+- *(webhooks)* Verify airtable webhook MAC signatures (NAN-7215) (#7628) by @agusayerza
+- *(integrations)* Add support for openrouter (#7710) by @hassan254-prog
+
+### Changed
+
+- Update version in manifest by @actions-user
+- September changelog entries and tighter dividers (#7591) by @sapnesh-nango
+- Make the docs favicon the same size as everyone else's (#7599) by @macko911
+- Remove E2B sandbox provider (#7600) by @marcindobry
+- Recommend OAuth for Management MCP (#7603) by @marcindobry
+- Retire old daily_function_executions CH table (#7595) by @ErickRDev
+- Remove daily-fn-exec one-off data migration script (#7596) by @ErickRDev
+- Loosen the changelog divider gap to 48px (#7609) by @sapnesh-nango
+- *(posthog)* Remove the legacy backend events (NAN-7125) (#7573) by @agusayerza
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/809982d12aad67a359ac6e75a1adb59ad292dfde by Givi by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/957b65ee32ecbfe1d0761228986633825654b372 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/6ef2e92eb45d3cec792ee7d8d2eda97618b3bed7 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/3e8305e2383842cfc95ca2390e9859686911f790 by Victor Lang'at by @github-actions[bot]
+- *(authz)* Replace withScope with can (#7492) by @kaposke
+- *(github-app)* Explain how to add the webhook secret to an existing app (NAN-7210) (#7647) by @agusayerza
+- Changelog entry for Management MCP OAuth and new tools (#7658) by @sapnesh-nango
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/fd0a116d2872bd8f8e9f2301f4855d72d949bb1d by Victor Lang'at by @github-actions[bot]
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/98217a8f0256c58480fa197d95d51f7c12d4b340 by Rhys Balevicius by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/46dc5e6f2359e5bc42c1118c7e60b9c70f41a3ff by Rhys Balevicius by @github-actions[bot]
+- Box the Management MCP OAuth screenshot (#7665) by @sapnesh-nango
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/1f51ebe9c3648515a3726a8195d12e1a2e280a41 by arctic-char by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9d2a2311e455b2c3b35c916adeddfedeb44e0ed3 by arctic-char by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/83a1a4955f7466e89cae8cc2b0ba768485d91319 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/e52b81d237dcbd00e103da6050d5f5d140b8841b by Victor Lang'at by @github-actions[bot]
+- Migrate webflow docs (#7686) by @hassan254-prog
+- Update version in manifest by @actions-user
+- *(all)* Bump zod versions (#7700) by @rbwest
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/1f08afc49a27b9f22f80ae31f2b2679f0e1bda99 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/d70f170c0b429fb03681fc4dc63972cb783fa44b by Victor Lang'at by @github-actions[bot]
+- Replace blue favicon with the website/app wolf favicon (light & dark mode) (#7714) by @macko911
+- Point get connection and node sdk links to current paths (#7718) by @hassan254-prog
+- *(webapp)* Remove webapp analytics events nobody uses (#7663) by @macko911
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/0a5ff5d9daf7e481dc14e5b8109e823c43430c86 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/ce75a75c9a8ffdbf9a6f6a484cf05fdf410e5f28 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/4866befe2e85d879f0ce0cad12a7ee12fa73727d by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/b8b5922290472952609ea17f505624b760b0ddc6 by Victor Lang'at by @github-actions[bot]
+
+### Fixed
+
+- *(retry)* Retry EPIPE as a network error (#7606) by @pfreixes
+- *(auth)* Stop a link cancelling onboarding for Google signups (#7579) by @macko911
+- *(oauth-server)* Support ChatGPT CIMD metadata choices (#7607) by @marcindobry
+- *(connectwise-psa)* Support self-hosted webhook signing-key origins (#7616) by @neelS-hah
+- *(webapp)* Sign users out when their session expires on any page (#7552) by @macko911
+- *(webapp)* Make Getting Started code snippet readable in light mode (#7621) by @macko911
+- *(webapp)* Remove SWR from the webapp (#7635) by @macko911
+- *(cron)* Allow startup-deal growth add-on transitions (#7648) by @ErickRDev
+- Support OpenAI plugin OAuth submission (#7633) by @marcindobry
+- *(server)* Delete variant sync records on cleanup, not base (#7649) by @rbwest
+- *(deploy)* Return a clean error when the previous sync version can't be auto-incremented (#7657) by @hassan254-prog
+- *(webapp)* Stop sending autocapture events to PostHog (#7655) by @macko911
+- *(webapp)* Solve issue with inaccessible Upgrade link in tooltips (#7467) by @macko911
+- *(posthog)* Stop merging every CLI device on an account into one PostHog person (#7654) by @macko911
+- *(docs)* Update self-hosting docs (#7689) by @rossmcewan
+- *(plans)* Give Growth add-on customers the environments the add-on promises (#7690) by @macko911
+- *(shared)* Get api url (#7704) by @rossmcewan
+- *(webapp)* Move remaining hand-rolled fetches onto react-query (part 1) (#7652) by @macko911
+- *(integrations)* Disable PKCE for eway-crm (#7723) by @hassan254-prog
+- Vulns (#7725) by @rossmcewan
+- *(agent-sessions)* Tell nango_tool_search what to do about a missing connection (NAN-7174) (#7705) by @agusayerza
+- More vulns (#7729) by @rossmcewan
+
 ## [v0.71.10] - 2026-09-21
 
 ### Added
@@ -8109,6 +8410,9 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.71.13]: https://github.com/NangoHQ/nango/compare/v0.71.12..v0.71.13
+[v0.71.12]: https://github.com/NangoHQ/nango/compare/v0.71.11..v0.71.12
+[v0.71.11]: https://github.com/NangoHQ/nango/compare/v0.71.10..v0.71.11
 [v0.71.10]: https://github.com/NangoHQ/nango/compare/v0.71.9..v0.71.10
 [v0.71.9]: https://github.com/NangoHQ/nango/compare/v0.71.8..v0.71.9
 [v0.71.8]: https://github.com/NangoHQ/nango/compare/v0.71.7..v0.71.8

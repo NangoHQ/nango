@@ -451,8 +451,7 @@ describe('OrchestratorClient', async () => {
                 retry: { count: 0, max: 0 },
                 ownerKey: 'environment:1',
                 args: {
-                    functionName: 'native-function',
-                    functionConfigId: 123,
+                    functionUuid: '11111111-1111-4111-8111-111111111111',
                     connection: { id: 1, connection_id: 'C', provider_config_key: 'P', environment_id: 1 },
                     activityLogId: 'a',
                     trigger: {

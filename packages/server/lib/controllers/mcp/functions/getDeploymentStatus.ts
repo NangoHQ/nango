@@ -7,7 +7,8 @@ import type { GetDeploymentStatusOutput } from './schema.js';
 
 export const getDeploymentStatusTool = defineManagementMcpTool<typeof getDeploymentStatusArgumentsSchema, GetDeploymentStatusOutput>({
     name: 'get_deployment_status',
-    description: 'Retrieve a function deployment by ID to check whether it is still running, succeeded, or failed.',
+    title: 'Get Deployment Status',
+    description: 'Returns a function deployment by ID, including whether it is still running, succeeded, or failed.',
     inputSchema: getDeploymentStatusArgumentsSchema,
     outputSchema: getDeploymentStatusOutputSchema,
     requiredScopes: { every: ['environment:deploy'] },
