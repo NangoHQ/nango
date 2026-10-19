@@ -28,6 +28,14 @@ const logLevelToColor = {
     warn: 'yellow'
 } as const;
 
+function cliNango(props: NangoProps, isSync: boolean): Nango {
+    const { secretKey, taskAuthToken: _taskAuthToken, ...rest } = props;
+    if (!secretKey) {
+        throw new Error('Parameter secretKey is required');
+    }
+    return new Nango({ ...rest, isSync, dryRun: true, secretKey }, getAxiosSettings(props));
+}
+
 function showLoggerLevelWarning() {
     // only show it once
     let called = false;
@@ -57,7 +65,7 @@ export class NangoActionCLI extends NangoActionBase<never, ZodCheckpoint> {
             this.stubbedCheckpoint = cliProps.stubbedCheckpoint;
         }
 
-        this.nango = new Nango({ isSync: false, dryRun: true, ...props }, getAxiosSettings(props));
+        this.nango = cliNango(props, false);
     }
 
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -199,7 +207,7 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
 
         this.dryRunService = cliProps.dryRunService;
 
-        this.nango = new Nango({ isSync: true, dryRun: true, ...props }, getAxiosSettings(props));
+        this.nango = cliNango(props, true);
     }
 
     // Can't double extends
