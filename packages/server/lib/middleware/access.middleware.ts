@@ -117,7 +117,7 @@ export class AccessMiddleware {
      * `res.connectionId` is not checked. A script may read or proxy another connection in the same
      * environment. Persist binds the token to its connection; this API is environment-scoped.
      */
-    private async authenticateCapabilityToken(_req: Request, res: Response<unknown, Partial<RequestLocals>>, token: string): Promise<Result<void>> {
+    private async authenticateCapabilityToken(res: Response<unknown, Partial<RequestLocals>>, token: string): Promise<Result<void>> {
         const auth = await verifyTaskCapabilityToken(token, INTERNAL_SERVICE_AUDIENCE_SERVER, envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS);
         const scope = res.locals.taskCapability;
         if (!auth || !scope || !hasScope(auth, scope)) {
@@ -173,7 +173,7 @@ export class AccessMiddleware {
             }
 
             if (isJwtShape(secret) && jwtHeaderAlg(secret) === 'EdDSA') {
-                return await this.authenticateCapabilityToken(req, res, secret);
+                return await this.authenticateCapabilityToken(res, secret);
             }
 
             const isScript = req.get('Nango-Is-Script') === 'true';

@@ -132,19 +132,20 @@ import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { withEnvironmentTarget } from './middleware/environment-target.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
-import { taskCapability } from './middleware/task-capability.js';
+import { API_TASK_SCOPES, taskCapability } from './middleware/task-capability.js';
 import { webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
+import type { ApiScope } from './middleware/task-capability.js';
 import type { RequestLocals } from './utils/express.js';
-import type { TaskCapabilityScope } from '@nangohq/internal-auth';
 import type { Request, RequestHandler } from 'express';
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const envAuth: RequestHandler[] = [...apiAuth, resolveEnvironment];
-/** Env auth for a route a task may call. The route names the capability; a task token is rejected when it is missing. */
-function withTaskCapability(scope: TaskCapabilityScope): RequestHandler[] {
-    return [taskCapability(scope), ...envAuth];
+/** Env auth for a route a task may call. The route names the capability; `can()` scopes come from that capability. */
+function withTaskCapability(scope: ApiScope, beforeCan: readonly RequestHandler[] = []): RequestHandler[] {
+    const [required, ...or] = API_TASK_SCOPES[scope];
+    return [taskCapability(scope), ...envAuth, ...beforeCan, can(required, ...or)];
 }
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const agentSessionAuth: RequestHandler[] = [authMiddleware.agentSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
@@ -313,13 +314,7 @@ publicAPI
     .route('/integrations/quickstart')
     .post(envAuth, auditPublicQuickstartIntegrationCreated, can('environment:integrations:create'), postPublicQuickstartIntegration);
 publicAPI.route('/integrations/:uniqueKey').patch(envAuth, auditPublicIntegrationUpdated, can('environment:integrations:update'), patchPublicIntegration);
-publicAPI
-    .route('/integrations/:uniqueKey')
-    .get(
-        withTaskCapability(TASK_CAPABILITY_SCOPES.apiIntegrationRead),
-        can('environment:integrations:read', 'environment:integrations:read_credentials'),
-        getPublicIntegration
-    );
+publicAPI.route('/integrations/:uniqueKey').get(withTaskCapability(TASK_CAPABILITY_SCOPES.apiIntegrationRead), getPublicIntegration);
 
 publicAPI.route('/integrations/:uniqueKey').delete(envAuth, auditPublicIntegrationDeleted, can('environment:integrations:delete'), deletePublicIntegration);
 publicAPI.route('/integrations/:uniqueKey/functions/:name/code').get(envAuth, can('environment:functions:read'), getFunctionCode);
@@ -398,27 +393,15 @@ publicAPI
 publicAPI.use('/connections', jsonContentTypeMiddleware);
 publicAPI.route('/connections').post(envAuth, auditConnectionCreated, can('environment:connections:create'), postPublicConnection);
 publicAPI.route('/connections').get(envAuth, can('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
-publicAPI
-    .route('/connections/metadata')
-    .post(withTaskCapability(TASK_CAPABILITY_SCOPES.apiMetadataWrite), can('environment:connections:update'), postPublicMetadata);
-publicAPI
-    .route('/connections/metadata')
-    .patch(withTaskCapability(TASK_CAPABILITY_SCOPES.apiMetadataWrite), can('environment:connections:update'), patchPublicMetadata);
-publicAPI
-    .route('/connections/:connectionId')
-    .get(
-        withTaskCapability(TASK_CAPABILITY_SCOPES.apiConnectionRead),
-        can('environment:connections:read', 'environment:connections:read_credentials'),
-        getPublicConnection
-    );
+publicAPI.route('/connections/metadata').post(withTaskCapability(TASK_CAPABILITY_SCOPES.apiMetadataWrite), postPublicMetadata);
+publicAPI.route('/connections/metadata').patch(withTaskCapability(TASK_CAPABILITY_SCOPES.apiMetadataWrite), patchPublicMetadata);
+publicAPI.route('/connections/:connectionId').get(withTaskCapability(TASK_CAPABILITY_SCOPES.apiConnectionRead), getPublicConnection);
 publicAPI.route('/connections/:connectionId').patch(envAuth, auditPublicConnectionUpdated, can('environment:connections:update'), patchPublicConnection);
 publicAPI.route('/connections/:connectionId').delete(envAuth, auditPublicConnectionDeleted, can('environment:connections:delete'), deletePublicConnection);
 
 // Config
 publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
-publicAPI
-    .route('/environment-variables')
-    .get(withTaskCapability(TASK_CAPABILITY_SCOPES.apiEnvVarsRead), can('environment:variables:read'), getPublicEnvironmentVariables);
+publicAPI.route('/environment-variables').get(withTaskCapability(TASK_CAPABILITY_SCOPES.apiEnvVarsRead), getPublicEnvironmentVariables);
 
 publicAPI.use('/environment', jsonContentTypeMiddleware);
 publicAPI
@@ -445,11 +428,9 @@ publicAPI.route('/records/prune').patch(envAuth, can('environment:records:write'
 
 // Syncs (continued)
 publicAPI.use('/sync', jsonContentTypeMiddleware);
-publicAPI.route('/sync/trigger').post(withTaskCapability(TASK_CAPABILITY_SCOPES.apiSyncTrigger), can('environment:syncs:execute'), postPublicTrigger);
+publicAPI.route('/sync/trigger').post(withTaskCapability(TASK_CAPABILITY_SCOPES.apiSyncTrigger), postPublicTrigger);
 publicAPI.route('/sync/pause').post(envAuth, auditSyncPaused, can('environment:syncs:execute'), postPublicSyncPause);
-publicAPI
-    .route('/sync/start')
-    .post(withTaskCapability(TASK_CAPABILITY_SCOPES.apiSyncTrigger), auditSyncStarted, can('environment:syncs:execute'), postPublicSyncStart);
+publicAPI.route('/sync/start').post(withTaskCapability(TASK_CAPABILITY_SCOPES.apiSyncTrigger, [auditSyncStarted]), postPublicSyncStart);
 publicAPI.route('/sync/status').get(envAuth, can('environment:syncs:read'), getPublicSyncStatus);
 publicAPI.route('/sync/:name/variant/:variant').post(envAuth, auditSyncVariantCreated, can('environment:syncs:variant:create'), postSyncVariant);
 publicAPI.route('/sync/:name/variant/:variant').delete(envAuth, auditSyncVariantDeleted, can('environment:syncs:variant:delete'), deleteSyncVariant);
@@ -502,10 +483,8 @@ publicAPI
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);
-publicAPI
-    .route('/action/trigger')
-    .post(withTaskCapability(TASK_CAPABILITY_SCOPES.apiActionTrigger), can('environment:actions:execute'), postPublicTriggerAction); //TODO: to deprecate
-publicAPI.route('/action/:id').get(withTaskCapability(TASK_CAPABILITY_SCOPES.apiActionTrigger), can('environment:actions:execute'), getAsyncActionResult);
+publicAPI.route('/action/trigger').post(withTaskCapability(TASK_CAPABILITY_SCOPES.apiActionTrigger), postPublicTriggerAction); //TODO: to deprecate
+publicAPI.route('/action/:id').get(withTaskCapability(TASK_CAPABILITY_SCOPES.apiActionTrigger), getAsyncActionResult);
 
 // Connect sessions
 publicAPI.use('/connect', jsonContentTypeMiddleware);
@@ -528,4 +507,4 @@ publicAPI.use('/v1', jsonContentTypeMiddleware);
 publicAPI.route('/v1/*splat').all(envAuth, requireV1Passthrough, withEnvironmentTarget, allPublicV1);
 
 // Proxy
-publicAPI.route('/proxy{/*splat}').all(withTaskCapability(TASK_CAPABILITY_SCOPES.apiProxy), can('environment:proxy'), upload.any(), allPublicProxy);
+publicAPI.route('/proxy{/*splat}').all(withTaskCapability(TASK_CAPABILITY_SCOPES.apiProxy), upload.any(), allPublicProxy);
