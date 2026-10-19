@@ -10,16 +10,8 @@ import {
 import type { InternalServiceAuth } from '@nangohq/internal-auth';
 import type { NextFunction, Request, Response } from 'express';
 
-const CONNECTION_PARAM = 'nangoConnectionId';
-const SYNC_PARAM = 'syncId';
-const TASK_PARAM = 'taskId';
-
 function unauthorized(res: Response): void {
     res.status(401).json({ error: { code: 'unauthorized', message: 'Unauthorized' } });
-}
-
-function pathHasParam(path: string, name: string): boolean {
-    return path.split('/').includes(`:${name}`);
 }
 
 function stringParam(req: Request, name: string): string | undefined {
@@ -43,14 +35,15 @@ export function setCapabilityAuth(res: Response, auth: InternalServiceAuth): voi
     res.locals[INTERNAL_SERVICE_AUTH_LOCALS_KEY] = auth;
 }
 
-/**
- * Secret-key callers pass through. A task JWT must match the scope. Resource ids are the path
- * params Express already matched (`:nangoConnectionId`, `:syncId`, `:taskId`).
- */
-export function requireTaskCapability(scope: string, path: string) {
-    const connection = pathHasParam(path, CONNECTION_PARAM);
-    const sync = pathHasParam(path, SYNC_PARAM);
-    const task = pathHasParam(path, TASK_PARAM);
+/** Path param names this route binds a task JWT to. Absent names are not checked. */
+export interface TaskCapabilityParams {
+    connectionId?: string;
+    syncId?: string;
+    taskId?: string;
+}
+
+/** Secret-key callers pass through. A task JWT must match the scope and the named path params. */
+export function requireTaskCapability(scope: string, params: TaskCapabilityParams = {}) {
     return (req: Request, res: Response, next: NextFunction): void => {
         const auth = getInternalServiceAuth(res);
         if (!auth || auth.kind !== 'jwt') {
@@ -61,15 +54,15 @@ export function requireTaskCapability(scope: string, path: string) {
             unauthorized(res);
             return;
         }
-        if (connection && !isConnectionBoundAuth(auth, positiveIntParam(req, CONNECTION_PARAM))) {
+        if (params.connectionId !== undefined && !isConnectionBoundAuth(auth, positiveIntParam(req, params.connectionId))) {
             unauthorized(res);
             return;
         }
-        if (sync && !isSyncBoundAuth(auth, stringParam(req, SYNC_PARAM))) {
+        if (params.syncId !== undefined && !isSyncBoundAuth(auth, stringParam(req, params.syncId))) {
             unauthorized(res);
             return;
         }
-        if (task && !isTaskBoundAuth(auth, stringParam(req, TASK_PARAM))) {
+        if (params.taskId !== undefined && !isTaskBoundAuth(auth, stringParam(req, params.taskId))) {
             unauthorized(res);
             return;
         }

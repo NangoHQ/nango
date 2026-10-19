@@ -34,10 +34,13 @@ function app() {
     server.post('/environment/:environmentId/log', (_req, res) => {
         res.status(204).end();
     });
-    const recordsPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:jobId/records';
-    server.post(recordsPath, requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, recordsPath), (_req, res) => {
-        res.status(204).end();
-    });
+    server.post(
+        '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:jobId/records',
+        requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, { connectionId: 'nangoConnectionId', syncId: 'syncId' }),
+        (_req, res) => {
+            res.status(204).end();
+        }
+    );
     return server;
 }
 
