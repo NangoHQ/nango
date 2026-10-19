@@ -1,7 +1,7 @@
 import { filterJsonSchemaForModels } from '@nangohq/utils';
 
 import type { functionConfigService, ResolveRunnableToolResult } from '@nangohq/shared';
-import type { FunctionTags, GetFunctionResponse, GetToolResponse, IntegrationConfig } from '@nangohq/types';
+import type { FunctionTags, GetFunctionResponse, GetToolResponse, IntegrationConfig, ListedNangoActionFunction } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 export function toGetFunctionResponse(fn: functionConfigService.CurrentFunctionConfig): GetFunctionResponse {
@@ -60,16 +60,34 @@ export function actionToGetToolResponse(
                   jsonSchema: resolved.tool.jsonSchema,
                   source: 'tools-catalog' as const
               };
+    return listedActionToGetToolResponse(
+        {
+            name: action.name,
+            ...(action.description !== undefined && { description: action.description }),
+            ...(action.scopes !== undefined && { scopes: action.scopes }),
+            ...(action.input != null && { input: action.input }),
+            returns: action.output,
+            json_schema: action.jsonSchema,
+            source: action.source
+        },
+        integration
+    );
+}
+
+export function listedActionToGetToolResponse(
+    action: Pick<ListedNangoActionFunction, 'name' | 'description' | 'scopes' | 'input' | 'returns' | 'json_schema' | 'source'>,
+    integration: Pick<IntegrationConfig, 'unique_key' | 'provider'>
+): GetToolResponse {
     return {
         uuid: null,
         integration_id: integration.unique_key,
         provider: integration.provider,
         name: action.name,
         description: action.description ?? '',
-        input_json_schema: resolveActionSchema(action.jsonSchema, action.input ? [action.input] : []),
-        output_json_schema: resolveActionSchema(action.jsonSchema, action.output),
+        input_json_schema: resolveActionSchema(action.json_schema, action.input ? [action.input] : []),
+        output_json_schema: resolveActionSchema(action.json_schema, action.returns),
         source: action.source,
-        meta: { tags: {}, ...(action.scopes && { required_scopes: action.scopes }) }
+        meta: { tags: {}, ...(action.scopes?.length && { required_scopes: action.scopes }) }
     };
 }
 
