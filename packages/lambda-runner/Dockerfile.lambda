@@ -105,6 +105,9 @@ COPY --from=public.ecr.aws/datadog/lambda-extension:89 /opt/. /opt/
 # COPY --from=build --chown=node:node /app/tmp /app/nango
 COPY --from=build /app/tmp ${LAMBDA_TASK_ROOT}
 ENV DD_LAMBDA_HANDLER="packages/lambda-runner/dist/index.handler"
+ENV DD_VERSION=$git_hash
+ENV DD_GIT_COMMIT_SHA=$git_hash
+ENV DD_GIT_REPOSITORY_URL=github.com/NangoHQ/nango
 RUN rm node_modules/datadog-lambda-js/dist/handler.js
 CMD ["node_modules/datadog-lambda-js/dist/handler.handler"]
 
