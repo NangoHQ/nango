@@ -25,7 +25,7 @@ async function copyNewerWebhookSigningKeys(knex) {
         WHERE customer_keys.key_type = 'webhook_signing'
           AND customer_keys.deleted_at IS NULL
           AND (existing.environment_id IS NULL OR customer_keys.updated_at > existing.updated_at)
-        ORDER BY relation.entity_id, customer_keys.updated_at DESC
+        ORDER BY relation.entity_id, customer_keys.updated_at DESC, customer_keys.id DESC
         ON CONFLICT (environment_id) DO UPDATE
         SET secret = EXCLUDED.secret,
             iv = EXCLUDED.iv,
