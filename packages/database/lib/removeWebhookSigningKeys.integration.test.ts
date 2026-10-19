@@ -89,8 +89,6 @@ async function narrowCustomerKeyTypeToApi(): Promise<void> {
 }
 
 describe('removeWebhookSigningKeys', () => {
-    const environmentIds: number[] = [];
-
     beforeAll(async () => {
         await multipleMigrations();
         await allowWebhookSigningKeyType();
@@ -98,16 +96,12 @@ describe('removeWebhookSigningKeys', () => {
 
     afterAll(async () => {
         await db.knex('customer_keys').where({ key_type: 'webhook_signing' }).delete();
-        if (environmentIds.length > 0) {
-            await db.knex('_nango_environments').whereIn('id', environmentIds).delete();
-        }
         await narrowCustomerKeyTypeToApi();
     });
 
     it('copies a newer legacy secret and keeps its timestamp', async () => {
         const accountId = await createAccount();
         const environmentId = await createEnvironment(accountId);
-        environmentIds.push(environmentId);
         await insertSigningKey(environmentId, 'current', older);
         await createLegacyKey(accountId, environmentId, 'legacy', newer);
 
@@ -121,7 +115,6 @@ describe('removeWebhookSigningKeys', () => {
     it('leaves the new row when the legacy secret is older or the same age', async () => {
         const accountId = await createAccount();
         const environmentId = await createEnvironment(accountId);
-        environmentIds.push(environmentId);
         await insertSigningKey(environmentId, 'current', newer);
         await createLegacyKey(accountId, environmentId, 'legacy', newer);
 
@@ -135,7 +128,6 @@ describe('removeWebhookSigningKeys', () => {
     it('keeps the newest legacy secret when the new row is missing', async () => {
         const accountId = await createAccount();
         const environmentId = await createEnvironment(accountId);
-        environmentIds.push(environmentId);
         await createLegacyKey(accountId, environmentId, 'older-legacy', older);
         await createLegacyKey(accountId, environmentId, 'newer-legacy', newer);
 
@@ -149,7 +141,6 @@ describe('removeWebhookSigningKeys', () => {
     it('copies a signing key for a soft-deleted environment', async () => {
         const accountId = await createAccount();
         const environmentId = await createEnvironment(accountId, true);
-        environmentIds.push(environmentId);
         await createLegacyKey(accountId, environmentId, 'deleted-env', newer);
 
         await copyNewerWebhookSigningKeys(db.knex);
@@ -160,7 +151,6 @@ describe('removeWebhookSigningKeys', () => {
     it('skips a deleted signing key and an orphaned relation', async () => {
         const accountId = await createAccount();
         const environmentId = await createEnvironment(accountId);
-        environmentIds.push(environmentId);
         await createLegacyKey(accountId, environmentId, 'deleted-key', newer, new Date());
         const highest = await db.knex('_nango_environments').max('id as max').first();
         const missingId = Number(highest?.['max'] ?? 0) + 1000;
@@ -175,7 +165,6 @@ describe('removeWebhookSigningKeys', () => {
     it('deletes the legacy signing keys', async () => {
         const accountId = await createAccount();
         const environmentId = await createEnvironment(accountId);
-        environmentIds.push(environmentId);
         await createLegacyKey(accountId, environmentId, 'doomed', newer);
 
         await deleteWebhookSigningCustomerKeys(db.knex);
