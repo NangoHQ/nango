@@ -56,7 +56,7 @@ export const FunctionPlaygroundDrawer: React.FC = () => {
 
     const inputFields = useMemo(() => getInputFields(inputSchema), [inputSchema]);
 
-    // Keep outside SheetContent, which unmounts on close: a sync run must keep polling while the drawer is closed.
+    // Keep this outside SheetContent. SheetContent unmounts on close, and a sync run must keep polling.
     const { handleRun, handleCancel } = usePlayground(inputFields);
 
     const clearInputError = useCallback((name: string) => clearPlaygroundInputError(name), [clearPlaygroundInputError]);
