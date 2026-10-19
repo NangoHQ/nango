@@ -4,7 +4,7 @@ import { assert, describe, expect, it } from 'vitest';
 import * as z from 'zod';
 
 import { fixturesPath } from '../tests/helpers.js';
-import { parseAction, parseFunction, parseSync, validateFunction } from './definitions.js';
+import { parseAction, parseFunction, parseSync, validateFunction, validateTool } from './definitions.js';
 
 const syncParams = {
     type: 'sync' as const,
@@ -347,9 +347,62 @@ describe('validateFunction tags', () => {
         expect(result.isErr()).toBe(true);
     });
 
-    it('rejects too many tags', () => {
-        const tags = Object.fromEntries(Array.from({ length: 33 }, (_, i) => [`tag${i}`, 'value']));
-        const result = validateFunction({ ...base, params: { tags } });
+    it('limits functions to 32 total tags', () => {
+        const tags = Object.fromEntries(Array.from({ length: 32 }, (_, i) => [`tag${i}`, 'value']));
+        expect(validateFunction({ ...base, params: { tags } }).isOk()).toBe(true);
+        const result = validateFunction({ ...base, params: { tags: { ...tags, instructions: 'Use this function' } } });
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toContain('Functions cannot have more than 32 tags');
+        }
+    });
+});
+
+describe('validateTool', () => {
+    const filePath = './github/tools/getIssue.ts';
+
+    it.each([
+        { reserved: {}, customTags: 30 },
+        { reserved: { instructions: 'Use this tool' }, customTags: 30 },
+        { reserved: { requiredScopes: ['repo'] }, customTags: 30 },
+        { reserved: { instructions: 'Use this tool', requiredScopes: ['repo'] }, customTags: 30 }
+    ])('allows $customTags custom tags with metadata $reserved', ({ reserved, customTags }) => {
+        const tags = Object.fromEntries(Array.from({ length: customTags }, (_, i) => [`tag${i}`, 'value']));
+        expect(validateTool({ filePath, params: { meta: { ...reserved, tags } } }).isOk()).toBe(true);
+        const result = validateTool({ filePath, params: { meta: { ...reserved, tags: { ...tags, extra: 'value' } } } });
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toContain('Tools cannot have more than 30 tags');
+        }
+    });
+
+    it.each([
+        { reason: 'no name or meta', params: {} },
+        { reason: 'a name', params: { name: 'get_issue-2' } },
+        { reason: 'empty meta', params: { meta: {} } },
+        { reason: 'long instructions', params: { meta: { instructions: 'a'.repeat(1024) } } },
+        { reason: 'required scopes', params: { meta: { requiredScopes: ['repo', 'read:org'] } } },
+        { reason: 'tags', params: { meta: { tags: { domain: 'issues', owners: ['platform'] } } } }
+    ])('accepts $reason', ({ params }) => {
+        expect(validateTool({ filePath, params }).isOk()).toBe(true);
+    });
+
+    it.each([
+        { reason: 'a name with invalid characters', params: { name: 'get issue' } },
+        { reason: 'a name that is too long', params: { name: 'a'.repeat(65) } },
+        { reason: 'instructions that are too long', params: { meta: { instructions: 'a'.repeat(1025) } } },
+        { reason: 'a required scope that is too long', params: { meta: { requiredScopes: ['a'.repeat(65)] } } },
+        { reason: 'a tag value that is too long', params: { meta: { tags: { domain: 'a'.repeat(65) } } } },
+        { reason: 'an invalid tag key', params: { meta: { tags: { Domain: 'issues' } } } },
+        { reason: 'the reserved instructions tag', params: { meta: { tags: { instructions: 'issues' } } } },
+        { reason: 'the reserved required_scopes tag', params: { meta: { tags: { required_scopes: 'repo' } } } },
+        { reason: 'an unknown meta field', params: { meta: { hints: {} } } },
+        {
+            reason: 'more than 30 custom tags',
+            params: { meta: { instructions: 'x', tags: Object.fromEntries(Array.from({ length: 32 }, (_, i) => [`tag${i}`, 'value'])) } }
+        }
+    ])('rejects $reason', ({ params }) => {
+        const result = validateTool({ filePath, params: params as never });
         expect(result.isErr()).toBe(true);
     });
 });

@@ -23,7 +23,7 @@ describe('createConnectionToolsMcpServer', () => {
     beforeEach(() => {
         vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(providerConfig);
         vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
-        vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(Ok([]));
+        vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(Ok({ actions: [], provider: 'github' }));
         mocks.executeAction.mockReset();
     });
 
@@ -32,7 +32,7 @@ describe('createConnectionToolsMcpServer', () => {
     });
 
     it('does not advertise a disabled action and reports direct calls as unavailable', async () => {
-        vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(Ok([actionFixture({ enabled: false })]));
+        vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(Ok({ actions: [actionFixture({ enabled: false })], provider: 'github' }));
         const disabledActionError = Object.assign(new Error('The action is disabled'), {
             code: 'disabled_action',
             nangoError: undefined
@@ -70,7 +70,7 @@ describe('createConnectionToolsMcpServer', () => {
 
     it('continues to advertise and execute an enabled action', async () => {
         const action = actionFixture({ enabled: true });
-        vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(Ok([action]));
+        vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(Ok({ actions: [action], provider: 'github' }));
         mocks.executeAction.mockResolvedValue({ logCtx: undefined, result: Ok({ data: { deleted: true } }) });
         const { client, server } = await createTestClient();
 
@@ -103,7 +103,7 @@ describe('createConnectionToolsMcpServer', () => {
 
     it('advertises and executes a catalog action', async () => {
         vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(
-            Ok([actionFixture({ enabled: true, name: 'delete-file', source: 'tools-catalog' })])
+            Ok({ actions: [actionFixture({ enabled: true, name: 'delete-file', source: 'tools-catalog' })], provider: 'github' })
         );
         mocks.executeAction.mockResolvedValue({ logCtx: undefined, result: Ok({ data: { deleted: true } }) });
         const { client, server } = await createTestClient();
