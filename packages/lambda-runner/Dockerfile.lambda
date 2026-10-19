@@ -104,6 +104,9 @@ COPY --from=public.ecr.aws/datadog/lambda-extension:89 /opt/. /opt/
 # Code
 # COPY --from=build --chown=node:node /app/tmp /app/nango
 COPY --from=build /app/tmp ${LAMBDA_TASK_ROOT}
+
+ARG git_hash
+
 ENV DD_LAMBDA_HANDLER="packages/lambda-runner/dist/index.handler"
 ENV DD_VERSION=$git_hash
 ENV DD_GIT_COMMIT_SHA=$git_hash
