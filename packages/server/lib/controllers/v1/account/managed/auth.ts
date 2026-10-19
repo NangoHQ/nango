@@ -203,8 +203,7 @@ export async function finalizeManagedAuthentication({
             account = resAccount;
         }
 
-        // Invited users do not go through account discovery:
-        const account_discovery_pending = !invitation;
+        const account_discovery_pending = isNewTeam;
 
         user = await userService.createUser({
             email: authorizedUser.email,

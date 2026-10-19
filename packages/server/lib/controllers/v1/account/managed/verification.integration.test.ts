@@ -87,12 +87,14 @@ describe(`POST ${route}`, () => {
         const organization = { id: `org_${nanoid()}`, name: `org-${nanoid()}` };
 
         const first = await signInThroughOrganization(organization);
+        expect(first.account_discovery_pending).toBe(true);
         expect(billingMocks.linkBillingCustomer).toHaveBeenCalledTimes(1);
         expect(billingMocks.linkBillingFreeSubscription).toHaveBeenCalledTimes(1);
 
         vi.clearAllMocks();
         const second = await signInThroughOrganization(organization);
         expect(second.account_id).toBe(first.account_id);
+        expect(second.account_discovery_pending).toBe(false);
         expect(billingMocks.linkBillingCustomer).not.toHaveBeenCalled();
         expect(billingMocks.linkBillingFreeSubscription).not.toHaveBeenCalled();
     });
