@@ -51,6 +51,7 @@ import { getPublicEnvironmentApiKey } from './controllers/environment/getApiKey.
 import { getPublicEnvironmentApiKeys } from './controllers/environment/getApiKeys.js';
 import { getPublicEnvironments } from './controllers/environment/getEnvironments.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
+import { patchPublicEnvironmentApiKey } from './controllers/environment/patchApiKey.js';
 import { postPublicEnvironmentApiKey } from './controllers/environment/postApiKey.js';
 import { postPublicEnvironment } from './controllers/environment/postEnvironment.js';
 import { postPublicRotateWebhookSigningKey } from './controllers/environment/postPublicRotateWebhookSigningKey.js';
@@ -112,6 +113,7 @@ import {
     auditFunctionVariantUpdated,
     auditPublicApiKeyCreated,
     auditPublicApiKeyDeleted,
+    auditPublicApiKeyUpdated,
     auditPublicConnectionDeleted,
     auditPublicConnectionUpdated,
     auditPublicEnvironmentCreated,
@@ -286,6 +288,7 @@ publicAPI
 publicAPI
     .route('/environments/:environmentUuid/api-keys/:keyUuid')
     .get(apiAuth, can('account:environments:api_keys:read'), getPublicEnvironmentApiKey)
+    .patch(apiAuth, auditPublicApiKeyUpdated, can('account:environments:api_keys:update'), patchPublicEnvironmentApiKey)
     .delete(apiAuth, auditPublicApiKeyDeleted, can('account:environments:api_keys:delete'), deletePublicEnvironmentApiKey);
 
 // @deprecated rollbacked for one customer, to delete asap

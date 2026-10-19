@@ -6,7 +6,8 @@ export {
     auditApiKeyDeleted,
     auditApiKeyUpdated,
     auditPublicApiKeyCreated,
-    auditPublicApiKeyDeleted
+    auditPublicApiKeyDeleted,
+    auditPublicApiKeyUpdated
 } from './apiKey.middleware.js';
 export {
     auditAppAuthPasswordChanged,

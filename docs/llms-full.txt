@@ -10343,6 +10343,34 @@ Creates an Environment API key with custom `scopes`. Not specifying any `scopes`
 ```
 </ResponseExample>
 
+## Update an environment API key
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/update-api-key.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:api_keys:update` scope. Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
+
+</Info>
+
+Updates an Environment API key. Changes the display name and/or scopes of an Environment API key. `scopes` replaces the key's current scopes. The secret does not change, but removing a scope makes requests that need it fail with 403.
+
+`keyUuid` is the UUID returned when the key was [created](/reference/backend/http-api/environments/create-api-key).
+
+<ResponseExample>
+```json Example Response
+{
+  "data": {
+    "id": 456,
+    "uuid": "123e4567-e89b-12d3-a456-426614174001",
+    "display_name": "provisioned-ci",
+    "scopes": ["environment:deploy"],
+    "last_used_at": null,
+    "created_at": "2026-08-18T12:00:00.000Z"
+  }
+}
+```
+</ResponseExample>
+
 ## Delete an environment API key
 
 Source: https://nango.dev/docs/reference/backend/http-api/environments/delete-api-key.md
