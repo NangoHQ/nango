@@ -70,10 +70,11 @@ class ShadowAuthCache {
 const customerKeyShadowCache = new ShadowAuthCache('customer_key', envs.AUTH_SHADOW_CACHE_TTL_MS);
 
 /**
- * In-process cache of the persist auth context, keyed by the secret's hash. The cached
- * PersistAuthContext holds no secret material (account/environment ids, environment name,
- * and a few plan fields), so the only trade-off is staleness: a served entry can be up to
- * the TTL old, delaying visibility of revoked keys, deleted environments, and plan changes.
+ * In-process cache of the persist auth context. One instance is keyed by the secret's hash,
+ * another by `environment:<id>`. The cached PersistAuthContext holds no secret material
+ * (account/environment ids, environment name, and a few plan fields), so the only trade-off
+ * is staleness: a served entry can be up to the TTL old, delaying visibility of revoked keys,
+ * deleted environments, and plan changes.
  * Enable/disable and TTL are configured via AUTH_PERSIST_CONTEXT_CACHE_* (see parse.ts).
  */
 class PersistAuthContextCache {
