@@ -12650,7 +12650,7 @@ inboxapp:
         - crm
     auth_mode: API_KEY
     proxy:
-        base_url: https://inboxapp.com/api/v2
+        base_url: https://inboxapp.com
         headers:
             authorization: Bearer ${apiKey}
         retry:
@@ -12659,7 +12659,7 @@ inboxapp:
         verification:
             method: GET
             endpoints:
-                - /team
+                - /api/v2/team
     docs: https://nango.dev/docs/api-integrations/inboxapp
     docs_connect: https://nango.dev/docs/api-integrations/inboxapp/connect
     credentials:
