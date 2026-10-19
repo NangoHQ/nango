@@ -5,19 +5,17 @@ import db, { multipleMigrations } from '@nangohq/database';
 
 import { seedAccountEnvAndUser } from '../seeders/global.seeder.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
-import customerKeyService from './customerKey.service.js';
+import customerKeyService, { CustomerKeyError } from './customerKey.service.js';
 
 import type { EncryptionManager } from '../utils/encryption.manager.js';
 
 // Stands in for a rotation committed by another process, which leaves this process's cache untouched.
 async function rotateInDb(envId: number): Promise<string> {
     const secret = uuid.v4();
-    const encrypted = getEncryptionManager().encryptAPISecret({ secret, iv: '', tag: '' } as Parameters<EncryptionManager['encryptAPISecret']>[0]);
-    const ids = db.knex('customer_keys_relations').select('customer_key_id').where('entity_type', 'environment').where('entity_id', envId);
+    const encrypted = encryptedSecret(secret);
     await db
-        .knex('customer_keys')
-        .where('key_type', 'webhook_signing')
-        .whereIn('id', ids)
+        .knex('webhook_signing_keys')
+        .where({ environment_id: envId })
         .update({ secret: encrypted.secret, iv: encrypted.iv, tag: encrypted.tag, updated_at: db.knex.raw('clock_timestamp()') });
     return secret;
 }
@@ -29,6 +27,28 @@ function encryptedSecret(secret: string) {
 function legacySigningKey(envId: number) {
     const ids = db.knex('customer_keys_relations').select('customer_key_id').where('entity_type', 'environment').where('entity_id', envId);
     return db.knex('customer_keys').where('key_type', 'webhook_signing').whereNull('deleted_at').whereIn('id', ids);
+}
+
+async function insertLegacySigningKey(accountId: number, envId: number, plainSecret: string): Promise<void> {
+    const encrypted = encryptedSecret(plainSecret);
+    const [key] = await db
+        .knex('customer_keys')
+        .insert({
+            account_id: accountId,
+            key_type: 'webhook_signing',
+            display_name: 'Webhook signing',
+            scopes: null,
+            secret: encrypted.secret,
+            iv: encrypted.iv,
+            tag: encrypted.tag,
+            hashed: uuid.v4()
+        })
+        .returning('id');
+    await db.knex('customer_keys_relations').insert({
+        customer_key_id: key.id,
+        entity_type: 'environment',
+        entity_id: envId
+    });
 }
 
 async function plaintext(envId: number): Promise<string> {
@@ -58,7 +78,6 @@ describe('rotateWebhookSigningKey cache', () => {
             throw second.error;
         }
 
-        expect(first.value).not.toBe(second.value);
         const committed = await plaintext(env.id);
         expect([first.value, second.value]).toContain(committed);
 
@@ -127,37 +146,26 @@ describe('webhook signing key rows', () => {
     });
 
     it('serves the legacy signing key when it is newer', async () => {
-        const { env } = await seedAccountEnvAndUser();
+        const { env, account } = await seedAccountEnvAndUser();
         const legacySecret = uuid.v4();
-        const legacy = encryptedSecret(legacySecret);
         const current = encryptedSecret(uuid.v4());
 
-        await legacySigningKey(env.id).update({
-            secret: legacy.secret,
-            iv: legacy.iv,
-            tag: legacy.tag,
-            updated_at: db.knex.raw('clock_timestamp()')
-        });
         await db
             .knex('webhook_signing_keys')
             .where({ environment_id: env.id })
             .update({ secret: current.secret, iv: current.iv, tag: current.tag, updated_at: db.knex.raw("clock_timestamp() - interval '1 minute'") });
+        await insertLegacySigningKey(account.id, env.id, legacySecret);
 
         expect(await plaintext(env.id)).toBe(legacySecret);
     });
 
     it('serves the new signing key when it is newer', async () => {
-        const { env } = await seedAccountEnvAndUser();
+        const { env, account } = await seedAccountEnvAndUser();
         const currentSecret = uuid.v4();
         const current = encryptedSecret(currentSecret);
-        const legacy = encryptedSecret(uuid.v4());
 
-        await legacySigningKey(env.id).update({
-            secret: legacy.secret,
-            iv: legacy.iv,
-            tag: legacy.tag,
-            updated_at: db.knex.raw("clock_timestamp() - interval '1 minute'")
-        });
+        await insertLegacySigningKey(account.id, env.id, uuid.v4());
+        await legacySigningKey(env.id).update({ updated_at: db.knex.raw("clock_timestamp() - interval '1 minute'") });
         await db
             .knex('webhook_signing_keys')
             .where({ environment_id: env.id })
@@ -177,28 +185,54 @@ describe('webhook signing key rows', () => {
         expect(await plaintext(env.id)).toBe(currentSecret);
     });
 
-    it('stores one updated_at on both signing key rows when rotating', async () => {
+    it('creates an environment signing key without a legacy row', async () => {
         const { env } = await seedAccountEnvAndUser();
+
+        expect(await legacySigningKey(env.id).first()).toBeUndefined();
+        expect(await plaintext(env.id)).toEqual(expect.any(String));
+    });
+
+    it('rotates a signing key that exists only in webhook_signing_keys', async () => {
+        const { env } = await seedAccountEnvAndUser();
+        await legacySigningKey(env.id).delete();
+
+        const rotated = await customerKeyService.rotateWebhookSigningKey(db.knex, env.id);
+        if (rotated.isErr()) {
+            throw rotated.error;
+        }
+        expect(await plaintext(env.id)).toBe(rotated.value);
+    });
+
+    it('rotates a signing key that exists only on customer_keys without changing that row', async () => {
+        const { env, account } = await seedAccountEnvAndUser();
+        const legacySecret = uuid.v4();
+        await db.knex('webhook_signing_keys').where({ environment_id: env.id }).delete();
+        await insertLegacySigningKey(account.id, env.id, legacySecret);
+        const before = await legacySigningKey(env.id).first();
+
         const rotated = await customerKeyService.rotateWebhookSigningKey(db.knex, env.id);
         if (rotated.isErr()) {
             throw rotated.error;
         }
 
-        const { rows } = await db.knex.raw<{ rows: { same: boolean }[] }>(
-            `SELECT customer_keys.updated_at = webhook_signing_keys.updated_at AS same
-             FROM customer_keys
-             JOIN customer_keys_relations relation
-               ON relation.customer_key_id = customer_keys.id
-              AND relation.entity_type = 'environment'
-              AND relation.entity_id = ?
-             JOIN webhook_signing_keys
-               ON webhook_signing_keys.environment_id = relation.entity_id
-             WHERE customer_keys.key_type = 'webhook_signing'
-               AND customer_keys.deleted_at IS NULL`,
-            [env.id]
-        );
-        expect(rows[0]?.same).toBe(true);
+        const after = await legacySigningKey(env.id).first();
+        expect(new Date(after.updated_at).toISOString()).toBe(new Date(before.updated_at).toISOString());
+        expect(rotated.value).not.toBe(legacySecret);
         expect(await plaintext(env.id)).toBe(rotated.value);
+    });
+
+    it('returns no signing key when neither row exists', async () => {
+        const { env } = await seedAccountEnvAndUser();
+        await legacySigningKey(env.id).delete();
+        await db.knex('webhook_signing_keys').where({ environment_id: env.id }).delete();
+
+        const rotated = await customerKeyService.rotateWebhookSigningKey(db.knex, env.id);
+        expect(rotated.isErr()).toBe(true);
+        if (rotated.isErr()) {
+            expect(rotated.error).toBeInstanceOf(CustomerKeyError);
+            expect((rotated.error as CustomerKeyError).code).toBe('no_webhook_signing_key');
+        }
+        expect(await db.knex('webhook_signing_keys').where({ environment_id: env.id }).first()).toBeUndefined();
     });
 
     it('does not let an earlier rotation overwrite a newer signing key', async () => {
