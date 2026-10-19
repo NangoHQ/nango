@@ -19,11 +19,12 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
+        "@ai-sdk/openai": "4.0.81",
         "@aws-sdk/client-sqs": "3.993.0",
-        "@modelcontextprotocol/client": "2.0.0",
-        "@modelcontextprotocol/core": "2.0.0",
-        "@modelcontextprotocol/node": "2.0.0",
-        "@modelcontextprotocol/server": "2.0.0",
+        "@modelcontextprotocol/client": "2.3.1",
+        "@modelcontextprotocol/core": "2.3.1",
+        "@modelcontextprotocol/node": "2.1.1",
+        "@modelcontextprotocol/server": "2.3.1",
         "@nangohq/audit": "file:../audit",
         "@nangohq/authz": "file:../authz",
         "@nangohq/billing": "file:../billing",
@@ -47,8 +48,10 @@
         "@nangohq/usage": "file:../usage",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
+        "@posthog/mcp": "0.18.0",
         "@workos-inc/node": "6.2.0",
-        "axios": "1.18.0",
+        "ai": "7.0.122",
+        "axios": "1.20.0",
         "body-parser": "2.3.0",
         "connect-session-knex": "4.0.0",
         "cookie-parser": "1.4.7",
@@ -66,13 +69,13 @@
         "jsonwebtoken": "9.0.3",
         "knex": "3.1.0",
         "lodash-es": "4.18.1",
-        "multer": "2.3.0",
+        "multer": "2.4.0",
         "node-cron": "4.6.0",
         "oauth": "0.10.0",
         "passport": "0.6.0",
         "passport-http": "0.3.0",
         "passport-local": "1.0.0",
-        "qs": "6.15.3",
+        "qs": "6.16.0",
         "rate-limiter-flexible": "5.0.3",
         "redis": "5.12.1",
         "semver": "7.6.3",
@@ -81,7 +84,7 @@
         "ua-parser-js": "2.0.10",
         "uuid": "14.0.0",
         "ws": "8.21.0",
-        "zod": "4.0.5"
+        "zod": "4.3.6"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
@@ -105,6 +108,6 @@
         "nodemon": "3.1.10",
         "type-fest": "4.41.0",
         "typescript": "5.8.3",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     }
 }

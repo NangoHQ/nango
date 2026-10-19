@@ -51,7 +51,7 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
 
         </Tabs>
 
-        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+        Or fetch credentials dynamically via the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
 
         <Note>
          The `{fileId}` in the URL is the unique identifier for the Excel file in OneDrive/SharePoint. You can obtain this ID by first making a Nango [proxy](/reference/api/proxy/get) call to `/v1.0/me/drive/root/children` to list files and retrieve their IDs. Then, use the ID of the desired workbook to access its worksheets.

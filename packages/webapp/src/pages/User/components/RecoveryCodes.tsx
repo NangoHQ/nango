@@ -23,7 +23,7 @@ export const RecoveryCodes: React.FC<{ codes: string[]; context: 'enroll' | 'reg
         try {
             await navigator.clipboard.writeText(codes.join('\n'));
             setCopied(true);
-            track('web:2fa:recovery_codes_copied', { context });
+            track('auth:copy_button_click', { copied_item: 'recovery_codes', flow: context });
         } catch {
             toast({ title: 'Could not copy to clipboard. Copy the codes manually.', variant: 'error' });
         }
@@ -31,7 +31,7 @@ export const RecoveryCodes: React.FC<{ codes: string[]; context: 'enroll' | 'reg
 
     const downloadAll = () => {
         downloadBlob(new Blob([codes.join('\n')], { type: 'text/plain' }), 'nango-recovery-codes.txt');
-        track('web:2fa:recovery_codes_downloaded', { context });
+        track('auth:download_button_click', { flow: context });
     };
 
     return (

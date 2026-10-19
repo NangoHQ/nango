@@ -4779,6 +4779,25 @@ highlevel-white-label:
 # source: https://developerportal.thomsonreuters.com/authentication/documents/api-access-mechanism-using-oauth2 (no scopes parameter — API access is governed by the authenticated user's Collaborate permissions)
 highq: []
 
+# source: HitPay Passport scope definitions (parent scopes such as `payments` also grant their `:read`/`:create`/... children)
+hitpay:
+    - business:read
+    - commerce
+    - commerce:create
+    - commerce:delete
+    - commerce:read
+    - commerce:update
+    - customer
+    - customer:create
+    - customer:delete
+    - customer:read
+    - customer:update
+    - payments
+    - payments:cancel
+    - payments:create
+    - payments:read
+    - payments:refund
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 hover: []
 
@@ -4957,6 +4976,9 @@ hubstaff:
     - profile
     - tasks:read
     - tasks:write
+
+# source: providers.yaml (no official scopes page or discovery endpoint found)
+imanage: []
 
 # source: https://docs.infor.com/inforos/2026.x/en-us/useradminlib_cloud/apigatewayag_cloud/vya1611685179822.html (scopes are disabled by default; when a tenant enables "Enforced Per Authorized App", the admin defines custom scope names per authorized app — there is no fixed, vendor-wide scope catalog)
 infor: []
@@ -8456,6 +8478,16 @@ nationbuilder:
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 nerdio: []
 
+# source: https://github.com/microsoft/PowerPlatformConnectors/blob/dev/certified-connectors/NetDocuments/apiDefinition.swagger.json (certified NetDocuments connector, securityDefinitions.oauth2_auth.scopes)
+netdocuments:
+    - admin
+    - delete_container
+    - delete_doc
+    - edit
+    - lookup
+    - organize
+    - read
+
 # source: providers.yaml default_scopes
 netsuite:
     - rest_webservices
@@ -11511,6 +11543,12 @@ tiktok-personal: []
 
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 timely: []
+
+# source: https://api.stoplight.io/projects/cHJqOjIxMTM5NA/branches/v1/export/openapi.yaml (Profile API, securitySchemes.Authorization.flows.authorizationCode.scopes)
+timocom:
+    - profile:company:read
+    - profile:contact:read
+    - profile:document:read
 
 # source: https://todoist.com/.well-known/oauth-authorization-server (scopes_supported)
 todoist:

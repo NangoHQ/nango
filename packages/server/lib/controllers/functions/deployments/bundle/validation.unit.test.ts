@@ -2,7 +2,7 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import { validation } from './validation.js';
 
-import type { FunctionDeploymentBundleBody } from '@nangohq/types';
+import type { FunctionDeploymentBundleBody, FunctionTags } from '@nangohq/types';
 import type * as z from 'zod';
 
 type DeployBody = FunctionDeploymentBundleBody;
@@ -56,9 +56,45 @@ const validBody = {
 } satisfies DeployBody;
 
 describe('function deploy validation', () => {
+    it.each([{}, { category: 'crm', entities: ['contacts', 'companies'] }])('accepts tags %j', (tags) => {
+        const body = { ...validBody, functions: [{ ...validFunction, tags }] };
+        expect(validation.parse(body)).toEqual(body);
+    });
+
+    it('defaults omitted tags to an empty object', () => {
+        expect(validation.parse(validBody)).toEqual({ ...validBody, functions: [{ ...validFunction, tags: {} }] });
+    });
+
+    it('accepts the allowed key characters', () => {
+        expect(validation.safeParse({ ...validBody, functions: [{ ...validFunction, tags: { 'a0_-./': 'value' } }] }).success).toBe(true);
+    });
+
+    it.each([
+        { reason: 'too many tags', tags: Object.fromEntries(Array.from({ length: 33 }, (_, i) => [`tag${i}`, 'value'])) },
+        { reason: 'long key', tags: { ['k'.repeat(65)]: 'value' } },
+        { reason: 'long string value', tags: { key: 'v'.repeat(1025) } },
+        { reason: 'long array item', tags: { key: ['v'.repeat(1025)] } },
+        { reason: 'long array', tags: { key: Array.from({ length: 65 }, () => 'value') } }
+    ])('rejects $reason', ({ tags }) => {
+        expect(validation.safeParse({ ...validBody, functions: [{ ...validFunction, tags }] }).success).toBe(false);
+    });
+
+    it.each(['Team', 'tEam', '1team', '_team', '', 'team name', 'team:name', 'tëam'])('rejects invalid key %j', (key) => {
+        expect(validation.safeParse({ ...validBody, functions: [{ ...validFunction, tags: { [key]: 'value' } }] }).success).toBe(false);
+    });
+
+    it.each([null, [], { value: true }, { value: 42 }, { value: null }, { value: {} }, { value: ['crm', 42] }, { value: [['crm']] }])(
+        'rejects invalid tags %j',
+        (tags) => {
+            const result = validation.safeParse({ ...validBody, functions: [{ ...validFunction, tags }] });
+            expect(result.success).toBe(false);
+        }
+    );
+
     it('stays structurally aligned with the endpoint body', () => {
         expectTypeOf<z.input<typeof validation>>().toEqualTypeOf<DeployBody>();
-        expectTypeOf<z.output<typeof validation>>().toEqualTypeOf<DeployBody>();
+        expectTypeOf<z.output<typeof validation>>().toMatchTypeOf<DeployBody>();
+        expectTypeOf<z.output<typeof validation>['functions'][number]['tags']>().toEqualTypeOf<FunctionTags>();
     });
 
     it('rejects inconsistent capabilities', () => {
@@ -94,6 +130,39 @@ describe('function deploy validation', () => {
                 expect.objectContaining({
                     path: ['functions', 0, 'json_schema', 'definitions']
                 })
+            );
+        }
+    });
+
+    it('accepts an event trigger with multiple distinct events and no input schema', () => {
+        const result = validation.safeParse({
+            ...validBody,
+            functions: [{ ...validFunction, trigger: { kind: 'event', events: ['post-connection-creation', 'validate-connection'] }, input_schema_ref: null }]
+        });
+        expect(result.success).toBe(true);
+    });
+
+    it.each([
+        { reason: 'empty', events: [] },
+        { reason: 'duplicate', events: ['post-connection-creation', 'post-connection-creation'] },
+        { reason: 'unknown', events: ['unknown'] }
+    ])('rejects invalid event lists: $reason', ({ events }) => {
+        const result = validation.safeParse({
+            ...validBody,
+            functions: [{ ...validFunction, trigger: { kind: 'event', events }, input_schema_ref: null }]
+        });
+        expect(result.success).toBe(false);
+    });
+
+    it.each([
+        { kind: 'schedule', trigger: { kind: 'schedule', frequency: 'every hour' } },
+        { kind: 'event', trigger: { kind: 'event', events: ['validate-connection'] } }
+    ])('rejects input on a $kind trigger', ({ kind, trigger }) => {
+        const result = validation.safeParse({ ...validBody, functions: [{ ...validFunction, trigger }] });
+        expect(result.success).toBe(false);
+        if (!result.success) {
+            expect(result.error.issues).toContainEqual(
+                expect.objectContaining({ path: ['functions', 0, 'input_schema_ref'], message: `${kind} must not declare input` })
             );
         }
     });

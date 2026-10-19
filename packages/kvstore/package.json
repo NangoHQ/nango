@@ -18,8 +18,8 @@
         "redis": "5.12.1"
     },
     "devDependencies": {
-        "testcontainers": "12.1.0",
-        "vitest": "4.1.9"
+        "testcontainers": "12.2.0",
+        "vitest": "4.1.11"
     },
     "files": [
         "dist/**/*"

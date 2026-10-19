@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
 
@@ -35,46 +34,27 @@ export function useGetOperation(env: string, params: GetOperation['Params']) {
 }
 
 export function useSearchFilters(enabled: boolean, env: string, body: SearchFilters['Body']) {
-    const [loading, setLoading] = useState<boolean>(false);
-    const [data, setData] = useState<SearchFilters['Success']>();
-    const [error, setError] = useState<SearchFilters['Errors']>();
-
-    async function fetchData() {
-        setLoading(true);
-        try {
+    const { data, error, isFetching } = useQuery<SearchFilters['Success'], APIError>({
+        queryKey: ['logs', 'filters', env, body.category, body.search],
+        queryFn: async ({ signal }): Promise<SearchFilters['Success']> => {
             const res = await apiFetch(`/api/v1/logs/filters?env=${env}`, {
                 method: 'POST',
-                body: JSON.stringify(body)
+                body: JSON.stringify(body),
+                signal
             });
-            if (res.status !== 200) {
-                setData(undefined);
-                setError((await res.json()) as SearchFilters['Errors']);
-                return;
+
+            const json = (await res.json()) as SearchFilters['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
             }
 
-            setError(undefined);
-            setData((await res.json()) as SearchFilters['Success']);
-        } catch (err) {
-            setData(undefined);
-            setError(err as any);
-        } finally {
-            setLoading(false);
-        }
-    }
+            return json;
+        },
+        enabled,
+        placeholderData: keepPreviousData
+    });
 
-    useEffect(() => {
-        if (enabled && !loading) {
-            void fetchData();
-        }
-    }, [env, enabled, body.category, body.search]);
-
-    function trigger() {
-        if (enabled && !loading) {
-            void fetchData();
-        }
-    }
-
-    return { data, error, loading, trigger };
+    return { data, error: error?.json, loading: isFetching };
 }
 
 export function usePostInsights(env: string, body: PostInsights['Body']) {

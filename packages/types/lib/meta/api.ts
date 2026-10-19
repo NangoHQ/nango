@@ -1,7 +1,16 @@
+import type { SignupAcquisition } from '../account/acquisition.js';
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { DBEnvironment } from '../environment/db.js';
 
 export type ApiEnvironmentSummary = Pick<DBEnvironment, 'id' | 'account_id' | 'name' | 'is_production'>;
+
+export type AccountGroupProperties = SignupAcquisition & {
+    name?: string;
+    plan?: string;
+    created_date?: string;
+    is_internal?: boolean;
+    discovery_source?: string;
+};
 
 export type GetMeta = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
@@ -18,6 +27,10 @@ export type GetMeta = ApiEndpoint<{
             gettingStartedClosed: boolean;
             // Whether this account can reach its own trail; gates the dashboard UI.
             auditTrail: boolean;
+            // Whether actions are always enabled. Gates the actions status column.
+            toolsCatalog: boolean;
+            accountGroup: AccountGroupProperties;
+            agentPlayground: boolean;
         };
     };
 }>;

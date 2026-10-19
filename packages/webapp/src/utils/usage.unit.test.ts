@@ -102,7 +102,7 @@ describe('billedUsageMetrics', () => {
         free: 's26',
         'free-uncapped': 's26',
         'pay-as-you-go': 's26',
-        'startup-deal': 'legacy',
+        'startup-deal': 's26',
         'starter-v2': 'legacy',
         'growth-v2': 'legacy',
         enterprise: 'legacy',

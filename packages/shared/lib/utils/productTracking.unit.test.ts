@@ -1,16 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { productTracking, withProductTrackingContext } from './productTracking.js';
+import { accountGroupProperties, isInternalAccount, productTracking, withProductTrackingContext } from './productTracking.js';
 
 import type { DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
 
 const team = { id: 42 } as DBTeam;
 const environment = { is_production: true } as DBEnvironment;
 const user = { id: 3 } as DBUser;
+const planSubmit = {
+    name: 'billing:plan_submit',
+    eventProperties: { previous_plan: 'free', plan: 'growth', previous_has_growth_addon: false, has_growth_addon: false, is_downgrade: false }
+} as const;
 
 type Capture = (payload: { event: string; distinctId: string; properties: Record<string, unknown>; groups?: Record<string, string> }) => void;
 
+type GroupIdentify = (payload: { groupType: string; groupKey: string; properties: Record<string, unknown> }) => void;
+
 const capture = vi.fn<Capture>();
+const groupIdentify = vi.fn<GroupIdentify>();
 const realClient = productTracking.client;
 
 function lastCapture() {
@@ -19,7 +26,9 @@ function lastCapture() {
 
 beforeEach(() => {
     capture.mockClear();
-    productTracking.client = { capture } as unknown as typeof productTracking.client;
+    groupIdentify.mockClear();
+    productTracking.identifiedAccounts.clear();
+    productTracking.client = { capture, groupIdentify } as unknown as typeof productTracking.client;
 });
 
 afterEach(() => {
@@ -28,28 +37,30 @@ afterEach(() => {
 
 describe('track', () => {
     it('attaches the event to the account group and says where it was sent from', () => {
-        productTracking.track({ name: 'account:billing:downgraded', team, environment, eventProperties: { source: 'repo' } });
+        productTracking.track({ ...planSubmit, team, environment });
 
         expect(capture).toHaveBeenCalledWith({
-            event: 'account:billing:downgraded',
+            event: 'billing:plan_submit',
             distinctId: 'account-42',
             groups: { company: '42' },
             properties: expect.objectContaining({
-                source: 'repo',
+                plan: 'growth',
                 surface: 'server',
                 is_production: true
             })
         });
     });
 
-    it('creates no person for an event nobody is behind', () => {
-        productTracking.track({ name: 'account:billing:downgraded', team });
+    it('sends an event nobody is behind as the account, with person processing on so it links to the group', () => {
+        productTracking.track({ ...planSubmit, team });
 
-        expect(lastCapture().properties['$process_person_profile']).toBe(false);
+        const { distinctId, properties } = lastCapture();
+        expect(distinctId).toBe('account-42');
+        expect(properties).not.toHaveProperty('$process_person_profile');
     });
 
     it('identifies a person by their user id, and then keeps the profile', () => {
-        productTracking.track({ name: 'account:billing:downgraded', team, user });
+        productTracking.track({ ...planSubmit, team, user });
 
         const { distinctId, properties } = lastCapture();
         expect(distinctId).toBe('3');
@@ -57,13 +68,13 @@ describe('track', () => {
     });
 
     it('omits is_production when there is no environment to resolve', () => {
-        productTracking.track({ name: 'account:billing:downgraded', team });
+        productTracking.track({ ...planSubmit, team });
 
         expect(lastCapture().properties).not.toHaveProperty('is_production');
     });
 
-    it('sends no personal data', () => {
-        productTracking.track({ name: 'account:billing:downgraded', team, environment, user });
+    it('sends no personal data on the event', () => {
+        productTracking.track({ ...planSubmit, team: { id: 43, name: 'Acme' }, environment, user });
 
         const properties = lastCapture().properties;
         for (const forbidden of ['$set', 'email', 'name', 'team-name', 'team_name', 'account_name']) {
@@ -72,9 +83,97 @@ describe('track', () => {
     });
 
     it('drops an event that has no account anywhere', () => {
-        productTracking.track({ name: 'account:billing:downgraded' });
+        productTracking.track({ ...planSubmit });
 
         expect(capture).not.toHaveBeenCalled();
+    });
+
+    it('names the account group once, and again only when the name changes', () => {
+        productTracking.track({ ...planSubmit, team: { id: 44, name: 'Acme' } });
+        productTracking.track({ ...planSubmit, team: { id: 44, name: 'Acme' } });
+        productTracking.track({ ...planSubmit, team: { id: 44, name: 'Acme Inc' } });
+
+        expect(groupIdentify.mock.calls.map(([payload]) => payload)).toStrictEqual([
+            { groupType: 'company', groupKey: '44', properties: { name: 'Acme' } },
+            { groupType: 'company', groupKey: '44', properties: { name: 'Acme Inc' } }
+        ]);
+    });
+
+    it('still sends the event when naming the account group fails', () => {
+        groupIdentify.mockImplementationOnce(() => {
+            throw new Error('boom');
+        });
+
+        productTracking.track({ ...planSubmit, team: { id: 45, name: 'Acme' } });
+
+        expect(capture).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves the account group alone when nothing about it is known', () => {
+        productTracking.track({ ...planSubmit, team });
+
+        expect(groupIdentify).not.toHaveBeenCalled();
+    });
+
+    it('sets the plan and created date on the account group', () => {
+        const createdAt = new Date('2024-03-01T10:00:00.000Z');
+        productTracking.track({ ...planSubmit, team: { id: 46, name: 'Acme', created_at: createdAt }, plan: { name: 'growth' } });
+
+        expect(groupIdentify).toHaveBeenCalledWith({
+            groupType: 'company',
+            groupKey: '46',
+            properties: { name: 'Acme', plan: 'growth', created_date: '2024-03-01T10:00:00.000Z' }
+        });
+    });
+
+    it('sends only the group properties that changed', () => {
+        productTracking.track({ ...planSubmit, team: { id: 47, name: 'Acme' }, plan: { name: 'free' } });
+        productTracking.track({ ...planSubmit, team: { id: 47 }, plan: { name: 'free' } });
+        productTracking.track({ ...planSubmit, team: { id: 47, name: 'Acme' }, plan: { name: 'growth' } });
+
+        expect(groupIdentify.mock.calls.map(([payload]) => payload.properties)).toStrictEqual([{ name: 'Acme', plan: 'free' }, { plan: 'growth' }]);
+    });
+});
+
+describe('plan: null', () => {
+    it("keeps the request's plan off the account group", () => {
+        withProductTrackingContext(
+            () => ({ team: { id: 48 }, plan: { name: 'free' } }),
+            () => {
+                productTracking.track({ ...planSubmit, plan: { name: 'growth' } });
+                productTracking.track({ ...planSubmit, plan: null });
+            }
+        );
+
+        expect(groupIdentify.mock.calls.map(([payload]) => payload.properties)).toStrictEqual([{ plan: 'growth' }]);
+    });
+});
+
+describe('accountGroupProperties', () => {
+    it('leaves out what it does not know', () => {
+        expect(accountGroupProperties({ id: 1 }, null)).toStrictEqual({});
+    });
+});
+
+describe('isInternalAccount', () => {
+    it('is internal only when every user has a @nango.dev email', () => {
+        expect(isInternalAccount([{ email: 'a@nango.dev' }, { email: 'B@Nango.dev' }])).toBe(true);
+        expect(isInternalAccount([{ email: 'a@nango.dev' }, { email: 'kelvin@customer.com' }])).toBe(false);
+        expect(isInternalAccount([{ email: 'a@nango.dev.example.com' }])).toBe(false);
+        expect(isInternalAccount([])).toBe(false);
+    });
+});
+
+describe('identifyAccountGroup', () => {
+    it('sends a property the request context does not carry, once per change, and keeps it out of later diffs', () => {
+        productTracking.identifyAccountGroup(48, { is_internal: true });
+        productTracking.identifyAccountGroup(48, { is_internal: true });
+        productTracking.track({ ...planSubmit, team: { id: 48, name: 'Acme' } });
+
+        expect(groupIdentify.mock.calls.map(([payload]) => payload)).toStrictEqual([
+            { groupType: 'company', groupKey: '48', properties: { is_internal: true } },
+            { groupType: 'company', groupKey: '48', properties: { name: 'Acme' } }
+        ]);
     });
 });
 
@@ -83,7 +182,7 @@ describe('withProductTrackingContext', () => {
         withProductTrackingContext(
             () => ({ team, environment }),
             () => {
-                productTracking.track({ name: 'account:billing:downgraded' });
+                productTracking.track({ ...planSubmit });
             }
         );
 
@@ -100,7 +199,7 @@ describe('withProductTrackingContext', () => {
             () => ({ team, environment: locals.environment }),
             () => {
                 locals.environment = environment;
-                productTracking.track({ name: 'account:billing:downgraded' });
+                productTracking.track({ ...planSubmit });
             }
         );
 
@@ -113,25 +212,38 @@ describe('withProductTrackingContext', () => {
         withProductTrackingContext(
             () => ({ team, environment }),
             () => {
-                productTracking.track({ name: 'account:billing:downgraded', environment: dev });
+                productTracking.track({ ...planSubmit, environment: dev });
             }
         );
 
         expect(lastCapture().properties['is_production']).toBe(false);
     });
 
+    it('sends nothing while a Nango admin is impersonating the account, even for an event that names it', () => {
+        withProductTrackingContext(
+            () => ({ team, environment, impersonated: true }),
+            () => {
+                productTracking.track({ ...planSubmit, team: { id: 47, name: 'Acme' } });
+                expect(productTracking.getServerEventAttribution({ team })).toBeNull();
+            }
+        );
+
+        expect(capture).not.toHaveBeenCalled();
+        expect(groupIdentify).not.toHaveBeenCalled();
+    });
+
     it('leaves an anonymous CLI event on its own surface, with no account', () => {
         withProductTrackingContext(
             () => ({ team, environment }),
             () => {
-                productTracking.trackAnonymous({ name: 'cli:dryrun', distinctId: 'device-1' });
+                productTracking.trackAnonymous({ name: 'functions:command_start', distinctId: 'device-1', eventProperties: { command: 'dryrun' } });
             }
         );
 
         const { distinctId, groups, properties } = lastCapture();
         expect(distinctId).toBe('device-1');
         expect(groups).toBeUndefined();
-        expect(properties).toMatchObject({ surface: 'cli' });
+        expect(properties).toMatchObject({ surface: 'cli', $process_person_profile: false });
         expect(properties).not.toHaveProperty('is_production');
     });
 });

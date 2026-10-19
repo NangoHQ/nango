@@ -84,4 +84,18 @@ Here are some commonly used scopes for Microsoft Teams:
 
 For a complete list of available scopes, see [Microsoft Graph permissions reference](https://learn.microsoft.com/en-us/graph/permissions-reference).
 
+## Teams Dev Portal and Graph tokens
+
+Connections can optionally issue **two tokens:**
+
+1. **Main Token (Graph Token):**
+   Used for standard Microsoft Graph API operations, such as making proxy calls to the Graph API at `https://graph.microsoft.com`.
+
+2. **Teams Dev Portal Token (`devPortalAccessToken`):**
+   Available under `connection_config` and required when calling the [Teams Developer Portal API](https://dev.teams.microsoft.com) (`/api/appdefinitions`, `/api/botframework`, ...) to programmatically manage Teams apps and bot registrations.
+
+<Note> To obtain the `devPortalAccessToken`, your integration **must include and request the `https://dev.teams.microsoft.com/AppDefinitions.ReadWrite` scope** during authorization. Without this scope, the Dev Portal token will **not** be issued — only the Graph token will be available for your connection. </Note>
+
+The `devPortalAccessToken` is only available for new connections. If it's missing from your `connection_config`, please reauthorize your connection to obtain and include the token.
+
 ---

@@ -1,0 +1,51 @@
+---
+title: Omnisend - How do I link my account?
+sidebarTitle: Omnisend
+---
+
+## Overview
+
+To authenticate with Omnisend, you need an API key generated in your Omnisend account.
+
+### Prerequisites
+
+- An Omnisend account with permission to create API keys.
+
+### Instructions
+
+#### Step 1: Open the API keys section
+
+1. Sign in to Omnisend.
+2. Go to **Store settings**, select **API**, then select the **API keys** tab.
+
+<img src="/api-integrations/omnisend/api-keys.png" alt="Omnisend Store settings page with the API keys tab selected" />
+
+<a id="step-2-create-an-omnisend-api-key"></a>
+
+#### Step 2: Create an Omnisend API key
+
+1. Select **Create API key**.
+2. Enter a descriptive name. Do not use the name of an Omnisend App Market app, as Omnisend will redirect you to that app's connection flow.
+3. Enable only the read and write permissions required by your application, then create the key.
+
+<img src="/api-integrations/omnisend/create-api-key.png" alt="Omnisend Create API key form with name and permission controls" />
+
+#### Step 3: Copy the API key
+
+Copy the key immediately when Omnisend displays it. Omnisend does not show it again after you leave this screen.
+
+<img src="/api-integrations/omnisend/copy-api-key.png" alt="Omnisend screen for copying a newly created API key; the key value is redacted" />
+
+#### Step 4: Enter the API key in the Connect UI
+
+1. Open the form where you need to authenticate with Omnisend.
+2. Enter your Omnisend API key.
+3. Submit the form.
+
+<img src="/api-integrations/omnisend/connect-ui.png" alt="Nango Connect UI for Omnisend with the credential field and Connect button" style={{maxWidth: "450px" }} />
+
+You are now connected to Omnisend.
+
+<Tip>Never expose the API key in browser code or commit it to source control.</Tip>
+
+---

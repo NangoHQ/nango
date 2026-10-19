@@ -1,0 +1,77 @@
+---
+title: 'Chameleon-i'
+sidebarTitle: 'Chameleon-i'
+description: 'Integrate your application with the Chameleon-i API'
+---
+
+## 🚀 Quickstart
+
+Connect to Chameleon-i with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Chameleon-i_.
+    </Step>
+    <Step id="authorize-chameleoni" title="Authorize Chameleon-i">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-chameleoni-api" title="Call the Chameleon-i API">
+    Let's make your first request to the Chameleon-i API to list your users. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/users/list" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/users/list',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Chameleon-i integration guides
+
+- [How do I link my account?](/api-integrations/chameleoni/connect)  
+Get your API key to connect your Chameleon-i account.
+
+Official docs: [Chameleon-i API documentation](https://chameleoni-api.readme.io/reference/getting-started-with-chameleoni-api)
+
+## 🧩 Pre-built syncs & actions for Chameleon-i
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/chameleoni/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

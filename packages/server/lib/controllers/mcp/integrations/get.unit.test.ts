@@ -5,6 +5,7 @@ import { Err, Ok } from '@nangohq/utils';
 import integrationService, { IntegrationServiceError } from '../../../services/integration.service.js';
 import { PublicMcpError } from '../utils.js';
 import { getIntegrationsTool } from './get.js';
+import { getIntegrationOutputSchema } from './schema.js';
 
 import type { ManagementMcpContext } from '../managementTool.js';
 import type { Config } from '@nangohq/shared';
@@ -18,35 +19,28 @@ describe('getIntegrationsTool', () => {
         vi.restoreAllMocks();
     });
 
-    it('returns an integration without credentials when only the read scope is granted', async () => {
-        const integration = integrationFixture();
-        const provider = providerFixture();
-        vi.spyOn(integrationService, 'get').mockImplementation(({ includeWebhook, includeCredentials }) =>
-            Promise.resolve(
-                Ok({
-                    integration,
-                    provider,
-                    ...(includeWebhook ? { webhookUrl: 'https://example.com/webhook' } : {}),
-                    ...(includeCredentials
-                        ? {
-                              credentials: {
-                                  type: 'OAUTH2',
-                                  clientId: 'client-id',
-                                  clientSecret: 'client-secret',
-                                  scopes: null,
-                                  webhookSecret: null
-                              } as const
-                          }
-                        : {})
-                })
-            )
+    it('returns an integration and optional webhook without credentials', async () => {
+        const getSpy = vi.spyOn(integrationService, 'get').mockResolvedValue(
+            Ok({
+                integration: integrationFixture(),
+                provider: providerFixture(),
+                webhookUrl: 'https://example.com/webhook',
+                credentials: {
+                    type: 'OAUTH2',
+                    clientId: 'client-id',
+                    clientSecret: 'client-secret',
+                    scopes: null,
+                    webhookSecret: null
+                }
+            })
         );
 
         const result = await getIntegrationsTool.handler(
-            { integration_id: 'github', include: ['webhook', 'credentials'] },
-            context(['environment:integrations:read'])
+            { integration_id: 'github', include: ['webhook'] },
+            context(['environment:integrations:read_credentials'])
         );
 
+        expect(getSpy).toHaveBeenCalledWith(expect.objectContaining({ includeWebhook: true, includeCredentials: false }));
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
             expect(result.value.data).toMatchObject({
@@ -54,41 +48,25 @@ describe('getIntegrationsTool', () => {
                 webhook_url: 'https://example.com/webhook'
             });
             expect(result.value.data).not.toHaveProperty('credentials');
+            expect(JSON.stringify(result.value)).not.toContain('client-secret');
+            expect(() => getIntegrationOutputSchema.parse(result.value)).not.toThrow();
         }
     });
 
-    it('returns explicitly requested credentials with the credential-reading scope', async () => {
-        const integration = integrationFixture();
-        const provider = providerFixture();
-        vi.spyOn(integrationService, 'get').mockResolvedValue(
-            Ok({
-                integration,
-                provider,
-                credentials: {
-                    type: 'OAUTH2',
-                    clientId: 'client-id',
-                    clientSecret: 'client-secret',
-                    scopes: 'repo,user',
-                    webhookSecret: null
-                }
-            })
-        );
+    it('rejects the removed credentials include', async () => {
+        const getSpy = vi.spyOn(integrationService, 'get');
 
         const result = await getIntegrationsTool.handler(
             { integration_id: 'github', include: ['credentials'] },
             context(['environment:integrations:read_credentials'])
         );
 
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-            expect(result.value.data.credentials).toStrictEqual({
-                type: 'OAUTH2',
-                client_id: 'client-id',
-                client_secret: 'client-secret',
-                scopes: 'repo,user',
-                webhook_secret: null
-            });
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+            expect(result.error.message).toContain('Invalid integrations_get arguments:');
         }
+        expect(getSpy).not.toHaveBeenCalled();
     });
 
     it('rejects invalid arguments before calling the integration service', async () => {
@@ -142,6 +120,7 @@ function integrationFixture(): Config {
         missing_fields: [],
         display_name: null,
         forward_webhooks: true,
+        allow_unverified_webhooks: false,
         shared_credentials_id: null,
         created_at: createdAt,
         updated_at: updatedAt

@@ -9,7 +9,8 @@ import type { ListConnectionsOutput } from './schema.js';
 
 export const listConnectionsTool = defineManagementMcpTool<typeof listConnectionsArgumentsSchema, ListConnectionsOutput>({
     name: 'connections_list',
-    description: 'List and filter connections in the authenticated Nango environment.',
+    title: 'List Connections',
+    description: 'Lists and filters connections in the authenticated Nango environment.',
     inputSchema: listConnectionsArgumentsSchema,
     outputSchema: listConnectionsOutputSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },

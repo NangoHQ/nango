@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { connectionService, connectionTagsSchema } from '@nangohq/shared';
 import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -35,6 +36,12 @@ export const getPublicConnections = asyncWrapperWithEnvironment<GetPublicConnect
     const queryParam = queryParamValues.data;
 
     if (queryParam.search) {
+        if (!(await getFlags().isConnectionsSearchParamEnabled(account.uuid))) {
+            res.status(400).send({
+                error: { code: 'feature_disabled', message: 'The `search` query param is deprecated and no longer available for this account' }
+            });
+            return;
+        }
         metrics.increment(metrics.Types.CONNECTIONS_SEARCH_PARAM_USED, 1, { accountId: account.id });
     }
 

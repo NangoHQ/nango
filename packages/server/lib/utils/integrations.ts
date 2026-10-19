@@ -1,4 +1,4 @@
-import type { IntegrationConfig, Provider } from '@nangohq/types';
+import type { AuthModeType, IntegrationConfig, Provider } from '@nangohq/types';
 
 export type IntegrationCredentials =
     | {
@@ -17,6 +17,13 @@ export type IntegrationCredentials =
           appLink: string | null;
           privateKey: string | null;
       }
+    | {
+          type: 'MCP_OAUTH2_GENERIC';
+          clientName: string | null;
+          clientUri: string | null;
+          clientLogoUri: string | null;
+      }
+    | { type: 'INTEGRATION_CONFIG'; authMode: AuthModeType; integration_config: Record<string, string> }
     | {
           type: 'MCP_OAUTH2';
           clientId: string | null;
@@ -81,6 +88,15 @@ export function getIntegrationCredentials(integration: IntegrationConfig, provid
         };
     }
 
+    if (provider.auth_mode === 'MCP_OAUTH2_GENERIC') {
+        return {
+            type: provider.auth_mode,
+            clientName: integration.custom?.['oauth_client_name'] || null,
+            clientUri: integration.custom?.['oauth_client_uri'] || null,
+            clientLogoUri: integration.custom?.['oauth_client_logo_uri'] || null
+        };
+    }
+
     if (provider.auth_mode === 'MCP_OAUTH2') {
         return {
             type: provider.auth_mode,
@@ -90,9 +106,78 @@ export function getIntegrationCredentials(integration: IntegrationConfig, provid
         };
     }
 
+    if (provider.integration_config && integration.custom) {
+        const custom = integration.custom;
+        // Only echo keys the provider's `integration_config` schema declares -- `custom` can carry other
+        // unrelated values (e.g. webhookSecret), which must never leak out through this response. Fields
+        // the schema marks `secret` (e.g. aws-sigv4's built-in credentials) are masked, not echoed in cleartext.
+        const integrationConfig: Record<string, string> = {};
+        for (const [field, definition] of Object.entries(provider.integration_config)) {
+            const value = custom[field];
+            if (value !== undefined) {
+                integrationConfig[field] = definition.secret ? '***' : value;
+            }
+        }
+        return { type: 'INTEGRATION_CONFIG', authMode: provider.auth_mode, integration_config: integrationConfig };
+    }
+
     return null;
 }
 
 function decodePrivateKey(privateKey: string | null | undefined): string | null {
     return privateKey === null || privateKey === undefined ? null : Buffer.from(privateKey, 'base64').toString('utf8');
+}
+
+/**
+ * Maps domain credentials to the wire shape shared by the public API and MCP integration responses.
+ */
+export function integrationCredentialsToWire(credentials: IntegrationCredentials) {
+    if (!credentials) {
+        return null;
+    }
+
+    switch (credentials.type) {
+        case 'OAUTH1':
+        case 'OAUTH2':
+        case 'TBA':
+            return {
+                type: credentials.type,
+                client_id: credentials.clientId,
+                client_secret: credentials.clientSecret,
+                scopes: credentials.scopes,
+                webhook_secret: credentials.webhookSecret
+            };
+        case 'APP':
+            return {
+                type: credentials.type,
+                app_id: credentials.appId,
+                private_key: credentials.privateKey,
+                app_link: credentials.appLink
+            };
+        case 'CUSTOM':
+            return {
+                type: credentials.type,
+                client_id: credentials.clientId,
+                client_secret: credentials.clientSecret,
+                app_id: credentials.appId,
+                app_link: credentials.appLink,
+                private_key: credentials.privateKey
+            };
+        case 'MCP_OAUTH2_GENERIC':
+            return {
+                type: credentials.type,
+                client_name: credentials.clientName,
+                client_uri: credentials.clientUri,
+                client_logo_uri: credentials.clientLogoUri
+            };
+        case 'INTEGRATION_CONFIG':
+            return { type: credentials.type, auth_mode: credentials.authMode, integration_config: credentials.integration_config };
+        case 'MCP_OAUTH2':
+            return {
+                type: credentials.type,
+                client_id: credentials.clientId,
+                client_secret: credentials.clientSecret,
+                scopes: credentials.scopes
+            };
+    }
 }

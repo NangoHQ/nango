@@ -15,13 +15,14 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@nangohq/utils": "file:../utils"
+        "@nangohq/utils": "file:../utils",
+        "jose": "6.2.12"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "@types/express": "5.0.2",
         "express": "5.1.0",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     },
     "files": [
         "dist/**/*"

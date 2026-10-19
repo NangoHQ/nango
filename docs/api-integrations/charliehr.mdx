@@ -1,0 +1,77 @@
+---
+title: 'CharlieHR'
+sidebarTitle: 'CharlieHR'
+description: 'Integrate your application with the CharlieHR API'
+---
+
+## 🚀 Quickstart
+
+Connect to CharlieHR with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _CharlieHR_.
+    </Step>
+    <Step id="authorize-charliehr" title="Authorize CharlieHR">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Client ID and Client Secret. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-charliehr-api" title="Call the CharlieHR API">
+    Let's make your first request to the CharlieHR API to get your company's details. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v1/company" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v1/company',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 CharlieHR integration guides
+
+- [How do I link my account?](/api-integrations/charliehr/connect)  
+Get your API Client ID and Client Secret to connect your CharlieHR account.
+
+Official site: [CharlieHR](https://www.charliehr.com/)
+
+## 🧩 Pre-built syncs & actions for CharlieHR
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/charliehr/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

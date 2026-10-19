@@ -190,6 +190,7 @@ export const postPublicApiKeyAuthorization = asyncWrapperWithEnvironment<PostPub
             connection: updatedConnection.connection,
             config,
             account,
+            environment,
             logCtx
         });
 

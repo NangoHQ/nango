@@ -1,12 +1,12 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
-import { seeders, userService } from '@nangohq/shared';
+import { errorNotificationService, seeders, userService } from '@nangohq/shared';
 import { flags } from '@nangohq/utils';
 
 import { authenticateUser, runServer } from '../utils/tests.js';
 
-import type { DBEnvironment } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -37,6 +37,29 @@ describe('authz integration', () => {
         const user = await seeders.seedUser(accountId);
         await userService.update({ id: user.id, role });
         return { ...user, role };
+    }
+
+    async function seedTargetFlow() {
+        const target = await seeders.seedAccountEnvAndUser();
+        const targetIntegration = await seeders.createConfigSeed(target.env, 'target-github', 'github');
+        const targetConnection = await seeders.createConnectionSeed({ env: target.env, provider: 'target-github' });
+        const { syncConfig, sync } = await seeders.createSyncSeeds({
+            connectionId: targetConnection.id,
+            environment_id: target.env.id,
+            nango_config_id: targetIntegration.id!,
+            sync_name: 'issues'
+        });
+        (
+            await errorNotificationService.sync.create({
+                type: 'sync',
+                action: 'run',
+                connection_id: targetConnection.id,
+                log_id: 'target-log',
+                active: true,
+                sync_id: sync.id
+            })
+        ).unwrap();
+        return { target, syncConfig, sync };
     }
 
     // ── FLAG_AUTH_ROLES_ENABLED=false bypasses all enforcement ──
@@ -695,6 +718,48 @@ describe('authz integration', () => {
             });
 
             expect(res.res.status).not.toBe(403);
+        });
+    });
+
+    describe('cross-tenant flow ids', () => {
+        it('should not disable or clear notifications for a flow owned by another account', async () => {
+            const { syncConfig, sync } = await seedTargetFlow();
+
+            const attacker = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(attacker.env, 'attacker-github', 'github');
+            const session = await authenticateUser(api, attacker.user);
+
+            const res = await api.fetch(`/api/v1/flows/${syncConfig.id}/disable` as '/api/v1/flows/:id/disable', {
+                method: 'PATCH',
+                params: { id: syncConfig.id },
+                query: { env: 'dev' },
+                body: { provider: 'github', providerConfigKey: 'attacker-github', scriptName: 'issues', type: 'sync' },
+                session
+            });
+
+            expect(res.res.status).toBe(400);
+            expect(res.json).toStrictEqual({ error: { code: 'unknown_sync_config' } });
+
+            const activeLogs = await db.knex.from('_nango_active_logs').where({ sync_id: sync.id, active: true });
+            expect(activeLogs).toHaveLength(1);
+
+            const targetConfig = await db.knex
+                .select<Pick<DBSyncConfig, 'enabled'>>('enabled')
+                .from('_nango_sync_configs')
+                .where({ id: syncConfig.id })
+                .first();
+            expect(targetConfig?.enabled).toBe(true);
+        });
+
+        it('should only clear notifications in the given environment', async () => {
+            const { target, syncConfig, sync } = await seedTargetFlow();
+            const other = await seeders.seedAccountEnvAndUser();
+
+            await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: syncConfig.id, environment_id: other.env.id });
+            expect(await db.knex.from('_nango_active_logs').where({ sync_id: sync.id, active: true })).toHaveLength(1);
+
+            await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: syncConfig.id, environment_id: target.env.id });
+            expect(await db.knex.from('_nango_active_logs').where({ sync_id: sync.id, active: true })).toHaveLength(0);
         });
     });
 });
