@@ -1,5 +1,3 @@
-import { generateKeyPairSync } from 'node:crypto';
-
 import express from 'express';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -14,6 +12,7 @@ import {
 } from './constants.js';
 import { mint } from './jwt.js';
 import { hasScope, internalServiceAuthMiddleware, requireFleetAuth, requireTaskBoundAuth, requireTaskScope, verifyTaskCapabilityToken } from './middleware.js';
+import { ed25519Material } from './testing.js';
 import { createInternalServiceToken } from './token.js';
 
 import type { InternalAuthEnvs } from './credential.js';
@@ -73,15 +72,6 @@ async function listen(server: ReturnType<typeof express>) {
             });
         });
     });
-}
-
-function ed25519Material(): { pem: string; raw: string } {
-    const { publicKey, privateKey } = generateKeyPairSync('ed25519');
-    const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
-    const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
-        .subarray(12)
-        .toString('base64url');
-    return { pem, raw };
 }
 
 afterEach(() => {
@@ -569,78 +559,24 @@ describe('jobs route policy', () => {
         }
     });
 
-    it('rejects a task JWT whose scopes omit putTask', async () => {
+    it.each([
+        { name: 'rejects putTask without that scope', method: 'PUT', path: '', scopes: [TASK_CAPABILITY_SCOPES.jobsHeartbeat], status: 401 },
+        { name: 'accepts putTask with that scope', method: 'PUT', path: '', scopes: [TASK_CAPABILITY_SCOPES.jobsPutTask], status: 204 },
+        { name: 'rejects heartbeat without that scope', method: 'POST', path: '/heartbeat', scopes: [TASK_CAPABILITY_SCOPES.jobsPutTask], status: 401 },
+        { name: 'accepts heartbeat with that scope', method: 'POST', path: '/heartbeat', scopes: [TASK_CAPABILITY_SCOPES.jobsHeartbeat], status: 201 }
+    ])('$name', async ({ method, path, scopes, status }) => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const { pem, raw } = ed25519Material();
         envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
         const taskId = '11111111-1111-4111-8111-111111111111';
         const token = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
-            { sub: taskSubject(taskId), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60, scopes: [TASK_CAPABILITY_SCOPES.jobsHeartbeat] }
+            { sub: taskSubject(taskId), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60, scopes }
         );
         const { url, close } = await listen(jobsMountedApp());
         try {
-            const res = await fetch(`${url}/tasks/${taskId}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
-            expect(res.status).toBe(401);
-        } finally {
-            await close();
-        }
-    });
-
-    it('accepts a task JWT that includes the putTask scope', async () => {
-        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
-        const { pem, raw } = ed25519Material();
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
-        const taskId = '11111111-1111-4111-8111-111111111111';
-        const token = await mint(
-            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
-            { sub: taskSubject(taskId), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60, scopes: [TASK_CAPABILITY_SCOPES.jobsPutTask] }
-        );
-        const { url, close } = await listen(jobsMountedApp());
-        try {
-            const res = await fetch(`${url}/tasks/${taskId}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
-            expect(res.status).toBe(204);
-        } finally {
-            await close();
-        }
-    });
-
-    it('rejects a task JWT whose scopes omit heartbeat', async () => {
-        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
-        const { pem, raw } = ed25519Material();
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
-        const taskId = '11111111-1111-4111-8111-111111111111';
-        const token = await mint(
-            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
-            { sub: taskSubject(taskId), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60, scopes: [TASK_CAPABILITY_SCOPES.jobsPutTask] }
-        );
-        const { url, close } = await listen(jobsMountedApp());
-        try {
-            const res = await fetch(`${url}/tasks/${taskId}/heartbeat`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-            expect(res.status).toBe(401);
-        } finally {
-            await close();
-        }
-    });
-
-    it('accepts a task JWT that includes the heartbeat scope', async () => {
-        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
-        const { pem, raw } = ed25519Material();
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
-        const taskId = '11111111-1111-4111-8111-111111111111';
-        const token = await mint(
-            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
-            {
-                sub: taskSubject(taskId),
-                aud: INTERNAL_SERVICE_AUDIENCE_JOBS,
-                ttlSecs: 60,
-                scopes: [TASK_CAPABILITY_SCOPES.jobsHeartbeat]
-            }
-        );
-        const { url, close } = await listen(jobsMountedApp());
-        try {
-            const res = await fetch(`${url}/tasks/${taskId}/heartbeat`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-            expect(res.status).toBe(201);
+            const res = await fetch(`${url}/tasks/${taskId}${path}`, { method, headers: { Authorization: `Bearer ${token}` } });
+            expect(res.status).toBe(status);
         } finally {
             await close();
         }

@@ -8,7 +8,7 @@ import {
     unauthorized
 } from '@nangohq/internal-auth';
 
-import type { InternalServiceAuth } from '@nangohq/internal-auth';
+import type { InternalServiceAuth, TaskCapabilityScope } from '@nangohq/internal-auth';
 import type { NextFunction, Request, Response } from 'express';
 
 function bodyString(req: Request, name: string): string | undefined {
@@ -53,7 +53,7 @@ function pathBound(req: Request, auth: InternalServiceAuth): boolean {
 }
 
 /** Secret-key callers pass through. A task JWT must include `scope` and match the route's resource params. */
-export function requireTaskCapability(scope: string, opts?: { bodySyncId?: string }) {
+export function requireTaskCapability(scope: TaskCapabilityScope, opts?: { bodySyncId?: string }) {
     return (req: Request, res: Response, next: NextFunction): void => {
         const auth = getInternalServiceAuth(res);
         if (!auth || auth.kind !== 'jwt') {

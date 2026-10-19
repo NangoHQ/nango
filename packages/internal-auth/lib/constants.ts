@@ -1,4 +1,5 @@
 import type { TaskCapabilityResource } from './jwt.js';
+import type { ScriptType } from '@nangohq/types';
 
 export const INTERNAL_SERVICE_TOKEN_ISSUER = 'nango-internal';
 export const INTERNAL_SERVICE_ISSUER_JOBS = 'service:jobs';
@@ -71,7 +72,7 @@ const SYNC_TASK_SCOPES: readonly TaskCapabilityScope[] = [
     TASK_CAPABILITY_SCOPES.persistSyncConflict
 ];
 
-export function taskScopesForScriptType(scriptType: 'function' | 'sync' | 'action' | 'webhook' | 'on-event'): readonly TaskCapabilityScope[] {
+export function taskScopesForScriptType(scriptType: ScriptType): readonly TaskCapabilityScope[] {
     return scriptType === 'sync' || scriptType === 'webhook' ? SYNC_TASK_SCOPES : BASE_TASK_SCOPES;
 }
 

@@ -5,7 +5,7 @@ import { normalizePem } from '@nangohq/utils';
 
 import { INTERNAL_SERVICE_ISSUER_JOBS, INTERNAL_SERVICE_ISSUER_SERVER } from './constants.js';
 
-import type { InternalServiceAuth, InternalServiceIssuer } from './constants.js';
+import type { InternalServiceAuth, InternalServiceIssuer, TaskCapabilityScope } from './constants.js';
 import type { InternalAuthPublicKey } from '@nangohq/types';
 import type { CryptoKey, JWTPayload } from 'jose';
 
@@ -62,7 +62,7 @@ export interface MintClaims {
     ttlSecs: number;
     issuedAt?: number;
     res?: TaskCapabilityResource;
-    scopes?: readonly string[];
+    scopes?: readonly TaskCapabilityScope[];
 }
 
 const privateKeyCache = new Map<string, Promise<CryptoKey>>();

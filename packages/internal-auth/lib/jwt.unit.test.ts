@@ -1,5 +1,3 @@
-import { generateKeyPairSync } from 'node:crypto';
-
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -11,16 +9,8 @@ import {
     taskSubject
 } from './constants.js';
 import { keyRegistryFromPublicKeys, mint, signerForService } from './jwt.js';
+import { ed25519Material } from './testing.js';
 import { verifyInternalServiceCredential } from './verify.js';
-
-function ed25519Material(): { pem: string; raw: string } {
-    const { publicKey, privateKey } = generateKeyPairSync('ed25519');
-    const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
-    const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
-        .subarray(12)
-        .toString('base64url');
-    return { pem, raw };
-}
 
 describe('signerForService', () => {
     it('reads the private key and key id for the named service', () => {
@@ -73,7 +63,7 @@ describe('unified internal auth JWT', () => {
                 aud: ['jobs', 'persist', 'server'],
                 ttlSecs: 60,
                 res: { environmentId: 9, connectionId: 42, syncId: 'sync-1' },
-                scopes: ['persist:records', 'jobs:heartbeat']
+                scopes: ['persist:records', 'jobs:heartbeat'] as const
             }
         );
         const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: jobs.raw }], INTERNAL_SERVICE_ISSUER_JOBS);

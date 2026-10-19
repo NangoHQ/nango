@@ -1,9 +1,7 @@
-import { generateKeyPairSync } from 'node:crypto';
-
 import express from 'express';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { INTERNAL_SERVICE_ISSUER_JOBS, mint, TASK_CAPABILITY_SCOPES, taskScopesForScriptType, taskSubject } from '@nangohq/internal-auth';
+import { ed25519Material, INTERNAL_SERVICE_ISSUER_JOBS, mint, TASK_CAPABILITY_SCOPES, taskScopesForScriptType, taskSubject } from '@nangohq/internal-auth';
 import { accountService } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
@@ -11,6 +9,7 @@ import { envs } from '../env.js';
 import { authMiddleware } from './auth.middleware.js';
 import { denyTaskTokenWithoutCapability, requireTaskCapability } from './capability.js';
 
+import type { TaskCapabilityScope } from '@nangohq/internal-auth';
 import type { PersistAuthContext } from '@nangohq/types';
 
 const context: PersistAuthContext = {
@@ -18,15 +17,6 @@ const context: PersistAuthContext = {
     environment: { id: 9, name: 'dev' },
     plan: { id: 1, name: 'free', records_store: 'default' }
 };
-
-function ed25519Material(): { pem: string; raw: string } {
-    const { publicKey, privateKey } = generateKeyPairSync('ed25519');
-    const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
-    const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
-        .subarray(12)
-        .toString('base64url');
-    return { pem, raw };
-}
 
 function app() {
     const server = express();
@@ -72,7 +62,7 @@ async function listen(server: ReturnType<typeof express>) {
 
 const signer = ed25519Material();
 
-function capabilityToken(overrides: { connectionId?: number; scopes?: readonly string[]; ttlSecs?: number; syncId?: string } = {}) {
+function capabilityToken(overrides: { connectionId?: number; scopes?: readonly TaskCapabilityScope[]; ttlSecs?: number; syncId?: string } = {}) {
     return mint(
         { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: signer.pem },
         {
@@ -88,14 +78,17 @@ function capabilityToken(overrides: { connectionId?: number; scopes?: readonly s
 describe('persist capability auth', () => {
     const previousKeys = envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS;
 
+    beforeEach(() => {
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: signer.raw }];
+        vi.spyOn(accountService, 'getPersistAuthContextByEnvironmentId').mockResolvedValue(Ok(context));
+    });
+
     afterEach(() => {
         vi.restoreAllMocks();
         envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = previousKeys;
     });
 
     it('rejects a task token on a route that did not declare a capability', async () => {
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: signer.raw }];
-        vi.spyOn(accountService, 'getPersistAuthContextByEnvironmentId').mockResolvedValue(Ok(context));
         const token = await capabilityToken();
         const { url, close } = await listen(app());
         try {
@@ -110,8 +103,6 @@ describe('persist capability auth', () => {
     });
 
     it('accepts a scoped token for the matching environment and connection', async () => {
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: signer.raw }];
-        vi.spyOn(accountService, 'getPersistAuthContextByEnvironmentId').mockResolvedValue(Ok(context));
         const token = await capabilityToken();
         const { url, close } = await listen(app());
         try {
@@ -127,8 +118,6 @@ describe('persist capability auth', () => {
     });
 
     it('rejects a token minted for connection A on connection B', async () => {
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: signer.raw }];
-        vi.spyOn(accountService, 'getPersistAuthContextByEnvironmentId').mockResolvedValue(Ok(context));
         const token = await capabilityToken({ connectionId: 1 });
         const { url, close } = await listen(app());
         try {
@@ -143,7 +132,6 @@ describe('persist capability auth', () => {
     });
 
     it('rejects a token after it expires', async () => {
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: signer.raw }];
         const token = await capabilityToken({ ttlSecs: -1 });
         const { url, close } = await listen(app());
         try {
@@ -158,8 +146,6 @@ describe('persist capability auth', () => {
     });
 
     it('rejects a persist:log token on a records route', async () => {
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: signer.raw }];
-        vi.spyOn(accountService, 'getPersistAuthContextByEnvironmentId').mockResolvedValue(Ok(context));
         const token = await capabilityToken({ scopes: [TASK_CAPABILITY_SCOPES.persistLog] });
         const { url, close } = await listen(app());
         try {
@@ -174,8 +160,6 @@ describe('persist capability auth', () => {
     });
 
     it('rejects a sync-conflict token for a different sync id in the body', async () => {
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: signer.raw }];
-        vi.spyOn(accountService, 'getPersistAuthContextByEnvironmentId').mockResolvedValue(Ok(context));
         const token = await capabilityToken({ syncId: 'sync-1' });
         const { url, close } = await listen(app());
         try {
@@ -191,8 +175,6 @@ describe('persist capability auth', () => {
     });
 
     it('rejects a records token on a different sync', async () => {
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: signer.raw }];
-        vi.spyOn(accountService, 'getPersistAuthContextByEnvironmentId').mockResolvedValue(Ok(context));
         const token = await capabilityToken({ syncId: 'sync-1' });
         const { url, close } = await listen(app());
         try {

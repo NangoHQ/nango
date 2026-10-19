@@ -2,7 +2,7 @@ import { INTERNAL_SERVICE_AUTH_LOCALS_KEY, INTERNAL_SERVICE_ISSUER_JOBS, INTERNA
 import { keyRegistryFromPublicKeys, mergeKeyRegistries, verify } from './jwt.js';
 import { verifyInternalServiceCredential } from './verify.js';
 
-import type { InternalServiceAuth } from './constants.js';
+import type { InternalServiceAuth, TaskCapabilityScope } from './constants.js';
 import type { InternalAuthEnvs } from './credential.js';
 import type { TaskCapabilityResource } from './jwt.js';
 import type { InternalAuthPublicKey } from '@nangohq/types';
@@ -63,7 +63,7 @@ export function isResourceBound(auth: InternalServiceAuth | undefined, key: keyo
     return isJobsTaskJwt(auth) && auth.res?.[key] === value;
 }
 
-export function hasScope(auth: InternalServiceAuth | undefined, scope: string): boolean {
+export function hasScope(auth: InternalServiceAuth | undefined, scope: TaskCapabilityScope): boolean {
     return isJobsTaskJwt(auth) && Boolean(auth.scopes?.includes(scope));
 }
 
@@ -174,7 +174,7 @@ export function requireTaskBoundAuth(envs: InternalAuthEnvs): (req: Request, res
  * TODO: reject a token with no `scopes` claim. The pass below only covers task tokens minted
  * before this deploy, which live at most 25h. After that window it is fail-open.
  */
-export function requireTaskScope(envs: InternalAuthEnvs, scope: string): (req: Request, res: Response, next: NextFunction) => void {
+export function requireTaskScope(envs: InternalAuthEnvs, scope: TaskCapabilityScope): (req: Request, res: Response, next: NextFunction) => void {
     return (_req, res, next) => {
         if (!envs.NANGO_INTERNAL_AUTH_REQUIRED) {
             next();

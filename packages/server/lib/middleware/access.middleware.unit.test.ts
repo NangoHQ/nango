@@ -1,9 +1,7 @@
-import { generateKeyPairSync } from 'node:crypto';
-
 import tracer from 'dd-trace';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { INTERNAL_SERVICE_ISSUER_JOBS, mint, TASK_CAPABILITY_SCOPES, taskSubject } from '@nangohq/internal-auth';
+import { ed25519Material, INTERNAL_SERVICE_ISSUER_JOBS, mint, TASK_CAPABILITY_SCOPES, taskSubject } from '@nangohq/internal-auth';
 import { accountService } from '@nangohq/shared';
 import { metrics, Ok } from '@nangohq/utils';
 
@@ -11,6 +9,7 @@ import { envs } from '../env.js';
 import accessMiddleware from './access.middleware.js';
 
 import type { RequestLocals } from '../utils/express.js';
+import type { TaskCapabilityScope } from '@nangohq/internal-auth';
 import type { ApiKeyContext, DBEnvironment, DBTeam } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -113,18 +112,9 @@ describe('secretKeyAuth', () => {
     });
 });
 
-function ed25519Material(): { pem: string; raw: string } {
-    const { publicKey, privateKey } = generateKeyPairSync('ed25519');
-    const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
-    const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
-        .subarray(12)
-        .toString('base64url');
-    return { pem, raw };
-}
-
 const capabilitySigner = ed25519Material();
 
-async function capabilityToken(scopes: readonly string[]) {
+async function capabilityToken(scopes: readonly TaskCapabilityScope[]) {
     return mint(
         { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: capabilitySigner.pem },
         {
