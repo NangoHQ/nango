@@ -4,7 +4,7 @@ import { pathToFileURL } from 'url';
 import * as z from 'zod';
 
 import { getInterval } from '@nangohq/nango-yaml';
-import { deriveFunctionCapabilities } from '@nangohq/runner-sdk';
+import { createFunction, deriveFunctionCapabilities, reservedToolTagKeys, toolToFunctionProps } from '@nangohq/runner-sdk';
 
 import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
@@ -26,6 +26,7 @@ import type {
     CreateFunctionResponse,
     CreateOnEventResponse,
     CreateSyncResponse,
+    CreateToolProps,
     FunctionRequires,
     FunctionTriggerDefinition
 } from '@nangohq/runner-sdk';
@@ -86,13 +87,31 @@ const functionTagValueSchema = z.union([functionTagStringSchema, z.array(functio
         return `Expected string or string[], received ${got}`;
     }
 });
-export const functionTagsSchema = z
-    .record(functionTagKeySchema, functionTagValueSchema, {
-        error: (iss) => (iss.code === 'invalid_key' ? iss.issues[0]?.message : undefined)
+const functionTagsRecordSchema = z.record(functionTagKeySchema, functionTagValueSchema, {
+    error: (iss) => (iss.code === 'invalid_key' ? iss.issues[0]?.message : undefined)
+});
+export const functionTagsSchema = functionTagsRecordSchema.refine((tags) => Object.keys(tags).length <= 32, {
+    message: 'Functions cannot have more than 32 tags'
+}) satisfies z.ZodType<FunctionTags>;
+
+const toolMetaSchema = z
+    .object({
+        instructions: z.string().max(1024).optional(),
+        requiredScopes: z.array(functionTagStringSchema).max(64).optional(),
+        tags: functionTagsRecordSchema
+            .refine((tags) => reservedToolTagKeys.every((key) => !(key in tags)), {
+                message: `Tag keys ${reservedToolTagKeys.map((key) => `'${key}'`).join(', ')} are reserved`
+            })
+            .optional()
     })
-    .refine((tags) => Object.keys(tags).length <= 32, {
-        message: 'Functions cannot have more than 32 tags'
-    }) satisfies z.ZodType<FunctionTags>;
+    .strict()
+    .refine((meta) => Object.keys(meta.tags ?? {}).length <= 30, {
+        message: 'Tools cannot have more than 30 tags'
+    });
+const toolNameSchema = z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]+$/, { message: 'Tool names can only contain letters, digits, underscores, or hyphens' })
+    .max(64);
 
 interface FunctionDefinition {
     description: string;
@@ -105,16 +124,19 @@ interface FunctionDefinition {
     tags?: FunctionTags | undefined;
 }
 
+type CompiledTool = CreateToolProps & { type: 'function'; _nangoFactory: 'tool' };
+
 export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'> & { filePath: string };
 
 export interface ParsedIntegrationDefinitions extends NangoYamlParsed {
     functions: FunctionConfig[];
+    hasExperimentalFunctions: boolean;
 }
 
 const allowed = ['action', 'sync', 'onEvent', 'function'];
 
 export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<ParsedIntegrationDefinitions>> {
-    const parsed: ParsedIntegrationDefinitions = { yamlVersion: 'v2', integrations: [], models: new Map(), functions: [] };
+    const parsed: ParsedIntegrationDefinitions = { yamlVersion: 'v2', integrations: [], models: new Map(), functions: [], hasExperimentalFunctions: false };
 
     printDebug('Rebuilding parsed from js files', debug);
 
@@ -141,7 +163,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
         }
         if (!moduleContent.default.default.type || !allowed.includes(moduleContent.default.default.type)) {
             // createFunction intentionally omitted from this message while experimental. Add on GA
-            return Err(new Error(`Script should be declared using utility function (createSync, createAction, createOnEvent) ${modulePath}`));
+            return Err(new Error(`Script should be declared using utility function (createSync, createAction, createOnEvent, createTool) ${modulePath}`));
         }
 
         printDebug(`Parsing ${filePath}`, debug);
@@ -150,7 +172,8 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
             | CreateSyncResponse<Record<string, ZodModel>, ZodMetadata, ZodCheckpoint>
             | CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>
             | CreateOnEventResponse
-            | CreateFunctionResponse;
+            | CreateFunctionResponse
+            | CompiledTool;
 
         const basename = path.basename(filePath, '.js');
         const realPath = filePath.replace(/\.js$/, '.ts');
@@ -216,17 +239,41 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 break;
             }
             case 'function': {
-                const validationRes = validateFunction({ params: script, integrationId, basename });
-                if (validationRes.isErr()) {
-                    return Err(validationRes.error);
+                const isTool = '_nangoFactory' in script && script._nangoFactory === 'tool';
+                let fnScript: FunctionDefinition = script;
+                let name = basename;
+                if (isTool) {
+                    name = script.name ?? basename;
+                    const validationRes = validateTool({ params: { ...script, name }, filePath: realPath });
+                    if (validationRes.isErr()) {
+                        return Err(validationRes.error);
+                    }
+                    fnScript = createFunction(toolToFunctionProps(script));
+                } else {
+                    const validationRes = validateFunction({ params: script, integrationId, basename });
+                    if (validationRes.isErr()) {
+                        return Err(validationRes.error);
+                    }
+                    parsed.hasExperimentalFunctions = true;
                 }
-                if (parsed.functions.some((fn) => fn.integrationId === integrationId && fn.name === basename)) {
+
+                if (parsed.functions.some((fn) => fn.integrationId === integrationId && fn.name === name)) {
                     return Err(
-                        new Error(`Function '${integrationId}/functions/${basename}.ts' is already defined. Function names must be unique per integration.`)
+                        new Error(
+                            isTool
+                                ? `Tool '${realPath}' is named '${name}', which is already used. Tool and function names must be unique per integration.`
+                                : `Function '${integrationId}/functions/${name}.ts' is already defined. Function names must be unique per integration.`
+                        )
                     );
                 }
                 parsed.functions.push({
-                    ...parseFunction({ params: script, integrationId, integrationIdClean, basename, basenameClean }),
+                    ...parseFunction({
+                        params: fnScript,
+                        integrationId,
+                        integrationIdClean,
+                        basename: name,
+                        basenameClean: name.replaceAll(/[^a-zA-Z0-9]/g, '')
+                    }),
                     filePath: realPath
                 });
                 break;
@@ -448,6 +495,27 @@ export function validateFunction({
     }
 
     return Ok(undefined);
+}
+
+export function validateTool({ params, filePath }: { params: Pick<CreateToolProps, 'name' | 'meta'>; filePath: string }): Result<void> {
+    if (params.name !== undefined) {
+        const nameValidation = toolNameSchema.safeParse(params.name);
+        if (!nameValidation.success) {
+            return Err(new Error(`Tool '${filePath}' has an invalid name: ${formatIssues(nameValidation.error.issues)}`));
+        }
+    }
+    if (params.meta !== undefined) {
+        const metaValidation = toolMetaSchema.safeParse(params.meta);
+        if (!metaValidation.success) {
+            return Err(new Error(`Tool '${filePath}' has invalid meta: ${formatIssues(metaValidation.error.issues)}`));
+        }
+    }
+
+    return Ok(undefined);
+}
+
+function formatIssues(issues: z.core.$ZodIssue[]): string {
+    return issues.map((issue) => `${issue.path.length > 0 ? `${issue.path.map((key) => JSON.stringify(key)).join('')}: ` : ''}${issue.message}`).join('; ');
 }
 
 export function parseFunction({

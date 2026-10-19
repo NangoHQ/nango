@@ -2411,6 +2411,29 @@ attention:
             pattern: '^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$'
             doc_section: '#step-1-obtaining-your-api-key'
 
+attentive-api-key:
+    display_name: Attentive (API Key)
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.attentivemobile.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/me
+    docs: https://nango.dev/docs/api-integrations/attentive-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/attentive-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Attentive custom app API key.
+            doc_section: '#step-1-create-a-custom-app'
+
 attio:
     display_name: Attio
     categories:
@@ -9284,6 +9307,61 @@ falai:
             title: API Key
             description: The API key for your fal.ai account
 
+fiix:
+    display_name: Fiix
+    categories:
+        - erp
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.macmms.com
+        query:
+            service: cmms
+            appKey: ${connectionConfig.appKey}
+            accessKey: ${credentials.username}
+            signatureMethod: HmacSHA256
+            signatureVersion: '1'
+        headers:
+            content-type: text/plain
+            authorization: ${hmacSha256Hex(${host}${path}?${query}, ${credentials.password})}
+    credentials_verification_script: fiixCredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/fiix
+    docs_connect: https://nango.dev/docs/api-integrations/fiix/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Fiix URL.
+            pattern: '^[a-zA-Z0-9-]+$'
+            example: acme
+            prefix: https://
+            suffix: .macmms.com
+            doc_section: '#step-1-find-your-subdomain'
+            order: 1
+        appKey:
+            type: string
+            title: App Key
+            description: Your Fiix API application key.
+            pattern: '^macmmsackp[0-9a-fA-F]+$'
+            example: macmmsackp3a7c***********************************************9e2f
+            doc_section: '#step-2-create-an-api-application'
+            order: 2
+    credentials:
+        username:
+            type: string
+            title: Access Key
+            description: Your Fiix API access key.
+            pattern: '^macmmsaakp[0-9a-fA-F]+$'
+            example: macmmsaakp5b1d***********************************************c84a
+            doc_section: '#step-2-create-an-api-application'
+        password:
+            type: string
+            title: Secret Key
+            description: Your Fiix API secret key.
+            pattern: '^macmmsaskp[0-9a-fA-F]+$'
+            example: macmmsaskp7e0b***********************************************************1f6d
+            secret: true
+            doc_section: '#step-2-create-an-api-application'
+
 findymail:
     display_name: FindyMail
     categories:
@@ -9327,6 +9405,32 @@ finta:
             pattern: '^finta_[A-Za-z0-9]+$'
             example: finta_ZdzcJWJv********************fVsY
             doc_section: '#step-1-finding-your-api-key'
+
+firecrawl:
+    display_name: Firecrawl
+    categories:
+        - dev-tools
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.firecrawl.dev
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/team/queue-status
+                - /v2/team/credit-usage
+    docs: https://nango.dev/docs/api-integrations/firecrawl
+    docs_connect: https://nango.dev/docs/api-integrations/firecrawl/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Firecrawl API key.
+            example: fc-1a2b************************3c4d
+            pattern: '^(fc-[0-9a-fA-F]{32}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$'
+            doc_section: '#step-1-generating-your-firecrawl-api-key'
 
 firefish:
     display_name: Firefish
@@ -12450,7 +12554,7 @@ hubspot:
         - popular
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
-    token_url: https://api.hubapi.com/oauth/v1/token
+    token_url: https://api.hubapi.com/oauth/2026-09/token
     connection_configuration:
         - portalId
     post_connection_script: hubspotPostConnection
@@ -28357,6 +28461,31 @@ vincere:
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-2-request-your-api-key'
             order: 2
+
+vwo:
+    display_name: Wingify (VWO)
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.wingify.com
+        headers:
+            token: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/accounts/current
+    docs: https://nango.dev/docs/api-integrations/vwo
+    docs_connect: https://nango.dev/docs/api-integrations/vwo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Wingify API token.
+            pattern: '^[0-9a-f]{64}$'
+            example: 7fe29f36****************************************************80f9
+            doc_section: '#step-1-generate-an-api-token'
 
 wappalyzer:
     display_name: Wappalyzer

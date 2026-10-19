@@ -75,7 +75,8 @@ import { getPublicIntegrationFunction } from './controllers/integrations/uniqueK
 import { getPublicIntegrationFunctions } from './controllers/integrations/uniqueKey/functions/getFunctions.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
-import { getConnectionToolsMcp, postConnectionToolsMcp } from './controllers/mcp/connectionTools.js';
+import { getTool } from './controllers/integrations/uniqueKey/tools/getTool.js';
+import { getConnectionToolsMcp, postConnectionToolsMcp, requireConnectionMcp } from './controllers/mcp/connectionTools.js';
 import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
@@ -94,7 +95,7 @@ import { postPublicSyncStart } from './controllers/sync/postSyncStart.js';
 import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
 import { postPublicTrigger } from './controllers/sync/postTrigger.js';
 import { putSyncConnectionFrequency } from './controllers/sync/putSyncConnectionFrequency.js';
-import { allPublicV1 } from './controllers/v1/getV1.js';
+import { allPublicV1, requireV1Passthrough } from './controllers/v1/getV1.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
 import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
@@ -317,6 +318,7 @@ publicAPI
     .route('/integrations/:uniqueKey/functions/:name')
     .get(envAuth, can('environment:functions:read'), getPublicIntegrationFunction)
     .delete(envAuth, auditPublicFunctionDeleted, can('environment:functions:delete'), deletePublicIntegrationFunction);
+publicAPI.route('/integrations/:uniqueKey/tools/:name').get(envAuth, can('environment:functions:read'), getTool);
 
 // @deprecated connections
 publicAPI.use('/connection', jsonContentTypeMiddleware);
@@ -433,8 +435,8 @@ publicAPI.route('/sync/:name/variant/:variant').delete(envAuth, auditSyncVariant
 
 // MCP
 publicAPI.use('/mcp', jsonContentTypeMiddleware);
-publicAPI.route('/mcp').post(envAuth, can('environment:mcp'), postConnectionToolsMcp);
-publicAPI.route('/mcp').get(envAuth, can('environment:mcp'), getConnectionToolsMcp);
+publicAPI.route('/mcp').post(envAuth, requireConnectionMcp, can('environment:mcp'), postConnectionToolsMcp);
+publicAPI.route('/mcp').get(envAuth, requireConnectionMcp, can('environment:mcp'), getConnectionToolsMcp);
 
 // Scripts config
 publicAPI.use('/scripts', jsonContentTypeMiddleware);
@@ -500,7 +502,7 @@ publicAPI.route('/session/:sessionId/mcp').get(agentSessionAuth, getAgentSession
 
 // V1 passthrough (deprecated) — scope checks are inline in allPublicV1 after action/model resolution
 publicAPI.use('/v1', jsonContentTypeMiddleware);
-publicAPI.route('/v1/*splat').all(envAuth, withEnvironmentTarget, allPublicV1);
+publicAPI.route('/v1/*splat').all(envAuth, requireV1Passthrough, withEnvironmentTarget, allPublicV1);
 
 // Proxy
 publicAPI.route('/proxy{/*splat}').all(envAuth, can('environment:proxy'), upload.any(), allPublicProxy);

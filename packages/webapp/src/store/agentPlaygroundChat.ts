@@ -1,46 +1,64 @@
-import { LocalStorageKeys } from '../utils/local-storage';
-
 import type { AgentPlaygroundMessageMetadata } from '@nangohq/types';
 import type { UIMessage } from 'ai';
 
-type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
+export type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
 
 interface StoredChat {
-    env: string;
     userId: string;
     messages: PlaygroundMessage[];
+    lastMessageAt: number;
 }
 
-function sessionExpiresAt(messages: PlaygroundMessage[]): number | undefined {
-    const latest = [...messages].reverse().find((message) => message.metadata?.sessionExpiresAt);
-    return latest?.metadata?.sessionExpiresAt ? Date.parse(latest.metadata.sessionExpiresAt) : undefined;
-}
+// The chat holds data from the user's connected apps, so the dashboard drops it once nobody has used it for this long.
+export const AGENT_PLAYGROUND_CHAT_IDLE_MS = 24 * 60 * 60 * 1000;
 
-// The chat holds data from the user's connected apps, so it never outlives the session it belongs to.
-export function loadAgentPlaygroundChat(env: string, userId: string, now = Date.now()): PlaygroundMessage[] | undefined {
+const CHAT_PREFIX = 'nango_agent_playground_chat:';
+const LAST_CHAT_PREFIX = 'nango_agent_playground_last_chat:';
+
+function readChat(chatId: string): StoredChat | undefined {
     try {
-        const raw = sessionStorage.getItem(LocalStorageKeys.AgentPlaygroundChat);
-        if (!raw) {
-            return undefined;
-        }
-        const stored = JSON.parse(raw) as StoredChat;
-        const expiresAt = sessionExpiresAt(stored.messages);
-        // A reply that stopped before any session, such as a setup notice, holds no app data and has nothing to expire with.
-        const answeredWithoutSession = expiresAt === undefined && stored.messages.at(-1)?.role === 'assistant';
-        if (stored.env !== env || stored.userId !== userId || (!answeredWithoutSession && (!expiresAt || expiresAt <= now))) {
-            clearAgentPlaygroundChat();
-            return undefined;
-        }
-        return stored.messages.map(settleAnsweredApprovals);
+        const raw = localStorage.getItem(CHAT_PREFIX + chatId);
+        return raw ? (JSON.parse(raw) as StoredChat) : undefined;
     } catch {
         return undefined;
     }
 }
 
+function keysWithPrefix(storage: Storage, prefix: string): string[] {
+    return Array.from({ length: storage.length }, (_, index) => storage.key(index)).filter((key): key is string => key?.startsWith(prefix) ?? false);
+}
+
+function isIdle(chat: StoredChat | undefined, now: number): boolean {
+    return !chat || typeof chat.lastMessageAt !== 'number' || now - chat.lastMessageAt >= AGENT_PLAYGROUND_CHAT_IDLE_MS;
+}
+
+export function removeIdleAgentPlaygroundChats(now = Date.now()): void {
+    try {
+        for (const key of keysWithPrefix(localStorage, CHAT_PREFIX)) {
+            if (isIdle(readChat(key.slice(CHAT_PREFIX.length)), now)) {
+                localStorage.removeItem(key);
+            }
+        }
+    } catch {}
+}
+
+export function openAgentPlaygroundChat(env: string, userId: string, now = Date.now()): { chatId: string; messages?: PlaygroundMessage[] } {
+    try {
+        removeIdleAgentPlaygroundChats(now);
+        // Only a tab with no chat of its own picks up the environment's latest, so New chat stays empty after a reload.
+        const chatId = sessionStorage.getItem(LAST_CHAT_PREFIX + env) ?? localStorage.getItem(LAST_CHAT_PREFIX + env);
+        const chat = chatId ? readChat(chatId) : undefined;
+        if (chatId && chat?.userId === userId) {
+            return { chatId, messages: chat.messages.map(settleAnsweredApprovals) };
+        }
+    } catch {}
+    return { chatId: crypto.randomUUID() };
+}
+
 export const INTERRUPTED_CALL = 'Interrupted before it finished. It may or may not have run.';
 
 // An approved request may already have run, so asking again could make the change twice.
-function settleAnsweredApprovals(message: PlaygroundMessage): PlaygroundMessage {
+export function settleAnsweredApprovals(message: PlaygroundMessage): PlaygroundMessage {
     return {
         ...message,
         parts: message.parts.map((part) => {
@@ -62,21 +80,58 @@ function settleAnsweredApprovals(message: PlaygroundMessage): PlaygroundMessage 
     };
 }
 
-export function saveAgentPlaygroundChat(env: string, userId: string, messages: PlaygroundMessage[]): void {
+// Saves also run on reload and on edits to a finished reply, and those must not restart the idle clock.
+// An approval and the reply after it extend the last message instead of adding one.
+function lastMessageAt(previous: StoredChat | undefined, userId: string, messages: PlaygroundMessage[], now: number): number {
+    const before = previous?.messages.at(-1);
+    const after = messages.at(-1);
+    const unchanged = previous && previous.userId === userId && before?.id === after?.id && before?.parts.length === after?.parts.length;
+    return unchanged && typeof previous.lastMessageAt === 'number' ? previous.lastMessageAt : now;
+}
+
+export function saveAgentPlaygroundChat({
+    chatId,
+    env,
+    userId,
+    messages,
+    now = Date.now()
+}: {
+    chatId: string;
+    env: string;
+    userId: string;
+    messages: PlaygroundMessage[];
+    now?: number;
+}): void {
     try {
         if (messages.length === 0) {
-            clearAgentPlaygroundChat();
+            deleteAgentPlaygroundChat(chatId);
             return;
         }
-        sessionStorage.setItem(LocalStorageKeys.AgentPlaygroundChat, JSON.stringify({ env, userId, messages } satisfies StoredChat));
+        const chat: StoredChat = { userId, messages, lastMessageAt: lastMessageAt(readChat(chatId), userId, messages, now) };
+        localStorage.setItem(CHAT_PREFIX + chatId, JSON.stringify(chat));
+        // A reload reopens this tab's chat. A new tab opens the environment's latest one.
+        sessionStorage.setItem(LAST_CHAT_PREFIX + env, chatId);
+        localStorage.setItem(LAST_CHAT_PREFIX + env, chatId);
     } catch {
         // Otherwise a reload would restore an older version of the chat.
-        clearAgentPlaygroundChat();
+        deleteAgentPlaygroundChat(chatId);
     }
 }
 
-export function clearAgentPlaygroundChat(): void {
+export function deleteAgentPlaygroundChat(chatId: string): void {
     try {
-        sessionStorage.removeItem(LocalStorageKeys.AgentPlaygroundChat);
+        localStorage.removeItem(CHAT_PREFIX + chatId);
+    } catch {}
+}
+
+export function clearAgentPlaygroundChats(): void {
+    try {
+        for (const storage of [localStorage, sessionStorage]) {
+            for (const key of [...keysWithPrefix(storage, CHAT_PREFIX), ...keysWithPrefix(storage, LAST_CHAT_PREFIX)]) {
+                storage.removeItem(key);
+            }
+        }
+        // Tabs opened before chats moved to localStorage still hold their chat here.
+        sessionStorage.removeItem('nango_agent_playground_chat');
     } catch {}
 }

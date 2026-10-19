@@ -3,6 +3,31 @@ title: "Changelog"
 sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
+
+<Update label="Playground page and Intercom webhooks" description="October 14, 2026">
+  - **Playground page:** The Function Playground is now a full page under Playground in the sidebar.
+  - **Intercom webhooks:** Nango can receive and forward [webhooks from Intercom](/api-integrations/intercom/webhooks).
+  - **SAP Business One:** Connections can opt in to skipping TLS certificate verification to support self-signed certificates. See [SAP Business One](/integrations/all/sap-business-one).
+</Update>
+---
+
+<Update label="Auto Catalog for AI agents" description="October 13, 2026">
+  Every action in Nango's catalog is now available on your integrations out of the box, so AI agents can use them without any setup.
+
+  - **Always current:** Catalog actions are maintained by Nango and update automatically, so agents always see the latest tools.
+  - **No more enabling actions manually:** All actions are enabled by default. Use [agent sessions](/guides/agent-sessions) to limit the toolset and control discovery for your AI agents.
+</Update>
+---
+
+<Update label="MCP server tools in agent sessions" description="October 13, 2026">
+  Connected MCP servers now show up in agent sessions next to Nango actions. Their tools are searchable, pinnable, and covered by the same allow and deny lists, and every call goes through Nango with credential refresh and logs.
+
+  Include an MCP integration such as [Notion (MCP)](/api-integrations/notion-mcp) or [Linear (MCP)](/api-integrations/linear-mcp) in the session's toolset, and its tools join the session alongside Nango actions.
+
+  See [MCP server tools](/guides/agent-sessions#mcp-server-tools) in the agent sessions guide.
+</Update>
+---
+
 <Update label="Nango for Claude" description="October 6, 2026">
   The [Management MCP server](/reference/backend/management-mcp) is now available in Claude's connector directory. Claude can configure integrations, call APIs, trigger syncs, and deploy functions for you. It also works with Claude Code, Codex, VS Code, and ChatGPT.
 
@@ -11,11 +36,11 @@ description: "Important developer & product updates, including deprecations & br
 ---
 
 <Update label="Connection MCP deprecation" description="October 6, 2026">
-  We're deprecating the Connection MCP server in favor of the new and more capable [agent sessions](/guides/agent-sessions).
+  We're deprecating the Connection MCP server on December 14, 2026 in favor of [agent sessions](/guides/agent-sessions).
 
   **Am I impacted?** Only if you have agents using the Connection MCP with an Environment API key and `connection-id` and `provider-config-key` headers.
 
-  **What to do:** Follow the [migration guide](/guides/platform/migrations/migrate-from-connection-mcp) to move to scoped agent sessions.
+  **What to do:** Follow the [migration guide](/guides/platform/migrations/migrate-from-connection-mcp).
 </Update>
 ---
 
