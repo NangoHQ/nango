@@ -114,7 +114,8 @@ import type {
     PostFunctionDryrun,
     PostFunctionDryrunResult,
     PostFunctionInvocation,
-    PostFunctionVariant
+    PostFunctionVariant,
+    PostToolCall
 } from './functions/api.js';
 import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
@@ -252,6 +253,7 @@ export type PublicApiEndpoints =
     | GetPublicIntegrationFunction
     | GetTool
     | GetTools
+    | PostToolCall
     | DeletePublicIntegrationFunction
     | GetPublicProviderTemplates
     | PostPublicRotateWebhookSigningKey

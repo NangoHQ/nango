@@ -241,6 +241,19 @@ describe(`GET ${route}`, () => {
         expect(expected[0]).toMatchObject({ uuid: functions[0]!.config.uuid, description: version.description });
     });
 
+    it('hides an action shadowed by a disabled function with the same name', async () => {
+        const { env, apiKey, integration } = await seed();
+        await seedAction(env.id, integration.id!, 'shadowed');
+        const [fn] = (
+            await functionConfigService.upsert(db.knex, [{ environmentId: env.id, integrationId: params.uniqueKey, name: 'shadowed', version }])
+        ).unwrap();
+        await db.knex('function_configs').where({ id: fn!.config.id }).update({ enabled: false });
+
+        const response = await api.fetch(route, { method: 'GET', query: {}, token: apiKey.secret, params });
+        expect(response.res.status).toBe(200);
+        expect(response.json).toStrictEqual({ data: [], next_cursor: null });
+    });
+
     it('lists catalog tools only when the catalog flag is enabled', async () => {
         const { apiKey } = await seed();
         const catalog = listCatalogTools('github');

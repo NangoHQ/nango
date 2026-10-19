@@ -43,6 +43,7 @@ import { getPublicConnection } from './controllers/connection/connectionId/getCo
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
 import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
 import { patchPublicConnection } from './controllers/connection/connectionId/patchConnection.js';
+import { postToolCall } from './controllers/connection/connectionId/tools/postCall.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import { deletePublicEnvironmentApiKey } from './controllers/environment/deleteApiKey.js';
@@ -463,6 +464,9 @@ publicAPI.route('/functions/deployments/bundle').post(envAuth, auditFunctionDepl
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid/invocations')
     .post(envAuth, can('environment:functions:invocations'), postFunctionInvocation);
+publicAPI
+    .route('/connections/:connectionId/tools/:name/calls')
+    .post(envAuth, can('environment:functions:invocations'), can('environment:actions:execute'), postToolCall);
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid')
     .patch(envAuth, auditFunctionVariantUpdated, can('environment:functions:update'), patchConnectionFunction);
