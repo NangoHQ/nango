@@ -1,14 +1,6 @@
 import tracer from 'dd-trace';
 
-import {
-    INTERNAL_SERVICE_AUDIENCE_PERSIST,
-    INTERNAL_SERVICE_ISSUER_JOBS,
-    isJwtShape,
-    isResourceBound,
-    jwtHeaderAlg,
-    keyRegistryFromPublicKeys,
-    verify
-} from '@nangohq/internal-auth';
+import { INTERNAL_SERVICE_AUDIENCE_PERSIST, isJwtShape, jwtHeaderAlg, verifyTaskCapabilityToken } from '@nangohq/internal-auth';
 import { accountService } from '@nangohq/shared';
 import { flagHasPlan, stringifyError, tagTraceUser } from '@nangohq/utils';
 
@@ -88,10 +80,8 @@ function applyPersistContext(res: Response<any, AuthLocals>, accountContext: Per
 
 async function authenticateCapability(res: Response<any, AuthLocals>, next: NextFunction, token: string, environmentId: number): Promise<void> {
     try {
-        const registry = keyRegistryFromPublicKeys(envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS, INTERNAL_SERVICE_ISSUER_JOBS);
-        const verified = await verify(token, INTERNAL_SERVICE_AUDIENCE_PERSIST, registry);
-        const auth = verified.auth;
-        if (!auth || !isResourceBound(auth, 'environmentId', environmentId)) {
+        const auth = await verifyTaskCapabilityToken(token, INTERNAL_SERVICE_AUDIENCE_PERSIST, envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS);
+        if (!auth || auth.res.environmentId !== environmentId) {
             res.status(401).json({ error: { code: 'unauthorized', message: 'Unauthorized' } });
             return;
         }
@@ -102,7 +92,7 @@ async function authenticateCapability(res: Response<any, AuthLocals>, next: Next
             return;
         }
         const accountContext = result.value;
-        if (!accountContext || accountContext.environment.id !== environmentId) {
+        if (!accountContext) {
             res.status(401).json({ error: { code: 'unauthorized', message: 'Unauthorized: Account not found' } });
             return;
         }

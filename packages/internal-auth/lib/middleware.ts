@@ -1,10 +1,11 @@
 import { INTERNAL_SERVICE_AUTH_LOCALS_KEY, INTERNAL_SERVICE_ISSUER_JOBS, INTERNAL_SERVICE_ISSUER_SERVER, nodeSubject, taskSubject } from './constants.js';
-import { keyRegistryFromPublicKeys, mergeKeyRegistries } from './jwt.js';
+import { keyRegistryFromPublicKeys, mergeKeyRegistries, verify } from './jwt.js';
 import { verifyInternalServiceCredential } from './verify.js';
 
 import type { InternalServiceAuth } from './constants.js';
 import type { InternalAuthEnvs } from './credential.js';
 import type { TaskCapabilityResource } from './jwt.js';
+import type { InternalAuthPublicKey } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 export function unauthorized(res: Response, code: 'missing_auth_header' | 'malformed_auth_header' | 'unauthorized', message: string): void {
@@ -64,6 +65,33 @@ export function isResourceBound(auth: InternalServiceAuth | undefined, key: keyo
 
 export function hasScope(auth: InternalServiceAuth | undefined, scope: string): boolean {
     return isJobsTaskJwt(auth) && Boolean(auth.scopes?.includes(scope));
+}
+
+export type TaskCapabilityAuth = InternalServiceAuth & { res: TaskCapabilityResource };
+
+let capabilityKeys: readonly InternalAuthPublicKey[] | undefined;
+let capabilityRegistry: ReturnType<typeof keyRegistryFromPublicKeys> | undefined;
+
+function capabilityRegistryFor(keys: readonly InternalAuthPublicKey[] | undefined): ReturnType<typeof keyRegistryFromPublicKeys> {
+    if (capabilityRegistry && capabilityKeys === keys) {
+        return capabilityRegistry;
+    }
+    capabilityKeys = keys;
+    capabilityRegistry = keyRegistryFromPublicKeys(keys, INTERNAL_SERVICE_ISSUER_JOBS);
+    return capabilityRegistry;
+}
+
+/** Jobs task JWT for `audience`, or `null`. A result always has `res.environmentId`. The registry is built once per `keys` array. */
+export async function verifyTaskCapabilityToken(
+    token: string,
+    audience: string,
+    keys: readonly InternalAuthPublicKey[] | undefined
+): Promise<TaskCapabilityAuth | null> {
+    const { auth } = await verify(token, audience, capabilityRegistryFor(keys));
+    if (!auth || !isJobsTaskJwt(auth) || !auth.res) {
+        return null;
+    }
+    return { ...auth, res: auth.res };
 }
 
 function registryFromEnvs(envs: InternalAuthEnvs) {

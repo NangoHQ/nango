@@ -3,15 +3,7 @@ import path from 'node:path';
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import {
-    hasScope,
-    INTERNAL_SERVICE_AUDIENCE_SERVER,
-    INTERNAL_SERVICE_ISSUER_JOBS,
-    isJwtShape,
-    jwtHeaderAlg,
-    keyRegistryFromPublicKeys,
-    verify
-} from '@nangohq/internal-auth';
+import { hasScope, INTERNAL_SERVICE_AUDIENCE_SERVER, isJwtShape, jwtHeaderAlg, verifyTaskCapabilityToken } from '@nangohq/internal-auth';
 import { accountService, environmentService, errorManager, ErrorSourceEnum, getPlan, isSandboxApiKey, LogActionEnum, userService } from '@nangohq/shared';
 import {
     Err,
@@ -126,24 +118,14 @@ export class AccessMiddleware {
      * environment. Persist binds the token to its connection; this API is environment-scoped.
      */
     private async authenticateCapabilityToken(_req: Request, res: Response<unknown, Partial<RequestLocals>>, token: string): Promise<Result<void>> {
-        const registry = keyRegistryFromPublicKeys(envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS, INTERNAL_SERVICE_ISSUER_JOBS);
-        const verified = await verify(token, INTERNAL_SERVICE_AUDIENCE_SERVER, registry);
-        const auth = verified.auth;
-        const environmentId = auth?.res?.environmentId;
+        const auth = await verifyTaskCapabilityToken(token, INTERNAL_SERVICE_AUDIENCE_SERVER, envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS);
         const scope = res.locals.taskCapability;
-        if (
-            !auth ||
-            auth.issuer !== INTERNAL_SERVICE_ISSUER_JOBS ||
-            !auth.sub?.startsWith('task:') ||
-            environmentId === undefined ||
-            !scope ||
-            !hasScope(auth, scope)
-        ) {
+        if (!auth || !scope || !hasScope(auth, scope)) {
             return Err('unknown_account');
         }
 
-        const result = await accountService.getTaskTokenAccountContext(environmentId);
-        if (result.isErr() || !result.value?.environment || result.value.environment.id !== environmentId) {
+        const result = await accountService.getTaskTokenAccountContext(auth.res.environmentId);
+        if (result.isErr() || !result.value) {
             return Err('unknown_account');
         }
         const accountContext = result.value;

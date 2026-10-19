@@ -13,7 +13,7 @@ import {
     taskSubject
 } from './constants.js';
 import { mint } from './jwt.js';
-import { hasScope, internalServiceAuthMiddleware, requireFleetAuth, requireTaskBoundAuth, requireTaskScope } from './middleware.js';
+import { hasScope, internalServiceAuthMiddleware, requireFleetAuth, requireTaskBoundAuth, requireTaskScope, verifyTaskCapabilityToken } from './middleware.js';
 import { createInternalServiceToken } from './token.js';
 
 import type { InternalAuthEnvs } from './credential.js';
@@ -645,7 +645,35 @@ describe('jobs route policy', () => {
             await close();
         }
     });
+});
 
+describe('verifyTaskCapabilityToken', () => {
+    it('returns res.environmentId for a jobs task JWT', async () => {
+        const { pem, raw } = ed25519Material();
+        const keys = [{ kid: 'jobs-2026-09', publicKey: raw }];
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: taskSubject('task-1'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60, res: { environmentId: 9 } }
+        );
+
+        const auth = await verifyTaskCapabilityToken(token, INTERNAL_SERVICE_AUDIENCE_JOBS, keys);
+
+        expect(auth?.res.environmentId).toBe(9);
+    });
+
+    it('rejects a task JWT that has no res', async () => {
+        const { pem, raw } = ed25519Material();
+        const keys = [{ kid: 'jobs-2026-09', publicKey: raw }];
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: taskSubject('task-1'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
+        );
+
+        expect(await verifyTaskCapabilityToken(token, INTERNAL_SERVICE_AUDIENCE_JOBS, keys)).toBeNull();
+    });
+});
+
+describe('hasScope', () => {
     it('does not treat a node token scope claim as a task scope', () => {
         expect(
             hasScope(
