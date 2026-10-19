@@ -1,6 +1,6 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { freePlan, updatePlanByTeam } from '@nangohq/shared';
+import { freePlan, getPlan, updatePlanByTeam } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import type { BillingCustomer, BillingSubscription, DBTeam, DBUser, Result } from '@nangohq/types';
@@ -26,6 +26,14 @@ export async function linkBillingCustomer(account: DBTeam, user: DBUser): Promis
  * Creates a billing subscription (free) and links it to the account plan
  */
 export async function linkBillingFreeSubscription(account: DBTeam): Promise<Result<BillingSubscription>> {
+    const resPlan = await getPlan(db.knex, { accountId: account.id });
+    if (resPlan.isErr()) {
+        return Err(resPlan.error);
+    }
+    if (resPlan.value.orb_subscription_id) {
+        return Err(new Error('billing_subscription_already_linked'));
+    }
+
     const resCreate = await billing.createSubscription(account, freePlan.code ?? 'free');
     if (resCreate.isErr()) {
         return Err(resCreate.error);
