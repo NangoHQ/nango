@@ -12109,6 +12109,30 @@ heap:
             format: uuid
             doc_section: '#step-1-generating-your-api-key-and-app-id'
 
+hetzner-cloud:
+    display_name: Hetzner Cloud
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.hetzner.cloud
+        headers:
+            authorization: Bearer ${apiKey}
+        paginate:
+            type: cursor
+            cursor_path_in_response: meta.pagination.next_page
+            cursor_name_in_request: page
+            limit_name_in_request: per_page
+        verification:
+            endpoints:
+                - /v1/locations
+    docs: https://nango.dev/docs/api-integrations/hetzner-cloud
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token of your Hetzner Cloud project.
+
 hex:
     display_name: Hex
     categories:
