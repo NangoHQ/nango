@@ -105,9 +105,7 @@ function startProcedure() {
                 input: codeParams
             });
 
-            const persistClient = distributedCoordination
-                ? new PersistClient({ secretKey: nangoProps.secretKey, taskAuthToken: nangoProps.taskAuthToken })
-                : undefined;
+            const persistClient = distributedCoordination ? new PersistClient(nangoProps) : undefined;
 
             // The update to sync tracking is atomic, so we can safely try to track and if it fails, we know there is a conflicting sync
             await usage.track(nangoProps, taskId, persistClient ? { persistClient } : undefined);

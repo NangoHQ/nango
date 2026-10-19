@@ -20,6 +20,7 @@ import type {
     GetTaskAbortSuccess,
     HasLockSuccess,
     MergingStrategy,
+    NangoProps,
     PostRecordsSuccess,
     PutCheckpointSuccess,
     PutRecordsSuccess,
@@ -44,8 +45,8 @@ export class PersistClient {
     private bearer: string;
     private userAgent: string;
 
-    constructor({ secretKey, taskAuthToken }: { secretKey?: string | undefined; taskAuthToken?: string | undefined }) {
-        this.bearer = runnerBearer({ secretKey, taskAuthToken });
+    constructor(props: Pick<NangoProps, 'secretKey' | 'taskAuthToken'>) {
+        this.bearer = runnerBearer(props);
         this.baseUrl = getPersistAPIUrl();
         this.userAgent = getUserAgent('sdk');
     }

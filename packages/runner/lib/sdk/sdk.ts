@@ -81,20 +81,7 @@ function scriptNango(
         isSync,
         dryRun: isTest
     };
-    const axiosProps = {
-        ...internalAxiosProps,
-        interceptors
-    };
-    const bearer = runnerBearer(props);
-    // The node client refuses both credentials. apiKey carries the token so it is not also used to sign webhooks.
-    if (props.taskAuthToken) {
-        return new Nango({ ...shared, apiKey: bearer }, axiosProps);
-    }
-    return new Nango({ ...shared, secretKey: bearer }, axiosProps);
-}
-
-function persistClientForProps(props: NangoProps): PersistClient {
-    return new PersistClient({ secretKey: props.secretKey, taskAuthToken: props.taskAuthToken });
+    return new Nango({ ...shared, apiKey: runnerBearer(props) }, { ...internalAxiosProps, interceptors });
 }
 
 /**
@@ -126,7 +113,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
         if (!this.syncConfig) throw new Error('Parameter syncConfig is required');
 
-        this.persistClient = runnerProps?.persistClient || persistClientForProps(props);
+        this.persistClient = runnerProps?.persistClient || new PersistClient(props);
         this.telemetryRecorder = runnerProps?.telemetryRecorder;
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
         this.checkpointKey = getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name });
@@ -497,7 +484,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         if (!this.syncJobId) throw new Error('Parameter syncJobId is required');
         if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
 
-        this.persistClient = runnerProps?.persistClient || persistClientForProps(props);
+        this.persistClient = runnerProps?.persistClient || new PersistClient(props);
         this.telemetryRecorder = runnerProps?.telemetryRecorder;
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
         this.checkpointKey = getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name, variant: this.variant });

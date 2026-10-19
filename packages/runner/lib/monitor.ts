@@ -79,7 +79,7 @@ export class RunnerMonitor {
     }
 
     private getMemoryPersistClient(entry: TrackedTask): PersistClient {
-        return entry.persistClient ?? new PersistClient({ secretKey: entry.nangoProps.secretKey, taskAuthToken: entry.nangoProps.taskAuthToken });
+        return entry.persistClient ?? new PersistClient(entry.nangoProps);
     }
 
     async trackForConflicts(taskId: string, opts = { refresh: false }): Promise<void> {
