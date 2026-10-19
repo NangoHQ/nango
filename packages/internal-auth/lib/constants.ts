@@ -1,3 +1,5 @@
+import type { TaskCapabilityResource } from './jwt.js';
+
 export const INTERNAL_SERVICE_TOKEN_ISSUER = 'nango-internal';
 export const INTERNAL_SERVICE_ISSUER_JOBS = 'service:jobs';
 export const INTERNAL_SERVICE_ISSUER_SERVER = 'service:server';
@@ -94,15 +96,9 @@ export interface InternalServiceAuth {
      * Resource the task may act on (`res`). Absent on service and node tokens.
      * `environmentId` is required when the claim is present.
      */
-    res?: TaskCapabilityResource;
+    res?: TaskCapabilityResource | undefined;
     /** Scopes the task may call. Absent on service and node tokens, and on legacy task tokens. */
-    scopes?: readonly string[];
-}
-
-export interface TaskCapabilityResource {
-    environmentId: number;
-    connectionId?: number;
-    syncId?: string;
+    scopes?: readonly string[] | undefined;
 }
 
 export function taskSubject(taskId: string): string {

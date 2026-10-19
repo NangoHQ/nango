@@ -5,7 +5,7 @@ import { normalizePem } from '@nangohq/utils';
 
 import { INTERNAL_SERVICE_ISSUER_JOBS, INTERNAL_SERVICE_ISSUER_SERVER } from './constants.js';
 
-import type { InternalServiceAuth, InternalServiceIssuer, TaskCapabilityResource } from './constants.js';
+import type { InternalServiceAuth, InternalServiceIssuer } from './constants.js';
 import type { InternalAuthPublicKey } from '@nangohq/types';
 import type { CryptoKey, JWTPayload } from 'jose';
 
@@ -113,30 +113,13 @@ function loadPublicKey(rawPublicKey: string): Promise<CryptoKey> {
     return pending;
 }
 
-function capabilityPayload(claims: MintClaims): JWTPayload {
-    const payload: JWTPayload = {};
-    if (claims.res !== undefined) {
-        const res: Record<string, number | string> = { environmentId: claims.res.environmentId };
-        if (claims.res.connectionId !== undefined) {
-            res['connectionId'] = claims.res.connectionId;
-        }
-        if (claims.res.syncId !== undefined) {
-            res['syncId'] = claims.res.syncId;
-        }
-        payload['res'] = res;
-    }
-    if (claims.scopes !== undefined) {
-        payload['scopes'] = [...claims.scopes];
-    }
-    return payload;
-}
-
 /** Mint one EdDSA JWT. `iss` is the signing service. `sub` is that service, a task, or a node. */
 export async function mint(signer: MintSigner, claims: MintClaims): Promise<string> {
     const key = await loadPrivateKey(signer.privateKey);
     const iat = claims.issuedAt ?? Math.floor(Date.now() / 1000);
     const audience = typeof claims.aud === 'string' ? claims.aud : [...claims.aud];
-    return await new SignJWT(capabilityPayload(claims))
+    // JSON serialization drops undefined, so omitted res and scopes are absent from the token.
+    return await new SignJWT({ res: claims.res, scopes: claims.scopes })
         .setProtectedHeader({ alg: 'EdDSA', typ: 'JWT', kid: signer.kid })
         .setIssuer(signer.iss)
         .setSubject(claims.sub)
@@ -163,41 +146,21 @@ const taskCapabilityResourceSchema = z
     })
     .strict();
 
-const capabilityClaimsSchema = z
-    .object({
-        res: taskCapabilityResourceSchema.optional(),
-        scopes: z.array(z.string().min(1)).optional()
-    })
-    .strict();
+export type TaskCapabilityResource = z.infer<typeof taskCapabilityResourceSchema>;
+
+/** Unknown keys are the standard JWT claims. A non-strict object strips them. */
+const capabilityClaimsSchema = z.object({
+    res: taskCapabilityResourceSchema.optional(),
+    scopes: z.array(z.string().min(1)).optional()
+});
 
 /** `null` means a present claim has the wrong type. Omitted claims are absent, not invalid. */
 function claimsFromPayload(payload: JWTPayload): Pick<InternalServiceAuth, 'res' | 'scopes'> | null {
-    const candidate: { res?: unknown; scopes?: unknown } = {};
-    if (payload['res'] !== undefined) {
-        candidate.res = payload['res'];
-    }
-    if (payload['scopes'] !== undefined) {
-        candidate.scopes = payload['scopes'];
-    }
-    const parsed = capabilityClaimsSchema.safeParse(candidate);
+    const parsed = capabilityClaimsSchema.safeParse(payload);
     if (!parsed.success) {
         return null;
     }
-    const claims: Pick<InternalServiceAuth, 'res' | 'scopes'> = {};
-    if (parsed.data.res !== undefined) {
-        const res: TaskCapabilityResource = { environmentId: parsed.data.res.environmentId };
-        if (parsed.data.res.connectionId !== undefined) {
-            res.connectionId = parsed.data.res.connectionId;
-        }
-        if (parsed.data.res.syncId !== undefined) {
-            res.syncId = parsed.data.res.syncId;
-        }
-        claims.res = res;
-    }
-    if (parsed.data.scopes !== undefined) {
-        claims.scopes = parsed.data.scopes;
-    }
-    return claims;
+    return parsed.data;
 }
 
 /**
