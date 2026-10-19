@@ -354,16 +354,6 @@ class CustomerKeyService {
         }
     }
 
-    private webhookSigningKeyForEnv(trx: Knex, envId: number) {
-        return trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-            .select(`${CUSTOMER_KEYS_TABLE}.*`)
-            .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
-            .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'webhook_signing')
-            .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-            .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId)
-            .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`);
-    }
-
     private cacheWebhookSigningKey(envId: number, key: string, updatedAt: Date): string {
         const existing = webhookSigningKeyCache.get(envId);
         const committedAt = updatedAt.getTime();
@@ -395,27 +385,7 @@ class CustomerKeyService {
     }
 
     private async readWebhookSigningKey(trx: Knex, envId: number): Promise<{ key: string; updatedAt: Date }> {
-        const { rows } = await trx.raw<{ rows: { secret: string; iv: string; tag: string; updated_at: Date }[] }>(
-            `SELECT secret, iv, tag, updated_at
-             FROM (
-                 SELECT secret, iv, tag, updated_at, 1 AS source_rank
-                 FROM ${WEBHOOK_SIGNING_KEYS_TABLE}
-                 WHERE environment_id = ?
-                 UNION ALL
-                 SELECT ${CUSTOMER_KEYS_TABLE}.secret, ${CUSTOMER_KEYS_TABLE}.iv, ${CUSTOMER_KEYS_TABLE}.tag, ${CUSTOMER_KEYS_TABLE}.updated_at, 0 AS source_rank
-                 FROM ${CUSTOMER_KEYS_TABLE}
-                 JOIN ${CUSTOMER_KEYS_RELATIONS_TABLE} relation
-                   ON relation.customer_key_id = ${CUSTOMER_KEYS_TABLE}.id
-                  AND relation.entity_type = 'environment'
-                  AND relation.entity_id = ?
-                 WHERE ${CUSTOMER_KEYS_TABLE}.key_type = 'webhook_signing'
-                   AND ${CUSTOMER_KEYS_TABLE}.deleted_at IS NULL
-             ) signing_keys
-             ORDER BY updated_at DESC, source_rank DESC
-             LIMIT 1`,
-            [envId, envId]
-        );
-        const row = rows[0];
+        const row = await trx(WEBHOOK_SIGNING_KEYS_TABLE).select('secret', 'iv', 'tag', 'updated_at').where({ environment_id: envId }).first();
         if (!row) {
             throw new NangoError('no_webhook_signing_key', { environment_id: envId });
         }
@@ -465,9 +435,8 @@ class CustomerKeyService {
                     throw new NangoError('impossible_condition');
                 }
 
-                const legacy = await this.webhookSigningKeyForEnv(innerTrx, envId).first();
                 const current = await innerTrx(WEBHOOK_SIGNING_KEYS_TABLE).where({ environment_id: envId }).first();
-                if (!legacy && !current) {
+                if (!current) {
                     throw new CustomerKeyError('no_webhook_signing_key', { environmentId: envId });
                 }
 

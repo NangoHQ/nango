@@ -80,7 +80,7 @@ export interface DBAPISecret extends Timestamps {
     is_default: boolean;
 }
 
-export type CustomerKeyType = 'api' | 'webhook_signing';
+export type CustomerKeyType = 'api';
 
 export interface DBCustomerKey extends Timestamps {
     id: number;
