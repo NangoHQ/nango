@@ -1,6 +1,6 @@
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
-import { mintRunnerDispatchToken, mintTaskAuthToken, nangoPropsForRunner } from '../internal-auth.js';
+import { mintRunnerDispatchToken, runnerAuth } from '../internal-auth.js';
 import { getRunner, getRunners } from '../runner/runner.js';
 
 import type { RuntimeAdapter } from './adapter.js';
@@ -36,8 +36,7 @@ export class RunnerRuntimeAdapter implements RuntimeAdapter {
         }
 
         try {
-            const nangoProps = await nangoPropsForRunner(params.taskId, params.nangoProps);
-            const internalAuthToken = nangoProps.taskAuthToken ?? (await mintTaskAuthToken(params.taskId, nangoProps));
+            const { nangoProps, internalAuthToken } = await runnerAuth(params.taskId, params.nangoProps);
             const res = await runner.value.client.start.mutate({
                 taskId: params.taskId,
                 nangoProps,

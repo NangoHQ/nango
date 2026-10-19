@@ -9,7 +9,7 @@ import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { setAbortFlag } from '../execution/operations/abort.js';
-import { mintTaskAuthToken, nangoPropsForRunner } from '../internal-auth.js';
+import { runnerAuth } from '../internal-auth.js';
 import { getLambdaTenantId, getRoutingId } from '../utils/lambda.js';
 
 import type { RuntimeAdapter } from './adapter.js';
@@ -141,8 +141,7 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
     }
 
     private async preparePayload(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<Result<string>> {
-        const nangoProps = await nangoPropsForRunner(params.taskId, params.nangoProps);
-        const internalAuthToken = nangoProps.taskAuthToken ?? (await mintTaskAuthToken(params.taskId, nangoProps));
+        const { nangoProps, internalAuthToken } = await runnerAuth(params.taskId, params.nangoProps);
         const authFields = internalAuthToken ? { internalAuthToken } : {};
         const payload = {
             taskId: params.taskId,

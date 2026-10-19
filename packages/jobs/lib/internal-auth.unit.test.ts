@@ -18,7 +18,7 @@ import {
     verifyRunnerDispatchToken
 } from '@nangohq/internal-auth';
 
-import { assertRunnerAuthMaterial, mintRunnerAuthEnv, mintRunnerDispatchToken, mintTaskAuthToken, nangoPropsForRunner } from './internal-auth.js';
+import { assertRunnerAuthMaterial, mintRunnerAuthEnv, mintRunnerDispatchToken, runnerAuth } from './internal-auth.js';
 
 import type { NangoProps } from '@nangohq/types';
 
@@ -46,22 +46,22 @@ afterEach(() => {
     mockEnvs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY = false;
 });
 
-describe('mintTaskAuthToken', () => {
-    it('returns null when the signing key is unset', async () => {
-        expect(await mintTaskAuthToken('task-1', {})).toBeNull();
+describe('runnerAuth', () => {
+    it('returns no token when nothing is configured', async () => {
+        const auth = await runnerAuth('task-1', {} as NangoProps);
+        expect(auth.internalAuthToken).toBeUndefined();
+        expect(auth.nangoProps.taskAuthToken).toBeUndefined();
     });
 
     it('mints a jobs-audience token when the signing key is set', async () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const issuedAt = Math.floor(Date.now() / 1000);
-        const token = await mintTaskAuthToken('task-1', {});
-        expect(token).toBeTruthy();
-        if (!token) {
-            return;
-        }
-        const auth = verifyInternalServiceToken(token, 'jobs', 'sign');
+        const { internalAuthToken, nangoProps } = await runnerAuth('task-1', {} as NangoProps);
+        expect(internalAuthToken).toEqual(expect.any(String));
+        expect(nangoProps.taskAuthToken).toBeUndefined();
+        const auth = verifyInternalServiceToken(internalAuthToken!, 'jobs', 'sign');
         expect(auth).toMatchObject({ kind: 'hmac', op: 'task', taskId: 'task-1', audience: 'jobs' });
-        const payload = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
+        const payload = JSON.parse(Buffer.from(internalAuthToken!.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
         expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS);
         expect(payload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS + 5);
     });
@@ -69,11 +69,11 @@ describe('mintTaskAuthToken', () => {
     it('uses killAfterMs plus a buffer when lifecycle is set', async () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const issuedAt = Math.floor(Date.now() / 1000);
-        const token = await mintTaskAuthToken('task-1', { lifecycle: { killAfterMs: 5_000, interruptAfterMs: 1_000 } });
-        if (!token) {
+        const { internalAuthToken } = await runnerAuth('task-1', { lifecycle: { killAfterMs: 5_000, interruptAfterMs: 1_000 } } as NangoProps);
+        if (!internalAuthToken) {
             throw new Error('expected a token');
         }
-        const payload = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
+        const payload = JSON.parse(Buffer.from(internalAuthToken.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
         expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + 60);
         expect(payload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS);
     });
@@ -81,11 +81,11 @@ describe('mintTaskAuthToken', () => {
     it('uses the bounded expiry when killAfterMs is 0', async () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const issuedAt = Math.floor(Date.now() / 1000);
-        const token = await mintTaskAuthToken('task-1', { lifecycle: { killAfterMs: 0, interruptAfterMs: 0 } });
-        if (!token) {
+        const { internalAuthToken } = await runnerAuth('task-1', { lifecycle: { killAfterMs: 0, interruptAfterMs: 0 } } as NangoProps);
+        if (!internalAuthToken) {
             throw new Error('expected a token');
         }
-        const payload = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
+        const payload = JSON.parse(Buffer.from(internalAuthToken.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
         expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + 60);
         expect(payload.exp).toBeLessThan(issuedAt + 65);
     });
@@ -202,7 +202,7 @@ describe('unified mint', () => {
         const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: raw }], INTERNAL_SERVICE_ISSUER_JOBS);
         const issuedAt = Math.floor(Date.now() / 1000);
 
-        const taskToken = await mintTaskAuthToken('task-1', {});
+        const { internalAuthToken: taskToken } = await runnerAuth('task-1', {} as NangoProps);
         expect(taskToken).toEqual(expect.any(String));
         const taskAuth = await verifyInternalServiceCredential(taskToken!, INTERNAL_SERVICE_AUDIENCE_JOBS, { registry });
         expect(taskAuth).toMatchObject({ kind: 'jwt', sub: taskSubject('task-1'), issuer: INTERNAL_SERVICE_ISSUER_JOBS });
@@ -233,10 +233,11 @@ describe('unified mint', () => {
             syncId: 'sync-1'
         } as NangoProps;
 
-        const dispatched = await nangoPropsForRunner('task-1', props);
+        const { nangoProps: dispatched, internalAuthToken } = await runnerAuth('task-1', props);
 
         expect(dispatched.secretKey).toBe('environment-secret');
-        expect(dispatched.taskAuthToken).toEqual(expect.any(String));
+        expect(internalAuthToken).toEqual(expect.any(String));
+        expect(dispatched.taskAuthToken).toBe(internalAuthToken);
         const auth = await verifyInternalServiceCredential(dispatched.taskAuthToken!, 'persist', { registry });
         expect(auth).toMatchObject({
             kind: 'jwt',
@@ -254,17 +255,19 @@ describe('unified mint', () => {
         mockEnvs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY = true;
         const props = { secretKey: 'environment-secret', scriptType: 'sync', environmentId: 9 } as NangoProps;
 
-        const dispatched = await nangoPropsForRunner('task-1', props);
+        const { nangoProps: dispatched, internalAuthToken } = await runnerAuth('task-1', props);
 
         expect(dispatched.secretKey).toBeUndefined();
-        expect(dispatched.taskAuthToken).toEqual(expect.any(String));
+        expect(internalAuthToken).toEqual(expect.any(String));
+        expect(dispatched.taskAuthToken).toBe(internalAuthToken);
     });
 
     it('keeps secretKey when no capability token can be minted', async () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const props = { secretKey: 'environment-secret', scriptType: 'sync' } as NangoProps;
-        const dispatched = await nangoPropsForRunner('task-1', props);
+        const { nangoProps: dispatched, internalAuthToken } = await runnerAuth('task-1', props);
         expect(dispatched.secretKey).toBe('environment-secret');
         expect(dispatched.taskAuthToken).toBeUndefined();
+        expect(internalAuthToken).toEqual(expect.any(String));
     });
 });
