@@ -4,7 +4,7 @@ import { pathToFileURL } from 'url';
 import * as z from 'zod';
 
 import { getInterval } from '@nangohq/nango-yaml';
-import { deriveFunctionCapabilities } from '@nangohq/runner-sdk';
+import { createFunction, deriveFunctionCapabilities, reservedToolTagKeys, toolToFunctionProps } from '@nangohq/runner-sdk';
 
 import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
@@ -17,7 +17,8 @@ import {
     EndpointMismatchDefinitionError,
     InvalidIntervalDefinitionError,
     InvalidModelDefinitionError,
-    TrackDeletesDefinitionError
+    TrackDeletesDefinitionError,
+    UnusedCheckpointDefinitionError
 } from './utils.js';
 
 import type {
@@ -25,6 +26,7 @@ import type {
     CreateFunctionResponse,
     CreateOnEventResponse,
     CreateSyncResponse,
+    CreateToolProps,
     FunctionRequires,
     FunctionTriggerDefinition
 } from '@nangohq/runner-sdk';
@@ -33,6 +35,7 @@ import type {
     DBFunctionConfigVersion,
     FunctionConcurrencyLimit,
     FunctionDeploymentArtifact,
+    FunctionTags,
     NangoYamlParsed,
     NangoYamlParsedIntegration,
     ParsedNangoAction,
@@ -40,6 +43,7 @@ import type {
     Result
 } from '@nangohq/types';
 
+// TODO: consolidate with the `server` schemas to have a single source of truth
 const debounceKeySourceSchema = z.union([z.object({ body: z.string() }).strict(), z.object({ header: z.string() }).strict()]);
 const functionTriggerDefinitionSchema = z.discriminatedUnion('kind', [
     z.object({ kind: z.literal('none') }).strict(),
@@ -70,6 +74,45 @@ const functionTriggerDefinitionSchema = z.discriminatedUnion('kind', [
         .strict()
 ]) satisfies z.ZodType<FunctionTriggerDefinition>;
 
+const functionTagStringSchema = z.string().max(64);
+const functionTagKeySchema = z
+    .string()
+    .regex(/^[a-z][a-z0-9_\-./]*$/, {
+        message: 'Tag keys must start with a lowercase letter and contain only lowercase letters, digits, underscores, hyphens, periods, or slashes'
+    })
+    .max(64);
+const functionTagValueSchema = z.union([functionTagStringSchema, z.array(functionTagStringSchema).max(64)], {
+    error: (iss) => {
+        const got = Array.isArray(iss.input) ? 'array' : iss.input === null ? 'null' : typeof iss.input;
+        return `Expected string or string[], received ${got}`;
+    }
+});
+const functionTagsRecordSchema = z.record(functionTagKeySchema, functionTagValueSchema, {
+    error: (iss) => (iss.code === 'invalid_key' ? iss.issues[0]?.message : undefined)
+});
+export const functionTagsSchema = functionTagsRecordSchema.refine((tags) => Object.keys(tags).length <= 32, {
+    message: 'Functions cannot have more than 32 tags'
+}) satisfies z.ZodType<FunctionTags>;
+
+const toolMetaSchema = z
+    .object({
+        instructions: z.string().max(1024).optional(),
+        requiredScopes: z.array(functionTagStringSchema).max(64).optional(),
+        tags: functionTagsRecordSchema
+            .refine((tags) => reservedToolTagKeys.every((key) => !(key in tags)), {
+                message: `Tag keys ${reservedToolTagKeys.map((key) => `'${key}'`).join(', ')} are reserved`
+            })
+            .optional()
+    })
+    .strict()
+    .refine((meta) => Object.keys(meta.tags ?? {}).length <= 30, {
+        message: 'Tools cannot have more than 30 tags'
+    });
+const toolNameSchema = z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]+$/, { message: 'Tool names can only contain letters, digits, underscores, or hyphens' })
+    .max(64);
+
 interface FunctionDefinition {
     description: string;
     trigger?: FunctionTriggerDefinition | undefined;
@@ -78,18 +121,22 @@ interface FunctionDefinition {
     input?: z.ZodTypeAny | undefined;
     output?: z.ZodTypeAny | undefined;
     data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
+    tags?: FunctionTags | undefined;
 }
+
+type CompiledTool = CreateToolProps & { type: 'function'; _nangoFactory: 'tool' };
 
 export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'> & { filePath: string };
 
 export interface ParsedIntegrationDefinitions extends NangoYamlParsed {
     functions: FunctionConfig[];
+    hasExperimentalFunctions: boolean;
 }
 
 const allowed = ['action', 'sync', 'onEvent', 'function'];
 
 export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<ParsedIntegrationDefinitions>> {
-    const parsed: ParsedIntegrationDefinitions = { yamlVersion: 'v2', integrations: [], models: new Map(), functions: [] };
+    const parsed: ParsedIntegrationDefinitions = { yamlVersion: 'v2', integrations: [], models: new Map(), functions: [], hasExperimentalFunctions: false };
 
     printDebug('Rebuilding parsed from js files', debug);
 
@@ -116,7 +163,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
         }
         if (!moduleContent.default.default.type || !allowed.includes(moduleContent.default.default.type)) {
             // createFunction intentionally omitted from this message while experimental. Add on GA
-            return Err(new Error(`Script should be declared using utility function (createSync, createAction, createOnEvent) ${modulePath}`));
+            return Err(new Error(`Script should be declared using utility function (createSync, createAction, createOnEvent, createTool) ${modulePath}`));
         }
 
         printDebug(`Parsing ${filePath}`, debug);
@@ -125,10 +172,12 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
             | CreateSyncResponse<Record<string, ZodModel>, ZodMetadata, ZodCheckpoint>
             | CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>
             | CreateOnEventResponse
-            | CreateFunctionResponse;
+            | CreateFunctionResponse
+            | CompiledTool;
 
         const basename = path.basename(filePath, '.js');
         const realPath = filePath.replace(/\.js$/, '.ts');
+        const absoluteRealPath = sourcePath.absolute.replace(/\.js$/, '.ts');
         const basenameClean = basename.replaceAll(/[^a-zA-Z0-9]/g, '');
         const integrationIdRes = getIntegrationId(filePath);
         if (integrationIdRes.isErr()) {
@@ -150,7 +199,14 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
 
         switch (script.type) {
             case 'sync': {
-                const parsedSyncRes = parseSync({ filePath: realPath, params: script, integrationIdClean, basename, basenameClean });
+                const parsedSyncRes = parseSync({
+                    filePath: realPath,
+                    absoluteFilePath: absoluteRealPath,
+                    params: script,
+                    integrationIdClean,
+                    basename,
+                    basenameClean
+                });
                 if (parsedSyncRes.isErr()) {
                     return Err(parsedSyncRes.error);
                 }
@@ -158,7 +214,18 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 break;
             }
             case 'action': {
-                integration.actions.push(parseAction({ filePath: realPath, params: script, integrationIdClean, basename, basenameClean }));
+                const parsedActionRes = parseAction({
+                    filePath: realPath,
+                    absoluteFilePath: absoluteRealPath,
+                    params: script,
+                    integrationIdClean,
+                    basename,
+                    basenameClean
+                });
+                if (parsedActionRes.isErr()) {
+                    return Err(parsedActionRes.error);
+                }
+                integration.actions.push(parsedActionRes.value);
                 break;
             }
             case 'onEvent': {
@@ -172,17 +239,41 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 break;
             }
             case 'function': {
-                const validationRes = validateFunction({ params: script, integrationId, basename });
-                if (validationRes.isErr()) {
-                    return Err(validationRes.error);
+                const isTool = '_nangoFactory' in script && script._nangoFactory === 'tool';
+                let fnScript: FunctionDefinition = script;
+                let name = basename;
+                if (isTool) {
+                    name = script.name ?? basename;
+                    const validationRes = validateTool({ params: { ...script, name }, filePath: realPath });
+                    if (validationRes.isErr()) {
+                        return Err(validationRes.error);
+                    }
+                    fnScript = createFunction(toolToFunctionProps(script));
+                } else {
+                    const validationRes = validateFunction({ params: script, integrationId, basename });
+                    if (validationRes.isErr()) {
+                        return Err(validationRes.error);
+                    }
+                    parsed.hasExperimentalFunctions = true;
                 }
-                if (parsed.functions.some((fn) => fn.integrationId === integrationId && fn.name === basename)) {
+
+                if (parsed.functions.some((fn) => fn.integrationId === integrationId && fn.name === name)) {
                     return Err(
-                        new Error(`Function '${integrationId}/functions/${basename}.ts' is already defined. Function names must be unique per integration.`)
+                        new Error(
+                            isTool
+                                ? `Tool '${realPath}' is named '${name}', which is already used. Tool and function names must be unique per integration.`
+                                : `Function '${integrationId}/functions/${name}.ts' is already defined. Function names must be unique per integration.`
+                        )
                     );
                 }
                 parsed.functions.push({
-                    ...parseFunction({ params: script, integrationId, integrationIdClean, basename, basenameClean }),
+                    ...parseFunction({
+                        params: fnScript,
+                        integrationId,
+                        integrationIdClean,
+                        basename: name,
+                        basenameClean: name.replaceAll(/[^a-zA-Z0-9]/g, '')
+                    }),
                     filePath: realPath
                 });
                 break;
@@ -221,12 +312,14 @@ const regexModelName = /^[A-Z][a-zA-Z0-9_]+$/;
 
 export function parseSync({
     filePath,
+    absoluteFilePath,
     params,
     integrationIdClean,
     basename,
     basenameClean
 }: {
     filePath: string;
+    absoluteFilePath: string;
     params: CreateSyncResponse<Record<string, ZodModel>, ZodMetadata, ZodCheckpoint>;
     integrationIdClean: string;
     basename: string;
@@ -271,7 +364,12 @@ export function parseSync({
     const outputNames = Object.keys(params.models);
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
 
-    const features = detectFeatures({ entryPoint: filePath });
+    const featuresRes = detectFeatures({ entryPoint: absoluteFilePath });
+    const features = featuresRes.isOk() ? featuresRes.value : [];
+
+    if (featuresRes.isOk() && params.checkpoint !== undefined && !features.includes('checkpoints')) {
+        return Err(new UnusedCheckpointDefinitionError(filePath, ['createSync', 'checkpoint']));
+    }
 
     const sync: ParsedNangoSync = {
         type: 'sync',
@@ -289,7 +387,7 @@ export function parseSync({
         version: params.version || '',
         webhookSubscriptions: params.webhookSubscriptions || [],
         json_schema: jsonSchema,
-        features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
+        features
     };
 
     return Ok(sync);
@@ -297,17 +395,19 @@ export function parseSync({
 
 export function parseAction({
     filePath,
+    absoluteFilePath,
     params,
     integrationIdClean,
     basename,
     basenameClean
 }: {
     filePath: string;
+    absoluteFilePath: string;
     params: CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>;
     integrationIdClean: string;
     basename: string;
     basenameClean: string;
-}): ParsedNangoAction {
+}): Result<ParsedNangoAction> {
     const inputName = `ActionInput_${integrationIdClean}_${basenameClean}`;
     const outputName = `ActionOutput_${integrationIdClean}_${basenameClean}`;
 
@@ -318,9 +418,14 @@ export function parseAction({
 
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
 
-    const features = detectFeatures({ entryPoint: filePath });
+    const featuresRes = detectFeatures({ entryPoint: absoluteFilePath });
+    const features = featuresRes.isOk() ? featuresRes.value : [];
 
-    return {
+    if (featuresRes.isOk() && params.checkpoint !== undefined && !features.includes('checkpoints')) {
+        return Err(new UnusedCheckpointDefinitionError(filePath, ['createAction', 'checkpoint']));
+    }
+
+    return Ok({
         type: 'action' as const,
         description: params.description,
         endpoint: params.endpoint ?? null,
@@ -331,8 +436,8 @@ export function parseAction({
         usedModels: [inputName, outputName],
         version: params.version || '',
         json_schema: jsonSchema,
-        features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
-    };
+        features
+    });
 }
 
 export function validateFunction({
@@ -340,7 +445,7 @@ export function validateFunction({
     integrationId,
     basename
 }: {
-    params: Pick<FunctionDefinition, 'trigger' | 'input' | 'data' | 'requires'>;
+    params: Pick<FunctionDefinition, 'trigger' | 'input' | 'data' | 'requires' | 'tags'>;
     integrationId: string;
     basename: string;
 }): Result<void> {
@@ -379,8 +484,38 @@ export function validateFunction({
     if (params.requires?.invoke === true) {
         return Err(new Error(`Function '${fnPath}' declares requires.invoke which is not supported yet.`));
     }
+    if (params.tags !== undefined) {
+        const tagsValidation = functionTagsSchema.safeParse(params.tags);
+        if (!tagsValidation.success) {
+            const details = tagsValidation.error.issues
+                .map((issue) => `${issue.path.length > 0 ? `${issue.path.map((key) => `${JSON.stringify(key)}`).join('')}: ` : ''}${issue.message}`)
+                .join('; ');
+            return Err(new Error(`Function '${fnPath}' has invalid tags: ${details}`));
+        }
+    }
 
     return Ok(undefined);
+}
+
+export function validateTool({ params, filePath }: { params: Pick<CreateToolProps, 'name' | 'meta'>; filePath: string }): Result<void> {
+    if (params.name !== undefined) {
+        const nameValidation = toolNameSchema.safeParse(params.name);
+        if (!nameValidation.success) {
+            return Err(new Error(`Tool '${filePath}' has an invalid name: ${formatIssues(nameValidation.error.issues)}`));
+        }
+    }
+    if (params.meta !== undefined) {
+        const metaValidation = toolMetaSchema.safeParse(params.meta);
+        if (!metaValidation.success) {
+            return Err(new Error(`Tool '${filePath}' has invalid meta: ${formatIssues(metaValidation.error.issues)}`));
+        }
+    }
+
+    return Ok(undefined);
+}
+
+function formatIssues(issues: z.core.$ZodIssue[]): string {
+    return issues.map((issue) => `${issue.path.length > 0 ? `${issue.path.map((key) => JSON.stringify(key)).join('')}: ` : ''}${issue.message}`).join('; ');
 }
 
 export function parseFunction({
@@ -448,7 +583,8 @@ export function parseFunction({
         model_schema_refs: Object.keys(models || {}).map(toSchemaRef),
         metadata_schema_ref: toSchemaRefNullable(metadataName),
         checkpoint_schema_ref: toSchemaRefNullable(checkpointName),
-        json_schema: buildJsonSchemaDefinitionsFromZodModels(allZodModels)
+        json_schema: buildJsonSchemaDefinitionsFromZodModels(allZodModels),
+        tags: params.tags ?? {}
     };
 }
 

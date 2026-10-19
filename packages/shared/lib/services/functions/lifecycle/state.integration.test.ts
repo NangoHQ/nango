@@ -73,21 +73,21 @@ describe(enable, () => {
             expect.arrayContaining([
                 expect.objectContaining({
                     environmentId: env.id,
+                    functionUuid: config.config.uuid,
                     connection: expect.objectContaining({ id: connection.id }),
-                    frequencyFallback: 'every hour',
-                    autoStart: true
+                    frequencyFallback: 'every hour'
                 }),
                 expect.objectContaining({
                     environmentId: env.id,
+                    functionUuid: config.config.uuid,
                     connection: expect.objectContaining({ id: otherConnection.id }),
-                    frequencyFallback: 'every hour',
-                    autoStart: true
+                    frequencyFallback: 'every hour'
                 })
             ])
         );
     });
 
-    it('uses trigger.autoStart when set', async () => {
+    it('keeps base instances disabled when trigger.autoStart is false', async () => {
         const { env, integrationKey, config } = await seed({ kind: 'schedule', frequency: 'every hour', autoStart: false });
         await db.knex('function_configs').where({ id: config.config.id }).update({ enabled: false });
         await createConnectionSeed({ env, provider: integrationKey });
@@ -95,7 +95,7 @@ describe(enable, () => {
 
         (await enable({ environmentId: env.id, uuid: config.config.uuid, orchestrator: { scheduleFunctions } })).unwrap();
 
-        expect(scheduleFunctions).toHaveBeenCalledWith([expect.objectContaining({ autoStart: false })]);
+        expect(scheduleFunctions).not.toHaveBeenCalled();
     });
 
     it('does not schedule a function if trigger is not scheduled', async () => {

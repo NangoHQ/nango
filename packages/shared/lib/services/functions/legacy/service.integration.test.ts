@@ -43,12 +43,14 @@ async function insertSyncConfig({
     environmentId,
     integration,
     name,
-    type
+    type,
+    enabled = true
 }: {
     environmentId: number;
     integration: IntegrationConfig;
     name: string;
     type: 'sync' | 'action';
+    enabled?: boolean;
 }): Promise<void> {
     if (integration.id === undefined) {
         throw new Error('Seeded integration has no id');
@@ -69,7 +71,7 @@ async function insertSyncConfig({
         models: [],
         metadata: {},
         active: true,
-        enabled: true,
+        enabled,
         deleted: false,
         deleted_at: null
     });
@@ -167,6 +169,29 @@ describe('listFunctions with catalog actions', () => {
         ]);
     });
 
+    it('lists a disabled deployed action as enabled and leaves a disabled sync disabled', async () => {
+        const { environment, integration } = await seedIntegration();
+        await insertSyncConfig({ environmentId: environment.id, integration, name: 'create-issue', type: 'action', enabled: false });
+        await insertSyncConfig({ environmentId: environment.id, integration, name: 'sync-issues', type: 'sync', enabled: false });
+
+        const page = await listPage({ environment, offset: 0, limit: 20 });
+
+        expect(page.rows).toEqual([
+            { name: 'create-issue', source: 'repo', enabled: true, id: expect.any(Number) },
+            { name: 'sync-issues', source: 'repo', enabled: false, id: expect.any(Number) }
+        ]);
+    });
+
+    it('keeps a disabled deployed action disabled when tools-catalog is off', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const { environment, integration } = await seedIntegration();
+        await insertSyncConfig({ environmentId: environment.id, integration, name: 'create-issue', type: 'action', enabled: false });
+
+        const page = await listPage({ environment, offset: 0, limit: 20 });
+
+        expect(page.rows).toEqual([{ name: 'create-issue', source: 'repo', enabled: false, id: expect.any(Number) }]);
+    });
+
     it('does not list a catalog action that already has a deployed row', async () => {
         const { environment, integration } = await seedIntegration();
         mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
@@ -222,23 +247,25 @@ describe('listFunctions with catalog actions', () => {
         if (result.isErr()) {
             return;
         }
-        expect(result.value.map((action) => ({ name: action.name, source: action.source, enabled: action.enabled }))).toEqual([
+        expect(result.value.provider).toBe('github');
+        expect(result.value.actions.map((action) => ({ name: action.name, source: action.source, enabled: action.enabled }))).toEqual([
             { name: 'create-issue', source: 'tools-catalog', enabled: true },
             { name: 'delete-issue', source: 'repo', enabled: true }
         ]);
     });
 
-    it('applies the requested action list limit', async () => {
+    it('lists every action without capping the count', async () => {
         const { environment } = await seedIntegration();
-        mockListCatalogTools.mockReturnValue([catalogTool('create-issue'), catalogTool('delete-issue')]);
+        const names = Array.from({ length: 250 }, (_, i) => `action-${String(i).padStart(3, '0')}`);
+        mockListCatalogTools.mockReturnValue(names.map((name) => catalogTool(name)));
 
-        const result = await listActions({ environmentId: environment.id, providerConfigKey: 'github', limit: 1 });
+        const result = await listActions({ environmentId: environment.id, providerConfigKey: 'github' });
 
         expect(result.isOk()).toBe(true);
         if (result.isErr()) {
             return;
         }
-        expect(result.value.map((action) => action.name)).toEqual(['create-issue']);
+        expect(result.value.actions.map((action) => action.name)).toEqual(names);
     });
 });
 

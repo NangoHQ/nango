@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { agentSessionPinnedToolsSchema, agentSessionToolsetSchema, compileToolsetFromFunctions } from './agentSessionToolset.service.js';
+import { compileToolsetFromFunctions } from './agentSessionToolset.service.js';
 
+import type { McpServerDiscovery } from './agentSessionMcpDiscovery.service.js';
 import type { AgentSessionToolsetCompilationError } from './agentSessionToolset.service.js';
 import type { IntegrationFunctionRow } from '@nangohq/shared';
 import type {
@@ -52,10 +53,6 @@ function compile({
     return compileToolsetFromFunctions({ toolset, pinnedTools, connectedIntegrations, functions });
 }
 
-function parseToolset(input: unknown): AgentSessionToolsetPolicy {
-    return agentSessionToolsetSchema.parse(input) as AgentSessionToolsetPolicy;
-}
-
 function integration(compiled: AgentSessionCompiledToolset, integrationId: string): AgentSessionCompiledIntegration {
     const entry = compiled[integrationId];
     if (!entry) {
@@ -76,56 +73,6 @@ function expectError(result: Result<AgentSessionCompiledToolset, AgentSessionToo
 
     return result.error;
 }
-
-describe('agentSessionToolsetSchema', () => {
-    it('normalises every shorthand to an allow and deny pair', () => {
-        expect(
-            parseToolset({
-                notion: { allow: { tools: ['read_doc'] } },
-                slack: { deny: { tools: ['send_message'] } },
-                github: '*',
-                linear: {}
-            })
-        ).toEqual({
-            notion: { allow: ['read_doc'], deny: [] },
-            slack: { allow: '*', deny: ['send_message'] },
-            github: { allow: '*', deny: [] },
-            linear: { allow: '*', deny: [] }
-        });
-    });
-
-    it('keeps deny alongside an explicit allow', () => {
-        expect(parseToolset({ notion: { allow: { tools: ['read_doc', 'upsert_doc'] }, deny: { tools: ['upsert_doc'] } } })).toEqual({
-            notion: { allow: ['read_doc', 'upsert_doc'], deny: ['upsert_doc'] }
-        });
-    });
-
-    it('accepts the environment wide shorthand', () => {
-        expect(parseToolset('*')).toBe('*');
-    });
-
-    it('rejects an empty toolset', () => {
-        expect(agentSessionToolsetSchema.safeParse({}).success).toBe(false);
-    });
-
-    it('rejects denying every tool, since leaving the integration out says the same thing', () => {
-        expect(agentSessionToolsetSchema.safeParse({ notion: { deny: '*' } }).success).toBe(false);
-        expect(agentSessionToolsetSchema.safeParse({ notion: { allow: { tools: ['read_doc'] }, deny: '*' } }).success).toBe(false);
-    });
-
-    it('keeps the star shorthand on allow', () => {
-        expect(parseToolset({ notion: { allow: '*' } })).toEqual({ notion: { allow: '*', deny: [] } });
-    });
-
-    it('rejects unknown keys on an integration policy', () => {
-        expect(agentSessionToolsetSchema.safeParse({ notion: { allow: { tags: { destructive: true } } } }).success).toBe(false);
-    });
-
-    it('rejects a pinned tools map keyed by nothing', () => {
-        expect(agentSessionPinnedToolsSchema.safeParse({ notion: ['read_doc'] }).success).toBe(true);
-        expect(agentSessionPinnedToolsSchema.safeParse({ notion: 'read_doc' }).success).toBe(false);
-    });
-});
 
 describe('compileToolset', () => {
     it('defaults to every connected integration, all searchable', () => {
@@ -167,26 +114,26 @@ describe('compileToolset', () => {
     });
 
     it('treats an explicit allow as an allowlist', () => {
-        const compiled = compile({ toolset: parseToolset({ notion: { allow: { tools: ['read_doc'] } } }) });
+        const compiled = compile({ toolset: { notion: { allow: ['read_doc'], deny: [] } } });
 
         expect(Object.keys(compiled.unwrap())).toEqual(['notion']);
         expect(names(integration(compiled.unwrap(), 'notion').searchable)).toEqual(['read_doc']);
     });
 
     it('subtracts a deny list from everything else', () => {
-        const compiled = compile({ toolset: parseToolset({ notion: { deny: { tools: ['delete_doc'] } } }) });
+        const compiled = compile({ toolset: { notion: { allow: '*', deny: ['delete_doc'] } } });
 
         expect(names(integration(compiled.unwrap(), 'notion').searchable)).toEqual(['read_doc', 'upsert_doc']);
     });
 
     it('lets deny win over an explicit allow', () => {
-        const compiled = compile({ toolset: parseToolset({ notion: { allow: { tools: ['read_doc', 'delete_doc'] }, deny: { tools: ['delete_doc'] } } }) });
+        const compiled = compile({ toolset: { notion: { allow: ['read_doc', 'delete_doc'], deny: ['delete_doc'] } } });
 
         expect(names(integration(compiled.unwrap(), 'notion').searchable)).toEqual(['read_doc']);
     });
 
     it('splits pinned tools out of the searchable set', () => {
-        const compiled = compile({ toolset: parseToolset({ notion: '*' }), pinnedTools: { notion: ['upsert_doc'] } });
+        const compiled = compile({ toolset: { notion: { allow: '*', deny: [] } }, pinnedTools: { notion: ['upsert_doc'] } });
 
         expect(names(integration(compiled.unwrap(), 'notion').pinned)).toEqual(['upsert_doc']);
         expect(names(integration(compiled.unwrap(), 'notion').searchable)).toEqual(['read_doc', 'delete_doc']);
@@ -199,64 +146,62 @@ describe('compileToolset', () => {
     });
 
     it('rejects an integration that does not exist in the environment', () => {
-        const compiled = expectError(compile({ toolset: parseToolset({ notion: '*', hubspot: '*' }) }));
+        const compiled = expectError(compile({ toolset: { notion: { allow: '*', deny: [] }, hubspot: { allow: '*', deny: [] } } }));
 
         expect(compiled.code).toBe('unknown_integration');
         expect(compiled.payload).toEqual({ integrations: ['hubspot'] });
     });
 
     it('rejects pinning on an integration that does not exist', () => {
-        const compiled = expectError(compile({ toolset: parseToolset({ notion: '*' }), pinnedTools: { hubspot: ['anything'] } }));
+        const compiled = expectError(compile({ toolset: { notion: { allow: '*', deny: [] } }, pinnedTools: { hubspot: ['anything'] } }));
 
         expect(compiled.code).toBe('unknown_integration');
         expect(compiled.payload).toEqual({ integrations: ['hubspot'] });
     });
 
     it('rejects an allowed tool that does not exist', () => {
-        const compiled = expectError(compile({ toolset: parseToolset({ notion: { allow: { tools: ['read_doc', 'read_dco'] } } }) }));
+        const compiled = expectError(compile({ toolset: { notion: { allow: ['read_doc', 'read_dco'], deny: [] } } }));
 
         expect(compiled.code).toBe('unknown_tool');
         expect(compiled.payload).toEqual({ tools: [{ integration_id: 'notion', tool: 'read_dco' }] });
     });
 
     it('rejects a denied tool that does not exist, so a typo cannot silently expose it', () => {
-        const compiled = expectError(compile({ toolset: parseToolset({ notion: { deny: { tools: ['delete_dco'] } } }) }));
+        const compiled = expectError(compile({ toolset: { notion: { allow: '*', deny: ['delete_dco'] } } }));
 
         expect(compiled.code).toBe('unknown_tool');
         expect(compiled.payload).toEqual({ tools: [{ integration_id: 'notion', tool: 'delete_dco' }] });
     });
 
     it('rejects a disabled action as unknown', () => {
-        const compiled = expectError(compile({ toolset: parseToolset({ notion: { allow: { tools: ['archive_doc'] } } }) }));
+        const compiled = expectError(compile({ toolset: { notion: { allow: ['archive_doc'], deny: [] } } }));
 
         expect(compiled.code).toBe('unknown_tool');
         expect(compiled.payload).toEqual({ tools: [{ integration_id: 'notion', tool: 'archive_doc' }] });
     });
 
     it('rejects a function that is not an action', () => {
-        const compiled = expectError(compile({ toolset: parseToolset({ notion: { allow: { tools: ['sync_pages'] } } }) }));
+        const compiled = expectError(compile({ toolset: { notion: { allow: ['sync_pages'], deny: [] } } }));
 
         expect(compiled.code).toBe('unsupported_function_type');
         expect(compiled.payload).toEqual({ tools: [{ integration_id: 'notion', tool: 'sync_pages', type: 'sync' }] });
     });
 
     it('reports the wrong function type ahead of unknown names', () => {
-        const compiled = expectError(compile({ toolset: parseToolset({ notion: { allow: { tools: ['sync_pages', 'read_dco'] } } }) }));
+        const compiled = expectError(compile({ toolset: { notion: { allow: ['sync_pages', 'read_dco'], deny: [] } } }));
 
         expect(compiled.code).toBe('unsupported_function_type');
     });
 
     it('rejects a pinned tool the toolset denies', () => {
-        const compiled = expectError(
-            compile({ toolset: parseToolset({ notion: { allow: { tools: ['read_doc'] } } }), pinnedTools: { notion: ['delete_doc'] } })
-        );
+        const compiled = expectError(compile({ toolset: { notion: { allow: ['read_doc'], deny: [] } }, pinnedTools: { notion: ['delete_doc'] } }));
 
         expect(compiled.code).toBe('tool_not_in_toolset');
         expect(compiled.payload).toEqual({ pinned: [{ integration_id: 'notion', tool: 'delete_doc' }] });
     });
 
     it('rejects a pinned tool on an integration outside the toolset', () => {
-        const compiled = expectError(compile({ toolset: parseToolset({ notion: '*' }), pinnedTools: { slack: ['send_message'] } }));
+        const compiled = expectError(compile({ toolset: { notion: { allow: '*', deny: [] } }, pinnedTools: { slack: ['send_message'] } }));
 
         expect(compiled.code).toBe('tool_not_in_toolset');
         expect(compiled.payload).toEqual({ pinned: [{ integration_id: 'slack', tool: 'send_message' }] });
@@ -272,5 +217,108 @@ describe('compileToolset', () => {
         });
 
         expect(Object.keys(compiled.unwrap())).toEqual([proto]);
+    });
+});
+
+describe('compileToolsetFromFunctions with MCP servers', () => {
+    const inputSchema = { type: 'object', properties: { query: { type: 'string' } } } as const;
+
+    function mcpTool(name: string) {
+        return { name, description: `${name} description`, inputSchema };
+    }
+
+    const linearFunctions: IntegrationFunctionRow[] = [emptyIntegration('linear-mcp'), action('linear-mcp', 'deployed_action')];
+
+    function compileMcp({
+        toolset,
+        pinnedTools,
+        discovery = {
+            status: 'available',
+            tools: [{ ...mcpTool('list_issues'), annotations: { readOnlyHint: true } }, mcpTool('create_issue'), mcpTool('deployed_action')]
+        }
+    }: {
+        toolset?: AgentSessionToolsetPolicy | undefined;
+        pinnedTools?: AgentSessionPinnedTools | undefined;
+        discovery?: McpServerDiscovery;
+    }) {
+        return compileToolsetFromFunctions({
+            toolset,
+            pinnedTools,
+            connectedIntegrations: ['linear-mcp'],
+            functions: linearFunctions,
+            mcpServers: new Map([['linear-mcp', discovery]])
+        });
+    }
+
+    it('adds the tools the server listed, with their schemas, next to deployed actions', () => {
+        const linear = integration(compileMcp({}).unwrap(), 'linear-mcp');
+
+        expect(linear.mcpServer).toBe('available');
+        expect(names(linear.searchable)).toEqual(['deployed_action', 'list_issues', 'create_issue']);
+        expect(linear.searchable.find((tool) => tool.name === 'list_issues')?.mcp).toEqual({ inputSchema, annotations: { readOnlyHint: true } });
+        expect(linear.searchable.find((tool) => tool.name === 'create_issue')?.mcp).toEqual({ inputSchema });
+        expect(linear.searchable.find((tool) => tool.name === 'deployed_action')?.mcp).toBeUndefined();
+    });
+
+    it('keeps a server tool that shares its name with a sync, since a sync cannot be called', () => {
+        const linear = integration(
+            compileToolsetFromFunctions({
+                toolset: { 'linear-mcp': { allow: ['list_issues'], deny: [] } },
+                pinnedTools: undefined,
+                connectedIntegrations: ['linear-mcp'],
+                functions: [...linearFunctions, action('linear-mcp', 'list_issues', { type: 'sync' })],
+                mcpServers: new Map([['linear-mcp', { status: 'available', tools: [mcpTool('list_issues')] }]])
+            }).unwrap(),
+            'linear-mcp'
+        );
+
+        expect(linear.searchable.map((tool) => ({ name: tool.name, mcp: tool.mcp }))).toEqual([{ name: 'list_issues', mcp: { inputSchema } }]);
+    });
+
+    it('filters and pins server tools by exact name', () => {
+        const linear = integration(
+            compileMcp({
+                toolset: { 'linear-mcp': { allow: ['list_issues', 'create_issue'], deny: ['create_issue'] } },
+                pinnedTools: { 'linear-mcp': ['list_issues'] }
+            }).unwrap(),
+            'linear-mcp'
+        );
+
+        expect(names(linear.pinned)).toEqual(['list_issues']);
+        expect(linear.searchable).toEqual([]);
+    });
+
+    it('rejects a name the server did not list', () => {
+        const compiled = expectError(compileMcp({ toolset: { 'linear-mcp': { allow: '*', deny: ['delete_issues'] } } }));
+
+        expect(compiled.code).toBe('unknown_tool');
+        expect(compiled.payload).toEqual({ tools: [{ integration_id: 'linear-mcp', tool: 'delete_issues' }] });
+    });
+
+    it('still rejects a pinned name the toolset denies when the server could not be listed', () => {
+        const compiled = expectError(
+            compileMcp({
+                toolset: { 'linear-mcp': { allow: '*', deny: ['list_issues'] } },
+                pinnedTools: { 'linear-mcp': ['list_issues'] },
+                discovery: { status: 'unavailable' }
+            })
+        );
+
+        expect(compiled.code).toBe('tool_not_in_toolset');
+    });
+
+    it('still compiles when the server could not be listed, and marks it unavailable', () => {
+        const linear = integration(
+            compileMcp({
+                toolset: { 'linear-mcp': { allow: ['list_issues', 'deployed_action'], deny: [] } },
+                pinnedTools: { 'linear-mcp': ['list_issues'] },
+                discovery: { status: 'unavailable' }
+            }).unwrap(),
+            'linear-mcp'
+        );
+
+        expect(linear.mcpServer).toBe('unavailable');
+        expect(linear.pinned).toEqual([]);
+        expect(names(linear.searchable)).toEqual(['deployed_action']);
     });
 });

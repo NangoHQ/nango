@@ -45,7 +45,7 @@ See [Data storage](/guides/platform/self-hosting#data-storage) on the overview p
 
 | Area | Nango | You |
 | --- | --- | --- |
-| Managed image releases | Publishes them, on a two-month cadence plus hotfixes | Pull and apply them |
+| Managed image releases | Publishes them, on a two-week cadence plus hotfixes | Pull and apply them |
 | Helm chart | Maintains it | Deploy and configure it |
 | Infrastructure provisioning | — | Provision it — VPC, database, cache, cluster, on any cloud or on-prem |
 | Application deployment & updates | — | Deploy and update it yourself |
@@ -69,7 +69,7 @@ Support follows your contract's SLA. Reach out through your support channel with
 
 ## Updates
 
-You pull and apply updates yourself. Notifications about new releases are posted to your dedicated Nango Slack channel, and you can subscribe directly to the [`NangoHQ/managed-image-releases`](https://github.com/NangoHQ/managed-image-releases) repository:
+You pull and apply updates yourself. Notifications about new releases are available by subscribing to the [`NangoHQ/managed-image-releases`](https://github.com/NangoHQ/managed-image-releases) repository:
 
 - **GitHub:** watch the repository, select **Custom**, and enable **Releases**.
 - **RSS/Atom:** subscribe to `https://github.com/NangoHQ/managed-image-releases/releases.atom`, which can be wired into Slack, Microsoft Teams, RSS readers, or internal automation.
@@ -245,6 +245,19 @@ NANGO_FEATURE_FLAG_MFA=true
 ```
 
 Once the server restarts, users can turn it on from their profile settings by pairing an authenticator app and saving their backup codes. Nango then asks them for a code at login.
+
+#### OAuth state cookie enforcement
+
+When an OAuth flow starts, Nango sets a cookie in the user's browser that is tied to that flow. By default, a callback that arrives without this cookie is still accepted. To reject it instead, so the flow can only be completed by the browser that started it, set these on the server service:
+
+```bash
+NANGO_FLAG_PROVIDER=env
+NANGO_FEATURE_FLAG_OAUTH_STATE_COOKIE_ENFORCEMENT=true
+```
+
+With the flag on, a callback forwarded from your backend or sent by a `fetch` request without the state cookie fails with a `state_cookie_err` error. Make sure the callback reaches Nango as a redirect in the same browser that opened the authorization page.
+
+The check covers OAuth 2 based flows, including MCP OAuth. It does not apply to App, OAuth 1, or plugin install flows.
 
 ### Server URL, callback URL, and custom domains
 
@@ -532,17 +545,48 @@ NANGO_CLI_TLS_KEY_PASSPHRASE=
 
 Orchestrator, jobs, and runner HTTP APIs accept an `Authorization: Bearer` credential except `GET /health`, which stays open for probes. Enforcement is off until you set `NANGO_INTERNAL_AUTH_REQUIRED=true`. Shipping the image with no new variables is a no-op.
 
-There are three credential kinds:
+New tokens are EdDSA JWTs with the same shape on every hop. The `kid` header selects the verifying key. Service tokens are minted by the caller (`iss` and `sub` are `service:jobs` or `service:server`) and last 5 minutes. Jobs mints `sub: task:<id>` or `node:<id>` for two hops: jobs → runner uses `aud: runner` and lasts 5 minutes; the runner carries `aud: jobs` back, where a task token lasts 25 hours by default, or the task lifetime, and a node token lasts a year. Runners never receive a private key.
 
-- **Control plane** (server, jobs, orchestrator): a static shared secret. Used for server and jobs calling orchestrator.
-- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call body. The runner presents it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is 25 hours (orchestrator started-to-completed is one day, plus one hour).
-- **Runner dispatch JWT**: jobs mints an EdDSA token (`aud: runner`, `task_id` or `node_id`) and sends it as `Authorization: Bearer` on `start`, `abort`, and `notifyWhenIdle`. The Ed25519 private key is derived from `NANGO_INTERNAL_AUTH_SIGNING_KEY` and never leaves jobs. Jobs injects only the matching public key onto the runner at node start, so a runner process cannot mint dispatch tokens. A start call without a valid jobs identity is rejected when `REQUIRED=true`.
+Until you set a private key, callers keep minting the previous credentials, and every receiver still accepts them:
+
+- **Static bearer** (`NANGO_INTERNAL_AUTH_TOKEN`): server and jobs calling orchestrator.
+- **Task and node HMAC JWTs** (`NANGO_INTERNAL_AUTH_SIGNING_KEY`): runner calls back to jobs. Task tokens last 25 hours by default, or the task lifetime. Node tokens last a year.
+- **Derived Ed25519 dispatch JWTs**: jobs calls the runner. The private key is derived from the HMAC signing key and never leaves jobs.
+
+Set the new keys in this order so a rolling deploy keeps accepting in-flight tokens:
+
+1. Deploy server, jobs, and orchestrator. Runners pick up the new image the next time jobs starts them.
+2. Set the public keys, and do not set private keys yet. Set `NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS` on orchestrator and jobs, and `NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS` on the server and orchestrator. Jobs copies the jobs public keys onto new runners and still injects the legacy derived public key.
+3. Recycle runners so every live runner can verify both shapes.
+4. Set the server private key, then the jobs private key. Jobs then mints service and workload JWTs. In-flight HMAC task tokens (up to 25 hours) and node tokens on runners that have not been recycled still verify.
+
+To rotate a key, append the new entry to the public-key JSON array and deploy the verifiers before you switch the minter's key id and private key.
+
+```yaml
+NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: |
+  [
+    {
+      "kid": "jobs-2026-09",
+      "publicKey": "<base64url of the raw 32-byte key>"
+    },
+    {
+      "kid": "jobs-2026-10",
+      "publicKey": "<base64url of the next key>"
+    }
+  ]
+```
 
 | Variable | Where | Purpose |
 | - | - | - |
-| `NANGO_INTERNAL_AUTH_TOKEN` | server, jobs, orchestrator | Static Bearer. Never the runner service. |
-| `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only. Never set on runners. | HMAC key for task JWTs (`aud: jobs`). Also the seed for the Ed25519 runner-dispatch keypair. |
-| `NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY` | runners (injected by jobs at node start) | Ed25519 public key. Verify-only; cannot mint dispatch tokens. |
+| `NANGO_INTERNAL_AUTH_TOKEN` | server, jobs, orchestrator | Legacy static Bearer. Used until that service's private key is set. Never the runner service. |
+| `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only. Never set on runners. | Legacy HMAC key and seed for the derived runner-dispatch keypair. |
+| `NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY` | runners (injected by jobs at node start) | Legacy Ed25519 public key. Verify-only. |
+| `NANGO_INTERNAL_AUTH_JOBS_KEY_ID` | jobs | `kid` for the jobs private key, for example `jobs-2026-09`. |
+| `NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY` | jobs only. Never set on runners. | Unencrypted Ed25519 PKCS8 PEM. Mints service and workload tokens. |
+| `NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS` | orchestrator, jobs, runners | JSON array of `{"kid","publicKey"}`. `publicKey` is the base64url raw 32-byte Ed25519 key. Must include the jobs key id before the private key is set. |
+| `NANGO_INTERNAL_AUTH_SERVER_KEY_ID` | server | `kid` for the server private key, for example `server-2026-09`. |
+| `NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY` | server only | Unencrypted Ed25519 PKCS8 PEM. Mints tokens for orchestrator. |
+| `NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS` | server, orchestrator | Same JSON array. Must include the server key id on the server process before the private key is set. |
 | `NANGO_INTERNAL_AUTH_REQUIRED` | orchestrator, jobs, runners | Fail closed. Default `false`. Flip independently on orchestrator, then jobs. Runners inherit `REQUIRED` at node start. |
 
 #### Custom websockets path
@@ -609,7 +653,7 @@ If `NANGO_LOGS_ENABLED` is `false`, logs are sent to stdout and can be viewed in
     Support per your contract's SLA, plus the managed image releases and Helm chart maintained by Nango. Nango doesn't have visibility into your instance, so support relies on what you share with us — logs, dashboard state, error messages.
   </Accordion>
   <Accordion title="Who applies updates?">
-    You do. We publish managed images on a two-month cadence plus hotfixes, and notify your Slack channel and the `managed-image-releases` repo — pulling and deploying them is on your team.
+    You do. We publish managed images on a two-week cadence plus hotfixes, and notify via the `managed-image-releases` repo — pulling and deploying them is on your team.
   </Accordion>
   <Accordion title="Which clouds are supported?">
     AWS, GCP, Azure, and on-prem Kubernetes — anywhere you can run the Helm chart.

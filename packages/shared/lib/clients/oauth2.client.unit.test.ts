@@ -1,7 +1,8 @@
 import http from 'node:http';
 
+import Boom from '@hapi/boom';
 import { AuthorizationCode } from 'simple-oauth2';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
 
@@ -10,8 +11,10 @@ import { getFreshOAuth2Credentials, getSimpleOAuth2ClientConfig } from './oauth2
 
 import type { Config as ProviderConfig } from '../models/index.js';
 import type * as OutboundPolicyModule from '../services/proxy/outbound-policy.js';
+import type { BufferTransport } from '@nangohq/logs';
 import type { DBConnectionDecrypted, ProviderOAuth2 } from '@nangohq/types';
 import type { AddressInfo } from 'node:net';
+import type { AccessToken } from 'simple-oauth2';
 
 // OAuth2 token calls run through simple-oauth2 wired with the OAuth-safe agents and gated by
 // `assertSafeOAuthUrl`. Neutralise the egress policy so a loopback test server is reachable (loopback is
@@ -149,6 +152,63 @@ describe('OAuth2 token generation and refresh', () => {
         );
     });
 
+    it.each([
+        {
+            description: 'interpolates connection_config placeholders in refresh_params before refreshing',
+            providerOverrides: {
+                refresh_params: { grant_type: 'refresh_token', resource: 'https://${connectionConfig.environmentUrl}' } as NonNullable<
+                    ProviderOAuth2['refresh_params']
+                >
+            },
+            connectionConfig: { environmentUrl: 'contoso.crm.dynamics.com' },
+            paramKey: 'resource',
+            expected: 'https://contoso.crm.dynamics.com'
+        },
+        {
+            description: 'interpolates connection_config placeholders in token_params when refresh_params is absent',
+            providerOverrides: {
+                token_params: { context: 'stores/${connectionConfig.storeHash}' } as NonNullable<ProviderOAuth2['token_params']>
+            },
+            connectionConfig: { storeHash: 'abc123' },
+            paramKey: 'context',
+            expected: 'stores/abc123'
+        }
+    ])('getFreshOAuth2Credentials $description', async ({ providerOverrides, connectionConfig, paramKey, expected }) => {
+        let receivedValue: string | null = null;
+        await withServer(
+            (req, res) => {
+                let body = '';
+                req.on('data', (chunk) => (body += chunk));
+                req.on('end', () => {
+                    receivedValue = new URLSearchParams(body).get(paramKey);
+                    res.writeHead(200, { 'content-type': 'application/json' });
+                    res.end(JSON.stringify({ access_token: 'refreshed-access-token', token_type: 'bearer', expires_in: 3600 }));
+                });
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({ token_url: `${baseUrl}/token`, ...providerOverrides });
+                const config = makeConfig();
+                const connection = {
+                    id: 1,
+                    environment_id: 1,
+                    connection_config: connectionConfig,
+                    credentials: {
+                        type: 'OAUTH2',
+                        access_token: 'stale-access-token',
+                        refresh_token: 'the-refresh-token',
+                        expires_at: new Date(Date.now() - 60_000)
+                    }
+                } as unknown as DBConnectionDecrypted;
+
+                const buffer = logContextGetter.getBuffer({ accountId: 1 });
+                const result = await getFreshOAuth2Credentials({ connection, config, provider, logCtx: buffer });
+
+                expect(result.success).toBe(true);
+                expect(receivedValue).toBe(expected);
+            }
+        );
+    });
+
     it('getFreshOAuth2Credentials fails without issuing the refresh when the token URL is blocked by policy', async () => {
         vi.mocked(assertSafeOAuthUrl).mockRejectedValueOnce(new Error('URL resolves to a blocked address'));
         let serverHit = false;
@@ -180,5 +240,38 @@ describe('OAuth2 token generation and refresh', () => {
                 expect(serverHit).toBe(false);
             }
         );
+    });
+
+    it('getFreshOAuth2Credentials reports the underlying error when the Boom error carries no payload', async () => {
+        // wreck throws a Boom error with `data` set to null when the token request times out or the socket dies.
+        const timeout = Boom.gatewayTimeout('Client request timeout');
+        const createToken = vi
+            .spyOn(AuthorizationCode.prototype, 'createToken')
+            .mockReturnValue({ refresh: () => Promise.reject(timeout) } as unknown as AccessToken);
+        onTestFinished(() => createToken.mockRestore());
+
+        const provider = makeProvider({ token_url: 'https://api.example.com/token' });
+        const connection = {
+            id: 1,
+            environment_id: 1,
+            connection_config: {},
+            credentials: {
+                type: 'OAUTH2',
+                access_token: 'stale-access-token',
+                refresh_token: 'the-refresh-token',
+                expires_at: new Date(Date.now() - 60_000)
+            }
+        } as unknown as DBConnectionDecrypted;
+
+        const buffer = logContextGetter.getBuffer({ accountId: 1 });
+        const result = await getFreshOAuth2Credentials({ connection, config: makeConfig(), provider, logCtx: buffer });
+
+        expect(result.success).toBe(false);
+        expect(result.error?.type).toBe('refresh_token_external_error');
+        expect(result.error?.payload).toStrictEqual({ dataMessage: 'Client request timeout' });
+
+        const httpLog = (buffer.transport as BufferTransport).buffer.find((msg) => msg.type === 'http');
+        expect(httpLog?.response?.code).toBe(504);
+        expect(httpLog?.meta?.['body']).toBe('Client request timeout');
     });
 });

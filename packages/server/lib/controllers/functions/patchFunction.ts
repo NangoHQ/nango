@@ -6,7 +6,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
-import { toGetFunctionResponse } from './helpers.js';
+import { toGetFunctionResponse } from './formatter.js';
 
 import type { PatchFunction } from '@nangohq/types';
 

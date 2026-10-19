@@ -224,7 +224,8 @@ export function getServer(authEnvs: InternalAuthEnvs = envs): express.Express {
             audience: INTERNAL_SERVICE_AUDIENCE_RUNNER,
             envs: {
                 NANGO_INTERNAL_AUTH_REQUIRED: authEnvs.NANGO_INTERNAL_AUTH_REQUIRED,
-                NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY: authEnvs.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY
+                NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY: authEnvs.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY,
+                NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: authEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS
             },
             skip: isHealthPath
         })

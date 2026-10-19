@@ -1,8 +1,8 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
-import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTriggerDefinition } from '../function/config.js';
+import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTags, FunctionTriggerDefinition } from '../function/config.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
-import type { FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
+import type { FunctionListSource, FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
@@ -242,9 +242,12 @@ export interface GetFunctionResponse {
     provider: string;
     name: string;
     description: string;
+    tags: FunctionTags;
     state: 'enabled' | 'disabled';
     source: FunctionSource;
     trigger: FunctionTriggerDefinition;
+    input_json_schema: JSONSchema7 | null;
+    output_json_schema: JSONSchema7 | null;
     created_at: string;
     updated_at: string;
 }
@@ -312,6 +315,62 @@ export type PostFunctionInvocation = ApiEndpoint<{
     };
     Error: ApiError<FunctionInvocationErrorCode>;
     Success: FunctionInvocationSuccess;
+}>;
+
+export type FunctionVariantErrorCode =
+    | 'invalid_variant'
+    | 'function_not_found'
+    | 'connection_not_found'
+    | 'function_disabled'
+    | 'function_variant_not_found'
+    | 'invalid_frequency'
+    | 'resource_capped'
+    | 'server_error';
+
+export type FunctionVariantSuccess = {
+    function: { uuid: string; name: string };
+    variant: string;
+    frequency: string;
+    state: 'enabled' | 'disabled';
+};
+
+export type PostFunctionVariant = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'variant_created', 'environment'>;
+    Method: 'POST';
+    Path: '/connections/:connectionId/functions/:functionUuid/variants';
+    Params: { connectionId: string; functionUuid: string };
+    Body: { variant: string };
+    Error: ApiError<FunctionVariantErrorCode>;
+    Success: FunctionVariantSuccess;
+}>;
+
+export type DeleteFunctionVariant = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'variant_deleted', 'environment'>;
+    Method: 'DELETE';
+    Path: '/connections/:connectionId/functions/:functionUuid/variants/:variant';
+    Params: { connectionId: string; functionUuid: string; variant: string };
+    Error: ApiError<FunctionVariantErrorCode>;
+    Success: { success: boolean };
+}>;
+
+export type PatchConnectionFunction = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'variant_updated', 'environment'>;
+    Method: 'PATCH';
+    Path: '/connections/:connectionId/functions/:functionUuid';
+    Params: { connectionId: string; functionUuid: string };
+    Body: PatchFunctionVariant['Body'];
+    Error: ApiError<FunctionVariantErrorCode>;
+    Success: FunctionVariantSuccess;
+}>;
+
+export type PatchFunctionVariant = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'variant_updated', 'environment'>;
+    Method: 'PATCH';
+    Path: '/connections/:connectionId/functions/:functionUuid/variants/:variant';
+    Params: { connectionId: string; functionUuid: string; variant: string };
+    Body: { enabled: boolean; frequency?: string | null } | { enabled?: boolean; frequency: string | null };
+    Error: ApiError<FunctionVariantErrorCode>;
+    Success: FunctionVariantSuccess;
 }>;
 
 export type GetFunctionInvocation = ApiEndpoint<{
@@ -416,6 +475,39 @@ export type DeletePublicIntegrationFunction = ApiEndpoint<{
     Success: FunctionDeletionSuccess;
 }>;
 
+export interface GetToolResponse {
+    uuid: string | null;
+    integration_id: string;
+    provider: string;
+    name: string;
+    description: string;
+    input_json_schema: JSONSchema7 | null;
+    output_json_schema: JSONSchema7 | null;
+    source: FunctionListSource;
+    meta: {
+        instructions?: string | undefined;
+        required_scopes?: string[] | undefined;
+        tags: FunctionTags;
+    };
+}
+
+export type GetTools = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/integrations/:uniqueKey/tools';
+    Params: { uniqueKey: string };
+    Querystring: { cursor?: string | undefined; limit?: number | undefined };
+    Success: { data: GetToolResponse[]; next_cursor: string | null };
+}>;
+
+export type GetTool = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/integrations/:uniqueKey/tools/:name';
+    Params: { uniqueKey: string; name: string };
+    Success: GetToolResponse;
+}>;
+
 export type GetPublicProviderTemplates = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
@@ -437,6 +529,7 @@ export interface FunctionDeploymentArtifact {
     name: string;
     integrationId: string;
     description: string;
+    tags?: FunctionTags | undefined;
     trigger: FunctionTriggerDefinition;
     requires: FunctionRequires;
     capabilities: FunctionCapabilities;

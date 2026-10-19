@@ -1,16 +1,15 @@
-import { z } from 'zod';
-
 import { legacyFunctionService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { providerConfigKeySchema, scriptNameSchema } from '../helpers/validation.js';
-
+import type { McpServerDiscovery } from './agentSessionMcpDiscovery.service.js';
 import type { IntegrationFunctionRow } from '@nangohq/shared';
 import type {
     AgentSessionCompiledIntegration,
     AgentSessionCompiledTool,
     AgentSessionCompiledToolset,
     AgentSessionIntegrationPolicy,
+    AgentSessionMcpServerStatus,
+    AgentSessionMcpToolDefinition,
     AgentSessionPinnedTools,
     AgentSessionToolsetCompilationErrorCode,
     AgentSessionToolsetPolicy,
@@ -22,37 +21,6 @@ import type {
 import type { Result } from '@nangohq/utils';
 
 const ALLOW_ALL = '*';
-
-const toolListSchema = z.array(scriptNameSchema);
-
-const toolListSelectorSchema = z.strictObject({ tools: toolListSchema });
-
-const integrationPolicySchema = z
-    .union([
-        z.literal(ALLOW_ALL),
-        z.strictObject({
-            allow: z.union([z.literal(ALLOW_ALL), toolListSelectorSchema]).optional(),
-            deny: toolListSelectorSchema.optional()
-        })
-    ])
-    .transform((policy): AgentSessionIntegrationPolicy => {
-        if (policy === ALLOW_ALL) {
-            return { allow: ALLOW_ALL, deny: [] };
-        }
-
-        const allow = policy.allow === undefined || policy.allow === ALLOW_ALL ? ALLOW_ALL : policy.allow.tools;
-
-        return { allow, deny: policy.deny?.tools ?? [] };
-    });
-
-export const agentSessionToolsetSchema = z.union([
-    z.literal(ALLOW_ALL),
-    z
-        .record(providerConfigKeySchema, integrationPolicySchema)
-        .refine((toolset) => Object.keys(toolset).length > 0, { message: 'A toolset must name at least one integration' })
-]);
-
-export const agentSessionPinnedToolsSchema = z.record(providerConfigKeySchema, toolListSchema);
 
 export class AgentSessionToolsetCompilationError extends Error {
     public readonly code: AgentSessionToolsetCompilationErrorCode;
@@ -74,22 +42,44 @@ export class AgentSessionToolsetCompilationError extends Error {
  * An omitted toolset means every integration the tenant resolved a connection for. An explicit
  * `'*'` means every integration in the environment, connected or not, which is the difference
  * between "whatever this tenant has" and "everything we offer".
+ *
+ * `mcpServers` holds what each connected MCP server listed, and its tools are filtered and pinned by
+ * name exactly like deployed actions.
  */
 export async function compileToolset({
     environmentId,
     toolset,
     pinnedTools,
-    connectedIntegrations
+    connectedIntegrations,
+    mcpServers
 }: {
     environmentId: number;
     toolset: AgentSessionToolsetPolicy | undefined;
     pinnedTools: AgentSessionPinnedTools | undefined;
     connectedIntegrations: string[];
+    mcpServers?: Map<string, McpServerDiscovery> | undefined;
 }): Promise<Result<AgentSessionCompiledToolset, AgentSessionToolsetCompilationError>> {
     const named = namedIntegrations({ toolset, pinnedTools, connectedIntegrations });
     const functions = await legacyFunctionService.findIntegrationFunctions({ environmentId, providerConfigKeys: named });
 
-    return compileToolsetFromFunctions({ toolset, pinnedTools, connectedIntegrations, functions });
+    return compileToolsetFromFunctions({ toolset, pinnedTools, connectedIntegrations, functions, mcpServers });
+}
+
+/**
+ * The integrations a policy could reach a connected MCP server through, so only those are listed.
+ */
+export function integrationsInScope({
+    toolset,
+    pinnedTools,
+    connectedIntegrations
+}: {
+    toolset: AgentSessionToolsetPolicy | undefined;
+    pinnedTools: AgentSessionPinnedTools | undefined;
+    connectedIntegrations: string[];
+}): string[] {
+    const named = namedIntegrations({ toolset, pinnedTools, connectedIntegrations });
+
+    return named ? connectedIntegrations.filter((integrationId) => named.includes(integrationId)) : connectedIntegrations;
 }
 
 /**
@@ -102,14 +92,17 @@ export function compileToolsetFromFunctions({
     toolset,
     pinnedTools,
     connectedIntegrations,
-    functions
+    functions,
+    mcpServers
 }: {
     toolset: AgentSessionToolsetPolicy | undefined;
     pinnedTools: AgentSessionPinnedTools | undefined;
     connectedIntegrations: string[];
     functions: IntegrationFunctionRow[];
+    mcpServers?: Map<string, McpServerDiscovery> | undefined;
 }): Result<AgentSessionCompiledToolset, AgentSessionToolsetCompilationError> {
     const integrations = groupFunctionsByIntegration(functions);
+    addMcpServerTools({ integrations, mcpServers });
 
     // Step 1. Resolve which integrations the policy covers.
     const policies = resolvePolicies({ toolset, connectedIntegrations, integrations });
@@ -153,7 +146,7 @@ export function compileToolsetFromFunctions({
         const pinnedNames = new Set(pinned.get(integrationId) ?? []);
 
         for (const name of pinnedNames) {
-            if (!allowed.some((action) => action.name === name)) {
+            if (!allowed.some((action) => action.name === name) && !(isUnlistedMcpTool(integration, name) && isAllowed(name, policy))) {
                 notInToolset.push({ integration_id: integrationId, tool: name });
             }
         }
@@ -161,7 +154,8 @@ export function compileToolsetFromFunctions({
         compiled.set(integrationId, {
             provider: integration.provider,
             pinned: allowed.filter((action) => pinnedNames.has(action.name)).map(toCompiledTool),
-            searchable: allowed.filter((action) => !pinnedNames.has(action.name)).map(toCompiledTool)
+            searchable: allowed.filter((action) => !pinnedNames.has(action.name)).map(toCompiledTool),
+            ...(integration.mcpServer ? { mcpServer: integration.mcpServer } : {})
         });
     }
 
@@ -172,10 +166,17 @@ export function compileToolsetFromFunctions({
     return Ok(Object.fromEntries(compiled));
 }
 
+interface IntegrationTool {
+    name: string;
+    description: string;
+    mcp?: AgentSessionMcpToolDefinition;
+}
+
 interface IntegrationFunctions {
     provider: string;
-    actions: { name: string; description: string }[];
+    actions: IntegrationTool[];
     functionTypesByName: Map<string, string>;
+    mcpServer?: AgentSessionMcpServerStatus;
 }
 
 interface ToolReference {
@@ -257,7 +258,8 @@ function referencedTools({ policies, pinned }: { policies: Map<string, AgentSess
  *
  * A name that is deployed but is not an action is reported ahead of one that does not exist at
  * all, since the wrong function type is the more specific thing to hand back. A disabled action
- * counts as unknown, because a session cannot serve it either way.
+ * counts as unknown, because a session cannot serve it either way. A name on an MCP server that
+ * could not be listed cannot be checked, so it is let through and simply reaches nothing.
  */
 function rejectUnusableReferences({
     referenced,
@@ -271,7 +273,7 @@ function rejectUnusableReferences({
 
     for (const reference of referenced) {
         const integration = integrations.get(reference.integrationId);
-        if (integration?.actions.some((action) => action.name === reference.name)) {
+        if (integration?.actions.some((action) => action.name === reference.name) || (integration && isUnlistedMcpTool(integration, reference.name))) {
             continue;
         }
 
@@ -326,8 +328,48 @@ function groupFunctionsByIntegration(functions: IntegrationFunctionRow[]): Map<s
     return integrations;
 }
 
-function toCompiledTool(action: { name: string; description: string }): AgentSessionCompiledTool {
-    return { name: action.name, description: action.description };
+/**
+ * A deployed action keeps its name when an MCP server lists a tool under the same one, since an
+ * account deploying it over the server's tool is the more deliberate choice.
+ */
+function addMcpServerTools({
+    integrations,
+    mcpServers
+}: {
+    integrations: Map<string, IntegrationFunctions>;
+    mcpServers: Map<string, McpServerDiscovery> | undefined;
+}): void {
+    for (const [integrationId, discovery] of mcpServers ?? []) {
+        const integration = integrations.get(integrationId);
+        if (!integration) {
+            continue;
+        }
+
+        integration.mcpServer = discovery.status;
+        if (discovery.status === 'unavailable') {
+            continue;
+        }
+
+        for (const tool of discovery.tools) {
+            if (integration.actions.some((action) => action.name === tool.name)) {
+                continue;
+            }
+
+            integration.actions.push({
+                name: tool.name,
+                description: tool.description ?? tool.name,
+                mcp: { inputSchema: tool.inputSchema, ...(tool.annotations ? { annotations: tool.annotations } : {}) }
+            });
+        }
+    }
+}
+
+function isUnlistedMcpTool(integration: IntegrationFunctions, name: string): boolean {
+    return integration.mcpServer === 'unavailable' && !integration.actions.some((action) => action.name === name);
+}
+
+function toCompiledTool(tool: IntegrationTool): AgentSessionCompiledTool {
+    return { name: tool.name, description: tool.description, ...(tool.mcp ? { mcp: tool.mcp } : {}) };
 }
 
 function unknownIntegrationError(rejected: string[]): AgentSessionToolsetCompilationError {
@@ -347,7 +389,7 @@ function unknownToolError(rejected: ToolReference[]): AgentSessionToolsetCompila
 
     return new AgentSessionToolsetCompilationError({
         code: 'unknown_tool',
-        message: `${rejected.length} ${rejected.length === 1 ? 'tool is' : 'tools are'} not a deployed and enabled action on the integration given. Check the tool names, and that the action is enabled.`,
+        message: `${rejected.length} ${rejected.length === 1 ? 'tool is' : 'tools are'} not an enabled action or an MCP server tool on the integration given. Check the tool names, and that the action is enabled.`,
         payload: { ...payload }
     });
 }

@@ -3,31 +3,50 @@ import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { convertToModelMessages, dynamicTool, jsonSchema, stepCountIs, streamText, toUIMessageStream } from 'ai';
 
 import db from '@nangohq/database';
-import { configService, connectionService, getProvider, sharedCredentialsService } from '@nangohq/shared';
-import { Err, getLogger, Ok } from '@nangohq/utils';
+import { buildTagsFromEndUser, configService, connectionService, getProvider, sharedCredentialsService } from '@nangohq/shared';
+import { Err, getLogger, metrics, Ok, report, stringifyError } from '@nangohq/utils';
 
+import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { createAgentSessionMcpServer, TOOL_NAME_SEPARATOR } from '../controllers/agent/mcp/sessionServer.js';
+import { postAgentSessionsBodySchema } from '../controllers/agent/postSessions.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { buildInstructions } from './agentPlayground.instructions.js';
 import { createPlaygroundModel } from './agentPlaygroundModel.service.js';
+import { modelErrorCategory, modelUnavailableError } from './agentPlaygroundModelError.js';
+import { PLAYGROUND_USER_TAG_KEY, sessionOwner } from './agentPlaygroundTags.js';
+import { isUsableOutcome, trackPlaygroundTurn, trackStarterIntegrationSetup } from './agentPlaygroundUsage.service.js';
 import * as agentSessionService from './agentSession.service.js';
-import * as agentSessionCreationService from './agentSessionCreation.service.js';
+import { trackAgentSessionCreated } from './agentSessionAnalytics.service.js';
 
-import type { AgentPlaygroundMessageMetadata, AgentSession, AgentSessionPinnedConnection, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
+import type { ModelErrorCategory } from './agentPlaygroundModelError.js';
+import type { PlaygroundStep, PlaygroundTurn, PlaygroundTurnOutcome } from './agentPlaygroundUsage.service.js';
+import type {
+    AgentPlaygroundIntegrationSetup,
+    AgentPlaygroundMessageMetadata,
+    AgentPlaygroundSessionChange,
+    AgentPlaygroundSessionCreated,
+    AgentSession,
+    AgentSessionPinnedConnection,
+    DBEnvironment,
+    DBPlan,
+    DBTeam,
+    DBUser,
+    PostAgentSessionsBody,
+    Tags
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-import type { JSONSchema7, LanguageModel, ToolSet, UIMessage, UIMessageChunk } from 'ai';
+import type { JSONSchema7, ToolSet, UIMessage, UIMessageChunk } from 'ai';
 
 const logger = getLogger('AgentPlayground');
 
-const PLAYGROUND_SESSION_EXPIRES_IN_MS = 60 * 60 * 1000;
 const MAX_STEPS = 10;
 
+export const PLAYGROUND_PROVIDERS = ['google-calendar', 'google-mail', 'github', 'slack', 'linear', 'hubspot'];
 export const PLAYGROUND_INTEGRATION_PREFIX = 'pg-';
-export const PLAYGROUND_PROVIDERS: { provider: string; sharedCredentialsName?: string }[] = [
-    { provider: 'google-calendar' },
-    { provider: 'github', sharedCredentialsName: 'github-getting-started' }
-];
-export const PLAYGROUND_USER_TAG_KEY = 'nango/playground_user';
+
+export function playgroundIntegrationId(provider: string): string {
+    return `${PLAYGROUND_INTEGRATION_PREFIX}${provider}`;
+}
 
 export type PlaygroundUIMessage = UIMessage<AgentPlaygroundMessageMetadata>;
 
@@ -62,91 +81,203 @@ export function newestConnectionPerIntegration(
     return [...pinned.values()];
 }
 
-export function playgroundIntegrationId(provider: string): string {
-    return `${PLAYGROUND_INTEGRATION_PREFIX}${provider}`;
+// Expects `integrations` oldest first, as listProviderConfigs returns them.
+export function existingIntegrationFor<T extends { unique_key: string; provider: string; missing_fields: string[] }>(
+    integrations: T[],
+    provider: string
+): T | undefined {
+    const matching = integrations.filter((integration) => integration.provider === provider);
+    const pick = (candidates: T[]) =>
+        candidates.find((integration) => integration.unique_key === playgroundIntegrationId(provider)) ??
+        candidates.find((integration) => integration.unique_key === provider) ??
+        candidates[0];
+    return pick(matching.filter((integration) => integration.missing_fields.length === 0)) ?? pick(matching);
 }
 
-export async function ensurePlaygroundIntegrations(environment: DBEnvironment): Promise<string[]> {
-    const ensured = await Promise.all(PLAYGROUND_PROVIDERS.map((entry) => ensurePlaygroundIntegration(environment, entry)));
-    return ensured.filter((integrationId): integrationId is string => integrationId !== null);
+// The scope matches on `end_user_email`, so connections made here must carry it.
+export function playgroundConnectionTags(user: Pick<DBUser, 'id' | 'uuid' | 'email' | 'name'>): Tags {
+    return buildTagsFromEndUser(
+        {
+            id: String(user.id),
+            email: user.email,
+            display_name: user.name,
+            tags: { origin: 'nango_agent_playground', [PLAYGROUND_USER_TAG_KEY]: user.uuid }
+        },
+        null
+    );
 }
 
-async function ensurePlaygroundIntegration(
-    environment: DBEnvironment,
-    { provider: providerName, sharedCredentialsName }: (typeof PLAYGROUND_PROVIDERS)[number]
-): Promise<string | null> {
-    const integrationId = playgroundIntegrationId(providerName);
+function playgroundConnectionScope(user: Pick<DBUser, 'email'>): Tags {
+    return { end_user_email: user.email };
+}
+
+export async function setUpStarterIntegration(environment: DBEnvironment, providerName: string): Promise<AgentPlaygroundIntegrationSetup> {
+    // Read the primary: on a stale replica read, the create below adds a duplicate.
+    const existing = existingIntegrationFor(await configService.listProviderConfigs(db.knex, environment.id), providerName);
+    if (existing) {
+        return {
+            provider: providerName,
+            integrationId: existing.unique_key,
+            outcome: existing.missing_fields.length > 0 ? 'missing_credentials' : 'existing'
+        };
+    }
+
+    const created = await createWithNangoOAuthApp(environment, providerName);
+    return created ? { provider: providerName, integrationId: created, outcome: 'created' } : { provider: providerName, outcome: 'not_created' };
+}
+
+async function createWithNangoOAuthApp(environment: DBEnvironment, providerName: string): Promise<string | null> {
     const provider = getProvider(providerName);
-    if (!provider) {
-        logger.error(`Agent Playground provider ${providerName} does not exist`);
+    const sharedCredentials = await sharedCredentialsService.getLatestSharedCredentialsByName(providerName);
+    if (sharedCredentials.isErr()) {
+        logger.error(`Agent Playground could not load the ${providerName} OAuth app: ${sharedCredentials.error.message}`);
+        return null;
+    }
+    if (!provider || !sharedCredentials.value) {
         return null;
     }
 
-    // Read the primary: on a stale replica read, the create below adds a suffixed duplicate.
-    if (await configService.getProviderConfig(integrationId, environment.id, db.knex)) {
-        return integrationId;
-    }
-
+    const integrationId = playgroundIntegrationId(providerName);
     const created = await sharedCredentialsService.createPreprovisionedProvider({
         providerName,
-        ...(sharedCredentialsName ? { shared_credentials_name: sharedCredentialsName } : {}),
         environment_id: environment.id,
         provider,
         unique_key: integrationId,
         display_name: provider.display_name
     });
     if (created.isErr()) {
+        // A concurrent request that inserted the same key first makes this one fail on the unique constraint.
+        const concurrent = existingIntegrationFor(await configService.listProviderConfigs(db.knex, environment.id), providerName);
+        if (concurrent) {
+            return concurrent.unique_key;
+        }
         logger.error(`Agent Playground could not create ${integrationId}: ${created.error.message}`);
         return null;
     }
-
-    // A concurrent request created it first, so this one got a suffixed key.
-    if (created.value.unique_key !== integrationId && created.value.id) {
-        await configService.deleteProviderConfig({
-            id: created.value.id,
-            environmentId: environment.id,
-            providerConfigKey: created.value.unique_key,
-            orchestrator: getOrchestrator()
-        });
+    if (created.value.unique_key === integrationId || !created.value.id) {
+        return created.value.unique_key;
     }
-    return integrationId;
+
+    // Keep our own row in the list: concurrent requests must all pick the same winner, or each deletes its own.
+    const winner = existingIntegrationFor(await configService.listProviderConfigs(db.knex, environment.id), providerName);
+    if (!winner || winner.unique_key === created.value.unique_key) {
+        return created.value.unique_key;
+    }
+    await configService.deleteProviderConfig({
+        id: created.value.id,
+        environmentId: environment.id,
+        providerConfigKey: created.value.unique_key,
+        orchestrator: getOrchestrator()
+    });
+    return winner.unique_key;
 }
 
-// The owner is read from the create-connection tags, so those tags must stay per user.
-export function sessionOwner(session: Pick<AgentSession, 'metaTools'>): string | undefined {
-    return session.metaTools.nangoCreateConnection.tags[PLAYGROUND_USER_TAG_KEY];
+// A session fixes its toolset and pinned connections when created, so any change since then needs a new session.
+export function sessionChange(
+    session: Pick<AgentSession, 'compiledToolset' | 'resolvedConnections'>,
+    integrationIds: string[],
+    pinned: AgentSessionPinnedConnection[]
+): AgentPlaygroundSessionChange | undefined {
+    const sameIntegrations =
+        Object.keys(session.compiledToolset).length === integrationIds.length &&
+        integrationIds.every((integrationId) => Object.hasOwn(session.compiledToolset, integrationId));
+    if (!sameIntegrations) {
+        return 'integrations_changed';
+    }
+    const sameConnections =
+        Object.keys(session.resolvedConnections).length === pinned.length &&
+        pinned.every(({ integrationId, connectionId }) => session.resolvedConnections[integrationId]?.connectionId === connectionId);
+    return sameConnections ? undefined : 'connections_changed';
 }
 
-async function getOrCreateSession(ctx: PlaygroundContext, sessionId: string | undefined): Promise<Result<AgentSession, AgentPlaygroundError>> {
-    if (sessionId) {
-        const existing = await agentSessionService.getAgentSession(db.knex, { id: sessionId, accountId: ctx.account.id, environmentId: ctx.environment.id });
-        if (existing.isOk() && !existing.value.endedAt && existing.value.expiresAt > new Date() && sessionOwner(existing.value) === ctx.user.uuid) {
-            return Ok(existing.value);
+export function playgroundSessionRequest({
+    pinned,
+    scope,
+    connectionTags
+}: {
+    pinned: AgentSessionPinnedConnection[];
+    scope: Tags;
+    connectionTags: Tags;
+}): PostAgentSessionsBody {
+    // A tag selector fails as ambiguous once a user has two connections to one integration. Use it only while nothing is pinned.
+    const connections =
+        pinned.length > 0
+            ? { pinned: pinned.map((pin) => ({ integration_id: pin.integrationId, connection_id: pin.connectionId })) }
+            : { any: [{ tags: scope }] };
+    return {
+        // Connected or not, so the agent can offer to connect a missing app.
+        toolset: '*',
+        meta_tools: { nango_create_connection: { enabled: true, tags: connectionTags }, nango_proxy: true },
+        expires_in: '1h',
+        // Last, because the pinned list grows with the integrations.
+        tenant: { connections }
+    };
+}
+
+async function getOrCreateSession(
+    ctx: PlaygroundContext,
+    sessionId: string | undefined,
+    integrationIds: string[],
+    pinned: AgentSessionPinnedConnection[]
+): Promise<Result<{ session: AgentSession; created?: AgentPlaygroundSessionCreated }, AgentPlaygroundError>> {
+    let reason: AgentPlaygroundSessionCreated['reason'];
+    const existing = sessionId
+        ? await agentSessionService.getAgentSession(db.knex, { id: sessionId, accountId: ctx.account.id, environmentId: ctx.environment.id })
+        : undefined;
+    if (
+        existing?.isOk() &&
+        sessionOwner(existing.value) === ctx.user.uuid &&
+        // Connections a session creates must stay in the user's scope, which follows their current email.
+        existing.value.metaTools.nangoCreateConnection.tags['end_user_email'] === ctx.user.email
+    ) {
+        if (existing.value.endedReason === 'expired' || (!existing.value.endedAt && existing.value.expiresAt <= new Date())) {
+            reason = 'expired';
+        } else if (!existing.value.endedAt) {
+            // Without this, connecting an app from the chat would replace the session the connection was made in.
+            const current = await withConnectionsCreatedInSession(existing.value).catch((err: unknown) => {
+                report(err);
+                return existing.value;
+            });
+            reason = sessionChange(current, integrationIds, pinned);
+            if (!reason) {
+                return Ok({ session: current });
+            }
         }
     }
 
-    const integrationIds = await ensurePlaygroundIntegrations(ctx.environment);
-    const connections = await connectionService.listConnections({
-        environmentId: ctx.environment.id,
-        integrationIds,
-        tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid }
-    });
-
-    const created = await agentSessionCreationService.createAgentSession({
+    // This request is returned to the user as the one that created the session, so the session must be built from it.
+    const request = playgroundSessionRequest({ pinned, scope: playgroundConnectionScope(ctx.user), connectionTags: playgroundConnectionTags(ctx.user) });
+    // Converts the public body into createAgentSession's arguments, the same way the public POST /sessions does.
+    const parsed = postAgentSessionsBodySchema.safeParse(request);
+    if (!parsed.success) {
+        return Err(new AgentPlaygroundError('session_creation_failed', parsed.error.message, { cause: parsed.error }));
+    }
+    const created = await agentSessionService.createAgentSession({
         account: ctx.account,
         environment: ctx.environment,
-        connections: { any: [], pinned: newestConnectionPerIntegration(connections) },
-        // Every playground integration, connected or not, so the agent can offer to connect a missing app.
-        toolset: Object.fromEntries(integrationIds.map((integrationId) => [integrationId, { allow: '*', deny: [] }])),
-        pinnedTools: undefined,
-        metaTools: { nango_create_connection: { enabled: true, tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid } }, nango_proxy: { enabled: true } },
-        expiresInMs: PLAYGROUND_SESSION_EXPIRES_IN_MS
+        plan: ctx.plan,
+        connections: parsed.data.tenant.connections,
+        toolset: parsed.data.toolset,
+        pinnedTools: parsed.data.pinned_tools,
+        metaTools: parsed.data.meta_tools?.metaTools,
+        expiresInMs: parsed.data.expires_in
     });
 
     if (created.isErr()) {
         return Err(new AgentPlaygroundError('session_creation_failed', created.error.message, { cause: created.error }));
     }
-    return Ok(created.value.session);
+    trackAgentSessionCreated(created.value.session);
+    return Ok({ session: created.value.session, created: { request, ...(reason ? { reason } : {}) } });
+}
+
+function setupOnlyReply(messageMetadata: AgentPlaygroundMessageMetadata): ReadableStream<UIMessageChunk<AgentPlaygroundMessageMetadata>> {
+    return new ReadableStream({
+        start(controller) {
+            controller.enqueue({ type: 'start', messageMetadata });
+            controller.enqueue({ type: 'finish', finishReason: 'stop' });
+            controller.close();
+        }
+    });
 }
 
 export async function buildMcpTools(client: Client): Promise<ToolSet> {
@@ -182,7 +313,7 @@ export async function buildMcpTools(client: Client): Promise<ToolSet> {
 }
 
 // Actions carry no read-only flag, so anything not named like a read waits for the user.
-const READ_ACTION = /^(list|get|search|fetch|find|read)([-_]|$)/;
+const READ_ACTION = /^(list|get|search|fetch|find|read|lookup|query|retrieve|export|download|whoami)([-_]|$)/;
 
 export function toolNeedsApproval(toolName: string, input: unknown): boolean {
     const args = (input ?? {}) as { method?: unknown; tool?: unknown };
@@ -213,27 +344,68 @@ function parseTextContent(content: { type: string; text?: string }[]): unknown {
     }
 }
 
+export function describeTurn(messages: PlaygroundUIMessage[], starterProvider: string | undefined): PlaygroundTurn {
+    const isFirstTurn = !messages.some((message) => message.role === 'assistant' && message.parts.length > 0);
+
+    return {
+        isFirstTurn,
+        ...(starterProvider ? { starterProvider } : {})
+    };
+}
+
 export async function startTurn({
     ctx,
     sessionId,
+    chatId,
     messages,
     timeZone,
-    abortSignal,
-    model
+    abortSignal
 }: {
     ctx: PlaygroundContext;
     sessionId: string | undefined;
+    chatId?: string | undefined;
     messages: PlaygroundUIMessage[];
     timeZone: string;
     abortSignal?: AbortSignal;
-    model?: () => LanguageModel;
 }): Promise<Result<ReadableStream<UIMessageChunk<AgentPlaygroundMessageMetadata>>, AgentPlaygroundError>> {
-    const session = await getOrCreateSession(ctx, sessionId);
-    if (session.isErr()) {
-        return Err(session.error);
+    const lastMessage = messages.at(-1);
+    const requestedStarter = lastMessage?.role === 'user' ? lastMessage.metadata?.starterProvider : undefined;
+    // The provider comes from the browser, so only the playground's own providers are set up or tracked.
+    const starterProvider = requestedStarter && PLAYGROUND_PROVIDERS.includes(requestedStarter) ? requestedStarter : undefined;
+    const integrationSetup = starterProvider ? await setUpStarterIntegration(ctx.environment, starterProvider) : undefined;
+    if (integrationSetup) {
+        trackStarterIntegrationSetup(ctx, integrationSetup);
+    }
+    if (integrationSetup && !isUsableOutcome(integrationSetup.outcome)) {
+        return Ok(setupOnlyReply({ integrationSetup }));
     }
 
-    const server = createAgentSessionMcpServer({ account: ctx.account, environment: ctx.environment, plan: ctx.plan, session: session.value });
+    let integrationIds: string[];
+    let pinned: AgentSessionPinnedConnection[];
+    try {
+        // Read after the starter setup, so an integration it creates is part of the list.
+        integrationIds = await configService.listIntegrationKeys(db.knex, ctx.environment.id);
+        pinned = newestConnectionPerIntegration(
+            await connectionService.listConnections({ environmentId: ctx.environment.id, integrationIds, tags: playgroundConnectionScope(ctx.user) })
+        );
+    } catch (err) {
+        return Err(new AgentPlaygroundError('session_creation_failed', 'Could not read the integrations and connections', { cause: err }));
+    }
+    const sessionResult = await getOrCreateSession(ctx, sessionId, integrationIds, pinned);
+    if (sessionResult.isErr()) {
+        return Err(sessionResult.error);
+    }
+    const { session, created: sessionCreated } = sessionResult.value;
+    const sessionMetadata = { sessionId: session.id };
+    const startMetadata: AgentPlaygroundMessageMetadata = { ...sessionMetadata };
+    if (integrationSetup) {
+        startMetadata.integrationSetup = integrationSetup;
+    }
+    if (sessionCreated) {
+        startMetadata.sessionCreated = sessionCreated;
+    }
+
+    const server = createAgentSessionMcpServer({ account: ctx.account, environment: ctx.environment, plan: ctx.plan, session });
     const client = new Client({ name: 'nango-agent-playground', version: '1.0.0' });
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
 
@@ -249,36 +421,35 @@ export async function startTurn({
 
     let tools: ToolSet;
     let modelMessages: Awaited<ReturnType<typeof convertToModelMessages>>;
-    let connected: Set<string>;
     try {
         await server.connect(serverTransport);
         await client.connect(clientTransport);
-        let connections: Awaited<ReturnType<typeof connectionService.listConnections>>;
-        // Read live: the session's own connection list only fills in once a tool uses a connection.
-        [tools, modelMessages, connections] = await Promise.all([
+        [tools, modelMessages] = await Promise.all([
             buildMcpTools(client),
-            // A tool call left unanswered by Stop or an ignored approval would make OpenAI reject every later turn.
-            convertToModelMessages(messages, { ignoreIncompleteToolCalls: true }),
-            connectionService.listConnections({
-                environmentId: ctx.environment.id,
-                integrationIds: Object.keys(session.value.compiledToolset),
-                tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid }
-            })
+            convertToModelMessages(
+                // A setup-only reply, or a Stop before the first part, leaves an assistant message with no parts. OpenAI rejects an empty turn.
+                messages.filter((message) => message.role !== 'assistant' || message.parts.length > 0),
+                // A tool call left unanswered by Stop or an ignored approval would make OpenAI reject every later turn.
+                { ignoreIncompleteToolCalls: true }
+            )
         ]);
-        connected = new Set(connections.map(({ connection }) => connection.provider_config_key));
     } catch (err) {
         await close();
         return Err(new AgentPlaygroundError('model_error', err instanceof Error ? err.message : 'The agent could not start', { cause: err }));
     }
 
+    const steps: PlaygroundStep[] = [];
+    let failed = false;
+    let failedCategory: ModelErrorCategory | null = null;
+
     const result = streamText({
-        model: (model ?? createPlaygroundModel)(),
+        model: createPlaygroundModel(),
         instructions: buildInstructions(
             timeZone,
             new Date(),
-            Object.entries(session.value.compiledToolset).map(([id, integration]) => ({ id, provider: integration.provider, connected: connected.has(id) })),
-            PLAYGROUND_PROVIDERS.filter(({ provider }) => !Object.hasOwn(session.value.compiledToolset, playgroundIntegrationId(provider))).map(
-                ({ provider }) => getProvider(provider)?.display_name ?? provider
+            client.getInstructions(),
+            PLAYGROUND_PROVIDERS.filter((provider) => !Object.values(session.compiledToolset).some((integration) => integration.provider === provider)).map(
+                (provider) => getProvider(provider)?.display_name ?? provider
             )
         ),
         messages: modelMessages,
@@ -286,10 +457,18 @@ export async function startTurn({
         stopWhen: stepCountIs(MAX_STEPS),
         ...(abortSignal ? { abortSignal } : {}),
         toolApproval: ({ toolCall }) => (toolNeedsApproval(toolCall.toolName, toolCall.input) ? 'user-approval' : undefined),
+        onStepEnd: (step) => {
+            steps.push({ model: { modelId: step.model.modelId }, usage: step.usage });
+        },
         onEnd: close,
         onAbort: close,
         onError: async ({ error }) => {
-            logger.error(`Agent Playground turn failed: ${error instanceof Error ? error.message : String(error)}`);
+            failed = true;
+            failedCategory = modelErrorCategory(error);
+            if (failedCategory) {
+                metrics.increment(metrics.Types.AGENT_PLAYGROUND_MODEL_ERROR, 1, { category: failedCategory });
+            }
+            logger.error(`Agent Playground turn failed (${failedCategory ?? 'not a provider error'}): ${stringifyError(error)}`);
             await close();
         }
     });
@@ -298,18 +477,39 @@ export async function startTurn({
         toUIMessageStream({
             stream: result.stream,
             originalMessages: messages,
-            onError: (error) => (error instanceof Error ? error.message : 'The agent failed to answer'),
+            onError: (error) => {
+                const category = modelErrorCategory(error);
+                if (category) {
+                    return JSON.stringify(modelUnavailableError(category));
+                }
+                return error instanceof Error ? error.message : 'The agent failed to answer';
+            },
             messageMetadata: ({ part }): AgentPlaygroundMessageMetadata | undefined => {
-                const sessionMetadata = { sessionId: session.value.id, sessionExpiresAt: session.value.expiresAt.toISOString() };
                 if (part.type === 'start') {
-                    return sessionMetadata;
+                    return startMetadata;
                 }
                 if (part.type === 'finish') {
-                    const usage = { inputTokens: part.totalUsage.inputTokens ?? 0, outputTokens: part.totalUsage.outputTokens ?? 0 };
-                    logger.info(`Agent Playground turn: ${usage.inputTokens} in / ${usage.outputTokens} out tokens`);
-                    return { ...sessionMetadata, usage };
+                    return { ...sessionMetadata, usage: { inputTokens: part.totalUsage.inputTokens ?? 0, outputTokens: part.totalUsage.outputTokens ?? 0 } };
                 }
                 return undefined;
+            },
+            // streamText's onEnd never runs when the request throws. Its onError runs before the failing step reports usage.
+            onEnd: ({ isAborted, isCancelled, outcome }) => {
+                let turnOutcome: PlaygroundTurnOutcome = 'complete';
+                if (isAborted || isCancelled || outcome.status === 'aborted') {
+                    turnOutcome = 'aborted';
+                } else if (failed || outcome.status === 'failed') {
+                    turnOutcome = 'error';
+                }
+                trackPlaygroundTurn({
+                    ctx,
+                    sessionId: session.id,
+                    chatId,
+                    turn: describeTurn(messages, starterProvider),
+                    outcome: turnOutcome,
+                    steps,
+                    errorCategory: failedCategory
+                });
             }
         })
     );

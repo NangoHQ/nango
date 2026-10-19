@@ -146,6 +146,10 @@ paths:
                                     description: Whether to forward webhooks received for this integration. Defaults to true.
                                 credentials:
                                     $ref: '#/components/schemas/IntegrationCredentialsInput'
+                                    description: >
+                                        Developer app credentials for the integration. Omit them to create the
+                                        integration without credentials and provide them later, either with an update
+                                        request or per connection at connection time.
                                 integration_config:
                                     type: object
                                     additionalProperties:
@@ -281,6 +285,9 @@ paths:
                                     description: Whether to forward webhooks received for this integration.
                                 credentials:
                                     $ref: '#/components/schemas/IntegrationCredentialsInput'
+                                    description: >
+                                        Developer app credentials for the integration. Only the fields you pass are
+                                        updated; the ones you leave out keep their current value.
                                 integration_config:
                                     type: object
                                     additionalProperties:
@@ -339,7 +346,7 @@ paths:
     /integrations/{uniqueKey}/functions:
         get:
             summary: List functions
-            description: Returns the functions deployed to an integration. Requires an API key with the `environment:functions:list` scope.
+            description: Returns the functions available to an integration, including Nango catalog actions when available. Requires an API key with the `environment:functions:list` scope.
             parameters:
                 - name: uniqueKey
                   in: path
@@ -417,7 +424,7 @@ paths:
     /integrations/{uniqueKey}/functions/{name}:
         get:
             summary: Get a function
-            description: Returns a single deployed function. Requires an API key with the `environment:functions:read` scope.
+            description: Returns a single function available to an integration. This can be a deployed function or a Nango catalog action. Requires an API key with the `environment:functions:read` scope.
             parameters:
                 - name: uniqueKey
                   in: path
@@ -1087,9 +1094,10 @@ paths:
                   description: Will exactly match a given connectionId. Can return multiple connections with the same ID across integrations
                 - name: search
                   in: query
+                  deprecated: true
                   schema:
                       type: string
-                  description: Will partially match connection IDs or end user profiles.
+                  description: Deprecated. No direct replacement for partial matching; prefer exact filtering via `connectionId` or connection tags (e.g. `tags[end_user_id]=...`).
                 - name: endUserId
                   in: query
                   deprecated: true
@@ -3747,7 +3755,7 @@ components:
 
         FunctionAvailability:
             type: object
-            description: Availability metadata attached to a listed function.
+            description: 'Availability metadata attached to a listed function. Catalog actions have `id: null`, `last_deployed: null`, `enabled: true`, and `source: tools-catalog`. Deployed functions have an id and a `last_deployed` timestamp.'
             required:
                 - id
                 - enabled
@@ -3755,16 +3763,19 @@ components:
                 - source
             properties:
                 id:
-                    type: number
+                    type: [number, 'null']
+                    description: Sync-config id. `null` for a Nango catalog action.
                 enabled:
                     type: boolean
+                    description: Whether the function is enabled. Always `true` for actions, including a deployed action whose stored configuration is disabled. Syncs and on-event functions report the stored value.
                 last_deployed:
-                    type: string
+                    type: [string, 'null']
                     format: date-time
-                    description: ISO-8601 timestamp.
+                    description: ISO-8601 timestamp. `null` for a Nango catalog action.
                 source:
                     type: string
-                    enum: [catalog, standalone, repo]
+                    enum: [catalog, standalone, repo, tools-catalog]
+                    description: '`tools-catalog` is a Nango catalog action that has not been deployed. `catalog`, `standalone`, and `repo` are deployed functions.'
 
         NangoSyncFunction:
             type: object
@@ -4518,6 +4529,15 @@ components:
                 forward_webhooks:
                     type: boolean
                     description: Whether webhooks received from this integration's provider are forwarded to your backend.
+                missing_fields:
+                    type: array
+                    items:
+                        type: string
+                    description: >
+                        Credential fields the integration is missing, e.g.
+                        `oauth_client_id`. Empty when the integration is fully configured, when it uses
+                        Nango-provided credentials, or when the auth mode collects everything at connection time.
+                        Field names only, never values.
         IntegrationFull:
             allOf:
                 - $ref: '#/components/schemas/Integration'
@@ -5339,13 +5359,16 @@ components:
                           description: The provider's `integration_config` values, keyed by the fields it declares.
 
         IntegrationCredentialsInput:
-            description: Integration credentials schema accepted in create/update request bodies. For MCP_OAUTH2, static creation requires both client_id and client_secret; dynamic and CIMD providers reject those fields because Nango manages them. Optional fields may be omitted but must not be null.
+            description: >
+                Integration credentials schema accepted in create/update request bodies. Only `type` is required:
+                developer app credentials can be omitted at creation and supplied later, either with an update request
+                or per connection at connection time. Fields left out of an update are kept as-is rather than cleared.
+                MCP_OAUTH2 is the exception — static creation requires both client_id and client_secret, while dynamic
+                and CIMD providers reject those fields because Nango manages them. Optional fields must not be null.
             oneOf:
                 - type: object
                   required:
                       - type
-                      - client_id
-                      - client_secret
                   properties:
                       type:
                           type: string
@@ -5369,9 +5392,6 @@ components:
                 - type: object
                   required:
                       - type
-                      - app_id
-                      - app_link
-                      - private_key
                   properties:
                       type:
                           type: string
@@ -5390,11 +5410,6 @@ components:
                 - type: object
                   required:
                       - type
-                      - client_id
-                      - client_secret
-                      - app_id
-                      - app_link
-                      - private_key
                   properties:
                       type:
                           type: string

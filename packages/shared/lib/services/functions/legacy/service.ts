@@ -66,20 +66,19 @@ export async function listFunctions({
 
 /**
  * Lists all action functions for a single integration without pagination.
- * The result includes disabled actions so callers can decide how to expose them.
+ * When tools-catalog is on, every action is reported enabled. When it is off,
+ * disabled actions are still included so callers can decide how to expose them.
  */
 export async function listActions({
     environmentId,
-    providerConfigKey,
-    limit = 200
+    providerConfigKey
 }: {
     environmentId: number;
     providerConfigKey: string;
-    limit?: number;
-}): Promise<Result<ListedNangoActionFunction[], ListFunctionsError>> {
+}): Promise<Result<{ actions: ListedNangoActionFunction[]; provider: string }, ListFunctionsError>> {
     try {
-        const integrationId = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
-        if (!integrationId) {
+        const integration = await configService.getProviderConfig(providerConfigKey, environmentId);
+        if (!integration) {
             return Err(
                 new ListFunctionsError({
                     code: 'integration_not_found',
@@ -88,13 +87,16 @@ export async function listActions({
             );
         }
 
-        const rows = await functionsModel.findActiveActions({ environmentId, providerConfigKey, limit });
+        const rows = await functionsModel.findActiveActions({ environmentId, providerConfigKey });
         const mapped = mapListingRows(rows);
         if (mapped.isErr()) {
             return Err(mapped.error);
         }
 
-        return Ok(mapped.value.filter((row): row is ListedNangoActionFunction => row.type === 'action'));
+        return Ok({
+            actions: mapped.value.filter((row): row is ListedNangoActionFunction => row.type === 'action'),
+            provider: integration.provider
+        });
     } catch (err) {
         return Err(new ListFunctionsError({ code: 'list_failed', message: 'Failed to list functions', cause: err }));
     }
