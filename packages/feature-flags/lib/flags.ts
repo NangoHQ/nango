@@ -1,4 +1,11 @@
+import { isCloud } from '@nangohq/utils';
+
 import type { FeatureFlagsClient } from './client.js';
+
+/** Evaluates a flag on cloud only; self-hosted and BYOC always get `offCloud`. */
+function cloudOnly(offCloud: boolean, evaluate: () => Promise<boolean>): Promise<boolean> {
+    return isCloud ? evaluate() : Promise.resolve(offCloud);
+}
 
 /**
  * Typed facade over the generic OpenFeature client: one named method per flag
@@ -93,19 +100,19 @@ export function buildFlags(client: FeatureFlagsClient) {
         },
         /**
          * Whether the deprecated `search` query param on GET /connections is still honored for this
-         * account. Default `false`: only accounts explicitly allowlisted in Unleash (the known existing
-         * users of this param) should have it enabled.
+         * account. Cloud only: default `false` there, so only accounts allowlisted in Unleash keep it.
+         * Always `true` on self-hosted and BYOC.
          */
         isConnectionsSearchParamEnabled(accountUuid: string) {
-            return client.isEnabled('connections-search-param', { targetingKey: accountUuid, accountUuid }, false);
+            return cloudOnly(true, () => client.isEnabled('connections-search-param', { targetingKey: accountUuid, accountUuid }, false));
         },
         /**
          * Whether the deprecated `/v1/*` passthrough (legacy custom endpoint routing for syncs and
-         * actions) is still reachable for this account. Default `false`: only accounts explicitly
-         * allowlisted in Unleash (the known existing users of this passthrough) should have it enabled.
+         * actions) is still reachable for this account. Cloud only: default `false` there, so only
+         * accounts allowlisted in Unleash keep it. Always `true` on self-hosted and BYOC.
          */
         isV1PassthroughEnabled(accountUuid: string) {
-            return client.isEnabled('v1-passthrough', { targetingKey: accountUuid, accountUuid }, false);
+            return cloudOnly(true, () => client.isEnabled('v1-passthrough', { targetingKey: accountUuid, accountUuid }, false));
         },
         /**
          * Whether the legacy Connection MCP server is available for this account.
