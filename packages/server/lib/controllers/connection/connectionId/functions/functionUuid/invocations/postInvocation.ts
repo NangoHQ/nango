@@ -92,5 +92,6 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
             ((_exhaustiveCheck: never) => {
                 res.status(500).send({ error: { code: 'server_error', message: 'Unknown invocation failure' } });
             })(invoke.error.code);
+            return;
     }
 });
