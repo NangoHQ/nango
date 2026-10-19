@@ -60,8 +60,8 @@ export async function mintTaskAuthToken(taskId: string, nangoProps: TaskAuthProp
 
 /**
  * Props handed to a runner. Adds taskAuthToken when the jobs signer can mint one.
- * secretKey stays until NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY is set, so a runner that has not
- * recycled still receives the credential it requires.
+ * secretKey stays until NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY is set. A runner that understands
+ * the token prefers it; one that has not recycled still uses secretKey.
  */
 export async function nangoPropsForRunner(taskId: string, nangoProps: NangoProps): Promise<NangoProps> {
     if (!jobsSigner()) {

@@ -77,33 +77,42 @@ const customerKeyShadowCache = new ShadowAuthCache('customer_key', envs.AUTH_SHA
  * deleted environments, and plan changes.
  * Enable/disable and TTL are configured via AUTH_PERSIST_CONTEXT_CACHE_* (see parse.ts).
  */
-class PersistAuthContextCache {
+class PersistAuthContextCache<T> {
     // TTL is a startup config; the enabled flag is read per-call so it can be toggled at runtime.
-    private cache = new TTLFixedSizeMap<string, PersistAuthContext>(10_000, envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS);
+    private cache = new TTLFixedSizeMap<string, T>(10_000, envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS);
 
     constructor(private metricCache: string) {}
 
-    get(hash: string): PersistAuthContext | undefined {
+    get(key: string): T | undefined {
         if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
             return undefined;
         }
-        const cached = this.cache.get(hash);
+        const cached = this.cache.get(key);
         metrics.increment(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: this.metricCache, result: cached ? 'hit' : 'miss' });
         return cached;
     }
 
-    set(hash: string, context: PersistAuthContext): void {
+    set(key: string, context: T): void {
         if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
             return;
         }
         // The cached instance is shared across requests; callers must not mutate it.
-        this.cache.set(hash, context);
+        this.cache.set(key, context);
     }
 }
 
-const persistAuthContextCache = new PersistAuthContextCache('persist_internal_secret');
+const persistAuthContextCache = new PersistAuthContextCache<PersistAuthContext>('persist_internal_secret');
 /** Separate from the secret-hash cache. Without an encryption key the hash is the plaintext secret, which could otherwise equal `environment:<id>`. */
-const persistEnvironmentAuthContextCache = new PersistAuthContextCache('persist_environment');
+const persistEnvironmentAuthContextCache = new PersistAuthContextCache<PersistAuthContext>('persist_environment');
+
+/** Account and environment for a task token. No decrypted secret. */
+interface TaskTokenAccountContext {
+    account: DBTeam;
+    environment: DBEnvironment;
+    plan: DBPlan | null;
+}
+
+const taskTokenAccountContextCache = new PersistAuthContextCache<TaskTokenAccountContext>('task_token');
 
 interface AccountContext {
     account: DBTeam;
@@ -1048,6 +1057,78 @@ class AccountService {
                     : null
         };
         persistEnvironmentAuthContextCache.set(cacheKey, context);
+        return context;
+    }
+
+    /**
+     * Account and environment for a task token. Does not load or decrypt the environment secret.
+     * Cached like the persist environment lookup.
+     */
+    async getTaskTokenAccountContext(environmentId: number): Promise<Result<TaskTokenAccountContext | null>> {
+        try {
+            return Ok(await this.resolveTaskTokenAccountContext(environmentId));
+        } catch (err) {
+            return Err(err instanceof Error ? err : new Error('failed_to_resolve_task_token_account_context', { cause: err }));
+        }
+    }
+
+    private async resolveTaskTokenAccountContext(environmentId: number): Promise<TaskTokenAccountContext | null> {
+        const cacheKey = `environment:${environmentId}`;
+        const cached = taskTokenAccountContextCache.get(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
+        const res = await db.readOnly
+            .select<{
+                account: DBTeam;
+                environment: DBEnvironment;
+                plan: DBPlan | null;
+            }>(
+                db.knex.raw('row_to_json(_nango_environments.*) as environment'),
+                db.knex.raw('row_to_json(_nango_accounts.*) as account'),
+                db.knex.raw('row_to_json(plans.*) as plan')
+            )
+            .from<DBEnvironment>('_nango_environments')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
+            .where('_nango_environments.id', environmentId)
+            .where('_nango_environments.deleted', false)
+            .first();
+
+        if (!res) {
+            return null;
+        }
+
+        const context: TaskTokenAccountContext = {
+            account: {
+                ...res.account,
+                created_at: new Date(res.account.created_at),
+                updated_at: new Date(res.account.updated_at)
+            },
+            environment: {
+                ...res.environment,
+                // The deprecated column is not the credential this request authenticated with.
+                secret_key: '',
+                pending_secret_key: null,
+                created_at: new Date(res.environment.created_at),
+                updated_at: new Date(res.environment.updated_at),
+                deleted_at: res.environment.deleted_at ? new Date(res.environment.deleted_at) : res.environment.deleted_at
+            },
+            plan: res.plan
+                ? {
+                      ...res.plan,
+                      created_at: new Date(res.plan.created_at),
+                      updated_at: new Date(res.plan.updated_at),
+                      trial_start_at: res.plan.trial_start_at ? new Date(res.plan.trial_start_at) : res.plan.trial_start_at,
+                      trial_end_at: res.plan.trial_end_at ? new Date(res.plan.trial_end_at) : res.plan.trial_end_at,
+                      trial_end_notified_at: res.plan.trial_end_notified_at ? new Date(res.plan.trial_end_notified_at) : res.plan.trial_end_notified_at,
+                      orb_subscribed_at: res.plan.orb_subscribed_at ? new Date(res.plan.orb_subscribed_at) : res.plan.orb_subscribed_at,
+                      orb_future_plan_at: res.plan.orb_future_plan_at ? new Date(res.plan.orb_future_plan_at) : res.plan.orb_future_plan_at
+                  }
+                : null
+        };
+        taskTokenAccountContextCache.set(cacheKey, context);
         return context;
     }
 

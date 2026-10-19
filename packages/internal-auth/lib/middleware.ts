@@ -155,7 +155,8 @@ export function requireTaskBoundAuth(envs: InternalAuthEnvs): (req: Request, res
 
 /**
  * When REQUIRED and the token carries a `scopes` claim, the route scope must be included.
- * Tokens without the claim stay task-id-only.
+ * TODO: reject a token with no `scopes` claim. The pass below only covers task tokens minted
+ * before this deploy, which live at most 25h. After that window it is fail-open.
  */
 export function requireTaskScope(envs: InternalAuthEnvs, scope: string): (req: Request, res: Response, next: NextFunction) => void {
     return (_req, res, next) => {
@@ -164,6 +165,7 @@ export function requireTaskScope(envs: InternalAuthEnvs, scope: string): (req: R
             return;
         }
         const auth = getInternalServiceAuth(res);
+        // TODO: remove this pass once every in-flight pre-scope token has expired (25h).
         if (!auth?.scopes) {
             next();
             return;

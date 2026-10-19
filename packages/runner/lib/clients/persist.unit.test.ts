@@ -274,14 +274,14 @@ describe('PersistClient credentials', () => {
         expect(authorization(fetchMock)).toBe('Bearer task-jwt');
     });
 
-    it('sends secretKey when both credentials are set', async () => {
+    it('sends the task token when both credentials are set', async () => {
         const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
         vi.stubGlobal('fetch', fetchMock);
 
         const client = new PersistClient({ secretKey: 'secret', taskAuthToken: 'task-jwt' });
         await postLog(client);
 
-        expect(authorization(fetchMock)).toBe('Bearer secret');
+        expect(authorization(fetchMock)).toBe('Bearer task-jwt');
     });
 
     it('throws when neither credential is set', () => {

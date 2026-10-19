@@ -86,10 +86,11 @@ function scriptNango(
         interceptors
     };
     const bearer = runnerBearer(props);
-    if (props.secretKey) {
-        return new Nango({ ...shared, secretKey: bearer }, axiosProps);
+    // The node client refuses both credentials. apiKey carries the token so it is not also used to sign webhooks.
+    if (props.taskAuthToken) {
+        return new Nango({ ...shared, apiKey: bearer }, axiosProps);
     }
-    return new Nango({ ...shared, apiKey: bearer }, axiosProps);
+    return new Nango({ ...shared, secretKey: bearer }, axiosProps);
 }
 
 function persistClientForProps(props: NangoProps): PersistClient {

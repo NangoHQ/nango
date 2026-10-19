@@ -9,7 +9,7 @@ import { Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { authMiddleware } from './auth.middleware.js';
-import { requireTaskCapability } from './capability.js';
+import { denyTaskTokenWithoutCapability, requireTaskCapability } from './capability.js';
 
 import type { PersistAuthContext } from '@nangohq/types';
 
@@ -31,12 +31,13 @@ function ed25519Material(): { pem: string; raw: string } {
 function app() {
     const server = express();
     server.use('/environment/:environmentId/*splat', authMiddleware);
-    server.post('/environment/:environmentId/log', (_req, res) => {
+    server.post('/environment/:environmentId/log', denyTaskTokenWithoutCapability, (_req, res) => {
         res.status(204).end();
     });
     server.post(
         '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:jobId/records',
         requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, { connectionId: 'nangoConnectionId', syncId: 'syncId' }),
+        denyTaskTokenWithoutCapability,
         (_req, res) => {
             res.status(204).end();
         }
@@ -45,6 +46,7 @@ function app() {
         '/environment/:environmentId/runner/sync-conflict',
         express.json(),
         requireTaskCapability(TASK_CAPABILITY_SCOPES.persistSyncConflict, { bodySyncId: 'syncId' }),
+        denyTaskTokenWithoutCapability,
         (_req, res) => {
             res.status(204).end();
         }
@@ -89,6 +91,22 @@ describe('persist capability auth', () => {
     afterEach(() => {
         vi.restoreAllMocks();
         envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = previousKeys;
+    });
+
+    it('rejects a task token on a route that did not declare a capability', async () => {
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: signer.raw }];
+        vi.spyOn(accountService, 'getPersistAuthContextByEnvironmentId').mockResolvedValue(Ok(context));
+        const token = await capabilityToken();
+        const { url, close } = await listen(app());
+        try {
+            const res = await fetch(`${url}/environment/9/log`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
     });
 
     it('accepts a scoped token for the matching environment and connection', async () => {

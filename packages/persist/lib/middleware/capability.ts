@@ -44,6 +44,8 @@ export function setCapabilityAuth(res: Response, auth: InternalServiceAuth): voi
     res.locals[INTERNAL_SERVICE_AUTH_LOCALS_KEY] = auth;
 }
 
+const TASK_CAPABILITY_SATISFIED = 'taskCapabilitySatisfied';
+
 /** Names of the request fields this route binds a task JWT to. Absent names are not checked. */
 export interface TaskCapabilityParams {
     connectionId?: string;
@@ -81,6 +83,21 @@ export function requireTaskCapability(scope: string, params: TaskCapabilityParam
             unauthorized(res);
             return;
         }
+        res.locals[TASK_CAPABILITY_SATISFIED] = true;
         next();
     };
+}
+
+/**
+ * Reject a task JWT that never passed `requireTaskCapability`. Secret-key requests pass.
+ * Register it after that middleware on every persist route so a route that forgets the
+ * capability check does not accept every task token for the environment.
+ */
+export function denyTaskTokenWithoutCapability(_req: Request, res: Response, next: NextFunction): void {
+    const auth = getInternalServiceAuth(res);
+    if (auth?.kind === 'jwt' && res.locals[TASK_CAPABILITY_SATISFIED] !== true) {
+        unauthorized(res);
+        return;
+    }
+    next();
 }

@@ -121,6 +121,9 @@ export class AccessMiddleware {
     /**
      * A jobs-signed task JWT is not an API key. The route declares the capability it accepts via
      * `taskCapability` before this runs. A route that declares none rejects the token.
+     *
+     * `res.connectionId` is not checked. A script may read or proxy another connection in the same
+     * environment. Persist binds the token to its connection; this API is environment-scoped.
      */
     private async authenticateCapabilityToken(_req: Request, res: Response<unknown, Partial<RequestLocals>>, token: string): Promise<Result<void>> {
         const registry = keyRegistryFromPublicKeys(envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS, INTERNAL_SERVICE_ISSUER_JOBS);
@@ -139,27 +142,28 @@ export class AccessMiddleware {
             return Err('unknown_account');
         }
 
-        const accountContext = await accountService.getAccountContext({ environmentId });
-        if (!accountContext?.environment || accountContext.environment.id !== environmentId) {
+        const result = await accountService.getTaskTokenAccountContext(environmentId);
+        if (result.isErr() || !result.value?.environment || result.value.environment.id !== environmentId) {
             return Err('unknown_account');
         }
+        const accountContext = result.value;
         if (flagHasPlan && !accountContext.plan) {
             return Err('plan_not_found');
         }
 
-        res.locals['authType'] = 'secretKey';
+        res.locals['authType'] = 'taskToken';
         res.locals['account'] = accountContext.account;
         res.locals['plan'] = accountContext.plan;
         res.locals['environment'] = accountContext.environment;
-        res.locals['secret'] = accountContext.secret;
-        res.locals['apiKeyAuthSource'] = 'api_secret';
+        res.locals['apiKeyAuthSource'] = 'task_token';
         res.locals['apiKeyPrincipal'] = {
             type: 'api_key',
-            source: 'api_secret',
+            source: 'task_token',
             accountId: accountContext.account.id,
             environmentIds: [accountContext.environment.id],
             scopes: [...environmentScopesForTaskCapability(scope)]
         };
+        metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, { auth_source: 'task_token' });
         tagTraceUser({ account: accountContext.account, environment: accountContext.environment, plan: accountContext.plan });
         return Ok(undefined);
     }

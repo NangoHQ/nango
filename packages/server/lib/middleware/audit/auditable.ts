@@ -75,10 +75,12 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
 };
 
 export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
+    if (locals.authType === 'taskToken') {
+        return { type: 'task_token', id: 'task' };
+    }
     if (locals.authType === 'secretKey') {
-        // Functions currently call the API with a secret key too, distinguished only by the
-        // client-settable Nango-Is-Script header — spoofable, so we don't trust it for attribution.
-        // Every secret-key caller is classified as api_key until functions get their own tokens.
+        // A script that still presents the environment secret is classified as api_key. The
+        // Nango-Is-Script header is client-settable, so it is not an audit actor.
         // Only a customer key has a uuid; the other auth sources have no key row, so they keep the internal id.
         return {
             type: 'api_key',

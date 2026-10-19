@@ -45,6 +45,10 @@ describe('resolveActor (unit)', () => {
         expect(resolveActor({ authType: 'secretKey', account } as any)).toEqual({ type: 'api_key', id: 'secret_key' });
     });
 
+    it('names a task token as a task, not the environment secret', () => {
+        expect(resolveActor({ authType: 'taskToken', account, apiKeyAuthSource: 'task_token' } as any)).toEqual({ type: 'task_token', id: 'task' });
+    });
+
     it('resolves a public key to the public_key type with an unknown id', () => {
         expect(resolveActor({ authType: 'publicKey', account } as any)).toEqual({ type: 'public_key', id: 'unknown' });
     });

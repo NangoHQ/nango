@@ -833,6 +833,38 @@ describe('Account service', () => {
         });
     });
 
+    describe('getTaskTokenAccountContext', () => {
+        it('returns the account and environment without a decrypted secret', async () => {
+            const { account, env } = await seedAccountEnvAndUser();
+
+            const result = (await accountService.getTaskTokenAccountContext(env.id)).unwrap();
+
+            expect(result?.account.id).toBe(account.id);
+            expect(result?.environment).toMatchObject({ id: env.id, uuid: env.uuid, name: env.name, secret_key: '', pending_secret_key: null });
+        });
+
+        it('serves a later lookup from the task token cache', async () => {
+            const previous = envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED;
+            (envs as { AUTH_PERSIST_CONTEXT_CACHE_ENABLED: boolean }).AUTH_PERSIST_CONTEXT_CACHE_ENABLED = true;
+            const incrementSpy = vi.spyOn(metrics, 'increment');
+            try {
+                const { env } = await seedAccountEnvAndUser();
+
+                const first = (await accountService.getTaskTokenAccountContext(env.id)).unwrap();
+                expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'task_token', result: 'miss' });
+
+                await db.knex('_nango_environments').where({ id: env.id }).update({ deleted: true, deleted_at: new Date() });
+                incrementSpy.mockClear();
+
+                const second = (await accountService.getTaskTokenAccountContext(env.id)).unwrap();
+                expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'task_token', result: 'hit' });
+                expect(second?.environment.id).toBe(first?.environment.id);
+            } finally {
+                (envs as { AUTH_PERSIST_CONTEXT_CACHE_ENABLED: boolean }).AUTH_PERSIST_CONTEXT_CACHE_ENABLED = previous;
+            }
+        });
+    });
+
     it('should return environment:* scopes for env var key (env_var path)', async () => {
         const account = await createTestAccount();
         const envName = uuid();

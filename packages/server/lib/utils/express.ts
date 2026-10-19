@@ -25,7 +25,7 @@ import type { AgentSession, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvi
 
 export interface RequestLocals {
     // Set by every auth path.
-    authType: 'secretKey' | 'publicKey' | 'basic' | 'adminKey' | 'none' | 'session' | 'connectSession' | 'agentSession' | 'mcpOAuth';
+    authType: 'secretKey' | 'publicKey' | 'basic' | 'adminKey' | 'none' | 'session' | 'connectSession' | 'agentSession' | 'mcpOAuth' | 'taskToken';
     account: DBTeam;
     plan: DBPlan | null;
 
@@ -46,7 +46,7 @@ export interface RequestLocals {
     apiKeyId?: number;
     apiKeyUuid?: string;
     apiKeyDisplayName?: string;
-    apiKeyAuthSource?: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
+    apiKeyAuthSource?: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var' | 'task_token';
     sandboxTokenPurpose?: 'dryrun' | 'deploy';
     sandboxTokenDryrunId?: string;
     sandboxTokenDeploymentId?: string;

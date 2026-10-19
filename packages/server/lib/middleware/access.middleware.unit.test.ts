@@ -5,13 +5,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { INTERNAL_SERVICE_ISSUER_JOBS, mint, TASK_CAPABILITY_SCOPES, taskSubject } from '@nangohq/internal-auth';
 import { accountService } from '@nangohq/shared';
-import { metrics } from '@nangohq/utils';
+import { metrics, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import accessMiddleware from './access.middleware.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { ApiKeyContext, DBAPISecret, DBEnvironment, DBTeam } from '@nangohq/types';
+import type { ApiKeyContext, DBEnvironment, DBTeam } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 const secretKey = '00000000-0000-4000-8000-000000000000';
@@ -163,21 +163,24 @@ describe('task capability token', () => {
 
     it('authenticates as the token environment when the route declares that capability', async () => {
         envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: capabilitySigner.raw }];
-        const lookup = vi.spyOn(accountService, 'getAccountContext').mockResolvedValue({
-            account: { id: 1 } as DBTeam,
-            environment: { id: 10 } as DBEnvironment,
-            plan: null,
-            secret: {} as DBAPISecret
-        });
+        const lookup = vi.spyOn(accountService, 'getTaskTokenAccountContext').mockResolvedValue(
+            Ok({
+                account: { id: 1 } as DBTeam,
+                environment: { id: 10 } as DBEnvironment,
+                plan: null
+            })
+        );
         const token = await capabilityToken([TASK_CAPABILITY_SCOPES.apiConnectionRead, TASK_CAPABILITY_SCOPES.apiProxy]);
 
         const { next, locals } = await runCapabilityAuth(`Bearer ${token}`, TASK_CAPABILITY_SCOPES.apiConnectionRead);
 
         expect(next).toHaveBeenCalled();
-        expect(lookup).toHaveBeenCalledWith({ environmentId: 10 });
-        expect(locals.authType).toBe('secretKey');
+        expect(lookup).toHaveBeenCalledWith(10);
+        expect(locals.authType).toBe('taskToken');
+        expect(locals.apiKeyAuthSource).toBe('task_token');
+        expect(locals.secret).toBeUndefined();
         expect(locals.apiKeyPrincipal).toMatchObject({
-            source: 'api_secret',
+            source: 'task_token',
             environmentIds: [10],
             scopes: ['environment:connections:read', 'environment:connections:read_credentials']
         });
@@ -185,12 +188,13 @@ describe('task capability token', () => {
 
     it('grants the action scope when the route declares api:action:trigger', async () => {
         envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: capabilitySigner.raw }];
-        vi.spyOn(accountService, 'getAccountContext').mockResolvedValue({
-            account: { id: 1 } as DBTeam,
-            environment: { id: 10 } as DBEnvironment,
-            plan: null,
-            secret: {} as DBAPISecret
-        });
+        vi.spyOn(accountService, 'getTaskTokenAccountContext').mockResolvedValue(
+            Ok({
+                account: { id: 1 } as DBTeam,
+                environment: { id: 10 } as DBEnvironment,
+                plan: null
+            })
+        );
         const token = await capabilityToken([TASK_CAPABILITY_SCOPES.apiActionTrigger]);
 
         const { next, locals } = await runCapabilityAuth(`Bearer ${token}`, TASK_CAPABILITY_SCOPES.apiActionTrigger);
@@ -201,7 +205,7 @@ describe('task capability token', () => {
 
     it('rejects a task token when the route did not declare a task capability', async () => {
         envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: capabilitySigner.raw }];
-        const lookup = vi.spyOn(accountService, 'getAccountContext');
+        const lookup = vi.spyOn(accountService, 'getTaskTokenAccountContext');
         const token = await capabilityToken([TASK_CAPABILITY_SCOPES.apiProxy, TASK_CAPABILITY_SCOPES.apiConnectionRead]);
 
         const { next, status, code } = await runCapabilityAuth(`Bearer ${token}`);
@@ -214,7 +218,7 @@ describe('task capability token', () => {
 
     it('rejects a task token that lacks the capability the route declared', async () => {
         envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: capabilitySigner.raw }];
-        const lookup = vi.spyOn(accountService, 'getAccountContext');
+        const lookup = vi.spyOn(accountService, 'getTaskTokenAccountContext');
         const token = await capabilityToken([TASK_CAPABILITY_SCOPES.apiProxy]);
 
         const { next, status, code } = await runCapabilityAuth(`Bearer ${token}`, TASK_CAPABILITY_SCOPES.apiConnectionRead);

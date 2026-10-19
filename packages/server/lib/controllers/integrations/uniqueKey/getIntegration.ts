@@ -44,7 +44,7 @@ export const getPublicIntegration = asyncWrapperWithEnvironment<GetPublicIntegra
     const query: GetPublicIntegration['Querystring'] = valQuery.data;
 
     const queryInclude = new Set(query.include || []);
-    if (queryInclude.size > 0 && authType !== 'secretKey') {
+    if (queryInclude.size > 0 && authType !== 'secretKey' && authType !== 'taskToken') {
         // This endpoint is not reachable any other way right now BUT it's to prevent any future mistakes
         res.status(403).send({ error: { code: 'invalid_permissions', message: "Can't include credentials without a private key" } });
         return;
