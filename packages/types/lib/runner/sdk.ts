@@ -16,9 +16,9 @@ export type ScriptType = 'function' | 'sync' | 'action' | 'webhook' | 'on-event'
 export interface NangoProps {
     scriptType: ScriptType;
     host?: string;
-    /** Environment secret. Omitted once a task capability token is minted. */
+    /** Environment secret. Omitted only when NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY is set. */
     secretKey?: string | undefined;
-    /** Short-lived task JWT. The runner credential once jobs omits secretKey. */
+    /** Short-lived task JWT. The runner credential once that flag omits secretKey. */
     taskAuthToken?: string | undefined;
     team: Pick<DBTeam, 'id' | 'name'>;
     connectionId: string;

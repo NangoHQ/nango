@@ -97,8 +97,12 @@ createRoute(server, deleteCheckpointHandler, {
 createRoute(server, postRunnerTelemetryHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistTelemetry)] });
 createRoute(server, putTaskAbortHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistAbort, { taskId: 'taskId' })] });
 createRoute(server, getTaskAbortHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistAbort, { taskId: 'taskId' })] });
-createRoute(server, putSyncConflictHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistSyncConflict)] });
-createRoute(server, deleteSyncConflictHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistSyncConflict)] });
+createRoute(server, putSyncConflictHandler, {
+    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistSyncConflict, { bodySyncId: 'syncId' })]
+});
+createRoute(server, deleteSyncConflictHandler, {
+    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistSyncConflict, { bodySyncId: 'syncId' })]
+});
 createRoute(server, postRunnerLockTryAcquireHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistLocks)] });
 createRoute(server, postRunnerLockReleaseHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistLocks)] });
 createRoute(server, postRunnerLockReleaseAllHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistLocks)] });

@@ -31,7 +31,7 @@ import { envs } from '../env.js';
 import { agentSessionTokenSchema, connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
 import * as agentSessionService from '../services/agentSession.service.js';
 import * as connectSessionService from '../services/connectSession.service.js';
-import { environmentScopesForTokenScopes, scriptScopeForRequest } from './script-capability-actions.js';
+import { environmentScopesForTaskCapability } from './task-capability.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AgentSession, ApiKeyContext, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
@@ -119,19 +119,23 @@ export class AccessMiddleware {
     }
 
     /**
-     * A jobs-signed task JWT is not an API key. It may call only the script allowlist, as the
-     * environment named in the token.
+     * A jobs-signed task JWT is not an API key. The route declares the capability it accepts via
+     * `taskCapability` before this runs. A route that declares none rejects the token.
      */
-    private async authenticateCapabilityToken(req: Request, res: Response<unknown, Partial<RequestLocals>>, token: string): Promise<Result<void>> {
+    private async authenticateCapabilityToken(_req: Request, res: Response<unknown, Partial<RequestLocals>>, token: string): Promise<Result<void>> {
         const registry = keyRegistryFromPublicKeys(envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS, INTERNAL_SERVICE_ISSUER_JOBS);
         const verified = await verify(token, INTERNAL_SERVICE_AUDIENCE_SERVER, registry);
         const auth = verified.auth;
         const environmentId = auth?.res?.environmentId;
-        if (!auth || auth.issuer !== INTERNAL_SERVICE_ISSUER_JOBS || !auth.sub?.startsWith('task:') || environmentId === undefined) {
-            return Err('unknown_account');
-        }
-        const scope = scriptScopeForRequest(req);
-        if (!scope || !hasScope(auth, scope)) {
+        const scope = res.locals.taskCapability;
+        if (
+            !auth ||
+            auth.issuer !== INTERNAL_SERVICE_ISSUER_JOBS ||
+            !auth.sub?.startsWith('task:') ||
+            environmentId === undefined ||
+            !scope ||
+            !hasScope(auth, scope)
+        ) {
             return Err('unknown_account');
         }
 
@@ -154,7 +158,7 @@ export class AccessMiddleware {
             source: 'api_secret',
             accountId: accountContext.account.id,
             environmentIds: [accountContext.environment.id],
-            scopes: environmentScopesForTokenScopes(auth.scopes ?? [])
+            scopes: [...environmentScopesForTaskCapability(scope)]
         };
         tagTraceUser({ account: accountContext.account, environment: accountContext.environment, plan: accountContext.plan });
         return Ok(undefined);

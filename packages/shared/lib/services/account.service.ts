@@ -80,12 +80,14 @@ class PersistAuthContextCache {
     // TTL is a startup config; the enabled flag is read per-call so it can be toggled at runtime.
     private cache = new TTLFixedSizeMap<string, PersistAuthContext>(10_000, envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS);
 
+    constructor(private metricCache: string) {}
+
     get(hash: string): PersistAuthContext | undefined {
         if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
             return undefined;
         }
         const cached = this.cache.get(hash);
-        metrics.increment(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'persist_internal_secret', result: cached ? 'hit' : 'miss' });
+        metrics.increment(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: this.metricCache, result: cached ? 'hit' : 'miss' });
         return cached;
     }
 
@@ -98,7 +100,9 @@ class PersistAuthContextCache {
     }
 }
 
-const persistAuthContextCache = new PersistAuthContextCache();
+const persistAuthContextCache = new PersistAuthContextCache('persist_internal_secret');
+/** Separate from the secret-hash cache. Without an encryption key the hash is the plaintext secret, which could otherwise equal `environment:<id>`. */
+const persistEnvironmentAuthContextCache = new PersistAuthContextCache('persist_environment');
 
 interface AccountContext {
     account: DBTeam;
@@ -1002,7 +1006,7 @@ class AccountService {
 
     private async resolvePersistAuthContextByEnvironmentId(environmentId: number): Promise<PersistAuthContext | null> {
         const cacheKey = `environment:${environmentId}`;
-        const cached = persistAuthContextCache.get(cacheKey);
+        const cached = persistEnvironmentAuthContextCache.get(cacheKey);
         if (cached) {
             return cached;
         }
@@ -1042,7 +1046,7 @@ class AccountService {
                     ? { id: row.plan_id, name: row.plan_name, records_store: row.records_store }
                     : null
         };
-        persistAuthContextCache.set(cacheKey, context);
+        persistEnvironmentAuthContextCache.set(cacheKey, context);
         return context;
     }
 

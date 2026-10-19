@@ -5,6 +5,7 @@ import {
     INTERNAL_SERVICE_ISSUER_JOBS,
     isEnvironmentBoundAuth,
     isJwtShape,
+    jwtHeaderAlg,
     keyRegistryFromPublicKeys,
     verify
 } from '@nangohq/internal-auth';
@@ -39,7 +40,7 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
         return;
     }
 
-    if (isJwtShape(secret)) {
+    if (isJwtShape(secret) && jwtHeaderAlg(secret) === 'EdDSA') {
         await authenticateCapability(res, next, secret, environmentId);
         return;
     }

@@ -1,4 +1,5 @@
 import type { Principal } from '@nangohq/authz';
+import type { TaskCapabilityScope } from '@nangohq/internal-auth';
 import type { AgentSession, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser, InternalEndUser } from '@nangohq/types';
 
 // Types are historically loose so we need to fix them at some point
@@ -49,6 +50,8 @@ export interface RequestLocals {
     sandboxTokenPurpose?: 'dryrun' | 'deploy';
     sandboxTokenDryrunId?: string;
     sandboxTokenDeploymentId?: string;
+    /** Set by `taskCapability` before auth. Absent means this route does not accept a task token. */
+    taskCapability?: TaskCapabilityScope;
 }
 
 /** RequestLocals with the environment confirmed present — see `asyncWrapperWithEnvironment` and `requireEnvironment`. */

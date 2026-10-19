@@ -90,11 +90,26 @@ describe('unified internal auth JWT', () => {
         }
     });
 
-    it('rejects a kid token whose res claim has the wrong type', async () => {
+    it('rejects a kid token whose res.environmentId is not a positive integer', async () => {
         const jobs = ed25519Material();
         const token = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: jobs.pem },
             { sub: taskSubject('task-1'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60, res: { environmentId: 0 } }
+        );
+        const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: jobs.raw }], INTERNAL_SERVICE_ISSUER_JOBS);
+        expect(await verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_JOBS, { registry, staticToken: token })).toBeNull();
+    });
+
+    it('rejects a kid token whose res claim has the wrong type', async () => {
+        const jobs = ed25519Material();
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: jobs.pem },
+            {
+                sub: taskSubject('task-1'),
+                aud: INTERNAL_SERVICE_AUDIENCE_JOBS,
+                ttlSecs: 60,
+                res: { environmentId: '9' } as unknown as { environmentId: number }
+            }
         );
         const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: jobs.raw }], INTERNAL_SERVICE_ISSUER_JOBS);
         expect(await verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_JOBS, { registry, staticToken: token })).toBeNull();

@@ -1,5 +1,7 @@
 // Unit tests for LambdaRuntimeAdapter – large payload S3 upload behaviour
 
+import { generateKeyPairSync } from 'node:crypto';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { INTERNAL_SERVICE_AUDIENCE_JOBS } from '@nangohq/internal-auth';
@@ -15,7 +17,10 @@ const { mockS3Send, mockLambdaSend, mockEnvs } = vi.hoisted(() => ({
     mockEnvs: {
         LAMBDA_PAYLOADS_BUCKET_NAME: 'test-payloads-bucket',
         LAMBDA_PAYLOAD_MAX_SIZE_BYTES: 100,
-        NANGO_INTERNAL_AUTH_SIGNING_KEY: undefined as string | undefined
+        NANGO_INTERNAL_AUTH_SIGNING_KEY: undefined as string | undefined,
+        NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: undefined as string | undefined,
+        NANGO_INTERNAL_AUTH_JOBS_KEY_ID: undefined as string | undefined,
+        NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY: false
     }
 }));
 
@@ -254,6 +259,9 @@ describe('LambdaRuntimeAdapter – internal auth mint', () => {
     };
     afterEach(() => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = undefined;
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = undefined;
+        mockEnvs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY = false;
         mockEnvs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES = 100;
         mockEnvs.LAMBDA_PAYLOADS_BUCKET_NAME = 'test-payloads-bucket';
     });
@@ -309,6 +317,26 @@ describe('LambdaRuntimeAdapter – internal auth mint', () => {
             aud: INTERNAL_SERVICE_AUDIENCE_JOBS,
             task_id: 'task-mint-s3'
         });
+    });
+
+    it('sends taskAuthToken and omits secretKey when the jobs signer is set and omit is enabled', async () => {
+        const { privateKey } = generateKeyPairSync('ed25519');
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = 'jobs-2026-09';
+        mockEnvs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY = true;
+        mockEnvs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES = 10 * 1024 * 1024;
+        const adapter = new LambdaRuntimeAdapter(mockFleet as any);
+        const result = await adapter.invoke({
+            taskId: 'task-capability',
+            nangoProps: minimalNangoProps(),
+            code: 'export default async function run() {}',
+            codeParams: { foo: 'bar' }
+        });
+        expect(result.isOk()).toBe(true);
+        const invokeCommand = (mockLambdaSend.mock.calls[0]! as unknown[])[0] as { input?: { Payload?: string } };
+        const payload = JSON.parse(invokeCommand.input!.Payload as string);
+        expect(payload.nangoProps.taskAuthToken).toEqual(expect.any(String));
+        expect(payload.nangoProps.secretKey).toBeUndefined();
     });
 });
 

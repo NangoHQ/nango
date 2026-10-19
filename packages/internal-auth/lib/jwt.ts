@@ -113,9 +113,6 @@ function loadPublicKey(rawPublicKey: string): Promise<CryptoKey> {
     return pending;
 }
 
-/**
- * Mint one EdDSA JWT. `iss` is the signing service. `sub` is that service, a task, or a node.
- */
 function capabilityPayload(claims: MintClaims): JWTPayload {
     const payload: JWTPayload = {};
     if (claims.res !== undefined) {
@@ -134,6 +131,7 @@ function capabilityPayload(claims: MintClaims): JWTPayload {
     return payload;
 }
 
+/** Mint one EdDSA JWT. `iss` is the signing service. `sub` is that service, a task, or a node. */
 export async function mint(signer: MintSigner, claims: MintClaims): Promise<string> {
     const key = await loadPrivateKey(signer.privateKey);
     const iat = claims.issuedAt ?? Math.floor(Date.now() / 1000);

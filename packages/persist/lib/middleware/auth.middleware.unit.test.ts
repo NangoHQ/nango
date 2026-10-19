@@ -41,6 +41,14 @@ function app() {
             res.status(204).end();
         }
     );
+    server.put(
+        '/environment/:environmentId/runner/sync-conflict',
+        express.json(),
+        requireTaskCapability(TASK_CAPABILITY_SCOPES.persistSyncConflict, { bodySyncId: 'syncId' }),
+        (_req, res) => {
+            res.status(204).end();
+        }
+    );
     return server;
 }
 
@@ -140,6 +148,23 @@ describe('persist capability auth', () => {
             const res = await fetch(`${url}/environment/9/connection/1/sync/sync-1/job/4/records`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a sync-conflict token for a different sync id in the body', async () => {
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: signer.raw }];
+        vi.spyOn(accountService, 'getPersistAuthContextByEnvironmentId').mockResolvedValue(Ok(context));
+        const token = await capabilityToken({ syncId: 'sync-1' });
+        const { url, close } = await listen(app());
+        try {
+            const res = await fetch(`${url}/environment/9/runner/sync-conflict`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+                body: JSON.stringify({ syncId: 'sync-2' })
             });
             expect(res.status).toBe(401);
         } finally {

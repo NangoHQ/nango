@@ -19,6 +19,15 @@ function stringParam(req: Request, name: string): string | undefined {
     return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
+function bodyString(req: Request, name: string): string | undefined {
+    const body: unknown = req.body;
+    if (typeof body !== 'object' || body === null) {
+        return undefined;
+    }
+    const value = (body as Record<string, unknown>)[name];
+    return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+
 function positiveIntParam(req: Request, name: string): number | undefined {
     const raw = stringParam(req, name);
     if (raw === undefined) {
@@ -35,11 +44,13 @@ export function setCapabilityAuth(res: Response, auth: InternalServiceAuth): voi
     res.locals[INTERNAL_SERVICE_AUTH_LOCALS_KEY] = auth;
 }
 
-/** Path param names this route binds a task JWT to. Absent names are not checked. */
+/** Names of the request fields this route binds a task JWT to. Absent names are not checked. */
 export interface TaskCapabilityParams {
     connectionId?: string;
     syncId?: string;
     taskId?: string;
+    /** Body field whose string value must match `res.syncId`. */
+    bodySyncId?: string;
 }
 
 /** Secret-key callers pass through. A task JWT must match the scope and the named path params. */
@@ -63,6 +74,10 @@ export function requireTaskCapability(scope: string, params: TaskCapabilityParam
             return;
         }
         if (params.taskId !== undefined && !isTaskBoundAuth(auth, stringParam(req, params.taskId))) {
+            unauthorized(res);
+            return;
+        }
+        if (params.bodySyncId !== undefined && !isSyncBoundAuth(auth, bodyString(req, params.bodySyncId))) {
             unauthorized(res);
             return;
         }
