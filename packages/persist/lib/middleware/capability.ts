@@ -1,16 +1,15 @@
-import { getInternalServiceAuth, hasScope, INTERNAL_SERVICE_AUTH_LOCALS_KEY, isResourceBound, isTaskBoundAuth } from '@nangohq/internal-auth';
+import {
+    getInternalServiceAuth,
+    hasScope,
+    INTERNAL_SERVICE_AUTH_LOCALS_KEY,
+    isResourceBound,
+    isTaskBoundAuth,
+    routeParam,
+    unauthorized
+} from '@nangohq/internal-auth';
 
 import type { InternalServiceAuth } from '@nangohq/internal-auth';
 import type { NextFunction, Request, Response } from 'express';
-
-function unauthorized(res: Response): void {
-    res.status(401).json({ error: { code: 'unauthorized', message: 'Unauthorized' } });
-}
-
-function stringParam(req: Request, name: string): string | undefined {
-    const value = req.params[name];
-    return typeof value === 'string' && value.length > 0 ? value : undefined;
-}
 
 function bodyString(req: Request, name: string): string | undefined {
     const body: unknown = req.body;
@@ -22,12 +21,12 @@ function bodyString(req: Request, name: string): string | undefined {
 }
 
 function positiveIntParam(req: Request, name: string): number | undefined {
-    const raw = stringParam(req, name);
+    const raw = routeParam(req, name);
     if (raw === undefined) {
         return undefined;
     }
     const id = Number(raw);
-    if (!Number.isInteger(id) || id <= 0 || !Number.isSafeInteger(id)) {
+    if (!Number.isSafeInteger(id) || id <= 0) {
         return undefined;
     }
     return id;
@@ -39,41 +38,34 @@ export function setCapabilityAuth(res: Response, auth: InternalServiceAuth): voi
 
 const TASK_CAPABILITY_SATISFIED = 'taskCapabilitySatisfied';
 
-/** Names of the request fields this route binds a task JWT to. Absent names are not checked. */
-export interface TaskCapabilityParams {
-    connectionId?: string;
-    syncId?: string;
-    taskId?: string;
-    /** Body field whose string value must match `res.syncId`. */
-    bodySyncId?: string;
+/** `:nangoConnectionId`, `:syncId`, and `:taskId` are bound when the route defines them. */
+function pathBound(req: Request, auth: InternalServiceAuth): boolean {
+    if ('nangoConnectionId' in req.params && !isResourceBound(auth, 'connectionId', positiveIntParam(req, 'nangoConnectionId'))) {
+        return false;
+    }
+    if ('syncId' in req.params && !isResourceBound(auth, 'syncId', routeParam(req, 'syncId'))) {
+        return false;
+    }
+    if ('taskId' in req.params && !isTaskBoundAuth(auth, routeParam(req, 'taskId'))) {
+        return false;
+    }
+    return true;
 }
 
-/** Secret-key callers pass through. A task JWT must match the scope and the named path params. */
-export function requireTaskCapability(scope: string, params: TaskCapabilityParams = {}) {
+/** Secret-key callers pass through. A task JWT must include `scope` and match the route's resource params. */
+export function requireTaskCapability(scope: string, opts?: { bodySyncId?: string }) {
     return (req: Request, res: Response, next: NextFunction): void => {
         const auth = getInternalServiceAuth(res);
         if (!auth || auth.kind !== 'jwt') {
             next();
             return;
         }
-        if (!hasScope(auth, scope)) {
-            unauthorized(res);
+        if (!hasScope(auth, scope) || !pathBound(req, auth)) {
+            unauthorized(res, 'unauthorized', 'Unauthorized');
             return;
         }
-        if (params.connectionId !== undefined && !isResourceBound(auth, 'connectionId', positiveIntParam(req, params.connectionId))) {
-            unauthorized(res);
-            return;
-        }
-        if (params.syncId !== undefined && !isResourceBound(auth, 'syncId', stringParam(req, params.syncId))) {
-            unauthorized(res);
-            return;
-        }
-        if (params.taskId !== undefined && !isTaskBoundAuth(auth, stringParam(req, params.taskId))) {
-            unauthorized(res);
-            return;
-        }
-        if (params.bodySyncId !== undefined && !isResourceBound(auth, 'syncId', bodyString(req, params.bodySyncId))) {
-            unauthorized(res);
+        if (opts?.bodySyncId !== undefined && !isResourceBound(auth, 'syncId', bodyString(req, opts.bodySyncId))) {
+            unauthorized(res, 'unauthorized', 'Unauthorized');
             return;
         }
         res.locals[TASK_CAPABILITY_SATISFIED] = true;
@@ -89,7 +81,7 @@ export function requireTaskCapability(scope: string, params: TaskCapabilityParam
 export function denyTaskTokenWithoutCapability(_req: Request, res: Response, next: NextFunction): void {
     const auth = getInternalServiceAuth(res);
     if (auth?.kind === 'jwt' && res.locals[TASK_CAPABILITY_SATISFIED] !== true) {
-        unauthorized(res);
+        unauthorized(res, 'unauthorized', 'Unauthorized');
         return;
     }
     next();

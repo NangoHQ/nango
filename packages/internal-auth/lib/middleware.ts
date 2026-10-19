@@ -7,7 +7,7 @@ import type { InternalAuthEnvs } from './credential.js';
 import type { TaskCapabilityResource } from './jwt.js';
 import type { NextFunction, Request, Response } from 'express';
 
-function unauthorized(res: Response, code: 'missing_auth_header' | 'malformed_auth_header' | 'unauthorized', message: string): void {
+export function unauthorized(res: Response, code: 'missing_auth_header' | 'malformed_auth_header' | 'unauthorized', message: string): void {
     res.status(401).json({ error: { code, message } });
 }
 
@@ -119,7 +119,7 @@ export function internalServiceAuthMiddleware(opts: {
     }
 }
 
-function routeParam(req: Request, name: string): string | undefined {
+export function routeParam(req: Request, name: string): string | undefined {
     const value = req.params[name];
     return typeof value === 'string' && value.length > 0 ? value : undefined;
 }

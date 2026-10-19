@@ -73,35 +73,19 @@ function createPersistRoute<E extends Endpoint<any>, Locals extends Record<strin
 
 createPersistRoute(getHealthHandler);
 createPersistRoute(postLogHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistLog)] });
-createPersistRoute(postRecordsHandler, {
-    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, { connectionId: 'nangoConnectionId', syncId: 'syncId' })]
-});
-createPersistRoute(deleteRecordsHandler, {
-    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, { connectionId: 'nangoConnectionId', syncId: 'syncId' })]
-});
-createPersistRoute(deleteOutdatedRecordsHandler, {
-    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, { connectionId: 'nangoConnectionId', syncId: 'syncId' })]
-});
-createPersistRoute(deleteHardRecordsHandler, {
-    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, { connectionId: 'nangoConnectionId', syncId: 'syncId' })]
-});
-createPersistRoute(putRecordsHandler, {
-    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, { connectionId: 'nangoConnectionId', syncId: 'syncId' })]
-});
-createPersistRoute(getCursorHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCursor, { connectionId: 'nangoConnectionId' })] });
-createPersistRoute(getRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, { connectionId: 'nangoConnectionId' })] });
-createPersistRoute(getCheckpointHandler, {
-    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCheckpoint, { connectionId: 'nangoConnectionId' })]
-});
-createPersistRoute(putCheckpointHandler, {
-    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCheckpoint, { connectionId: 'nangoConnectionId' })]
-});
-createPersistRoute(deleteCheckpointHandler, {
-    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCheckpoint, { connectionId: 'nangoConnectionId' })]
-});
+createPersistRoute(postRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords)] });
+createPersistRoute(deleteRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords)] });
+createPersistRoute(deleteOutdatedRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords)] });
+createPersistRoute(deleteHardRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords)] });
+createPersistRoute(putRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords)] });
+createPersistRoute(getCursorHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCursor)] });
+createPersistRoute(getRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords)] });
+createPersistRoute(getCheckpointHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCheckpoint)] });
+createPersistRoute(putCheckpointHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCheckpoint)] });
+createPersistRoute(deleteCheckpointHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCheckpoint)] });
 createPersistRoute(postRunnerTelemetryHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistTelemetry)] });
-createPersistRoute(putTaskAbortHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistAbort, { taskId: 'taskId' })] });
-createPersistRoute(getTaskAbortHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistAbort, { taskId: 'taskId' })] });
+createPersistRoute(putTaskAbortHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistAbort)] });
+createPersistRoute(getTaskAbortHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistAbort)] });
 createPersistRoute(putSyncConflictHandler, {
     middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistSyncConflict, { bodySyncId: 'syncId' })]
 });

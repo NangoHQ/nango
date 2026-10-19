@@ -36,7 +36,7 @@ function app() {
     });
     server.post(
         '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:jobId/records',
-        requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, { connectionId: 'nangoConnectionId', syncId: 'syncId' }),
+        requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords),
         denyTaskTokenWithoutCapability,
         (_req, res) => {
             res.status(204).end();
