@@ -4,6 +4,7 @@ import { verifyInternalServiceCredential } from './verify.js';
 
 import type { InternalServiceAuth } from './constants.js';
 import type { InternalAuthEnvs } from './credential.js';
+import type { TaskCapabilityResource } from './jwt.js';
 import type { NextFunction, Request, Response } from 'express';
 
 function unauthorized(res: Response, code: 'missing_auth_header' | 'malformed_auth_header' | 'unauthorized', message: string): void {
@@ -53,25 +54,12 @@ function isJobsTaskJwt(auth: InternalServiceAuth | undefined): auth is InternalS
     return auth?.kind === 'jwt' && auth.issuer === INTERNAL_SERVICE_ISSUER_JOBS && Boolean(auth.sub?.startsWith('task:'));
 }
 
-export function isEnvironmentBoundAuth(auth: InternalServiceAuth | undefined, environmentId: number | undefined): boolean {
-    if (environmentId === undefined || !Number.isInteger(environmentId) || environmentId <= 0) {
+/** A missing param must not match a missing claim. A bad param cannot equal a claim that already parsed as a positive int or non-empty string. */
+export function isResourceBound(auth: InternalServiceAuth | undefined, key: keyof TaskCapabilityResource, value: number | string | undefined): boolean {
+    if (value === undefined) {
         return false;
     }
-    return isJobsTaskJwt(auth) && auth.res?.environmentId === environmentId;
-}
-
-export function isConnectionBoundAuth(auth: InternalServiceAuth | undefined, connectionId: number | undefined): boolean {
-    if (connectionId === undefined || !Number.isInteger(connectionId) || connectionId <= 0) {
-        return false;
-    }
-    return isJobsTaskJwt(auth) && auth.res?.connectionId === connectionId;
-}
-
-export function isSyncBoundAuth(auth: InternalServiceAuth | undefined, syncId: string | undefined): boolean {
-    if (!syncId) {
-        return false;
-    }
-    return isJobsTaskJwt(auth) && auth.res?.syncId === syncId;
+    return isJobsTaskJwt(auth) && auth.res?.[key] === value;
 }
 
 export function hasScope(auth: InternalServiceAuth | undefined, scope: string): boolean {

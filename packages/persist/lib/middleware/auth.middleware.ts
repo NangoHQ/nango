@@ -3,8 +3,8 @@ import tracer from 'dd-trace';
 import {
     INTERNAL_SERVICE_AUDIENCE_PERSIST,
     INTERNAL_SERVICE_ISSUER_JOBS,
-    isEnvironmentBoundAuth,
     isJwtShape,
+    isResourceBound,
     jwtHeaderAlg,
     keyRegistryFromPublicKeys,
     verify
@@ -91,7 +91,7 @@ async function authenticateCapability(res: Response<any, AuthLocals>, next: Next
         const registry = keyRegistryFromPublicKeys(envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS, INTERNAL_SERVICE_ISSUER_JOBS);
         const verified = await verify(token, INTERNAL_SERVICE_AUDIENCE_PERSIST, registry);
         const auth = verified.auth;
-        if (!auth || !isEnvironmentBoundAuth(auth, environmentId)) {
+        if (!auth || !isResourceBound(auth, 'environmentId', environmentId)) {
             res.status(401).json({ error: { code: 'unauthorized', message: 'Unauthorized' } });
             return;
         }

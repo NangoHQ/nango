@@ -1,11 +1,4 @@
-import {
-    getInternalServiceAuth,
-    hasScope,
-    INTERNAL_SERVICE_AUTH_LOCALS_KEY,
-    isConnectionBoundAuth,
-    isSyncBoundAuth,
-    isTaskBoundAuth
-} from '@nangohq/internal-auth';
+import { getInternalServiceAuth, hasScope, INTERNAL_SERVICE_AUTH_LOCALS_KEY, isResourceBound, isTaskBoundAuth } from '@nangohq/internal-auth';
 
 import type { InternalServiceAuth } from '@nangohq/internal-auth';
 import type { NextFunction, Request, Response } from 'express';
@@ -67,11 +60,11 @@ export function requireTaskCapability(scope: string, params: TaskCapabilityParam
             unauthorized(res);
             return;
         }
-        if (params.connectionId !== undefined && !isConnectionBoundAuth(auth, positiveIntParam(req, params.connectionId))) {
+        if (params.connectionId !== undefined && !isResourceBound(auth, 'connectionId', positiveIntParam(req, params.connectionId))) {
             unauthorized(res);
             return;
         }
-        if (params.syncId !== undefined && !isSyncBoundAuth(auth, stringParam(req, params.syncId))) {
+        if (params.syncId !== undefined && !isResourceBound(auth, 'syncId', stringParam(req, params.syncId))) {
             unauthorized(res);
             return;
         }
@@ -79,7 +72,7 @@ export function requireTaskCapability(scope: string, params: TaskCapabilityParam
             unauthorized(res);
             return;
         }
-        if (params.bodySyncId !== undefined && !isSyncBoundAuth(auth, bodyString(req, params.bodySyncId))) {
+        if (params.bodySyncId !== undefined && !isResourceBound(auth, 'syncId', bodyString(req, params.bodySyncId))) {
             unauthorized(res);
             return;
         }
