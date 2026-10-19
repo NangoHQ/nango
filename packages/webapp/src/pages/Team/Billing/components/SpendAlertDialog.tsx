@@ -20,14 +20,18 @@ import {
 import { usePutSpendAlert } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
-import { currencySymbol, parseThreshold, thresholdToInput } from '../spendAlert';
+import { APIError, apiErrorCode } from '@/utils/api';
+import { currencySymbol, floorError, parseThreshold, thresholdToInput } from '../spendAlert';
+
+import type { PutSpendAlert } from '@nangohq/types';
 
 /** One dialog for add and edit: an account has at most one alert, so editing is the same PUT. */
 export const SpendAlertDialog: React.FC<{
     thresholdInCents?: number | null;
     currency: string | null;
+    floorInCents: number | null;
     children: React.ReactElement;
-}> = ({ thresholdInCents = null, currency, children }) => {
+}> = ({ thresholdInCents = null, currency, floorInCents, children }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { mutateAsync: putSpendAlert, isPending } = usePutSpendAlert(env);
@@ -58,11 +62,21 @@ export const SpendAlertDialog: React.FC<{
             return;
         }
 
+        const belowFloor = floorError(parsed.thresholdInCents, floorInCents, currency);
+        if (belowFloor) {
+            setError(belowFloor);
+            return;
+        }
+
         try {
             await putSpendAlert({ thresholdInCents: parsed.thresholdInCents });
             setOpen(false);
             toast({ title: isEdit ? 'Spend alert updated' : 'Spend alert added', variant: 'success' });
-        } catch {
+        } catch (err) {
+            if (err instanceof APIError && apiErrorCode(err) === 'threshold_below_floor') {
+                setError((err.json as PutSpendAlert['Errors']).error.message ?? 'Enter a higher amount');
+                return;
+            }
             toast({ title: 'Failed to save the spend alert', variant: 'error' });
         }
     };

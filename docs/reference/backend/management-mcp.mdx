@@ -84,12 +84,12 @@ Use the Integrations tools to inspect and manage integrations in the authenticat
 
 ### Connections
 
-Use the Connections tools to inspect connections in the authenticated Nango environment. Connection list results never include credentials. Getting a connection only includes credentials when the caller has the credential-reading permission.
+Use the Connections tools to inspect connections in the authenticated Nango environment.
 
-| Tool               | Description                                                                                                                                         | Additional permission                                                         |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `connections_list` | List and filter connections.                                                                                                                        | `environment:connections:list` or `environment:connections:list_credentials` |
-| `connections_get`  | Get a connection and its current credential state. Credential access and refresh flags require `read_credentials` and may rotate credential material. | `environment:connections:read` or `environment:connections:read_credentials` |
+| Tool               | Description                  | Additional permission                                                         |
+| ------------------ | ---------------------------- | ----------------------------------------------------------------------------- |
+| `connections_list` | List and filter connections. | `environment:connections:list` or `environment:connections:list_credentials` |
+| `connections_get`  | Get a connection.            | `environment:connections:read` or `environment:connections:read_credentials` |
 
 ### Actions
 
@@ -114,11 +114,11 @@ Use the Sync tools to set sync state or trigger syncs for an integration in the 
 
 ### Functions
 
-Use the Functions tools to inspect and deploy template functions in the authenticated Nango environment. Use `get_deployment_status` to check whether a deployment has finished.
+Use the Functions tools to inspect available functions and deploy templates in the authenticated Nango environment. `functions_list` includes deployed functions and Nango catalog actions. Catalog actions are available out of the box; use `deploy_template` when you want to enable a sync template or explicitly deploy a template.
 
 | Tool                    | Description                                                                   | Additional permission        |
 | ----------------------- | ----------------------------------------------------------------------------- | ---------------------------- |
-| `functions_list`        | List and filter deployed syncs, actions, and on-event scripts by integration. | `environment:functions:list` |
+| `functions_list`        | List and filter available functions by integration, including Nango catalog actions. | `environment:functions:list` |
 | `deploy_template`       | Deploy a function template.                                                   | `environment:deploy`         |
 | `get_deployment_status` | Retrieve a deployment's current status and result.                            | `environment:deploy`         |
 

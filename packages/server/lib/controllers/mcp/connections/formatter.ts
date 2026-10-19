@@ -33,13 +33,12 @@ export function connectionToMcp({
     };
 }
 
-export function retrievedConnectionToMcp({ connection, credentials, provider, activeLogs, endUser }: RetrievedConnection): McpConnectionFull {
+export function retrievedConnectionToMcp({ connection, provider, activeLogs, endUser }: RetrievedConnection): McpConnectionFull {
     return {
         id: connection.id,
         connection_id: connection.connection_id,
         provider_config_key: connection.provider_config_key,
         provider,
-        connection_config: connection.connection_config,
         webhook_url_override: connection.webhook_url_override,
         created_at: new Date(connection.created_at).toISOString(),
         updated_at: new Date(connection.updated_at).toISOString(),
@@ -60,20 +59,6 @@ export function retrievedConnectionToMcp({ connection, credentials, provider, ac
                         }
                       : null
               }
-            : null,
-        ...(credentials ? { credentials: datesToIsoStrings(credentials) as Record<string, unknown> } : {})
+            : null
     };
-}
-
-function datesToIsoStrings(value: unknown): unknown {
-    if (value instanceof Date) {
-        return value.toISOString();
-    }
-    if (Array.isArray(value)) {
-        return value.map(datesToIsoStrings);
-    }
-    if (value && typeof value === 'object') {
-        return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, datesToIsoStrings(child)]));
-    }
-    return value;
 }

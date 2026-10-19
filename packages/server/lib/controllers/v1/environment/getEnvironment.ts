@@ -65,7 +65,8 @@ export const getEnvironment = asyncWrapperWithEnvironment<GetEnvironment>(async 
 
     let webhookSigningKey: string | null = null;
     if (principalCan(res.locals, 'environment:settings:read_secret')) {
-        const signingKeyResult = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        // The cache can hold a rotated-out key for up to 5 minutes, and the dashboard must show the current one.
+        const signingKeyResult = await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, environment.id);
         if (signingKeyResult.isOk()) {
             webhookSigningKey = signingKeyResult.value;
         }

@@ -145,26 +145,6 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
 
     return (
         <div className="relative min-w-0">
-            {scopes.length > 0 && !loading && (
-                <div className="absolute -top-6 right-0 flex items-center gap-1">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span>
-                                <CopyButton text={scopes.join(',')} />
-                            </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="top">Copy all</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <IconButton type="button" size="2xs" variant="ghost" label="Delete all scopes" onClick={() => void deleteAllScopes()}>
-                                <Trash2 />
-                            </IconButton>
-                        </TooltipTrigger>
-                        <TooltipContent side="top">Delete all</TooltipContent>
-                    </Tooltip>
-                </div>
-            )}
             <Combobox
                 items={availableScopes ?? []}
                 multiple
@@ -192,6 +172,40 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                         onFocus={() => hasAvailableScopesDropdown && setDropdownOpen(true)}
                     />
                     <div className="ml-auto flex items-center gap-1 shrink-0 pl-1">
+                        {scopes.length > 0 && !loading && (
+                            <>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span>
+                                            <CopyButton text={scopes.join(',')} />
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">Copy all</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <IconButton
+                                            type="button"
+                                            size="2xs"
+                                            variant="ghost"
+                                            label="Delete all scopes"
+                                            onMouseDown={(event) => {
+                                                // The chips container treats a press as focusing the input, which reopens suggestions.
+                                                event.preventDefault();
+                                                event.stopPropagation();
+                                            }}
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                void deleteAllScopes();
+                                            }}
+                                        >
+                                            <Trash2 />
+                                        </IconButton>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">Delete all</TooltipContent>
+                                </Tooltip>
+                            </>
+                        )}
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <IconButton

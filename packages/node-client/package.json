@@ -1,44 +1,44 @@
 {
-    "name": "@nangohq/node",
-    "version": "0.71.10",
-    "description": "Nango's Node client.",
-    "type": "module",
-    "main": "dist/index.js",
-    "module": "./dist/index.js",
-    "scripts": {
-        "build": "tsup lib/index.ts --format cjs",
-        "prepublishOnly": "npm run build"
-    },
-    "exports": {
-        ".": {
-            "require": "./dist/index.cjs",
-            "import": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
-    },
-    "typings": "dist/index.d.ts",
-    "keywords": [],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/NangoHQ/nango.git",
-        "directory": "packages/node-client"
-    },
-    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
-    "dependencies": {
-        "@nangohq/types": "0.71.10",
-        "axios": "1.18.0"
-    },
-    "engines": {
-        "node": ">=20.0"
-    },
-    "files": [
-        "dist/**/*",
-        "!**/*.json",
-        "README.md"
-    ],
-    "devDependencies": {
-        "vitest": "4.1.9",
-        "esbuild": "0.28.1",
-        "tsup": "8.5.1"
+  "name": "@nangohq/node",
+  "version": "0.71.13",
+  "description": "Nango's Node client.",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "./dist/index.js",
+  "scripts": {
+    "build": "node api.js && tsup lib/index.ts --format cjs",
+    "prepublishOnly": "npm run build"
+  },
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     }
+  },
+  "typings": "dist/index.d.ts",
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NangoHQ/nango.git",
+    "directory": "packages/node-client"
+  },
+  "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+  "dependencies": {
+    "@nangohq/types": "0.71.13",
+    "axios": "1.20.0"
+  },
+  "engines": {
+    "node": ">=20.0"
+  },
+  "files": [
+    "dist/**/*",
+    "!**/*.json",
+    "README.md"
+  ],
+  "devDependencies": {
+    "vitest": "4.1.11",
+    "esbuild": "0.28.1",
+    "tsup": "8.5.1"
+  }
 }

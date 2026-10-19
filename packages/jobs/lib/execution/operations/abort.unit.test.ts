@@ -36,7 +36,7 @@ vi.mock('./state.js', () => ({
 }));
 
 vi.mock('../../internal-auth.js', () => ({
-    mintRunnerDispatchToken: vi.fn(() => null)
+    mintRunnerDispatchToken: vi.fn(() => Promise.resolve(null))
 }));
 
 vi.mock('../../runner/runner.js', () => ({
@@ -58,7 +58,7 @@ describe('abortTaskWithId', () => {
         mockPutTaskAbort.mockResolvedValue(Ok(undefined));
         mockSetTaskSuccess.mockResolvedValue(Ok({} as never));
         mockOrchestratorFailed.mockResolvedValue(Ok({} as never));
-        vi.mocked(mintRunnerDispatchToken).mockReturnValue(null);
+        vi.mocked(mintRunnerDispatchToken).mockResolvedValue(null);
     });
 
     afterEach(() => {
@@ -83,7 +83,7 @@ describe('abortTaskWithId', () => {
     });
 
     it('passes a minted runner-audience token to getRunners', async () => {
-        vi.mocked(mintRunnerDispatchToken).mockReturnValue('runner.jwt');
+        vi.mocked(mintRunnerDispatchToken).mockResolvedValue('runner.jwt');
         const abortA = vi.fn().mockResolvedValue(true);
 
         (getRunners as unknown as { mockResolvedValue: (value: any) => void }).mockResolvedValue(Ok([{ client: { abort: { mutate: abortA } } }] as any[]));
@@ -156,7 +156,7 @@ describe('abortTask', () => {
         mockPutTaskAbort.mockResolvedValue(Ok(undefined));
         mockSetTaskSuccess.mockResolvedValue(Ok({} as never));
         mockOrchestratorFailed.mockResolvedValue(Ok({} as never));
-        vi.mocked(mintRunnerDispatchToken).mockReturnValue(null);
+        vi.mocked(mintRunnerDispatchToken).mockResolvedValue(null);
     });
 
     afterEach(() => {

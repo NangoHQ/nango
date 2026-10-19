@@ -1,29 +1,29 @@
 {
-    "name": "@nangohq/keystore",
-    "version": "1.0.0",
-    "type": "module",
-    "main": "dist/index.js",
-    "private": true,
-    "scripts": {
-        "dev:migration:create": "npm run knex -- migrate:make",
-        "dev:migration:run": "npm run knex -- migrate:latest",
-        "knex": "tsx ../../node_modules/knex/bin/cli.js --knexfile lib/db/knexfile.ts",
-        "prod:migration:run": "knex --knexfile dist/db/knexfile.js migrate:latest"
-    },
-    "keywords": [],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/NangoHQ/nango.git",
-        "directory": "packages/keystore"
-    },
-    "dependencies": {
-        "@nangohq/kms": "file:../kms",
-        "@nangohq/utils": "file:../utils",
-        "dd-trace": "5.117.0",
-        "knex": "3.1.0"
-    },
-    "devDependencies": {
-        "@nangohq/types": "file:../types",
-        "vitest": "4.1.9"
-    }
+  "name": "@nangohq/keystore",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "private": true,
+  "scripts": {
+    "dev:migration:create": "node api.js && npm run knex -- migrate:make",
+    "dev:migration:run": "node api.js && npm run knex -- migrate:latest",
+    "knex": "tsx ../../node_modules/knex/bin/cli.js --knexfile lib/db/knexfile.ts",
+    "prod:migration:run": "knex --knexfile dist/db/knexfile.js migrate:latest"
+  },
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NangoHQ/nango.git",
+    "directory": "packages/keystore"
+  },
+  "dependencies": {
+    "@nangohq/kms": "file:../kms",
+    "@nangohq/utils": "file:../utils",
+    "dd-trace": "5.117.0",
+    "knex": "3.1.0"
+  },
+  "devDependencies": {
+    "@nangohq/types": "file:../types",
+    "vitest": "4.1.11"
+  }
 }

@@ -1,0 +1,36 @@
+---
+title: 'ModMed (FHIR) - How do I connect a practice?'
+sidebarTitle: 'ModMed (FHIR)'
+---
+
+## Overview
+
+To authenticate with the ModMed Certified FHIR API, you need:
+
+1. **FHIR Host** — the host of the practice's Certified FHIR endpoint. Nango uses it as the base for all proxied API calls.
+
+This guide will show you how to obtain your FHIR Host.
+
+### Prerequisites
+
+- You've set up the integration's Client ID, Key ID, Private Key, and Scope in Nango — see the [setup guide](/api-integrations/modmed-fhir/how-to-register-your-own-modmed-fhir-app).
+- A practice admin has added your developer app's Client ID to their practice.
+
+### Step 1: Finding your FHIR Host
+
+Each ModMed practice has its own Certified FHIR endpoint. Look up the practice in ModMed's [FHIR endpoint directory](https://mm-fhir-endpoint-display.prod.fhir.ema-api.com/). Endpoints follow the format `https://<practice>.<specialty>.prod.fhir.ema-api.com/fhir/r4/`.
+
+Enter only the host — without `https://` or the `/fhir/r4/` path, e.g. `acme.mmi.prod.fhir.ema-api.com`.
+
+
+### Step 2: Enter your FHIR Host in the Connect UI
+
+Once you have it:
+
+1. Open the form where you need to authenticate with ModMed (FHIR).
+2. Enter your **FHIR Host** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/modmed-fhir/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to ModMed (FHIR).

@@ -197,6 +197,9 @@ export interface DBPlan extends Timestamps {
      */
     can_disable_connect_ui_watermark: boolean;
 
+    /** @default true */
+    has_overdue_invoices_banner: boolean;
+
     /**
      * Sync Function Runtime
      * @default "runner"

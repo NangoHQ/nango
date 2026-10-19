@@ -1,27 +1,27 @@
 {
-    "name": "@nangohq/kvstore",
-    "version": "1.0.0",
-    "type": "module",
-    "main": "./dist/index.js",
-    "types": "./dist/index.js",
-    "private": true,
-    "scripts": {
-        "build": "rimraf ./dist && tsc"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/NangoHQ/nango.git",
-        "directory": "packages/kvstore"
-    },
-    "dependencies": {
-        "@nangohq/utils": "file:../utils",
-        "redis": "5.12.1"
-    },
-    "devDependencies": {
-        "testcontainers": "12.1.0",
-        "vitest": "4.1.9"
-    },
-    "files": [
-        "dist/**/*"
-    ]
+  "name": "@nangohq/kvstore",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.js",
+  "private": true,
+  "scripts": {
+    "build": "node api.js && rimraf ./dist && tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NangoHQ/nango.git",
+    "directory": "packages/kvstore"
+  },
+  "dependencies": {
+    "@nangohq/utils": "file:../utils",
+    "redis": "5.12.1"
+  },
+  "devDependencies": {
+    "testcontainers": "12.2.0",
+    "vitest": "4.1.11"
+  },
+  "files": [
+    "dist/**/*"
+  ]
 }

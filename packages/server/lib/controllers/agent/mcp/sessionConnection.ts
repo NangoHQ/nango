@@ -36,12 +36,40 @@ export async function resolveSessionConnection({
         return null;
     }
 
+    await fill({ session, integrationId, connection });
+
+    return connection;
+}
+
+export async function withConnectionsCreatedInSession(session: AgentSession): Promise<AgentSession> {
+    if (!session.metaTools.nangoCreateConnection.enabled) {
+        return session;
+    }
+
+    const missing = Object.keys(session.compiledToolset).filter((integrationId) => !Object.hasOwn(session.resolvedConnections, integrationId));
+    if (missing.length === 0) {
+        return session;
+    }
+
+    const created = await agentSessionConnectionsService.findConnectionsCreatedForSession({ environmentId: session.environmentId, sessionId: session.id });
+    const found = missing.flatMap((integrationId) => (Object.hasOwn(created, integrationId) && created[integrationId] ? [created[integrationId]] : []));
+    if (found.length === 0) {
+        return session;
+    }
+
+    await Promise.all(found.map((connection) => fill({ session, integrationId: connection.integrationId, connection })));
+
+    return {
+        ...session,
+        resolvedConnections: { ...session.resolvedConnections, ...Object.fromEntries(found.map((connection) => [connection.integrationId, connection])) }
+    };
+}
+
+async function fill({ session, integrationId, connection }: { session: AgentSession; integrationId: string; connection: AgentSessionResolvedConnection }) {
     // The connection is usable whether or not it gets written down, so a failure here costs another
     // lookup on the next call rather than the call the agent is making now.
     const filled = await agentSessionService.fillResolvedConnection(db.knex, { id: session.id, integrationId, connection });
     if (filled.isErr()) {
         report(filled.error);
     }
-
-    return connection;
 }

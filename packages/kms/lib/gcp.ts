@@ -21,7 +21,7 @@ export type GcpKmsClient = {
 };
 
 /**
- * Wraps and unwraps an AWS Encryption SDK data key via GCP Cloud KMS Encrypt/Decrypt.
+ * Encryption SDK keyring (the envelope library, no AWS calls) backed by GCP Cloud KMS Encrypt/Decrypt.
  * GCP has no GenerateDataKey; on encrypt we generate the data key locally then wrap it.
  */
 export class GcpKmsKeyringNode extends KeyringNode {
