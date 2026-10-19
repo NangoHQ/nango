@@ -1,0 +1,55 @@
+---
+title: Litmos - How do I link my account?
+sidebarTitle: Litmos
+---
+
+## Overview
+
+To authenticate with Litmos, you will need:
+
+1. **API Domain** - The Litmos API domain for your account's region.
+2. **API Key** - A key that grants Nango permission to call the Litmos API on your behalf.
+
+This guide explains how to obtain both.
+
+### Prerequisites
+
+- An Account Owner or Administrator login on a paid Litmos account. Litmos does not enable the API on trial accounts.
+
+### Instructions
+
+<a id="step-1-find-your-api-domain"></a>
+#### Step 1: Find your API domain
+
+Pick the API domain that matches the region your Litmos account is hosted in:
+
+| Region | API domain |
+| --- | --- |
+| United States | `api.litmos.com` |
+| Europe | `api.litmoseu.com` |
+| Australia | `api.litmos.com.au` |
+
+<a id="step-2-find-your-api-key"></a>
+#### Step 2: Find your API key
+
+1. Log in to Litmos as an Account Owner or Administrator.
+2. Open the profile menu in the top-right corner and select **My Profile & Settings**.
+
+<img src="/api-integrations/litmos/profile-menu.png" alt="Litmos profile menu with My Profile & Settings." style={{maxWidth: "260px" }}/>
+
+3. Scroll to the **API key** section and copy the key.
+
+<img src="/api-integrations/litmos/api-key.png" alt="API key section in Litmos profile settings." style={{maxWidth: "450px" }}/>
+
+Treat the key like a password: it can read and change data across your whole Litmos account.
+
+#### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Litmos.
+2. Select your **API Domain**.
+3. Enter your **API Key**.
+4. Submit the form to complete authentication.
+
+<img src="/api-integrations/litmos/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Litmos.

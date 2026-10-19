@@ -15052,6 +15052,44 @@ listrak:
             secret: true
             doc_section: '#step-1-create-api-credentials'
 
+litmos:
+    display_name: Litmos
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiDomain}
+        headers:
+            apikey: ${apiKey}
+        query:
+            source: nango
+            format: json
+        verification:
+            method: GET
+            endpoints:
+                - /v1.svc/users?limit=1
+    docs: https://nango.dev/docs/api-integrations/litmos
+    docs_connect: https://nango.dev/docs/api-integrations/litmos/connect
+    connection_config:
+        apiDomain:
+            type: string
+            title: API Domain
+            description: The Litmos API domain for your account's region.
+            order: 1
+            enum:
+                - api.litmos.com
+                - api.litmoseu.com
+                - api.litmos.com.au
+            doc_section: '#step-1-find-your-api-domain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Litmos API key, found under My Profile & Settings.
+            format: uuid
+            example: 7c1e****-****-****-****-********a04b
+            doc_section: '#step-2-find-your-api-key'
+
 liveswitch:
     display_name: LiveSwitch
     categories:
