@@ -1,6 +1,13 @@
 import express from 'express';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, internalServiceAuthMiddleware, requireFleetAuth, requireTaskBoundAuth } from '@nangohq/internal-auth';
+import {
+    INTERNAL_SERVICE_AUDIENCE_JOBS,
+    internalServiceAuthMiddleware,
+    requireFleetAuth,
+    requireTaskBoundAuth,
+    requireTaskScope,
+    TASK_CAPABILITY_SCOPES
+} from '@nangohq/internal-auth';
 import { serverRequestSizeLimit } from '@nangohq/nango-orchestrator';
 import { createRoute } from '@nangohq/utils';
 
@@ -21,8 +28,10 @@ server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_J
 server.use(express.json({ limit: serverRequestSizeLimit }));
 createRoute(server, postIdleHandler, { middleware: [requireFleetAuth(envs)] });
 createRoute(server, postRegisterHandler, { middleware: [requireFleetAuth(envs)] });
-createRoute(server, putTaskHandler, { middleware: [requireTaskBoundAuth(envs)] });
-createRoute(server, postHeartbeatHandler, { middleware: [requireTaskBoundAuth(envs)] });
+createRoute(server, putTaskHandler, { middleware: [requireTaskBoundAuth(envs), requireTaskScope(envs, TASK_CAPABILITY_SCOPES.jobsPutTask)] });
+createRoute(server, postHeartbeatHandler, {
+    middleware: [requireTaskBoundAuth(envs), requireTaskScope(envs, TASK_CAPABILITY_SCOPES.jobsHeartbeat)]
+});
 
 server.use((err: any, _req: Request, res: Response<ResDefaultErrors>, _next: NextFunction) => {
     if (err instanceof Error) {

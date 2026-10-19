@@ -49,6 +49,35 @@ function isSignedAuth(auth: InternalServiceAuth | undefined): boolean {
     return auth?.kind === 'hmac' || auth?.kind === 'eddsa';
 }
 
+function isJobsTaskJwt(auth: InternalServiceAuth | undefined): auth is InternalServiceAuth {
+    return auth?.kind === 'jwt' && auth.issuer === INTERNAL_SERVICE_ISSUER_JOBS && Boolean(auth.sub?.startsWith('task:'));
+}
+
+export function isEnvironmentBoundAuth(auth: InternalServiceAuth | undefined, environmentId: number | undefined): boolean {
+    if (environmentId === undefined || !Number.isInteger(environmentId) || environmentId <= 0) {
+        return false;
+    }
+    return isJobsTaskJwt(auth) && auth.res?.environmentId === environmentId;
+}
+
+export function isConnectionBoundAuth(auth: InternalServiceAuth | undefined, connectionId: number | undefined): boolean {
+    if (connectionId === undefined || !Number.isInteger(connectionId) || connectionId <= 0) {
+        return false;
+    }
+    return isJobsTaskJwt(auth) && auth.res?.connectionId === connectionId;
+}
+
+export function isSyncBoundAuth(auth: InternalServiceAuth | undefined, syncId: string | undefined): boolean {
+    if (!syncId) {
+        return false;
+    }
+    return isJobsTaskJwt(auth) && auth.res?.syncId === syncId;
+}
+
+export function hasScope(auth: InternalServiceAuth | undefined, scope: string): boolean {
+    return isJobsTaskJwt(auth) && Boolean(auth.scopes?.includes(scope));
+}
+
 function registryFromEnvs(envs: InternalAuthEnvs) {
     return mergeKeyRegistries(
         keyRegistryFromPublicKeys(envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS, INTERNAL_SERVICE_ISSUER_JOBS),
@@ -117,6 +146,29 @@ export function requireTaskBoundAuth(envs: InternalAuthEnvs): (req: Request, res
         const auth = getInternalServiceAuth(res);
         const taskId = routeParam(req, 'taskId');
         if (isTaskBoundAuth(auth, taskId)) {
+            next();
+            return;
+        }
+        unauthorized(res, 'unauthorized', 'Unauthorized');
+    };
+}
+
+/**
+ * When REQUIRED and the token carries a `scopes` claim, the route scope must be included.
+ * Tokens without the claim stay task-id-only.
+ */
+export function requireTaskScope(envs: InternalAuthEnvs, scope: string): (req: Request, res: Response, next: NextFunction) => void {
+    return (_req, res, next) => {
+        if (!envs.NANGO_INTERNAL_AUTH_REQUIRED) {
+            next();
+            return;
+        }
+        const auth = getInternalServiceAuth(res);
+        if (!auth?.scopes) {
+            next();
+            return;
+        }
+        if (hasScope(auth, scope)) {
             next();
             return;
         }

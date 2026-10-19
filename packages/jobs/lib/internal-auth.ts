@@ -5,11 +5,13 @@ import {
     INTERNAL_SERVICE_AUDIENCE_JOBS,
     INTERNAL_SERVICE_AUDIENCE_RUNNER,
     INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS,
+    INTERNAL_SERVICE_TASK_CAPABILITY_AUDIENCES,
     INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS,
     INTERNAL_SERVICE_TOKEN_TTL_SECS,
     mint,
     nodeSubject,
     signerForService,
+    taskScopesForScriptType,
     taskSubject
 } from '@nangohq/internal-auth';
 
@@ -26,17 +28,54 @@ function jobsSigner() {
     return signerForService('jobs', envs);
 }
 
+type TaskAuthProps = Pick<NangoProps, 'lifecycle'> & Partial<Pick<NangoProps, 'environmentId' | 'nangoConnectionId' | 'syncId' | 'scriptType'>>;
+
 /**
- * Mint a task-bound token for putTask/heartbeat. Uses the jobs Ed25519 key when configured,
- * otherwise the legacy HMAC signing key. Returns null when neither is set.
+ * Mint a task-bound token for putTask/heartbeat and, when the jobs Ed25519 key is configured,
+ * the persist and script-API capability token. Falls back to the legacy HMAC signing key.
+ * Returns null when neither is set.
  */
-export async function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoProps, 'lifecycle'>): Promise<string | null> {
+export async function mintTaskAuthToken(taskId: string, nangoProps: TaskAuthProps): Promise<string | null> {
     const expiresInSecs = taskExpiresInSecs(nangoProps);
     const signer = jobsSigner();
     if (signer) {
-        return mint(signer, { sub: taskSubject(taskId), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: expiresInSecs });
+        const res =
+            nangoProps.environmentId !== undefined
+                ? {
+                      environmentId: nangoProps.environmentId,
+                      ...(nangoProps.nangoConnectionId !== undefined ? { connectionId: nangoProps.nangoConnectionId } : {}),
+                      ...(nangoProps.syncId !== undefined ? { syncId: nangoProps.syncId } : {})
+                  }
+                : undefined;
+        return mint(signer, {
+            sub: taskSubject(taskId),
+            aud: INTERNAL_SERVICE_TASK_CAPABILITY_AUDIENCES,
+            ttlSecs: expiresInSecs,
+            ...(res ? { res } : {}),
+            ...(nangoProps.scriptType ? { scopes: taskScopesForScriptType(nangoProps.scriptType) } : {})
+        });
     }
     return createInternalServiceToken({ taskId, expiresInSecs }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+}
+
+/**
+ * Props handed to a runner. Adds taskAuthToken when the jobs signer can mint one.
+ * secretKey stays until NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY is set, so a runner that has not
+ * recycled still receives the credential it requires.
+ */
+export async function nangoPropsForRunner(taskId: string, nangoProps: NangoProps): Promise<NangoProps> {
+    if (!jobsSigner()) {
+        return nangoProps;
+    }
+    const taskAuthToken = await mintTaskAuthToken(taskId, nangoProps);
+    if (!taskAuthToken) {
+        return nangoProps;
+    }
+    if (!envs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY) {
+        return { ...nangoProps, taskAuthToken };
+    }
+    const { secretKey: _secretKey, ...rest } = nangoProps;
+    return { ...rest, taskAuthToken };
 }
 
 /**

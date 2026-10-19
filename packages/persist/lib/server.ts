@@ -1,9 +1,11 @@
 import express from 'express';
 import qs from 'qs';
 
+import { TASK_CAPABILITY_SCOPES } from '@nangohq/internal-auth';
 import { createRoute } from '@nangohq/utils';
 
 import { authMiddleware } from './middleware/auth.middleware.js';
+import { requireTaskCapability } from './middleware/capability.js';
 import { connectionOwnershipMiddleware } from './middleware/connectionOwnership.middleware.js';
 import { recordsPath } from './records.js';
 import { routeHandler as deleteCheckpointHandler } from './routes/environment/environmentId/connection/connectionId/checkpoint/deleteCheckpoint.js';
@@ -65,26 +67,38 @@ server.use('/environment/:environmentId/runner/sync-conflict', express.json({ li
 server.use('/environment/:environmentId/runner/locks', express.json({ limit: maxSizeJsonRunnerCoordination }));
 
 createRoute(server, getHealthHandler);
-createRoute(server, postLogHandler);
-createRoute(server, postRecordsHandler);
-createRoute(server, deleteRecordsHandler);
-createRoute(server, deleteOutdatedRecordsHandler);
-createRoute(server, deleteHardRecordsHandler);
-createRoute(server, putRecordsHandler);
-createRoute(server, getCursorHandler);
-createRoute(server, getRecordsHandler);
-createRoute(server, getCheckpointHandler);
-createRoute(server, putCheckpointHandler);
-createRoute(server, deleteCheckpointHandler);
-createRoute(server, postRunnerTelemetryHandler);
-createRoute(server, putTaskAbortHandler);
-createRoute(server, getTaskAbortHandler);
-createRoute(server, putSyncConflictHandler);
-createRoute(server, deleteSyncConflictHandler);
-createRoute(server, postRunnerLockTryAcquireHandler);
-createRoute(server, postRunnerLockReleaseHandler);
-createRoute(server, postRunnerLockReleaseAllHandler);
-createRoute(server, getRunnerLockHandler);
+createRoute(server, postLogHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistLog, postLogHandler.path)] });
+createRoute(server, postRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, postRecordsHandler.path)] });
+createRoute(server, deleteRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, deleteRecordsHandler.path)] });
+createRoute(server, deleteOutdatedRecordsHandler, {
+    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, deleteOutdatedRecordsHandler.path)]
+});
+createRoute(server, deleteHardRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, deleteHardRecordsHandler.path)] });
+createRoute(server, putRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, putRecordsHandler.path)] });
+createRoute(server, getCursorHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCursor, getCursorHandler.path)] });
+createRoute(server, getRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords, getRecordsHandler.path)] });
+createRoute(server, getCheckpointHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCheckpoint, getCheckpointHandler.path)] });
+createRoute(server, putCheckpointHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCheckpoint, putCheckpointHandler.path)] });
+createRoute(server, deleteCheckpointHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCheckpoint, deleteCheckpointHandler.path)] });
+createRoute(server, postRunnerTelemetryHandler, {
+    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistTelemetry, postRunnerTelemetryHandler.path)]
+});
+createRoute(server, putTaskAbortHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistAbort, putTaskAbortHandler.path)] });
+createRoute(server, getTaskAbortHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistAbort, getTaskAbortHandler.path)] });
+createRoute(server, putSyncConflictHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistSyncConflict, putSyncConflictHandler.path)] });
+createRoute(server, deleteSyncConflictHandler, {
+    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistSyncConflict, deleteSyncConflictHandler.path)]
+});
+createRoute(server, postRunnerLockTryAcquireHandler, {
+    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistLocks, postRunnerLockTryAcquireHandler.path)]
+});
+createRoute(server, postRunnerLockReleaseHandler, {
+    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistLocks, postRunnerLockReleaseHandler.path)]
+});
+createRoute(server, postRunnerLockReleaseAllHandler, {
+    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistLocks, postRunnerLockReleaseAllHandler.path)]
+});
+createRoute(server, getRunnerLockHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistLocks, getRunnerLockHandler.path)] });
 
 server.use((_req: Request, res: Response, next: NextFunction) => {
     res.status(404);

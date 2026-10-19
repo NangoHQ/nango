@@ -18,7 +18,9 @@ import {
     verifyRunnerDispatchToken
 } from '@nangohq/internal-auth';
 
-import { assertRunnerAuthMaterial, mintRunnerAuthEnv, mintRunnerDispatchToken, mintTaskAuthToken } from './internal-auth.js';
+import { assertRunnerAuthMaterial, mintRunnerAuthEnv, mintRunnerDispatchToken, mintTaskAuthToken, nangoPropsForRunner } from './internal-auth.js';
+
+import type { NangoProps } from '@nangohq/types';
 
 const { mockEnvs } = vi.hoisted(() => ({
     mockEnvs: {
@@ -26,7 +28,8 @@ const { mockEnvs } = vi.hoisted(() => ({
         NANGO_INTERNAL_AUTH_REQUIRED: false,
         NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: undefined as string | undefined,
         NANGO_INTERNAL_AUTH_JOBS_KEY_ID: undefined as string | undefined,
-        NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: undefined as { kid: string; publicKey: string }[] | undefined
+        NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: undefined as { kid: string; publicKey: string }[] | undefined,
+        NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY: false
     }
 }));
 
@@ -40,6 +43,7 @@ afterEach(() => {
     mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = undefined;
     mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = undefined;
     mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = undefined;
+    mockEnvs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY = false;
 });
 
 describe('mintTaskAuthToken', () => {
@@ -210,5 +214,57 @@ describe('unified mint', () => {
         const payload = JSON.parse(Buffer.from(dispatch!.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
         expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_TOKEN_TTL_SECS);
         expect(payload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_TOKEN_TTL_SECS + 5);
+    });
+
+    it('adds a scoped capability token and keeps secretKey until omit is enabled', async () => {
+        const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+        const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
+        const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
+            .subarray(12)
+            .toString('base64url');
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = pem;
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = 'jobs-2026-09';
+        const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: raw }], INTERNAL_SERVICE_ISSUER_JOBS);
+        const props = {
+            secretKey: 'environment-secret',
+            scriptType: 'sync',
+            environmentId: 9,
+            nangoConnectionId: 3,
+            syncId: 'sync-1'
+        } as NangoProps;
+
+        const dispatched = await nangoPropsForRunner('task-1', props);
+
+        expect(dispatched.secretKey).toBe('environment-secret');
+        expect(dispatched.taskAuthToken).toEqual(expect.any(String));
+        const auth = await verifyInternalServiceCredential(dispatched.taskAuthToken!, 'persist', { registry });
+        expect(auth).toMatchObject({
+            kind: 'jwt',
+            sub: taskSubject('task-1'),
+            res: { environmentId: 9, connectionId: 3, syncId: 'sync-1' },
+            scopes: expect.arrayContaining(['persist:records', 'jobs:heartbeat'])
+        });
+    });
+
+    it('omits secretKey when NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY is set', async () => {
+        const { privateKey } = generateKeyPairSync('ed25519');
+        const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = pem;
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = 'jobs-2026-09';
+        mockEnvs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY = true;
+        const props = { secretKey: 'environment-secret', scriptType: 'sync', environmentId: 9 } as NangoProps;
+
+        const dispatched = await nangoPropsForRunner('task-1', props);
+
+        expect(dispatched.secretKey).toBeUndefined();
+        expect(dispatched.taskAuthToken).toEqual(expect.any(String));
+    });
+
+    it('keeps secretKey when no capability token can be minted', async () => {
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
+        const props = { secretKey: 'environment-secret', scriptType: 'sync' } as NangoProps;
+        const dispatched = await nangoPropsForRunner('task-1', props);
+        expect(dispatched.secretKey).toBe('environment-secret');
+        expect(dispatched.taskAuthToken).toBeUndefined();
     });
 });

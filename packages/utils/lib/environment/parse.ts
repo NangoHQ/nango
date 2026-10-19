@@ -830,6 +830,10 @@ const ENVS_SHAPE = z.object({
         .stringbool({ truthy: ['true'], falsy: ['false'] })
         .optional()
         .default(false),
+    NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY: z
+        .stringbool({ truthy: ['true'], falsy: ['false'] })
+        .optional()
+        .default(false),
     NANGO_INTERNAL_AUTH_JOBS_KEY_ID: z.string().optional(),
     NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: z.string().optional(),
     NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: internalAuthPublicKeysSchema('NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS'),

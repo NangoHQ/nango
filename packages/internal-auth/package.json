@@ -16,7 +16,8 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
         "@nangohq/utils": "file:../utils",
-        "jose": "6.2.12"
+        "jose": "6.2.12",
+        "zod": "4.3.6"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",

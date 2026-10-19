@@ -1,12 +1,13 @@
 import { decodeProtectedHeader, importJWK, importPKCS8, jwtVerify, SignJWT } from 'jose';
+import * as z from 'zod';
 
 import { normalizePem } from '@nangohq/utils';
 
 import { INTERNAL_SERVICE_ISSUER_JOBS, INTERNAL_SERVICE_ISSUER_SERVER } from './constants.js';
 
-import type { InternalServiceAuth, InternalServiceIssuer } from './constants.js';
+import type { InternalServiceAuth, InternalServiceIssuer, TaskCapabilityResource } from './constants.js';
 import type { InternalAuthPublicKey } from '@nangohq/types';
-import type { CryptoKey } from 'jose';
+import type { CryptoKey, JWTPayload } from 'jose';
 
 export interface KeyRegistryEntry {
     iss: InternalServiceIssuer;
@@ -57,9 +58,11 @@ export function signerForService(service: InternalAuthService, envs: SignerEnvs)
 
 export interface MintClaims {
     sub: string;
-    aud: string;
+    aud: string | readonly string[];
     ttlSecs: number;
     issuedAt?: number;
+    res?: TaskCapabilityResource;
+    scopes?: readonly string[];
 }
 
 const privateKeyCache = new Map<string, Promise<CryptoKey>>();
@@ -113,14 +116,33 @@ function loadPublicKey(rawPublicKey: string): Promise<CryptoKey> {
 /**
  * Mint one EdDSA JWT. `iss` is the signing service. `sub` is that service, a task, or a node.
  */
+function capabilityPayload(claims: MintClaims): JWTPayload {
+    const payload: JWTPayload = {};
+    if (claims.res !== undefined) {
+        const res: Record<string, number | string> = { environmentId: claims.res.environmentId };
+        if (claims.res.connectionId !== undefined) {
+            res['connectionId'] = claims.res.connectionId;
+        }
+        if (claims.res.syncId !== undefined) {
+            res['syncId'] = claims.res.syncId;
+        }
+        payload['res'] = res;
+    }
+    if (claims.scopes !== undefined) {
+        payload['scopes'] = [...claims.scopes];
+    }
+    return payload;
+}
+
 export async function mint(signer: MintSigner, claims: MintClaims): Promise<string> {
     const key = await loadPrivateKey(signer.privateKey);
     const iat = claims.issuedAt ?? Math.floor(Date.now() / 1000);
-    return await new SignJWT({})
+    const audience = typeof claims.aud === 'string' ? claims.aud : [...claims.aud];
+    return await new SignJWT(capabilityPayload(claims))
         .setProtectedHeader({ alg: 'EdDSA', typ: 'JWT', kid: signer.kid })
         .setIssuer(signer.iss)
         .setSubject(claims.sub)
-        .setAudience(claims.aud)
+        .setAudience(audience)
         .setIssuedAt(iat)
         .setExpirationTime(iat + claims.ttlSecs)
         .sign(key);
@@ -133,6 +155,51 @@ export interface UnifiedVerifyResult {
      * retried against a verifier that ignores `kid`.
      */
     kidBound: boolean;
+}
+
+const taskCapabilityResourceSchema = z
+    .object({
+        environmentId: z.number().int().positive(),
+        connectionId: z.number().int().positive().optional(),
+        syncId: z.string().min(1).optional()
+    })
+    .strict();
+
+const capabilityClaimsSchema = z
+    .object({
+        res: taskCapabilityResourceSchema.optional(),
+        scopes: z.array(z.string().min(1)).optional()
+    })
+    .strict();
+
+/** `null` means a present claim has the wrong type. Omitted claims are absent, not invalid. */
+function claimsFromPayload(payload: JWTPayload): Pick<InternalServiceAuth, 'res' | 'scopes'> | null {
+    const candidate: { res?: unknown; scopes?: unknown } = {};
+    if (payload['res'] !== undefined) {
+        candidate.res = payload['res'];
+    }
+    if (payload['scopes'] !== undefined) {
+        candidate.scopes = payload['scopes'];
+    }
+    const parsed = capabilityClaimsSchema.safeParse(candidate);
+    if (!parsed.success) {
+        return null;
+    }
+    const claims: Pick<InternalServiceAuth, 'res' | 'scopes'> = {};
+    if (parsed.data.res !== undefined) {
+        const res: TaskCapabilityResource = { environmentId: parsed.data.res.environmentId };
+        if (parsed.data.res.connectionId !== undefined) {
+            res.connectionId = parsed.data.res.connectionId;
+        }
+        if (parsed.data.res.syncId !== undefined) {
+            res.syncId = parsed.data.res.syncId;
+        }
+        claims.res = res;
+    }
+    if (parsed.data.scopes !== undefined) {
+        claims.scopes = parsed.data.scopes;
+    }
+    return claims;
 }
 
 /**
@@ -170,13 +237,18 @@ export async function verify(token: string, audience: string, registry: KeyRegis
         if (payload.iss !== entry.iss || typeof payload.sub !== 'string' || payload.sub.length === 0) {
             return { auth: null, kidBound: true };
         }
+        const scope = claimsFromPayload(payload);
+        if (!scope) {
+            return { auth: null, kidBound: true };
+        }
         return {
             auth: {
                 kind: 'jwt',
                 subject: payload.sub,
                 sub: payload.sub,
                 issuer: entry.iss,
-                audience
+                audience,
+                ...scope
             },
             kidBound: true
         };

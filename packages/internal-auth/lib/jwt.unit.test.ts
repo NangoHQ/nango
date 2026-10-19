@@ -64,6 +64,42 @@ describe('unified internal auth JWT', () => {
         });
     });
 
+    it('verifies a task token against each capability audience and copies scope claims', async () => {
+        const jobs = ed25519Material();
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: jobs.pem },
+            {
+                sub: taskSubject('task-1'),
+                aud: ['jobs', 'persist', 'server'],
+                ttlSecs: 60,
+                res: { environmentId: 9, connectionId: 42, syncId: 'sync-1' },
+                scopes: ['persist:records', 'jobs:heartbeat']
+            }
+        );
+        const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: jobs.raw }], INTERNAL_SERVICE_ISSUER_JOBS);
+        for (const audience of ['jobs', 'persist', 'server']) {
+            const auth = await verifyInternalServiceCredential(token, audience, { registry });
+            expect(auth).toMatchObject({
+                kind: 'jwt',
+                sub: 'task:task-1',
+                issuer: INTERNAL_SERVICE_ISSUER_JOBS,
+                audience,
+                res: { environmentId: 9, connectionId: 42, syncId: 'sync-1' },
+                scopes: ['persist:records', 'jobs:heartbeat']
+            });
+        }
+    });
+
+    it('rejects a kid token whose res claim has the wrong type', async () => {
+        const jobs = ed25519Material();
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: jobs.pem },
+            { sub: taskSubject('task-1'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60, res: { environmentId: 0 } }
+        );
+        const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: jobs.raw }], INTERNAL_SERVICE_ISSUER_JOBS);
+        expect(await verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_JOBS, { registry, staticToken: token })).toBeNull();
+    });
+
     it('selects the key by kid', async () => {
         const current = ed25519Material();
         const next = ed25519Material();

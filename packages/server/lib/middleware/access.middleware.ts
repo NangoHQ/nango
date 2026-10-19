@@ -3,6 +3,15 @@ import path from 'node:path';
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
+import {
+    hasScope,
+    INTERNAL_SERVICE_AUDIENCE_SERVER,
+    INTERNAL_SERVICE_ISSUER_JOBS,
+    isJwtShape,
+    jwtHeaderAlg,
+    keyRegistryFromPublicKeys,
+    verify
+} from '@nangohq/internal-auth';
 import { accountService, environmentService, errorManager, ErrorSourceEnum, getPlan, isSandboxApiKey, LogActionEnum, userService } from '@nangohq/shared';
 import {
     Err,
@@ -22,6 +31,7 @@ import { envs } from '../env.js';
 import { agentSessionTokenSchema, connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
 import * as agentSessionService from '../services/agentSession.service.js';
 import * as connectSessionService from '../services/connectSession.service.js';
+import { environmentScopesForTokenScopes, scriptScopeForRequest } from './script-capability-actions.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AgentSession, ApiKeyContext, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
@@ -109,6 +119,48 @@ export class AccessMiddleware {
     }
 
     /**
+     * A jobs-signed task JWT is not an API key. It may call only the script allowlist, as the
+     * environment named in the token.
+     */
+    private async authenticateCapabilityToken(req: Request, res: Response<unknown, Partial<RequestLocals>>, token: string): Promise<Result<void>> {
+        const registry = keyRegistryFromPublicKeys(envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS, INTERNAL_SERVICE_ISSUER_JOBS);
+        const verified = await verify(token, INTERNAL_SERVICE_AUDIENCE_SERVER, registry);
+        const auth = verified.auth;
+        const environmentId = auth?.res?.environmentId;
+        if (!auth || auth.issuer !== INTERNAL_SERVICE_ISSUER_JOBS || !auth.sub?.startsWith('task:') || environmentId === undefined) {
+            return Err('unknown_account');
+        }
+        const scope = scriptScopeForRequest(req);
+        if (!scope || !hasScope(auth, scope)) {
+            return Err('unknown_account');
+        }
+
+        const accountContext = await accountService.getAccountContext({ environmentId });
+        if (!accountContext?.environment || accountContext.environment.id !== environmentId) {
+            return Err('unknown_account');
+        }
+        if (flagHasPlan && !accountContext.plan) {
+            return Err('plan_not_found');
+        }
+
+        res.locals['authType'] = 'secretKey';
+        res.locals['account'] = accountContext.account;
+        res.locals['plan'] = accountContext.plan;
+        res.locals['environment'] = accountContext.environment;
+        res.locals['secret'] = accountContext.secret;
+        res.locals['apiKeyAuthSource'] = 'api_secret';
+        res.locals['apiKeyPrincipal'] = {
+            type: 'api_key',
+            source: 'api_secret',
+            accountId: accountContext.account.id,
+            environmentIds: [accountContext.environment.id],
+            scopes: environmentScopesForTokenScopes(auth.scopes ?? [])
+        };
+        tagTraceUser({ account: accountContext.account, environment: accountContext.environment, plan: accountContext.plan });
+        return Ok(undefined);
+    }
+
+    /**
      * Resolve and apply API-key authentication without writing an error response. This lets routes
      * that support another bearer-token scheme decide which authentication challenge to return.
      */
@@ -128,6 +180,10 @@ export class AccessMiddleware {
             const secret = authorizationHeader.split('Bearer ').pop();
             if (!secret) {
                 return Err('malformed_auth_header');
+            }
+
+            if (isJwtShape(secret) && jwtHeaderAlg(secret) === 'EdDSA') {
+                return await this.authenticateCapabilityToken(req, res, secret);
             }
 
             const isScript = req.get('Nango-Is-Script') === 'true';

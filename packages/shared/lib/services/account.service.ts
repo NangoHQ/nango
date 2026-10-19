@@ -989,6 +989,64 @@ class AccountService {
     }
 
     /**
+     * Same persist context as getPersistAuthContext, resolved from the environment id on a
+     * task capability token. There is no secret to hash.
+     */
+    async getPersistAuthContextByEnvironmentId(environmentId: number): Promise<Result<PersistAuthContext | null>> {
+        try {
+            return Ok(await this.resolvePersistAuthContextByEnvironmentId(environmentId));
+        } catch (err) {
+            return Err(err instanceof Error ? err : new Error('failed_to_resolve_persist_auth_context', { cause: err }));
+        }
+    }
+
+    private async resolvePersistAuthContextByEnvironmentId(environmentId: number): Promise<PersistAuthContext | null> {
+        const cacheKey = `environment:${environmentId}`;
+        const cached = persistAuthContextCache.get(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
+        const row = await db.readOnly
+            .select<{
+                environment_id: number;
+                environment_name: string;
+                account_id: number;
+                plan_id: number | null;
+                plan_name: DBPlan['name'] | null;
+                records_store: DBPlan['records_store'] | null;
+            }>(
+                '_nango_environments.id as environment_id',
+                '_nango_environments.name as environment_name',
+                '_nango_accounts.id as account_id',
+                'plans.id as plan_id',
+                'plans.name as plan_name',
+                'plans.records_store as records_store'
+            )
+            .from('_nango_environments')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
+            .where('_nango_environments.id', environmentId)
+            .where('_nango_environments.deleted', false)
+            .first();
+
+        if (!row) {
+            return null;
+        }
+
+        const context: PersistAuthContext = {
+            account: { id: row.account_id },
+            environment: { id: row.environment_id, name: row.environment_name },
+            plan:
+                row.plan_id !== null && row.plan_name !== null && row.records_store !== null
+                    ? { id: row.plan_id, name: row.plan_name, records_store: row.records_store }
+                    : null
+        };
+        persistAuthContextCache.set(cacheKey, context);
+        return context;
+    }
+
+    /**
      * Resolve account context using only api_secrets (no customer_keys lookup).
      * Used by internal services (persist, runners) that authenticate with the
      * environment's internal secret key. Avoids polluting customer_keys.last_used_at.
