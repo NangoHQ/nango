@@ -44,7 +44,7 @@ function app(audience: string) {
 function jobsMountedApp() {
     const server = express();
     server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_JOBS, envs }));
-    server.put('/tasks/:taskId', requireTaskBoundAuth(envs), (_req, res) => {
+    server.put('/tasks/:taskId', requireTaskBoundAuth(envs), requireTaskScope(envs, TASK_CAPABILITY_SCOPES.jobsPutTask), (_req, res) => {
         res.status(204).end();
     });
     server.post('/tasks/:taskId/heartbeat', requireTaskBoundAuth(envs), requireTaskScope(envs, TASK_CAPABILITY_SCOPES.jobsHeartbeat), (_req, res) => {
@@ -564,6 +564,42 @@ describe('jobs route policy', () => {
         try {
             const res = await fetch(`${url}/runners/1/idle`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
             expect(res.status).toBe(200);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a task JWT whose scopes omit putTask', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { pem, raw } = ed25519Material();
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
+        const taskId = '11111111-1111-4111-8111-111111111111';
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: taskSubject(taskId), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60, scopes: [TASK_CAPABILITY_SCOPES.jobsHeartbeat] }
+        );
+        const { url, close } = await listen(jobsMountedApp());
+        try {
+            const res = await fetch(`${url}/tasks/${taskId}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('accepts a task JWT that includes the putTask scope', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { pem, raw } = ed25519Material();
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
+        const taskId = '11111111-1111-4111-8111-111111111111';
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: taskSubject(taskId), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60, scopes: [TASK_CAPABILITY_SCOPES.jobsPutTask] }
+        );
+        const { url, close } = await listen(jobsMountedApp());
+        try {
+            const res = await fetch(`${url}/tasks/${taskId}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+            expect(res.status).toBe(204);
         } finally {
             await close();
         }

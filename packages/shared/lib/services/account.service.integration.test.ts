@@ -782,6 +782,57 @@ describe('Account service', () => {
         });
     });
 
+    describe('getPersistAuthContextByEnvironmentId', () => {
+        it('should return the narrow context for a known environment', async () => {
+            const { account, env, plan } = await seedAccountEnvAndUser();
+
+            const result = (await accountService.getPersistAuthContextByEnvironmentId(env.id)).unwrap();
+
+            expect(result).toStrictEqual({
+                account: { id: account.id },
+                environment: { id: env.id, name: env.name },
+                plan: { id: plan.id, name: 'free', records_store: plan.records_store }
+            });
+        });
+
+        it('should return null for a deleted environment', async () => {
+            const { env } = await seedAccountEnvAndUser();
+            await db.knex('_nango_environments').where({ id: env.id }).update({ deleted: true, deleted_at: new Date() });
+
+            const result = (await accountService.getPersistAuthContextByEnvironmentId(env.id)).unwrap();
+
+            expect(result).toBeNull();
+        });
+
+        it('should return null for an unknown id', async () => {
+            const result = (await accountService.getPersistAuthContextByEnvironmentId(2_000_000_000)).unwrap();
+
+            expect(result).toBeNull();
+        });
+
+        it('should serve from cache within the TTL when enabled', async () => {
+            const previous = envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED;
+            (envs as { AUTH_PERSIST_CONTEXT_CACHE_ENABLED: boolean }).AUTH_PERSIST_CONTEXT_CACHE_ENABLED = true;
+            const incrementSpy = vi.spyOn(metrics, 'increment');
+            try {
+                const { env } = await seedAccountEnvAndUser();
+
+                const first = (await accountService.getPersistAuthContextByEnvironmentId(env.id)).unwrap();
+                expect(first?.environment.id).toBe(env.id);
+                expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'persist_environment', result: 'miss' });
+
+                await db.knex('_nango_environments').where({ id: env.id }).update({ deleted: true, deleted_at: new Date() });
+                incrementSpy.mockClear();
+
+                const second = (await accountService.getPersistAuthContextByEnvironmentId(env.id)).unwrap();
+                expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'persist_environment', result: 'hit' });
+                expect(second).toStrictEqual(first);
+            } finally {
+                (envs as { AUTH_PERSIST_CONTEXT_CACHE_ENABLED: boolean }).AUTH_PERSIST_CONTEXT_CACHE_ENABLED = previous;
+            }
+        });
+    });
+
     it('should return environment:* scopes for env var key (env_var path)', async () => {
         const account = await createTestAccount();
         const envName = uuid();

@@ -252,3 +252,39 @@ describe('PersistClient.deleteHardAllRecords', () => {
         expect(res.isErr() && res.error.message).toContain('stream ended without a terminal line');
     });
 });
+
+describe('PersistClient credentials', () => {
+    function authorization(fetchMock: ReturnType<typeof vi.fn>): string | null {
+        const [, options] = fetchMock.mock.calls[0] as [string, RequestInit];
+        return new Headers(options.headers).get('authorization');
+    }
+
+    async function postLog(client: PersistClient) {
+        return client.postLog({ environmentId: 1, data: '{}' });
+    }
+
+    it('sends the task token when it is the only credential', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new PersistClient({ taskAuthToken: 'task-jwt' });
+        const res = await postLog(client);
+
+        expect(res.isOk()).toBe(true);
+        expect(authorization(fetchMock)).toBe('Bearer task-jwt');
+    });
+
+    it('sends secretKey when both credentials are set', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new PersistClient({ secretKey: 'secret', taskAuthToken: 'task-jwt' });
+        await postLog(client);
+
+        expect(authorization(fetchMock)).toBe('Bearer secret');
+    });
+
+    it('throws when neither credential is set', () => {
+        expect(() => new PersistClient({})).toThrow('Parameter taskAuthToken or secretKey is required');
+    });
+});
