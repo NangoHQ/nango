@@ -1,4 +1,4 @@
-import { ExternalLink, Plus } from 'lucide-react';
+import { ArrowUpRight, ExternalLink, Plus } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
@@ -14,7 +14,7 @@ import { usePathNavigation } from '@/hooks/usePathNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
-import { useCanOpenPlaygroundFunctions, useOpenPlaygroundWithContext } from '@/utils/playground';
+import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
 import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
 import { FunctionsTab } from './Functions/Tab';
 import { SettingsTab } from './Settings/Tab';
@@ -32,8 +32,7 @@ export const ShowIntegration: React.FC = () => {
 
     const { can } = usePermissions();
     const canCreateTestConnection = can('environment:connections:update');
-    const openPlaygroundWithContext = useOpenPlaygroundWithContext();
-    const canOpenPlayground = useCanOpenPlaygroundFunctions();
+    const canRunFunctions = useCanRunFunctions();
 
     const { data, isLoading: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
     const integration = data?.data;
@@ -90,7 +89,7 @@ export const ShowIntegration: React.FC = () => {
             <Tabs
                 value={activeTab}
                 onValueChange={(value) => {
-                    if (value === 'playground') {
+                    if (value === 'run') {
                         openPlaygroundWithContext({ source: 'integration', integration: integration.integration.unique_key });
                     } else {
                         setActiveTab(value);
@@ -106,23 +105,27 @@ export const ShowIntegration: React.FC = () => {
                         Settings
                     </TabsTrigger>
                     <TabsTrigger value="setup-guide" disabled asChild>
-                        <Link to={integration.template.docs} target="_blank" className={integrationLinkTabClassName}>
-                            API setup guide <ExternalLink className="size-3.5" />
+                        <Link to={integration.template.docs} target="_blank" rel="noopener noreferrer" className={integrationLinkTabClassName}>
+                            API setup guide
+                            <ExternalLink className="size-3.5" />
                         </Link>
                     </TabsTrigger>
                     <TabsTrigger value="logs" disabled asChild>
                         <Link to={`/${env}/logs?integrations=${integration.integration.unique_key}`} className={integrationLinkTabClassName}>
-                            Logs <ExternalLink className="size-3.5" />
+                            Logs
+                            <ArrowUpRight className="size-3.5" />
                         </Link>
                     </TabsTrigger>
                     <TabsTrigger value="connections" disabled asChild>
                         <Link to={`/${env}/connections?integrations=${integration.integration.unique_key}`} className={integrationLinkTabClassName}>
-                            Connections <ExternalLink className="size-3.5" />
+                            Connections
+                            <ArrowUpRight className="size-3.5" />
                         </Link>
                     </TabsTrigger>
-                    {canOpenPlayground && (
-                        <TabsTrigger value="playground" className={integrationTabClassName}>
-                            Playground <ExternalLink className="size-3.5" />
+                    {canRunFunctions && (
+                        <TabsTrigger value="run" className={integrationTabClassName}>
+                            Runner
+                            <ArrowUpRight className="size-3.5" />
                         </TabsTrigger>
                     )}
                 </TabsList>

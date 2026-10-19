@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { Link, Outlet, useLocation, useOutletContext, useParams } from 'react-router-dom';
 
@@ -10,7 +10,7 @@ import { useGetIntegration } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
-import { useCanOpenPlaygroundFunctions, useOpenPlaygroundWithContext } from '@/utils/playground';
+import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
 import { IntegrationLogoWithProfile } from './components/IntegrationLogoWithProfile';
 
 import type { GetConnection, GetIntegration } from '@nangohq/types';
@@ -36,8 +36,7 @@ export const ConnectionShow = () => {
     const env = useStore((state) => state.env);
     const { connectionId, providerConfigKey } = useParams();
     const location = useLocation();
-    const openPlaygroundWithContext = useOpenPlaygroundWithContext();
-    const canOpenPlayground = useCanOpenPlaygroundFunctions();
+    const canOpenPlayground = useCanRunFunctions();
     const {
         data: connectionResponse,
         error: connectionError,
@@ -129,16 +128,16 @@ export const ConnectionShow = () => {
                             <button
                                 type="button"
                                 className={tabsTriggerClassName}
-                                onClick={() => {
+                                onClick={() =>
                                     openPlaygroundWithContext({
                                         source: 'connection',
                                         integration: integrationData.integration.unique_key,
                                         connection: connectionResponse.connection.connection_id
-                                    });
-                                }}
+                                    })
+                                }
                             >
-                                Playground
-                                <ExternalLink className="size-4" />
+                                Runner
+                                <ArrowUpRight className="size-3.5" />
                             </button>
                         )}
                     </TabsList>

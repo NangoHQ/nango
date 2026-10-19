@@ -1,4 +1,4 @@
-import { ArrowRight, ExternalLink, Trash2 } from 'lucide-react';
+import { ExternalLink, Play, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
 import { Badge, Button } from '@nangohq/design-system';
@@ -16,7 +16,7 @@ import { useGetIntegrationFunctionCode, useGetTemplateFunctionCode } from '@/hoo
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
-import { useCanOpenPlaygroundFunctions, useOpenPlaygroundWithContext } from '@/utils/playground';
+import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
 import { buildPullCommand, isSyncOrAction } from '@/utils/scripts';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
@@ -39,8 +39,7 @@ interface FunctionDetailsPanelProps {
 
 export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, integration, onDeleted }) => {
     const env = useStore((state) => state.env);
-    const openPlaygroundWithContext = useOpenPlaygroundWithContext();
-    const canOpenPlayground = useCanOpenPlaygroundFunctions();
+    const canOpenPlayground = useCanRunFunctions();
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
     const [activeTab, setActiveTab] = useState<'input' | 'output' | 'code'>('input');
@@ -112,7 +111,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                     </div>
                     {fn.description && <p className="type-text-regular-xs text-text-secondary">{fn.description}</p>}
                 </div>
-                <div className="flex shrink-0 flex-col items-start gap-2">
+                <div className="flex shrink-0 flex-col items-end gap-2">
                     {canDelete && (
                         <Button
                             variant="link-danger"
@@ -137,14 +136,14 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                     {canOpenPlayground && (
                         <ConditionalTooltip
                             condition={!canUsePlayground}
-                            content={listed ? 'Enable this function to use it in the Playground.' : 'Deploy this template to use it in the Playground.'}
+                            content={listed ? 'Enable this function to run it.' : 'Deploy this template to run it.'}
                             side="left"
                             asChild
                         >
                             <span className="inline-flex">
                                 <Button
                                     variant="link-accent"
-                                    size="xs"
+                                    size="sm"
                                     disabled={!canUsePlayground}
                                     onClick={() => {
                                         if (!isListedFunction(fn) || !isSyncOrAction(fn)) return;
@@ -156,7 +155,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                                         });
                                     }}
                                 >
-                                    View in playground <ArrowRight />
+                                    Run function <Play />
                                 </Button>
                             </span>
                         </ConditionalTooltip>
