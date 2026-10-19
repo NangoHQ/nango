@@ -15,7 +15,7 @@ import semver from 'semver';
 import { serializeError } from 'serialize-error';
 
 import { cloudHost, localhostUrl } from './constants.js';
-import { getDeviceId, state } from './state.js';
+import { state } from './state.js';
 import { getCliHttpsAgent } from './tls.js';
 import { Err, Ok } from './utils/result.js';
 import { NANGO_VERSION } from './version.js';
@@ -306,17 +306,9 @@ export function getUserAgent(): string {
 }
 
 export function getCliHeaders(): Record<string, string> {
-    const headers: Record<string, string> = {
+    return {
         'User-Agent': getUserAgent()
     };
-    if (!isTelemetryDisabled()) {
-        const { deviceId, ephemeral } = getDeviceId();
-        // Only correlate persisted ids; a throwaway id would just create junk aliases server-side.
-        if (!ephemeral) {
-            headers['Nango-CLI-Device-Id'] = deviceId;
-        }
-    }
-    return headers;
 }
 
 export function getNangoRootPath(debug = false): string {

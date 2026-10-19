@@ -1,0 +1,82 @@
+---
+title: 'Attentive (API Key)'
+sidebarTitle: 'Attentive (API Key)'
+description: 'Integrate your application with the Attentive API using an API key'
+---
+
+## 🚀 Quickstart
+
+Connect to Attentive (API Key) with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Attentive (API Key)_.
+    </Step>
+    <Step id="authorize-attentive" title="Authorize Attentive">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-attentive-api" title="Call the Attentive API">
+    Let's make your first request to the Attentive API to get the details of your app and company. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/me" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/me',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Attentive (API Key) integration guides
+
+- [How do I link my account?](/api-integrations/attentive-api-key/connect)  
+Create a custom app in Attentive and get its API key.
+
+Official docs: [Attentive API documentation](https://docs.attentive.com/pages/authentication/)
+
+## 🧩 Pre-built syncs & actions for Attentive (API Key)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/attentive-api-key/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- The API key only has access to the APIs you gave the app **Write** permission for when you created it. Requests to other APIs fail.
+- The same key also works with the GraphQL API at `/v1/graphql`.
+
+---

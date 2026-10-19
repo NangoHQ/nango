@@ -523,6 +523,23 @@ export interface GroupBackpressure {
     queued: number;
 }
 
+/**
+ * Started tasks per group key.
+ * The count is abandoned after `queryTimeoutMs` so a slow one cannot pile up behind the next.
+ */
+export async function concurrencyPerGroup(db: knex.Knex, { queryTimeoutMs }: { queryTimeoutMs: number }): Promise<Result<Map<string, number>>> {
+    try {
+        const { rows } = await db
+            .raw<{
+                rows: { groupKey: string; count: number }[];
+            }>(`SELECT group_key AS "groupKey", count(*)::int AS count FROM ${TASKS_TABLE} WHERE state = 'STARTED' GROUP BY group_key`)
+            .timeout(queryTimeoutMs, { cancel: true });
+        return Ok(new Map(rows.map((r) => [r.groupKey, r.count])));
+    } catch (err) {
+        return Err(new Error(`Error fetching concurrency per group: ${stringifyError(err)}`));
+    }
+}
+
 export async function getGroupsWithBackpressure(db: knex.Knex, { limit }: { limit: number }): Promise<Result<GroupBackpressure[]>> {
     try {
         const { rows } = await db.raw<{ rows: GroupBackpressure[] }>(

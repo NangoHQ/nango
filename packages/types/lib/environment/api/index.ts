@@ -189,6 +189,7 @@ export type PostPublicApiKey = ApiEndpoint<{
     Params: { environmentUuid: string };
     Body: {
         display_name: string;
+        scopes?: ApiKeyScope[];
     };
     Success: {
         data: {
@@ -237,6 +238,28 @@ export type GetPublicApiKey = ApiEndpoint<{
             created_at: string;
         };
     };
+}>;
+
+export type PatchPublicApiKey = ApiEndpoint<{
+    Audit: AuditPolicy<'api_key', 'updated', 'environment'>;
+    Method: 'PATCH';
+    Path: '/environments/:environmentUuid/api-keys/:keyUuid';
+    Params: { environmentUuid: string; keyUuid: string };
+    Body: {
+        display_name?: string;
+        scopes?: ApiKeyScope[];
+    };
+    Success: {
+        data: {
+            id: number;
+            uuid: string;
+            display_name: string;
+            scopes: ApiKeyScope[];
+            last_used_at: string | null;
+            created_at: string;
+        };
+    };
+    Error: ApiError<'conflict' | 'not_found'>;
 }>;
 
 export type DeletePublicApiKey = ApiEndpoint<{

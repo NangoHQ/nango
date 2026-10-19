@@ -289,6 +289,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
             connection: storedConnection.connection,
             config,
             account,
+            environment,
             logCtx
         });
         if (customValidationResponse.isErr()) {

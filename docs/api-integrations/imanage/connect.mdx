@@ -1,0 +1,45 @@
+---
+title: 'iManage Work - How do I link my account?'
+sidebarTitle: 'iManage Work'
+---
+
+## Overview
+
+To connect with iManage Work, you need:
+
+1. **Server Hostname** — the hostname of your iManage Work server.
+2. **Customer ID** — your numeric iManage customer ID.
+3. **Default Library** _(optional)_ — the library to use when a request doesn't name one.
+
+This guide will show you how to find these values.
+
+### Prerequisites
+
+- An iManage Work account.
+- Your firm's iManage administrator has enabled the app in **Control Center** > **Settings** > **Applications**.
+
+### Step 1: Find your server hostname
+
+Use the hostname of the server you sign in to, without `https://`:
+
+- **iManage Cloud**: `cloudimanage.com`
+- **Custom subdomain or on-premises server**: your firm's own hostname, for example `dms.acme.com`
+
+### Step 2: Find your customer ID
+
+Your customer ID is a number your iManage administrator gives you, for example `1234`.
+
+### Step 3: Choose a default library (optional)
+
+If the app you're connecting to should work in one library by default, enter its ID, for example `ACTIVE_US`. Your administrator can tell you which libraries you have access to. Leave this blank otherwise.
+
+### Step 4: Enter your details in the Connect UI
+
+1. Open the form where you need to authenticate with iManage Work.
+2. Enter your **Server Hostname**, **Customer ID**, and optionally your **Default Library**.
+3. Submit the form, then sign in to iManage Work and approve access.
+
+
+<img src="/api-integrations/imanage/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to iManage Work.

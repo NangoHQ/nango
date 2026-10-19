@@ -88,6 +88,7 @@ function sendUpdateIntegrationError(res: Response, error: UpdateIntegrationsServ
         case 'integration_has_connections':
         case 'invalid_integration_config':
         case 'custom_not_allowed':
+        case 'shared_credentials_not_editable':
             res.status(400).send({ error: { code: 'invalid_body', message: error.message } });
             return;
         case 'update_failed':

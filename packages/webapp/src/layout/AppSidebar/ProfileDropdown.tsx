@@ -56,7 +56,7 @@ export const ProfileDropdown: React.FC = () => {
                 label: 'Account API keys',
                 icon: KeyRound,
                 href: '/api-keys',
-                onSelect: () => track('web:account_api_keys:opened', { source: 'profile_menu' })
+                onSelect: () => track('auth:api_keys_link_click', {})
             });
         }
 

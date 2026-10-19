@@ -1,7 +1,7 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 
-import { APIError, isNoSessionError } from '../utils/api';
+import { isNoSessionApiError } from '../utils/api';
 import { PROD_ENVIRONMENT_NAME } from '../utils/environments';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
 import { signout } from '../utils/user';
@@ -50,7 +50,7 @@ export const useStore = create<State>()((set, get) => ({
 }));
 
 function handleQueryError(error: unknown) {
-    if (error instanceof APIError && isNoSessionError(error.res.status, error.json)) {
+    if (isNoSessionApiError(error)) {
         void signout({ expired: true });
     }
 }

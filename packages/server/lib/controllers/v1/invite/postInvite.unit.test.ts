@@ -24,6 +24,7 @@ vi.mock('@nangohq/database', () => ({
 vi.mock('@nangohq/shared', () => ({
     expirePreviousInvitations: mockExpirePreviousInvitations,
     inviteEmail: mockInviteEmail,
+    productTracking: { track: vi.fn() },
     userService: {
         getUserByEmail: mockGetUserByEmail
     }

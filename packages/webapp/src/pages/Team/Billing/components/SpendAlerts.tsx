@@ -20,6 +20,7 @@ export const SpendAlerts: React.FC = () => {
 
     const thresholdInCents = data?.data.thresholdInCents ?? null;
     const currency = data?.data.currency ?? null;
+    const floorInCents = data?.data.floorInCents ?? null;
 
     const handleRemove = () => {
         void confirm({
@@ -46,7 +47,7 @@ export const SpendAlerts: React.FC = () => {
                 isPending={isPending}
                 isError={isError}
                 addAction={
-                    <SpendAlertDialog currency={currency}>
+                    <SpendAlertDialog currency={currency} floorInCents={floorInCents}>
                         <Button variant="link-accent">
                             <Plus /> Add spend alert
                         </Button>
@@ -54,7 +55,7 @@ export const SpendAlerts: React.FC = () => {
                 }
                 rowActions={
                     <>
-                        <SpendAlertDialog thresholdInCents={thresholdInCents} currency={currency}>
+                        <SpendAlertDialog thresholdInCents={thresholdInCents} currency={currency} floorInCents={floorInCents}>
                             <IconButton variant="ghost" size="xs" label="Edit spend alert">
                                 <Pencil />
                             </IconButton>

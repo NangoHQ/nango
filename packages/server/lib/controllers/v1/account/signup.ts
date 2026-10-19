@@ -8,8 +8,10 @@ import { flagHasUsage, PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToH
 
 import { envs } from '../../../env.js';
 import { sendVerificationEmail } from '../../../helpers/email.js';
+import { identifyAccountMembership } from '../../../services/accountAnalytics.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
+import { signupAcquisitionSchema } from '../../../utils/signupAcquisition.js';
 
 import type { DBTeam, PostSignup, Role } from '@nangohq/types';
 
@@ -27,7 +29,8 @@ const validation = z
         password: passwordSchema,
         name: z.string(),
         token: z.string().uuid().optional(),
-        foundUs: z.string().optional()
+        foundUs: z.string().optional(),
+        acquisition: signupAcquisitionSchema
     })
     .strict();
 
@@ -46,7 +49,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         return;
     }
 
-    const { email, password, name, token, foundUs }: PostSignup['Body'] = val.data;
+    const { email, password, name, token, foundUs, acquisition }: PostSignup['Body'] = val.data;
 
     const existingUser = await userService.getUserByEmail(email);
     if (existingUser) {
@@ -93,7 +96,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         }
 
         // Regular account
-        account = await accountService.createAccount({ name, email, foundUs });
+        account = await accountService.createAccount({ name, email, foundUs, acquisition });
         if (!account) {
             res.status(500).send({
                 error: { code: 'error_creating_account', message: 'There was a problem creating the account. Please reach out to support.' }
@@ -118,6 +121,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });
         return;
     }
+    void identifyAccountMembership(account.id);
 
     if (!token && flagHasUsage) {
         const linkOrbCustomerRes = await linkBillingCustomer(account, user);

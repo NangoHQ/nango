@@ -146,6 +146,7 @@ export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicU
             connection: updatedConnection.connection,
             config,
             account,
+            environment,
             logCtx
         });
 

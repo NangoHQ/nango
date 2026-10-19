@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { APIError, apiFetch } from '../utils/api';
 import { metaQueryKey } from './useMeta';
 
-import type { GetEnvironment, PatchEnvironment, PatchWebhook, PostEnvironment, PostEnvironmentVariables } from '@nangohq/types';
+import type { GetEnvironment, PatchEnvironment, PatchWebhook, PostEnvironment, PostEnvironmentVariables, PostRotateWebhookSigningKey } from '@nangohq/types';
 
 export const environmentQueryKey = (env: string) => [env, 'environment'] as const;
 
@@ -56,6 +56,27 @@ export function usePatchWebhook(env: string) {
             });
 
             const json = (await res.json()) as PatchWebhook['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) });
+        }
+    });
+}
+
+export function usePostRotateWebhookSigningKey(env: string) {
+    const queryClient = useQueryClient();
+    return useMutation<PostRotateWebhookSigningKey['Success'], APIError>({
+        mutationFn: async () => {
+            const res = await apiFetch(`/api/v1/environment/webhook-signing-key/rotate?env=${env}`, {
+                method: 'POST'
+            });
+
+            const json = (await res.json()) as PostRotateWebhookSigningKey['Reply'];
             if (!res.ok || 'error' in json) {
                 throw new APIError({ res, json });
             }

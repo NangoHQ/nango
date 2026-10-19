@@ -8,6 +8,7 @@ import { Err, flags, metrics, Ok } from '@nangohq/utils';
 import { audit, auditBackend } from '../../audit.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { listIntegrationsTool } from './integrations/list.js';
+import { withTopLevelToolSecuritySchemesResponse } from './management.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { getProvidersTool } from './providers/get.js';
 
@@ -59,16 +60,53 @@ describe('createManagementMcpServer with OAuth', () => {
 
         try {
             expect(client.getInstructions()).toBe(
-                'Before using an environment-bound tool, always ask the user which Nango environment to use. Call environments_list first when you need to present the available choices. Use only the environment the user selects; do not query every environment unless the user explicitly asks you to.'
+                'Environment-bound tools operate in the Nango environment named in each call. environments_list returns environments available to the authenticated user. The server checks access and permissions for the named environment on every call.'
             );
 
             const result = await client.listTools();
 
             expect(result.tools.map((tool) => tool.name)).toStrictEqual(['environments_list', ...managementToolNames]);
+            expect(result.tools.every(({ title }) => typeof title === 'string' && title.trim().length > 0)).toBe(true);
+            expect(result.tools.every(({ title, annotations }) => annotations?.title === title)).toBe(true);
+            for (const tool of result.tools) {
+                expect(tool._meta).toStrictEqual({
+                    securitySchemes: [{ type: 'oauth2', scopes: ['environment:*'] }]
+                });
+            }
+
+            // The MCP SDK currently strips the top-level securitySchemes extension required
+            // by OpenAI, so inspect the SSE response transformation and its _meta compatibility mirror.
+            const message = JSON.stringify({ jsonrpc: '2.0', id: 1, result });
+            const encoded = new TextEncoder().encode(`event: message\ndata: ${message}\n\n`);
+            const body = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    const split = Math.floor(encoded.length / 2);
+                    controller.enqueue(encoded.slice(0, split));
+                    controller.enqueue(encoded.slice(split));
+                    controller.close();
+                }
+            });
+            const response = await withTopLevelToolSecuritySchemesResponse(new Response(body, { headers: { 'content-type': 'text/event-stream' } }));
+            const data = (await response.text()).split('\n').find((line) => line.startsWith('data: '));
+            if (!data) {
+                throw new Error('Expected an SSE data line');
+            }
+            const serialized = JSON.parse(data.slice('data: '.length)) as {
+                result: { tools: Array<Record<string, unknown>> };
+            };
+            for (const tool of serialized.result.tools) {
+                expect(tool).toMatchObject({
+                    securitySchemes: [{ type: 'oauth2', scopes: ['environment:*'] }],
+                    _meta: {
+                        securitySchemes: [{ type: 'oauth2', scopes: ['environment:*'] }]
+                    }
+                });
+            }
+
             expect(result.tools[0]).toMatchObject({
                 name: 'environments_list',
-                description:
-                    'List the Nango environments currently available to your user. Call this first, then ask the user to choose an environment before using environment-bound tools. Do not automatically query every returned environment.',
+                title: 'List Environments',
+                description: 'Lists the Nango environments available to the authenticated user and whether each is a production environment.',
                 annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
                 inputSchema: {
                     type: 'object',

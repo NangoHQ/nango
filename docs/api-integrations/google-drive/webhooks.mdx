@@ -300,7 +300,7 @@ See: [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs)
 Google Drive has no built-in identifier Nango can derive automatically, so you must always register the watched resource yourself. Nango matches incoming Drive notifications by resource ID, against **`metadata.googleDriveWatchResourceIds`** — the value you store via `nango.updateMetadata()` in your post-connection-creation script (step 3) and renewal sync (step 4).
 
 - The value must be a JSON **`string[]`**. Store the **`X-Goog-Resource-ID` string exactly as Google sends it**.
-- Update metadata from your own Nango functions via `nango.updateMetadata()`, or manually via the [update metadata API](/reference/api/connection/update-metadata).
+- Update metadata from your own Nango functions via `nango.updateMetadata()`, or manually via the [update metadata API](/reference/backend/http-api/connections/update-metadata).
 
 If you use the post-connection-creation script from [step 3](#3-create-a-notification-channel-watch-the-drive), this is already handled for you.
 

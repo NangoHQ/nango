@@ -9,6 +9,7 @@ import { capping } from '../utils/usage.js';
 import * as webhookHandlers from './index.js';
 import { InternalNango } from './internal-nango.js';
 import { unverifiedWebhookMessage } from './missing-secret.js';
+import { withoutNangoWebhookSecret } from './nango-webhook-secret.js';
 
 import type { WebhookHandlersMap, WebhookRequest, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
@@ -45,7 +46,7 @@ export async function routeWebhook({
             method: request.method,
             path: request.path,
             headers: request.headers,
-            query: request.query,
+            query: withoutNangoWebhookSecret(request.query),
             body: request.body
         },
         logContextGetter

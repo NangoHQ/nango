@@ -10,7 +10,7 @@ export class Processor {
     private processors: OrchestratorProcessor[];
 
     constructor(orchestratorServiceUrl: string) {
-        const orchestratorClient = new OrchestratorClient({ baseUrl: orchestratorServiceUrl });
+        const orchestratorClient = new OrchestratorClient({ baseUrl: orchestratorServiceUrl, service: 'jobs' });
 
         const processorConfigs = envs.JOBS_PROCESSOR_CONFIG;
 

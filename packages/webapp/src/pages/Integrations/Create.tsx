@@ -36,7 +36,8 @@ export const CreateIntegration = () => {
 
         try {
             const response = await postIntegration(data);
-            navigate(`/${env}/integrations/${response.data.unique_key}/settings`);
+            const tab = data.useSharedCredentials ? 'functions' : 'settings';
+            navigate(`/${env}/integrations/${response.data.unique_key}/${tab}`);
         } catch {
             toast({ title: 'Failed to create integration', variant: 'error' });
         }

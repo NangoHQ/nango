@@ -25,6 +25,7 @@ const opts: BatchDeleteSharedOptions = { deadline: new Date(Date.now() + 60_000)
 function functionVersion(version: string): Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> {
     return {
         description: `Function ${version}`,
+        tags: {},
         file_location: `dev/functions/test/${version}.js`,
         version,
         source: 'repo',

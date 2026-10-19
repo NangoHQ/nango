@@ -2,11 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { productTracking, withProductTrackingContext } from '@nangohq/shared';
 
+import { PLAYGROUND_USER_TAG_KEY } from './agentPlaygroundTags.js';
 import {
     trackAgentSessionCreated,
     trackAgentSessionProxyRequest,
     trackAgentSessionTerminated,
-    trackAgentSessionToolCall
+    trackAgentSessionToolCall,
+    trackAgentSessionToolSearch
 } from './agentSessionAnalytics.service.js';
 
 import type { AgentSession, DBEnvironment, DBTeam } from '@nangohq/types';
@@ -61,12 +63,23 @@ describe('trackAgentSessionCreated', () => {
         expect(event).toBe('agents:session_start');
         expect(properties).toMatchObject({
             agent_session_id: 'session-1',
+            is_playground: false,
             integration_count: 2,
             is_tool_search_enabled: true,
             is_execute_enabled: true,
             is_proxy_enabled: false,
             is_create_connection_enabled: false
         });
+    });
+
+    it('marks a session the Agent Playground created', () => {
+        const playgroundSession: AgentSession = {
+            ...session,
+            metaTools: { ...session.metaTools, nangoCreateConnection: { enabled: true, tags: { [PLAYGROUND_USER_TAG_KEY]: 'user-a' } } }
+        };
+        inRequest(() => trackAgentSessionCreated(playgroundSession));
+
+        expect(onlyEvent().properties).toMatchObject({ agent_session_id: 'session-1', is_playground: true });
     });
 
     it('inherits the account and environment of the request', () => {
@@ -164,6 +177,18 @@ describe('trackAgentSessionToolCall', () => {
         expect(onlyEvent().properties).toMatchObject({ is_pinned: pinned });
     });
 
+    it('marks a tool that ran on an MCP server', () => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'linear-mcp', toolName: 'list_issues', mcpTool: true }));
+
+        expect(onlyEvent().properties).toMatchObject({ is_mcp_tool: true });
+    });
+
+    it('leaves the MCP marker off a deployed action', () => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc' }));
+
+        expect(onlyEvent().properties).not.toHaveProperty('is_mcp_tool');
+    });
+
     it('leaves pinned out when the call site cannot say', () => {
         inRequest(() => trackAgentSessionToolCall({ metaTool: 'nango_execute', session, toolName: 'made_up', errorCode: 'tool_not_in_session' }));
 
@@ -241,5 +266,46 @@ describe('trackAgentSessionProxyRequest', () => {
         expect(properties).not.toHaveProperty('http_status');
         expect(properties).not.toHaveProperty('provider');
         expect(properties).toMatchObject({ error_code: 'integration_not_connected' });
+    });
+});
+
+describe('trackAgentSessionToolSearch', () => {
+    const matches = [
+        { tool_name: 'send_email', tool_slug: 'gmail__send_email', integration_id: 'gmail', confidence: 0.82 },
+        { tool_name: 'create_draft', tool_slug: 'gmail__create_draft', integration_id: 'gmail', confidence: 0.61 }
+    ];
+    const related = [{ tool_name: 'create_ticket', tool_slug: 'zendesk__create_ticket', integration_id: 'zendesk', confidence: 0.28 }];
+
+    it('carries the query as sent, with both result tiers and their confidence', () => {
+        inRequest(() => trackAgentSessionToolSearch({ session, query: 'email a customer', matches, related, logOperationId: 'op-3' }));
+
+        const { event, properties } = onlyEvent();
+        expect(event).toBe('agents:tool_search_complete');
+        expect(properties).toMatchObject({
+            agent_session_id: 'session-1',
+            meta_tool: 'nango_tool_search',
+            query: 'email a customer',
+            match_count: 2,
+            related_count: 1,
+            top_match_confidence: 0.82,
+            matches,
+            related,
+            log_operation_id: 'op-3',
+            is_success: true
+        });
+    });
+
+    it('reports a search rejected before its arguments could be read', () => {
+        inRequest(() => trackAgentSessionToolSearch({ session, matches: [], related: [], errorCode: 'invalid_input' }));
+
+        const { properties } = onlyEvent();
+        expect(properties).not.toHaveProperty('query');
+        expect(properties).toMatchObject({ is_success: false, error_code: 'invalid_input' });
+    });
+
+    it('reports a search that failed', () => {
+        inRequest(() => trackAgentSessionToolSearch({ session, query: 'email a customer', matches: [], related: [], errorCode: 'search_failed' }));
+
+        expect(onlyEvent().properties).toMatchObject({ match_count: 0, related_count: 0, is_success: false, error_code: 'search_failed' });
     });
 });

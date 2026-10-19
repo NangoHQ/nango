@@ -1,0 +1,78 @@
+---
+title: 'How to register your own ModMed FHIR app'
+sidebarTitle: 'ModMed (FHIR) setup'
+description: 'Register a Bulk FHIR app with ModMed and connect it to Nango'
+---
+
+This guide covers the one-time setup for ModMed's Certified FHIR API [Bulk FHIR](https://portal.api.modmed.com/reference/authentication-2) flow. You do this once for your whole application — every connection you create afterward (one per practice) reuses the same Client ID and key.
+
+<Note>
+Bulk FHIR authenticates your application, not an individual end user — there's no OAuth redirect or login screen, and no client secret. ModMed verifies a JWT that Nango signs on your behalf (`private_key_jwt`), checking it against a public key you publish yourself. Nango signs with `ES384`, the algorithm ModMed confirms for this flow, so the private key you generate and give Nango must be an EC (P-384) key.
+</Note>
+
+<Steps>
+  <Step id="register-app" title="Register a Bulk FHIR app with ModMed">
+    Go to [Become a ModMed Certified FHIR API Vendor](https://portal.api.modmed.com/docs/register-to-become-a-modmed-certified-fhir-api-vendor) and click **Register Now**. When you configure your app, choose the **Bulk FHIR** app type — it gives practice-level access without per-user authentication.
+  </Step>
+  <Step id="generate-key-pair" title="Generate a key pair">
+    Generate an EC (P-384) key pair:
+
+    ```bash
+    openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-384 -out privatekey.pem
+    openssl pkey -in privatekey.pem -pubout -out publickey.pem
+    ```
+
+    `privatekey.pem` must start with `-----BEGIN PRIVATE KEY-----` (PKCS#8). Nango can't read a key that starts with `-----BEGIN EC PRIVATE KEY-----`, which is what `openssl ecparam -genkey` produces. To convert one, run `openssl pkcs8 -topk8 -nocrypt -in old-key.pem -out privatekey.pem`.
+
+    Keep `privatekey.pem` secret — you'll paste its contents into Nango in a later step. Never commit it to source control or share it outside Nango.
+  </Step>
+  <Step id="host-jwks-file" title="Host a JWKS file with your public key">
+    Convert your public key to JWK format and publish it as a JWKS document at a stable, publicly reachable URL you control (e.g. `https://your-domain.com/.well-known/modmed-jwks.json`). Assign a unique `kid` (key ID) to the key entry — you'll need this exact value in Nango.
+
+    To get the `x` and `y` values, run:
+
+    ```bash
+    node -e 'console.log(require("crypto").createPublicKey(require("fs").readFileSync("publickey.pem")).export({ format: "jwk" }))'
+    ```
+
+    Then add `alg`, `use`, and `kid` to build the JWKS document:
+
+    ```json
+    {
+      "keys": [
+        {
+          "kty": "EC",
+          "crv": "P-384",
+          "alg": "ES384",
+          "use": "sig",
+          "kid": "<your-key-id>",
+          "x": "<x-coordinate>",
+          "y": "<y-coordinate>"
+        }
+      ]
+    }
+    ```
+
+    <Warning>This URL must stay reachable indefinitely — ModMed checks every token request against the public key published there. If it goes down or the key is removed, every connection using it stops authenticating.</Warning>
+  </Step>
+  <Step id="register-jwks-url" title="Register your JWKS URL with ModMed">
+    In your app's configuration, register the JWKS URL from the previous step. Note the **Client ID** ModMed assigns your app and the `system/*.rs` scopes it's approved for — you'll need both for the next step, along with the `kid` you chose.
+  </Step>
+  <Step id="enter-credentials-in-nango" title="Enter your credentials in Nango">
+    1. In Nango, go to **Integrations** → your ModMed (FHIR) integration → **Settings** tab.
+    2. Enter:
+        - **Client ID** — from the previous step
+        - **Key ID** — the `kid` from your JWKS entry
+        - **Private Key** — the full contents of `privatekey.pem`, the EC (P-384) private key you generated in step 2. Nango signs with `ES384`, so this must be a P-384 EC key — an RSA or P-256 key won't work.
+        - **Scope** — the space-separated `system/*.rs` scopes your app was approved for (e.g. `system/Patient.rs system/Observation.rs`). ModMed requires scope on every Bulk FHIR token request.
+
+    Each field saves as soon as you leave it. Every connection you create under this integration reuses these values automatically — you won't be asked for them again per practice.
+  </Step>
+  <Step id="connect-a-practice" title="Next">
+    Follow the [connect guide](/api-integrations/modmed-fhir/connect) to create a connection for your first practice.
+  </Step>
+</Steps>
+
+For more details, see [ModMed Certified FHIR API — Authentication](https://portal.api.modmed.com/reference/authentication-2).
+
+---

@@ -1,3 +1,5 @@
+import type { CapturedNetworkRequest } from 'posthog-js';
+
 const REDACTED = '[redacted]';
 
 // A token stops at URL delimiters ('?#&'), whitespace, quotes and semicolons (so a token inside
@@ -54,6 +56,11 @@ export function redactSensitiveText(value: string): string {
     redacted = redacted.replace(NEXT_PARAM_PATTERN, `$1${REDACTED}`);
 
     return redacted.replace(JWT_PATTERN, REDACTED);
+}
+
+/** PostHog passes the URL as `name`, both for the recording's own URL and for recorded network requests. */
+export function maskCapturedNetworkRequest(data: CapturedNetworkRequest): CapturedNetworkRequest {
+    return { ...data, name: redactSensitiveText(data.name) };
 }
 
 /** Mutates in place: callers (PostHog capture hooks, Sentry before-send) own the object. */

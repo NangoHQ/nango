@@ -54,6 +54,7 @@ export interface ProxyServiceRequest {
     activityLogId?: string | undefined;
     /** Stamped on the operation this creates. Ignored when activityLogId points at an existing one. */
     actor?: OperationActor | undefined;
+    abortSignal?: AbortSignal | undefined;
     isSync?: boolean | undefined;
     isDryRun?: boolean | undefined;
 }
@@ -319,6 +320,7 @@ export class ProxyService {
                 proxyConfig: proxyConfig.value,
                 outboundPolicy: getServerOutboundUrlPolicy(),
                 maxWaitMs: envs.NANGO_PROXY_MAX_RETRY_WAIT_MS,
+                abortSignal: params.abortSignal,
                 logger: (message) => {
                     void logCtx?.log(message);
                 },

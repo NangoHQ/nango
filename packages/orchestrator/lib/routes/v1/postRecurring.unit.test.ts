@@ -20,8 +20,7 @@ let api: Server;
 
 const functionArgs = {
     type: 'function',
-    functionConfigId: 123,
-    functionName: 'fetchIssues',
+    functionUuid: '11111111-1111-4111-8111-111111111111',
     connection: { id: 456, connection_id: 'customer-connection', provider_config_key: 'github', environment_id: 789 },
     trigger: { kind: 'schedule', input: null, connection: { connectionId: 'customer-connection', integrationId: 'github' } },
     async: true
@@ -96,7 +95,7 @@ describe('POST /v1/recurring', () => {
 
     it('creates recurring function schedules', async () => {
         const body = {
-            name: 'environment:789:function:123',
+            name: 'environment:789:functioninstance:123',
             state: 'STARTED' as const,
             startsAt: new Date().toISOString(),
             frequencyMs: 300_000,
@@ -166,7 +165,7 @@ describe('POST /v1/recurring', () => {
 
     it('returns a server error when schedule creation fails', async () => {
         const body = {
-            name: 'environment:789:function:123',
+            name: 'environment:789:functioninstance:123',
             state: 'STARTED' as const,
             startsAt: new Date().toISOString(),
             frequencyMs: 300_000,
@@ -187,7 +186,7 @@ describe('POST /v1/recurring', () => {
 
     it('rejects unknown function argument fields', async () => {
         const body = {
-            name: 'environment:789:function:123',
+            name: 'environment:789:functioninstance:123',
             state: 'STARTED' as const,
             startsAt: new Date().toISOString(),
             frequencyMs: 300_000,

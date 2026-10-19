@@ -1,9 +1,10 @@
 import { v4 as uuid } from 'uuid';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
+import { productTracking } from '../utils/productTracking.js';
 import userService from './user.service.js';
 
 import type { DBTeam, DBUser } from '@nangohq/types';
@@ -66,5 +67,35 @@ describe('User service - case-insensitive email', () => {
 
         expect(found?.id).toBe(inserted!.id);
         expect(found?.email).toBe(storedEmail);
+    });
+});
+
+describe('User service - tracking', () => {
+    let account: DBTeam;
+
+    beforeAll(async () => {
+        await multipleMigrations();
+        account = await createTestAccount();
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it.each([
+        { hashed_password: 'hash', method: 'password' },
+        { hashed_password: '', method: 'google' }
+    ])('tracks a $method user', async ({ hashed_password, method }) => {
+        const track = vi.spyOn(productTracking, 'track');
+
+        const user = await userService.createUser({
+            email: `${uuid()}@example.com`,
+            name: 'Test',
+            hashed_password,
+            account_id: account.id,
+            email_verified: true
+        });
+
+        expect(track).toHaveBeenCalledWith({ name: 'auth:user_create', team: { id: account.id }, user, eventProperties: { method } });
     });
 });

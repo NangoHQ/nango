@@ -105,6 +105,30 @@ describe('createConnectSession', () => {
         expect(transactionSpy).not.toHaveBeenCalled();
     });
 
+    it('rejects preset connection config that is invalid for the provider', async () => {
+        vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([{ unique_key: 'auth0', provider: 'auth0' }] as any);
+        const transactionSpy = vi.spyOn(db.knex, 'transaction');
+
+        const result = await createConnectSession({
+            account: accountFixture(),
+            environment: environmentFixture(),
+            plan: null,
+            endUser: null,
+            tags: {},
+            allowedIntegrations: ['auth0'],
+            integrationsConfigDefaults: { auth0: { connectionConfig: { subdomain: 'Not Valid!' } } }
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toMatchObject({
+                code: 'invalid_connection_config',
+                message: 'Auth0 Domain has an invalid format'
+            });
+        }
+        expect(transactionSpy).not.toHaveBeenCalled();
+    });
+
     it('creates a preview session without enforcing the connection cap', async () => {
         const expiresAt = new Date('2026-01-01T00:30:00.000Z');
         mockTransaction();

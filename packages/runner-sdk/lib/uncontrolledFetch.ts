@@ -26,11 +26,14 @@ function getSafeDispatcher(policy: OutboundUrlPolicy): Dispatcher {
     return dispatcher;
 }
 
+export type UncontrolledFetchRedirect = 'follow' | 'error';
+
 export interface UncontrolledFetchOptions {
     url: URL;
     method?: HTTP_METHOD;
     headers?: Record<string, string> | undefined;
     body?: string | null;
+    redirect?: UncontrolledFetchRedirect | undefined;
 }
 
 export async function executeUncontrolledFetch(
@@ -75,6 +78,12 @@ export async function executeUncontrolledFetch(
 
         const bytesSent = countRequestBytes(props.headers as Headers, body);
         const bytesReceived = countHeaderBytes(response.headers);
+
+        if (REDIRECT_STATUS_CODES.has(response.status) && options.redirect === 'error') {
+            recordTransfer({ bytesSent, bytesReceived });
+            void response.body?.cancel().catch(() => {});
+            throw makeActionError('redirect_error', 'The server responded with a redirect. The request was not followed.');
+        }
 
         if (!REDIRECT_STATUS_CODES.has(response.status)) {
             if (response.body === null) {

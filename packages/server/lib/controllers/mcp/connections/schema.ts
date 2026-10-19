@@ -20,10 +20,7 @@ export const listConnectionsArgumentsSchema = z
 export const getConnectionArgumentsSchema = z
     .object({
         connection_id: connectionIdSchema.min(1),
-        integration_id: providerConfigKeySchema.min(1),
-        refresh_token: z.boolean().optional(),
-        force_refresh: z.boolean().optional(),
-        refresh_github_app_jwt_token: z.boolean().optional()
+        integration_id: providerConfigKeySchema.min(1)
     })
     .strict();
 
@@ -73,12 +70,10 @@ export const listConnectionsOutputSchema = z
 export const mcpConnectionFullSchema = mcpConnectionSchema
     .omit({ created: true })
     .extend({
-        connection_config: z.record(z.string(), z.unknown()),
         webhook_url_override: z.string().nullable(),
         created_at: z.string(),
         updated_at: z.string(),
-        last_fetched_at: z.string().nullable(),
-        credentials: z.record(z.string(), z.unknown()).optional()
+        last_fetched_at: z.string().nullable()
     })
     .strict();
 

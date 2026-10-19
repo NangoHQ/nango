@@ -14,7 +14,6 @@ import { useListIntegrations } from '../../hooks/useIntegration';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { track } from '../../utils/analytics';
 import { ConnectionAdvancedConfig } from './components/ConnectionAdvancedConfig';
 import { CreateConnectionSelector } from './components/CreateConnectionSelector';
 
@@ -87,10 +86,6 @@ export const ConnectionCreate: React.FC = () => {
             form.setValue('overrideDocUrl', provider.data.docs_connect);
         }
     }, [provider, form]);
-
-    useEffect(() => {
-        track('web:create_connection:viewed', {});
-    }, []);
 
     useEffect(() => {
         if (paramIntegrationId && listIntegration) {

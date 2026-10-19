@@ -49,7 +49,8 @@ const parsed = {
             }
         }
     ],
-    functions: [githubFunction, slackFunction]
+    functions: [githubFunction, slackFunction],
+    hasExperimentalFunctions: true
 } satisfies ParsedIntegrationDefinitions;
 
 const legacyConfirmation = {
@@ -72,7 +73,8 @@ const legacyChangeConfirmation = {
 
 const legacyOnlyParsed = {
     ...parsed,
-    functions: []
+    functions: [],
+    hasExperimentalFunctions: false
 } satisfies ParsedIntegrationDefinitions;
 
 const functionsOnlyParsed = {

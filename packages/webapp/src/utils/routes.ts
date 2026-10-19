@@ -26,25 +26,29 @@ export const signinPathWithNext = (location: { pathname: string; search: string;
     return params.length > 0 ? `/signin?${params.join('&')}` : '/signin';
 };
 
-// Reserved TLD (RFC 2606), so a `next` pointing at another origin fails the comparison below.
-const NEXT_BASE_ORIGIN = 'https://internal.invalid';
+// Reserved TLD (RFC 2606), so a URL pointing at another origin fails the comparison below.
+const IN_APP_BASE_ORIGIN = 'https://internal.invalid';
+
+export const inAppPath = (href: string): string | undefined => {
+    try {
+        const url = new URL(href, IN_APP_BASE_ORIGIN);
+        // `/..//evil.example` passes the origin check but normalises to `//evil.example`. The browser reads that as another host.
+        if (url.origin === IN_APP_BASE_ORIGIN && !url.pathname.startsWith('//')) {
+            return url.pathname + url.search + url.hash;
+        }
+    } catch {
+        return undefined;
+    }
+
+    return undefined;
+};
 
 export const safeNextPath = (next: string | null | undefined): string => {
     if (!next || next.length > MAX_NEXT_LENGTH) {
         return '/';
     }
 
-    try {
-        const url = new URL(next, NEXT_BASE_ORIGIN);
-        // `/..//evil.example` passes the origin check but normalises to `//evil.example`. The browser reads that as another host.
-        if (url.origin === NEXT_BASE_ORIGIN && !url.pathname.startsWith('//')) {
-            return url.pathname + url.search + url.hash;
-        }
-    } catch {
-        return '/';
-    }
-
-    return '/';
+    return inAppPath(next) ?? '/';
 };
 
 export const isNonEnvPath = (pathname: string): boolean => {

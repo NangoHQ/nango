@@ -284,7 +284,7 @@ describe('proxyTool analytics', () => {
 
     beforeEach(() => {
         capture.mockClear();
-        productTracking.client = { capture } as unknown as typeof productTracking.client;
+        productTracking.client = { capture, groupIdentify: vi.fn() } as unknown as typeof productTracking.client;
         vi.spyOn(egressTelemetryRecorder, 'record').mockImplementation(vi.fn());
     });
 

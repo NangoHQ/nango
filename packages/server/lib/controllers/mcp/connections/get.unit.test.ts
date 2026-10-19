@@ -5,6 +5,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { PublicMcpError } from '../utils.js';
 import { getConnectionsTool } from './get.js';
+import { getConnectionOutputSchema } from './schema.js';
 
 import type { ManagementMcpContext } from '../managementTool.js';
 import type { RetrievedConnection } from '@nangohq/shared';
@@ -14,13 +15,13 @@ describe('getConnectionsTool', () => {
         vi.restoreAllMocks();
     });
 
-    it('uses the read-only service path and omits credentials with the read scope', async () => {
-        const getSpy = vi.spyOn(connectionService, 'getConnectionWithoutCredentials').mockResolvedValue(Ok({ ...connectionFixture(), credentials: undefined }));
+    it('returns a connection without credentials or connection config', async () => {
+        const getSpy = vi.spyOn(connectionService, 'getConnectionWithoutCredentials').mockResolvedValue(Ok(connectionFixture()));
         const getWithCredentialsSpy = vi.spyOn(connectionService, 'getConnectionWithCredentials');
 
         const result = await getConnectionsTool.handler(
             { connection_id: 'connection-id', integration_id: 'github' },
-            context(['environment:connections:read'])
+            context(['environment:connections:read_credentials'])
         );
 
         expect(getSpy).toHaveBeenCalledWith({
@@ -32,47 +33,30 @@ describe('getConnectionsTool', () => {
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
             expect(result.value).not.toHaveProperty('credentials');
+            expect(result.value).not.toHaveProperty('connection_config');
             expect(result.value).toMatchObject({ connection_id: 'connection-id', provider_config_key: 'github' });
+            expect(() => getConnectionOutputSchema.parse(result.value)).not.toThrow();
         }
     });
 
-    it.each(['refresh_token', 'force_refresh', 'refresh_github_app_jwt_token'] as const)(
-        'rejects %s without the credential-reading scope',
-        async (argument) => {
-            const getSpy = vi.spyOn(connectionService, 'getConnectionWithCredentials');
-
-            const result = await getConnectionsTool.handler(
-                { connection_id: 'connection-id', integration_id: 'github', [argument]: true },
-                context(['environment:connections:read'])
-            );
-
-            expect(result.isErr()).toBe(true);
-            if (result.isErr()) {
-                expect(result.error).toBeInstanceOf(PublicMcpError);
-                expect(result.error.message).toContain('environment:connections:read_credentials');
-            }
-            expect(getSpy).not.toHaveBeenCalled();
-        }
-    );
-
-    it('returns credentials with the credential-reading scope', async () => {
-        const getSpy = vi.spyOn(connectionService, 'getConnectionWithCredentials').mockResolvedValue(Ok(connectionFixture()));
+    it.each(['include_credentials', 'refresh_token', 'force_refresh', 'refresh_github_app_jwt_token'])('rejects the removed %s argument', async (argument) => {
+        const getSpy = vi.spyOn(connectionService, 'getConnectionWithoutCredentials');
 
         const result = await getConnectionsTool.handler(
-            { connection_id: 'connection-id', integration_id: 'github' },
+            { connection_id: 'connection-id', integration_id: 'github', [argument]: true },
             context(['environment:connections:read_credentials'])
         );
 
-        expect(getSpy).toHaveBeenCalledWith(expect.objectContaining({ connectionId: 'connection-id', integrationId: 'github' }));
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-            expect(result.value.credentials).toStrictEqual({ type: 'API_KEY', apiKey: 'secret' });
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+            expect(result.error.message).toContain('Invalid connections_get arguments:');
         }
+        expect(getSpy).not.toHaveBeenCalled();
     });
 
     it('rejects invalid arguments before calling the connection service', async () => {
-        const getSpy = vi.spyOn(connectionService, 'getConnectionWithCredentials');
-        const getWithoutCredentialsSpy = vi.spyOn(connectionService, 'getConnectionWithoutCredentials');
+        const getSpy = vi.spyOn(connectionService, 'getConnectionWithoutCredentials');
 
         const result = await getConnectionsTool.handler({ connection_id: 'connection-id' }, context(['environment:connections:read']));
 
@@ -82,7 +66,6 @@ describe('getConnectionsTool', () => {
             expect(result.error.message).toContain('Invalid connections_get arguments:');
         }
         expect(getSpy).not.toHaveBeenCalled();
-        expect(getWithoutCredentialsSpy).not.toHaveBeenCalled();
     });
 
     it.each([
@@ -121,7 +104,7 @@ function connectionFixture(): RetrievedConnection {
             end_user_id: null,
             provider_config_key: 'github',
             connection_id: 'connection-id',
-            connection_config: {},
+            connection_config: { userCredentials: { access_token: 'config-secret' } },
             webhook_url_override: null,
             environment_id: 42,
             metadata: null,

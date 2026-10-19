@@ -23,7 +23,7 @@ For continuously replicated data, use [Sync external API data](/getting-started/
 ## How Nango fits in
 
 1. Your user authorizes an integration with Nango.
-2. You enable a template function or deploy your own.
+2. You call a catalog action directly or deploy your own action.
 3. Your app calls the function with an input payload.
 4. Nango executes the provider API calls with the user's credentials.
 5. Your app receives the result, or polls/listens for completion if the function runs asynchronously.
@@ -39,5 +39,5 @@ These functions are the technical foundation behind on-demand API operations, un
 - [Functions SDK reference](/reference/functions/functions-sdk) - runtime methods available inside function code.
 
 <Note>
-  You can enable template functions from the [template catalog](https://www.nango.dev/templates) and skip writing code until you need custom behavior.
+  You can use actions from the [template catalog](https://www.nango.dev/templates) without writing code. See the [Functions guide](/guides/functions/functions-guide#catalog-action-stability) to choose between a catalog action and your own.
 </Note>

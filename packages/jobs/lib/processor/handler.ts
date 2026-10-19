@@ -56,8 +56,7 @@ export async function handler(task: OrchestratorTask): Promise<Result<void>> {
             {
                 tags: {
                     'task.id': task.id,
-                    'function.name': task.functionName,
-                    'function.config_id': task.functionConfigId,
+                    'function.uuid': task.functionUuid,
                     'connection.id': task.connection.connection_id,
                     'environment.id': task.connection.environment_id
                 }

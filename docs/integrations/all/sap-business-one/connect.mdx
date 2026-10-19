@@ -7,10 +7,11 @@ sidebarTitle: SAP Business One
 
 To authenticate with SAP Business One, you need:
 1. **Service Layer URL** - The base URL for your SAP Business One Service Layer
-2. **Company Database** - The name of your SAP Business One company database
-3. **Database Instance** (Optional) - The database server instance name
-4. **Username** - Your SAP Business One API access username
-5. **Password** - Your SAP Business One API access password
+2. **Skip certificate verification** (Optional) - Only needed if your Service Layer uses a self-signed certificate
+3. **Company Database** - The name of your SAP Business One company database
+4. **Database Instance** (Optional) - The database server instance name
+5. **Username** - Your SAP Business One API access username
+6. **Password** - Your SAP Business One API access password
 
 This guide will walk you through obtaining these credentials from your SAP Business One environment.
 
@@ -54,7 +55,11 @@ The Service Layer URL must include the API base path, typically `/b1s/v1` — fo
 2. Navigate to **Landscape** > **Database Instances**.
 3. Locate the instance used by your SAP Business One system.
 
-### Step 5: Enter Credentials in the Connect UI
+### Step 5: Skip certificate verification
+
+If your Service Layer uses a self-signed certificate — common when it's hosted by an internal or third-party cloud team — set **Skip certificate verification** to `true` in the connection form. This disables protection against man-in-the-middle attacks for this connection, so only enable it if you trust the network path to your Service Layer. Leave it set to `false` if your certificate is publicly trusted.
+
+### Step 6: Enter Credentials in the Connect UI
 
 Once you have all your credentials:
 1. Open the form where you need to authenticate with SAP Business One

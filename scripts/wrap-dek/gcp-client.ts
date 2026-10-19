@@ -1,7 +1,7 @@
 import { KeyManagementServiceClient } from '@google-cloud/kms';
 import { GoogleAuth, Impersonated } from 'google-auth-library';
 
-import type { GcpKmsClient } from './gcp.js';
+import type { GcpKmsClient } from '../../packages/kms/lib/gcp.js';
 
 const CLOUD_PLATFORM_SCOPE = 'https://www.googleapis.com/auth/cloud-platform';
 

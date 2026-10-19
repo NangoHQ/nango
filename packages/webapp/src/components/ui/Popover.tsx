@@ -11,6 +11,10 @@ function PopoverTrigger({ ...props }: React.ComponentProps<typeof PopoverPrimiti
     return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
 }
 
+function PopoverClose({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Close>) {
+    return <PopoverPrimitive.Close data-slot="popover-close" {...props} />;
+}
+
 function PopoverContent({ className, align = 'center', sideOffset = 4, ...props }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
     return (
         <PopoverPrimitive.Portal>
@@ -44,4 +48,4 @@ function PopoverDescription({ className, ...props }: React.ComponentProps<'p'>) 
     return <p data-slot="popover-description" className={cn('text-text-muted', className)} {...props} />;
 }
 
-export { Popover, PopoverAnchor, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger };
+export { Popover, PopoverAnchor, PopoverClose, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger };

@@ -142,7 +142,7 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
                 onClear={
                     breakdownDimension
                         ? () => {
-                              track('web:usage:group_cleared', { metric });
+                              track('billing:usage_update', { change: 'group_clear', metric });
                               onSetBreakdown(null);
                           }
                         : undefined
@@ -168,7 +168,7 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
                             <DropdownMenuItem
                                 key={d}
                                 onSelect={() => {
-                                    track('web:usage:grouped', { metric, dimension: d });
+                                    track('billing:usage_update', { change: 'group', metric, dimension: d });
                                     onSetBreakdown(d);
                                 }}
                                 className={DIM_ITEM}
@@ -188,7 +188,7 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
                     onOpenChange={(next) => {
                         setFilterOpen(next);
                         if (next) {
-                            track('web:usage:filter_opened', { metric });
+                            track('billing:filter_button_click', { metric });
                             prefetchValues(dimensions);
                         }
                     }}

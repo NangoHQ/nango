@@ -93,7 +93,7 @@ export async function idle(nodeId: number): Promise<Result<void>> {
 export async function notifyOnIdle(node: Node): Promise<Result<void>> {
     const res = await retryWithBackoff(
         async () => {
-            const token = mintRunnerDispatchToken({ nodeId: String(node.id) });
+            const token = await mintRunnerDispatchToken({ nodeId: String(node.id) });
             return await fetch(
                 `${node.url}/notifyWhenIdle`,
                 withInternalTls({

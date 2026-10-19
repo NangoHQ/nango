@@ -1,5 +1,6 @@
 import { userQueryKey } from '../hooks/useUser';
 import { queryClient } from '../store';
+import { clearAgentPlaygroundChats } from '../store/agentPlaygroundChat';
 import { resetPlayground } from '../store/playground';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
 import { resetAnalytics, useAnalyticsIdentify } from './analytics';
@@ -36,11 +37,12 @@ export async function signout({ expired = false }: { expired?: boolean } = {}) {
     }
     signingOut = true;
 
-    // Read before the first await. Once React re-renders, PrivateRoute has already moved the page to /signin.
+    // Read before the first await. Once the queries clear, PrivateRoute can move the page to /signin.
     const target = expired ? signinPathWithNext(window.location, { expired: true }) : '/signin';
 
     storage.clearSession();
     resetPlayground(); // playground selections belong to the session's account/env
+    clearAgentPlaygroundChats();
     resetAnalytics();
 
     try {

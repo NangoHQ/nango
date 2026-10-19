@@ -1,8 +1,9 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 
-import { isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
+import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -11,6 +12,9 @@ const endpoint = '/connection';
 describe(`GET ${endpoint}`, () => {
     beforeAll(async () => {
         api = await runServer();
+    });
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
     afterAll(() => {
         api.server.close();
@@ -247,11 +251,12 @@ describe(`GET ${endpoint}`, () => {
         expect(res.json.connections[0]!.connection_id).toBe(conn1.connection_id);
     });
 
-    it('should search connections', async () => {
+    it('should search connections when the account is allowlisted', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         await seeders.createConnectionSeed({ env, provider: 'github' });
         const conn2 = await seeders.createConnectionSeed({ env, provider: 'github' });
+        vi.spyOn(getFlags(), 'isConnectionsSearchParamEnabled').mockResolvedValue(true);
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
@@ -266,6 +271,27 @@ describe(`GET ${endpoint}`, () => {
             connections: [{ connection_id: conn2.connection_id }]
         });
         expect(res.json.connections).toHaveLength(1);
+    });
+
+    it('should return 400 when searching by default (account not allowlisted)', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            query: {
+                search: conn.connection_id
+            }
+        });
+
+        expect(res.res.status).toBe(400);
+        isError(res.json);
+        expect(res.json.error).toEqual({
+            code: 'feature_disabled',
+            message: 'The `search` query param is deprecated and no longer available for this account'
+        });
     });
 
     it('should return end user', async () => {

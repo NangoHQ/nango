@@ -911,6 +911,31 @@ describe('buildProxyHeaders', () => {
         expect(result['authorization']).toMatch(/^Basic [A-Za-z0-9+/=]+$/);
     });
 
+    it('signs the full request URL for the real fiix provider config', () => {
+        const provider = getProvider('fiix');
+        if (!provider) {
+            throw new Error('fiix provider is missing');
+        }
+
+        const config = getDefaultProxy({ method: 'POST', endpoint: '/api/', data: { _maCn: 'FindRequest' }, provider });
+        const connection = getTestConnection({
+            credentials: { type: 'BASIC', username: 'macmmsaakp-access', password: 'secret-key' },
+            connection_config: { subdomain: 'acme', appKey: 'macmmsackp-app' }
+        });
+
+        const url = buildProxyURL({ config, connection });
+        expect(url).toBe(
+            'https://acme.macmms.com/api/?service=cmms&appKey=macmmsackp-app&accessKey=macmmsaakp-access&signatureMethod=HmacSHA256&signatureVersion=1'
+        );
+
+        const result = buildProxyHeaders({ config, url, connection });
+
+        // Fiix signs the URL minus the protocol with HMAC-SHA256 and the secret key, hex encoded
+        const expected = crypto.createHmac('sha256', 'secret-key').update(url.replace('https://', ''), 'utf8').digest('hex');
+        expect(result['authorization']).toBe(expected);
+        expect(result['content-type']).toBe('text/plain');
+    });
+
     it('resolves ${bodyCanonicalParams} for the real streamline-ai provider config end-to-end through buildProxyHeaders', () => {
         const provider = getProvider('streamline-ai');
         if (!provider) {
@@ -1455,6 +1480,30 @@ describe('buildProxyURL', () => {
         });
 
         expect(url).toBe('https://amplitude.com/api/test');
+    });
+
+    it.each([
+        ['send', 'https://send.api.mailtrap.io/api/test'],
+        ['sandbox', 'https://sandbox.api.mailtrap.io/api/test']
+    ])('should build the base URL from the selected subdomain %s (e.g. mailtrap)', (subdomain, expected) => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://${connectionConfig.subdomain}.api.mailtrap.io'
+                }
+            }
+        });
+
+        const url = buildProxyURL({
+            config,
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'test-key' },
+                connection_config: { subdomain }
+            })
+        });
+
+        expect(url).toBe(expected);
     });
 
     it('should fall back to second base URL when first connectionConfig param is absent (e.g. amazon-selling-partner without subdomain)', () => {

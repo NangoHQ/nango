@@ -2,8 +2,15 @@ import {
     createInternalServiceToken,
     createRunnerDispatchToken,
     exportRunnerPublicKey,
+    INTERNAL_SERVICE_AUDIENCE_JOBS,
+    INTERNAL_SERVICE_AUDIENCE_RUNNER,
     INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS,
-    INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS
+    INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS,
+    INTERNAL_SERVICE_TOKEN_TTL_SECS,
+    mint,
+    nodeSubject,
+    signerForService,
+    taskSubject
 } from '@nangohq/internal-auth';
 
 import { envs } from './env.js';
@@ -15,19 +22,35 @@ function taskExpiresInSecs(nangoProps?: Pick<NangoProps, 'lifecycle'>): number {
     return killAfterMs !== undefined ? Math.max(60, Math.ceil(killAfterMs / 1000) + 60) : INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS;
 }
 
-/**
- * Mint a task-bound HMAC JWT for putTask/heartbeat. Returns null when the signing key is unset so
- * invoke stays a no-op until infra is in place.
- */
-export function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoProps, 'lifecycle'>): string | null {
-    return createInternalServiceToken({ taskId, expiresInSecs: taskExpiresInSecs(nangoProps) }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+function jobsSigner() {
+    return signerForService('jobs', envs);
 }
 
 /**
- * Mint a runner-audience EdDSA JWT for jobs→runner dispatch. Signed with a private key that never
- * leaves jobs. Returns null when the signing key is unset.
+ * Mint a task-bound token for putTask/heartbeat. Uses the jobs Ed25519 key when configured,
+ * otherwise the legacy HMAC signing key. Returns null when neither is set.
  */
-export function mintRunnerDispatchToken(args: { taskId: string; nangoProps?: Pick<NangoProps, 'lifecycle'> } | { nodeId: string }): string | null {
+export async function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoProps, 'lifecycle'>): Promise<string | null> {
+    const expiresInSecs = taskExpiresInSecs(nangoProps);
+    const signer = jobsSigner();
+    if (signer) {
+        return mint(signer, { sub: taskSubject(taskId), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: expiresInSecs });
+    }
+    return createInternalServiceToken({ taskId, expiresInSecs }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+}
+
+/**
+ * Mint a runner-audience token for jobs→runner dispatch. Bound to the task or node it may act on.
+ * Uses the jobs Ed25519 key when configured, otherwise the legacy derived-Ed25519 dispatch token.
+ */
+export async function mintRunnerDispatchToken(
+    args: { taskId: string; nangoProps?: Pick<NangoProps, 'lifecycle'> } | { nodeId: string }
+): Promise<string | null> {
+    const signer = jobsSigner();
+    if (signer) {
+        const sub = 'nodeId' in args ? nodeSubject(args.nodeId) : taskSubject(args.taskId);
+        return mint(signer, { sub, aud: INTERNAL_SERVICE_AUDIENCE_RUNNER, ttlSecs: INTERNAL_SERVICE_TOKEN_TTL_SECS });
+    }
     if ('nodeId' in args) {
         return createRunnerDispatchToken({ op: 'node', nodeId: args.nodeId }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
     }
@@ -35,26 +58,68 @@ export function mintRunnerDispatchToken(args: { taskId: string; nangoProps?: Pic
 }
 
 /**
- * Env injected onto a runner process. Empty when the signing key is unset so node start stays a
- * no-op. Never includes TOKEN, the jobs master SIGNING_KEY, or any minting material — only the
- * Ed25519 public key (verify-only) and a jobs-audience node JWT.
+ * Env injected onto a runner process. Empty when no auth material is configured so node start stays
+ * a no-op. Never includes a private key, the static token, or the HMAC signing key.
  */
-export function mintRunnerAuthEnv(nodeId: number): Record<string, string> {
-    const token = createInternalServiceToken(
-        {
-            op: 'node',
-            nodeId: String(nodeId),
-            expiresInSecs: INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS
-        },
-        envs.NANGO_INTERNAL_AUTH_SIGNING_KEY
-    );
-    const publicKey = exportRunnerPublicKey(envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
-    if (!token || !publicKey) {
+export async function mintRunnerAuthEnv(nodeId: number): Promise<Record<string, string>> {
+    const signer = jobsSigner();
+    const nodeToken = signer
+        ? await mint(signer, {
+              sub: nodeSubject(String(nodeId)),
+              aud: INTERNAL_SERVICE_AUDIENCE_JOBS,
+              ttlSecs: INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS
+          })
+        : createInternalServiceToken(
+              {
+                  op: 'node',
+                  nodeId: String(nodeId),
+                  expiresInSecs: INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS
+              },
+              envs.NANGO_INTERNAL_AUTH_SIGNING_KEY
+          );
+    const legacyPublicKey = exportRunnerPublicKey(envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+    const jobsPublicKeys = envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS ?? [];
+
+    // Public keys alone are not a credential jobs can present. Leave the runner env empty so
+    // REQUIRED is not turned on while jobs has nothing to mint.
+    if (!nodeToken) {
         return {};
     }
-    return {
-        NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN: token,
-        NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY: publicKey,
-        NANGO_INTERNAL_AUTH_REQUIRED: envs.NANGO_INTERNAL_AUTH_REQUIRED ? 'true' : 'false'
-    };
+
+    const env: Record<string, string> = {};
+    if (nodeToken) {
+        env['NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN'] = nodeToken;
+    }
+    if (legacyPublicKey) {
+        env['NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY'] = legacyPublicKey;
+    }
+    if (jobsPublicKeys.length > 0) {
+        env['NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS'] = JSON.stringify(jobsPublicKeys);
+    }
+    env['NANGO_INTERNAL_AUTH_REQUIRED'] = envs.NANGO_INTERNAL_AUTH_REQUIRED ? 'true' : 'false';
+    return env;
+}
+
+/**
+ * REQUIRED jobs routes reject runners that have no credential. Refuse to start unless jobs can mint one,
+ * whether or not a public-key list is configured.
+ */
+export function assertRunnerAuthMaterial({
+    required = Boolean(envs.NANGO_INTERNAL_AUTH_REQUIRED),
+    signingKey = envs.NANGO_INTERNAL_AUTH_SIGNING_KEY,
+    privateKey = envs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY,
+    keyId = envs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID
+}: {
+    required?: boolean;
+    signingKey?: string | undefined;
+    privateKey?: string | undefined;
+    keyId?: string | undefined;
+} = {}): void {
+    if (!required) {
+        return;
+    }
+    if (signingKey?.trim() || (privateKey?.trim() && keyId?.trim())) {
+        return;
+    }
+    throw new Error('NANGO_INTERNAL_AUTH_REQUIRED is true, but jobs has no private key or HMAC signing key to mint runner credentials.');
 }

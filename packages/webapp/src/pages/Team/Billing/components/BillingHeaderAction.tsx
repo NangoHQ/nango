@@ -44,7 +44,7 @@ export const BillingHeaderAction: React.FC = () => {
     }
 
     return (
-        <ButtonLink to={portalUrl} size="md" target="_blank" rel="noopener noreferrer" onClick={() => track('web:usage:invoice_details_clicked', {})}>
+        <ButtonLink to={portalUrl} size="md" target="_blank" rel="noopener noreferrer" onClick={() => track('billing:invoice_link_click', {})}>
             All invoices
             <ExternalLink />
         </ButtonLink>

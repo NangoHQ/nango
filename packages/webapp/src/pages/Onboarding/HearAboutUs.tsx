@@ -7,7 +7,6 @@ import { Button } from '@nangohq/design-system';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useOnboardingHearAboutUs, usePostOnboardingHearAboutUs } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { track } from '../../utils/analytics';
 
 import type { PostOnboardingHearAboutUs } from '@nangohq/types';
 
@@ -38,7 +37,6 @@ export const HearAboutUs: React.FC = () => {
     }, [data, error, navigate]);
 
     const submit = async (source: PostOnboardingHearAboutUs['Body']['source']) => {
-        track('web:signup:hear_about', { source });
         try {
             await postHearAboutUs({ source });
         } finally {

@@ -1,11 +1,12 @@
 import * as z from 'zod';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { connectionService, getActionOrModelByEndpoint } from '@nangohq/shared';
 import { baseUrl, metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { principalCan } from '../../authz/principal.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { asyncWrapper, asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { postPublicTriggerAction } from '../action/postTriggerAction.js';
 import { getPublicRecords } from '../records/getRecords.js';
 
@@ -14,6 +15,14 @@ import type { GetPublicV1, HTTP_METHOD } from '@nangohq/types';
 const schemaHeaders = z.object({
     'provider-config-key': providerConfigKeySchema,
     'connection-id': connectionIdSchema
+});
+
+export const requireV1Passthrough = asyncWrapper<GetPublicV1>(async (_req, res, next) => {
+    if (!(await getFlags().isV1PassthroughEnabled(res.locals.account.uuid))) {
+        res.status(404).send({ error: { code: 'feature_disabled' } });
+        return;
+    }
+    next();
 });
 
 /** @deprecated Use POST /action/trigger to trigger actions and GET /records to fetch sync records instead. */

@@ -13,20 +13,22 @@ import {
     externalWebhookService,
     getApiUrl,
     getEndUserByConnectionId,
-    getSyncConfigRaw,
     LogActionEnum,
     NangoError,
+    resolveRunnableTool,
     secretService
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, slackService } from '../clients.js';
+import { envs } from '../env.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { pubsub } from '../utils/pubsub.js';
 import { startScript } from './operations/start.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
+import { toRunnableSyncConfig } from './runnableSyncConfig.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
@@ -68,22 +70,29 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         providerConfig = await tracer.trace('action.prepare.providerConfig', async () =>
             configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id)
         );
-        if (providerConfig === null) {
+        if (!providerConfig) {
             throw new Error(`Provider config not found for connection: ${task.connection.connection_id}`);
         }
 
-        const providerConfigEnvironmentId = providerConfig.environment_id;
-        const providerConfigId = providerConfig.id!;
-        syncConfig = await tracer.trace('action.prepare.syncConfig', async () =>
-            getSyncConfigRaw({
-                environmentId: providerConfigEnvironmentId,
-                config_id: providerConfigId,
-                name: task.actionName,
-                isAction: true
+        const integration = providerConfig;
+        const resolved = await tracer.trace('action.prepare.syncConfig', async () =>
+            resolveRunnableTool({
+                accountUuid: accountContext.account.uuid,
+                environmentId: integration.environment_id,
+                integration: integration,
+                name: task.actionName
             })
         );
-        if (!syncConfig) {
+        if (resolved.kind === 'missing') {
             throw new Error(`Action not found: ${task.id}`);
+        }
+        if (resolved.kind === 'catalog') {
+            if (!integration.id) {
+                throw new Error(`Provider config not found for connection: ${task.connection.connection_id}`);
+            }
+            syncConfig = toRunnableSyncConfig(resolved.tool, { environmentId: integration.environment_id, configId: integration.id });
+        } else {
+            syncConfig = resolved.config;
         }
         if (!syncConfig.enabled) {
             throw new Error(`Action is disabled: ${task.id}`);
@@ -126,7 +135,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         }
 
         void logCtx.info(`Starting action '${task.actionName}'${formatAttempts(task)}`, {
-            input: task.input,
+            input: envs.NANGO_LOG_FUNCTION_INPUT ? task.input : 'REDACTED',
             action: task.actionName,
             connection: task.connection.connection_id,
             integration: task.connection.provider_config_key
@@ -607,7 +616,7 @@ function getLogCtx(
                     environment: { id: opts.environmentId, name: opts.environmentName },
                     integration: { id: opts.syncConfig.nango_config_id, name: opts.providerConfigKey, provider: opts.provider },
                     connection: { id: opts.nangoConnectionId, name: opts.connectionId },
-                    syncConfig: { id: opts.syncConfig.id, name: opts.syncConfig.sync_name }
+                    syncConfig: opts.syncConfig.id ? { id: opts.syncConfig.id, name: opts.syncConfig.sync_name } : { name: opts.syncConfig.sync_name }
                 }
             ),
             opts.startedAt

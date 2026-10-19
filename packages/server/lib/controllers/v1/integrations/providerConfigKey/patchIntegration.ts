@@ -1,4 +1,4 @@
-import { configService, connectionService, getProvider } from '@nangohq/shared';
+import { configService, connectionService, getProvider, productTracking } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { resolveIntegrationConfig } from '../../../../services/integrationConfig.js';
@@ -85,6 +85,10 @@ export const patchIntegration = asyncWrapperWithEnvironment<PatchIntegration>(as
     // Forward webhooks
     if ('forward_webhooks' in body && body.forward_webhooks !== undefined) {
         integration.forward_webhooks = body.forward_webhooks;
+    }
+
+    if ('allow_unverified_webhooks' in body && body.allow_unverified_webhooks !== undefined) {
+        integration.allow_unverified_webhooks = body.allow_unverified_webhooks;
     }
 
     // Credentials
@@ -215,6 +219,7 @@ export const patchIntegration = asyncWrapperWithEnvironment<PatchIntegration>(as
     }
 
     await configService.editProviderConfig(integration, provider);
+    productTracking.track({ name: 'integrations:integration_update', eventProperties: { provider: integration.provider } });
     res.status(200).send({
         data: {
             success: true

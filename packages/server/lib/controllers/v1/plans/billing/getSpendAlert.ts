@@ -2,11 +2,11 @@ import { billing } from '@nangohq/billing';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { isSpendPlan } from '../../../../utils/spendPlans.js';
+import { getSpendFloorInCents, isSpendPlan } from '../../../../utils/spendPlans.js';
 
 import type { GetSpendAlert } from '@nangohq/types';
 
-const NO_ALERT = { thresholdInCents: null, currency: null };
+const NO_ALERT = { thresholdInCents: null, currency: null, floorInCents: null };
 
 export const getSpendAlert = asyncWrapper<GetSpendAlert>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -39,13 +39,14 @@ export const getSpendAlert = asyncWrapper<GetSpendAlert>(async (req, res) => {
         return;
     }
 
+    const floorInCents = getSpendFloorInCents(plan);
     const alert = alertRes.value;
     if (alert) {
-        res.status(200).send({ data: { thresholdInCents: alert.thresholdInCents, currency: alert.currency } });
+        res.status(200).send({ data: { thresholdInCents: alert.thresholdInCents, currency: alert.currency, floorInCents } });
         return;
     }
 
     // Every Orb customer is created in USD (see getOrCreateCustomer), so with no alert to read a
     // currency off, USD is what a threshold would be set in.
-    res.status(200).send({ data: { thresholdInCents: null, currency: 'USD' } });
+    res.status(200).send({ data: { thresholdInCents: null, currency: 'USD', floorInCents } });
 });

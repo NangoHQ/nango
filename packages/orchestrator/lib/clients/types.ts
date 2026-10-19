@@ -52,8 +52,7 @@ interface OnEventArgs {
 }
 
 interface FunctionArgs {
-    functionConfigId: number;
-    functionName: string;
+    functionUuid: string;
     connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     activityLogId?: string;
     variant?: string;
@@ -285,8 +284,7 @@ export function TaskFunction(props: TaskCommonFields & FunctionArgs): TaskFuncti
         attempt: props.attempt,
         retryKey: props.retryKey,
         attemptMax: props.attemptMax,
-        functionName: props.functionName,
-        functionConfigId: props.functionConfigId,
+        functionUuid: props.functionUuid,
         ...(props.variant !== undefined && { variant: props.variant }),
         connection: props.connection,
         ...(props.activityLogId !== undefined && { activityLogId: props.activityLogId }),

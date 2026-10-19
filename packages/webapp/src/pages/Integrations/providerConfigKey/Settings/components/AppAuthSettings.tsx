@@ -1,4 +1,4 @@
-import { FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { CopyButton } from '@/components/ui/CopyButton';
@@ -10,6 +10,7 @@ import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/cloud';
 import { AppPrivateKeyInput } from './AppPrivateKeyInput';
+import { SettingsField } from './SettingsLayout';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 
@@ -39,58 +40,45 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
     };
 
     return (
-        <div className="flex flex-col gap-10">
-            {/* Setup URL */}
-            <div className="flex flex-col gap-2">
-                <div className="flex gap-2 items-center">
-                    <FieldLabel htmlFor="setup_url">Setup URL</FieldLabel>
-                    <InfoTooltip>
+        <div className="flex flex-col gap-6">
+            <SettingsField
+                label="Setup URL"
+                htmlFor="setup_url"
+                info={
+                    <InfoTooltip size="sm">
                         Register this setup URL on the app settings page in the &quot;Post Installation section&quot;. Check &quot;Redirect on update&quot; as
                         well.
                     </InfoTooltip>
-                </div>
+                }
+            >
                 <InputGroup>
                     <InputGroupInput disabled value={setupUrl} />
                     <InputGroupAddon align="inline-end">
                         <CopyButton text={setupUrl} />
                     </InputGroupAddon>
                 </InputGroup>
-            </div>
+            </SettingsField>
 
-            {/* App ID */}
-            <div className="flex flex-col gap-2">
-                <div className="flex gap-2 items-center">
-                    <FieldLabel htmlFor="app_id">App ID</FieldLabel>
-                    <InfoTooltip>Obtain the app id from the app page.</InfoTooltip>
-                </div>
+            <SettingsField label="App ID" htmlFor="app_id" info={<InfoTooltip size="sm">Obtain the app id from the app page.</InfoTooltip>}>
                 {isSharedCredentials ? (
                     <NangoProvidedInput fakeValueSize={12} />
                 ) : (
                     <EditableInput initialValue={integration.oauth_client_id || ''} onSave={(value) => onSave({ appId: value })} validate={validateNotEmpty} />
                 )}
-            </div>
+            </SettingsField>
 
-            {/* App Public Link */}
-            <div className="flex flex-col gap-2">
-                <div className="flex gap-2 items-center">
-                    <FieldLabel htmlFor="app_link">App Public Link</FieldLabel>
-                    <InfoTooltip>Obtain the app public link from the app page.</InfoTooltip>
-                </div>
+            <SettingsField label="App public link" htmlFor="app_link" info={<InfoTooltip size="sm">Obtain the app public link from the app page.</InfoTooltip>}>
                 {isSharedCredentials ? (
                     <NangoProvidedInput fakeValueSize={24} />
                 ) : (
                     <EditableInput initialValue={integration.app_link || ''} onSave={(value) => onSave({ appLink: value })} validate={validateUrl} />
                 )}
-            </div>
+            </SettingsField>
 
-            {/* App Private Key */}
             {isSharedCredentials ? (
-                <div className="flex flex-col gap-2">
-                    <div className="flex gap-2 items-center">
-                        <FieldLabel htmlFor="private_key">App Private Key</FieldLabel>
-                    </div>
+                <SettingsField label="App private key" htmlFor="private_key">
                     <NangoProvidedInput fakeValueSize={48} />
-                </div>
+                </SettingsField>
             ) : (
                 <AppPrivateKeyInput initialValue={integration.oauth_client_secret || ''} onSave={(value) => onSave({ privateKey: value })} />
             )}

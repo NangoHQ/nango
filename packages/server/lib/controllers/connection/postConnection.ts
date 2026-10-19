@@ -449,6 +449,7 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
         connection: updatedConnection.connection,
         config: integration,
         account,
+        environment,
         logCtx
     });
 

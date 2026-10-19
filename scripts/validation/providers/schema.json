@@ -90,6 +90,8 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["display_name", "docs"],
+            "if": { "required": ["mcp_endpoint"] },
+            "then": { "required": ["proxy"], "properties": { "proxy": { "type": "object", "required": ["base_url"] } } },
             "properties": {
                 "alias": {
                     "type": "string"
@@ -501,6 +503,10 @@
                 "mcp_server_url": {
                     "type": "string"
                 },
+                "mcp_endpoint": {
+                    "type": "string",
+                    "pattern": "^/"
+                },
                 "registration_params": {
                     "type": "object",
                     "additionalProperties": {
@@ -707,6 +713,9 @@
                 "require_client_certificate": {
                     "type": "boolean"
                 },
+                "allow_unverified_https": {
+                    "type": "boolean"
+                },
                 "token_url_skip_encode": {
                     "type": "array",
                     "items": {
@@ -714,6 +723,9 @@
                     }
                 },
                 "webhook_user_defined_secret": {
+                    "type": "boolean"
+                },
+                "webhook_signature_enforced": {
                     "type": "boolean"
                 },
                 "webhook_routing_script": {

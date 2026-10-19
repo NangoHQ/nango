@@ -3,6 +3,7 @@ import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { MFACredential } from '../mfa/credential.js';
 import type { ApiUser } from '../user/api.js';
+import type { SignupAcquisition } from './acquisition.js';
 
 export interface AccountApiKey {
     id: number;
@@ -51,6 +52,7 @@ export type PostSignup = ApiEndpoint<{
         password: string;
         token?: string | undefined;
         foundUs?: string | undefined;
+        acquisition?: SignupAcquisition | undefined;
     };
     Error:
         | ApiError<'email_already_verified'>
@@ -182,6 +184,7 @@ export type PostManagedSignup = ApiEndpoint<{
     Path: '/api/v1/account/managed/signup';
     Body: {
         provider: 'GoogleOAuth';
+        acquisition?: SignupAcquisition | undefined;
         token?: string | undefined;
         returnTo?: string | undefined;
     };

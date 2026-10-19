@@ -1,11 +1,16 @@
+import { useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
 import { trackPlaygroundOpened } from '@/features/Playground/analytics';
+import { usePlaygroundTabs } from '@/pages/Playground/usePlaygroundTabs';
+import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
 
 import type { PlaygroundOpenSource } from '@/features/Playground/analytics';
 import type { PlaygroundFunctionType, PlaygroundState } from '@/store/playground';
 
 export interface PlaygroundContextOverride {
-    source: PlaygroundOpenSource;
+    source: Exclude<PlaygroundOpenSource, 'playground'>;
     integration?: string | null;
     connection?: string | null;
     functionName?: string | null;
@@ -13,28 +18,41 @@ export interface PlaygroundContextOverride {
     inputValues?: Record<string, string>;
 }
 
-/**
- * Opens the Playground and overwrites its selection state.
- *
- * Intended for future contextual "Open Playground" buttons on
- * integration/connection/sync/action pages
- */
-export function openPlaygroundWithContext(override: PlaygroundContextOverride) {
-    const next: PlaygroundState = {
-        isOpen: true,
-        integration: override.integration ?? null,
-        connection: override.connection ?? null,
-        function: override.functionName ?? null,
-        functionType: override.functionType ?? null,
-        inputValues: override.inputValues ?? {},
-        result: null,
-        pendingOperationId: null,
-        running: false,
-        inputErrors: {},
-        connectionSearch: ''
-    };
+export interface PlaygroundLocationState {
+    back?: { to: string; label: string };
+}
 
-    usePlaygroundStore.getState().setState(next);
+export function useCanOpenPlaygroundFunctions(): boolean {
+    return usePlaygroundTabs().tabs.includes('functions');
+}
 
-    trackPlaygroundOpened(override.source);
+export function useOpenPlaygroundWithContext() {
+    const env = useStore((s) => s.env);
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    return useCallback(
+        (override: PlaygroundContextOverride) => {
+            const next: PlaygroundState = {
+                integration: override.integration ?? null,
+                connection: override.connection ?? null,
+                function: override.functionName ?? null,
+                functionType: override.functionType ?? null,
+                inputValues: override.inputValues ?? {},
+                result: null,
+                pendingOperationId: null,
+                running: false,
+                inputErrors: {},
+                connectionSearch: ''
+            };
+
+            usePlaygroundStore.getState().abortActiveRun?.();
+            usePlaygroundStore.getState().setState(next);
+            trackPlaygroundOpened(override.source);
+
+            const state: PlaygroundLocationState = { back: { to: location.pathname + location.search + location.hash, label: override.source } };
+            void navigate(`/${env}/playground/functions`, { state });
+        },
+        [env, navigate, location.pathname, location.search, location.hash]
+    );
 }

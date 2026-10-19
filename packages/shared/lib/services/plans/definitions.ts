@@ -1,4 +1,4 @@
-import type { PlanDefinition } from '@nangohq/types';
+import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
 export const freePlan: PlanDefinition = {
     code: 'free',
@@ -32,6 +32,7 @@ export const freePlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
+        has_overdue_invoices_banner: true,
         sync_function_runtime: 'lambda',
         action_function_runtime: 'lambda',
         webhook_function_runtime: 'lambda',
@@ -81,6 +82,7 @@ export const starterV1Plan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
+        has_overdue_invoices_banner: true,
         lambda_tenant_isolation: true
     }
 };
@@ -126,6 +128,7 @@ export const growthV1Plan: PlanDefinition = {
         can_override_docs_connect_url: true,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true,
+        has_overdue_invoices_banner: true,
         lambda_tenant_isolation: true
     }
 };
@@ -220,6 +223,7 @@ export const enterprisePlan: PlanDefinition = {
         can_override_docs_connect_url: true,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true,
+        has_overdue_invoices_banner: false,
         lambda_tenant_isolation: true
     }
 };
@@ -235,7 +239,8 @@ export const enterpriseCloudHostedPlan: PlanDefinition = {
     basePrice: 5_000,
     flags: {
         ...growthV2Plan.flags,
-        api_rate_limit_size: '2xl'
+        api_rate_limit_size: '2xl',
+        has_overdue_invoices_banner: false
     }
 };
 
@@ -303,6 +308,7 @@ export const starterLegacyPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
+        has_overdue_invoices_banner: true,
         lambda_tenant_isolation: true
     }
 };
@@ -346,6 +352,7 @@ export const scaleLegacyPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
+        has_overdue_invoices_banner: true,
         lambda_tenant_isolation: true
     }
 };
@@ -390,16 +397,11 @@ export const growthLegacyPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true,
+        has_overdue_invoices_banner: true,
         lambda_tenant_isolation: true
     }
 };
 
-/**
- * The feature flags the growth add-on grants.
- *
- * NOTE: Only the boolean flags are listed here, the numeric limits (e.g. `api_rate_limit_size`, `environments_max`)
- * are resolved via `mergePlanFlags` following the precedence rules implemented therein.
- * This is so a hand-granted limit is not pulled back down when the add-on is disabled. */
 type GrowthFeatureFlag = 'has_otel' | 'has_rbac' | 'can_override_docs_connect_url' | 'can_customize_connect_ui_theme' | 'can_disable_connect_ui_watermark';
 
 export const GROWTH_FEATURE_FLAGS = {
@@ -410,10 +412,31 @@ export const GROWTH_FEATURE_FLAGS = {
     can_disable_connect_ui_watermark: true
 } satisfies Record<GrowthFeatureFlag, boolean>;
 
-export const PLANS_WITH_GROWTH_ADD_ON: PlanDefinition['code'][] = ['pay-as-you-go'];
+export const GROWTH_ADDON_ENVIRONMENTS_MAX = 10;
+export const GROWTH_ADDON_RATE_LIMIT_SIZE: DBPlan['api_rate_limit_size'] = 'xl';
+
+export const API_RATE_LIMIT_SIZES: DBPlan['api_rate_limit_size'][] = [
+    's',
+    'm',
+    'l',
+    'xl',
+    '2xl',
+    '3xl',
+    '4xl',
+    '5xl',
+    '6xl',
+    '7xl',
+    '8xl',
+    '9xl',
+    '10xl',
+    '11xl',
+    '12xl'
+];
+
+export const PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON: PlanDefinition['code'][] = ['pay-as-you-go'];
 
 export function canHaveGrowthAddon(planCode: PlanDefinition['code']): boolean {
-    return PLANS_WITH_GROWTH_ADD_ON.includes(planCode);
+    return PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON.includes(planCode);
 }
 
 export const plansList: PlanDefinition[] = [

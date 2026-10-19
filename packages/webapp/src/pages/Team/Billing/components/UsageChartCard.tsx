@@ -94,14 +94,14 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
 
     // Group and filter are independent slots: clearing the filter leaves the grouping untouched.
     const clearFilter = () => {
-        track('web:usage:filter_cleared', { metric });
+        track('billing:usage_update', { change: 'filter_clear', metric });
         void setFilterParam(null);
     };
     // Filtering by the grouped dimension is allowed (the "drill into a Rest value" case); the
     // collision is resolved for the query while the grouping stays set in the URL.
     const applyFilter = (dim: AnyBreakdownDimension, value: string) => {
         // Dimension only — filter values can be connection/environment identifiers.
-        track('web:usage:filtered', { metric, dimension: dim });
+        track('billing:usage_update', { change: 'filter', metric, dimension: dim });
         void setFilterParam(`${dim}:${value}`);
     };
 
@@ -165,15 +165,15 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
             filtered={inFilterMode}
             globalTotal={globalTotal}
             singleSeries={singleSeries}
-            onSeriesIsolate={() => track('web:usage:series_isolated', { metric })}
-            onSeriesToggle={() => track('web:usage:series_toggled', { metric })}
+            onSeriesIsolate={() => track('billing:usage_update', { change: 'series_isolate', metric })}
+            onSeriesToggle={() => track('billing:usage_update', { change: 'series_toggle', metric })}
             capLine={capLine}
             chartMode={chartModeState}
             formatValue={metricValueFormatter(metric)}
             seriesHref={(s) => (dimension && s.value ? breakdownSeriesHref(env, dimension, s.value) : undefined)}
             seriesCopyValue={(s) => (dimension && s.value ? breakdownSeriesCopyValue(dimension, s.value) : undefined)}
-            onSeriesCopy={() => dimension && track('web:usage:value_copied', { metric, dimension })}
-            onSeriesGoTo={() => dimension && track('web:usage:value_opened', { metric, dimension })}
+            onSeriesCopy={() => dimension && track('billing:copy_button_click', { metric, dimension })}
+            onSeriesGoTo={() => dimension && track('billing:open_link_click', { metric, dimension })}
         />
     );
 };

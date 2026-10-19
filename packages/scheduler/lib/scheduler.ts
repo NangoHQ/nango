@@ -192,6 +192,9 @@ export class Scheduler {
                 return Err(res.error);
             }
             return Ok(res.value.map(({ group_key, queued }) => ({ groupKey: group_key, queued })));
+        },
+        concurrencyPerGroup: async ({ queryTimeoutMs }: { queryTimeoutMs: number }): Promise<Result<Map<string, number>>> => {
+            return tasks.concurrencyPerGroup(this.db, { queryTimeoutMs });
         }
     };
 

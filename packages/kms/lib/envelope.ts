@@ -1,5 +1,6 @@
 import { buildClient, CommitmentPolicy, KmsKeyringNode } from '@aws-crypto/client-node';
 
+import { AzureKmsKeyringNode } from './azure.js';
 import { GcpKmsKeyringNode } from './gcp.js';
 
 import type { EncryptionContext, KeyringNode } from '@aws-crypto/client-node';
@@ -13,9 +14,10 @@ export type UnwrapDekOptions = {
     wrapped: string; // base64 AWS Encryption SDK envelope
     expectedContext: EncryptionContext; // the exact encryption context the envelope must have been wrapped with
 } & (
-    | { kmsKeyArn: string; gcpKmsKeyName?: never; keyring?: never }
-    | { gcpKmsKeyName: string; kmsKeyArn?: never; keyring?: never }
-    | { keyring: KeyringNode; kmsKeyArn?: never; gcpKmsKeyName?: never }
+    | { kmsKeyArn: string; gcpKmsKeyName?: never; azureKmsKeyId?: never; keyring?: never }
+    | { gcpKmsKeyName: string; kmsKeyArn?: never; azureKmsKeyId?: never; keyring?: never }
+    | { azureKmsKeyId: string; kmsKeyArn?: never; gcpKmsKeyName?: never; keyring?: never }
+    | { keyring: KeyringNode; kmsKeyArn?: never; gcpKmsKeyName?: never; azureKmsKeyId?: never }
 );
 
 /**
@@ -36,16 +38,25 @@ export function assertDekLength(dek: Uint8Array): void {
     }
 }
 
-export type WrappingKey = { kmsKeyArn: string } | { gcpKmsKeyName: string };
+export type WrappingKey = { kmsKeyArn: string } | { gcpKmsKeyName: string } | { azureKmsKeyId: string };
+
+type WrappingKeyCandidates = {
+    kmsKeyArn?: string | undefined;
+    gcpKmsKeyName?: string | undefined;
+    azureKmsKeyId?: string | undefined;
+};
 
 /**
  * Exactly one wrapping-key identifier. Used by unwrapDek and DekRegistry.
- * Exclusive-union types are still assignable at runtime if a caller passes both
+ * Exclusive-union types are still assignable at runtime if a caller passes several
  * (excess-property checks only apply to object literals).
  */
-export function resolveWrappingKey(kmsKeyArn: string | undefined, gcpKmsKeyName: string | undefined, errors: { both: string; neither: string }): WrappingKey {
-    if (kmsKeyArn && gcpKmsKeyName) {
-        throw new Error(errors.both);
+export function resolveWrappingKey(
+    { kmsKeyArn, gcpKmsKeyName, azureKmsKeyId }: WrappingKeyCandidates,
+    errors: { multiple: string; none: string }
+): WrappingKey {
+    if ([kmsKeyArn, gcpKmsKeyName, azureKmsKeyId].filter(Boolean).length > 1) {
+        throw new Error(errors.multiple);
     }
     if (kmsKeyArn) {
         return { kmsKeyArn };
@@ -53,23 +64,35 @@ export function resolveWrappingKey(kmsKeyArn: string | undefined, gcpKmsKeyName:
     if (gcpKmsKeyName) {
         return { gcpKmsKeyName };
     }
-    throw new Error(errors.neither);
+    if (azureKmsKeyId) {
+        return { azureKmsKeyId };
+    }
+    throw new Error(errors.none);
 }
 
-const UNWRAP_ONE_SOURCE = 'unwrapDek requires exactly one of kmsKeyArn, gcpKmsKeyName, or keyring';
+const UNWRAP_ONE_SOURCE = 'unwrapDek requires exactly one of kmsKeyArn, gcpKmsKeyName, azureKmsKeyId, or keyring';
 
 function resolveKeyring(opts: UnwrapDekOptions): KeyringNode {
-    const kmsKeyArn = 'kmsKeyArn' in opts ? opts.kmsKeyArn : undefined;
-    const gcpKmsKeyName = 'gcpKmsKeyName' in opts ? opts.gcpKmsKeyName : undefined;
+    const candidates: WrappingKeyCandidates = {
+        kmsKeyArn: 'kmsKeyArn' in opts ? opts.kmsKeyArn : undefined,
+        gcpKmsKeyName: 'gcpKmsKeyName' in opts ? opts.gcpKmsKeyName : undefined,
+        azureKmsKeyId: 'azureKmsKeyId' in opts ? opts.azureKmsKeyId : undefined
+    };
     const injectable = 'keyring' in opts ? opts.keyring : undefined;
     if (injectable) {
-        if (kmsKeyArn !== undefined || gcpKmsKeyName !== undefined) {
+        if (Object.values(candidates).some((value) => value !== undefined)) {
             throw new Error(UNWRAP_ONE_SOURCE);
         }
         return injectable;
     }
-    const wrappingKey = resolveWrappingKey(kmsKeyArn, gcpKmsKeyName, { both: UNWRAP_ONE_SOURCE, neither: UNWRAP_ONE_SOURCE });
-    return 'gcpKmsKeyName' in wrappingKey ? new GcpKmsKeyringNode(wrappingKey.gcpKmsKeyName) : new KmsKeyringNode({ keyIds: [wrappingKey.kmsKeyArn] });
+    const wrappingKey = resolveWrappingKey(candidates, { multiple: UNWRAP_ONE_SOURCE, none: UNWRAP_ONE_SOURCE });
+    if ('gcpKmsKeyName' in wrappingKey) {
+        return new GcpKmsKeyringNode(wrappingKey.gcpKmsKeyName);
+    }
+    if ('azureKmsKeyId' in wrappingKey) {
+        return new AzureKmsKeyringNode(wrappingKey.azureKmsKeyId);
+    }
+    return new KmsKeyringNode({ keyIds: [wrappingKey.kmsKeyArn] });
 }
 
 function assertEncryptionContext(context: Readonly<Record<string, string>>, expected: EncryptionContext): void {

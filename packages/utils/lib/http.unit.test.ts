@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { redactHeaders, redactURL } from './http.js';
 
@@ -37,6 +37,30 @@ describe('redactHeaders', () => {
         ).toStrictEqual({
             authorization: 'REDACTED',
             'x-not-filtered': 'hello'
+        });
+    });
+
+    describe('NANGO_IGNORED_HEADERS', () => {
+        const envVarName = 'NANGO_IGNORED_HEADERS';
+
+        afterEach(() => {
+            vi.unstubAllEnvs();
+            vi.resetModules();
+        });
+
+        it('should remove headers provided by env var', async () => {
+            vi.stubEnv(envVarName, ' x-custom-trace, ,x-extra-id ');
+            vi.resetModules();
+
+            const { redactHeaders: redactHeadersWithEnv } = await import('./http.js');
+
+            expect(
+                redactHeadersWithEnv({
+                    headers: { 'X-Custom-Trace': 'abc', 'x-extra-id': 'def', 'x-kept': 'hello' }
+                })
+            ).toStrictEqual({
+                'x-kept': 'hello'
+            });
         });
     });
 

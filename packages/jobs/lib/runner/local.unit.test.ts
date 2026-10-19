@@ -34,14 +34,18 @@ afterEach(() => {
 });
 
 describe('envForRunnerProcess', () => {
-    it('strips control-plane secrets and injects fleet tokens plus the Ed25519 public key', () => {
+    it('strips control-plane secrets and injects fleet tokens plus the Ed25519 public key', async () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         mockEnvs.NANGO_INTERNAL_AUTH_REQUIRED = true;
-        const env = envForRunnerProcess(7, {
+        const env = await envForRunnerProcess(7, {
             PATH: '/usr/bin',
             NANGO_INTERNAL_AUTH_TOKEN: 'shared',
-            NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign'
+            NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign',
+            NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: 'private',
+            NANGO_INTERNAL_AUTH_JOBS_KEY_ID: 'jobs-2026-09'
         });
+        expect(env['NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY']).toBeUndefined();
+        expect(env['NANGO_INTERNAL_AUTH_JOBS_KEY_ID']).toBeUndefined();
         expect(env['NANGO_INTERNAL_AUTH_TOKEN']).toBeUndefined();
         expect(env['NANGO_INTERNAL_AUTH_SIGNING_KEY']).toBeUndefined();
         expect(env['NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY']).toBe(exportRunnerPublicKey('sign'));

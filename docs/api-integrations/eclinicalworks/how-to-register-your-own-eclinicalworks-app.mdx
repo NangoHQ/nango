@@ -1,0 +1,69 @@
+---
+title: 'How to register your own eClinicalWorks app'
+sidebarTitle: 'eClinicalWorks Setup'
+description: 'Register with the eClinicalWorks Dev Portal and connect it to Nango'
+---
+
+This guide covers the one-time setup for eClinicalWorks' [SMART Backend Services](https://fhir.eclinicalworks.com/ecwopendev/documentation/getting-started/backend/authentication) flow. You do this once for your whole application — every connection you create afterward (one per practice) reuses the same Client ID and key.
+
+<Note>
+Backend Services authenticates your application, not an individual end user — there's no OAuth redirect or login screen. eClinicalWorks verifies a JWT that Nango signs on your behalf, checking it against a public key you publish yourself. Nango signs with `RS384`, so the private key you generate and give Nango must be an RSA key — the same key type eClinicalWorks verifies against.
+</Note>
+
+<Steps>
+  <Step id="register-app" title="Register your app with the eClinicalWorks Dev Portal">
+    Go to the [eClinicalWorks Platform for Open Development](https://fhir.eclinicalworks.com/ecwopendev/documentation/getting-started) and register as a developer. Create an app entry and select the **Backend Services** (non-interactive, system-to-system) authentication type.
+  </Step>
+  <Step id="generate-key-pair" title="Generate an RSA key pair">
+    eClinicalWorks requires `RS384` for Backend Services apps that register a JSON Web Key Set URL (the setup this guide uses):
+
+    ```bash
+    openssl genrsa -out privatekey.pem 2048
+    openssl rsa -in privatekey.pem -pubout -out publickey.pem
+    ```
+
+    Keep `privatekey.pem` secret — you'll paste its contents into Nango in a later step. Never commit it to source control or share it outside Nango.
+  </Step>
+  <Step id="host-jwks-file" title="Host a JWKS file with your public key">
+    Convert your public key to JWK format and publish it as a JWKS document at a stable, publicly reachable URL you control (e.g. `https://your-domain.com/.well-known/eclinicalworks-jwks.json`). Assign a unique `kid` (key ID) to the key entry — you'll need this exact value in Nango.
+
+    ```json
+    {
+      "keys": [
+        {
+          "kty": "RSA",
+          "alg": "RS384",
+          "use": "sig",
+          "kid": "<your-key-id>",
+          "n": "<modulus>",
+          "e": "<exponent>"
+        }
+      ]
+    }
+    ```
+
+    <Warning>This URL must stay reachable indefinitely — eClinicalWorks fetches your public key from it on every token request. If it goes down or the key is removed, every connection using it stops authenticating.</Warning>
+  </Step>
+  <Step id="register-jwks-url" title="Register your JWKS URL with eClinicalWorks">
+    On your app's entry in the Dev Portal, add the JWKS URL from the previous step and request the scope(s) your app needs (e.g. `system/Patient.read`). Note the **Client ID** eClinicalWorks assigns your app — you'll need it for the next step, along with the `kid` you chose.
+
+    <Note>Include `system/Group.read` in your scope request only if you need bulk `Group/$export` access — omit it if you only need the Backend Single Patient API.</Note>
+  </Step>
+  <Step id="enter-credentials-in-nango" title="Enter your credentials in Nango">
+    1. In Nango, go to **Integrations** → your eClinicalWorks (FHIR) integration → **Settings** tab.
+    2. Enter:
+        - **Client ID** — from the previous step
+        - **Key ID** — the `kid` from your JWKS entry
+        - **Private Key** — the full contents of `privatekey.pem`, the RSA private key you generated in step 2. Nango signs with `RS384`, so this must be an RSA key — an EC key won't work.
+        - **Scope** — the SMART Backend Services scope(s) eClinicalWorks granted your app (e.g. `system/Patient.read`)
+
+    Each field saves as soon as you leave it. Every connection you create under this integration reuses these values automatically — you won't be asked for them again per practice.
+  </Step>
+  <Step id="connect-a-practice" title="Next">
+    Follow the [connect guide](/api-integrations/eclinicalworks/connect) to create a connection for your first practice.
+  </Step>
+</Steps>
+
+For more details, see [eClinicalWorks Platform for Open Development — Backend Services authentication](https://fhir.eclinicalworks.com/ecwopendev/documentation/getting-started/backend/authentication).
+
+---

@@ -1,8 +1,10 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '@/utils/api';
+import { readSignupAcquisition } from '@/utils/signupAcquisition';
 
 import type {
+    GetEmailByExpiredToken,
     GetEmailByUuid,
     GetManagedEmailVerification,
     GetOnboardingAccountDiscovery,
@@ -187,7 +189,7 @@ export function useSignupAPI() {
         mutationFn: async ({ name, email, password, token }) => {
             const res = await apiFetch('/api/v1/account/signup', {
                 method: 'POST',
-                body: JSON.stringify({ name, email, password, token })
+                body: JSON.stringify({ name, email, password, token, acquisition: readSignupAcquisition() })
             });
 
             if (res.status === 200) {
@@ -302,6 +304,26 @@ export function useEmailByUuid(uuid: string | undefined) {
             throw new APIError({ res, json });
         },
         enabled: !!uuid
+    });
+}
+
+export function useEmailByExpiredToken(token: string | undefined) {
+    return useQuery<GetEmailByExpiredToken['Success'], APIError>({
+        queryKey: ['account', 'email', 'expired-token', token],
+        queryFn: async () => {
+            const res = await apiFetch(`/api/v1/account/email/expired-token/${token}`);
+
+            if (res.status === 200) {
+                return (await res.json()) as GetEmailByExpiredToken['Success'];
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        },
+        enabled: !!token,
+        // The request swaps the token for a new one and emails it, so a refetch fails with the old token.
+        staleTime: Infinity,
+        refetchOnReconnect: false
     });
 }
 

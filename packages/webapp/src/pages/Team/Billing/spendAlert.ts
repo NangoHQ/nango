@@ -1,3 +1,5 @@
+import { formatMoneyFromCents } from './money';
+
 /** Mirrors the ceiling in the server's putSpendAlert validator. */
 export const MAX_THRESHOLD_IN_CENTS = 1_000_000_000;
 
@@ -35,6 +37,15 @@ export function parseThreshold(input: string): ParsedThreshold {
     }
 
     return { ok: true, thresholdInCents };
+}
+
+export function floorError(thresholdInCents: number, floorInCents: number | null, currency: string | null): string | null {
+    if (floorInCents === null || thresholdInCents > floorInCents) {
+        return null;
+    }
+
+    const floor = formatMoneyFromCents(floorInCents, currency) ?? (floorInCents / 100).toFixed(2);
+    return `Your bill starts at ${floor} each month, so an alert at or below that would go off right away. Enter an amount above ${floor}.`;
 }
 
 export function thresholdToInput(thresholdInCents: number): string {

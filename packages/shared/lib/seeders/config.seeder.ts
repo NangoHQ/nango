@@ -142,6 +142,7 @@ export function getTestConfig(data?: Partial<IntegrationConfig>): IntegrationCon
         deleted: false,
         deleted_at: null,
         forward_webhooks: true,
+        allow_unverified_webhooks: false,
         shared_credentials_id: null,
         oauth_client_id: null,
         oauth_client_secret: null,

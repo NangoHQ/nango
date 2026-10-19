@@ -4,6 +4,7 @@ import { createBrowserRouter, createRoutesFromChildren, matchRoutes, useLocation
 
 import { globalEnv } from './env';
 import { redactSensitiveProperties, redactSensitiveText } from './sensitive-url';
+import { sentryIgnoreErrors } from './sentry-ignore-errors';
 
 /**
  * Auth routes carry tokens in the URL path (NAN-6506). `sendDefaultPii: false` does not cover
@@ -51,6 +52,9 @@ function redactSensitiveEvent<TEvent extends Sentry.Event>(event: TEvent): TEven
 // replays, no console breadcrumbs, no serialized non-Error throw payloads.
 Sentry.init({
     dsn: globalEnv.publicSentryKey,
+    enabled: !import.meta.env.DEV,
+    environment: globalEnv.environment,
+    ignoreErrors: sentryIgnoreErrors,
     integrations: [
         Sentry.reactRouterV6BrowserTracingIntegration({
             useEffect,

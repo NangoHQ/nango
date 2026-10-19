@@ -69,13 +69,13 @@ export const listFunctionsArgumentsSchema = z
     .strict();
 
 const deployedFunctionBaseSchema = {
-    id: z.number().int(),
+    id: z.number().int().nullable(),
     name: z.string(),
     description: z.string().optional(),
     scopes: z.array(z.string()).optional(),
     enabled: z.boolean(),
-    last_deployed: z.iso.datetime(),
-    source: z.enum(['catalog', 'standalone', 'repo'])
+    last_deployed: z.iso.datetime().nullable(),
+    source: z.enum(['catalog', 'standalone', 'repo', 'tools-catalog'])
 };
 
 const jsonSchemaSchema: z.ZodType<object> = z.looseObject({});

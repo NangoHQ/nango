@@ -46,8 +46,7 @@ function buildFunctionMessage(overrides: Partial<FunctionDispatchMessage> = {}):
         provider: 'github',
         activityLogId: 'function-log-1',
         connection: { id: 42, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2 },
-        functionName: 'native-webhook',
-        functionConfigId: 123,
+        functionUuid: '11111111-1111-4111-8111-111111111111',
         trigger: {
             kind: 'http',
             input: { hello: 'world' },
@@ -224,12 +223,11 @@ describe('DispatchQueueConsumer', () => {
         expect(h.orchestratorExecuteFunctionBatch.mock.calls[0]![0]).toEqual([
             expect.objectContaining({
                 name: 'function:1',
-                group: { key: 'function:environment:2:connection:42:function:native-webhook', maxConcurrency: 1 },
+                group: { key: 'function:environment:2:connection:42:function:11111111-1111-4111-8111-111111111111', maxConcurrency: 1 },
                 retry: { count: 0, max: 0 },
                 ownerKey: 'environment:2',
                 args: expect.objectContaining({
-                    functionName: 'native-webhook',
-                    functionConfigId: 123,
+                    functionUuid: func.functionUuid,
                     connection: func.connection,
                     trigger: func.trigger,
                     async: true

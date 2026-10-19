@@ -31,7 +31,7 @@ export async function handleCreateApiKey({
     environmentId: number;
     displayName: string;
     scopes?: ApiKeyScope[] | undefined;
-}): Promise<void> {
+}): Promise<boolean> {
     const result = await customerKeyService.createApiKey(db.knex, {
         accountId,
         environmentId,
@@ -41,7 +41,7 @@ export async function handleCreateApiKey({
 
     if (result.isErr()) {
         sendCreateApiKeyError(res, result.error);
-        return;
+        return false;
     }
 
     const key = result.value;
@@ -55,4 +55,5 @@ export async function handleCreateApiKey({
             created_at: key.created_at.toISOString()
         }
     });
+    return true;
 }

@@ -261,6 +261,57 @@ describe('executeSessionTool', () => {
         );
     });
 
+    it.each([
+        {
+            shape: 'every message in a GraphQL errors array',
+            errors: [{ message: 'Invalid scope: read_content required', extensions: { code: 'FORBIDDEN' } }, { message: 'Page not found' }],
+            reason: 'Invalid scope: read_content required; Page not found'
+        },
+        {
+            shape: 'the entries that carry a message',
+            errors: [{ extensions: { code: 'FORBIDDEN' } }, { message: 'Page not found' }],
+            reason: 'Page not found'
+        },
+        { shape: 'an errors string', errors: 'Invalid API key', reason: 'Invalid API key' },
+        { shape: 'an array of error strings', errors: ['Page not found', 'Title is required'], reason: 'Page not found; Title is required' }
+    ])('surfaces $shape', async ({ errors, reason }) => {
+        executeAction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(
+                new ActionExecutionError({
+                    code: 'action_failed',
+                    message: 'wrapped',
+                    nangoError: { message: 'An error occurred during an HTTP call', payload: { errors } } as never
+                })
+            )
+        });
+
+        const result = await execute('read_doc');
+
+        expect(errorOf(result).message).toBe(
+            `Tool 'read_doc' ran on integration 'notion' and failed: An error occurred during an HTTP call: ${reason}. Read the failure before deciding whether to call it again with different input or to tell the user.`
+        );
+    });
+
+    it('falls back to the error message when the errors carry no message', async () => {
+        executeAction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(
+                new ActionExecutionError({
+                    code: 'action_failed',
+                    message: 'wrapped',
+                    nangoError: { message: 'An error occurred during an HTTP call', payload: { errors: [{ extensions: { code: 'FORBIDDEN' } }] } } as never
+                })
+            )
+        });
+
+        const result = await execute('read_doc');
+
+        expect(errorOf(result).message).toBe(
+            "Tool 'read_doc' ran on integration 'notion' and failed: An error occurred during an HTTP call. Read the failure before deciding whether to call it again with different input or to tell the user."
+        );
+    });
+
     it('does not repeat a reason the error message already carries', async () => {
         executeAction.mockResolvedValue({
             logCtx: undefined,

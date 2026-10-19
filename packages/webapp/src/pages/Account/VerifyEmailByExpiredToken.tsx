@@ -2,21 +2,27 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { Spinner } from '@/components/ui/Spinner';
+import { useEmailByExpiredToken, useResendVerificationEmailByUuid } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { apiFetch } from '../../utils/api';
+import { APIError } from '../../utils/api';
 
 import type { GetEmailByExpiredToken, ResendVerificationEmailByUuid } from '@nangohq/types';
 
 export function VerifyEmailByExpiredToken() {
-    const [serverErrorMessage, setServerErrorMessage] = useState('');
-    const [email, setEmail] = useState('');
-    const [uuid, setUuid] = useState('');
-    const [loaded, setLoaded] = useState(false);
+    const [resendErrorMessage, setResendErrorMessage] = useState('');
     const navigate = useNavigate();
     const { toast } = useToast();
 
     const { token } = useParams();
+    const { data, error, isLoading } = useEmailByExpiredToken(token);
+    const { mutateAsync: resendVerificationEmail } = useResendVerificationEmailByUuid();
+
+    const email = data?.email ?? '';
+    const uuid = data?.uuid ?? '';
+    const lookupError = error instanceof APIError ? (error.json as GetEmailByExpiredToken['Errors']) : undefined;
+    const lookupErrorMessage = error ? lookupError?.error?.message || 'Issue verifying email. Please try again.' : '';
+    const serverErrorMessage = resendErrorMessage || lookupErrorMessage;
 
     useEffect(() => {
         if (!token) {
@@ -25,52 +31,26 @@ export function VerifyEmailByExpiredToken() {
     }, [token, navigate]);
 
     useEffect(() => {
-        const getEmail = async () => {
-            const res = await apiFetch(`/api/v1/account/email/expired-token/${token}`);
-
-            if (res?.status === 200) {
-                const response: GetEmailByExpiredToken['Success'] = (await res.json()) as GetEmailByExpiredToken['Success'];
-                const { email, verified, uuid } = response;
-
-                setUuid(uuid);
-
-                if (verified) {
-                    toast({ variant: 'success', title: 'Email already verified. Routing to the login page' });
-                    navigate('/signin');
-                }
-                setEmail(email);
-            } else {
-                const errorResponse: GetEmailByExpiredToken['Errors'] = (await res.json()) as GetEmailByExpiredToken['Errors'];
-                setServerErrorMessage(errorResponse.error.message || 'Issue verifying email. Please try again.');
-            }
-            setLoaded(true);
-        };
-
-        if (!loaded) {
-            getEmail();
+        if (data?.verified) {
+            toast({ variant: 'success', title: 'Email already verified. Routing to the login page' });
+            navigate('/signin');
         }
-    }, [token, loaded, setLoaded, navigate, toast]);
+    }, [data?.verified, navigate, toast]);
 
     const resendEmail = async (e: React.SyntheticEvent) => {
         e.preventDefault();
-        setServerErrorMessage('');
+        setResendErrorMessage('');
 
-        const res = await apiFetch('/api/v1/account/resend-verification-email/by-uuid', {
-            method: 'POST',
-            body: JSON.stringify({
-                uuid
-            })
-        });
-
-        if (res?.status === 200) {
+        try {
+            await resendVerificationEmail({ uuid });
             toast({ variant: 'success', title: 'Verification email sent again!' });
-        } else {
-            const response: ResendVerificationEmailByUuid['Errors'] = await res.json();
-            setServerErrorMessage(response.error.message || 'Unkown error...');
+        } catch (err) {
+            const response = err instanceof APIError ? (err.json as ResendVerificationEmailByUuid['Errors']) : undefined;
+            setResendErrorMessage(response?.error?.message || 'Unkown error...');
         }
     };
 
-    if (!loaded) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <Spinner />

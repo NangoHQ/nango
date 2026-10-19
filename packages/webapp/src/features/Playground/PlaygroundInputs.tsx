@@ -13,24 +13,19 @@ import type { InputField } from './types';
 
 interface Props {
     env: string;
-    queryEnv: string;
     isSync: boolean;
     inputFields: InputField[];
     inputErrors: Record<string, string>;
     clearInputError: (name: string) => void;
 }
 
-export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, inputFields, inputErrors, clearInputError }) => {
+export const PlaygroundInputs: React.FC<Props> = ({ env, isSync, inputFields, inputErrors, clearInputError }) => {
     const playgroundIntegration = usePlaygroundStore((s) => s.integration);
     const playgroundConnection = usePlaygroundStore((s) => s.connection);
     const inputValues = usePlaygroundStore((s) => s.inputValues);
     const setPlaygroundInputValue = usePlaygroundStore((s) => s.setInputValue);
-    const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
 
-    const connectionDetailsQuery = useConnection(
-        { env: queryEnv, provider_config_key: playgroundIntegration || '' },
-        { connectionId: playgroundConnection || '' }
-    );
+    const connectionDetailsQuery = useConnection({ env, provider_config_key: playgroundIntegration || '' }, { connectionId: playgroundConnection || '' });
     const connectionMetadata = connectionDetailsQuery.data?.connection?.metadata ?? null;
 
     if (isSync) {
@@ -45,16 +40,14 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                         </AlertDescription>
                         <AlertActions>
                             {playgroundIntegration && playgroundConnection && (
-                                <AlertButtonLink
-                                    to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}/auth`}
-                                    onClick={() => setPlaygroundOpen(false)}
-                                >
+                                <AlertButtonLink to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}/auth`}>
                                     View metadata
                                 </AlertButtonLink>
                             )}
                             <AlertButtonLink
                                 to="https://nango.dev/docs/getting-started/use-cases/customer-configuration"
-                                onClick={() => setPlaygroundOpen(false)}
+                                target="_blank"
+                                rel="noopener noreferrer"
                             >
                                 Docs <ExternalLink />
                             </AlertButtonLink>

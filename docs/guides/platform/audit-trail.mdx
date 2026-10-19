@@ -48,7 +48,7 @@ The audit trail covers the main control-plane operations related to connections,
 |----------|---------|
 | `connection` | `created`, `updated`, `metadata_updated`, `refreshed`, `deleted` |
 | `integration` | `created`, `updated`, `deleted` |
-| `function` | `deployed`, `upgraded`, `deleted` |
+| `function` | `deployed`, `upgraded`, `updated`, `deleted`, `variant_created`, `variant_deleted`, `variant_updated` |
 | `sync` | `enabled`, `disabled`, `paused`, `started`, `triggered`, `cancelled`, `frequency_changed`, `variant_created`, `variant_deleted` |
 | `api_key` | `created`, `updated`, `deleted` |
 | `environment` | `created`, `updated`, `variables_changed`, `webhook_urls_changed`, `webhook_signing_key_rotated`, `deleted` |
@@ -61,6 +61,8 @@ The audit trail covers the main control-plane operations related to connections,
 | `audit_trail` | `queried`, `exported` |
 
 `connection.metadata_updated` and `sync.triggered` are recorded for actions taken in the dashboard. The equivalent API endpoints — `POST` / `PATCH /connection/metadata` and `POST /sync/trigger` — are data plane operations and are not recorded; see [Limitations](#limitations).
+
+`function.variant_updated` records the requested `enabled` and `frequency` settings in its metadata. A `frequency` of `null` means the frequency override was reset. Omitted settings are not included.
 
 Secrets, such as API keys and passwords, are stripped from audit log entries.
 

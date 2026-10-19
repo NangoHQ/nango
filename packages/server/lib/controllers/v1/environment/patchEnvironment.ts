@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { environmentService, PROD_ENVIRONMENT_NAME } from '@nangohq/shared';
+import { environmentService, PROD_ENVIRONMENT_NAME, productTracking } from '@nangohq/shared';
 import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { principalCan } from '../../../authz/principal.js';
@@ -111,5 +111,6 @@ export const patchEnvironment = asyncWrapperWithEnvironment<PatchEnvironment>(as
         return;
     }
 
+    productTracking.track({ name: 'environments:environment_update', eventProperties: { section: 'settings' } });
     res.status(200).send({ data: environmentToApi(updated) });
 });

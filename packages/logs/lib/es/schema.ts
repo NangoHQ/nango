@@ -1,7 +1,7 @@
 import { envs } from '../env.js';
 import { propsMessages, propsOperations } from '../schema/mappings.js';
 
-import type { LogsPutPipelineParams } from '../storage/types.js';
+import type { LogsPutIndexTemplateParams, LogsPutPipelineParams, LogsStorageProvider } from '../storage/types.js';
 import type { estypes } from '@elastic/elasticsearch';
 
 export const retentionMinAge = `${envs.NANGO_LOGS_ES_RETENTION_DAYS}d`;
@@ -54,10 +54,19 @@ function indexSortBlock() {
     };
 }
 
-function buildOperationsSettings(): Record<string, unknown> {
-    const base: Record<string, unknown> = {
+function serverlessIndexSettings(): Record<string, unknown> {
+    return {
         analysis: analysisBlock(),
-        index: indexSortBlock(),
+        index: indexSortBlock()
+    };
+}
+
+function buildOperationsSettings(): Record<string, unknown> {
+    if (envs.NANGO_LOGS_PROVIDER === 'ec-serverless') {
+        return serverlessIndexSettings();
+    }
+    const base: Record<string, unknown> = {
+        ...serverlessIndexSettings(),
         number_of_shards: envs.NANGO_LOGS_ES_SHARD_PER_DAY_OPERATIONS
     };
     if (envs.NANGO_LOGS_PROVIDER === 'opensearch') {
@@ -69,9 +78,11 @@ function buildOperationsSettings(): Record<string, unknown> {
 }
 
 function buildMessagesSettings(): Record<string, unknown> {
+    if (envs.NANGO_LOGS_PROVIDER === 'ec-serverless') {
+        return serverlessIndexSettings();
+    }
     const base: Record<string, unknown> = {
-        analysis: analysisBlock(),
-        index: indexSortBlock(),
+        ...serverlessIndexSettings(),
         number_of_shards: envs.NANGO_LOGS_ES_SHARD_PER_DAY_MESSAGES
     };
     if (envs.NANGO_LOGS_PROVIDER === 'opensearch') {
@@ -96,6 +107,46 @@ export function getDailyIndexPipeline(name: string): LogsPutPipelineParams {
                 }
             }
         ]
+    };
+}
+
+export function getTimestampPipeline(name: string): LogsPutPipelineParams {
+    return {
+        id: `timestamp.${name}`,
+        description: 'Copy createdAt to @timestamp for data stream lifecycle',
+        processors: [
+            {
+                set: {
+                    field: '@timestamp',
+                    copy_from: 'createdAt'
+                }
+            }
+        ]
+    };
+}
+
+export function getLogsIngestPipelineId(indexName: string, provider: LogsStorageProvider = envs.NANGO_LOGS_PROVIDER): string {
+    return provider === 'ec-serverless' ? `timestamp.${indexName}` : `daily.${indexName}`;
+}
+
+export function getServerlessIndexTemplate(index: Pick<estypes.IndicesCreateRequest, 'index' | 'mappings'>): LogsPutIndexTemplateParams {
+    const properties = (index.mappings?.properties ?? {}) as Record<string, unknown>;
+    return {
+        name: `${index.index}-template`,
+        index_patterns: index.index,
+        data_stream: {},
+        template: {
+            settings: serverlessIndexSettings(),
+            mappings: {
+                _source: { enabled: true, excludes: ['@timestamp'] },
+                dynamic: false,
+                properties: {
+                    ...properties,
+                    '@timestamp': { type: 'date' }
+                }
+            },
+            lifecycle: { data_retention: retentionMinAge }
+        }
     };
 }
 

@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { SidebarInset, SidebarProvider } from '@/components/ui/Sidebar';
-import { Playground } from '@/features/Playground';
 import { AppHeader } from '@/layout/AppHeader';
 import { cn } from '@/utils/utils';
 import { AppSidebar } from './AppSidebar';
@@ -11,6 +10,8 @@ interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
     fullWidth?: boolean;
     /** Section title rendered in the fixed header below the top bar. Omit to hide the section header. */
     title?: string;
+    /** Optional content rendered before the section title (e.g. an integration logo). */
+    titleLeading?: React.ReactNode;
     /** Optional badge rendered inline after the section title (e.g. an environment badge). */
     titleBadge?: React.ReactNode;
     /** Optional action rendered on the right of the section header (e.g. the page's primary button). */
@@ -24,13 +25,13 @@ interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(
-    ({ children, className, fullWidth = false, title, titleBadge, titleActions, centered = false, ...props }, ref) => {
+    ({ children, className, fullWidth = false, title, titleLeading, titleBadge, titleActions, centered = false, ...props }, ref) => {
         return (
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset className="max-h-screen overflow-hidden">
                     <AppHeader />
-                    {title != null && <SectionHeader title={title} badge={titleBadge} actions={titleActions} centered={centered} />}
+                    {title != null && <SectionHeader title={title} leading={titleLeading} badge={titleBadge} actions={titleActions} centered={centered} />}
                     <div
                         ref={ref}
                         className={cn('relative w-full flex-1 min-h-0 overflow-auto bg-surface-page min-w-3xl', fullWidth ? 'p-0' : 'p-11')}
@@ -40,7 +41,6 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(
                             {/* Mirrors SectionHeader's inner row: same cap inside the same padding, so the two line up */}
                             {centered ? <div className={cn('mx-auto w-full', CENTERED_MAX_WIDTH)}>{children}</div> : children}
                         </div>
-                        <Playground />
                     </div>
                 </SidebarInset>
             </SidebarProvider>

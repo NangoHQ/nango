@@ -115,9 +115,55 @@ describe(`POST ${endpoint}`, () => {
                 provider: 'algolia',
                 unique_key: 'foobar',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true
+                forward_webhooks: true,
+                missing_fields: []
             }
         });
+    });
+
+    it('should create an OAuth integration without credentials', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { provider: 'github', unique_key: 'github' }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.data.unique_key).toBe('github');
+        expect(res.json.data.missing_fields).toStrictEqual(['oauth_client_id', 'oauth_client_secret']);
+
+        const resGet = await api.fetch(getEndpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github' },
+            query: { include: ['credentials'] }
+        });
+
+        isSuccess(resGet.json);
+        expect(resGet.json.data.credentials).toMatchObject({ type: 'OAUTH2', client_id: null, client_secret: null });
+    });
+
+    it('should create an OAuth integration with only some credential fields', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { provider: 'github', unique_key: 'github', credentials: { type: 'OAUTH2', scopes: 'repo' } }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.data.missing_fields).toStrictEqual(['oauth_client_id', 'oauth_client_secret']);
+
+        const resGet = await api.fetch(getEndpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github' },
+            query: { include: ['credentials'] }
+        });
+
+        isSuccess(resGet.json);
+        expect(resGet.json.data.credentials).toMatchObject({ type: 'OAUTH2', client_id: null, client_secret: null, scopes: 'repo' });
     });
 
     it('should add webhookSecret when creds.webhook_secret is present', async () => {
@@ -147,7 +193,8 @@ describe(`POST ${endpoint}`, () => {
                 provider: 'github',
                 unique_key: 'github',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true
+                forward_webhooks: true,
+                missing_fields: []
             }
         });
 
@@ -189,7 +236,8 @@ describe(`POST ${endpoint}`, () => {
                 provider: 'github',
                 unique_key: 'github',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true
+                forward_webhooks: true,
+                missing_fields: []
             }
         });
 

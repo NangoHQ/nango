@@ -28,9 +28,10 @@ const rawBody = JSON.stringify(body);
 const installationCreated = { action: 'created', installation: { id: 42, app_id: APP_ID }, requester: { login: 'octocat' } };
 const installationCreatedRawBody = JSON.stringify(installationCreated);
 
-function makeNango() {
+function makeNango({ allowUnverified = false }: { allowUnverified?: boolean } = {}) {
     const integration = getTestConfig({
         provider: 'github-app-oauth',
+        allow_unverified_webhooks: allowUnverified,
         custom: { app_id: APP_ID, private_key: Buffer.from(PRIVATE_KEY, 'ascii').toString('base64') },
         app_link: APP_LINK
     });
@@ -94,7 +95,7 @@ describe('github-app-oauth-webhook-routing', () => {
         expect(result.isErr()).toBe(true);
         expect(errType(result)).toBe('webhook_missing_signature');
         expect(execute).not.toHaveBeenCalled();
-        expect(markUnverified).toHaveBeenCalledWith({ reason: 'github_app_missing_signature', remediation: REMEDIATION });
+        expect(markUnverified).toHaveBeenCalledWith({ reason: 'github_app_missing_signature', remediation: REMEDIATION }, 'rejected');
     });
 
     it('does not finalize a pending connection from an unsigned installation event', async () => {
@@ -116,6 +117,25 @@ describe('github-app-oauth-webhook-routing', () => {
 
         expect(result.isOk()).toBe(true);
         expect(execute).toHaveBeenCalledOnce();
-        expect(markUnverified).toHaveBeenCalledWith({ reason: 'github_app_missing_signature', remediation: REMEDIATION });
+        expect(markUnverified).toHaveBeenCalledWith({ reason: 'github_app_missing_signature', remediation: REMEDIATION }, 'flag');
+    });
+
+    it('processes a missing signature header when the integration allows unverified webhooks', async () => {
+        const { nango, execute, markUnverified } = makeNango({ allowUnverified: true });
+
+        const result = await GithubAppOauthWebhookRouting.default(nango, {}, body as never, rawBody);
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledOnce();
+        expect(markUnverified).toHaveBeenCalledWith({ reason: 'github_app_missing_signature', remediation: REMEDIATION }, 'setting');
+    });
+
+    it('rejects an invalid signature when the integration allows unverified webhooks', async () => {
+        const { nango, execute } = makeNango({ allowUnverified: true });
+
+        const result = await GithubAppOauthWebhookRouting.default(nango, { 'x-hub-signature-256': sign(rawBody, 'other-key') }, body as never, rawBody);
+
+        expect(errType(result)).toBe('webhook_invalid_signature');
+        expect(execute).not.toHaveBeenCalled();
     });
 });

@@ -17,10 +17,14 @@ export interface IntegrationConfig extends TimestampsAndDeleted {
     missing_fields: string[];
     display_name: string | null;
     forward_webhooks: boolean;
+    allow_unverified_webhooks: boolean;
     shared_credentials_id: number | null;
 }
 
 export type DBIntegrationDecrypted = IntegrationConfig; // TODO: tag this
 export type DBIntegrationCrypted = Tagged<IntegrationConfig, 'IntegrationCrypted'>;
 
-export type DBCreateIntegration = SetOptional<NullablePartial<Omit<IntegrationConfig, 'created_at' | 'updated_at'>>, 'missing_fields'>;
+export type DBCreateIntegration = SetOptional<
+    NullablePartial<Omit<IntegrationConfig, 'created_at' | 'updated_at'>>,
+    'missing_fields' | 'allow_unverified_webhooks'
+>;

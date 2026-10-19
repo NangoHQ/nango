@@ -2,7 +2,9 @@ import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
-import { redactSensitiveProperties, redactSensitiveText } from './sensitive-url.js';
+import { maskCapturedNetworkRequest, redactSensitiveProperties, redactSensitiveText } from './sensitive-url.js';
+
+import type { CapturedNetworkRequest } from 'posthog-js';
 
 const JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoibWF0ZWpAbmFuZ28uZGV2IiwiaWF0IjoxNzAwMDAwMDAwfQ.abc123DEF-_456';
 const UUID = '8f14e45f-ceea-467a-9b0d-1e0a1b2c3d4e';
@@ -110,6 +112,28 @@ describe('redactSensitiveText', () => {
     it('returns unrelated strings untouched', () => {
         expect(redactSensitiveText('')).toBe('');
         expect(redactSensitiveText('https://app.nango.dev/integrations/github')).toBe('https://app.nango.dev/integrations/github');
+    });
+});
+
+describe('maskCapturedNetworkRequest', () => {
+    it('redacts the token in a recorded network request and keeps the other fields', () => {
+        const request: CapturedNetworkRequest = {
+            name: `https://api.nango.dev/api/v1/invite/${UUID}`,
+            entryType: 'resource',
+            startTime: 10,
+            duration: 5,
+            method: 'GET',
+            status: 200,
+            initiatorType: 'fetch'
+        };
+
+        expect(maskCapturedNetworkRequest(request)).toStrictEqual({ ...request, name: 'https://api.nango.dev/api/v1/invite/[redacted]' });
+    });
+
+    it('redacts the recording url, which PostHog passes as a bare name', () => {
+        expect(maskCapturedNetworkRequest({ name: `https://app.nango.dev/reset-password/${JWT}` } as CapturedNetworkRequest)).toStrictEqual({
+            name: 'https://app.nango.dev/reset-password/[redacted]'
+        });
     });
 });
 

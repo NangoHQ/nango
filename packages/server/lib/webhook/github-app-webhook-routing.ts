@@ -38,11 +38,10 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
             return Err(new NangoError('webhook_invalid_signature'));
         }
     } else {
-        nango.markUnverified({ reason: 'github_app_missing_signature', remediation: 'Set the Nango webhook secret on the GitHub App' });
+        const outcome = await nango.unverifiedOutcome((accountUuid) => getFlags().allowUnauthorizedGithubAppWebhook(accountUuid));
+        nango.markUnverified({ reason: 'github_app_missing_signature', remediation: 'Set the Nango webhook secret on the GitHub App' }, outcome);
 
-        const allowUnauthorized = await getFlags().allowUnauthorizedGithubAppWebhook(nango.team.uuid);
-
-        if (!allowUnauthorized) {
+        if (outcome === 'rejected') {
             logger.error('Github App webhook signature missing', { configId: nango.integration.id });
             return Err(new NangoError('webhook_missing_signature'));
         }

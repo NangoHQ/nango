@@ -2,8 +2,10 @@ import * as z from 'zod';
 
 import { nanoid } from '@nangohq/utils';
 
-import { defaultOperationExpiration } from '../env.js';
+import { defaultOperationExpiration, envs } from '../env.js';
+import { indexOperations } from '../es/schema.js';
 
+import type { LogsStorageProvider } from '../storage/types.js';
 import type { estypes } from '@elastic/elasticsearch';
 import type { ConcatOperationList, MessageRow, OperationRow, OperationRowInsert, SearchOperationsType } from '@nangohq/types';
 import type { SetRequired } from 'type-fest';
@@ -15,7 +17,7 @@ export interface AdditionalOperationData {
     environment?: { id: number; name: string } | undefined;
     connection?: { id: number; name: string } | undefined;
     integration?: { id: number; name: string; provider: string } | undefined;
-    syncConfig?: { id: number; name: string } | undefined; // TODO: rename to functions or something similar because it also apply to legacy syncs/actions/on-events scripts but also to functions
+    syncConfig?: { id?: number; name: string } | undefined; // TODO: rename to functions or something similar because it also apply to legacy syncs/actions/on-events scripts but also to functions
     meta?: MessageRow['meta'];
 }
 
@@ -92,6 +94,14 @@ export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'pare
 
 export function getFullIndexName(prefix: string, createdAt: string) {
     return `${prefix}.${new Date(createdAt).toISOString().split('T')[0]}`;
+}
+
+/** Daily indices are concrete `{prefix}.{yyyy-MM-dd}` names. Serverless writes a data stream under the prefix itself. */
+export function getOperationUpdateIndex(createdAt: string, provider: LogsStorageProvider = envs.NANGO_LOGS_PROVIDER): string {
+    if (provider === 'ec-serverless') {
+        return indexOperations.index;
+    }
+    return getFullIndexName(indexOperations.index, createdAt);
 }
 
 export function createCursor({ sort }: Pick<estypes.SearchHit, 'sort'>): string {

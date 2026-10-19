@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { Err, Ok } from '@nangohq/utils';
 
 import { InternalMcpError, PublicMcpError } from '../../mcp/utils.js';
-import { callAgentSessionTool } from './sessionTool.js';
+import { callAgentSessionTool, RemoteToolResult } from './sessionTool.js';
 
 import type { Result } from '@nangohq/utils';
 
@@ -92,5 +92,15 @@ describe('callAgentSessionTool in structured mode', () => {
         expect(result.isError).toBe(true);
         expect(result.structuredContent).toBeUndefined();
         expect(result._meta).toStrictEqual({ 'nango/error_code': 'tool_failed' });
+    });
+});
+
+describe('callAgentSessionTool with an MCP server tool', () => {
+    it('returns the result the server gave, error results included', async () => {
+        const result = { content: [{ type: 'text' as const, text: 'Unknown team' }], isError: true };
+
+        expect(await callAgentSessionTool({ metric: 'integration_tool', accountId: 1, run: () => Promise.resolve(Ok(new RemoteToolResult(result))) })).toBe(
+            result
+        );
     });
 });

@@ -1,10 +1,11 @@
 import type { TimestampsAndDeletedAt } from '../db.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
-import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTriggerDefinition } from './config.js';
+import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTags, FunctionTriggerDefinition } from './config.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export interface DBFunctionConfig extends TimestampsAndDeletedAt {
     id: number;
+    uuid: string;
     nango_config_id: number;
     environment_id: number;
     name: string;
@@ -16,6 +17,7 @@ export interface DBFunctionConfigVersion extends TimestampsAndDeletedAt {
     id: number;
     function_config_id: number;
     description: string;
+    tags: FunctionTags;
     file_location: string;
     version: string;
     source: FunctionSource;
@@ -37,6 +39,7 @@ export interface DBFunctionInstance extends TimestampsAndDeletedAt {
     function_config_id: number;
     name: string;
     variant: string;
+    enabled: boolean;
     last_run_at: Date | null;
     frequency: string | null;
 }

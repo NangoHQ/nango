@@ -6,7 +6,7 @@ import { dispatchWebhookExecutions } from './dispatch.js';
 import { countUnverifiedWebhook } from './missing-secret.js';
 
 import type { DispatchContext } from './dispatch.js';
-import type { UnverifiedWebhook } from './missing-secret.js';
+import type { UnverifiedOutcome, UnverifiedWebhook } from './missing-secret.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { ConnectionInternal, DBConnectionDecrypted, DBEnvironment, DBIntegrationDecrypted, DBPlan, DBTeam, HttpRequest, Metadata } from '@nangohq/types';
 
@@ -38,17 +38,35 @@ export class InternalNango {
     }
 
     /**
-     * Record that this webhook was accepted without verifying it. The warning is attached to the
-     * operations the dispatch and the forward already create rather than logged here.
+     * Record that this webhook could not be verified, and whether it was let through. The warning is
+     * attached to the operations the dispatch and the forward already create rather than logged here.
      */
-    markUnverified(unverified: UnverifiedWebhook): void {
-        this.unverified = unverified;
+    markUnverified(unverified: UnverifiedWebhook, outcome: UnverifiedOutcome = 'unenforced'): void {
+        if (outcome !== 'rejected') {
+            this.unverified = unverified;
+        }
         countUnverifiedWebhook({
             accountId: this.team.id,
             environmentId: this.environment.id,
             provider: this.integration.provider,
-            reason: unverified.reason
+            reason: unverified.reason,
+            outcome
         });
+    }
+
+    /**
+     * Whether a provider that enforces signatures lets an unverifiable webhook through. The integration's
+     * allow_unverified_webhooks is checked before the provider's legacy flag, so the metric shows which
+     * accounts still depend on a flag.
+     */
+    async unverifiedOutcome(flag?: (accountUuid: string) => Promise<boolean>): Promise<Exclude<UnverifiedOutcome, 'unenforced'>> {
+        if (this.integration.allow_unverified_webhooks) {
+            return 'setting';
+        }
+        if (flag && (await flag(this.team.uuid))) {
+            return 'flag';
+        }
+        return 'rejected';
     }
 
     async getConnectionForWebhook(connectionId: string): Promise<{ connectionId: string; metadata: Metadata | null } | null> {

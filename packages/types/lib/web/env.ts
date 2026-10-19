@@ -8,6 +8,7 @@ export interface WindowEnv {
     publicUrl: string;
     connectUrl: string;
     gitHash: string | undefined;
+    environment: 'development' | 'staging' | 'production';
     publicSentryKey: string;
     publicPosthogKey: string;
     publicPosthogHost: string;

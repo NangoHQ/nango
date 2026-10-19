@@ -1,4 +1,4 @@
-import { configService, getProvider, sharedCredentialsService } from '@nangohq/shared';
+import { configService, getProvider, productTracking, sharedCredentialsService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToApi } from '../../../formatters/integration.js';
@@ -138,6 +138,7 @@ export const postIntegration = asyncWrapperWithEnvironment<PostIntegration>(asyn
         integration = createdIntegration;
     }
 
+    productTracking.track({ name: 'integrations:integration_create', eventProperties: { provider: integration.provider, is_playground: false } });
     res.status(200).send({
         data: integrationToApi(integration)
     });

@@ -7,6 +7,7 @@ import type {
     FunctionCapabilities,
     FunctionConcurrencyLimit,
     FunctionRequires,
+    FunctionTags,
     FunctionTriggerDefinition,
     GetPublicConnection,
     GetPublicIntegration,
@@ -133,6 +134,23 @@ export type Nango<
 
 // Function
 
+// Derives the runtime capabilities from function definition
+export function deriveFunctionCapabilities(params: {
+    data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
+    requires?: FunctionRequires | undefined;
+}): FunctionCapabilities {
+    const models = params.data?.models;
+    // A connection-less function has no connection to proxy through, so outbound is always off.
+    const connectionLess = params.requires?.connection === false;
+    return {
+        usesRecords: !!models && Object.keys(models).length > 0,
+        usesCheckpoints: !!params.data?.checkpoint,
+        usesMetadata: !!params.data?.metadata,
+        usesOutbound: !connectionLess && params.requires?.outbound !== false,
+        usesInvoke: params.requires?.invoke === true
+    };
+}
+
 export interface CreateFunctionProps<
     TModels extends Record<string, ZodModel> = Record<never, ZodModel>,
     TInput extends z.ZodTypeAny = z.ZodVoid,
@@ -168,6 +186,7 @@ export interface CreateFunctionProps<
             perConnection?: TTrigger extends { kind: 'schedule' } ? 1 : FunctionConcurrencyLimit;
         };
     };
+    tags?: FunctionTags;
     // The handler. Runs on the runner with the capability-narrowed `nango` surface.
     exec: (nango: Nango<TModels, TMetadata, TCheckpoint, TRequires>, trigger: Trigger<TTrigger, z.infer<TInput>>) => MaybePromise<z.infer<TOutput>>;
 }
@@ -216,21 +235,4 @@ export function createFunction<
     params: CreateFunctionProps<TModels, TInput, TOutput, TMetadata, TCheckpoint, TTrigger, TRequires>
 ): CreateFunctionResponse<TModels, TInput, TOutput, TMetadata, TCheckpoint, TTrigger, TRequires> {
     return { type: 'function', ...params, capabilities: deriveFunctionCapabilities(params) };
-}
-
-// Derives the runtime capabilities from function definition
-export function deriveFunctionCapabilities(params: {
-    data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
-    requires?: FunctionRequires | undefined;
-}): FunctionCapabilities {
-    const models = params.data?.models;
-    // A connection-less function has no connection to proxy through, so outbound is always off.
-    const connectionLess = params.requires?.connection === false;
-    return {
-        usesRecords: !!models && Object.keys(models).length > 0,
-        usesCheckpoints: !!params.data?.checkpoint,
-        usesMetadata: !!params.data?.metadata,
-        usesOutbound: !connectionLess && params.requires?.outbound !== false,
-        usesInvoke: params.requires?.invoke === true
-    };
 }

@@ -57,6 +57,8 @@ describe('unwrapDek', () => {
         const keyring = testKeyring();
         const wrapped = await wrap(keyring, Buffer.from(testDek, 'base64'));
         const bothProviders = { wrapped, expectedContext, kmsKeyArn: 'arn:aws:kms:test', gcpKmsKeyName: 'projects/test/cryptoKeys/dek' };
-        await expect(unwrapDek(bothProviders as unknown as UnwrapDekOptions)).rejects.toThrow(/exactly one of kmsKeyArn, gcpKmsKeyName, or keyring/);
+        await expect(unwrapDek(bothProviders as unknown as UnwrapDekOptions)).rejects.toThrow(
+            /exactly one of kmsKeyArn, gcpKmsKeyName, azureKmsKeyId, or keyring/
+        );
     });
 });

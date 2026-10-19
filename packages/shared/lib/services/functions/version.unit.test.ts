@@ -22,6 +22,27 @@ const artifact = {
 } satisfies FunctionDeploymentArtifact;
 
 describe(functionVersionHash, () => {
+    it('treats omitted and empty tags as the same version', () => {
+        expect(functionVersionHash({ ...artifact, tags: {} }).unwrap()).toBe(functionVersionHash(artifact).unwrap());
+        expect(functionVersionHash({ ...artifact, tags: undefined }).unwrap()).toBe(functionVersionHash(artifact).unwrap());
+    });
+
+    it('changes when tags are added, changed or removed', () => {
+        const tagged = { ...artifact, tags: { category: 'crm', entities: ['contacts', 'companies'] } };
+        const hash = functionVersionHash(tagged).unwrap();
+
+        expect(hash).not.toBe(functionVersionHash(artifact).unwrap());
+        expect(hash).not.toBe(functionVersionHash({ ...tagged, tags: { ...tagged.tags, category: 'sales' } }).unwrap());
+        expect(hash).not.toBe(functionVersionHash({ ...tagged, tags: { ...tagged.tags, entities: ['contacts'] } }).unwrap());
+        expect(hash).not.toBe(functionVersionHash({ ...tagged, tags: {} }).unwrap());
+    });
+
+    it('is stable across tag key order', () => {
+        expect(functionVersionHash({ ...artifact, tags: { category: 'crm', entities: ['contacts', 'companies'] } }).unwrap()).toBe(
+            functionVersionHash({ ...artifact, tags: { entities: ['contacts', 'companies'], category: 'crm' } }).unwrap()
+        );
+    });
+
     it('is stable across object key order', () => {
         const reordered = {
             ...artifact,

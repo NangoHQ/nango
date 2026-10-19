@@ -1,6 +1,7 @@
 import { NangoError } from '@nangohq/shared';
-import { Err, getLogger, metrics, Ok } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
+import { countUnverifiedWebhook } from './missing-secret.js';
 import { safeCompare } from './signature.js';
 
 import type { InternalNango } from './internal-nango.js';
@@ -11,11 +12,7 @@ const logger = getLogger('Webhook.GoogleChannelToken');
 
 function reject(integration: IntegrationConfig, reason: string, errorType: 'webhook_missing_token' | 'webhook_invalid_signature'): Result<void> {
     logger.error(reason, { configId: integration.id, provider: integration.provider, environmentId: integration.environment_id });
-    metrics.increment(metrics.Types.WEBHOOK_INCOMING_UNVERIFIED, 1, {
-        environmentId: integration.environment_id,
-        provider: integration.provider,
-        reason
-    });
+    countUnverifiedWebhook({ environmentId: integration.environment_id, provider: integration.provider, reason, outcome: 'rejected' });
     return Err(new NangoError(errorType));
 }
 

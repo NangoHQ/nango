@@ -3,11 +3,7 @@ import { useEffect, useRef } from 'react';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { useStore } from '@/store';
 
-interface ThirdStepProps {
-    onSetupIntegrationClicked: () => void;
-}
-
-export const ThirdStep = ({ onSetupIntegrationClicked }: ThirdStepProps) => {
+export const ThirdStep = () => {
     const env = useStore((state) => state.env);
     const componentRef = useRef<HTMLDivElement>(null);
 
@@ -27,7 +23,7 @@ export const ThirdStep = ({ onSetupIntegrationClicked }: ThirdStepProps) => {
                 <p className="text-text-strong">Now that you’ve had a glimpse of Nango, you can go ahead and configure your first integration!</p>
             </div>
 
-            <ButtonLink to={`/${env}/integrations/create`} onClick={onSetupIntegrationClicked} variant="primary" size="lg">
+            <ButtonLink to={`/${env}/integrations/create`} variant="primary" size="lg">
                 Set up your own integrations
             </ButtonLink>
         </div>

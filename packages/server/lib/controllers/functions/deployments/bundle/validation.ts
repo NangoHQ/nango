@@ -2,13 +2,34 @@ import * as z from 'zod';
 
 import { providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
 
-import type { FunctionDeploymentBundleBody, FunctionReconciliationScope, FunctionTriggerDefinition } from '@nangohq/types';
+import type { FunctionDeploymentBundleBody, FunctionReconciliationScope, FunctionTags, FunctionTriggerDefinition } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 const schemaReference = z.string().regex(/^#\/definitions\/[a-zA-Z0-9_-]+$/);
 const nullableSchemaReference = schemaReference.nullable();
 const jsonSchema = z.custom<JSONSchema7>((value) => typeof value === 'object' && value !== null && !Array.isArray(value), 'Expected a JSON Schema object');
 const debounceKeySource = z.union([z.object({ body: z.string() }).strict(), z.object({ header: z.string() }).strict()]);
+const tagString = z.string().max(1024);
+const tagKey = z
+    .string()
+    .regex(/^[a-z][a-z0-9_\-./]*$/, {
+        message: 'Tag keys must start with a lowercase letter and contain only lowercase letters, digits, underscores, hyphens, periods, or slashes'
+    })
+    .max(64);
+const tagValue = z.union([tagString, z.array(tagString).max(64)], {
+    error: (iss) => {
+        const got = Array.isArray(iss.input) ? 'array' : iss.input === null ? 'null' : typeof iss.input;
+        return `Expected string or string[], received ${got}`;
+    }
+});
+const tags = z
+    .record(tagKey, tagValue, {
+        error: (iss) => (iss.code === 'invalid_key' ? iss.issues[0]?.message : undefined)
+    })
+    .refine((tags) => Object.keys(tags).length <= 32, {
+        message: 'Functions cannot have more than 32 tags'
+    }) satisfies z.ZodType<FunctionTags>;
+
 const trigger = z.discriminatedUnion('kind', [
     z.object({ kind: z.literal('none') }).strict(),
     z.object({ kind: z.literal('schedule'), frequency: z.string(), autoStart: z.boolean().optional() }).strict(),
@@ -30,7 +51,10 @@ const trigger = z.discriminatedUnion('kind', [
     z
         .object({
             kind: z.literal('event'),
-            events: z.array(z.enum(['post-connection-creation', 'pre-connection-deletion', 'validate-connection']))
+            events: z
+                .array(z.enum(['post-connection-creation', 'pre-connection-deletion', 'validate-connection']))
+                .nonempty()
+                .refine((events) => new Set(events).size === events.length, 'Event names must be unique')
         })
         .strict()
 ]) satisfies z.ZodType<FunctionTriggerDefinition>;
@@ -79,6 +103,7 @@ const functionConfig = z
         name: scriptNameSchema,
         integrationId: providerConfigKeySchema,
         description: z.string().max(2000),
+        tags: tags.default({}),
         trigger,
         requires,
         capabilities,
@@ -116,6 +141,11 @@ const functionConfig = z
     .refine((fn) => fn.capabilities.usesInvoke === (fn.requires.invoke === true), {
         message: 'usesInvoke must match requires.invoke',
         path: ['capabilities', 'usesInvoke']
+    })
+    .superRefine((fn, ctx) => {
+        if ((fn.trigger.kind === 'schedule' || fn.trigger.kind === 'event') && fn.input_schema_ref !== null) {
+            ctx.addIssue({ code: 'custom', message: `${fn.trigger.kind} must not declare input`, path: ['input_schema_ref'] });
+        }
     })
     .refine(
         (fn) =>

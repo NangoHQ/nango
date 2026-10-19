@@ -14,7 +14,6 @@ export interface PlaygroundResult {
 }
 
 export interface PlaygroundState {
-    isOpen: boolean;
     integration: string | null;
     connection: string | null;
     function: string | null;
@@ -31,7 +30,6 @@ export interface PlaygroundState {
 
 interface PlaygroundStore extends PlaygroundState {
     abortActiveRun: (() => void) | null;
-    setOpen: (value: boolean) => void;
     setIntegration: (value: string | null) => void;
     setConnection: (value: string | null) => void;
     setFunction: (name: string | null, type: PlaygroundFunctionType) => void;
@@ -45,12 +43,11 @@ interface PlaygroundStore extends PlaygroundState {
     clearInputError: (name: string) => void;
     setConnectionSearch: (search: string) => void;
     setAbortActiveRun: (abortActiveRun: (() => void) | null) => void;
-    reset: (keepOpen?: boolean) => void;
+    reset: () => void;
     setState: (value: PlaygroundState) => void;
 }
 
 export const defaultPlaygroundState: PlaygroundState = {
-    isOpen: false,
     integration: null,
     connection: null,
     function: null,
@@ -68,8 +65,6 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
         (set) => ({
             ...defaultPlaygroundState,
             abortActiveRun: null,
-
-            setOpen: (isOpen) => set({ isOpen }),
 
             setIntegration: (integration) => set({ integration, connection: null, function: null, functionType: null, inputValues: {} }),
 
@@ -101,7 +96,7 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
 
             setAbortActiveRun: (abortActiveRun) => set({ abortActiveRun }),
 
-            reset: (keepOpen = true) => set((s) => ({ ...defaultPlaygroundState, isOpen: keepOpen ? s.isOpen : false })),
+            reset: () => set(defaultPlaygroundState),
 
             setState: (value) => set(value)
         }),
@@ -109,7 +104,6 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
             name: LocalStorageKeys.Playground,
             storage: createJSONStorage(() => sessionStorage),
             partialize: (s) => ({
-                isOpen: false,
                 integration: s.integration,
                 connection: s.connection,
                 function: s.function,

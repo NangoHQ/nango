@@ -91,3 +91,16 @@ export function isNoSessionError(status: number, json: unknown): boolean {
     const { error } = json;
     return typeof error === 'object' && error !== null && 'code' in error && error.code === 'unauthorized';
 }
+
+export function isNoSessionApiError(error: unknown): boolean {
+    return error instanceof APIError && isNoSessionError(error.res.status, error.json);
+}
+
+export function apiErrorCode(err: unknown): string {
+    const json: unknown = err instanceof APIError ? err.json : undefined;
+    if (typeof json !== 'object' || json === null || !('error' in json)) {
+        return 'unknown_error';
+    }
+    const { error } = json;
+    return typeof error === 'object' && error !== null && 'code' in error && typeof error.code === 'string' ? error.code : 'unknown_error';
+}

@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { metrics } from '@nangohq/utils';
+
 import { InternalNango } from './internal-nango.js';
 
 const mocks = vi.hoisted(() => {
@@ -25,12 +27,12 @@ vi.mock('@nangohq/shared', () => ({
     functionConfigService: { search: mocks.functionConfigSearch }
 }));
 
-function makeInternalNango() {
+function makeInternalNango({ allowUnverifiedWebhooks = false }: { allowUnverifiedWebhooks?: boolean } = {}) {
     return new InternalNango({
-        team: { id: 1 } as any,
+        team: { id: 1, uuid: 'team-uuid' } as any,
         environment: { id: 2 } as any,
         plan: undefined,
-        integration: { id: 3, unique_key: 'github-dev', provider: 'github' } as any,
+        integration: { id: 3, unique_key: 'github-dev', provider: 'github', allow_unverified_webhooks: allowUnverifiedWebhooks } as any,
         request: { method: 'POST', path: '/webhook/env/github-dev', headers: {}, query: {}, body: null },
         logContextGetter: { create: vi.fn() } as any
     });
@@ -60,5 +62,49 @@ describe('InternalNango', () => {
         const nango = makeInternalNango();
 
         await expect(nango.getConnectionForWebhook('missing')).resolves.toBeNull();
+    });
+
+    describe('unverifiedOutcome', () => {
+        it('prefers the integration setting over the flag', async () => {
+            const flag = vi.fn().mockResolvedValue(true);
+
+            await expect(makeInternalNango({ allowUnverifiedWebhooks: true }).unverifiedOutcome(flag)).resolves.toBe('setting');
+            expect(flag).not.toHaveBeenCalled();
+        });
+
+        it('falls back to the flag for the account', async () => {
+            const flag = vi.fn().mockResolvedValue(true);
+
+            await expect(makeInternalNango().unverifiedOutcome(flag)).resolves.toBe('flag');
+            expect(flag).toHaveBeenCalledWith('team-uuid');
+        });
+
+        it('rejects when neither allows it', async () => {
+            await expect(makeInternalNango().unverifiedOutcome(vi.fn().mockResolvedValue(false))).resolves.toBe('rejected');
+            await expect(makeInternalNango().unverifiedOutcome()).resolves.toBe('rejected');
+        });
+    });
+
+    describe('markUnverified', () => {
+        it('tags the metric with the outcome', () => {
+            const increment = vi.spyOn(metrics, 'increment');
+            const nango = makeInternalNango();
+
+            nango.markUnverified({ reason: 'missing_secret' }, 'setting');
+            nango.markUnverified({ reason: 'missing_secret' }, 'flag');
+            nango.markUnverified({ reason: 'missing_secret' });
+
+            expect(increment.mock.calls.map(([, , tags]) => (tags as { outcome: string }).outcome)).toEqual(['setting', 'flag', 'unenforced']);
+        });
+
+        it('only flags the forward when the webhook is let through', () => {
+            const rejected = makeInternalNango();
+            rejected.markUnverified({ reason: 'missing_secret' }, 'rejected');
+            expect(rejected.unverified).toBeUndefined();
+
+            const allowed = makeInternalNango();
+            allowed.markUnverified({ reason: 'missing_secret' }, 'setting');
+            expect(allowed.unverified).toEqual({ reason: 'missing_secret' });
+        });
     });
 });

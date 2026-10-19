@@ -1,10 +1,9 @@
-import { FieldLabel } from '@nangohq/design-system';
-
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
+import { SettingsField } from './SettingsLayout';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration, ProviderInstallPlugin } from '@nangohq/types';
 
@@ -29,36 +28,30 @@ export const InstallPluginSettings: React.FC<{ data: GetIntegration['Success']['
     const isBasicAuth = template.auth_mode === 'INSTALL_PLUGIN' && (template as ProviderInstallPlugin).auth_type === 'BASIC';
 
     return (
-        <div className="flex flex-col gap-10">
-            {/* Install Link */}
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="install_link">Install Link</FieldLabel>
+        <div className="flex flex-col gap-6">
+            <SettingsField label="Install link" htmlFor="install_link">
                 <EditableInput initialValue={integration.app_link || ''} onSave={(value) => onSave({ appLink: value })} validate={validateUrl} />
-            </div>
+            </SettingsField>
 
             {isBasicAuth && (
                 <>
-                    {/* Username */}
-                    <div className="flex flex-col gap-2">
-                        <FieldLabel htmlFor="username">Username</FieldLabel>
+                    <SettingsField label="Username" htmlFor="username">
                         <EditableInput
                             secret
                             initialValue={integration.custom?.['username'] || ''}
                             onSave={(value) => onSave({ username: value } as any)}
                             validate={validateNotEmpty}
                         />
-                    </div>
+                    </SettingsField>
 
-                    {/* Password */}
-                    <div className="flex flex-col gap-2">
-                        <FieldLabel htmlFor="password">Password</FieldLabel>
+                    <SettingsField label="Password" htmlFor="password">
                         <EditableInput
                             secret
                             initialValue={integration.custom?.['password'] || ''}
                             onSave={(value) => onSave({ password: value } as any)}
                             validate={validateNotEmpty}
                         />
-                    </div>
+                    </SettingsField>
                 </>
             )}
         </div>

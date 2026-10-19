@@ -73,6 +73,8 @@ vi.mock('../env.js', () => ({
         NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED: false,
         NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: [],
         NANGO_OUTBOUND_URL_POLICY: null,
+        NANGO_PROXY_IDLE_TIMEOUT_MS: 300_000,
+        NANGO_PROXY_MAX_RETRY_WAIT_MS: 600_000,
         DD_ENV: 'test',
         DD_SITE: 'datadoghq.com',
         DD_API_KEY_SECRET_ARN: 'arn:aws:secretsmanager:us-west-2:1:secret:dd',
@@ -144,5 +146,21 @@ describe('lambda function environment', () => {
         expect(variables).not.toHaveProperty('NANGO_INTERNAL_AUTH_TOKEN');
         expect(variables).not.toHaveProperty('NANGO_INTERNAL_AUTH_SIGNING_KEY');
         expect(Object.keys(variables).filter((key) => key.startsWith('NANGO_INTERNAL_AUTH'))).toEqual([]);
+    });
+
+    it('should pass the proxy timeouts to the function', async () => {
+        const res = await lambdaNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+
+        const created = await vi.waitFor(() => {
+            const command = sent.find((call) => call.commandName === 'CreateFunctionCommand');
+            if (!command) {
+                throw new Error('CreateFunctionCommand was never sent');
+            }
+            return command;
+        });
+
+        const { Variables: variables } = created.input['Environment'] as { Variables: Record<string, string> };
+        expect(variables).toMatchObject({ NANGO_PROXY_IDLE_TIMEOUT_MS: '300000', NANGO_PROXY_MAX_RETRY_WAIT_MS: '600000' });
     });
 });

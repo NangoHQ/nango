@@ -1,0 +1,39 @@
+---
+title: 'Tenable - How do I link my account?'
+sidebarTitle: 'Tenable'
+---
+
+## Overview
+
+To authenticate with Tenable, you will need:
+1. **Access Key** - Your Tenable API access key.
+2. **Secret Key** - Your Tenable API secret key.
+
+This guide will walk you through generating these in your Tenable account.
+
+### Prerequisites:
+
+- You must have a Tenable Vulnerability Management account
+
+### Instructions:
+
+#### Step 1: Generating your API keys
+
+1. Log in to your Tenable Vulnerability Management account.
+2. Select the **Settings** icon, then select **My Account**.
+3. Select the **API Keys** tab.
+4. Select **Generate**. This replaces any existing API keys for your account — any integration using the old keys will stop working.
+5. Tenable displays your new **Access Key** and **Secret Key**.
+
+<Tip>Copy both keys and store them securely — Tenable only shows the Secret Key once, at generation time.</Tip>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **Access Key** and **Secret Key**:
+1. Open the form where you need to authenticate with Tenable.
+2. Enter your **Access Key** and **Secret Key** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/tenable/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Tenable.

@@ -9,7 +9,8 @@ import type { CreateIntegrationsOutput } from './schema.js';
 
 export const createIntegrationsTool = defineManagementMcpTool<typeof createIntegrationArgumentsSchema, CreateIntegrationsOutput>({
     name: 'integrations_create',
-    description: 'Create an integration in Nango using caller-supplied or Nango-provided developer-app credentials.',
+    title: 'Create Integration',
+    description: 'Creates an integration in Nango using caller-supplied or Nango-provided developer-app credentials.',
     inputSchema: createIntegrationArgumentsSchema,
     outputSchema: createIntegrationsOutputSchema,
     requiredScopes: { every: ['environment:integrations:create'] },

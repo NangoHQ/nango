@@ -2,6 +2,7 @@ import db from '@nangohq/database';
 import { accountService, getPlan, userService } from '@nangohq/shared';
 import { flagHasPlan, tagTraceUser } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
 import authMiddleware from '../../middleware/access.middleware.js';
 import { oauthServer, oauthServerConfig } from '../../oauth/server.js';
 
@@ -11,6 +12,17 @@ import type { Request, RequestHandler, Response } from 'express';
 export const MANAGEMENT_MCP_OAUTH_SCOPE = 'environment:*';
 
 type OAuthAuthenticationResult = { kind: 'authenticated' } | { kind: 'not_oauth' } | { kind: 'invalid_token' } | { kind: 'insufficient_scope' };
+
+export const getOpenAIAppsChallenge: RequestHandler = (_req, res) => {
+    const token = envs.NANGO_OPENAI_APPS_CHALLENGE_TOKEN;
+    if (!token) {
+        res.status(404).json({ error: { code: 'not_found', message: 'Not found' } });
+        return;
+    }
+
+    res.setHeader('Cache-Control', 'no-store');
+    res.status(200).type('text/plain').send(token);
+};
 
 export const getManagementOAuthProtectedResourceMetadata: RequestHandler = (_req, res) => {
     if (!oauthServerConfig) {
@@ -105,8 +117,8 @@ async function authenticateOAuthToken(token: string, res: Response<unknown, Part
         return { kind: 'invalid_token' };
     }
 
-    const userId = parsePositiveInteger(accessToken.accountId);
-    if (!userId) {
+    const userId = parseNonNegativeInteger(accessToken.accountId);
+    if (userId === null) {
         return { kind: 'invalid_token' };
     }
     const user = await userService.getUserById(userId);
@@ -139,12 +151,12 @@ function hasExactAudience(value: unknown, resource: string): boolean {
     return value === resource || (Array.isArray(value) && value.length === 1 && value[0] === resource);
 }
 
-function parsePositiveInteger(value: unknown): number | null {
+function parseNonNegativeInteger(value: unknown): number | null {
     if (typeof value !== 'string') {
         return null;
     }
     const parsed = Number(value);
-    return Number.isSafeInteger(parsed) && parsed > 0 && String(parsed) === value ? parsed : null;
+    return Number.isSafeInteger(parsed) && parsed >= 0 && String(parsed) === value ? parsed : null;
 }
 
 function readBearerToken(req: Request): string | null {

@@ -8,7 +8,8 @@ import type { ListFunctionsOutput } from './schema.js';
 
 export const listFunctionsTool = defineManagementMcpTool<typeof listFunctionsArgumentsSchema, ListFunctionsOutput>({
     name: 'functions_list',
-    description: 'List and filter functions deployed to an integration in the authenticated Nango environment.',
+    title: 'List Functions',
+    description: 'Lists and filters functions deployed to an integration in the authenticated Nango environment.',
     inputSchema: listFunctionsArgumentsSchema,
     outputSchema: listFunctionsOutputSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },

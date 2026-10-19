@@ -6,7 +6,7 @@ import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { customerKeyService, seeders } from '@nangohq/shared';
 
-import { createAgentSession, createAgentSessionToken, getAgentSessionByToken } from '../../services/agentSession.service.js';
+import { createAgentSessionToken, getAgentSessionByToken, insertAgentSession } from '../../services/agentSession.service.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 import type { AgentSession, DBEnvironment, DBTeam } from '@nangohq/types';
@@ -37,7 +37,7 @@ async function seedEnvironment(): Promise<{ account: DBTeam; env: DBEnvironment;
 
 async function seedSession({ account, env }: { account: DBTeam; env: DBEnvironment }): Promise<AgentSession> {
     return (
-        await createAgentSession(db.knex, {
+        await insertAgentSession(db.knex, {
             accountId: account.id,
             environmentId: env.id,
             resolvedConnections: {},

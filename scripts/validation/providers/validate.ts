@@ -52,8 +52,8 @@ if (validator.errors) {
 const invalidInterpolation = /(?<!(\$|]))\{(?!\s*})/g;
 for (const [providerKey, provider] of Object.entries(providersJson)) {
     // Skip validation for 'sage-intacct' provider, we need this so that we can specify the element attribute
-    // Skip validation for 'semble', its token_params.query is a literal GraphQL mutation string
-    if (providerKey === 'sage-intacct' || providerKey === 'supabase-mcp' || providerKey === 'semble') {
+    // Skip validation for 'semble' and 'monday-api-key', their query/data fields are literal GraphQL bodies
+    if (providerKey === 'sage-intacct' || providerKey === 'supabase-mcp' || providerKey === 'semble' || providerKey === 'monday-api-key') {
         continue;
     }
 

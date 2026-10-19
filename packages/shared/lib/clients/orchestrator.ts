@@ -1,13 +1,13 @@
 import tracer from 'dd-trace';
 import ddtags from 'dd-trace/ext/tags.js';
-import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
 import { maxScheduleNamesPerSearch } from '@nangohq/nango-orchestrator';
-import { Err, errorToObject, getCheckpointKey, getFrequencyMs, Ok, stringifyError } from '@nangohq/utils';
+import { Err, errorToObject, getCheckpointKey, getFrequencyMs, MIN_SYNC_FREQUENCY_MS, Ok, stringifyError } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { hardDeleteCheckpoints } from '../index.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
@@ -100,12 +100,19 @@ export interface OrchestratorClientInterface {
 
 const FunctionScheduleId = {
     get: ({ environmentId, id }: { environmentId: number; id: number }): string => {
-        return `environment:${environmentId}:function:${id}`;
+        return `environment:${environmentId}:functioninstance:${id}`;
     },
     parse: (id: string): Result<{ environmentId: number; id: number }> => {
         const parts = id.split(':');
-        if (parts.length !== 4 || parts[0] !== 'environment' || isNaN(Number(parts[1])) || parts[2] !== 'function' || !parts[3] || isNaN(Number(parts[3]))) {
-            return Err(`Invalid function id: ${id}. expected format: environment:<environmentId>:function:<id>`);
+        if (
+            parts.length !== 4 ||
+            parts[0] !== 'environment' ||
+            isNaN(Number(parts[1])) ||
+            parts[2] !== 'functioninstance' ||
+            !parts[3] ||
+            isNaN(Number(parts[3]))
+        ) {
+            return Err(`Invalid function instance id: ${id}. expected format: environment:<environmentId>:functioninstance:<id>`);
         }
         return Ok({ environmentId: Number(parts[1]), id: Number(parts[3]) });
     }
@@ -153,8 +160,7 @@ export class Orchestrator {
     async invokeFunction({
         environment,
         connection,
-        functionConfigId,
-        functionName,
+        functionUuid,
         trigger,
         async,
         retryMax,
@@ -163,8 +169,7 @@ export class Orchestrator {
     }: {
         environment: DBEnvironment;
         connection: ConnectionJobs;
-        functionName: string;
-        functionConfigId: number;
+        functionUuid: string;
         trigger: FunctionTrigger;
         async: boolean;
         retryMax: number;
@@ -172,11 +177,10 @@ export class Orchestrator {
         logCtx: LogContext;
     }): Promise<Result<AsyncFunctionResponse | { data: JsonValue }, NangoError>> {
         try {
-            const groupKey = `function:environment:${environment.id}:connection:${connection.id}:function:${functionName}`;
+            const groupKey = `function:environment:${environment.id}:connection:${connection.id}:function:${functionUuid}`;
             const executionId = `${groupKey}:at:${new Date().toISOString()}:${uuid()}`;
             const args = {
-                functionName,
-                functionConfigId,
+                functionUuid,
                 connection: {
                     id: connection.id,
                     connection_id: connection.connection_id,
@@ -211,15 +215,18 @@ export class Orchestrator {
 
             if (res.value.kind === 'scheduled') {
                 void logCtx.info('The function was successfully scheduled for asynchronous execution', {
-                    function: functionName,
+                    functionUuid,
                     connection: connection.connection_id,
                     integration: connection.provider_config_key
                 });
-                return Ok({ id: res.value.retryKey, statusUrl: `/functions/invocations/${res.value.retryKey}` });
+                return Ok({
+                    id: res.value.retryKey,
+                    statusUrl: `/connections/${encodeURIComponent(connection.connection_id)}/functions/${functionUuid}/invocations/${res.value.retryKey}`
+                });
             }
 
             void logCtx.enrichOperation({
-                meta: { truncated_response: JSON.stringify(res.value.output)?.slice(0, 100) }
+                meta: { truncated_response: envs.NANGO_LOG_FUNCTION_OUTPUT ? JSON.stringify(res.value.output)?.slice(0, 100) : 'REDACTED' }
             });
 
             return Ok({ data: res.value.output });
@@ -339,7 +346,7 @@ export class Orchestrator {
             }
 
             void logCtx.enrichOperation({
-                meta: { truncated_response: JSON.stringify(res.value)?.slice(0, 100) }
+                meta: { truncated_response: envs.NANGO_LOG_FUNCTION_OUTPUT ? JSON.stringify(res.value)?.slice(0, 100) : 'REDACTED' }
             });
 
             return Ok({ data: res.value as T });
@@ -949,21 +956,21 @@ export class Orchestrator {
         functions: {
             environmentId: number;
             instance: DBFunctionInstance;
+            functionUuid: string;
             connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
             frequencyFallback: string;
-            autoStart: boolean;
         }[]
     ): Promise<Result<void>> {
         try {
             const schedules: RecurringProps[] = [];
-            for (const { instance, connection, environmentId, frequencyFallback, autoStart } of functions) {
+            for (const { instance, functionUuid, connection, environmentId, frequencyFallback } of functions) {
                 const frequencyMs = this.getFrequencyMs(instance.frequency || frequencyFallback);
                 if (frequencyMs.isErr()) {
                     return Err(frequencyMs.error);
                 }
                 schedules.push({
                     name: FunctionScheduleId.get({ environmentId, id: instance.id }),
-                    state: autoStart ? 'STARTED' : 'PAUSED',
+                    state: 'STARTED',
                     frequencyMs: frequencyMs.value,
                     group: {
                         key: `function:scheduled:environment:${environmentId}`,
@@ -978,9 +985,13 @@ export class Orchestrator {
                     startsAt: new Date(),
                     args: {
                         type: 'function',
-                        functionConfigId: instance.function_config_id,
-                        functionName: instance.name,
-                        connection,
+                        functionUuid,
+                        connection: {
+                            id: connection.id,
+                            connection_id: connection.connection_id,
+                            provider_config_key: connection.provider_config_key,
+                            environment_id: connection.environment_id
+                        },
                         variant: instance.variant,
                         trigger: {
                             kind: 'schedule',
@@ -1015,7 +1026,7 @@ export class Orchestrator {
             return Err(new NangoError('sync_interval_invalid'));
         }
 
-        if (res.value < ms('30s')) {
+        if (res.value < MIN_SYNC_FREQUENCY_MS) {
             const error = new NangoError('sync_interval_too_short');
             return Err(error);
         }

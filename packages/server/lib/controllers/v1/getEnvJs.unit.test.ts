@@ -83,4 +83,10 @@ describe('getEnvJs', () => {
             expect(config.dashboardApiUrl).toBe(testCase.expected.dashboardApiUrl);
         });
     }
+
+    it.each(['development', 'staging', 'production'])('sends environment %s from NODE_ENV', async (nodeEnv) => {
+        const config = await renderEnvJs({ NODE_ENV: nodeEnv });
+
+        expect(config.environment).toBe(nodeEnv);
+    });
 });

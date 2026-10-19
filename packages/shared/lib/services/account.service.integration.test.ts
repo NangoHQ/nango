@@ -7,6 +7,7 @@ import { Err, metrics } from '@nangohq/utils';
 import { envs } from '../env.js';
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
 import { seedAccountEnvAndUser } from '../seeders/global.seeder.js';
+import { productTracking } from '../utils/productTracking.js';
 import accountService from './account.service.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService, { CreateEnvironmentError, defaultEnvironments } from './environment.service.js';
@@ -202,6 +203,54 @@ describe('Account service', () => {
 
         const account = await db.knex.select('*').from('_nango_accounts').where({ name: teamName }).first();
         expect(account).toBeUndefined();
+    });
+
+    it('tracks a signup account', async () => {
+        const track = vi.spyOn(productTracking, 'track');
+
+        const account = await accountService.createAccount({ name: uuid() });
+
+        expect(track).toHaveBeenCalledWith({ name: 'auth:account_create', team: account });
+    });
+
+    it('attaches the same first source to the account and its single signup event', async () => {
+        const track = vi.spyOn(productTracking, 'track');
+        const group = vi.spyOn(productTracking, 'identifyAccountGroup');
+        const acquisition = { acquisition_utm_source: 'facebook', acquisition_landing_path: '/' };
+
+        const account = await accountService.createAccount({ name: uuid(), acquisition });
+
+        expect(track.mock.calls.filter(([event]) => event.name === 'auth:account_create')).toHaveLength(1);
+        expect(track).toHaveBeenCalledWith({ name: 'auth:account_create', team: account, eventProperties: acquisition });
+        expect(account).not.toBeNull();
+        expect(group).toHaveBeenCalledWith(account?.id, acquisition);
+    });
+
+    it('does not attach acquisition when an account is not a signup', async () => {
+        const track = vi.spyOn(productTracking, 'track');
+        const group = vi.spyOn(productTracking, 'identifyAccountGroup');
+
+        await accountService.createAccount({ name: uuid(), isSignup: false, acquisition: { acquisition_utm_source: 'facebook' } });
+
+        expect(track).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'auth:account_create' }));
+        expect(group).not.toHaveBeenCalled();
+    });
+
+    it('does not track an account that is not a signup', async () => {
+        const track = vi.spyOn(productTracking, 'track');
+
+        await accountService.createAccount({ name: uuid(), isSignup: false });
+
+        expect(track).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'auth:account_create' }));
+    });
+
+    it('does not track a rolled-back account', async () => {
+        vi.spyOn(plans, 'createPlan').mockRejectedValueOnce(new Error('PLAN_CREATION_FAILED'));
+        const track = vi.spyOn(productTracking, 'track');
+
+        await expect(accountService.createAccount({ name: uuid() })).rejects.toThrow('PLAN_CREATION_FAILED');
+
+        expect(track).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'auth:account_create' }));
     });
 
     it('should rollback the transaction if creating a default environment fails', async () => {

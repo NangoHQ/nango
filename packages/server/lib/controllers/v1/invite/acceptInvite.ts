@@ -3,6 +3,7 @@ import * as z from 'zod';
 import { acceptInvitation, getInvitation, userService, validateInvitation } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { identifyAccountMembership } from '../../../services/accountAnalytics.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { AcceptInvite } from '@nangohq/types';
@@ -42,6 +43,7 @@ export const acceptInvite = asyncWrapper<AcceptInvite>(async (req, res) => {
         res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
         return;
     }
+    void identifyAccountMembership(updated.account_id);
 
     // User is stored in session, so we need to update the DB
     const passportSession = (req.session as typeof req.session & { passport: { user: typeof updated } }).passport;

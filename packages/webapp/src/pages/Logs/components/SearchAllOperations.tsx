@@ -12,6 +12,7 @@ import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
 import { PeriodSelector } from '@/components/patterns/PeriodSelector';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { queryClient, useStore } from '../../../store';
+import { track } from '../../../utils/analytics';
 import { APIError, apiFetch } from '../../../utils/api';
 import { last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
 import { formatQuantity } from '../../../utils/utils';
@@ -21,12 +22,14 @@ import { OperationRow } from './OperationRow';
 import { SearchableMultiSelect } from './SearchableMultiSelect';
 
 import type { Period } from '../../../utils/dates';
-import type { OperationRow as OperationRowType, SearchOperations, SearchOperationsData } from '@nangohq/types';
+import type { AnalyticsEventProperties, OperationRow as OperationRowType, SearchOperations, SearchOperationsData } from '@nangohq/types';
 import type { Table as ReactTable } from '@tanstack/react-table';
 
 interface Props {
     onSelectOperation: (open: boolean, operationId: string) => void;
 }
+
+type LogsFilter = AnalyticsEventProperties<'logs:filter_update'>['filter'];
 
 const parseSearch = parseAsString.withDefault('');
 const parseLive = parseAsBoolean.withDefault(true).withOptions({ history: 'push' });
@@ -64,6 +67,9 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
     const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>(() => search);
     useDebounce(
         () => {
+            if (search && search !== debouncedSearch) {
+                track('logs:filter_update', { filter: 'search' });
+            }
             setDebouncedSearch(search);
             setManualLoadMore(search !== ''); // Because it can spam the backend we disable infinite scroll
         },
@@ -246,9 +252,19 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
 
     // --- Period
     const onPeriodChange = (period: Period | null, live: boolean) => {
+        track('logs:filter_update', { filter: 'period' });
         void setPeriod(period ? [period.from, period.to ?? new Date()] : []);
         void setLive(live);
     };
+
+    const trackedFilter =
+        <T,>(filter: LogsFilter, current: T[], set: (value: T[]) => unknown) =>
+        (value: T[]) => {
+            if (value.join(',') !== current.join(',')) {
+                track('logs:filter_update', { filter });
+            }
+            void set(value);
+        };
 
     return (
         <div className="flex h-full min-h-0 flex-col gap-3">
@@ -269,12 +285,49 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     </InputGroup>
                 </div>
                 <div className="flex gap-2">
-                    <FilterMultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={['all']} onChange={setStates} />
-                    <FilterMultiSelect label="Type" options={typesOptions} selected={types} defaultSelect={['all']} onChange={setTypes} width="w-80" />
-                    <SearchableMultiSelect label="Integration" selected={integrations} category={'integration'} onChange={setIntegrations} max={20} />
-                    <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} max={20} />
-                    <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} max={20} />
-                    <SearchableMultiSelect label="Agent session" selected={agentSessions} category={'agentSession'} onChange={setAgentSessions} max={20} />
+                    <FilterMultiSelect
+                        label="Status"
+                        options={statusOptions}
+                        selected={states}
+                        defaultSelect={['all']}
+                        onChange={trackedFilter('status', states, setStates)}
+                    />
+                    <FilterMultiSelect
+                        label="Type"
+                        options={typesOptions}
+                        selected={types}
+                        defaultSelect={['all']}
+                        onChange={trackedFilter('type', types, setTypes)}
+                        width="w-80"
+                    />
+                    <SearchableMultiSelect
+                        label="Integration"
+                        selected={integrations}
+                        category={'integration'}
+                        onChange={trackedFilter('integration', integrations, setIntegrations)}
+                        max={20}
+                    />
+                    <SearchableMultiSelect
+                        label="Connection"
+                        selected={connections}
+                        category={'connection'}
+                        onChange={trackedFilter('connection', connections, setConnections)}
+                        max={20}
+                    />
+                    <SearchableMultiSelect
+                        label="Script"
+                        selected={syncs}
+                        category={'syncConfig'}
+                        onChange={trackedFilter('script', syncs, setSyncs)}
+                        max={20}
+                    />
+                    <SearchableMultiSelect
+                        label="Agent session"
+                        selected={agentSessions}
+                        category={'agentSession'}
+                        onChange={trackedFilter('agent_session', agentSessions, setAgentSessions)}
+                        max={20}
+                    />
 
                     <PeriodSelector
                         isLive={!manualLoadMore && isLive}

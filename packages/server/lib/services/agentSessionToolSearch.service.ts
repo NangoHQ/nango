@@ -2,7 +2,11 @@ import Fuse from 'fuse.js';
 
 import { logContextGetter } from '@nangohq/logs';
 import { legacyFunctionService } from '@nangohq/shared';
-import { filterJsonSchemaForModels } from '@nangohq/utils';
+import { filterJsonSchemaForModels, report } from '@nangohq/utils';
+
+import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuidance.js';
+import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
+import { trackAgentSessionToolSearch } from './agentSessionAnalytics.service.js';
 
 import type { ActionInputSchemaRow } from '@nangohq/shared';
 import type {
@@ -10,12 +14,15 @@ import type {
     AgentSessionToolConnectionState,
     AgentSessionToolInput,
     AgentSessionToolMatch,
+    AgentSessionToolSearchHit,
     AgentSessionToolSearchResult,
     DBEnvironment,
     DBTeam
 } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 
 const DEFINITIONS_POINTER = '#/definitions/';
+const JSON_SCHEMA_DRAFT_07 = 'http://json-schema.org/draft-07/schema#';
 
 const FUSE_OPTIONS: NonNullable<ConstructorParameters<typeof Fuse<SearchCandidate>>[1]> = {
     includeScore: true,
@@ -92,7 +99,11 @@ interface SearchCandidate {
     description: string;
     connection: AgentSessionToolConnectionState;
     listed: boolean;
+    input?: AgentSessionToolInput;
 }
+
+/** A candidate with the score it was ranked on, so how well a search did outlives the ranking. */
+type ScoredCandidate = SearchCandidate & { score: number };
 
 /**
  * The name nango_execute takes for a tool. It cannot be derived from the integration and action,
@@ -117,40 +128,58 @@ export async function searchSessionTools({
     await logCtx.enrichOperation({ actor: { kind: 'session', id: session.id } });
 
     try {
-        const ranked = rankSessionTools({ session, query, slugOf });
+        const current = await withConnectionsCreatedInSession(session).catch((err: unknown) => {
+            report(err);
+            void logCtx.warn('Could not look up connections created in this session', { error: err });
+            return session;
+        });
+        const ranked = rankSessionTools({ session: current, query, slugOf });
         const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
 
         // It's possible a tool was removed after the session compiled, so we set input as unavailable.
-        const matches = ranked.best.map((candidate) => toMatch(candidate, inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' }));
+        const matches = ranked.best.map((candidate) =>
+            toMatch(candidate, candidate.input ?? inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' })
+        );
         const related = ranked.related.map((candidate) => toMatch(candidate, undefined));
 
         await logCtx.enrichOperation({ meta: searchOperationMeta({ query, matches, related }) });
         void logCtx.info(`Tool search for '${query}' returned ${matches.length} ${matches.length === 1 ? 'match' : 'matches'}`);
         await logCtx.success();
 
-        return { guidance: guidanceFor({ query, matches, related }), matches, related };
+        trackAgentSessionToolSearch({
+            session,
+            query,
+            matches: searchHits(ranked.best),
+            related: searchHits(ranked.related),
+            logOperationId: logCtx.id
+        });
+
+        return { guidance: guidanceFor({ session, query, matches, related }), matches, related };
     } catch (err) {
         void logCtx.error('Failed to search the session tools', { error: err });
         await logCtx.failed();
+
+        trackAgentSessionToolSearch({ session, query, matches: [], related: [], logOperationId: logCtx.id, errorCode: 'search_failed' });
+
         throw err;
     }
 }
 
 export function rankSessionTools({ session, query, slugOf }: { session: AgentSession; query: string; slugOf: ToolSlugLookup }): {
-    best: SearchCandidate[];
-    related: SearchCandidate[];
+    best: ScoredCandidate[];
+    related: ScoredCandidate[];
 } {
     const candidates = buildSearchCandidateList({ session, slugOf });
     const scored = scoreCandidates({ candidates, query });
 
-    const best: SearchCandidate[] = [];
-    const related: SearchCandidate[] = [];
+    const best: ScoredCandidate[] = [];
+    const related: ScoredCandidate[] = [];
 
     for (const { candidate, score } of scored) {
         if (score <= BEST_MATCH_SCORE && best.length < MAX_BEST_MATCHES) {
-            best.push(candidate);
+            best.push({ ...candidate, score });
         } else if (related.length < MAX_RELATED_MATCHES) {
-            related.push(candidate);
+            related.push({ ...candidate, score });
         }
     }
 
@@ -224,7 +253,8 @@ function buildSearchCandidateList({ session, slugOf }: { session: AgentSession; 
                           provider: compiled.provider,
                           description: tool.description,
                           connection,
-                          listed
+                          listed,
+                          ...(tool.mcp ? { input: { kind: 'schema', schema: tool.mcp.inputSchema as JSONSchema7 } as const } : {})
                       }
                   ]
                 : [];
@@ -252,10 +282,21 @@ async function findToolInputs({
     environmentId: number;
     candidates: SearchCandidate[];
 }): Promise<Map<string, Map<string, AgentSessionToolInput>>> {
-    const rows = await legacyFunctionService.findActionInputSchemas({
+    return await findActionInputs({
         environmentId,
-        actions: candidates.map((candidate) => ({ integrationId: candidate.integration, name: candidate.action }))
+        actions: candidates.filter((candidate) => !candidate.input).map((candidate) => ({ integrationId: candidate.integration, name: candidate.action }))
     });
+}
+
+/** Inputs keyed by integration id, then action name. An action missing from the result is no longer deployed. */
+export async function findActionInputs({
+    environmentId,
+    actions
+}: {
+    environmentId: number;
+    actions: { integrationId: string; name: string }[];
+}): Promise<Map<string, Map<string, AgentSessionToolInput>>> {
+    const rows = await legacyFunctionService.findActionInputSchemas({ environmentId, actions });
 
     const inputs = new Map<string, Map<string, AgentSessionToolInput>>();
     for (const row of rows) {
@@ -273,8 +314,8 @@ async function findToolInputs({
 
 /**
  * An action's arguments are the schema it was deployed with, rooted at its input model. The document
- * is handed over as it is stored, pointers and all, which is the same shape the function input
- * validator compiles, so search cannot advertise a schema execution would reject.
+ * is handed over as it is stored, pointers and all, which is the same draft-07 shape the function
+ * input validator compiles, so search cannot advertise a schema execution would reject.
  */
 export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
     if (!row.input) {
@@ -291,7 +332,26 @@ export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
         return { kind: 'unavailable' };
     }
 
-    return { kind: 'schema', schema: { ...filtered.value, $ref: `${DEFINITIONS_POINTER}${row.input}` } };
+    return { kind: 'schema', schema: { $schema: JSON_SCHEMA_DRAFT_07, ...filtered.value, $ref: `${DEFINITIONS_POINTER}${row.input}` } };
+}
+
+/**
+ * MCP needs an object at the root of a tool's input, so the input model is inlined there with the
+ * definitions it points at. Any other root has no object form and is reachable only through
+ * nango_execute.
+ */
+export function objectRootedToolInputSchema(schema: JSONSchema7): JSONSchema7 | undefined {
+    const { $ref, definitions } = schema;
+    if (!$ref?.startsWith(DEFINITIONS_POINTER) || !definitions) {
+        return undefined;
+    }
+
+    const model = definitions[$ref.slice(DEFINITIONS_POINTER.length)];
+    if (typeof model !== 'object' || model.type !== 'object') {
+        return undefined;
+    }
+
+    return { $schema: JSON_SCHEMA_DRAFT_07, ...model, definitions: { ...definitions, ...model.definitions } };
 }
 
 /** Only what identifies a tool, since a full match carries a description and an input schema. */
@@ -316,7 +376,17 @@ function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | unde
     };
 }
 
-function guidanceFor({ query, matches, related }: { query: string; matches: AgentSessionToolMatch[]; related: AgentSessionToolMatch[] }): string {
+function guidanceFor({
+    session,
+    query,
+    matches,
+    related
+}: {
+    session: AgentSession;
+    query: string;
+    matches: AgentSessionToolMatch[];
+    related: AgentSessionToolMatch[];
+}): string {
     if (matches.length === 0 && related.length === 0) {
         return `No tool in this session matches '${query}'. Try a shorter query, or words describing the operation rather than the product, and note that this session may simply not carry a tool for it.`;
     }
@@ -325,7 +395,7 @@ function guidanceFor({ query, matches, related }: { query: string; matches: Agen
 
     if (matches.length > 0) {
         lines.push(
-            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the tool of the one you want, exactly as given, and the input its schema describes. A schema is a JSON Schema document rooted at its \`$ref\`.`
+            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the tool of the one you want, exactly as given, and the input its schema describes. A schema is a JSON Schema document, rooted at its \`$ref\` when it has one.`
         );
 
         const takesNothing = matches.filter((match) => match.input?.kind === 'none');
@@ -359,7 +429,8 @@ function guidanceFor({ query, matches, related }: { query: string; matches: Agen
     const unconnected = [...new Set([...matches, ...related].filter((match) => match.connection.status === 'not_connected').map((match) => match.integration))];
     if (unconnected.length > 0) {
         lines.push(
-            `${unconnected.map((integration) => `'${integration}'`).join(', ')} ${unconnected.length === 1 ? 'has' : 'have'} no connection in this session. Their tools are listed for completeness and will fail if you call them.`
+            `${unconnected.map((integration) => `'${integration}'`).join(', ')} ${unconnected.length === 1 ? 'has no connection' : 'have no connections'} in this session. Their tools are listed for completeness and will fail if you call them.`,
+            ...new Set(unconnected.map((integration) => notConnectedGuidance(integration, session)))
         );
     }
 
@@ -368,4 +439,14 @@ function guidanceFor({ query, matches, related }: { query: string; matches: Agen
 
 function toolNames(matches: AgentSessionToolMatch[]): string {
     return matches.map((match) => `'${match.tool}'`).join(', ');
+}
+
+/** Scores run from 0, everything matched, to 1, nothing matched, and the event reports the other way round. */
+function searchHits(candidates: ScoredCandidate[]): AgentSessionToolSearchHit[] {
+    return candidates.map((candidate) => ({
+        tool_name: candidate.action,
+        tool_slug: candidate.slug,
+        integration_id: candidate.integration,
+        confidence: Math.round((1 - candidate.score) * 100) / 100
+    }));
 }

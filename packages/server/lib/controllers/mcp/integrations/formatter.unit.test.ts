@@ -37,36 +37,32 @@ describe('integrationToMcp', () => {
         expect(result.credentials_label).toStrictEqual({ apiKey: 'Workspace token' });
     });
 
-    it('formats explicitly requested domain includes for the MCP transport', () => {
+    it('formats an explicitly requested webhook URL', () => {
         const provider = getProvider('github');
         if (!provider) {
             throw new Error('Expected github provider');
         }
         const integration = integrationFixture({ provider: 'github', custom: null });
 
-        const result = integrationToMcp({
-            integration,
-            provider,
-            webhookUrl: 'https://example.com/webhook',
-            credentials: {
-                type: 'OAUTH2',
-                clientId: 'client-id',
-                clientSecret: 'client-secret',
-                scopes: 'repo,user',
-                webhookSecret: 'webhook-secret'
-            }
+        const result = integrationToMcp({ integration, provider, webhookUrl: 'https://example.com/webhook' });
+
+        expect(result.webhook_url).toBe('https://example.com/webhook');
+    });
+
+    it('surfaces the credential fields an integration is still waiting on', () => {
+        const provider = getProvider('github');
+        if (!provider) {
+            throw new Error('Expected github provider');
+        }
+        const integration = integrationFixture({
+            provider: 'github',
+            custom: null,
+            missing_fields: ['oauth_client_id', 'oauth_client_secret']
         });
 
-        expect(result).toMatchObject({
-            webhook_url: 'https://example.com/webhook',
-            credentials: {
-                type: 'OAUTH2',
-                client_id: 'client-id',
-                client_secret: 'client-secret',
-                scopes: 'repo,user',
-                webhook_secret: 'webhook-secret'
-            }
-        });
+        const result = integrationToMcp({ integration, provider });
+
+        expect(result.missing_fields).toStrictEqual(['oauth_client_id', 'oauth_client_secret']);
     });
 
     it('never returns mcpRegistrationClientUri/mcpRegistrationAccessToken', () => {
@@ -84,35 +80,17 @@ describe('integrationToMcp', () => {
         expect(JSON.stringify(result)).not.toContain('reg-secret');
         expect(JSON.stringify(result)).not.toContain('mcpRegistration');
     });
-
-    it('formats APP credentials for the MCP transport', () => {
-        const provider = getProvider('github-app');
-        if (!provider) {
-            throw new Error('Expected github-app provider');
-        }
-        const integration = integrationFixture({ provider: 'github-app', custom: null });
-
-        const result = integrationToMcp({
-            integration,
-            provider,
-            credentials: {
-                type: 'APP',
-                appId: 'app-id',
-                privateKey: 'private-key',
-                appLink: 'https://github.com/apps/example'
-            }
-        });
-
-        expect(result.credentials).toStrictEqual({
-            type: 'APP',
-            app_id: 'app-id',
-            private_key: 'private-key',
-            app_link: 'https://github.com/apps/example'
-        });
-    });
 });
 
-function integrationFixture({ provider, custom }: { provider: string; custom: IntegrationConfig['custom'] }): IntegrationConfig {
+function integrationFixture({
+    provider,
+    custom,
+    missing_fields = []
+}: {
+    provider: string;
+    custom: IntegrationConfig['custom'];
+    missing_fields?: string[];
+}): IntegrationConfig {
     return {
         unique_key: provider,
         provider,
@@ -120,9 +98,10 @@ function integrationFixture({ provider, custom }: { provider: string; custom: In
         oauth_client_secret: null,
         environment_id: 1,
         custom,
-        missing_fields: [],
+        missing_fields,
         display_name: null,
         forward_webhooks: true,
+        allow_unverified_webhooks: false,
         shared_credentials_id: null,
         created_at: new Date('2026-01-01T00:00:00.000Z'),
         updated_at: new Date('2026-01-02T00:00:00.000Z')

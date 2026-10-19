@@ -176,6 +176,28 @@ describe('retryFlexible', () => {
         expect(delay).toHaveBeenLastCalledWith(1000);
     });
 
+    it('should stop waiting and rethrow the last error once aborted', async () => {
+        const controller = new AbortController();
+        vi.mocked(delay).mockImplementationOnce((_ms, _value, opts) => {
+            return opts?.signal?.aborted ? Promise.reject(new Error('aborted')) : Promise.resolve(undefined);
+        });
+        const fn = vi.fn(() => {
+            controller.abort();
+            throw new Error('boom');
+        });
+
+        await expect(
+            retryFlexible(fn, {
+                max: 5,
+                maxWaitMs: 600_000,
+                onError: () => ({ retry: true, reason: 'test', wait: 600_000 }),
+                signal: controller.signal
+            })
+        ).rejects.toThrow('boom');
+        expect(fn).toHaveBeenCalledTimes(1);
+        expect(delay).toHaveBeenLastCalledWith(600_000, undefined, { signal: controller.signal });
+    });
+
     it('should fail fast when onError returns retry: false', async () => {
         await expect(
             retryFlexible(

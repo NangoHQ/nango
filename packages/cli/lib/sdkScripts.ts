@@ -2,7 +2,7 @@
 
 export type { ActionError, NangoActionBase as NangoAction, NangoSyncBase as NangoSync, ProxyConfiguration } from '@nangohq/runner-sdk';
 
-export { createAction, createOnEvent, createSync } from '@nangohq/runner-sdk';
+export { createAction, createOnEvent, createSync, createTool } from '@nangohq/runner-sdk';
 export type {
     CreateActionProps,
     CreateActionResponse,
@@ -10,5 +10,8 @@ export type {
     CreateOnEventProps,
     CreateOnEventResponse,
     CreateSyncProps,
-    CreateSyncResponse
+    CreateSyncResponse,
+    CreateToolProps,
+    CreateToolResponse,
+    ToolMeta
 } from '@nangohq/runner-sdk';

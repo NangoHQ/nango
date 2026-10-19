@@ -1,0 +1,67 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { Ok } from '@nangohq/utils';
+
+import { preConnectionDeletion } from './pre-connection-deletion.js';
+
+import type { LogContextGetter } from '@nangohq/logs';
+import type * as SharedModule from '@nangohq/shared';
+import type { DBConnection, DBEnvironment, DBTeam } from '@nangohq/types';
+
+const { mockSearch, mockGetByConfig, mockGetProviderConfig, mockInvoke, mockTriggerOnEventScript } = vi.hoisted(() => ({
+    mockSearch: vi.fn(),
+    mockGetByConfig: vi.fn(),
+    mockGetProviderConfig: vi.fn(),
+    mockInvoke: vi.fn(),
+    mockTriggerOnEventScript: vi.fn()
+}));
+
+vi.mock('@nangohq/shared', async () => {
+    const actual: typeof SharedModule = await vi.importActual('@nangohq/shared');
+    return {
+        ...actual,
+        configService: { getProviderConfig: mockGetProviderConfig },
+        functionConfigService: { search: mockSearch },
+        onEventScriptService: { getByConfig: mockGetByConfig }
+    };
+});
+
+vi.mock('../../../utils/utils.js', () => ({
+    getOrchestrator: () => ({ invokeFunction: mockInvoke, triggerOnEventScript: mockTriggerOnEventScript })
+}));
+
+const team = { id: 1 } as DBTeam;
+const environment = { id: 2 } as DBEnvironment;
+const connection = { id: 3, config_id: 4, connection_id: 'conn', provider_config_key: 'integration' } as DBConnection;
+const logCtx = { operation: {}, failed: vi.fn() };
+const logContextGetter = { create: vi.fn().mockResolvedValue(logCtx) } as unknown as LogContextGetter;
+const functionConfig = { config: { id: 5, name: 'eventFn' }, currentVersion: { id: 6, limits: { concurrency: { perConnection: 1 } } } };
+const legacyScript = { id: 7, name: 'legacy', file_location: 'legacy.js', version: '1', sdk_version: '1' };
+
+describe('preConnectionDeletion', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockSearch.mockResolvedValue(Ok([functionConfig]));
+        mockGetByConfig.mockResolvedValue([legacyScript]);
+        mockGetProviderConfig.mockResolvedValue(null);
+        mockInvoke.mockResolvedValue(Ok({ data: null }));
+        mockTriggerOnEventScript.mockResolvedValue(Ok({ data: null }));
+    });
+
+    it('runs matching functions and legacy scripts', async () => {
+        await preConnectionDeletion({ team, environment, connection, logContextGetter });
+
+        expect(mockInvoke).toHaveBeenCalledOnce();
+        expect(mockGetByConfig).toHaveBeenCalledWith(connection.config_id, 'pre-connection-deletion');
+        expect(mockTriggerOnEventScript).toHaveBeenCalledOnce();
+    });
+
+    it('runs legacy when no function matches', async () => {
+        mockSearch.mockResolvedValue(Ok([]));
+
+        await preConnectionDeletion({ team, environment, connection, logContextGetter });
+
+        expect(mockTriggerOnEventScript).toHaveBeenCalledOnce();
+        expect(mockInvoke).not.toHaveBeenCalled();
+    });
+});

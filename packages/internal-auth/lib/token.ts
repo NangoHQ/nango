@@ -49,23 +49,47 @@ export function isJwtShape(token: string): boolean {
     return parts.length === 3 && parts.every((part) => part.length > 0);
 }
 
-export function jwtHeaderAlg(token: string): string | null {
+interface JwtHeader {
+    alg?: string | undefined;
+    kid?: string | undefined;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readJwtHeader(token: string): JwtHeader | null {
     if (!isJwtShape(token)) {
         return null;
     }
-    const headerPart = token.split('.')[0];
+    const [headerPart] = token.split('.');
     if (!headerPart) {
         return null;
     }
+
+    let parsed: unknown;
     try {
-        const parsed: unknown = JSON.parse(base64UrlDecode(headerPart));
-        if (!parsed || typeof parsed !== 'object' || !('alg' in parsed) || typeof parsed.alg !== 'string') {
-            return null;
-        }
-        return parsed.alg;
+        parsed = JSON.parse(base64UrlDecode(headerPart));
     } catch {
         return null;
     }
+    if (!isRecord(parsed)) {
+        return null;
+    }
+
+    const { alg, kid } = parsed;
+    if (alg !== undefined && typeof alg !== 'string') {
+        return null;
+    }
+    if (kid !== undefined && typeof kid !== 'string') {
+        return null;
+    }
+
+    return { alg, kid };
+}
+
+export function jwtHeaderAlg(token: string): string | null {
+    return readJwtHeader(token)?.alg ?? null;
 }
 
 function signHs256(signingInput: string, key: string): string {

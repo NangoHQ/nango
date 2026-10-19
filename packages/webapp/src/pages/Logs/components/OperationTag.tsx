@@ -1,4 +1,4 @@
-import { Ban, Bot, Forward, Layers, Link, Lock, Pause, Play, Plus, RefreshCw, Settings, Settings2, Trash2, User, X } from 'lucide-react';
+import { Ban, Bot, Forward, Layers, Link, Lock, Pause, Play, Plus, RefreshCw, Search, Settings, Settings2, Trash2, User, X } from 'lucide-react';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
@@ -52,6 +52,7 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                         <Tag>
                             {operation.action === 'create' && <Plus className="w-3.5 h-3.5" />}
                             {operation.action === 'terminate' && <Ban className="w-3.5 h-3.5" />}
+                            {operation.action === 'tool_search' && <Search className="w-3.5 h-3.5" />}
                         </Tag>
                     )}
 
