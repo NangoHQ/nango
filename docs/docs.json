@@ -1491,6 +1491,8 @@
               "api-integrations/ids-fulfillment",
               "api-integrations/immybot",
               "api-integrations/imanage",
+              "api-integrations/inboxapp",
+              "api-integrations/inboxapp-mcp",
               "integrations/all/incident-io",
               "api-integrations/infor",
               "api-integrations/infor-cc",

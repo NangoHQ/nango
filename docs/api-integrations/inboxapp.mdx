@@ -1,0 +1,80 @@
+---
+title: 'Inboxapp'
+sidebarTitle: 'Inboxapp'
+description: 'Integrate your application with the Inboxapp API'
+---
+
+## 🚀 Quickstart
+
+Connect to Inboxapp with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Inboxapp_.
+    </Step>
+    <Step title="Authorize Inboxapp">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Inboxapp API">
+    Let's make your first request to the Inboxapp API (list threads, limit 10). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/threads?limit=10" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/threads',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            params: { limit: 10 }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production API token, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Inboxapp Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to obtain your Inboxapp API token](/api-integrations/inboxapp/connect)  
+Get your API token to connect Inboxapp to Nango
+
+Official docs: [Inboxapp API v2](https://docs.inboxapp.com/v2/developer-api)
+
+## 🚨 API gotchas
+
+- An API token belongs to one team. To work with several teams, create one connection per team.
+- Each team can make 300 requests per minute, 10,000 per hour and 100,000 per day. Past a limit, requests fail with `429` and a `Retry-After` header. See [Rate limits](https://docs.inboxapp.com/v2/reference/rate-limits).
+- Collections return `{ "data": [...], "nextCursor": "..." }`. Pass `nextCursor` back as `cursor`, with the same filters, to read the next page.
+
+---
