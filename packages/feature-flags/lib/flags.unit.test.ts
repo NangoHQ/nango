@@ -1,16 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import { buildFeatureFlagsClient } from './client.js';
 import { buildFlags } from './flags.js';
+import { NoopProvider } from './providers/noop.js';
 
 import type { FeatureFlagsClient } from './client.js';
-
-const state = vi.hoisted(() => ({ isCloud: false }));
-
-vi.mock('@nangohq/utils', () => ({
-    get isCloud() {
-        return state.isCloud;
-    }
-}));
 
 function makeClient(value: boolean) {
     const isEnabled = vi.fn().mockResolvedValue(value);
@@ -24,28 +18,16 @@ describe.each([
     { method: 'isConnectionsSearchParamEnabled', key: 'connections-search-param' },
     { method: 'isV1PassthroughEnabled', key: 'v1-passthrough' }
 ] as const)('$method', ({ method, key }) => {
-    beforeEach(() => {
-        state.isCloud = false;
+    it('is enabled when no provider has a value, so self-hosted keeps the deprecated feature', async () => {
+        const flags = buildFlags(buildFeatureFlagsClient(new NoopProvider()));
+
+        await expect(flags[method](accountUuid)).resolves.toBe(true);
     });
 
-    it('evaluates the flag on cloud, defaulting to false', async () => {
-        state.isCloud = true;
+    it("returns the provider's value, so Unleash can restrict it to an allowlist", async () => {
         const { client, isEnabled } = makeClient(false);
 
         await expect(buildFlags(client)[method](accountUuid)).resolves.toBe(false);
-        expect(isEnabled).toHaveBeenCalledWith(key, { targetingKey: accountUuid, accountUuid }, false);
-    });
-
-    it('returns the allowlisted value on cloud', async () => {
-        state.isCloud = true;
-
-        await expect(buildFlags(makeClient(true).client)[method](accountUuid)).resolves.toBe(true);
-    });
-
-    it('is always enabled off cloud without evaluating the flag', async () => {
-        const { client, isEnabled } = makeClient(false);
-
-        await expect(buildFlags(client)[method](accountUuid)).resolves.toBe(true);
-        expect(isEnabled).not.toHaveBeenCalled();
+        expect(isEnabled).toHaveBeenCalledWith(key, { targetingKey: accountUuid, accountUuid }, true);
     });
 });

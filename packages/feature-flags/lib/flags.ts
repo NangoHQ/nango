@@ -1,11 +1,4 @@
-import { isCloud } from '@nangohq/utils';
-
 import type { FeatureFlagsClient } from './client.js';
-
-/** Evaluates a flag on cloud only; self-hosted and BYOC always get `offCloud`. */
-function cloudOnly(offCloud: boolean, evaluate: () => Promise<boolean>): Promise<boolean> {
-    return isCloud ? evaluate() : Promise.resolve(offCloud);
-}
 
 /**
  * Typed facade over the generic OpenFeature client: one named method per flag
@@ -17,6 +10,11 @@ function cloudOnly(offCloud: boolean, evaluate: () => Promise<boolean>): Promise
  *
  * Separate words in flag keys with dashes, never underscores: the env provider can't
  * tell the two apart.
+ *
+ * The default applies only when the provider has no value for the flag (self-hosted
+ * without a provider, or a missing toggle). New features default to `false`; deprecations
+ * default to `true` so the old behavior keeps working until the code is removed, while
+ * Unleash restricts it on cloud.
  */
 export function buildFlags(client: FeatureFlagsClient) {
     return {
@@ -100,19 +98,18 @@ export function buildFlags(client: FeatureFlagsClient) {
         },
         /**
          * Whether the deprecated `search` query param on GET /connections is still honored for this
-         * account. Cloud only: default `false` there, so only accounts allowlisted in Unleash keep it.
-         * Always `true` on self-hosted and BYOC.
+         * account. Deprecation: default `true`; on cloud, Unleash restricts it to an allowlist.
          */
         isConnectionsSearchParamEnabled(accountUuid: string) {
-            return cloudOnly(true, () => client.isEnabled('connections-search-param', { targetingKey: accountUuid, accountUuid }, false));
+            return client.isEnabled('connections-search-param', { targetingKey: accountUuid, accountUuid }, true);
         },
         /**
          * Whether the deprecated `/v1/*` passthrough (legacy custom endpoint routing for syncs and
-         * actions) is still reachable for this account. Cloud only: default `false` there, so only
-         * accounts allowlisted in Unleash keep it. Always `true` on self-hosted and BYOC.
+         * actions) is still reachable for this account. Deprecation: default `true`; on cloud,
+         * Unleash restricts it to an allowlist.
          */
         isV1PassthroughEnabled(accountUuid: string) {
-            return cloudOnly(true, () => client.isEnabled('v1-passthrough', { targetingKey: accountUuid, accountUuid }, false));
+            return client.isEnabled('v1-passthrough', { targetingKey: accountUuid, accountUuid }, true);
         },
         /**
          * Whether the legacy Connection MCP server is available for this account.
