@@ -31,14 +31,14 @@ export function serializeAttributes(attributes: MetricRow['attributes']): string
     return JSON.stringify(attributes, Object.keys(attributes).sort());
 }
 
-/** The table stores scalar attributes only; an array value is a producer bug, not something to stringify. */
+/** The table stores scalar attributes only; an array or a non-finite number is a producer bug, not something to stringify. */
 function scalarAttributes(attributes: Attributes): MetricRow['attributes'] | undefined {
     const scalars: MetricRow['attributes'] = {};
     for (const [key, value] of Object.entries(attributes)) {
         if (value === undefined) {
             continue;
         }
-        if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
+        if (typeof value === 'number' ? !Number.isFinite(value) : typeof value !== 'string' && typeof value !== 'boolean') {
             return undefined;
         }
         scalars[key] = value;

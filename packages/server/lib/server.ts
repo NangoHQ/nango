@@ -145,9 +145,9 @@ const close = once(() => {
         await auditPartitions?.abort();
         await destroyAuditDb();
         await hostedTelemetryPartitions?.abort();
+        await tasks.stop();
         await hostedTelemetry.shutdown();
         await destroyHostedTelemetryDb();
-        await tasks.stop();
         await db.destroy();
         await records.close();
         await destroyLogs();
