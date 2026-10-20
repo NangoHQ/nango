@@ -37,6 +37,7 @@ const TIMING = {
     flashDur: 900,
     trailLen: 26
 };
+const LOGO_WAIT = 400;
 const CYCLE = DOT_ORDER.length * TIMING.gap + TIMING.travel + TIMING.pause;
 const EASE = 'cubic-bezier(.2,.8,.2,1)';
 const glowAt = (percent: number) => `color-mix(in srgb, var(--hero-glow) ${percent}%, transparent)`;
@@ -53,161 +54,182 @@ export const HeroIllustration: React.FC = () => {
         if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             return;
         }
-        const part = <T extends Element>(name: string) => root.querySelector<T>(`[data-part="${name}"]`);
-        const markLit = part<HTMLElement>('mark-lit');
-        const mark = part<HTMLElement>('mark');
-        const box = part<HTMLElement>('box');
-        const glow = part<HTMLElement>('glow');
-        if (!markLit || !mark || !box || !glow) {
-            return;
-        }
-
-        const anims: Animation[] = [];
-        const play = (el: Element, keyframes: Keyframe[], options: KeyframeAnimationOptions) => {
-            anims.push(el.animate(keyframes, { fill: 'both', easing: EASE, ...options }));
-        };
-
-        const routes = new Map<string, { line: SVGPathElement; trail: SVGPathElement; dot: SVGCircleElement; flash: HTMLElement; length: number }>();
-        TILES.forEach(({ provider }, i) => {
-            const tile = part<HTMLElement>(`tile-${provider}`);
-            const flash = part<HTMLElement>(`flash-${provider}`);
-            const line = part<SVGPathElement>(`line-${provider}`);
-            const reveal = part<SVGPathElement>(`reveal-${provider}`);
-            const trail = part<SVGPathElement>(`trail-${provider}`);
-            const dot = part<SVGCircleElement>(`dot-${provider}`);
-            if (!tile || !flash || !line || !reveal || !trail || !dot) {
+        const start = (): (() => void) | undefined => {
+            const part = <T extends Element>(name: string) => root.querySelector<T>(`[data-part="${name}"]`);
+            const markLit = part<HTMLElement>('mark-lit');
+            const mark = part<HTMLElement>('mark');
+            const box = part<HTMLElement>('box');
+            const glow = part<HTMLElement>('glow');
+            if (!markLit || !mark || !box || !glow) {
                 return;
             }
-            const length = line.getTotalLength();
-            trail.style.strokeDasharray = `${TIMING.trailLen} ${length + TIMING.trailLen}`;
-            routes.set(provider, { line, trail, dot, flash, length });
+
+            const anims: Animation[] = [];
+            const play = (el: Element, keyframes: Keyframe[], options: KeyframeAnimationOptions) => {
+                anims.push(el.animate(keyframes, { fill: 'both', easing: EASE, ...options }));
+            };
+
+            const routes = new Map<string, { line: SVGPathElement; trail: SVGPathElement; dot: SVGCircleElement; flash: HTMLElement; length: number }>();
+            TILES.forEach(({ provider }, i) => {
+                const tile = part<HTMLElement>(`tile-${provider}`);
+                const flash = part<HTMLElement>(`flash-${provider}`);
+                const line = part<SVGPathElement>(`line-${provider}`);
+                const reveal = part<SVGPathElement>(`reveal-${provider}`);
+                const trail = part<SVGPathElement>(`trail-${provider}`);
+                const dot = part<SVGCircleElement>(`dot-${provider}`);
+                if (!tile || !flash || !line || !reveal || !trail || !dot) {
+                    return;
+                }
+                const length = line.getTotalLength();
+                trail.style.strokeDasharray = `${TIMING.trailLen} ${length + TIMING.trailLen}`;
+                routes.set(provider, { line, trail, dot, flash, length });
+
+                play(
+                    tile,
+                    [
+                        { opacity: 0, transform: 'translateY(4px) scale(.92)' },
+                        { opacity: 1, transform: 'none' }
+                    ],
+                    {
+                        duration: TIMING.tileDur,
+                        delay: i * TIMING.tileStagger
+                    }
+                );
+                play(reveal, [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], {
+                    duration: TIMING.lineDur,
+                    delay: TIMING.linesIn + i * TIMING.lineStagger,
+                    easing: 'cubic-bezier(.4,0,.2,1)'
+                });
+            });
 
             play(
-                tile,
+                mark,
                 [
-                    { opacity: 0, transform: 'translateY(4px) scale(.92)' },
+                    { opacity: 0, transform: 'scale(.8)' },
                     { opacity: 1, transform: 'none' }
                 ],
-                {
-                    duration: TIMING.tileDur,
-                    delay: i * TIMING.tileStagger
-                }
+                { duration: TIMING.markDur, delay: TIMING.markIn }
             );
-            play(reveal, [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], {
-                duration: TIMING.lineDur,
-                delay: TIMING.linesIn + i * TIMING.lineStagger,
-                easing: 'cubic-bezier(.4,0,.2,1)'
+            play(
+                box,
+                [
+                    { opacity: 0, scale: '.5' },
+                    { opacity: 1, scale: '1' }
+                ],
+                { duration: TIMING.boxDur, delay: TIMING.boxIn }
+            );
+            play(markLit, [{ opacity: 0 }, { opacity: 1 }], { duration: TIMING.boxDur, delay: TIMING.boxIn });
+            play(
+                glow,
+                [
+                    { opacity: 0, transform: 'scale(.6)' },
+                    { opacity: 1, transform: 'none' }
+                ],
+                { duration: TIMING.glowDur, delay: TIMING.boxIn + 200 }
+            );
+            // No backwards fill: during its delay it would hold the glow at full opacity over the fade-in above.
+            play(glow, [{ opacity: 1 }, { opacity: 0.65 }, { opacity: 1 }], {
+                duration: CYCLE,
+                delay: TIMING.dotsStart,
+                iterations: Infinity,
+                easing: 'ease-in-out',
+                fill: 'forwards'
             });
-        });
 
-        play(
-            mark,
-            [
-                { opacity: 0, transform: 'scale(.8)' },
-                { opacity: 1, transform: 'none' }
-            ],
-            { duration: TIMING.markDur, delay: TIMING.markIn }
-        );
-        play(
-            box,
-            [
-                { opacity: 0, scale: '.5' },
-                { opacity: 1, scale: '1' }
-            ],
-            { duration: TIMING.boxDur, delay: TIMING.boxIn }
-        );
-        play(markLit, [{ opacity: 0 }, { opacity: 1 }], { duration: TIMING.boxDur, delay: TIMING.boxIn });
-        play(
-            glow,
-            [
-                { opacity: 0, transform: 'scale(.6)' },
-                { opacity: 1, transform: 'none' }
-            ],
-            { duration: TIMING.glowDur, delay: TIMING.boxIn + 200 }
-        );
-        // No backwards fill: during its delay it would hold the glow at full opacity over the fade-in above.
-        play(glow, [{ opacity: 1 }, { opacity: 0.65 }, { opacity: 1 }], {
-            duration: CYCLE,
-            delay: TIMING.dotsStart,
-            iterations: Infinity,
-            easing: 'ease-in-out',
-            fill: 'forwards'
-        });
-
-        const flashedRound = new Map<string, number>();
-        let elapsed = 0;
-        let last: number | null = null;
-        let frame = 0;
-        const tick = (now: number) => {
-            if (last !== null) {
-                elapsed += now - last;
-            }
-            last = now;
-            const t = elapsed - TIMING.dotsStart;
-            if (t >= 0) {
-                const round = Math.floor(t / CYCLE);
-                DOT_ORDER.forEach((provider, i) => {
-                    const route = routes.get(provider);
-                    if (!route) {
-                        return;
-                    }
-                    const progress = ((t % CYCLE) - i * TIMING.gap) / TIMING.travel;
-                    if (progress < 0 || progress > 1) {
-                        route.dot.style.opacity = '0';
-                        route.trail.style.opacity = '0';
-                        return;
-                    }
-                    const distance = easeInOut(progress) * route.length;
-                    const point = route.line.getPointAtLength(distance);
-                    const fade = Math.min(1, progress * 8, (1 - progress) * 8);
-                    route.dot.setAttribute('cx', String(point.x));
-                    route.dot.setAttribute('cy', String(point.y));
-                    route.dot.style.opacity = String(fade);
-                    route.trail.style.opacity = String(fade * 0.7);
-                    route.trail.style.strokeDashoffset = String(TIMING.trailLen - distance);
-                    if (progress > 0.96 && flashedRound.get(provider) !== round) {
-                        flashedRound.set(provider, round);
-                        route.flash.animate([{ opacity: 1 }, { opacity: 0 }], { duration: TIMING.flashDur, easing: 'ease-out' });
-                    }
-                });
-            }
-            frame = requestAnimationFrame(tick);
-        };
-
-        let onScreen = true;
-        let running = true;
-        frame = requestAnimationFrame(tick);
-        const paused: Animation[] = [];
-        const update = () => {
-            const shouldRun = onScreen && !document.hidden;
-            if (shouldRun === running) {
-                return;
-            }
-            running = shouldRun;
-            if (running) {
-                paused.splice(0).forEach((a) => a.play());
+            const flashedRound = new Map<string, number>();
+            let elapsed = 0;
+            let last: number | null = null;
+            let frame = 0;
+            const tick = (now: number) => {
+                if (last !== null) {
+                    elapsed += now - last;
+                }
+                last = now;
+                const t = elapsed - TIMING.dotsStart;
+                if (t >= 0) {
+                    const round = Math.floor(t / CYCLE);
+                    DOT_ORDER.forEach((provider, i) => {
+                        const route = routes.get(provider);
+                        if (!route) {
+                            return;
+                        }
+                        const progress = ((t % CYCLE) - i * TIMING.gap) / TIMING.travel;
+                        if (progress < 0 || progress > 1) {
+                            route.dot.style.opacity = '0';
+                            route.trail.style.opacity = '0';
+                            return;
+                        }
+                        const distance = easeInOut(progress) * route.length;
+                        const point = route.line.getPointAtLength(distance);
+                        const fade = Math.min(1, progress * 8, (1 - progress) * 8);
+                        route.dot.setAttribute('cx', String(point.x));
+                        route.dot.setAttribute('cy', String(point.y));
+                        route.dot.style.opacity = String(fade);
+                        route.trail.style.opacity = String(fade * 0.7);
+                        route.trail.style.strokeDashoffset = String(TIMING.trailLen - distance);
+                        if (progress > 0.96 && flashedRound.get(provider) !== round) {
+                            flashedRound.set(provider, round);
+                            route.flash.animate([{ opacity: 1 }, { opacity: 0 }], { duration: TIMING.flashDur, easing: 'ease-out' });
+                        }
+                    });
+                }
                 frame = requestAnimationFrame(tick);
-            } else {
-                // Pausing a finished animation would make play() rewind it and replay the intro.
-                paused.push(...anims.filter((a) => a.playState === 'running'));
-                paused.forEach((a) => a.pause());
-                cancelAnimationFrame(frame);
-                last = null;
-            }
-        };
-        const observer = new IntersectionObserver(([entry]) => {
-            onScreen = entry?.isIntersecting ?? true;
+            };
+
+            let onScreen = true;
+            let running = true;
+            frame = requestAnimationFrame(tick);
+            const paused: Animation[] = [];
+            const update = () => {
+                const shouldRun = onScreen && !document.hidden;
+                if (shouldRun === running) {
+                    return;
+                }
+                running = shouldRun;
+                if (running) {
+                    paused.splice(0).forEach((a) => a.play());
+                    frame = requestAnimationFrame(tick);
+                } else {
+                    // Pausing a finished animation would make play() rewind it and replay the intro.
+                    paused.push(...anims.filter((a) => a.playState === 'running'));
+                    paused.forEach((a) => a.pause());
+                    cancelAnimationFrame(frame);
+                    last = null;
+                }
+            };
+            const observer = new IntersectionObserver(([entry]) => {
+                onScreen = entry?.isIntersecting ?? true;
+                update();
+            });
+            observer.observe(root);
+            document.addEventListener('visibilitychange', update);
             update();
+
+            return () => {
+                cancelAnimationFrame(frame);
+                observer.disconnect();
+                document.removeEventListener('visibilitychange', update);
+                anims.forEach((a) => a.cancel());
+            };
+        };
+
+        let stop: (() => void) | undefined;
+        let cancelled = false;
+        let timer = 0;
+        const logosDecoded = Promise.all([...root.querySelectorAll('img')].map((img) => img.decode().catch(() => undefined)));
+        const waitCap = new Promise((resolve) => {
+            timer = window.setTimeout(resolve, LOGO_WAIT);
         });
-        observer.observe(root);
-        document.addEventListener('visibilitychange', update);
-        update();
+        void Promise.race([logosDecoded, waitCap]).then(() => {
+            if (!cancelled) {
+                stop = start();
+            }
+        });
 
         return () => {
-            cancelAnimationFrame(frame);
-            observer.disconnect();
-            document.removeEventListener('visibilitychange', update);
-            anims.forEach((a) => a.cancel());
+            cancelled = true;
+            clearTimeout(timer);
+            stop?.();
         };
     }, []);
 
