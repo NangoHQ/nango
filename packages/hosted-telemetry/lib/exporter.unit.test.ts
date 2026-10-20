@@ -92,6 +92,33 @@ describe('flatten', () => {
         expect(dropped).toEqual({ 'nango.connections.count': 1 });
     });
 
+    it('drops a point whose attributes carry an array, and counts it once', () => {
+        const { rows, dropped } = flatten(
+            batch([
+                {
+                    descriptor: descriptor('nango.hosted_metric.active_concurrency', InstrumentType.HISTOGRAM),
+                    aggregationTemporality: 1,
+                    dataPointType: DataPointType.HISTOGRAM,
+                    dataPoints: [
+                        {
+                            ...time,
+                            attributes: { environment_id: 7, tags: ['a', 'b'] },
+                            value: { count: 1, sum: 3, min: 3, max: 3, buckets: { boundaries: [], counts: [1] } }
+                        },
+                        { ...time, attributes: { environment_id: 8 }, value: { count: 1, sum: 5, min: 5, max: 5, buckets: { boundaries: [], counts: [1] } } }
+                    ]
+                }
+            ])
+        );
+        expect(rows.map((r) => [r.metric, r.attributes['environment_id']])).toEqual([
+            ['nango.hosted_metric.active_concurrency.count', 8],
+            ['nango.hosted_metric.active_concurrency.sum', 8],
+            ['nango.hosted_metric.active_concurrency.min', 8],
+            ['nango.hosted_metric.active_concurrency.max', 8]
+        ]);
+        expect(dropped).toEqual({ 'nango.hosted_metric.active_concurrency': 1 });
+    });
+
     it('drops attributes the table would refuse, and keeps the last of two points with one key', () => {
         const { rows, dropped } = flatten(
             batch([

@@ -6,8 +6,9 @@ import { getLogger, retry, stringifyError } from '@nangohq/utils';
 
 import { HOSTED_TELEMETRY_ATTRIBUTES_MAX_BYTES, HOSTED_TELEMETRY_TABLE } from './postgres/schema.js';
 
+import type { Attributes } from '@opentelemetry/api';
 import type { ExportResult } from '@opentelemetry/core';
-import type { AggregationOption, PushMetricExporter, ResourceMetrics } from '@opentelemetry/sdk-metrics';
+import type { AggregationOption, DataPoint, PushMetricExporter, ResourceMetrics } from '@opentelemetry/sdk-metrics';
 import type { Knex } from 'knex';
 
 const logger = getLogger('hosted-telemetry');
@@ -30,10 +31,25 @@ export function serializeAttributes(attributes: MetricRow['attributes']): string
     return JSON.stringify(attributes, Object.keys(attributes).sort());
 }
 
+/** The table stores scalar attributes only; an array value is a producer bug, not something to stringify. */
+function scalarAttributes(attributes: Attributes): MetricRow['attributes'] | undefined {
+    const scalars: MetricRow['attributes'] = {};
+    for (const [key, value] of Object.entries(attributes)) {
+        if (value === undefined) {
+            continue;
+        }
+        if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
+            return undefined;
+        }
+        scalars[key] = value;
+    }
+    return scalars;
+}
+
 /**
  * One row per sum or gauge point, four per histogram point: count, sum, min and max. A histogram window with no
  * samples has no min or max and gets no row for them. A value that is not a finite number, or attributes the table
- * would refuse, is a producer bug: counted in `dropped` so the export can say so, instead of failing every row with
+ * would refuse, an array value or too many bytes, is a producer bug: counted in `dropped` so the export can say so, instead of failing every row with
  * it. Two points with the same key, which only happens when one name is used as two instrument kinds, keep the last.
  *
  * A row is stamped with the point's start time: with delta temporality that is the previous collection, so one
@@ -43,13 +59,24 @@ export function flatten(batch: ResourceMetrics): { rows: MetricRow[]; dropped: R
     const producerId = batch.resource.attributes[PRODUCER_ID_ATTRIBUTE];
     const rows = new Map<string, MetricRow>();
     const dropped: Record<string, number> = {};
-    const push = (ts: Date, metric: string, attributes: MetricRow['attributes'], value: number | undefined) => {
+    const drop = (metric: string, count = 1) => {
+        dropped[metric] = (dropped[metric] ?? 0) + count;
+    };
+    const prepare = (dataPoint: DataPoint<unknown>, metric: string): { ts: Date; attributes: MetricRow['attributes'] } | undefined => {
+        const attributes = scalarAttributes({ ...dataPoint.attributes, [PRODUCER_ID_ATTRIBUTE]: producerId });
+        if (!attributes) {
+            drop(metric);
+            return undefined;
+        }
+        return { ts: new Date(hrTimeToMilliseconds(dataPoint.startTime)), attributes };
+    };
+    const push = ({ ts, attributes }: { ts: Date; attributes: MetricRow['attributes'] }, metric: string, value: number | undefined) => {
         if (value === undefined) {
             return;
         }
         const serialized = serializeAttributes(attributes);
         if (!Number.isFinite(value) || Buffer.byteLength(serialized) > HOSTED_TELEMETRY_ATTRIBUTES_MAX_BYTES) {
-            dropped[metric] = (dropped[metric] ?? 0) + 1;
+            drop(metric);
             return;
         }
         rows.set(`${ts.getTime()} ${metric} ${serialized}`, { ts, metric, attributes, value });
@@ -57,18 +84,30 @@ export function flatten(batch: ResourceMetrics): { rows: MetricRow[]; dropped: R
     for (const scope of batch.scopeMetrics) {
         for (const metric of scope.metrics) {
             const name = metric.descriptor.name;
-            for (const dataPoint of metric.dataPoints) {
-                const ts = new Date(hrTimeToMilliseconds(dataPoint.startTime));
-                const attributes = { ...dataPoint.attributes, [PRODUCER_ID_ATTRIBUTE]: producerId } as MetricRow['attributes'];
-                if (metric.dataPointType === DataPointType.SUM || metric.dataPointType === DataPointType.GAUGE) {
-                    push(ts, name, attributes, dataPoint.value as number);
-                } else {
-                    const value = dataPoint.value as { count: number; sum?: number; min?: number; max?: number };
-                    push(ts, `${name}.count`, attributes, value.count);
-                    push(ts, `${name}.sum`, attributes, value.sum);
-                    push(ts, `${name}.min`, attributes, value.min);
-                    push(ts, `${name}.max`, attributes, value.max);
-                }
+            switch (metric.dataPointType) {
+                case DataPointType.SUM:
+                case DataPointType.GAUGE:
+                    for (const dataPoint of metric.dataPoints) {
+                        const prepared = prepare(dataPoint, name);
+                        if (prepared) {
+                            push(prepared, name, dataPoint.value);
+                        }
+                    }
+                    break;
+                case DataPointType.HISTOGRAM:
+                    for (const dataPoint of metric.dataPoints) {
+                        const prepared = prepare(dataPoint, name);
+                        if (prepared) {
+                            push(prepared, `${name}.count`, dataPoint.value.count);
+                            push(prepared, `${name}.sum`, dataPoint.value.sum);
+                            push(prepared, `${name}.min`, dataPoint.value.min);
+                            push(prepared, `${name}.max`, dataPoint.value.max);
+                        }
+                    }
+                    break;
+                case DataPointType.EXPONENTIAL_HISTOGRAM:
+                    drop(name, metric.dataPoints.length);
+                    break;
             }
         }
     }
