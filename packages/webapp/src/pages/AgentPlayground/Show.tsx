@@ -1,6 +1,6 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai';
-import { ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet';
@@ -53,7 +53,7 @@ const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
     { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
     { prompt: 'Summarize my 3 latest emails in Gmail', provider: 'google-mail', name: 'Gmail' },
     { prompt: "Star Nango's GitHub repo", provider: 'github', name: 'GitHub' },
-    { prompt: 'Send me a Slack message saying "Hello, world!"', provider: 'slack', name: 'Slack' },
+    { prompt: 'Send me "Hello, world!" on Slack', provider: 'slack', name: 'Slack' },
     { prompt: 'What Linear issues are assigned to me?', provider: 'linear', name: 'Linear' },
     { prompt: 'Show my 5 newest HubSpot contacts', provider: 'hubspot', name: 'HubSpot' }
 ];
@@ -631,6 +631,20 @@ const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced
     );
 };
 
+const StarterPromptText: React.FC<{ prompt: string; name: string }> = ({ prompt, name }) => {
+    const start = prompt.indexOf(name);
+    if (start === -1) {
+        return prompt;
+    }
+    return (
+        <>
+            {prompt.slice(0, start)}
+            <span className="text-body-medium-medium">{name}</span>
+            {prompt.slice(start + name.length)}
+        </>
+    );
+};
+
 const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string, provider: string) => void }> = ({ composer, onPick }) => {
     return (
         <div className="flex flex-1 flex-col items-center text-center">
@@ -640,16 +654,19 @@ const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string,
             </div>
             {composer}
             <div className="grid w-full flex-[4] auto-rows-min grid-cols-2 gap-3 pt-6">
-                {STARTER_PROMPTS.map(({ prompt, provider }) => (
+                {STARTER_PROMPTS.map(({ prompt, provider, name }) => (
                     <button
                         key={prompt}
                         type="button"
                         onClick={() => onPick(prompt, provider)}
-                        className="group flex items-center gap-2.5 rounded-ds-xs border-ds-hairline border-border-muted bg-surface-panel px-3 py-3 text-left text-body-medium-regular text-text-default transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-container-panel"
+                        className="group flex items-center gap-3 rounded-ds-xs border-ds-hairline border-border-muted bg-surface-panel px-4 py-4 text-left text-body-medium-regular text-text-default transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-container-panel"
                     >
-                        <IntegrationLogo provider={provider} className="size-5 shrink-0 border-0 bg-transparent p-0" />
-                        <span className="flex-1">{prompt}</span>
-                        <ArrowUpRight className="size-4 shrink-0 text-text-muted opacity-0 transition-opacity group-hover:opacity-100" />
+                        {/* Template logos pad their artwork, so a 25px box draws an 18px logo. */}
+                        <IntegrationLogo provider={provider} className="-m-[3.5px] size-[25px] shrink-0 border-0 bg-transparent p-0" />
+                        <span className="flex-1">
+                            <StarterPromptText prompt={prompt} name={name} />
+                        </span>
+                        <ArrowRight className="size-3.5 shrink-0 text-text-muted transition-colors group-hover:text-text-default" />
                     </button>
                 ))}
             </div>
