@@ -1,8 +1,9 @@
 import knexFactory from 'knex';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { ensureDailyPartitions } from '@nangohq/migrations';
+
 import { migrate } from './migrate.js';
-import { ensurePartitions } from './partitions.js';
 import { HOSTED_TELEMETRY_TABLE } from './schema.js';
 
 import type { Knex } from 'knex';
@@ -29,7 +30,7 @@ beforeAll(async () => {
     knex = knexFactory({ client: 'pg', connection: { connectionString: url } });
     await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [schema]);
     expect((await migrate({ knex, schema })).isOk()).toBe(true);
-    (await ensurePartitions({ knex, schema, dates: [ts] })).unwrap();
+    (await ensureDailyPartitions({ knex, schema, table: HOSTED_TELEMETRY_TABLE, dates: [ts] })).unwrap();
 });
 
 afterAll(async () => {
