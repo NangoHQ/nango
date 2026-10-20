@@ -1679,6 +1679,7 @@
               "integrations/all/okta-preview",
               "api-integrations/omni",
               "api-integrations/omnisend",
+              "api-integrations/omnisend-oauth",
               "api-integrations/one-drive",
               "integrations/all/one-drive-personal",
               "integrations/all/one-note",
