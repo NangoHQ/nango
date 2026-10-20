@@ -745,9 +745,9 @@ const ENVS_SHAPE = z.object({
     SIGNUP_AD_CONTEXT_ENABLED: z.stringbool().optional().default(false),
     SIGNUP_AD_CONTEXT_COOKIE_NAME: z
         .string()
-        .regex(/^[A-Za-z0-9_]{1,64}$/)
         .optional()
-        .default('nango_signup_ads_dev'),
+        .transform((value) => presentEnv(value) ?? 'nango_signup_ads_dev')
+        .pipe(z.string().regex(/^[A-Za-z0-9_]{1,64}$/)),
 
     // PostHog
     PUBLIC_POSTHOG_KEY: z.string().optional(),

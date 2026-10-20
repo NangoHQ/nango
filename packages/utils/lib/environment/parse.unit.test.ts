@@ -21,6 +21,22 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007, ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: 0 });
     });
 
+    it.each([undefined, '', '   '])('defaults an unset or blank signup ad cookie name (%j)', (name) => {
+        const res = parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_COOKIE_NAME: name });
+        expect(res.SIGNUP_AD_CONTEXT_ENABLED).toBe(false);
+        expect(res.SIGNUP_AD_CONTEXT_COOKIE_NAME).toBe('nango_signup_ads_dev');
+    });
+
+    it('accepts a custom signup ad cookie name when enabled', () => {
+        const res = parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_ENABLED: 'true', SIGNUP_AD_CONTEXT_COOKIE_NAME: 'nango_signup_ads_prod' });
+        expect(res.SIGNUP_AD_CONTEXT_ENABLED).toBe(true);
+        expect(res.SIGNUP_AD_CONTEXT_COOKIE_NAME).toBe('nango_signup_ads_prod');
+    });
+
+    it.each(['invalid;name', 'a'.repeat(65)])('rejects an invalid nonempty signup ad cookie name', (name) => {
+        expect(() => parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_COOKIE_NAME: name })).toThrowError(/SIGNUP_AD_CONTEXT_COOKIE_NAME/);
+    });
+
     it('parses the local Nango user id as a non-negative integer', () => {
         expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '0' }).LOCAL_NANGO_USER_ID).toBe(0);
         expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '1e2' }).LOCAL_NANGO_USER_ID).toBe(100);
