@@ -277,7 +277,6 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
                 )}
 
             <div
-                data-ph-mask
                 ref={scroller}
                 onScroll={onScroll}
                 className="flex min-h-0 flex-1 flex-col gap-8 overflow-auto pt-4 pb-6 [mask-image:linear-gradient(to_bottom,transparent,black_16px,black_calc(100%-16px),transparent)]"
