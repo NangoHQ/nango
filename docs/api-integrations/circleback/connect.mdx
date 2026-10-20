@@ -1,0 +1,36 @@
+---
+title: Circleback - How do I link my account?
+sidebarTitle: Circleback
+---
+
+## Overview
+
+To authenticate with Circleback, you need:
+
+1. **API Key** — a personal API key (`cb_<secret>`) created in Circleback settings. Requests made with it read the meetings of the Circleback user who created it.
+
+This guide will walk you through obtaining your API key from Circleback.
+
+### Prerequisites
+
+- A Circleback account with access to the meetings you want to sync. Each person connects their own key; there is no workspace-wide key that reads other users' meetings.
+
+### Step 1: Obtaining your API key
+
+1. Log in to [Circleback](https://circleback.ai) and open **Settings** -> **API keys**.
+2. Click **Generate API Key**. Circleback shows the full secret (`cb_...`) once at creation time; the key list only shows masked previews afterwards, and a deleted key cannot be retrieved.
+3. Copy the secret somewhere secure until you have pasted it into Nango.
+
+<Note>
+Treat this API key as a password: never put it in source code, URLs, logs, or client-side applications. Nango stores it encrypted and only uses it server-side to call the Circleback API on your behalf.
+</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+Once you have your API key:
+
+1. Open the form where you need to authenticate with Circleback.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Circleback.
