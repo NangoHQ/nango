@@ -152,7 +152,7 @@ function isJobsTaskJwt(auth: InternalServiceAuth | undefined): auth is InternalS
 }
 
 export function hasScope(auth: InternalServiceAuth | undefined, scope: TaskCapabilityScope): boolean {
-    return isJobsTaskJwt(auth) && Boolean(auth.scopes?.includes(scope));
+    return isJobsTaskJwt(auth) && auth.res !== undefined && Boolean(auth.scopes?.includes(scope));
 }
 
 export function isResourceBound(auth: InternalServiceAuth | undefined, key: keyof TaskCapabilityResource, value: number | string | undefined): boolean {
@@ -179,8 +179,9 @@ export function requireTaskScope(envs: InternalAuthEnvs, scope: TaskCapabilitySc
             return;
         }
         // TODO(NAN-6636): remove this fallback in PR 5, at least 25h after capability tokens are deployed.
-        // It applies only to Ed25519 task JWTs minted before they carried scopes. Non-JWT task auth is handled above.
-        if (isJobsTaskJwt(auth) && (!auth.scopes || auth.scopes.length === 0)) {
+        // It applies only to Ed25519 task JWTs minted before they carried a scopes claim. An explicit empty
+        // array is not that legacy token. Non-JWT task auth is handled above.
+        if (isJobsTaskJwt(auth) && auth.scopes === undefined) {
             next();
             return;
         }

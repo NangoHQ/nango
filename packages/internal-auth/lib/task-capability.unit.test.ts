@@ -55,7 +55,9 @@ describe('T1', () => {
         const actionScopes = taskScopesForScriptType('action');
         expect(syncScopes).toEqual([...TASK_CAPABILITY_SCOPES]);
         expect(taskScopesForScriptType('webhook')).toEqual(syncScopes);
-        expect(actionScopes).toEqual(expect.not.arrayContaining([...SYNC_ONLY]));
+        for (const scope of SYNC_ONLY) {
+            expect(actionScopes).not.toContain(scope);
+        }
         expect(actionScopes).toEqual(expect.arrayContaining(['persist:log', 'jobs:putTask', 'jobs:heartbeat', 'api:proxy']));
         expect(taskScopesForScriptType('on-event')).toEqual(actionScopes);
         expect(taskScopesForScriptType('function')).toEqual(actionScopes);
@@ -116,6 +118,24 @@ describe('T2', () => {
             const token = await signCustom(pem, { res, scopes });
             expect(await verifyTaskCapabilityToken(token, INTERNAL_SERVICE_AUDIENCE_JOBS, registry)).toBeNull();
         }
+    });
+
+    it('rejects a scopes claim that is not an array of strings, including an empty array', async () => {
+        const { pem, raw } = ed25519TestMaterial();
+        const registry = registryFor(INTERNAL_SERVICE_ISSUER_JOBS, raw);
+        for (const scopes of ['persist:log', { log: true }, []]) {
+            const token = await signCustom(pem, { res: RESOURCE, scopes });
+            expect(await verifyTaskCapabilityToken(token, INTERNAL_SERVICE_AUDIENCE_JOBS, registry)).toBeNull();
+        }
+    });
+
+    it('refuses to mint a res claim that verification would reject', async () => {
+        const { pem } = ed25519TestMaterial();
+        const signer = { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: KID, privateKey: pem } as const;
+        const base = { sub: taskSubject(TASK_ID), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60, scopes: taskScopesForScriptType('action') };
+        await expect(mint(signer, { ...base, res: { environmentId: 0, connectionId: 1 } })).rejects.toThrow(/positive environmentId/);
+        await expect(mint(signer, { ...base, res: { environmentId: 9, connectionId: -1 } })).rejects.toThrow(/positive environmentId/);
+        await expect(mint(signer, { ...base, res: { environmentId: 9, connectionId: 1, syncId: '' } })).rejects.toThrow(/syncId/);
     });
 });
 
@@ -252,6 +272,30 @@ describe('requireTaskScope', () => {
         } finally {
             await close();
             envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
+            envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = undefined;
+        }
+    });
+
+    it('rejects a task JWT with scopes but no res, and an explicit empty scopes array', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { pem, raw } = ed25519TestMaterial();
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: KID, publicKey: raw }];
+        const registry = registryFor(INTERNAL_SERVICE_ISSUER_JOBS, raw);
+        const scopesOnly = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: KID, privateKey: pem },
+            { sub: taskSubject(TASK_ID), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60, scopes: taskScopesForScriptType('action') }
+        );
+        const emptyScopes = await signCustom(pem, { res: RESOURCE, scopes: [] });
+        const scopesOnlyAuth = (await verify(scopesOnly, INTERNAL_SERVICE_AUDIENCE_JOBS, registry)).auth;
+        expect(hasScope(scopesOnlyAuth ?? undefined, 'persist:log')).toBe(false);
+        const { url, close } = await listen(scopedJobsApp());
+        try {
+            for (const token of [scopesOnly, emptyScopes]) {
+                const put = await fetch(`${url}/tasks/${TASK_ID}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+                expect(put.status).toBe(401);
+            }
+        } finally {
+            await close();
             envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = undefined;
         }
     });
