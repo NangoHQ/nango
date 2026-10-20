@@ -5,13 +5,25 @@ import { seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
-import type { DBSyncConfig } from '@nangohq/types';
+import type { DBOnEventScript, DBSyncConfig } from '@nangohq/types';
 
 const route = '/integrations/:uniqueKey/functions/:name';
 let api: Awaited<ReturnType<typeof runServer>>;
 
 async function getSyncConfig(id: number): Promise<Pick<DBSyncConfig, 'id' | 'deleted' | 'active'> | undefined> {
     return db.knex.from<DBSyncConfig>('_nango_sync_configs').select('id', 'deleted', 'active').where({ id }).first();
+}
+
+async function insertOnEventScript({ configId, name, event }: { configId: number; name: string; event: DBOnEventScript['event'] }): Promise<void> {
+    await db.knex.from<DBOnEventScript>('on_event_scripts').insert({
+        config_id: configId,
+        name,
+        file_location: `s3://tests/${configId}/${name}.js`,
+        version: '0.0.1',
+        active: true,
+        event,
+        sdk_version: '0.0.0-yaml'
+    });
 }
 
 async function seedWithScopes(scopes: string[]) {
@@ -64,6 +76,43 @@ describe(`DELETE ${route}`, () => {
         isError(res.json);
         expect(res.res.status).toBe(400);
         expect(res.json.error.code).toBe('invalid_query_params');
+    });
+
+    it('should reject an unknown type', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const res = await api.fetch(route, {
+            method: 'DELETE',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github', name: 'my-sync' },
+            // @ts-expect-error not a function type
+            query: { type: 'bogus' }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json.error.code).toBe('invalid_query_params');
+    });
+
+    it('should reject an on-event function as managed by nango deploy', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        await insertOnEventScript({ configId: integration.id!, name: 'my-on-event', event: 'POST_CONNECTION_CREATION' });
+
+        const res = await api.fetch(route, {
+            method: 'DELETE',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github', name: 'my-on-event' },
+            query: { type: 'on-event' }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json.error.code).toBe('function_managed_by_deploy');
+
+        const after = await db.knex.from<DBOnEventScript>('on_event_scripts').select('id', 'active').where({ config_id: integration.id! }).first();
+        expect(after?.active).toBe(true);
     });
 
     it('should reject repo functions (managed by nango deploy)', async () => {
