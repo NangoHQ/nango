@@ -19,6 +19,7 @@ import {
     InputGroupTextarea
 } from '@nangohq/design-system';
 
+import { GithubLogo } from '@/assets/GithubLogo';
 import { LogoInverted } from '@/assets/LogoInverted';
 import { OpenAIIcon } from '@/assets/OpenAIIcon';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
@@ -662,7 +663,11 @@ const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string,
                         className="group flex items-center gap-3 rounded-ds-xs border-ds-hairline border-border-muted bg-surface-panel px-4 py-4 text-left text-body-medium-regular text-text-default transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-container-panel"
                     >
                         {/* Template logos pad their artwork, so a 25px box draws an 18px logo. */}
-                        <IntegrationLogo provider={provider} className="-m-[3.5px] size-[25px] shrink-0 border-0 bg-transparent p-0" />
+                        {provider === 'github' ? (
+                            <GithubLogo className="-m-[3.5px] size-[25px] shrink-0 text-text-strong" />
+                        ) : (
+                            <IntegrationLogo provider={provider} className="-m-[3.5px] size-[25px] shrink-0 border-0 bg-transparent p-0" />
+                        )}
                         <span className="flex-1">
                             <StarterPromptText prompt={prompt} name={name} />
                         </span>
