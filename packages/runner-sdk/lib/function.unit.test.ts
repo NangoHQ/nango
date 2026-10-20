@@ -4,6 +4,7 @@ import * as z from 'zod';
 
 import { createFunction } from './function.js';
 
+import type { HttpResponse } from './function.js';
 import type { OnEventType } from '@nangohq/types';
 
 type Has<T, K extends PropertyKey> = K extends keyof T ? true : false;
@@ -30,6 +31,7 @@ describe('createFunction', () => {
                     await nango.getMetadata();
 
                     expectTypeOf<Has<typeof nango, 'proxy'>>().toEqualTypeOf<true>();
+                    expectTypeOf(nango.get<{ title: string }>({ endpoint: '/issues/1' })).toEqualTypeOf<Promise<HttpResponse<{ title: string }>>>();
                     expectTypeOf(nango.batchSave).parameter(1).toEqualTypeOf<'GithubIssue'>();
                     expectTypeOf(cp).toEqualTypeOf<{ lastId: string } | undefined>();
                     expectTypeOf(nango.getMetadata()).toEqualTypeOf<Promise<{ org: string }>>();
