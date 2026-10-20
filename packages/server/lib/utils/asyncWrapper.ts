@@ -4,8 +4,8 @@ import tracer from 'dd-trace';
 
 import { metrics, report } from '@nangohq/utils';
 
-import type { RequestLocals, RequestLocalsWithEnvironment } from './express.js';
-import type { DBEnvironment, Endpoint } from '@nangohq/types';
+import type { RequestLocals, RequestLocalsWithAnyEnvironment, RequestLocalsWithEnvironment } from './express.js';
+import type { DBEnvironment, Endpoint, EnvironmentWithoutSecrets } from '@nangohq/types';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
 export function asyncWrapper<TEndpoint extends Endpoint<any>, Locals extends Record<string, any> = RequestLocals>(
@@ -50,7 +50,7 @@ export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>>(
 ): RequestHandler<any, TEndpoint['Reply'], any, any, any> {
     // Must be async so asyncWrapper attaches its .catch(next).
     return asyncWrapper<TEndpoint>(async (req, res, next) => {
-        if (!requireEnvironment(req, res)) {
+        if (!requireDbEnvironment(req, res)) {
             return;
         }
 
@@ -64,7 +64,7 @@ export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>>(
  * No environment means an environment-scoped handler was wired to a route that resolves none, which
  * is a wiring mistake rather than a client error.
  */
-export function requireEnvironment(req: Request, res: Response<any, RequestLocals>): DBEnvironment | null {
+export function requireEnvironment(req: Request, res: Response<any, RequestLocals>): DBEnvironment | EnvironmentWithoutSecrets | null {
     const { environment } = res.locals;
     if (!environment) {
         report(new Error('handler_requires_environment'), { route: req.route?.path ?? req.originalUrl });
@@ -72,5 +72,46 @@ export function requireEnvironment(req: Request, res: Response<any, RequestLocal
         return null;
     }
 
+    return environment;
+}
+
+export function isDbEnvironment(environment: DBEnvironment | EnvironmentWithoutSecrets): environment is DBEnvironment {
+    return 'secret_key' in environment && 'pending_secret_key' in environment && 'hmac_key' in environment && 'otlp_settings' in environment;
+}
+
+/**
+ * Same as {@link asyncWrapperWithEnvironment}, for routes that also accept a task capability token.
+ * The handler sees `DBEnvironment | EnvironmentWithoutSecrets` because a task token never loads secrets.
+ */
+export function asyncWrapperWithAnyEnvironment<TEndpoint extends Endpoint<any>>(
+    fn: (
+        req: Request<TEndpoint['Params'], TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring']>,
+        res: Response<TEndpoint['Reply'], RequestLocalsWithAnyEnvironment>,
+        next: NextFunction
+    ) => Promise<void> | void
+): RequestHandler<any, TEndpoint['Reply'], any, any, any> {
+    return asyncWrapper<TEndpoint>(async (req, res, next) => {
+        if (!requireEnvironment(req, res)) {
+            return;
+        }
+
+        await fn(req, res as Response<TEndpoint['Reply'], RequestLocalsWithAnyEnvironment>, next);
+    });
+}
+
+/**
+ * Like `requireEnvironment`, and also refuses an environment that was loaded without its secrets.
+ * Task-token routes must not use this: they are given `EnvironmentWithoutSecrets` on purpose.
+ */
+export function requireDbEnvironment(req: Request, res: Response<any, RequestLocals>): DBEnvironment | null {
+    const environment = requireEnvironment(req, res);
+    if (!environment) {
+        return null;
+    }
+    if (!isDbEnvironment(environment)) {
+        report(new Error('handler_requires_environment_secrets'), { route: req.route?.path ?? req.originalUrl });
+        res.status(500).send({ error: { code: 'server_error' } });
+        return null;
+    }
     return environment;
 }

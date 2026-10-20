@@ -2,7 +2,7 @@ import { accountService, environmentService, errorManager, generateSlackConnecti
 import { flags } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { requireEnvironment } from '../utils/asyncWrapper.js';
+import { requireDbEnvironment, requireEnvironment } from '../utils/asyncWrapper.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { NextFunction, Request, Response } from 'express';
@@ -10,7 +10,7 @@ import type { NextFunction, Request, Response } from 'express';
 class EnvironmentController {
     getHmacDigest(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
-            const environment = requireEnvironment(req, res);
+            const environment = requireDbEnvironment(req, res);
             if (!environment) {
                 return;
             }
