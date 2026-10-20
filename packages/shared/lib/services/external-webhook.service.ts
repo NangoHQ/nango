@@ -31,13 +31,19 @@ export async function update(
             >
         >;
     }
-): Promise<void> {
-    await trx
+): Promise<DBExternalWebhook> {
+    const [webhook] = await trx
         .from<DBExternalWebhook>('_nango_external_webhooks')
         .insert({
             environment_id,
             ...data
         })
         .onConflict('environment_id')
-        .merge();
+        .merge()
+        .returning('*');
+
+    if (!webhook) {
+        throw new Error('failed_to_upsert_external_webhook');
+    }
+    return webhook;
 }

@@ -15,7 +15,7 @@ import secretService from './secret.service.js';
 
 import type { Orchestrator } from '../index.js';
 import type { Knex } from '@nangohq/database';
-import type { DBEnvironment, DBEnvironmentVariable, DBPlan, SdkLogger } from '@nangohq/types';
+import type { ApiWebhooks, DBEnvironment, DBEnvironmentVariable, DBExternalWebhook, DBPlan, SdkLogger } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const TABLE = '_nango_environments';
@@ -23,6 +23,25 @@ const TABLE = '_nango_environments';
 export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
 
 export type CreateEnvironmentErrorCode = 'invalid_is_prod_flag' | 'conflict' | 'resource_capped' | 'creation_failed';
+
+type CreateEnvironmentSettings = {
+    accountId: number;
+    name: string;
+    isProduction?: boolean;
+    callbackUrl?: string;
+    hmacKey?: string;
+    hmacEnabled?: boolean;
+    slackNotifications?: boolean;
+    otlpSettings?: DBEnvironment['otlp_settings'];
+    webhooks?: Partial<ApiWebhooks>;
+    plan?: DBPlan | null;
+};
+
+type EnvironmentWithSettings = {
+    environment: DBEnvironment;
+    webhooks: DBExternalWebhook;
+    webhookSigningKey: string;
+};
 
 type EnvironmentIdentifier = { type: 'id'; id: number } | { type: 'uuid'; uuid: string };
 
@@ -173,19 +192,10 @@ class EnvironmentService {
             hmacEnabled,
             slackNotifications,
             otlpSettings,
+            webhooks,
             plan
-        }: {
-            accountId: number;
-            name: string;
-            isProduction?: boolean;
-            callbackUrl?: string;
-            hmacKey?: string;
-            hmacEnabled?: boolean;
-            slackNotifications?: boolean;
-            otlpSettings?: DBEnvironment['otlp_settings'];
-            plan?: DBPlan | null;
-        }
-    ): Promise<Result<DBEnvironment, CreateEnvironmentError>> {
+        }: CreateEnvironmentSettings
+    ): Promise<Result<EnvironmentWithSettings, CreateEnvironmentError>> {
         const isProduction = this.resolveIsProduction({ name, isProduction: isProductionSetting });
         if (isProduction.isErr()) {
             return Err(isProduction.error);
@@ -203,7 +213,7 @@ class EnvironmentService {
                 return Err(new CreateEnvironmentError('conflict'));
             }
 
-            const environment = await trx.transaction(async (innerTrx): Promise<DBEnvironment> => {
+            const created = await trx.transaction(async (innerTrx): Promise<EnvironmentWithSettings> => {
                 const [env] = await innerTrx<DBEnvironment>(TABLE)
                     .insert({
                         account_id: accountId,
@@ -250,22 +260,23 @@ class EnvironmentService {
                     throw createdWebhookKey.error;
                 }
 
-                await externalWebhookService.update(innerTrx, {
+                const webhookSettings = await externalWebhookService.update(innerTrx, {
                     environment_id: env.id,
                     data: {
                         on_auth_creation: true,
                         on_auth_refresh_error: true,
                         on_sync_completion_always: true,
                         on_sync_error: true,
-                        on_connection_deletion: true
+                        on_connection_deletion: true,
+                        ...webhooks
                     }
                 });
 
-                return env;
+                return { environment: env, webhooks: webhookSettings, webhookSigningKey: createdWebhookKey.value.secret };
             });
 
-            await onNewEnvironment(trx, { accountId, environmentId: environment.id, isProduction: isProduction.value });
-            return Ok(environment);
+            await onNewEnvironment(trx, { accountId, environmentId: created.environment.id, isProduction: isProduction.value });
+            return Ok(created);
         } catch (err) {
             report(err, { accountId, environmentId, environmentName: name });
             return Err(new CreateEnvironmentError('creation_failed', { cause: err }));
