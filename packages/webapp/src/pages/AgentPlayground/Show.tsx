@@ -20,7 +20,6 @@ import {
 } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
-import { LogoWolf } from '@/assets/LogoWolf';
 import { OpenAIIcon } from '@/assets/OpenAIIcon';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { ButtonLink } from '@/components/ui/ButtonLink';
@@ -38,6 +37,7 @@ import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
 import { approvalProperties, pendingApprovals } from './approvalTracking';
 import { describeChatError } from './chatError';
+import { HeroIllustration } from './components/HeroIllustration';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
@@ -634,15 +634,12 @@ const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced
 const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string, provider: string) => void }> = ({ composer, onPick }) => {
     return (
         <div className="flex flex-1 flex-col items-center text-center">
-            <div className="flex w-full flex-1 flex-col items-center justify-end pb-6">
-                <LogoWolf
-                    aria-hidden
-                    className="pointer-events-none -mb-28 h-auto w-[337px] text-text-strong opacity-[0.06] [mask-image:linear-gradient(to_bottom,black_45px,transparent_199px)]"
-                />
-                <h2 className="relative text-heading-medium text-text-strong">Explore how Nango works with an agent</h2>
+            <div className="flex w-full flex-[3] flex-col items-center justify-end gap-12 pb-6">
+                <HeroIllustration />
+                <h2 className="text-heading-medium text-text-strong">Explore how Nango works with an agent</h2>
             </div>
             {composer}
-            <div className="grid w-full flex-1 auto-rows-min grid-cols-2 gap-3 pt-6">
+            <div className="grid w-full flex-[4] auto-rows-min grid-cols-2 gap-3 pt-6">
                 {STARTER_PROMPTS.map(({ prompt, provider }) => (
                     <button
                         key={prompt}
