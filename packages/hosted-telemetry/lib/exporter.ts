@@ -38,10 +38,11 @@ function scalarAttributes(attributes: Attributes): MetricRow['attributes'] | und
         if (value === undefined) {
             continue;
         }
-        if (typeof value === 'number' ? !Number.isFinite(value) : typeof value !== 'string' && typeof value !== 'boolean') {
+        if (typeof value === 'string' || typeof value === 'boolean' || (typeof value === 'number' && Number.isFinite(value))) {
+            scalars[key] = value;
+        } else {
             return undefined;
         }
-        scalars[key] = value;
     }
     return scalars;
 }
