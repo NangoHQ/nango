@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
 import { invokeFunction } from '@nangohq/shared';
-import { getHeaders, redactHeaders, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { getHeaders, redactHeaders, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema } from '../../../../../../helpers/validation.js';
 import { asyncWrapperWithEnvironment } from '../../../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../../../utils/utils.js';
-import { sendFunctionFailure } from '../../../../../functions/errors.js';
+import { sendFunctionInvocationResult } from '../../../../../functions/invocation.js';
 
 import type { FunctionInvocationType, PostFunctionInvocation } from '@nangohq/types';
 
@@ -57,41 +57,5 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
         orchestrator: getOrchestrator()
     });
 
-    if (invoke.isOk()) {
-        if ('statusUrl' in invoke.value) {
-            res.setHeader('X-Nango-Invocation-Id', invoke.value.id);
-            res.status(202).location(invoke.value.statusUrl).json(invoke.value);
-            return;
-        }
-        res.status(200).json(invoke.value.data as PostFunctionInvocation['Success']);
-        return;
-    }
-
-    switch (invoke.error.code) {
-        case 'connection_not_found':
-        case 'function_not_found':
-            res.status(404).send({ error: { code: invoke.error.code, message: invoke.error.message } });
-            return;
-        case 'function_disabled':
-            res.status(403).send({ error: { code: invoke.error.code, message: invoke.error.message } });
-            return;
-        case 'invalid_invocation':
-            res.status(400).send({ error: { code: invoke.error.code, message: invoke.error.message } });
-            return;
-        case 'validation_error':
-            res.status(400).send({ error: { code: invoke.error.code, message: invoke.error.message, errors: invoke.error.errors } });
-            return;
-        case 'function_failed':
-            sendFunctionFailure({ res, cause: invoke.error.cause, message: invoke.error.message, errorToReport: invoke.error });
-            return;
-        case 'server_error':
-            report(invoke.error);
-            res.status(500).send({ error: { code: invoke.error.code, message: invoke.error.message } });
-            return;
-        default:
-            ((_exhaustiveCheck: never) => {
-                res.status(500).send({ error: { code: 'server_error', message: 'Unknown invocation failure' } });
-            })(invoke.error.code);
-            return;
-    }
+    sendFunctionInvocationResult({ res, result: invoke });
 });

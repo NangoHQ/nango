@@ -112,25 +112,33 @@ describe(`GET ${route}`, () => {
         expect(response.json).toMatchObject({ uuid: fn!.config.uuid, description: version.description });
     });
 
-    it.each(['disabled', 'scheduled'] as const)('falls back to an action when the function is %s', async (state) => {
+    it('falls back to an action when the function is scheduled', async () => {
         const { apiKey, env } = await seedAction();
-        const [fn] = (
+        (
             await functionConfigService.upsert(db.knex, [
                 {
                     environmentId: env.id,
                     integrationId: 'github-123',
                     name: 'fetchIssue',
-                    version: state === 'scheduled' ? { ...version, trigger: { kind: 'schedule', frequency: '0 * * * *' } } : version
+                    version: { ...version, trigger: { kind: 'schedule', frequency: '0 * * * *' } }
                 }
             ])
         ).unwrap();
-        if (state === 'disabled') {
-            await db.knex('function_configs').where({ id: fn!.config.id }).update({ enabled: false });
-        }
 
         const response = await api.fetch(route, { method: 'GET', token: apiKey.secret, params: { uniqueKey: 'github-123', name: 'fetchIssue' } });
         expect(response.res.status).toBe(200);
         expect(response.json).toMatchObject({ uuid: null, description: 'Legacy action' });
+    });
+
+    it('does not fall back to an action when the function is disabled', async () => {
+        const { apiKey, env } = await seedAction();
+        const [fn] = (
+            await functionConfigService.upsert(db.knex, [{ environmentId: env.id, integrationId: 'github-123', name: 'fetchIssue', version }])
+        ).unwrap();
+        await db.knex('function_configs').where({ id: fn!.config.id }).update({ enabled: false });
+
+        const response = await api.fetch(route, { method: 'GET', token: apiKey.secret, params: { uniqueKey: 'github-123', name: 'fetchIssue' } });
+        expect(response.res.status).toBe(404);
     });
 
     it('requires authentication and the read scope', async () => {

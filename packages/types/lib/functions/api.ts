@@ -508,6 +508,19 @@ export type GetTool = ApiEndpoint<{
     Success: GetToolResponse;
 }>;
 
+export type PostToolCall = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'data-plane operation' };
+    Method: 'POST';
+    Path: '/connections/:connectionId/tools/:name/calls';
+    Params: { connectionId: string; name: string };
+    Headers: { 'provider-config-key'?: string | undefined };
+    Body: {
+        input?: unknown | undefined;
+    };
+    Error: ApiError<FunctionInvocationErrorCode | 'ambiguous_connection'>;
+    Success: FunctionInvocationSuccess;
+}>;
+
 export type GetPublicProviderTemplates = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
