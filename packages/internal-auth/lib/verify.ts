@@ -4,8 +4,7 @@ import { trimOrNull } from './credential.js';
 import { verify as verifyUnifiedToken } from './jwt.js';
 import { jwtHeaderAlg, verifyInternalServiceToken, verifyRunnerDispatchToken } from './token.js';
 
-import type { InternalServiceAuth } from './constants.js';
-import type { KeyRegistry } from './jwt.js';
+import type { InternalServiceAuth, KeyRegistry } from './jwt.js';
 
 export interface InternalServiceCredentials {
     signingKey?: string | undefined;

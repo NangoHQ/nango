@@ -397,7 +397,7 @@ describe('Account service', () => {
         await db.knex('customer_keys_relations').where({ entity_type: 'environment', entity_id: environment!.id }).delete();
         await db.knex('customer_keys').where({ account_id: account.id, key_type: 'api' }).delete();
 
-        const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
+        const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key! });
 
         expect(bySecretKey).toBeNull();
     });
@@ -434,7 +434,7 @@ describe('Account service', () => {
 
         await db.knex('customer_keys').update({ deleted_at: new Date() }).where({ account_id: account.id, key_type: 'api' });
 
-        const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
+        const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key! });
 
         expect(bySecretKey).toBeNull();
     });
@@ -455,7 +455,7 @@ describe('Account service', () => {
             entity_id: account.id
         });
 
-        const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
+        const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key! });
 
         expect(bySecretKey).toBeNull();
     });
@@ -840,12 +840,14 @@ describe('Account service', () => {
             const result = (await accountService.getTaskTokenAccountContext(env.id)).unwrap();
 
             expect(result?.account.id).toBe(account.id);
-            expect(result?.environment).toMatchObject({ id: env.id, uuid: env.uuid, name: env.name, secret_key: '', pending_secret_key: null });
+            expect(result?.environment).toMatchObject({ id: env.id, uuid: env.uuid, name: env.name });
+            expect(result?.environment).not.toHaveProperty('secret_key');
+            expect(result?.environment).not.toHaveProperty('pending_secret_key');
         });
 
         it('serves a later lookup from the task token cache', async () => {
-            const previous = envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED;
-            (envs as { AUTH_PERSIST_CONTEXT_CACHE_ENABLED: boolean }).AUTH_PERSIST_CONTEXT_CACHE_ENABLED = true;
+            const previous = envs.AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED;
+            (envs as { AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED: boolean }).AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED = true;
             const incrementSpy = vi.spyOn(metrics, 'increment');
             try {
                 const { env } = await seedAccountEnvAndUser();
@@ -860,7 +862,7 @@ describe('Account service', () => {
                 expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'task_token', result: 'hit' });
                 expect(second?.environment.id).toBe(first?.environment.id);
             } finally {
-                (envs as { AUTH_PERSIST_CONTEXT_CACHE_ENABLED: boolean }).AUTH_PERSIST_CONTEXT_CACHE_ENABLED = previous;
+                (envs as { AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED: boolean }).AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED = previous;
             }
         });
     });

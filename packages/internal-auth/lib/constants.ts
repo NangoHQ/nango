@@ -1,4 +1,3 @@
-import type { TaskCapabilityResource } from './jwt.js';
 import type { ScriptType } from '@nangohq/types';
 
 export const INTERNAL_SERVICE_TOKEN_ISSUER = 'nango-internal';
@@ -81,26 +80,6 @@ export type InternalServiceTokenOp = 'task' | 'node';
 export type InternalServiceAuthKind = 'hmac' | 'static' | 'eddsa' | 'jwt';
 
 export type InternalServiceIssuer = typeof INTERNAL_SERVICE_ISSUER_JOBS | typeof INTERNAL_SERVICE_ISSUER_SERVER;
-
-export interface InternalServiceAuth {
-    kind: InternalServiceAuthKind;
-    subject: string;
-    audience: string;
-    op?: InternalServiceTokenOp;
-    taskId?: string;
-    nodeId?: string;
-    /** Unified JWT issuer (`service:jobs` or `service:server`). */
-    issuer?: InternalServiceIssuer;
-    /** Unified JWT `sub` (`service:*`, `task:<id>`, or `node:<id>`). */
-    sub?: string;
-    /**
-     * Resource the task may act on (`res`). Absent on service and node tokens.
-     * `environmentId` is required when the claim is present.
-     */
-    res?: TaskCapabilityResource | undefined;
-    /** Scopes the task may call. Absent on service and node tokens, and on legacy task tokens. */
-    scopes?: readonly string[] | undefined;
-}
 
 export function taskSubject(taskId: string): string {
     return `task:${taskId}`;

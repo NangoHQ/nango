@@ -52,6 +52,8 @@ export interface RequestLocals {
     sandboxTokenDeploymentId?: string;
     /** Set by `taskCapability` before auth. Absent means this route does not accept a task token. */
     taskCapability?: ApiScope;
+    /** `sub` of a task capability token (`task:<id>`). Set only when `authType` is `taskToken`. */
+    taskSubject?: string;
 }
 
 /** RequestLocals with the environment confirmed present — see `asyncWrapperWithEnvironment` and `requireEnvironment`. */

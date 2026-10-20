@@ -44,20 +44,17 @@ export async function runnerAuth(taskId: string, nangoProps: NangoProps): Promis
     const expiresInSecs = taskExpiresInSecs(nangoProps);
     const signer = jobsSigner();
     if (signer) {
-        const res =
-            nangoProps.environmentId !== undefined
-                ? {
-                      environmentId: nangoProps.environmentId,
-                      ...(nangoProps.nangoConnectionId !== undefined ? { connectionId: nangoProps.nangoConnectionId } : {}),
-                      ...(nangoProps.syncId !== undefined ? { syncId: nangoProps.syncId } : {})
-                  }
-                : undefined;
+        const res = {
+            environmentId: nangoProps.environmentId,
+            connectionId: nangoProps.nangoConnectionId,
+            ...(nangoProps.syncId !== undefined ? { syncId: nangoProps.syncId } : {})
+        };
         const internalAuthToken = await mint(signer, {
             sub: taskSubject(taskId),
             aud: INTERNAL_SERVICE_TASK_CAPABILITY_AUDIENCES,
             ttlSecs: expiresInSecs,
-            ...(res ? { res } : {}),
-            ...(nangoProps.scriptType ? { scopes: taskScopesForScriptType(nangoProps.scriptType) } : {})
+            res,
+            scopes: taskScopesForScriptType(nangoProps.scriptType)
         });
         if (!envs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY) {
             return { nangoProps: { ...nangoProps, taskAuthToken: internalAuthToken }, internalAuthToken };

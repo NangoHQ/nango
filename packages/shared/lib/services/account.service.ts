@@ -73,16 +73,22 @@ const customerKeyShadowCache = new ShadowAuthCache('customer_key', envs.AUTH_SHA
  * In-process cache of an auth context. Each instance has its own map, keyed by a secret hash
  * or an environment id. A served entry can be up to the TTL old, delaying visibility of revoked
  * keys, deleted environments, and plan changes.
- * Enable/disable and TTL are configured via AUTH_PERSIST_CONTEXT_CACHE_* (see parse.ts).
+ * TTL is read once at startup. The enabled flag is read per call so it can be toggled at runtime.
+ * Persist and the task-token lookup take their own flags: enabling one must not enable the other.
  */
-class PersistAuthContextCache<T> {
-    // TTL is a startup config; the enabled flag is read per-call so it can be toggled at runtime.
-    private cache = new TTLFixedSizeMap<string | number, T>(10_000, envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS);
+class AuthContextCache<T> {
+    private cache: TTLFixedSizeMap<string | number, T>;
 
-    constructor(private metricCache: string) {}
+    constructor(
+        private metricCache: string,
+        private enabled: () => boolean,
+        ttlMs: number
+    ) {
+        this.cache = new TTLFixedSizeMap(10_000, ttlMs);
+    }
 
     get(key: string | number): T | undefined {
-        if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
+        if (!this.enabled()) {
             return undefined;
         }
         const cached = this.cache.get(key);
@@ -91,7 +97,7 @@ class PersistAuthContextCache<T> {
     }
 
     set(key: string | number, context: T): void {
-        if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
+        if (!this.enabled()) {
             return;
         }
         // The cached instance is shared across requests; callers must not mutate it.
@@ -99,17 +105,32 @@ class PersistAuthContextCache<T> {
     }
 }
 
-const persistAuthContextCache = new PersistAuthContextCache<PersistAuthContext>('persist_internal_secret');
-const persistEnvironmentAuthContextCache = new PersistAuthContextCache<PersistAuthContext>('persist_environment');
+const persistAuthContextCache = new AuthContextCache<PersistAuthContext>(
+    'persist_internal_secret',
+    () => envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED,
+    envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS
+);
+const persistEnvironmentAuthContextCache = new AuthContextCache<PersistAuthContext>(
+    'persist_environment',
+    () => envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED,
+    envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS
+);
+
+/** Environment columns a task token may see. The deprecated secret columns are not a credential. */
+type TaskTokenEnvironment = Omit<DBEnvironment, 'secret_key' | 'pending_secret_key'>;
 
 /** Account and environment for a task token. No decrypted secret. */
 interface TaskTokenAccountContext {
     account: DBTeam;
-    environment: DBEnvironment;
+    environment: TaskTokenEnvironment;
     plan: DBPlan | null;
 }
 
-const taskTokenAccountContextCache = new PersistAuthContextCache<TaskTokenAccountContext>('task_token');
+const taskTokenAccountContextCache = new AuthContextCache<TaskTokenAccountContext>(
+    'task_token',
+    () => envs.AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED,
+    envs.AUTH_TASK_TOKEN_CONTEXT_CACHE_TTL_MS
+);
 
 interface PersistAuthContextRow {
     environment_id: number;
@@ -128,6 +149,52 @@ function persistAuthContextFromRow(row: PersistAuthContextRow): PersistAuthConte
             row.plan_id !== null && row.plan_name !== null && row.records_store !== null
                 ? { id: row.plan_id, name: row.plan_name, records_store: row.records_store }
                 : null
+    };
+}
+
+// `row_to_json` returns timestamps as strings. Knex does not parse them back into Dates.
+function accountFromRow(account: DBTeam): DBTeam {
+    return {
+        ...account,
+        created_at: new Date(account.created_at),
+        updated_at: new Date(account.updated_at)
+    };
+}
+
+function environmentDates(environment: DBEnvironment): Pick<DBEnvironment, 'created_at' | 'updated_at' | 'deleted_at'> {
+    return {
+        created_at: new Date(environment.created_at),
+        updated_at: new Date(environment.updated_at),
+        deleted_at: environment.deleted_at ? new Date(environment.deleted_at) : environment.deleted_at
+    };
+}
+
+function environmentFromRow(environment: DBEnvironment, secrets: { secret_key: string; pending_secret_key: string | null }): DBEnvironment {
+    return {
+        ...environment,
+        ...secrets,
+        ...environmentDates(environment)
+    };
+}
+
+function taskTokenEnvironmentFromRow(environment: DBEnvironment): TaskTokenEnvironment {
+    const { secret_key: _secretKey, pending_secret_key: _pendingSecretKey, ...rest } = environment;
+    return { ...rest, ...environmentDates(environment) };
+}
+
+function planFromRow(plan: DBPlan | null): DBPlan | null {
+    if (!plan) {
+        return null;
+    }
+    return {
+        ...plan,
+        created_at: new Date(plan.created_at),
+        updated_at: new Date(plan.updated_at),
+        trial_start_at: plan.trial_start_at ? new Date(plan.trial_start_at) : plan.trial_start_at,
+        trial_end_at: plan.trial_end_at ? new Date(plan.trial_end_at) : plan.trial_end_at,
+        trial_end_notified_at: plan.trial_end_notified_at ? new Date(plan.trial_end_notified_at) : plan.trial_end_notified_at,
+        orb_subscribed_at: plan.orb_subscribed_at ? new Date(plan.orb_subscribed_at) : plan.orb_subscribed_at,
+        orb_future_plan_at: plan.orb_future_plan_at ? new Date(plan.orb_future_plan_at) : plan.orb_future_plan_at
     };
 }
 
@@ -596,32 +663,12 @@ class AccountService {
         const pendingKey = res.pending_secret ? getEncryptionManager().decryptAPISecret(res.pending_secret) : null;
 
         return {
-            // getting data with row_to_json breaks the automatic string to date parser
-            account: {
-                ...res.account,
-                created_at: new Date(res.account.created_at),
-                updated_at: new Date(res.account.updated_at)
-            },
-            environment: {
-                ...res.environment,
+            account: accountFromRow(res.account),
+            environment: environmentFromRow(res.environment, {
                 secret_key: defaultSecret.secret,
-                pending_secret_key: pendingKey?.secret || null,
-                created_at: new Date(res.environment.created_at),
-                updated_at: new Date(res.environment.updated_at),
-                deleted_at: res.environment.deleted_at ? new Date(res.environment.deleted_at) : res.environment.deleted_at
-            },
-            plan: res.plan
-                ? {
-                      ...res.plan,
-                      created_at: new Date(res.plan.created_at),
-                      updated_at: new Date(res.plan.updated_at),
-                      trial_start_at: res.plan.trial_start_at ? new Date(res.plan.trial_start_at) : res.plan.trial_start_at,
-                      trial_end_at: res.plan.trial_end_at ? new Date(res.plan.trial_end_at) : res.plan.trial_end_at,
-                      trial_end_notified_at: res.plan.trial_end_notified_at ? new Date(res.plan.trial_end_notified_at) : res.plan.trial_end_notified_at,
-                      orb_subscribed_at: res.plan.orb_subscribed_at ? new Date(res.plan.orb_subscribed_at) : res.plan.orb_subscribed_at,
-                      orb_future_plan_at: res.plan.orb_future_plan_at ? new Date(res.plan.orb_future_plan_at) : res.plan.orb_future_plan_at
-                  }
-                : null,
+                pending_secret_key: pendingKey?.secret || null
+            }),
+            plan: planFromRow(res.plan),
             secret: defaultSecret
         };
     }
@@ -745,31 +792,12 @@ class AccountService {
                       };
 
             return Ok({
-                account: {
-                    ...row.account,
-                    created_at: new Date(row.account.created_at),
-                    updated_at: new Date(row.account.updated_at)
-                },
-                environment: {
-                    ...row.environment,
+                account: accountFromRow(row.account),
+                environment: environmentFromRow(row.environment, {
                     secret_key: defaultSecret.secret,
-                    pending_secret_key: pendingKey?.secret || null,
-                    created_at: new Date(row.environment.created_at),
-                    updated_at: new Date(row.environment.updated_at),
-                    deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
-                },
-                plan: row.plan
-                    ? {
-                          ...row.plan,
-                          created_at: new Date(row.plan.created_at),
-                          updated_at: new Date(row.plan.updated_at),
-                          trial_start_at: row.plan.trial_start_at ? new Date(row.plan.trial_start_at) : row.plan.trial_start_at,
-                          trial_end_at: row.plan.trial_end_at ? new Date(row.plan.trial_end_at) : row.plan.trial_end_at,
-                          trial_end_notified_at: row.plan.trial_end_notified_at ? new Date(row.plan.trial_end_notified_at) : row.plan.trial_end_notified_at,
-                          orb_subscribed_at: row.plan.orb_subscribed_at ? new Date(row.plan.orb_subscribed_at) : row.plan.orb_subscribed_at,
-                          orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
-                      }
-                    : null,
+                    pending_secret_key: pendingKey?.secret || null
+                }),
+                plan: planFromRow(row.plan),
                 secret: defaultSecret,
                 auth
             });
@@ -892,14 +920,10 @@ class AccountService {
         const environmentContext =
             row.environment && defaultSecret
                 ? {
-                      environment: {
-                          ...row.environment,
+                      environment: environmentFromRow(row.environment, {
                           secret_key: defaultSecret.secret,
-                          pending_secret_key: pendingKey?.secret || null,
-                          created_at: new Date(row.environment.created_at),
-                          updated_at: new Date(row.environment.updated_at),
-                          deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
-                      },
+                          pending_secret_key: pendingKey?.secret || null
+                      }),
                       secret: defaultSecret
                   }
                 : null;
@@ -918,23 +942,8 @@ class AccountService {
         };
 
         return {
-            account: {
-                ...row.account,
-                created_at: new Date(row.account.created_at),
-                updated_at: new Date(row.account.updated_at)
-            },
-            plan: row.plan
-                ? {
-                      ...row.plan,
-                      created_at: new Date(row.plan.created_at),
-                      updated_at: new Date(row.plan.updated_at),
-                      trial_start_at: row.plan.trial_start_at ? new Date(row.plan.trial_start_at) : row.plan.trial_start_at,
-                      trial_end_at: row.plan.trial_end_at ? new Date(row.plan.trial_end_at) : row.plan.trial_end_at,
-                      trial_end_notified_at: row.plan.trial_end_notified_at ? new Date(row.plan.trial_end_notified_at) : row.plan.trial_end_notified_at,
-                      orb_subscribed_at: row.plan.orb_subscribed_at ? new Date(row.plan.orb_subscribed_at) : row.plan.orb_subscribed_at,
-                      orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
-                  }
-                : null,
+            account: accountFromRow(row.account),
+            plan: planFromRow(row.plan),
             ...environmentContext,
             principal: {
                 type: 'api_key',
@@ -1078,32 +1087,9 @@ class AccountService {
         }
 
         const context: TaskTokenAccountContext = {
-            account: {
-                ...res.account,
-                created_at: new Date(res.account.created_at),
-                updated_at: new Date(res.account.updated_at)
-            },
-            environment: {
-                ...res.environment,
-                // The deprecated column is not the credential this request authenticated with.
-                secret_key: '',
-                pending_secret_key: null,
-                created_at: new Date(res.environment.created_at),
-                updated_at: new Date(res.environment.updated_at),
-                deleted_at: res.environment.deleted_at ? new Date(res.environment.deleted_at) : res.environment.deleted_at
-            },
-            plan: res.plan
-                ? {
-                      ...res.plan,
-                      created_at: new Date(res.plan.created_at),
-                      updated_at: new Date(res.plan.updated_at),
-                      trial_start_at: res.plan.trial_start_at ? new Date(res.plan.trial_start_at) : res.plan.trial_start_at,
-                      trial_end_at: res.plan.trial_end_at ? new Date(res.plan.trial_end_at) : res.plan.trial_end_at,
-                      trial_end_notified_at: res.plan.trial_end_notified_at ? new Date(res.plan.trial_end_notified_at) : res.plan.trial_end_notified_at,
-                      orb_subscribed_at: res.plan.orb_subscribed_at ? new Date(res.plan.orb_subscribed_at) : res.plan.orb_subscribed_at,
-                      orb_future_plan_at: res.plan.orb_future_plan_at ? new Date(res.plan.orb_future_plan_at) : res.plan.orb_future_plan_at
-                  }
-                : null
+            account: accountFromRow(res.account),
+            environment: taskTokenEnvironmentFromRow(res.environment),
+            plan: planFromRow(res.plan)
         };
         taskTokenAccountContextCache.set(environmentId, context);
         return context;
@@ -1157,31 +1143,12 @@ class AccountService {
         const pendingKey = row.pending_secret ? getEncryptionManager().decryptAPISecret(row.pending_secret) : null;
 
         return {
-            account: {
-                ...row.account,
-                created_at: new Date(row.account.created_at),
-                updated_at: new Date(row.account.updated_at)
-            },
-            environment: {
-                ...row.environment,
+            account: accountFromRow(row.account),
+            environment: environmentFromRow(row.environment, {
                 secret_key: defaultSecret.secret,
-                pending_secret_key: pendingKey?.secret || null,
-                created_at: new Date(row.environment.created_at),
-                updated_at: new Date(row.environment.updated_at),
-                deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
-            },
-            plan: row.plan
-                ? {
-                      ...row.plan,
-                      created_at: new Date(row.plan.created_at),
-                      updated_at: new Date(row.plan.updated_at),
-                      trial_start_at: row.plan.trial_start_at ? new Date(row.plan.trial_start_at) : row.plan.trial_start_at,
-                      trial_end_at: row.plan.trial_end_at ? new Date(row.plan.trial_end_at) : row.plan.trial_end_at,
-                      trial_end_notified_at: row.plan.trial_end_notified_at ? new Date(row.plan.trial_end_notified_at) : row.plan.trial_end_notified_at,
-                      orb_subscribed_at: row.plan.orb_subscribed_at ? new Date(row.plan.orb_subscribed_at) : row.plan.orb_subscribed_at,
-                      orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
-                  }
-                : null,
+                pending_secret_key: pendingKey?.secret || null
+            }),
+            plan: planFromRow(row.plan),
             secret: defaultSecret,
             auth: {
                 source: 'api_secret' as const,

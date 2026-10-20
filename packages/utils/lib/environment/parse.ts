@@ -240,12 +240,16 @@ const ENVS_SHAPE = z.object({
     AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
     DEFAULT_USER_ROLE: z.enum(roles).optional().default('administrator'),
     AUTH_SHADOW_CACHE_TTL_MS: z.coerce.number().int().positive().optional().default(60_000), // 1 minute
-    // In-process cache of the persist auth context (persist internal-secret route).
+    // In-process cache of the persist auth context (persist internal-secret and environment-id routes).
     AUTH_PERSIST_CONTEXT_CACHE_ENABLED: z.stringbool().optional().default(false),
     // Cached entries are served for up to this long, so revoked keys, deleted environments, and plan
     // changes stay visible until it elapses. Avoid raising it beyond 1 minute unless strictly
     // necessary — a larger TTL widens that eventual-consistency window. Read once at startup.
     AUTH_PERSIST_CONTEXT_CACHE_TTL_MS: z.coerce.number().int().positive().max(60_000).optional().default(60_000), // 1 minute
+    // Same cache for the account context a task token resolves on the API. Its own flag, so turning
+    // on the persist cache does not turn this one on.
+    AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED: z.stringbool().optional().default(false),
+    AUTH_TASK_TOKEN_CONTEXT_CACHE_TTL_MS: z.coerce.number().int().positive().max(60_000).optional().default(60_000), // 1 minute
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?

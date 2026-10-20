@@ -5,5 +5,4 @@ export * from './jwt.js';
 export * from './token.js';
 export * from './verify.js';
 export * from './middleware.js';
-export * from './testing.js';
 export * from './fetch.js';

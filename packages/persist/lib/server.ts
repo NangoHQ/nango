@@ -5,7 +5,7 @@ import { TASK_CAPABILITY_SCOPES } from '@nangohq/internal-auth';
 import { createRoute } from '@nangohq/utils';
 
 import { authMiddleware } from './middleware/auth.middleware.js';
-import { denyTaskTokenWithoutCapability, requireTaskCapability } from './middleware/capability.js';
+import { requireTaskCapability } from './middleware/capability.js';
 import { connectionOwnershipMiddleware } from './middleware/connectionOwnership.middleware.js';
 import { recordsPath } from './records.js';
 import { routeHandler as deleteCheckpointHandler } from './routes/environment/environmentId/connection/connectionId/checkpoint/deleteCheckpoint.js';
@@ -39,8 +39,9 @@ import { routeHandler as putTaskAbortHandler } from './routes/environment/enviro
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
 import { routeHandler as postRunnerTelemetryHandler, route as postRunnerTelemetryRoute } from './routes/runner/telemetry/postTelemetry.js';
 
+import type { TaskCapabilityScope } from '@nangohq/internal-auth';
 import type { ApiError, Endpoint } from '@nangohq/types';
-import type { CreateRouteConfig, RouteHandler } from '@nangohq/utils';
+import type { RouteHandler } from '@nangohq/utils';
 import type { NextFunction, Request, Response } from 'express';
 
 const maxSizeJsonLog = '100kb';
@@ -67,35 +68,35 @@ server.use(postRunnerTelemetryRoute.path, express.json({ limit: maxSizeJsonRunne
 server.use('/environment/:environmentId/runner/sync-conflict', express.json({ limit: maxSizeJsonRunnerCoordination }));
 server.use('/environment/:environmentId/runner/locks', express.json({ limit: maxSizeJsonRunnerCoordination }));
 
-function createPersistRoute<E extends Endpoint<any>, Locals extends Record<string, any>>(rh: RouteHandler<E, Locals>, config?: CreateRouteConfig): void {
-    createRoute(server, rh, { middleware: [...(config?.middleware ?? []), denyTaskTokenWithoutCapability] });
+function createPersistRoute<E extends Endpoint<any>, Locals extends Record<string, any>>(
+    rh: RouteHandler<E, Locals>,
+    scope: TaskCapabilityScope | null,
+    opts?: { bodySyncId?: string }
+): void {
+    createRoute(server, rh, { middleware: [requireTaskCapability(scope, opts)] });
 }
 
-createPersistRoute(getHealthHandler);
-createPersistRoute(postLogHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistLog)] });
-createPersistRoute(postRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords)] });
-createPersistRoute(deleteRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords)] });
-createPersistRoute(deleteOutdatedRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords)] });
-createPersistRoute(deleteHardRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords)] });
-createPersistRoute(putRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords)] });
-createPersistRoute(getCursorHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCursor)] });
-createPersistRoute(getRecordsHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords)] });
-createPersistRoute(getCheckpointHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCheckpoint)] });
-createPersistRoute(putCheckpointHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCheckpoint)] });
-createPersistRoute(deleteCheckpointHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistCheckpoint)] });
-createPersistRoute(postRunnerTelemetryHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistTelemetry)] });
-createPersistRoute(putTaskAbortHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistAbort)] });
-createPersistRoute(getTaskAbortHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistAbort)] });
-createPersistRoute(putSyncConflictHandler, {
-    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistSyncConflict, { bodySyncId: 'syncId' })]
-});
-createPersistRoute(deleteSyncConflictHandler, {
-    middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistSyncConflict, { bodySyncId: 'syncId' })]
-});
-createPersistRoute(postRunnerLockTryAcquireHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistLocks)] });
-createPersistRoute(postRunnerLockReleaseHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistLocks)] });
-createPersistRoute(postRunnerLockReleaseAllHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistLocks)] });
-createPersistRoute(getRunnerLockHandler, { middleware: [requireTaskCapability(TASK_CAPABILITY_SCOPES.persistLocks)] });
+createPersistRoute(getHealthHandler, null);
+createPersistRoute(postLogHandler, TASK_CAPABILITY_SCOPES.persistLog);
+createPersistRoute(postRecordsHandler, TASK_CAPABILITY_SCOPES.persistRecords);
+createPersistRoute(deleteRecordsHandler, TASK_CAPABILITY_SCOPES.persistRecords);
+createPersistRoute(deleteOutdatedRecordsHandler, TASK_CAPABILITY_SCOPES.persistRecords);
+createPersistRoute(deleteHardRecordsHandler, TASK_CAPABILITY_SCOPES.persistRecords);
+createPersistRoute(putRecordsHandler, TASK_CAPABILITY_SCOPES.persistRecords);
+createPersistRoute(getCursorHandler, TASK_CAPABILITY_SCOPES.persistCursor);
+createPersistRoute(getRecordsHandler, TASK_CAPABILITY_SCOPES.persistRecords);
+createPersistRoute(getCheckpointHandler, TASK_CAPABILITY_SCOPES.persistCheckpoint);
+createPersistRoute(putCheckpointHandler, TASK_CAPABILITY_SCOPES.persistCheckpoint);
+createPersistRoute(deleteCheckpointHandler, TASK_CAPABILITY_SCOPES.persistCheckpoint);
+createPersistRoute(postRunnerTelemetryHandler, TASK_CAPABILITY_SCOPES.persistTelemetry);
+createPersistRoute(putTaskAbortHandler, TASK_CAPABILITY_SCOPES.persistAbort);
+createPersistRoute(getTaskAbortHandler, TASK_CAPABILITY_SCOPES.persistAbort);
+createPersistRoute(putSyncConflictHandler, TASK_CAPABILITY_SCOPES.persistSyncConflict, { bodySyncId: 'syncId' });
+createPersistRoute(deleteSyncConflictHandler, TASK_CAPABILITY_SCOPES.persistSyncConflict, { bodySyncId: 'syncId' });
+createPersistRoute(postRunnerLockTryAcquireHandler, TASK_CAPABILITY_SCOPES.persistLocks);
+createPersistRoute(postRunnerLockReleaseHandler, TASK_CAPABILITY_SCOPES.persistLocks);
+createPersistRoute(postRunnerLockReleaseAllHandler, TASK_CAPABILITY_SCOPES.persistLocks);
+createPersistRoute(getRunnerLockHandler, TASK_CAPABILITY_SCOPES.persistLocks);
 
 server.use((_req: Request, res: Response, next: NextFunction) => {
     res.status(404);

@@ -36,8 +36,6 @@ export function setCapabilityAuth(res: Response, auth: InternalServiceAuth): voi
     res.locals[INTERNAL_SERVICE_AUTH_LOCALS_KEY] = auth;
 }
 
-const TASK_CAPABILITY_SATISFIED = 'taskCapabilitySatisfied';
-
 /** `:nangoConnectionId`, `:syncId`, and `:taskId` are bound when the route defines them. */
 function pathBound(req: Request, auth: InternalServiceAuth): boolean {
     if ('nangoConnectionId' in req.params && !isResourceBound(auth, 'connectionId', positiveIntParam(req, 'nangoConnectionId'))) {
@@ -52,15 +50,18 @@ function pathBound(req: Request, auth: InternalServiceAuth): boolean {
     return true;
 }
 
-/** Secret-key callers pass through. A task JWT must include `scope` and match the route's resource params. */
-export function requireTaskCapability(scope: TaskCapabilityScope, opts?: { bodySyncId?: string }) {
+/**
+ * Secret-key callers pass through. `null` rejects every task JWT: the route declares no capability.
+ * A scope requires that claim and a match on the route's resource params.
+ */
+export function requireTaskCapability(scope: TaskCapabilityScope | null, opts?: { bodySyncId?: string }) {
     return (req: Request, res: Response, next: NextFunction): void => {
         const auth = getInternalServiceAuth(res);
         if (!auth || auth.kind !== 'jwt') {
             next();
             return;
         }
-        if (!hasScope(auth, scope) || !pathBound(req, auth)) {
+        if (scope === null || !hasScope(auth, scope) || !pathBound(req, auth)) {
             unauthorized(res, 'unauthorized', 'Unauthorized');
             return;
         }
@@ -68,21 +69,6 @@ export function requireTaskCapability(scope: TaskCapabilityScope, opts?: { bodyS
             unauthorized(res, 'unauthorized', 'Unauthorized');
             return;
         }
-        res.locals[TASK_CAPABILITY_SATISFIED] = true;
         next();
     };
-}
-
-/**
- * Reject a task JWT that never passed `requireTaskCapability`. Secret-key requests pass.
- * Register it after that middleware on every persist route so a route that forgets the
- * capability check does not accept every task token for the environment.
- */
-export function denyTaskTokenWithoutCapability(_req: Request, res: Response, next: NextFunction): void {
-    const auth = getInternalServiceAuth(res);
-    if (auth?.kind === 'jwt' && res.locals[TASK_CAPABILITY_SATISFIED] !== true) {
-        unauthorized(res, 'unauthorized', 'Unauthorized');
-        return;
-    }
-    next();
 }

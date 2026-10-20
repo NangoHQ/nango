@@ -76,7 +76,7 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
 
 export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     if (locals.authType === 'taskToken') {
-        return { type: 'task_token', id: 'task' };
+        return { type: 'task_token', id: locals.taskSubject ?? 'unknown' };
     }
     if (locals.authType === 'secretKey') {
         // A script that still presents the environment secret is classified as api_key. The

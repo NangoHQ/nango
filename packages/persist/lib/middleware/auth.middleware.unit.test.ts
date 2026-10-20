@@ -1,13 +1,14 @@
 import express from 'express';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ed25519Material, INTERNAL_SERVICE_ISSUER_JOBS, mint, TASK_CAPABILITY_SCOPES, taskScopesForScriptType, taskSubject } from '@nangohq/internal-auth';
+import { INTERNAL_SERVICE_ISSUER_JOBS, mint, TASK_CAPABILITY_SCOPES, taskScopesForScriptType, taskSubject } from '@nangohq/internal-auth';
+import { ed25519Material } from '@nangohq/internal-auth/testing';
 import { accountService } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { authMiddleware } from './auth.middleware.js';
-import { denyTaskTokenWithoutCapability, requireTaskCapability } from './capability.js';
+import { requireTaskCapability } from './capability.js';
 
 import type { TaskCapabilityScope } from '@nangohq/internal-auth';
 import type { PersistAuthContext } from '@nangohq/types';
@@ -21,13 +22,12 @@ const context: PersistAuthContext = {
 function app() {
     const server = express();
     server.use('/environment/:environmentId/*splat', authMiddleware);
-    server.post('/environment/:environmentId/log', denyTaskTokenWithoutCapability, (_req, res) => {
+    server.post('/environment/:environmentId/log', requireTaskCapability(null), (_req, res) => {
         res.status(204).end();
     });
     server.post(
         '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:jobId/records',
         requireTaskCapability(TASK_CAPABILITY_SCOPES.persistRecords),
-        denyTaskTokenWithoutCapability,
         (_req, res) => {
             res.status(204).end();
         }
@@ -36,7 +36,6 @@ function app() {
         '/environment/:environmentId/runner/sync-conflict',
         express.json(),
         requireTaskCapability(TASK_CAPABILITY_SCOPES.persistSyncConflict, { bodySyncId: 'syncId' }),
-        denyTaskTokenWithoutCapability,
         (_req, res) => {
             res.status(204).end();
         }

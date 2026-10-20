@@ -9,7 +9,8 @@ import {
 import { trimOrNull } from './credential.js';
 import { deriveRunnerEd25519PrivateKey, runnerPublicKeyFromEnv } from './ed25519.js';
 
-import type { InternalServiceAuth, InternalServiceAuthKind, InternalServiceTokenOp } from './constants.js';
+import type { InternalServiceAuthKind, InternalServiceTokenOp } from './constants.js';
+import type { InternalServiceAuth } from './jwt.js';
 
 type CreateInternalServiceTokenBase = {
     audience?: string;

@@ -137,6 +137,7 @@ export class AccessMiddleware {
         res.locals['account'] = accountContext.account;
         res.locals['plan'] = accountContext.plan;
         res.locals['environment'] = accountContext.environment;
+        res.locals['taskSubject'] = auth.sub;
         res.locals['apiKeyAuthSource'] = 'task_token';
         res.locals['apiKeyPrincipal'] = {
             type: 'api_key',

@@ -5,7 +5,7 @@ import { normalizePem } from '@nangohq/utils';
 
 import { INTERNAL_SERVICE_ISSUER_JOBS, INTERNAL_SERVICE_ISSUER_SERVER } from './constants.js';
 
-import type { InternalServiceAuth, InternalServiceIssuer, TaskCapabilityScope } from './constants.js';
+import type { InternalServiceAuthKind, InternalServiceIssuer, InternalServiceTokenOp, TaskCapabilityScope } from './constants.js';
 import type { InternalAuthPublicKey } from '@nangohq/types';
 import type { CryptoKey, JWTPayload } from 'jose';
 
@@ -147,6 +147,26 @@ const taskCapabilityResourceSchema = z
     .strict();
 
 export type TaskCapabilityResource = z.infer<typeof taskCapabilityResourceSchema>;
+
+export interface InternalServiceAuth {
+    kind: InternalServiceAuthKind;
+    subject: string;
+    audience: string;
+    op?: InternalServiceTokenOp;
+    taskId?: string;
+    nodeId?: string;
+    /** Unified JWT issuer (`service:jobs` or `service:server`). */
+    issuer?: InternalServiceIssuer;
+    /** Unified JWT `sub` (`service:*`, `task:<id>`, or `node:<id>`). */
+    sub?: string;
+    /**
+     * Resource the task may act on (`res`). Absent on service and node tokens.
+     * `environmentId` is required when the claim is present.
+     */
+    res?: TaskCapabilityResource | undefined;
+    /** Scopes the task may call. Absent on service and node tokens, and on legacy task tokens. */
+    scopes?: readonly string[] | undefined;
+}
 
 /** Unknown keys are the standard JWT claims. A non-strict object strips them. */
 const capabilityClaimsSchema = z.object({

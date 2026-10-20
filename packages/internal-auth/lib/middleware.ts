@@ -2,9 +2,9 @@ import { INTERNAL_SERVICE_AUTH_LOCALS_KEY, INTERNAL_SERVICE_ISSUER_JOBS, INTERNA
 import { keyRegistryFromPublicKeys, mergeKeyRegistries, verify } from './jwt.js';
 import { verifyInternalServiceCredential } from './verify.js';
 
-import type { InternalServiceAuth, TaskCapabilityScope } from './constants.js';
+import type { TaskCapabilityScope } from './constants.js';
 import type { InternalAuthEnvs } from './credential.js';
-import type { TaskCapabilityResource } from './jwt.js';
+import type { InternalServiceAuth, TaskCapabilityResource } from './jwt.js';
 import type { InternalAuthPublicKey } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -51,8 +51,8 @@ function isSignedAuth(auth: InternalServiceAuth | undefined): boolean {
     return auth?.kind === 'hmac' || auth?.kind === 'eddsa';
 }
 
-function isJobsTaskJwt(auth: InternalServiceAuth | undefined): auth is InternalServiceAuth {
-    return auth?.kind === 'jwt' && auth.issuer === INTERNAL_SERVICE_ISSUER_JOBS && Boolean(auth.sub?.startsWith('task:'));
+function isJobsTaskJwt(auth: InternalServiceAuth | undefined): auth is InternalServiceAuth & { kind: 'jwt'; sub: string } {
+    return auth?.kind === 'jwt' && auth.issuer === INTERNAL_SERVICE_ISSUER_JOBS && typeof auth.sub === 'string' && auth.sub.startsWith('task:');
 }
 
 /** A missing param must not match a missing claim. A bad param cannot equal a claim that already parsed as a positive int or non-empty string. */
@@ -67,11 +67,13 @@ export function hasScope(auth: InternalServiceAuth | undefined, scope: TaskCapab
     return isJobsTaskJwt(auth) && Boolean(auth.scopes?.includes(scope));
 }
 
-export type TaskCapabilityAuth = InternalServiceAuth & { res: TaskCapabilityResource };
+export type TaskCapabilityAuth = InternalServiceAuth & { kind: 'jwt'; sub: string; res: TaskCapabilityResource };
 
 let capabilityKeys: readonly InternalAuthPublicKey[] | undefined;
 let capabilityRegistry: ReturnType<typeof keyRegistryFromPublicKeys> | undefined;
 
+// Identity, not contents. Callers pass `envs.*_PUBLIC_KEYS`, one array for the process, and tests
+// replace that array to swap keys. A new array misses; the same array is reused until it is replaced.
 function capabilityRegistryFor(keys: readonly InternalAuthPublicKey[] | undefined): ReturnType<typeof keyRegistryFromPublicKeys> {
     if (capabilityRegistry && capabilityKeys === keys) {
         return capabilityRegistry;
@@ -81,17 +83,21 @@ function capabilityRegistryFor(keys: readonly InternalAuthPublicKey[] | undefine
     return capabilityRegistry;
 }
 
-/** Jobs task JWT for `audience`, or `null`. A result always has `res.environmentId`. The registry is built once per `keys` array. */
+function isTaskCapabilityAuth(auth: InternalServiceAuth | null): auth is TaskCapabilityAuth {
+    return auth !== null && isJobsTaskJwt(auth) && auth.res !== undefined;
+}
+
+/** Jobs task JWT for `audience`, or `null`. A result always has `res.environmentId`. */
 export async function verifyTaskCapabilityToken(
     token: string,
     audience: string,
     keys: readonly InternalAuthPublicKey[] | undefined
 ): Promise<TaskCapabilityAuth | null> {
     const { auth } = await verify(token, audience, capabilityRegistryFor(keys));
-    if (!auth || !isJobsTaskJwt(auth) || !auth.res) {
+    if (!isTaskCapabilityAuth(auth)) {
         return null;
     }
-    return { ...auth, res: auth.res };
+    return auth;
 }
 
 function registryFromEnvs(envs: InternalAuthEnvs) {

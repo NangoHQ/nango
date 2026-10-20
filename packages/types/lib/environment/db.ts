@@ -17,10 +17,10 @@ export interface DBEnvironment extends TimestampsAndDeletedCorrect {
     /**
      * @deprecated Field secret_key is deprecated.
      * New code should use SecretService to retrieve secrets for environments.
-     * This field is populated for backward compatibility only.
-     * It may be removed in a future release.
+     * Populated for backward compatibility when the request authenticated with a secret.
+     * Absent for task-token auth. It may be removed in a future release.
      */
-    secret_key: string;
+    secret_key?: string;
     public_key: string;
     callback_url: string | null;
     /**
@@ -44,10 +44,10 @@ export interface DBEnvironment extends TimestampsAndDeletedCorrect {
     /**
      * @deprecated Field pending_secret_key is deprecated.
      * New code should use SecretService to rotate secrets for environments.
-     * This field is populated for backward compatibility only.
-     * It may be removed in a future release.
+     * Populated for backward compatibility when the request authenticated with a secret.
+     * Absent for task-token auth. It may be removed in a future release.
      */
-    pending_secret_key: string | null;
+    pending_secret_key?: string | null;
     pending_public_key?: string | null;
     slack_notifications: boolean;
 

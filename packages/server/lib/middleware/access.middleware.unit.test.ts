@@ -1,7 +1,8 @@
 import tracer from 'dd-trace';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { ed25519Material, INTERNAL_SERVICE_ISSUER_JOBS, mint, TASK_CAPABILITY_SCOPES, taskSubject } from '@nangohq/internal-auth';
+import { INTERNAL_SERVICE_ISSUER_JOBS, mint, TASK_CAPABILITY_SCOPES, taskSubject } from '@nangohq/internal-auth';
+import { ed25519Material } from '@nangohq/internal-auth/testing';
 import { accountService } from '@nangohq/shared';
 import { metrics, Ok } from '@nangohq/utils';
 
@@ -167,6 +168,7 @@ describe('task capability token', () => {
         expect(next).toHaveBeenCalled();
         expect(lookup).toHaveBeenCalledWith(10);
         expect(locals.authType).toBe('taskToken');
+        expect(locals.taskSubject).toBe(taskSubject('task-1'));
         expect(locals.apiKeyAuthSource).toBe('task_token');
         expect(locals.secret).toBeUndefined();
         expect(locals.apiKeyPrincipal).toMatchObject({
