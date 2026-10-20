@@ -22,8 +22,8 @@ export interface HostedTelemetry {
     shutdown(): Promise<void>;
 }
 
-/** The process that wrote a row: the pod on Kubernetes, the container on ECS, else a name for this boot. */
-const PRODUCER_ID = process.env['HOSTNAME'] || randomUUID();
+/** The process that wrote a row: the pod or container name when there is one, always with a suffix unique to this boot. */
+const PRODUCER_ID = [process.env['HOSTNAME'], randomUUID().slice(0, 8)].filter(Boolean).join('-');
 
 export function producerId(): string {
     return PRODUCER_ID;
