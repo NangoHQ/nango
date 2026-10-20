@@ -741,6 +741,14 @@ const ENVS_SHAPE = z.object({
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
     NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),
 
+    // Optional website-to-signup ad context. Keep disabled until destination validation is complete.
+    SIGNUP_AD_CONTEXT_ENABLED: z.stringbool().optional().default(false),
+    SIGNUP_AD_CONTEXT_COOKIE_NAME: z
+        .string()
+        .regex(/^[A-Za-z0-9_]{1,64}$/)
+        .optional()
+        .default('nango_signup_ads_dev'),
+
     // PostHog
     PUBLIC_POSTHOG_KEY: z.string().optional(),
     PUBLIC_POSTHOG_HOST: z.string().optional(),
