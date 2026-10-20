@@ -834,15 +834,43 @@ describe('Account service', () => {
     });
 
     describe('getTaskTokenAccountContext', () => {
-        it('returns the account and environment without a decrypted secret', async () => {
-            const { account, env } = await seedAccountEnvAndUser();
+        it('returns the account and environment without credentials', async () => {
+            const { account, env, plan } = await seedAccountEnvAndUser();
+            const growthStartsAt = new Date('2024-01-02T03:04:05.000Z');
+            const growthEndsAt = new Date('2024-06-07T08:09:10.000Z');
+            await db
+                .knex('_nango_environments')
+                .where({ id: env.id })
+                .update({
+                    hmac_key: 'webhook-signing-secret',
+                    otlp_settings: { endpoint: 'https://collector.example', headers: { Authorization: 'Bearer collector-token' } }
+                });
+            await db.knex('plans').where({ id: plan.id }).update({
+                growth_features_starts_at: growthStartsAt,
+                growth_features_ends_at: growthEndsAt
+            });
 
             const result = (await accountService.getTaskTokenAccountContext(env.id)).unwrap();
 
             expect(result?.account.id).toBe(account.id);
-            expect(result?.environment).toMatchObject({ id: env.id, uuid: env.uuid, name: env.name });
-            expect(result?.environment).not.toHaveProperty('secret_key');
-            expect(result?.environment).not.toHaveProperty('pending_secret_key');
+            expect(result?.environment).toMatchObject({ id: env.id, uuid: env.uuid, name: env.name, public_key: env.public_key });
+            expect(result?.environment.hmac_key).toBeNull();
+            expect(result?.environment.otlp_settings).toBeNull();
+            expect(result?.environment.created_at).toBeInstanceOf(Date);
+            for (const column of [
+                'secret_key',
+                'secret_key_iv',
+                'secret_key_tag',
+                'secret_key_hashed',
+                'pending_secret_key',
+                'pending_secret_key_iv',
+                'pending_secret_key_tag'
+            ]) {
+                expect(result?.environment).not.toHaveProperty(column);
+            }
+            expect(result?.plan?.growth_features_starts_at).toEqual(growthStartsAt);
+            expect(result?.plan?.growth_features_ends_at).toEqual(growthEndsAt);
+            expect(result?.plan?.created_at).toBeInstanceOf(Date);
         });
 
         it('serves a later lookup from the task token cache', async () => {

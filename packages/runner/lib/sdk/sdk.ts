@@ -81,7 +81,11 @@ function scriptNango(
         isSync,
         dryRun: isTest
     };
-    return new Nango({ ...shared, apiKey: runnerBearer(props) }, { ...internalAxiosProps, interceptors });
+    // A secret-key run keeps secretKey so webhook verification can fall back to it. A task token is
+    // only an apiKey: the constructor rejects setting both, and the token is not a signing key.
+    const bearer = runnerBearer(props);
+    const credentials = props.taskAuthToken ? { apiKey: bearer } : { secretKey: bearer };
+    return new Nango({ ...shared, ...credentials }, { ...internalAxiosProps, interceptors });
 }
 
 /**

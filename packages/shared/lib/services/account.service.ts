@@ -161,7 +161,9 @@ function accountFromRow(account: DBTeam): DBTeam {
     };
 }
 
-function environmentDates(environment: DBEnvironment): Pick<DBEnvironment, 'created_at' | 'updated_at' | 'deleted_at'> {
+function environmentDates(
+    environment: Pick<DBEnvironment, 'created_at' | 'updated_at' | 'deleted_at'>
+): Pick<DBEnvironment, 'created_at' | 'updated_at' | 'deleted_at'> {
     return {
         created_at: new Date(environment.created_at),
         updated_at: new Date(environment.updated_at),
@@ -177,9 +179,15 @@ function environmentFromRow(environment: DBEnvironment, secrets: { secret_key: s
     };
 }
 
-function taskTokenEnvironmentFromRow(environment: DBEnvironment): TaskTokenEnvironment {
+function taskTokenEnvironmentFromRow(environment: Omit<DBEnvironment, 'hmac_key' | 'otlp_settings'>): TaskTokenEnvironment {
     const { secret_key: _secretKey, pending_secret_key: _pendingSecretKey, ...rest } = environment;
-    return { ...rest, ...environmentDates(environment) };
+    return {
+        ...rest,
+        ...environmentDates(environment),
+        // The task-token query does not select these. Null keeps the row assignable without caching a credential.
+        hmac_key: null,
+        otlp_settings: null
+    };
 }
 
 function planFromRow(plan: DBPlan | null): DBPlan | null {
@@ -194,8 +202,28 @@ function planFromRow(plan: DBPlan | null): DBPlan | null {
         trial_end_at: plan.trial_end_at ? new Date(plan.trial_end_at) : plan.trial_end_at,
         trial_end_notified_at: plan.trial_end_notified_at ? new Date(plan.trial_end_notified_at) : plan.trial_end_notified_at,
         orb_subscribed_at: plan.orb_subscribed_at ? new Date(plan.orb_subscribed_at) : plan.orb_subscribed_at,
-        orb_future_plan_at: plan.orb_future_plan_at ? new Date(plan.orb_future_plan_at) : plan.orb_future_plan_at
+        orb_future_plan_at: plan.orb_future_plan_at ? new Date(plan.orb_future_plan_at) : plan.orb_future_plan_at,
+        growth_features_starts_at: plan.growth_features_starts_at ? new Date(plan.growth_features_starts_at) : plan.growth_features_starts_at,
+        growth_features_ends_at: plan.growth_features_ends_at ? new Date(plan.growth_features_ends_at) : plan.growth_features_ends_at
     };
+}
+
+// Dropped inside Postgres so a task-token lookup never materializes them in Node, including the cache.
+const TASK_TOKEN_ENVIRONMENT_CREDENTIAL_COLUMNS = [
+    'secret_key',
+    'secret_key_iv',
+    'secret_key_tag',
+    'secret_key_hashed',
+    'pending_secret_key',
+    'pending_secret_key_iv',
+    'pending_secret_key_tag',
+    'hmac_key',
+    'otlp_settings'
+] as const;
+
+function taskTokenEnvironmentSelect() {
+    const omitted = TASK_TOKEN_ENVIRONMENT_CREDENTIAL_COLUMNS.map((column) => ` - '${column}'`).join('');
+    return db.knex.raw(`(to_jsonb(_nango_environments)${omitted}) as environment`);
 }
 
 function persistAuthContextQuery() {
@@ -1048,7 +1076,8 @@ class AccountService {
     }
 
     /**
-     * Account and environment for a task token. Does not load or decrypt the environment secret.
+     * Account and environment for a task token. Credential columns are removed in SQL, so the
+     * environment secret, hmac key, and OTLP headers are neither decrypted nor cached.
      * Cached like the persist environment lookup.
      */
     async getTaskTokenAccountContext(environmentId: number): Promise<Result<TaskTokenAccountContext | null>> {
@@ -1068,13 +1097,9 @@ class AccountService {
         const res = await db.readOnly
             .select<{
                 account: DBTeam;
-                environment: DBEnvironment;
+                environment: Omit<DBEnvironment, 'secret_key' | 'pending_secret_key' | 'hmac_key' | 'otlp_settings'>;
                 plan: DBPlan | null;
-            }>(
-                db.knex.raw('row_to_json(_nango_environments.*) as environment'),
-                db.knex.raw('row_to_json(_nango_accounts.*) as account'),
-                db.knex.raw('row_to_json(plans.*) as plan')
-            )
+            }>(taskTokenEnvironmentSelect(), db.knex.raw('row_to_json(_nango_accounts.*) as account'), db.knex.raw('row_to_json(plans.*) as plan'))
             .from<DBEnvironment>('_nango_environments')
             .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
             .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')

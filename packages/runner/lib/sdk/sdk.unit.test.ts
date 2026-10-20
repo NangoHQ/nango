@@ -44,6 +44,24 @@ const nangoProps: NangoProps = {
 
 const locks = new MapLocks();
 
+describe('script credentials', () => {
+    it('keeps secretKey when the run has no task token', () => {
+        const persistClient = new PersistClient({ secretKey: 'environment-secret' });
+        const runner = new NangoActionRunner({ ...nangoProps, secretKey: 'environment-secret' }, { persistClient, locks });
+
+        expect(runner.nango.secretKey).toBe('environment-secret');
+        expect(runner.nango.apiKey).toBe('environment-secret');
+    });
+
+    it('authenticates a task token as apiKey', () => {
+        const persistClient = new PersistClient({ secretKey: 'environment-secret' });
+        const runner = new NangoActionRunner({ ...nangoProps, secretKey: 'environment-secret', taskAuthToken: 'task-token' }, { persistClient, locks });
+
+        expect(runner.nango.apiKey).toBe('task-token');
+        expect(runner.nango.secretKey).toBeUndefined();
+    });
+});
+
 describe('cache', () => {
     let nangoAction: NangoActionRunner;
     let nango: Nango;
