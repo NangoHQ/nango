@@ -1,9 +1,11 @@
 import knexFactory from 'knex';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
+import { ensureDailyPartitions } from '@nangohq/migrations';
+
 import { AuditClient } from '../client.js';
 import { migrate } from '../postgres/migrate.js';
-import { ensurePartitions } from '../postgres/partitions.js';
+import { AUDIT_EVENTS_TABLE } from '../postgres/schema.js';
 import { PostgresAuditStore } from './postgres.js';
 
 import type { Knex } from 'knex';
@@ -39,7 +41,7 @@ beforeAll(async () => {
     knex = knexFactory({ client: 'pg', connection: { connectionString: url } });
     await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [schema]);
     expect((await migrate({ knex, schema })).isOk()).toBe(true);
-    (await ensurePartitions({ knex, schema, dates: [new Date('2026-09-30T00:00:00Z')] })).unwrap();
+    (await ensureDailyPartitions({ knex, schema, table: AUDIT_EVENTS_TABLE, dates: [new Date('2026-09-30T00:00:00Z')] })).unwrap();
     store = new PostgresAuditStore(knex, schema);
     client = new AuditClient(store, store);
 });
