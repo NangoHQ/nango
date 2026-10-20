@@ -23,7 +23,7 @@ import { deleteOldData } from './crons/deleteOldData.js';
 import { lambdaKeepWarmCron } from './crons/lambdaKeepWarm.js';
 import { manageGrowthAddonsCron } from './crons/manageGrowthAddons.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
-import { timeoutFunctionAsyncJobsCron } from './crons/timeoutFunctionAsyncJobs.js';
+import { destroyTimeoutFunctionAsyncJobsCron, timeoutFunctionAsyncJobsCron } from './crons/timeoutFunctionAsyncJobs.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
 import { envs } from './env.js';
@@ -142,6 +142,7 @@ const close = once(() => {
         await hostedTelemetryPartitions?.abort();
         await destroyHostedTelemetryDb();
         await tasks.stop();
+        await destroyTimeoutFunctionAsyncJobsCron();
         await db.destroy();
         await records.close();
         await destroyLogs();
