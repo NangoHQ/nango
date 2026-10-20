@@ -1,0 +1,82 @@
+---
+title: 'AdRoll'
+sidebarTitle: 'AdRoll'
+description: 'Integrate your application with the AdRoll API'
+---
+
+## 🚀 Quickstart
+
+Connect to AdRoll with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _AdRoll_. Follow the [setup guide](/api-integrations/adroll/how-to-register-your-own-adroll-api-oauth-app) to register an OAuth app and obtain your client ID and client secret, then enter them in the integration settings.
+    </Step>
+    <Step title="Authorize AdRoll">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to AdRoll. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the AdRoll API">
+    Let's make your first request to the AdRoll API (fetch your organization). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v1/organization/get" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v1/organization/get',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 AdRoll Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own AdRoll API OAuth app](/api-integrations/adroll/how-to-register-your-own-adroll-api-oauth-app)  
+  Register an OAuth app with AdRoll and obtain credentials to connect it to Nango
+
+Official docs: [NextRoll API for AdRoll](https://apidocs.nextroll.com/guides/get-started.html)
+
+## 🧩 Pre-built syncs & actions for AdRoll
+
+Enable them in your dashboard. [Extend and customize](/guides/functions/functions-guide) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/adroll/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
