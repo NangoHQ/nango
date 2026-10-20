@@ -17,6 +17,7 @@ import secretService from './services/secret.service.js';
 import sharedCredentialsService from './services/shared-credentials.service.js';
 import syncManager, { RunSyncCommandError, syncCommandToOperation } from './services/sync/manager.service.js';
 import userService from './services/user.service.js';
+import * as webhookSigningKeyService from './services/webhookSigningKey.service.js';
 import { getEncryptionManager, pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 
@@ -43,6 +44,7 @@ export * from './services/tags/schema.js';
 export * as gettingStartedService from './services/getting-started.service.js';
 export { MFAError, recordMFALoginRefused, recordMFAVerifyFailure, recordMFAVerifySuccess } from './services/mfa.service.js';
 export { CustomerKeyError, MAX_API_KEYS_PER_ACCOUNT } from './services/customerKey.service.js';
+export { WebhookSigningKeyError } from './services/webhookSigningKey.service.js';
 export type { ApiKeyRef, CustomerKeySearch } from './services/customerKey.service.js';
 export {
     GetConnectionError,
@@ -96,6 +98,7 @@ export {
     connectionService,
     customerKeyService,
     environmentService,
+    webhookSigningKeyService,
     errorManager,
     errorNotificationService,
     externalWebhookService,

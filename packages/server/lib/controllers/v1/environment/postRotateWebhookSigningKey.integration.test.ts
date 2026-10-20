@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { customerKeyService, getEncryptionManager, seeders } from '@nangohq/shared';
+import { getEncryptionManager, seeders, webhookSigningKeyService } from '@nangohq/shared';
 
 import { authenticateUser, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
@@ -9,7 +9,7 @@ const route = '/api/v1/environment/webhook-signing-key/rotate';
 let api: Awaited<ReturnType<typeof runServer>>;
 
 async function committedSigningKey(envId: number): Promise<string> {
-    const fresh = await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, envId);
+    const fresh = await webhookSigningKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, envId);
     if (fresh.isErr()) {
         throw fresh.error;
     }
@@ -36,7 +36,7 @@ describe(`POST ${route}`, () => {
         const { env, user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
-        const before = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
+        const before = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
         if (before.isErr()) {
             throw before.error;
         }
@@ -52,7 +52,7 @@ describe(`POST ${route}`, () => {
         expect(res.status).toBe(200);
         expect(json.data.webhook_signing_key).not.toBe(before.value);
 
-        const after = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
+        const after = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
         if (after.isErr()) {
             throw after.error;
         }
@@ -83,7 +83,7 @@ describe(`POST ${route}`, () => {
     it('should rotate through the public api with a secret key', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
 
-        const before = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
+        const before = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
         if (before.isErr()) {
             throw before.error;
         }

@@ -2,12 +2,12 @@ import db from '@nangohq/database';
 import {
     accountService,
     connectionService,
-    customerKeyService,
     environmentService,
     externalWebhookService,
     generateSlackConnectionId,
     getGlobalWebhookReceiveUrl,
-    getWebsocketsPath
+    getWebsocketsPath,
+    webhookSigningKeyService
 } from '@nangohq/shared';
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -66,7 +66,7 @@ export const getEnvironment = asyncWrapperWithEnvironment<GetEnvironment>(async 
     let webhookSigningKey: string | null = null;
     if (principalCan(res.locals, 'environment:settings:read_secret')) {
         // The cache can hold a rotated-out key for up to 5 minutes, and the dashboard must show the current one.
-        const signingKeyResult = await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, environment.id);
+        const signingKeyResult = await webhookSigningKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, environment.id);
         if (signingKeyResult.isOk()) {
             webhookSigningKey = signingKeyResult.value;
         }

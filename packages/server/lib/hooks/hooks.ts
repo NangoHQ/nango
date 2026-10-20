@@ -4,7 +4,6 @@ import db from '@nangohq/database';
 import {
     configService,
     connectionService,
-    customerKeyService,
     errorNotificationService,
     externalWebhookService,
     getProvider,
@@ -14,7 +13,8 @@ import {
     NangoError,
     ProxyRequest,
     pubsub,
-    syncManager
+    syncManager,
+    webhookSigningKeyService
 } from '@nangohq/shared';
 import { Err, isHosted, Ok, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
@@ -125,7 +125,7 @@ export const connectionCreated = async (
     const webhookSettings = await externalWebhookService.get(environment.id);
 
     if (webhookSettings) {
-        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        const webhookSigningKey = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
         if (webhookSigningKey.isErr()) {
             throw webhookSigningKey.error;
         }
@@ -171,7 +171,7 @@ export const connectionCreationFailed = async (
         const webhookSettings = await externalWebhookService.get(environment.id);
 
         if (webhookSettings) {
-            const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+            const webhookSigningKey = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
             if (webhookSigningKey.isErr()) {
                 throw webhookSigningKey.error;
             }
@@ -215,7 +215,7 @@ export const connectionDeleted = async ({
             return;
         }
 
-        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        const webhookSigningKey = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
         if (webhookSigningKey.isErr()) {
             throw webhookSigningKey.error;
         }
@@ -305,7 +305,7 @@ export const connectionRefreshSuccess = async ({
             const webhookSettings = await externalWebhookService.get(environment.id);
 
             if (webhookSettings) {
-                const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+                const webhookSigningKey = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
                 if (webhookSigningKey.isErr()) {
                     throw webhookSigningKey.error;
                 }
@@ -365,7 +365,7 @@ export const connectionRefreshFailed = async ({
     const webhookSettings = await externalWebhookService.get(environment.id);
 
     if (webhookSettings) {
-        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        const webhookSigningKey = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
         if (webhookSigningKey.isErr()) {
             throw webhookSigningKey.error;
         }

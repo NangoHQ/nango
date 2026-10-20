@@ -7,7 +7,6 @@ import {
     configService,
     connectionService,
     createSyncJob,
-    customerKeyService,
     environmentService,
     externalWebhookService,
     getApiUrl,
@@ -18,7 +17,8 @@ import {
     secretService,
     SyncJobsType,
     SyncStatus,
-    updateSyncJobStatus
+    updateSyncJobStatus,
+    webhookSigningKeyService
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
@@ -288,7 +288,7 @@ export async function handleWebhookSuccess({
     const environment = accountAndEnv.environment;
 
     if (environment && webhookSettings) {
-        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        const webhookSigningKey = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
         if (webhookSigningKey.isErr()) {
             throw webhookSigningKey.error;
         }
@@ -491,7 +491,7 @@ async function onFailure({
             if (team && syncConfig && providerConfig) {
                 void tracer.scope().activate(span, async () => {
                     try {
-                        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+                        const webhookSigningKey = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
                         if (webhookSigningKey.isErr()) {
                             throw webhookSigningKey.error;
                         }

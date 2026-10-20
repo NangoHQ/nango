@@ -6,7 +6,6 @@ import {
     accountService,
     configService,
     connectionService,
-    customerKeyService,
     environmentService,
     errorManager,
     ErrorSourceEnum,
@@ -16,7 +15,8 @@ import {
     LogActionEnum,
     NangoError,
     resolveRunnableTool,
-    secretService
+    secretService,
+    webhookSigningKeyService
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from '@nangohq/webhooks';
@@ -565,7 +565,7 @@ async function sendWebhookIfNeeded({
     }
     const webhookSettings = await externalWebhookService.get(environment.id);
     if (webhookSettings) {
-        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        const webhookSigningKey = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
         if (webhookSigningKey.isErr()) {
             throw webhookSigningKey.error;
         }

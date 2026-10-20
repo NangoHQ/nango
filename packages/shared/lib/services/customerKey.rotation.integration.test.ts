@@ -5,8 +5,9 @@ import db, { multipleMigrations } from '@nangohq/database';
 
 import { seedAccountEnvAndUser } from '../seeders/global.seeder.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
-import customerKeyService, { CustomerKeyError } from './customerKey.service.js';
 import environmentService from './environment.service.js';
+import { WebhookSigningKeyError } from './webhookSigningKey.service.js';
+import * as webhookSigningKeyService from './webhookSigningKey.service.js';
 
 import type { Orchestrator } from '../index.js';
 import type { EncryptionManager } from '../utils/encryption.manager.js';
@@ -32,7 +33,7 @@ function legacySigningKey(envId: number) {
 }
 
 async function plaintext(envId: number): Promise<string> {
-    const fresh = await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, envId);
+    const fresh = await webhookSigningKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, envId);
     if (fresh.isErr()) {
         throw fresh.error;
     }
@@ -48,8 +49,8 @@ describe('rotateWebhookSigningKey cache', () => {
         const { env } = await seedAccountEnvAndUser();
 
         const [first, second] = await Promise.all([
-            customerKeyService.rotateWebhookSigningKey(db.knex, env.id),
-            customerKeyService.rotateWebhookSigningKey(db.knex, env.id)
+            webhookSigningKeyService.rotateWebhookSigningKey(db.knex, env.id),
+            webhookSigningKeyService.rotateWebhookSigningKey(db.knex, env.id)
         ]);
         if (first.isErr()) {
             throw first.error;
@@ -61,7 +62,7 @@ describe('rotateWebhookSigningKey cache', () => {
         const committed = await plaintext(env.id);
         expect([first.value, second.value]).toContain(committed);
 
-        const served = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
+        const served = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
         if (served.isErr()) {
             throw served.error;
         }
@@ -71,19 +72,19 @@ describe('rotateWebhookSigningKey cache', () => {
     it('does not let a read that started before a rotation repopulate the old key', async () => {
         const { env } = await seedAccountEnvAndUser();
 
-        const before = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
+        const before = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
         if (before.isErr()) {
             throw before.error;
         }
 
-        const inFlight = customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
-        const rotated = await customerKeyService.rotateWebhookSigningKey(db.knex, env.id);
+        const inFlight = webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
+        const rotated = await webhookSigningKeyService.rotateWebhookSigningKey(db.knex, env.id);
         if (rotated.isErr()) {
             throw rotated.error;
         }
         await inFlight;
 
-        const served = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
+        const served = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
         if (served.isErr()) {
             throw served.error;
         }
@@ -94,25 +95,25 @@ describe('rotateWebhookSigningKey cache', () => {
     it('the uncached read serves a key rotated elsewhere without touching the cache', async () => {
         const { env } = await seedAccountEnvAndUser();
 
-        const before = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
+        const before = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
         if (before.isErr()) {
             throw before.error;
         }
         const rotated = await rotateInDb(env.id);
 
-        const cached = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
+        const cached = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
         if (cached.isErr()) {
             throw cached.error;
         }
         expect(cached.value).toBe(before.value);
 
-        const fresh = await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, env.id);
+        const fresh = await webhookSigningKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, env.id);
         if (fresh.isErr()) {
             throw fresh.error;
         }
         expect(fresh.value).toBe(rotated);
 
-        const after = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
+        const after = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
         if (after.isErr()) {
             throw after.error;
         }
@@ -147,7 +148,7 @@ describe('webhook signing key rows', () => {
         const { env } = await seedAccountEnvAndUser();
         await legacySigningKey(env.id).delete();
 
-        const rotated = await customerKeyService.rotateWebhookSigningKey(db.knex, env.id);
+        const rotated = await webhookSigningKeyService.rotateWebhookSigningKey(db.knex, env.id);
         if (rotated.isErr()) {
             throw rotated.error;
         }
@@ -169,7 +170,7 @@ describe('webhook signing key rows', () => {
 
         await environmentService.hardDelete(env.id);
 
-        const fresh = await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, env.id);
+        const fresh = await webhookSigningKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, env.id);
         expect(fresh.isErr()).toBe(true);
         if (fresh.isErr()) {
             expect(fresh.error).toMatchObject({ type: 'unhandled_no_webhook_signing_key' });
@@ -181,11 +182,11 @@ describe('webhook signing key rows', () => {
         await legacySigningKey(env.id).delete();
         await db.knex('webhook_signing_keys').where({ environment_id: env.id }).delete();
 
-        const rotated = await customerKeyService.rotateWebhookSigningKey(db.knex, env.id);
+        const rotated = await webhookSigningKeyService.rotateWebhookSigningKey(db.knex, env.id);
         expect(rotated.isErr()).toBe(true);
         if (rotated.isErr()) {
-            expect(rotated.error).toBeInstanceOf(CustomerKeyError);
-            expect((rotated.error as CustomerKeyError).code).toBe('no_webhook_signing_key');
+            expect(rotated.error).toBeInstanceOf(WebhookSigningKeyError);
+            expect((rotated.error as WebhookSigningKeyError).code).toBe('no_webhook_signing_key');
         }
         expect(await db.knex('webhook_signing_keys').where({ environment_id: env.id }).first()).toBeUndefined();
     });
@@ -214,7 +215,7 @@ describe('webhook signing key rows', () => {
         });
 
         await lockHeld;
-        const rotating = customerKeyService.rotateWebhookSigningKey(db.knex, env.id);
+        const rotating = webhookSigningKeyService.rotateWebhookSigningKey(db.knex, env.id);
 
         const deadline = Date.now() + 8_000;
         let blocked = false;

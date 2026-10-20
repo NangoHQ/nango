@@ -12,6 +12,7 @@ import { pubsub } from '../utils/pubsub.js';
 import customerKeyService from './customerKey.service.js';
 import { getPlan, lambdaKeepWarmProvisionedConcurrencyMultiplier } from './plans/plans.js';
 import secretService from './secret.service.js';
+import * as webhookSigningKeyService from './webhookSigningKey.service.js';
 
 import type { Orchestrator } from '../index.js';
 import type { Knex } from '@nangohq/database';
@@ -242,7 +243,7 @@ class EnvironmentService {
                     throw createdApiKey.error;
                 }
 
-                const createdWebhookKey = await customerKeyService.createWebhookSigningKey(innerTrx, {
+                const createdWebhookKey = await webhookSigningKeyService.createWebhookSigningKey(innerTrx, {
                     accountId: accountId,
                     environmentId: env.id
                 });

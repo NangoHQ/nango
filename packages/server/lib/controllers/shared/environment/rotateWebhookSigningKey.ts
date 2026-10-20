@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { CustomerKeyError, customerKeyService } from '@nangohq/shared';
+import { WebhookSigningKeyError, webhookSigningKeyService } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
 import type { RequestLocalsWithEnvironment } from '../../../utils/express.js';
@@ -13,14 +13,14 @@ export async function handleRotateWebhookSigningKey({
     res: Response<PostRotateWebhookSigningKey['Reply'] | PostPublicRotateWebhookSigningKey['Reply'], RequestLocalsWithEnvironment>;
     environmentId: number;
 }): Promise<boolean> {
-    const rotated = await customerKeyService.rotateWebhookSigningKey(db.knex, environmentId);
+    const rotated = await webhookSigningKeyService.rotateWebhookSigningKey(db.knex, environmentId);
     if (rotated.isErr()) {
         const err = rotated.error;
-        if (err instanceof CustomerKeyError && err.code === 'no_webhook_signing_key') {
+        if (err instanceof WebhookSigningKeyError && err.code === 'no_webhook_signing_key') {
             res.status(404).send({ error: { code: 'not_found', message: 'This environment has no webhook signing key' } });
             return false;
         }
-        if (err instanceof CustomerKeyError && err.code === 'multiple_webhook_signing_keys') {
+        if (err instanceof WebhookSigningKeyError && err.code === 'multiple_webhook_signing_keys') {
             res.status(409).send({
                 error: { code: 'multiple_webhook_signing_keys', message: 'This environment has more than one webhook signing key, contact support' }
             });

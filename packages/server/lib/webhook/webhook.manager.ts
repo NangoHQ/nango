@@ -1,7 +1,7 @@
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { connectionService, customerKeyService, externalWebhookService, getProvider, makeDataTransferEvent, NangoError, pubsub } from '@nangohq/shared';
+import { connectionService, externalWebhookService, getProvider, makeDataTransferEvent, NangoError, pubsub, webhookSigningKeyService } from '@nangohq/shared';
 import { Err, getLogger } from '@nangohq/utils';
 import { forwardWebhook } from '@nangohq/webhooks';
 
@@ -115,7 +115,7 @@ export async function routeWebhook({
         const webhookSettings = await externalWebhookService.get(environment.id);
 
         const webhookSigningSecret = webhookSettings
-            ? await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id).then((r) => {
+            ? await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id).then((r) => {
                   if (r.isErr()) throw r.error;
                   return r.value;
               })

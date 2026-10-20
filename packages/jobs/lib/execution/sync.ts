@@ -8,7 +8,6 @@ import {
     configService,
     connectionService,
     createSyncJob,
-    customerKeyService,
     environmentService,
     errorManager,
     errorNotificationService,
@@ -27,7 +26,8 @@ import {
     SyncJobsType,
     SyncStatus,
     updateSyncJobResult,
-    updateSyncJobStatus
+    updateSyncJobStatus,
+    webhookSigningKeyService
 } from '@nangohq/shared';
 import { Err, getFrequencyMs, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
@@ -355,7 +355,7 @@ export async function handleSyncSuccess({
         const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
         const outboundWebhookUrlOverride = webhookSettings ? await connectionService.getWebhookUrlOverride(connection) : null;
         const webhookSigningSecret = webhookSettings
-            ? await customerKeyService.getWebhookSigningKeyForEnv(db.knex, nangoProps.environmentId).then((r) => {
+            ? await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, nangoProps.environmentId).then((r) => {
                   if (r.isErr()) throw r.error;
                   return r.value;
               })
@@ -949,7 +949,7 @@ async function onFailure({
                     syncSuccess: false
                 }
             });
-            const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+            const webhookSigningKey = await webhookSigningKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
             if (webhookSigningKey.isErr()) {
                 throw webhookSigningKey.error;
             }
