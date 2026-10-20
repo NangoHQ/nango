@@ -76,6 +76,7 @@ import type {
     ListApiKeys,
     PatchApiKey,
     PatchEnvironment,
+    PatchPublicApiKey,
     PostEnvironment,
     PostPublicApiKey,
     PostPublicEnvironment,
@@ -101,6 +102,8 @@ import type {
     GetPublicIntegrationFunction,
     GetPublicIntegrationFunctions,
     GetPublicProviderTemplates,
+    GetTool,
+    GetTools,
     PatchConnectionFunction,
     PatchFunction,
     PatchFunctionVariant,
@@ -112,7 +115,8 @@ import type {
     PostFunctionDryrun,
     PostFunctionDryrunResult,
     PostFunctionInvocation,
-    PostFunctionVariant
+    PostFunctionVariant,
+    PostToolCall
 } from './functions/api.js';
 import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
@@ -132,6 +136,7 @@ import type {
 } from './integration/api.js';
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
+import type { GetConnectionToolsMcp, PostConnectionToolsMcp } from './mcp/api.js';
 import type { GetMeta } from './meta/api.js';
 import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from './mfa/api.js';
 import type { GetPlainHmac } from './plain/api.js';
@@ -192,6 +197,8 @@ export type PublicApiEndpoints =
     | DeleteAgentSession
     | PostAgentSessionMcp
     | GetAgentSessionMcp
+    | PostConnectionToolsMcp
+    | GetConnectionToolsMcp
     | PostPublicConnectSessionsReconnect
     | GetPublicConnections
     | GetPublicConnection
@@ -245,6 +252,9 @@ export type PublicApiEndpoints =
     | GetPublicFunctionCode
     | GetPublicIntegrationFunctions
     | GetPublicIntegrationFunction
+    | GetTool
+    | GetTools
+    | PostToolCall
     | DeletePublicIntegrationFunction
     | GetPublicProviderTemplates
     | PostPublicRotateWebhookSigningKey
@@ -255,6 +265,7 @@ export type PublicApiEndpoints =
     | GetPublicApiKey
     | GetPublicApiKeys
     | PostPublicApiKey
+    | PatchPublicApiKey
     | DeletePublicApiKey;
 
 export type PrivateApiEndpoints =

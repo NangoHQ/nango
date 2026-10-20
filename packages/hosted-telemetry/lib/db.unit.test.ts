@@ -13,15 +13,15 @@ const envs = vi.hoisted(() => ({
 vi.mock('./env.js', () => ({ envs }));
 
 vi.mock('@nangohq/database', () => ({
-    getDbConfig: () => ({
+    getDbConfig: ({ timeoutMs }: { timeoutMs: number }) => ({
         client: 'pg',
-        connection: { connectionString: 'postgres://main:x@db:5432/nango', application_name: 'main' },
-        pool: { min: 2, max: 30 }
+        connection: { connectionString: 'postgres://main:x@db:5432/nango', application_name: 'main', statement_timeout: timeoutMs },
+        pool: { min: 2, max: 30, acquireTimeoutMillis: 30000, createTimeoutMillis: 10000 }
     })
 }));
 
-function connection(db: ReturnType<typeof hostedTelemetryDb>): { connectionString: string } {
-    return db?.client.config.connection as { connectionString: string };
+function connection(db: ReturnType<typeof hostedTelemetryDb>): { connectionString: string; application_name: string; statement_timeout: number } {
+    return db?.client.config.connection as { connectionString: string; application_name: string; statement_timeout: number };
 }
 
 describe('hostedTelemetryDb', () => {
@@ -39,15 +39,20 @@ describe('hostedTelemetryDb', () => {
     it('gets its own pool to the main database by default', () => {
         flags.hasHostedTelemetry = true;
         const db = hostedTelemetryDb();
-        expect(connection(db).connectionString).toBe('postgres://main:x@db:5432/nango');
-        expect(db?.client.config.pool).toEqual({ min: 0, max: 5 });
+        expect(connection(db)).toEqual({ connectionString: 'postgres://main:x@db:5432/nango', application_name: 'main', statement_timeout: 60_000 });
+        expect(db?.client.config.pool).toEqual({ min: 0, max: 5, acquireTimeoutMillis: 30000, createTimeoutMillis: 10000 });
     });
 
     it('uses the URL when one moves it, and keeps that pool across calls', () => {
         flags.hasHostedTelemetry = true;
         envs.NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL = 'postgres://telemetry:x@db:5432/telemetry';
         const first = hostedTelemetryDb();
-        expect(connection(first).connectionString).toBe('postgres://telemetry:x@db:5432/telemetry');
+        expect(connection(first)).toEqual({
+            connectionString: 'postgres://telemetry:x@db:5432/telemetry',
+            application_name: 'main',
+            statement_timeout: 60_000,
+            ssl: false
+        });
         expect(hostedTelemetryDb()).toBe(first);
     });
 });

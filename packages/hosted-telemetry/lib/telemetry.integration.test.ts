@@ -1,9 +1,10 @@
 import knexFactory from 'knex';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { ensureDailyPartitions } from '@nangohq/migrations';
+
 import { PostgresMetricExporter } from './exporter.js';
 import { migrate } from './postgres/migrate.js';
-import { ensurePartitions } from './postgres/partitions.js';
 import { HOSTED_TELEMETRY_TABLE } from './postgres/schema.js';
 import { createHostedTelemetry, producerId } from './telemetry.js';
 
@@ -35,7 +36,7 @@ beforeAll(async () => {
     await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [schema]);
     (await migrate({ knex, schema })).unwrap();
     const now = new Date();
-    (await ensurePartitions({ knex, schema, dates: [now, new Date(now.getTime() + 86_400_000)] })).unwrap();
+    (await ensureDailyPartitions({ knex, schema, table: HOSTED_TELEMETRY_TABLE, dates: [now, new Date(now.getTime() + 86_400_000)] })).unwrap();
 });
 
 afterAll(async () => {

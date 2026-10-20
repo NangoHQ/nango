@@ -20,16 +20,17 @@ export function hostedTelemetryDb(): Knex | undefined {
         return undefined;
     }
     const url = envs.NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL;
+    const base = getDbConfig({ timeoutMs: 60_000 });
     instance ??= knex({
-        ...getDbConfig({ timeoutMs: 0 }),
+        ...base,
         ...(url && {
             connection: {
+                ...(base.connection as Knex.PgConnectionConfig),
                 connectionString: url,
-                application_name: envs.NANGO_DB_APPLICATION_NAME,
                 ssl: envs.NANGO_HOSTED_TELEMETRY_POSTGRES_SSL ? { rejectUnauthorized: false } : false
             }
         }),
-        pool: { min: 0, max: envs.NANGO_HOSTED_TELEMETRY_POSTGRES_POOL_MAX }
+        pool: { ...base.pool, min: 0, max: envs.NANGO_HOSTED_TELEMETRY_POSTGRES_POOL_MAX }
     });
     return instance;
 }

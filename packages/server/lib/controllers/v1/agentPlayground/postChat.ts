@@ -21,6 +21,7 @@ export function isTimeZone(timeZone: string): boolean {
 
 const bodySchema = z.object({
     sessionId: z.uuid().optional(),
+    chatId: z.uuid().optional(),
     messages: z.array(z.unknown()).min(1).max(200),
     timeZone: z.string().refine(isTimeZone, { message: 'Unknown IANA time zone' }).optional()
 });
@@ -68,6 +69,7 @@ export const postAgentPlaygroundChat = asyncWrapperWithEnvironment<PostAgentPlay
     const stream = await startTurn({
         ctx: { account, environment, plan, user },
         sessionId: body.data.sessionId,
+        chatId: body.data.chatId,
         messages,
         timeZone: body.data.timeZone ?? 'UTC',
         abortSignal: aborted.signal

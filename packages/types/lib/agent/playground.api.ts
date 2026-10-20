@@ -46,6 +46,7 @@ export type PostAgentPlaygroundChat = ApiEndpoint<{
     Querystring: { env: string };
     Body: {
         sessionId?: string | undefined;
+        chatId?: string | undefined;
         messages: unknown[];
         timeZone?: string | undefined;
     };

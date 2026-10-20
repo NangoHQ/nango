@@ -6,6 +6,23 @@ import { Nango } from './index.js';
 
 import type { NangoProps } from './types.js';
 
+describe('callTool', () => {
+    it('passes input and returns the response directly', async () => {
+        const nango = new Nango({ secretKey: 'test' });
+        const post = vi.fn().mockResolvedValue({ data: { deleted: true } });
+        // @ts-expect-error - mock the private HTTP client
+        nango.http = { post };
+        const body = { input: { eventId: 'event123' } };
+        const output = await nango.callTool({ connectionId: 'customer/id', name: 'calendar_delete_event' }, body);
+        expect(post).toHaveBeenCalledWith(
+            expect.stringContaining('/connections/customer%2Fid/tools/calendar_delete_event/calls'),
+            body,
+            expect.objectContaining({ headers: expect.objectContaining({ 'Content-Type': 'application/json' }) })
+        );
+        expect(output).toStrictEqual({ deleted: true });
+    });
+});
+
 describe('triggerSync', () => {
     const nango = new Nango({ secretKey: 'test' });
     const mockHttp = {

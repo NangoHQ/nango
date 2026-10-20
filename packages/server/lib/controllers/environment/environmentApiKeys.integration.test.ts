@@ -5,13 +5,22 @@ import { customerKeyService, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
-import type { AccountApiKeyScope, DBCustomerKey } from '@nangohq/types';
+import type { AccountApiKeyScope, ApiKeyScope, DBCustomerKey } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let keyIndex = 0;
 
 async function seedAccount() {
     return await seeders.seedAccountEnvAndUser();
+}
+
+async function createEnvironmentKey(accountId: number, environmentId: number, displayName: string, scopes?: ApiKeyScope[]): Promise<DBCustomerKey> {
+    return (await customerKeyService.createApiKey(db.knex, { accountId, environmentId, displayName, ...(scopes ? { scopes } : {}) })).unwrap();
+}
+
+async function findEnvironmentKey(accountId: number, environmentId: number, keyUuid: string) {
+    const found = (await customerKeyService.search(db.knex, { type: 'environment', environmentId, accountId, keyUuid }, { withSecrets: true })).unwrap();
+    return found[0];
 }
 
 async function createAccountKey(accountId: number, scopes: AccountApiKeyScope[]): Promise<DBCustomerKey> {
@@ -264,6 +273,45 @@ describe('Public environment API key management', () => {
             isError(res.json);
             expect(res.json.error).toEqual({ code: 'not_found', message: 'Environment not found' });
         });
+
+        it('should create an environment API key with the requested scopes', async () => {
+            const { account, env } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:create']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys', {
+                method: 'POST',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid },
+                body: { display_name: 'scoped-ci', scopes: ['environment:deploy'] }
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json.data.scopes).toEqual(['environment:deploy']);
+        });
+
+        it.each([
+            { name: 'empty scopes', scopes: [] },
+            { name: 'an unknown scope', scopes: ['environment:not_a_scope'] },
+            { name: 'an account scope with wildcard', scopes: ['account:*'] },
+            { name: 'an account scope', scopes: ['account:environments:create'] },
+            { name: 'a non-string scope', scopes: [42] }
+        ])('should reject $name', async ({ scopes }) => {
+            const { account, env } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:create']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys', {
+                method: 'POST',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid },
+                // @ts-expect-error testing invalid scopes
+                body: { display_name: 'invalid-scopes', scopes }
+            });
+
+            expect(res.res.status).toBe(400);
+            isError(res.json);
+            expect(res.json.error.code).toBe('invalid_body');
+        });
     });
 
     describe('GET /environments/:environmentUuid/api-keys/:keyUuid', () => {
@@ -427,6 +475,238 @@ describe('Public environment API key management', () => {
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
             expect(res.json.data.secret).toBe(apiKey.secret);
+        });
+    });
+
+    describe('PATCH /environments/:environmentUuid/api-keys/:keyUuid', () => {
+        it('should be protected', async () => {
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'PATCH',
+                params: {
+                    environmentUuid: '123e4567-e89b-12d3-a456-426614174000',
+                    keyUuid: '123e4567-e89b-12d3-a456-426614174001'
+                },
+                body: { display_name: 'renamed' }
+            });
+
+            shouldBeProtected(res);
+        });
+
+        it('should deny environment API keys', async () => {
+            const { env, apiKey } = await seedAccount();
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'PATCH',
+                token: apiKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: apiKey.uuid },
+                body: { scopes: ['environment:deploy'] }
+            });
+
+            expect(res.res.status).toBe(403);
+            isError(res.json);
+            expect(res.json.error).toEqual({
+                code: 'forbidden',
+                message: 'Insufficient scope. Required: account:environments:api_keys:update'
+            });
+        });
+
+        it('should deny Account API keys without the update scope', async () => {
+            const { account, env } = await seedAccount();
+            const key = await createEnvironmentKey(account.id, env.id, 'not-updatable');
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:create', 'account:environments:api_keys:read']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'PATCH',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: key.uuid },
+                body: { display_name: 'renamed' }
+            });
+
+            expect(res.res.status).toBe(403);
+            isError(res.json);
+            expect(res.json.error).toEqual({
+                code: 'forbidden',
+                message: 'Insufficient scope. Required: account:environments:api_keys:update'
+            });
+            expect((await findEnvironmentKey(account.id, env.id, key.uuid))?.display_name).toBe('not-updatable');
+        });
+
+        it('should update the display name and keep scopes and secret', async () => {
+            const { account, env } = await seedAccount();
+            const key = await createEnvironmentKey(account.id, env.id, 'before-rename', ['environment:deploy']);
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:update']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'PATCH',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: key.uuid },
+                body: { display_name: 'after-rename' }
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json).toStrictEqual({
+                data: {
+                    id: key.id,
+                    uuid: key.uuid,
+                    display_name: 'after-rename',
+                    scopes: ['environment:deploy'],
+                    last_used_at: null,
+                    created_at: key.created_at.toISOString()
+                }
+            });
+
+            const stored = await findEnvironmentKey(account.id, env.id, key.uuid);
+            expect(stored).toMatchObject({ display_name: 'after-rename', scopes: ['environment:deploy'], secret: key.secret });
+        });
+
+        it('should replace scopes and keep the display name', async () => {
+            const { account, env } = await seedAccount();
+            const key = await createEnvironmentKey(account.id, env.id, 'rescoped');
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:update']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'PATCH',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: key.uuid },
+                body: { scopes: ['environment:deploy'] }
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json.data).toMatchObject({ display_name: 'rescoped', scopes: ['environment:deploy'] });
+            expect(await findEnvironmentKey(account.id, env.id, key.uuid)).toMatchObject({ display_name: 'rescoped', scopes: ['environment:deploy'] });
+        });
+
+        it('should update display name and scopes together', async () => {
+            const { account, env } = await seedAccount();
+            const key = await createEnvironmentKey(account.id, env.id, 'both-before');
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:update']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'PATCH',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: key.uuid },
+                body: { display_name: 'both-after', scopes: ['environment:deploy'] }
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json.data).toMatchObject({ display_name: 'both-after', scopes: ['environment:deploy'] });
+            expect(await findEnvironmentKey(account.id, env.id, key.uuid)).toMatchObject({ display_name: 'both-after', scopes: ['environment:deploy'] });
+        });
+
+        it('should reject a duplicate display name without changing scopes', async () => {
+            const { account, env } = await seedAccount();
+            await createEnvironmentKey(account.id, env.id, 'taken-name');
+            const key = await createEnvironmentKey(account.id, env.id, 'conflicting');
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:update']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'PATCH',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: key.uuid },
+                body: { display_name: 'taken-name', scopes: ['environment:deploy'] }
+            });
+
+            expect(res.res.status).toBe(409);
+            isError(res.json);
+            expect(res.json.error).toEqual({ code: 'conflict', message: 'A key with this name already exists' });
+            expect(await findEnvironmentKey(account.id, env.id, key.uuid)).toMatchObject({ display_name: 'conflicting', scopes: ['environment:*'] });
+        });
+
+        it.each([
+            { name: 'an empty body', body: {} },
+            { name: 'an empty display name', body: { display_name: '' } },
+            { name: 'empty scopes', body: { scopes: [] } },
+            { name: 'an unknown scope', body: { scopes: ['environment:not_a_scope'] } },
+            { name: 'an account scope', body: { scopes: ['account:*'] } },
+            { name: 'an unknown field', body: { display_name: 'renamed', secret: 'abc' } }
+        ])('should reject $name', async ({ body }) => {
+            const { account, env } = await seedAccount();
+            const key = await createEnvironmentKey(account.id, env.id, 'invalid-update');
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:update']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'PATCH',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: key.uuid },
+                // @ts-expect-error testing invalid bodies
+                body
+            });
+
+            expect(res.res.status).toBe(400);
+            isError(res.json);
+            expect(res.json.error.code).toBe('invalid_body');
+            expect(await findEnvironmentKey(account.id, env.id, key.uuid)).toMatchObject({ display_name: 'invalid-update', scopes: ['environment:*'] });
+        });
+
+        it('should return not found for an unknown key in the environment', async () => {
+            const { account, env } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:update']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'PATCH',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: '123e4567-e89b-12d3-a456-426614174099' },
+                body: { display_name: 'renamed' }
+            });
+
+            expect(res.res.status).toBe(404);
+            isError(res.json);
+            expect(res.json.error).toEqual({ code: 'not_found', message: 'API key not found' });
+        });
+
+        it('should not update a key from another account', async () => {
+            const first = await seedAccount();
+            const second = await seedAccount();
+            const accountKey = await createAccountKey(first.account.id, ['account:environments:api_keys:update']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'PATCH',
+                token: accountKey.secret,
+                params: { environmentUuid: second.env.uuid, keyUuid: second.apiKey.uuid },
+                body: { scopes: ['environment:deploy'] }
+            });
+
+            expect(res.res.status).toBe(404);
+            isError(res.json);
+            expect(res.json.error).toEqual({ code: 'not_found', message: 'Environment not found' });
+            expect((await findEnvironmentKey(second.account.id, second.env.id, second.apiKey.uuid))?.scopes).toEqual(['environment:*']);
+        });
+
+        it('should not update a key through another environment of the same account', async () => {
+            const { account, env, apiKey } = await seedAccount();
+            const otherEnv = await seeders.createEnvironmentSeed(account.id, 'other-env');
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:update']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'PATCH',
+                token: accountKey.secret,
+                params: { environmentUuid: otherEnv.uuid, keyUuid: apiKey.uuid },
+                body: { scopes: ['environment:deploy'] }
+            });
+
+            expect(res.res.status).toBe(404);
+            isError(res.json);
+            expect(res.json.error).toEqual({ code: 'not_found', message: 'API key not found' });
+            expect((await findEnvironmentKey(account.id, env.id, apiKey.uuid))?.scopes).toEqual(['environment:*']);
+        });
+
+        it('should allow account:*', async () => {
+            const { account, env } = await seedAccount();
+            const key = await createEnvironmentKey(account.id, env.id, 'wildcard-update');
+            const accountKey = await createAccountKey(account.id, ['account:*']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'PATCH',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: key.uuid },
+                body: { display_name: 'wildcard-updated' }
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
         });
     });
 
