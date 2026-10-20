@@ -2,7 +2,7 @@ import { INTERNAL_SERVICE_AUTH_LOCALS_KEY, INTERNAL_SERVICE_ISSUER_JOBS, INTERNA
 import { keyRegistryFromPublicKeys, mergeKeyRegistries } from './jwt.js';
 import { verifyInternalServiceCredential } from './verify.js';
 
-import type { InternalServiceAuth } from './constants.js';
+import type { InternalServiceAuth, TaskCapabilityResource, TaskCapabilityScope } from './constants.js';
 import type { InternalAuthEnvs } from './credential.js';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -134,6 +134,66 @@ export function requireFleetAuth(envs: InternalAuthEnvs): (req: Request, res: Re
         const auth = getInternalServiceAuth(res);
         const nodeId = routeParam(req, 'nodeId');
         if (isNodeBoundAuth(auth, nodeId)) {
+            next();
+            return;
+        }
+        unauthorized(res, 'unauthorized', 'Unauthorized');
+    };
+}
+
+function isJobsTaskJwt(auth: InternalServiceAuth | undefined): auth is InternalServiceAuth {
+    return Boolean(
+        auth?.kind === 'jwt' &&
+            auth.issuer === INTERNAL_SERVICE_ISSUER_JOBS &&
+            typeof auth.sub === 'string' &&
+            auth.sub.startsWith('task:') &&
+            auth.sub.length > 'task:'.length
+    );
+}
+
+export function hasScope(auth: InternalServiceAuth | undefined, scope: TaskCapabilityScope): boolean {
+    return isJobsTaskJwt(auth) && Boolean(auth.scopes?.includes(scope));
+}
+
+export function isResourceBound(
+    auth: InternalServiceAuth | undefined,
+    expected: Pick<TaskCapabilityResource, 'environmentId' | 'connectionId' | 'syncId'>
+): boolean {
+    if (!isJobsTaskJwt(auth) || !auth.res) {
+        return false;
+    }
+    if (auth.res.environmentId !== expected.environmentId || auth.res.connectionId !== expected.connectionId) {
+        return false;
+    }
+    if (expected.syncId !== undefined && auth.res.syncId !== expected.syncId) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * When REQUIRED, the route's declared scope must be on the task capability token.
+ * HMAC task tokens carry no scopes and always pass. A scope-less Ed25519 task JWT also passes
+ * until the fallback below is removed.
+ */
+export function requireTaskScope(envs: InternalAuthEnvs, scope: TaskCapabilityScope): (req: Request, res: Response, next: NextFunction) => void {
+    return (_req, res, next) => {
+        if (!envs.NANGO_INTERNAL_AUTH_REQUIRED) {
+            next();
+            return;
+        }
+        const auth = getInternalServiceAuth(res);
+        if (auth?.kind === 'hmac' && auth.op === 'task') {
+            next();
+            return;
+        }
+        // TODO(NAN-6636): remove this fallback in PR 5, at least 25h after capability tokens are deployed.
+        // It applies only to Ed25519 task JWTs minted before they carried scopes. HMAC task tokens are handled above.
+        if (isJobsTaskJwt(auth) && (!auth.scopes || auth.scopes.length === 0)) {
+            next();
+            return;
+        }
+        if (hasScope(auth, scope)) {
             next();
             return;
         }
