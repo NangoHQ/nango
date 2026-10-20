@@ -41,5 +41,6 @@ export const flagEnforceCLIVersion = process.env['FLAG_ENFORCE_CLI_VERSION'] ===
 export const flags = {
     hasAdminCapabilities: Boolean(process.env['NANGO_ADMIN_UUID']),
     hasAuthRoles: process.env['FLAG_AUTH_ROLES_ENABLED'] === 'true',
-    hasAuditTrail: process.env['FLAG_AUDIT_TRAIL_ENABLED'] === 'true'
+    hasAuditTrail: process.env['FLAG_AUDIT_TRAIL_ENABLED'] === 'true',
+    hasHostedTelemetry: process.env['FLAG_HOSTED_TELEMETRY_ENABLED'] === 'true'
 };
