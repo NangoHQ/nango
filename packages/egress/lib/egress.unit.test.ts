@@ -1,4 +1,5 @@
 import dns from 'node:dns/promises';
+import tls from 'node:tls';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -477,5 +478,22 @@ describe('getSafeUndiciDispatcher connect overrides', () => {
         // proving the connection was routed through the safe lookup rather than the unix socket.
         const outboundErr = findOutboundUrlError(caught);
         expect(outboundErr?.code).toBe('denied_dns');
+    });
+
+    it('drops rejectUnauthorized so callers cannot turn off server certificate verification', async () => {
+        vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '93.184.216.34', family: 4 }] as never);
+        const connectSpy = vi.spyOn(tls, 'connect').mockImplementation(() => {
+            throw new Error('stop before connecting');
+        });
+        const policy = resolvePolicyForServer({ proxyBaseUrlOverrideDenylist: [], outboundUrlPolicy: { mode: 'permissive' } });
+
+        const dispatcher = getSafeUndiciDispatcher(policy, { cert: 'client-cert', key: 'client-key', rejectUnauthorized: false } as never);
+        await fetch('https://nango-egress-test.example/', { dispatcher } as never).catch(() => null);
+
+        expect(connectSpy).toHaveBeenCalled();
+        const options = connectSpy.mock.calls[0]![0] as tls.ConnectionOptions;
+        expect(options.rejectUnauthorized).not.toBe(false);
+        expect(options.cert).toBe('client-cert');
+        expect(options.key).toBe('client-key');
     });
 });
