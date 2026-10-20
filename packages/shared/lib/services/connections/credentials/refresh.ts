@@ -20,6 +20,7 @@ import type {
     DBConnectionDecrypted,
     DBEnvironment,
     DBTeam,
+    EnvironmentWithoutSecrets,
     IntegrationConfig,
     Provider,
     RefreshableCredentials,
@@ -31,14 +32,14 @@ import type { Result } from '@nangohq/utils';
 
 interface RefreshProps {
     account: DBTeam;
-    environment: DBEnvironment;
+    environment: DBEnvironment | EnvironmentWithoutSecrets;
     connection: DBConnectionDecrypted;
     integration: IntegrationConfig;
     logContextGetter: LogContextGetter;
     instantRefresh: boolean;
     onRefreshSuccess: (args: {
         connection: DBConnectionDecrypted;
-        environment: DBEnvironment;
+        environment: DBEnvironment | EnvironmentWithoutSecrets;
         config: ProviderConfig;
         account: DBTeam;
         provider: Provider;
@@ -47,7 +48,7 @@ interface RefreshProps {
         connection: DBConnectionDecrypted;
         logCtx: LogContext;
         authError: { type: string; description: string };
-        environment: DBEnvironment;
+        environment: DBEnvironment | EnvironmentWithoutSecrets;
         provider: Provider;
         config: ProviderConfig;
         account: DBTeam;

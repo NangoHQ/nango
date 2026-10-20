@@ -18,7 +18,7 @@ import { noteConnectionUpsert } from '../hooks/auditConnection.js';
 import { preConnectionDeletion } from '../hooks/connection/on/pre-connection-deletion.js';
 import { connectionCreated as connectionCreatedHook, connectionRefreshSuccess } from '../hooks/hooks.js';
 import { slackService } from '../services/slack.js';
-import { requireEnvironment } from '../utils/asyncWrapper.js';
+import { requireDbEnvironment } from '../utils/asyncWrapper.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { RequestLocals } from '../utils/express.js';
@@ -47,7 +47,7 @@ class ConnectionController {
             }
 
             const { account } = res.locals;
-            const environment = requireEnvironment(req, res);
+            const environment = requireDbEnvironment(req, res);
             if (!environment) {
                 return;
             }
@@ -112,7 +112,7 @@ class ConnectionController {
      */
     async setMetadataLegacy(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
-            const environment = requireEnvironment(req, res);
+            const environment = requireDbEnvironment(req, res);
             if (!environment) {
                 return;
             }
@@ -149,7 +149,7 @@ class ConnectionController {
      */
     async updateMetadataLegacy(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
-            const environment = requireEnvironment(req, res);
+            const environment = requireDbEnvironment(req, res);
             if (!environment) {
                 return;
             }
@@ -182,7 +182,7 @@ class ConnectionController {
     async createConnection(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
             const { account } = res.locals;
-            const environment = requireEnvironment(req, res);
+            const environment = requireDbEnvironment(req, res);
             if (!environment) {
                 return;
             }

@@ -6,7 +6,7 @@ import { principalCan } from '../../../authz/principal.js';
 import { integrationCredentialsToPublicApi, integrationToPublicApi } from '../../../formatters/integration.js';
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import integrationService from '../../../services/integration.service.js';
-import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithAnyEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { ApiPublicIntegrationInclude, GetPublicIntegration } from '@nangohq/types';
 
@@ -26,7 +26,7 @@ const validationQuery = z
     })
     .strict();
 
-export const getPublicIntegration = asyncWrapperWithEnvironment<GetPublicIntegration>(async (req, res) => {
+export const getPublicIntegration = asyncWrapperWithAnyEnvironment<GetPublicIntegration>(async (req, res) => {
     const valQuery = validationQuery.safeParse(req.query);
     if (!valQuery.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });
@@ -44,8 +44,9 @@ export const getPublicIntegration = asyncWrapperWithEnvironment<GetPublicIntegra
     const query: GetPublicIntegration['Querystring'] = valQuery.data;
 
     const queryInclude = new Set(query.include || []);
-    if (queryInclude.size > 0 && authType !== 'secretKey') {
-        // This endpoint is not reachable any other way right now BUT it's to prevent any future mistakes
+    if (queryInclude.size > 0 && authType !== 'secretKey' && authType !== 'taskToken') {
+        // Session tokens must not ask for webhook or credential includes. A task token may: the route's
+        // can() check already requires environment:integrations:read_credentials before credentials are returned.
         res.status(403).send({ error: { code: 'invalid_permissions', message: "Can't include credentials without a private key" } });
         return;
     }

@@ -112,6 +112,11 @@ export const rateLimiterMiddleware = async (req: Request, res: Response<any, Par
 
 function getKey(req: Request, res: Response<any, Partial<RequestLocals>>): string {
     if ('account' in res.locals) {
+        // Task tokens get their own bucket. The Nango-Is-Script header is client-settable, so it must
+        // not decide the bucket for a request that already authenticated as a task.
+        if (res.locals.authType === 'taskToken') {
+            return `account-task-${res.locals['account'].id}`;
+        }
         let key = `account-${res.locals.authType === 'secretKey' ? 'secret' : 'global'}-${res.locals['account'].id}`;
         // customers requests and requests from scripts fall into different buckets
         if (req.get('Nango-Is-Script') === 'true') {

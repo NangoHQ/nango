@@ -82,6 +82,7 @@ import type {
     DBEndUser,
     DBEnvironment,
     DBTeam,
+    EnvironmentWithoutSecrets,
     JwtCredentials,
     MaybePromise,
     Metadata,
@@ -797,7 +798,7 @@ export class ConnectionService {
         refreshGithubAppJwtToken = false
     }: {
         account: DBTeam;
-        environment: DBEnvironment;
+        environment: DBEnvironment | EnvironmentWithoutSecrets;
         connectionId: string;
         integrationId: string;
         forceRefresh?: boolean;
