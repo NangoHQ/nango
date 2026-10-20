@@ -4,6 +4,25 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="Scoped environment API keys from the API" description="October 19, 2026">
+  The account-level API can now create Environment API keys with specific scopes, and update a key's name or scopes after creation.
+
+  - [Create an environment API key](/reference/backend/http-api/environments/create-api-key) accepts an optional `scopes` array. Without it, the key keeps full environment access as before.
+  - [Update an environment API key](/reference/backend/http-api/environments/update-api-key) changes the `display_name` or replaces the `scopes`. The secret stays the same, and requests that need a removed scope start failing with a 403.
+
+  Both require an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the matching `account:environments:api_keys:*` scope.
+</Update>
+---
+
+<Update label="Agent Playground" description="October 15, 2026">
+  The Playground page in the dashboard now has an Agent tab, where you can try an AI agent on your own integrations before writing any code.
+
+  Pick a suggested prompt or type your own. The agent connects apps from inside the chat, uses the connections in your environment, and shows each tool call as a card you can open to see what was sent and what came back. Any change to your data waits for your approval.
+
+  Under the hood it is a regular [agent session](/guides/agent-sessions), so what you see is what your own agent would get. The chat shows the `POST /sessions` request behind each session.
+</Update>
+---
+
 <Update label="Playground page and Intercom webhooks" description="October 14, 2026">
   - **Playground page:** The Function Playground is now a full page under Playground in the sidebar.
   - **Intercom webhooks:** Nango can receive and forward [webhooks from Intercom](/api-integrations/intercom/webhooks).
