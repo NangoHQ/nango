@@ -39,17 +39,8 @@ export function eddsaBearerToken(header: string | undefined): string | undefined
 }
 
 /**
- * Secret-key authentication. An EdDSA bearer is not a customer secret: a route that never declared a
- * scope rejects it here instead of looking the token up as a secret.
+ * Secret-key authentication for a route that declared a scope.
  */
-export const authMiddleware = async (req: Request, res: Response<any, AuthLocals>, next: NextFunction) => {
-    if (eddsaBearerToken(req.get('authorization'))) {
-        res.status(401).json({ error: { code: 'unauthorized', message: 'Unauthorized' } });
-        return;
-    }
-    return authenticateSecret(req, res, next);
-};
-
 export async function authenticateSecret(req: Request, res: Response<any, AuthLocals>, next: NextFunction) {
     const authorizationHeader = req.get('authorization');
 

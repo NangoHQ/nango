@@ -1,4 +1,3 @@
-import express from 'express';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -11,15 +10,15 @@ import {
 } from '@nangohq/internal-auth';
 import { ed25519TestMaterial, mintTaskCapabilityToken } from '@nangohq/internal-auth/testing';
 import { accountService } from '@nangohq/shared';
-import { Ok } from '@nangohq/utils';
+import { createRoute, Ok } from '@nangohq/utils';
 
 import type { PersistAuthContext } from '@nangohq/types';
+import type { Express } from 'express';
 
 const material = ed25519TestMaterial();
 process.env['NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS'] = JSON.stringify([{ kid: 'jobs-2026-09', publicKey: material.raw }]);
 
-const { server } = await import('../server.js');
-const { authMiddleware } = await import('./auth.middleware.js');
+const { server, assertPersistRoutesAuthenticated } = await import('../server.js');
 
 const context: PersistAuthContext = {
     account: { id: 1 },
@@ -35,7 +34,7 @@ function hs256Secret(): string {
     return `${header}.${payload}.sig`;
 }
 
-async function listen(app: express.Express): Promise<{ url: string; close: () => Promise<void> }> {
+async function listen(app: Express): Promise<{ url: string; close: () => Promise<void> }> {
     return await new Promise((resolve) => {
         const httpServer = app.listen(0, '127.0.0.1', () => {
             const address = httpServer.address();
@@ -129,7 +128,7 @@ describe('persist task capability', () => {
         expect(secretLookup).not.toHaveBeenCalled();
     });
 
-    it('T8: a token gets a 401 on a route registered with null and on a route that was never given a scope', async () => {
+    it('T8: a token gets a 401 on a route registered with null, and a route that skipped createPersistRoute fails startup', async () => {
         const bearer = await token(['persist:log']);
         const health = await fetch(`${url}/health`, { headers: { Authorization: `Bearer ${bearer}` } });
         expect(health.status).toBe(401);
@@ -137,18 +136,25 @@ describe('persist task capability', () => {
         const open = await fetch(`${url}/health`);
         expect(open.status).toBe(200);
 
-        const app = express();
-        app.use('/environment/:environmentId/*splat', authMiddleware);
-        app.get('/environment/:environmentId/unscoped', (_req, res) => {
-            res.status(204).end();
+        const path = '/environment/:environmentId/unscoped';
+        createRoute(server, {
+            path,
+            method: 'GET',
+            validate: (_req, _res, next) => {
+                next();
+            },
+            handler: (_req, res) => {
+                res.status(204).end();
+            }
         });
-        const unscoped = await listen(app);
         try {
-            const res = await fetch(`${unscoped.url}/environment/9/unscoped`, { headers: { Authorization: `Bearer ${bearer}` } });
-            expect(res.status).toBe(401);
-            expect(secretLookup).not.toHaveBeenCalled();
+            expect(() => assertPersistRoutesAuthenticated(server)).toThrow(path);
         } finally {
-            await unscoped.close();
+            const stack = (server as Express & { router: { stack: { route?: { path?: string } }[] } }).router.stack;
+            const index = stack.findIndex((layer) => layer.route?.path === path);
+            if (index >= 0) {
+                stack.splice(index, 1);
+            }
         }
     });
 

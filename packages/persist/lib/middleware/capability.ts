@@ -1,26 +1,18 @@
-import {
-    hasScope,
-    INTERNAL_SERVICE_AUDIENCE_PERSIST,
-    INTERNAL_SERVICE_ISSUER_JOBS,
-    isResourceBound,
-    isTaskBoundAuth,
-    keyRegistryFromPublicKeys,
-    verifyTaskCapabilityToken
-} from '@nangohq/internal-auth';
+import { hasScope, INTERNAL_SERVICE_AUDIENCE_PERSIST, isResourceBound, isTaskBoundAuth, verifyTaskCapabilityToken } from '@nangohq/internal-auth';
 import { accountService } from '@nangohq/shared';
-import { createRoute, ENVS, parseEnvs, stringifyError } from '@nangohq/utils';
+import { createRoute, stringifyError } from '@nangohq/utils';
 
 import { applyPersistAuthContext, authenticateSecret, eddsaBearerToken } from './auth.middleware.js';
 import { connectionOwnershipMiddleware } from './connectionOwnership.middleware.js';
 
 import type { AuthLocals } from './auth.middleware.js';
-import type { TaskCapabilityScope } from '@nangohq/internal-auth';
+import type { KeyRegistry, TaskCapabilityScope } from '@nangohq/internal-auth';
 import type { Endpoint } from '@nangohq/types';
 import type { RouteHandler } from '@nangohq/utils';
 import type { Express, NextFunction, Request, RequestHandler, Response } from 'express';
 
-// Built once at process start. Verification receives this registry and never builds one per request.
-const jobsRegistry = keyRegistryFromPublicKeys(parseEnvs(ENVS).NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS, INTERNAL_SERVICE_ISSUER_JOBS);
+/** Set on the capability middleware so server startup can reject a route that skipped `createPersistRoute`. */
+export const PERSIST_CAPABILITY: unique symbol = Symbol('persistCapability');
 
 export interface PersistRouteOptions {
     /** Sync-conflict routes carry syncId in the body, not the path. */
@@ -30,31 +22,33 @@ export interface PersistRouteOptions {
 }
 
 /**
- * Registers a persist route with its capability scope. `null` rejects task tokens and does not
- * require a secret. The Express app is an argument because the server object is created in server.ts.
+ * Returns `createPersistRoute` bound to a jobs key registry. The caller builds that registry once
+ * and passes it in; verification never builds one per request.
  */
-export function createPersistRoute<E extends Endpoint<any>>(
-    app: Express,
-    handler: RouteHandler<E, AuthLocals>,
-    scope: TaskCapabilityScope | null,
-    opts?: PersistRouteOptions
-): void {
-    const middleware: RequestHandler[] = [persistCapability(scope, handler.path, opts)];
-    if (String(handler.path).includes(':nangoConnectionId')) {
-        middleware.push(connectionOwnershipMiddleware as RequestHandler);
-    }
-    if (opts?.parseJson) {
-        middleware.push(opts.parseJson);
-    }
-    createRoute(app, handler, { middleware });
+export function createPersistRoutes(registry: KeyRegistry) {
+    return function createPersistRoute<E extends Endpoint<any>>(
+        app: Express,
+        handler: RouteHandler<E, AuthLocals>,
+        scope: TaskCapabilityScope | null,
+        opts?: PersistRouteOptions
+    ): void {
+        const middleware: RequestHandler[] = [persistCapability(registry, scope, String(handler.path), opts)];
+        if (String(handler.path).includes(':nangoConnectionId')) {
+            middleware.push(connectionOwnershipMiddleware as RequestHandler);
+        }
+        if (opts?.parseJson) {
+            middleware.push(opts.parseJson);
+        }
+        createRoute(app, handler, { middleware });
+    };
 }
 
-function persistCapability(scope: TaskCapabilityScope | null, path: string, opts: PersistRouteOptions | undefined): RequestHandler {
-    return (req, res, next) => {
+function persistCapability(registry: KeyRegistry, scope: TaskCapabilityScope | null, path: string, opts: PersistRouteOptions | undefined): RequestHandler {
+    const middleware: RequestHandler = (req, res, next) => {
         const authRes = res as Response<unknown, AuthLocals>;
         const token = eddsaBearerToken(req.get('authorization'));
         if (token) {
-            void authenticateTask(req, authRes, next, token, scope, path, opts);
+            void authenticateTask(registry, req, authRes, next, token, scope, path, opts);
             return;
         }
         if (scope === null) {
@@ -63,9 +57,12 @@ function persistCapability(scope: TaskCapabilityScope | null, path: string, opts
         }
         void authenticateSecret(req, authRes, next);
     };
+    (middleware as RequestHandler & { [PERSIST_CAPABILITY]?: true })[PERSIST_CAPABILITY] = true;
+    return middleware;
 }
 
 async function authenticateTask(
+    registry: KeyRegistry,
     req: Request,
     res: Response<unknown, AuthLocals>,
     next: NextFunction,
@@ -80,7 +77,7 @@ async function authenticateTask(
     }
 
     try {
-        const auth = await verifyTaskCapabilityToken(token, INTERNAL_SERVICE_AUDIENCE_PERSIST, jobsRegistry);
+        const auth = await verifyTaskCapabilityToken(token, INTERNAL_SERVICE_AUDIENCE_PERSIST, registry);
         if (!auth || !hasScope(auth, scope)) {
             unauthorized(res);
             return;
@@ -126,6 +123,7 @@ async function authenticateTask(
     }
 }
 
+// Copied from the private helper in internal-auth/lib/middleware.ts. That package does not export it.
 function routeParam(req: Request, name: string): string | undefined {
     const value = req.params[name];
     return typeof value === 'string' && value.length > 0 ? value : undefined;
@@ -150,6 +148,7 @@ function bodySyncId(body: unknown): string | undefined {
     return typeof syncId === 'string' ? syncId : undefined;
 }
 
+// Copied from the private helper in internal-auth/lib/middleware.ts. That package does not export it.
 function unauthorized(res: Response): void {
     res.status(401).json({ error: { code: 'unauthorized', message: 'Unauthorized' } });
 }

@@ -1023,7 +1023,7 @@ class AccountService {
     }
 
     private async resolvePersistAuthContextByEnvironmentId(environmentId: number): Promise<PersistAuthContext | null> {
-        const cacheKey = `environment:${environmentId}`;
+        const cacheKey = String(environmentId);
         const cached = persistEnvironmentAuthCache.get(cacheKey);
         if (cached) {
             return cached;
