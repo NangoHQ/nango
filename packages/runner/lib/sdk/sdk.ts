@@ -811,7 +811,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
             count: 1
         });
 
-        return { records: res.value.records as NangoRecord<T>[], next_cursor: res.value.nextCursor ?? null };
+        return { records: res.value.records as NangoRecord<T>[], next_cursor: res.value.next_cursor };
     }
 
     public async getRecordsByIds<K = string | number, T extends Record<string, any> = Record<string, any>>(ids: K[], model: string): Promise<Map<K, T>> {
@@ -822,26 +822,25 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
             return objects;
         }
 
-        let cursor: string | undefined = undefined;
         for (let i = 0; i < ids.length; i += this.getRecordsBatchSize) {
-            this.throwIfAbortedOrKilled();
             const externalIdMap = new Map<string, K>(ids.slice(i, i + this.getRecordsBatchSize).map((id) => [String(id), id]));
+            let cursor: string | null = null;
+            do {
+                this.throwIfAbortedOrKilled();
+                const page: { records: NangoRecord<T>[]; next_cursor: string | null } = await this.fetchRecordsPage<T>(model, {
+                    externalIds: Array.from(externalIdMap.keys()),
+                    ...(cursor ? { cursor } : {})
+                });
 
-            const pageOptions: { cursor?: string; externalIds: string[] } = {
-                externalIds: Array.from(externalIdMap.keys()),
-                ...(cursor ? { cursor } : {})
-            };
-
-            const { records, next_cursor } = await this.fetchRecordsPage<T>(model, pageOptions);
-            cursor = next_cursor ?? undefined;
-
-            for (const record of records) {
-                const stringId = String(record.id);
-                const realId = externalIdMap.get(stringId);
-                if (realId !== undefined) {
-                    objects.set(realId, record);
+                for (const record of page.records) {
+                    const stringId = String(record.id);
+                    const realId = externalIdMap.get(stringId);
+                    if (realId !== undefined) {
+                        objects.set(realId, record);
+                    }
                 }
-            }
+                cursor = page.next_cursor;
+            } while (cursor);
         }
 
         return objects;
