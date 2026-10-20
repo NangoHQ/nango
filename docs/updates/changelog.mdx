@@ -4,6 +4,33 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="Agent Playground" description="October 20, 2026">
+  Try an AI agent on your own integrations before writing any code.
+
+  The new Agent Playground lets you connect your apps and ask a built-in AI agent to perform tasks directly in the Nango dashboard.
+
+  - **Explore use cases:** Start with a suggested prompt or type your own request.
+  - **See how each task runs:** Inspect tool calls to understand how the agent uses your integrations.
+  - **Validate ideas before building:** Try workflows with your connected accounts before adding them to your product.
+
+  Under the hood it is a regular [agent session](/guides/agent-sessions), so what you see is what your own agent would get.
+
+  [Try Agent Playground](https://app.nango.dev/dev/playground/agent).
+
+  ![Agent Playground answering a Google Calendar prompt](/images/changelog/agent-playground.png)
+</Update>
+---
+
+<Update label="Scoped environment API keys from the API" description="October 19, 2026">
+  The account-level API can now create Environment API keys with specific scopes, and update a key's name or scopes after creation.
+
+  - [Create an environment API key](/reference/backend/http-api/environments/create-api-key) accepts an optional `scopes` array. Without it, the key keeps full environment access as before.
+  - [Update an environment API key](/reference/backend/http-api/environments/update-api-key) changes the `display_name` or replaces the `scopes`. The secret stays the same, and requests that need a removed scope start failing with a 403.
+
+  Both require an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the matching `account:environments:api_keys:*` scope.
+</Update>
+---
+
 <Update label="Playground page and Intercom webhooks" description="October 14, 2026">
   - **Playground page:** The Function Playground is now a full page under Playground in the sidebar.
   - **Intercom webhooks:** Nango can receive and forward [webhooks from Intercom](/api-integrations/intercom/webhooks).
