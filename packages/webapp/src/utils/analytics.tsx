@@ -47,23 +47,26 @@ function resumeAnalytics() {
 export function isSessionRecordingAllowed({
     user,
     loadingUser,
+    userErrorCode,
     meta
 }: {
     user: ApiUser | undefined;
     loadingUser: boolean;
+    userErrorCode: string | undefined;
     meta: GetMeta['Success']['data'] | undefined;
 }): boolean | undefined {
     if (loadingUser) {
         return undefined;
     }
+    // Only a 401 proves the visitor is signed out. Any other failure may hide a signed-in BAA account.
     if (!user) {
-        return true;
+        return userErrorCode === 'unauthorized';
     }
     // A recording already running from the sign-in page must stop until /meta rules out a BAA account.
     if (!meta) {
         return false;
     }
-    return !meta.hasBaa && !meta.debugMode;
+    return meta.hasBaa === false && !meta.debugMode;
 }
 
 export function useAnalytics(input: Parameters<typeof isSessionRecordingAllowed>[0]) {

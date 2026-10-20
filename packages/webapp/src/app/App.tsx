@@ -21,10 +21,10 @@ const App = () => {
     // Sync persisted theme preference to the DOM
     useTheme();
     const [_, setLastEnvironment] = useLocalStorage(LocalStorageKeys.LastEnvironment);
-    const { user, loading: loadingUser } = useUser();
+    const { user, loading: loadingUser, error: userError } = useUser();
     const { data: metaData } = useMeta(!!user);
     const meta = metaData?.data;
-    useAnalytics({ user, loadingUser, meta });
+    useAnalytics({ user, loadingUser, userErrorCode: userError?.error?.code, meta });
 
     useEffect(() => {
         setShowGettingStarted(env === 'dev' && globalEnv.features.gettingStarted);
