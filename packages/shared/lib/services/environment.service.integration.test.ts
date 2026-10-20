@@ -7,8 +7,11 @@ import { Err } from '@nangohq/utils';
 import { externalWebhookService } from '../index.js';
 import { createAccount } from '../seeders/account.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
+import { getEncryptionManager } from '../utils/encryption.manager.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService from './environment.service.js';
+
+import type { DBCustomerKey } from '@nangohq/types';
 
 describe('Environment service', () => {
     beforeAll(async () => {
@@ -105,6 +108,36 @@ describe('Environment service', () => {
         expect(created.webhookSigningKey).toBe(storedKey);
     });
 
+    it.each(['8A27FE09-327C-43EC-8F75-B1F212904F45', '01932D5E-7B5C-7E27-9D62-1BD0F0A21C8F'])(
+        'should encrypt and preserve the supplied signing UUID %s',
+        async (webhookSigningKey) => {
+            const account = await createAccount();
+            const created = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid(), webhookSigningKey })).unwrap();
+
+            expect(created.webhookSigningKey).toBe(webhookSigningKey);
+
+            const storedKey = await db
+                .knex<DBCustomerKey>('customer_keys')
+                .select('customer_keys.*')
+                .join('customer_keys_relations', 'customer_keys_relations.customer_key_id', 'customer_keys.id')
+                .where('customer_keys.key_type', 'webhook_signing')
+                .where('customer_keys.account_id', account.id)
+                .where('customer_keys_relations.entity_type', 'environment')
+                .where('customer_keys_relations.entity_id', created.environment.id)
+                .first<DBCustomerKey | undefined>();
+            if (!storedKey) {
+                throw new Error('Expected a persisted webhook signing key linked to the environment');
+            }
+
+            expect(storedKey.secret).not.toBe(webhookSigningKey);
+            expect(storedKey.iv).toBeTruthy();
+            expect(storedKey.tag).toBeTruthy();
+            expect(storedKey.hashed).toBeTruthy();
+            expect(storedKey.hashed).not.toBe(webhookSigningKey);
+            expect(getEncryptionManager().decryptAPISecret(storedKey).secret).toBe(webhookSigningKey);
+        }
+    );
+
     it('should persist custom webhook URLs and disabled subscriptions', async () => {
         const account = await createAccount();
         const webhooks = {
@@ -148,6 +181,7 @@ describe('Environment service', () => {
     it.each(['signing key', 'webhook configuration'])('should roll back all creation writes when %s creation fails', async (stage) => {
         const account = await createAccount();
         const name = uuid();
+        const webhookSigningKey = uuid();
         const expectedFailure = new Error(`Failed to create ${stage}`);
 
         const createSigningKey = customerKeyService.createWebhookSigningKey.bind(customerKeyService);
@@ -166,7 +200,7 @@ describe('Environment service', () => {
             return updated;
         });
 
-        const result = await environmentService.createEnvironment(db.knex, { accountId: account.id, name });
+        const result = await environmentService.createEnvironment(db.knex, { accountId: account.id, name, webhookSigningKey });
         if (result.isOk()) {
             throw new Error('Expected environment creation to fail');
         }
@@ -176,6 +210,7 @@ describe('Environment service', () => {
         expect(result.error.cause).toBe(expectedFailure);
 
         expect(signingKeySpy).toHaveBeenCalledOnce();
+        expect(signingKeySpy.mock.calls[0]?.[1].secret).toBe(webhookSigningKey);
 
         const environmentId = signingKeySpy.mock.calls[0]?.[1].environmentId;
         expect(environmentId).toBeDefined();

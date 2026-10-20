@@ -331,15 +331,15 @@ class CustomerKeyService {
         trx: Knex,
         {
             accountId,
-            environmentId
+            environmentId,
+            secret: plainText = uuid.v4()
         }: {
             accountId: number;
             environmentId: number;
+            secret?: string;
         }
     ): Promise<Result<DBCustomerKey>> {
         try {
-            const plainText = uuid.v4();
-
             const hashed = await this.hashSecret(plainText);
             if (hashed.isErr()) {
                 throw hashed.error;

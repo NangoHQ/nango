@@ -34,6 +34,7 @@ type CreateEnvironmentSettings = {
     slackNotifications?: boolean;
     otlpSettings?: DBEnvironment['otlp_settings'];
     webhooks?: Partial<ApiWebhooks>;
+    webhookSigningKey?: string;
     plan?: DBPlan | null;
 };
 
@@ -193,6 +194,7 @@ class EnvironmentService {
             slackNotifications,
             otlpSettings,
             webhooks,
+            webhookSigningKey,
             plan
         }: CreateEnvironmentSettings
     ): Promise<Result<EnvironmentWithSettings, CreateEnvironmentError>> {
@@ -254,7 +256,8 @@ class EnvironmentService {
 
                 const createdWebhookKey = await customerKeyService.createWebhookSigningKey(innerTrx, {
                     accountId: accountId,
-                    environmentId: env.id
+                    environmentId: env.id,
+                    ...(webhookSigningKey !== undefined && { secret: webhookSigningKey })
                 });
                 if (createdWebhookKey.isErr()) {
                     throw createdWebhookKey.error;
