@@ -1,11 +1,10 @@
 import knex from 'knex';
 
 import { getDbConfig } from '@nangohq/database';
+import { migrate, startPartitionDaemon } from '@nangohq/hosted-telemetry';
 import { flags } from '@nangohq/utils';
 
 import { envs } from './env.js';
-import { migrate } from './postgres/migrate.js';
-import { startPartitionDaemon } from './postgres/partitions.js';
 
 import type { Knex } from 'knex';
 

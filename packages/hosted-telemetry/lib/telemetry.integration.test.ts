@@ -6,7 +6,7 @@ import { ensureDailyPartitions } from '@nangohq/migrations';
 import { PostgresMetricExporter } from './exporter.js';
 import { migrate } from './postgres/migrate.js';
 import { HOSTED_TELEMETRY_TABLE } from './postgres/schema.js';
-import { createHostedTelemetry, producerId } from './telemetry.js';
+import { createHostedTelemetry, hostedTelemetry, initHostedTelemetry, producerId } from './telemetry.js';
 
 import type { Knex } from 'knex';
 
@@ -45,10 +45,12 @@ afterAll(async () => {
 });
 
 describe('hosted telemetry producer', () => {
-    it('is a no-op without a store', async () => {
+    it('is a no-op without a store, and the shared instance is one until it is initialised', async () => {
         const telemetry = createHostedTelemetry();
         telemetry.increment('nango.hosted_metric.active_concurrency', 1, { environment_id: 7 });
         await expect(telemetry.shutdown()).resolves.toBeUndefined();
+        hostedTelemetry.increment('nango.hosted_metric.active_concurrency', 1, { environment_id: 7 });
+        await expect(hostedTelemetry.shutdown()).resolves.toBeUndefined();
         expect(await rows()).toEqual([]);
     });
 
@@ -104,5 +106,14 @@ describe('hosted telemetry producer', () => {
         await exporter.write([row]);
 
         expect(await rows()).toEqual([row]);
+    });
+
+    it('records through the shared instance once it is initialised', async () => {
+        await knex.raw('TRUNCATE ??.??', [schema, HOSTED_TELEMETRY_TABLE]);
+        initHostedTelemetry({ knex, schema });
+        hostedTelemetry.increment('nango.hosted_metric.active_concurrency', 3, { environment_id: 7 });
+        await hostedTelemetry.shutdown();
+
+        expect((await rows()).map((r) => [r.metric, r.value])).toEqual([['nango.hosted_metric.active_concurrency', 3]]);
     });
 });

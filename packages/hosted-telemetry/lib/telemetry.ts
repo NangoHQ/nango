@@ -4,7 +4,6 @@ import { createNoopMeter } from '@opentelemetry/api';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 
-import { hostedTelemetryDb } from './db.js';
 import { PostgresMetricExporter, PRODUCER_ID_ATTRIBUTE } from './exporter.js';
 import { HOSTED_TELEMETRY_SCHEMA } from './postgres/schema.js';
 
@@ -64,5 +63,16 @@ export function createHostedTelemetry(store?: { knex: Knex; schema?: string; exp
     };
 }
 
-const db = hostedTelemetryDb();
-export const hostedTelemetry = createHostedTelemetry(db && { knex: db, exportIntervalMs: EXPORT_INTERVAL_MS });
+let current = createHostedTelemetry();
+
+/** Called once at boot by the service that owns the pool. Until then every call on `hostedTelemetry` records nothing. */
+export function initHostedTelemetry({ knex, schema }: { knex: Knex; schema?: string }): void {
+    current = createHostedTelemetry({ knex, ...(schema && { schema }), exportIntervalMs: EXPORT_INTERVAL_MS });
+}
+
+export const hostedTelemetry: HostedTelemetry = {
+    increment: (name, value, attributes) => current.increment(name, value, attributes),
+    gauge: (name, value, attributes) => current.gauge(name, value, attributes),
+    histogram: (name, value, attributes) => current.histogram(name, value, attributes),
+    shutdown: () => current.shutdown()
+};

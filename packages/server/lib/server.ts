@@ -10,7 +10,7 @@ import { WebSocketServer } from 'ws';
 
 import db, { KnexDatabase } from '@nangohq/database';
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
-import { destroyHostedTelemetryDb, hostedTelemetry, migrateHostedTelemetryDb, startHostedTelemetryPartitions } from '@nangohq/hosted-telemetry';
+import { hostedTelemetry, initHostedTelemetry } from '@nangohq/hosted-telemetry';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
@@ -29,6 +29,7 @@ import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
 import { envs } from './env.js';
 import { migrateFleets, stopFleets } from './fleet.js';
+import { destroyHostedTelemetryDb, hostedTelemetryDb, migrateHostedTelemetryDb, startHostedTelemetryPartitions } from './hostedTelemetryDb.js';
 import { beginShutdown } from './ready.js';
 import { router } from './routes.js';
 import { tasks } from './tasks/index.js';
@@ -97,6 +98,10 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 
 const auditPartitions = startAuditPartitions();
 const hostedTelemetryPartitions = startHostedTelemetryPartitions();
+const telemetryDb = hostedTelemetryDb();
+if (telemetryDb) {
+    initHostedTelemetry({ knex: telemetryDb });
+}
 
 // Preload providers
 getProviders();

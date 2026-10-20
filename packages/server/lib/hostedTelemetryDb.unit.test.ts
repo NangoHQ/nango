@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { flags } from '@nangohq/utils';
 
-import { destroyHostedTelemetryDb, hostedTelemetryDb } from './db.js';
+import { destroyHostedTelemetryDb, hostedTelemetryDb } from './hostedTelemetryDb.js';
 
 const envs = vi.hoisted(() => ({
     NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL: undefined as string | undefined,
