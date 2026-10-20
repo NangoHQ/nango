@@ -1169,6 +1169,7 @@
               "integrations/all/boldsign",
               "integrations/all/booking-com",
               "api-integrations/boondmanager",
+              "api-integrations/bouncer",
               "api-integrations/box",
               "integrations/all/braintree",
               "integrations/all/braintree-sandbox",
