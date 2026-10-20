@@ -31,7 +31,8 @@ import type {
     DBUser,
     PersistAuthContext,
     Result,
-    SignupAcquisition
+    SignupAcquisition,
+    TaskTokenEnvironment
 } from '@nangohq/types';
 
 const hashLocalCache = new FixedSizeMap<string, string>(10_000);
@@ -115,9 +116,6 @@ const persistEnvironmentAuthContextCache = new AuthContextCache<PersistAuthConte
     () => envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED,
     envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS
 );
-
-/** Environment columns a task token may see. The deprecated secret columns are not a credential. */
-type TaskTokenEnvironment = Omit<DBEnvironment, 'secret_key' | 'pending_secret_key'>;
 
 /** Account and environment for a task token. No decrypted secret. */
 interface TaskTokenAccountContext {

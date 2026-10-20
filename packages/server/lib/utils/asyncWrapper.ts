@@ -5,7 +5,7 @@ import tracer from 'dd-trace';
 import { metrics, report } from '@nangohq/utils';
 
 import type { RequestLocals, RequestLocalsWithEnvironment } from './express.js';
-import type { DBEnvironment, Endpoint } from '@nangohq/types';
+import type { DBEnvironment, Endpoint, TaskTokenEnvironment } from '@nangohq/types';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
 export function asyncWrapper<TEndpoint extends Endpoint<any>, Locals extends Record<string, any> = RequestLocals>(
@@ -64,7 +64,7 @@ export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>>(
  * No environment means an environment-scoped handler was wired to a route that resolves none, which
  * is a wiring mistake rather than a client error.
  */
-export function requireEnvironment(req: Request, res: Response<any, RequestLocals>): DBEnvironment | null {
+export function requireEnvironment(req: Request, res: Response<any, RequestLocals>): DBEnvironment | TaskTokenEnvironment | null {
     const { environment } = res.locals;
     if (!environment) {
         report(new Error('handler_requires_environment'), { route: req.route?.path ?? req.originalUrl });

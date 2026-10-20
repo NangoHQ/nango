@@ -1,6 +1,17 @@
 import type { ApiScope } from '../middleware/task-capability.js';
 import type { Principal } from '@nangohq/authz';
-import type { AgentSession, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser, InternalEndUser } from '@nangohq/types';
+import type {
+    AgentSession,
+    ApiKeyPrincipal,
+    ConnectSession,
+    DBAPISecret,
+    DBEnvironment,
+    DBPlan,
+    DBTeam,
+    DBUser,
+    InternalEndUser,
+    TaskTokenEnvironment
+} from '@nangohq/types';
 
 // Types are historically loose so we need to fix them at some point
 // export type RequestLocals =
@@ -37,7 +48,8 @@ export interface RequestLocals {
     user: DBUser;
 
     // Set only by some auth paths, so a handler must check before use.
-    environment?: DBEnvironment;
+    // Task-token auth omits secret_key and pending_secret_key; other paths set a full DBEnvironment.
+    environment?: DBEnvironment | TaskTokenEnvironment;
     endUser?: InternalEndUser | null;
     lang?: string;
     secret?: DBAPISecret;
@@ -57,4 +69,4 @@ export interface RequestLocals {
 }
 
 /** RequestLocals with the environment confirmed present — see `asyncWrapperWithEnvironment` and `requireEnvironment`. */
-export type RequestLocalsWithEnvironment = RequestLocals & { environment: DBEnvironment };
+export type RequestLocalsWithEnvironment = RequestLocals & { environment: DBEnvironment | TaskTokenEnvironment };

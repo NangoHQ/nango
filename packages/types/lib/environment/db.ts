@@ -17,10 +17,10 @@ export interface DBEnvironment extends TimestampsAndDeletedCorrect {
     /**
      * @deprecated Field secret_key is deprecated.
      * New code should use SecretService to retrieve secrets for environments.
-     * Populated for backward compatibility when the request authenticated with a secret.
-     * Absent for task-token auth. It may be removed in a future release.
+     * This field is populated for backward compatibility only.
+     * It may be removed in a future release.
      */
-    secret_key?: string;
+    secret_key: string;
     public_key: string;
     callback_url: string | null;
     /**
@@ -44,10 +44,10 @@ export interface DBEnvironment extends TimestampsAndDeletedCorrect {
     /**
      * @deprecated Field pending_secret_key is deprecated.
      * New code should use SecretService to rotate secrets for environments.
-     * Populated for backward compatibility when the request authenticated with a secret.
-     * Absent for task-token auth. It may be removed in a future release.
+     * This field is populated for backward compatibility only.
+     * It may be removed in a future release.
      */
-    pending_secret_key?: string | null;
+    pending_secret_key: string | null;
     pending_public_key?: string | null;
     slack_notifications: boolean;
 
@@ -55,6 +55,9 @@ export interface DBEnvironment extends TimestampsAndDeletedCorrect {
     otlp_settings: { endpoint: string; headers: Record<string, string> } | null;
     is_production: boolean;
 }
+
+/** Environment loaded for a task token. Secret columns are not selected; use SecretService on a full `DBEnvironment`. */
+export type TaskTokenEnvironment = Omit<DBEnvironment, 'secret_key' | 'pending_secret_key'>;
 
 export interface DBExternalWebhook extends Timestamps {
     id: number;
