@@ -23,13 +23,27 @@ export function applyPersistAuthContext(res: Response<any, AuthLocals>, accountC
 }
 
 /**
+ * The token from an EdDSA `Authorization` header. The scheme match is anchored and
+ * case-insensitive (`Bearer`, `bearer`). Anything else returns undefined so the secret path can run.
+ */
+export function eddsaBearerToken(header: string | undefined): string | undefined {
+    if (!header) {
+        return undefined;
+    }
+    const match = /^Bearer\s+(\S+)$/i.exec(header.trim());
+    const token = match?.[1];
+    if (!token || jwtHeaderAlg(token) !== 'EdDSA') {
+        return undefined;
+    }
+    return token;
+}
+
+/**
  * Secret-key authentication. An EdDSA bearer is not a customer secret: a route that never declared a
  * scope rejects it here instead of looking the token up as a secret.
  */
 export const authMiddleware = async (req: Request, res: Response<any, AuthLocals>, next: NextFunction) => {
-    const authorizationHeader = req.get('authorization');
-    const secret = authorizationHeader?.split('Bearer ').pop();
-    if (secret && jwtHeaderAlg(secret) === 'EdDSA') {
+    if (eddsaBearerToken(req.get('authorization'))) {
         res.status(401).json({ error: { code: 'unauthorized', message: 'Unauthorized' } });
         return;
     }

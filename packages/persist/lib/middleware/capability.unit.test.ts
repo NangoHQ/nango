@@ -175,6 +175,17 @@ describe('persist task capability', () => {
         expect(secretLookup).not.toHaveBeenCalled();
     });
 
+    it('accepts a lowercase bearer scheme on an EdDSA task JWT', async () => {
+        const bearer = await token(['persist:log']);
+        const res = await fetch(`${url}/environment/9/log`, {
+            method: 'POST',
+            headers: { Authorization: `bearer ${bearer}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(logBody)
+        });
+        expect(res.status).toBe(204);
+        expect(secretLookup).not.toHaveBeenCalled();
+    });
+
     it('a token for task-1 gets a 401 on task-2 abort', async () => {
         const bearer = await token(['persist:abort']);
         const res = await fetch(`${url}/environment/9/runner/task/task-2/abort`, { headers: { Authorization: `Bearer ${bearer}` } });
