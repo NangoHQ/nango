@@ -29,7 +29,7 @@ import { useUser } from '@/hooks/useUser';
 import { usePlaygroundToolbarSlot } from '@/pages/Playground/Show';
 import { useStore } from '@/store';
 import { deleteAgentPlaygroundChat, openAgentPlaygroundChat, saveAgentPlaygroundChat } from '@/store/agentPlaygroundChat';
-import { track } from '@/utils/analytics';
+import { analyticsSessionHeaders, track } from '@/utils/analytics';
 import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
 import { approvalProperties, pendingApprovals } from './approvalTracking';
@@ -74,17 +74,17 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
     );
 
     const sessionId = useRef<string | undefined>(undefined);
-    const transport = useMemo(
-        () =>
-            new DefaultChatTransport<PlaygroundMessage>({
-                api: new URL(`/api/v1/agent-playground/chat?env=${env}`, globalEnv.dashboardApiUrl).toString(),
-                credentials: 'include',
-                prepareSendMessagesRequest: ({ messages }) => ({
-                    body: { messages, sessionId: sessionId.current, chatId, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }
-                })
-            }),
-        [env, chatId]
-    );
+    const transport = useMemo(() => {
+        const api = new URL(`/api/v1/agent-playground/chat?env=${env}`, globalEnv.dashboardApiUrl);
+        return new DefaultChatTransport<PlaygroundMessage>({
+            api: api.toString(),
+            credentials: 'include',
+            prepareSendMessagesRequest: ({ messages }) => ({
+                body: { messages, sessionId: sessionId.current, chatId, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+                headers: analyticsSessionHeaders(api)
+            })
+        });
+    }, [env, chatId]);
     const onReset = () => {
         deleteAgentPlaygroundChat(chatId);
         onNewChat();

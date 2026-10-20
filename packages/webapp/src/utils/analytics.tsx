@@ -1,11 +1,22 @@
 import posthog from 'posthog-js';
 import { usePostHog } from 'posthog-js/react';
 
+import { globalEnv } from './env';
+
 import type { AccountGroupProperties, AnalyticsEventNameFor, AnalyticsEventPropertiesArgs, ApiUser } from '@nangohq/types';
 
 /** Uses the `posthog` singleton so it works outside React components too. */
 export function track<E extends AnalyticsEventNameFor<'web'>>(event: E, ...[properties]: AnalyticsEventPropertiesArgs<E>) {
     posthog?.capture(event, { ...properties, surface: 'web' });
+}
+
+export function analyticsSessionHeaders(url: URL): Record<string, string> {
+    // The OAuth issuer can share this origin, and its CORS policy rejects the header, so match the path too.
+    if (url.origin !== new URL(globalEnv.dashboardApiUrl).origin || !url.pathname.startsWith('/api/v1/')) {
+        return {};
+    }
+    const sessionId = posthog?.get_session_id();
+    return sessionId ? { 'X-Nango-Analytics-Session-Id': sessionId } : {};
 }
 
 // Every group() call with properties sends a $groupidentify event, and PrivateRoute identifies on each render.
