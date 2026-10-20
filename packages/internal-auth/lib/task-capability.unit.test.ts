@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
     INTERNAL_SERVICE_AUDIENCE_JOBS,
     INTERNAL_SERVICE_AUDIENCE_PERSIST,
+    INTERNAL_SERVICE_AUDIENCE_RUNNER,
     INTERNAL_SERVICE_AUDIENCE_SERVER,
     INTERNAL_SERVICE_ISSUER_JOBS,
     INTERNAL_SERVICE_ISSUER_SERVER,
@@ -13,10 +14,11 @@ import {
     taskScopesForScriptType,
     taskSubject
 } from './constants.js';
+import { exportRunnerPublicKey } from './ed25519.js';
 import { keyRegistryFromPublicKeys, mint, verify, verifyTaskCapabilityToken } from './jwt.js';
 import { hasScope, internalServiceAuthMiddleware, isResourceBound, requireTaskBoundAuth, requireTaskScope } from './middleware.js';
 import { ed25519TestMaterial, mintTaskCapabilityToken } from './testing.js';
-import { createInternalServiceToken } from './token.js';
+import { createInternalServiceToken, createRunnerDispatchToken } from './token.js';
 
 import type { TaskCapabilityResource } from './constants.js';
 import type { InternalAuthEnvs } from './credential.js';
@@ -75,6 +77,24 @@ describe('T1', () => {
         const ignored = await verifyTaskCapabilityToken(withUnknown, INTERNAL_SERVICE_AUDIENCE_PERSIST, registry);
         expect(ignored?.res).toEqual(RESOURCE);
         expect(ignored?.scopes).toEqual(actionScopes);
+
+        const withFutureScope = await signCustom(pem, { res: RESOURCE, scopes: ['persist:log', 'future:thing'] });
+        const future = await verifyTaskCapabilityToken(withFutureScope, INTERNAL_SERVICE_AUDIENCE_JOBS, registry);
+        expect(future).not.toBeNull();
+        if (!future) {
+            return;
+        }
+        expect(future.scopes).toEqual(['persist:log']);
+        expect(hasScope(future, 'persist:log')).toBe(true);
+        expect(hasScope(future, 'jobs:putTask')).toBe(false);
+
+        for (const scopes of [
+            ['persist:log', ''],
+            ['persist:log', 1]
+        ]) {
+            const token = await signCustom(pem, { res: RESOURCE, scopes });
+            expect(await verifyTaskCapabilityToken(token, INTERNAL_SERVICE_AUDIENCE_JOBS, registry)).toBeNull();
+        }
     });
 });
 
@@ -140,9 +160,17 @@ describe('T4', () => {
             INTERNAL_SERVICE_AUDIENCE_JOBS,
             registry
         );
-        expect(hasScope(task ?? undefined, 'persist:records')).toBe(true);
-        expect(isResourceBound(task ?? undefined, RESOURCE)).toBe(true);
-        expect(isResourceBound(task ?? undefined, { ...RESOURCE, syncId: 'sync-b' })).toBe(false);
+        expect(task).not.toBeNull();
+        if (!task) {
+            return;
+        }
+        expect(hasScope(task, 'persist:records')).toBe(true);
+        expect(isResourceBound(task, 'environmentId', RESOURCE.environmentId)).toBe(true);
+        expect(isResourceBound(task, 'connectionId', RESOURCE.connectionId)).toBe(true);
+        expect(isResourceBound(task, 'syncId', RESOURCE.syncId)).toBe(true);
+        expect(isResourceBound(task, 'syncId', 'sync-b')).toBe(false);
+        expect(isResourceBound(task, 'environmentId', undefined)).toBe(false);
+        expect(isResourceBound(task, 'syncId', undefined)).toBe(false);
 
         for (const sub of [nodeSubject('1'), INTERNAL_SERVICE_ISSUER_JOBS, INTERNAL_SERVICE_ISSUER_SERVER]) {
             const token = await mint(
@@ -152,7 +180,9 @@ describe('T4', () => {
             const auth = (await verify(token, INTERNAL_SERVICE_AUDIENCE_JOBS, registry)).auth;
             expect(auth).not.toBeNull();
             expect(hasScope(auth ?? undefined, 'persist:records')).toBe(false);
-            expect(isResourceBound(auth ?? undefined, RESOURCE)).toBe(false);
+            expect(isResourceBound(auth ?? undefined, 'environmentId', RESOURCE.environmentId)).toBe(false);
+            expect(isResourceBound(auth ?? undefined, 'connectionId', RESOURCE.connectionId)).toBe(false);
+            expect(isResourceBound(auth ?? undefined, 'syncId', RESOURCE.syncId)).toBe(false);
             expect(await verifyTaskCapabilityToken(token, INTERNAL_SERVICE_AUDIENCE_JOBS, registry)).toBeNull();
         }
     });
@@ -249,29 +279,48 @@ describe('requireTaskScope', () => {
         }
     });
 
-    it('does not apply the HMAC or scope-less fallback to a node token', async () => {
+    it('does not apply the scope-less fallback to a node JWT', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
-        envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const { pem, raw } = ed25519TestMaterial();
         envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: KID, publicKey: raw }];
-        const hmacNode = createInternalServiceToken({ op: 'node', nodeId: '1', expiresInSecs: 120 }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
-        if (!hmacNode) {
-            throw new Error('expected an HMAC node token');
-        }
         const scopeLessNode = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: KID, privateKey: pem },
             { sub: nodeSubject('1'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
         );
         const { url, close } = await listen(scopeOnlyApp());
         try {
-            for (const token of [hmacNode, scopeLessNode]) {
-                const res = await fetch(`${url}/tasks/${TASK_ID}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
-                expect(res.status).toBe(401);
-            }
+            const res = await fetch(`${url}/tasks/${TASK_ID}`, { method: 'PUT', headers: { Authorization: `Bearer ${scopeLessNode}` } });
+            expect(res.status).toBe(401);
         } finally {
             await close();
-            envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
             envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = undefined;
+        }
+    });
+
+    it('accepts an eddsa task token after requireTaskBoundAuth', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const signingKey = 'sign';
+        const publicKey = exportRunnerPublicKey(signingKey);
+        if (!publicKey) {
+            throw new Error('expected a runner public key');
+        }
+        envs.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY = publicKey;
+        const token = createRunnerDispatchToken({ taskId: TASK_ID, expiresInSecs: 120 }, signingKey);
+        if (!token) {
+            throw new Error('expected an eddsa task token');
+        }
+        const server = express();
+        server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_RUNNER, envs }));
+        server.put('/tasks/:taskId', requireTaskBoundAuth(envs), requireTaskScope(envs, 'jobs:putTask'), (_req, res) => {
+            res.status(204).end();
+        });
+        const { url, close } = await listen(server);
+        try {
+            const res = await fetch(`${url}/tasks/${TASK_ID}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+            expect(res.status).toBe(204);
+        } finally {
+            await close();
+            envs.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY = undefined;
         }
     });
 });

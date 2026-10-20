@@ -120,10 +120,7 @@ export async function mint(signer: MintSigner, claims: MintClaims): Promise<stri
     const iat = claims.issuedAt ?? Math.floor(Date.now() / 1000);
     const payload: Record<string, unknown> = {};
     if (claims.res) {
-        payload['res'] =
-            claims.res.syncId === undefined
-                ? { environmentId: claims.res.environmentId, connectionId: claims.res.connectionId }
-                : { environmentId: claims.res.environmentId, connectionId: claims.res.connectionId, syncId: claims.res.syncId };
+        payload['res'] = claims.res;
     }
     if (claims.scopes !== undefined) {
         payload['scopes'] = [...claims.scopes];
@@ -208,19 +205,23 @@ export async function verify(token: string, audience: string, registry: KeyRegis
     }
 }
 
+export type TaskCapabilityAuth = InternalServiceAuth & {
+    kind: 'jwt';
+    sub: string;
+    res: TaskCapabilityResource;
+    scopes: readonly TaskCapabilityScope[];
+};
+
 /**
  * Verify a task capability token for one audience. The caller builds `registry` once and passes it in.
- * Returns null unless the token is an Ed25519 jobs task JWT with a valid `res` and at least one scope.
+ * Returns null unless the token is an Ed25519 jobs task JWT with a valid `res` and at least one known scope.
  */
-export async function verifyTaskCapabilityToken(token: string, audience: string, registry: KeyRegistry): Promise<InternalServiceAuth | null> {
+export async function verifyTaskCapabilityToken(token: string, audience: string, registry: KeyRegistry): Promise<TaskCapabilityAuth | null> {
     const { auth } = await verify(token, audience, registry);
-    if (!auth?.res || !auth.scopes || auth.scopes.length === 0) {
+    if (!auth?.res || !auth.scopes || auth.scopes.length === 0 || auth.issuer !== INTERNAL_SERVICE_ISSUER_JOBS || !isTaskSubject(auth.sub)) {
         return null;
     }
-    if (auth.issuer !== INTERNAL_SERVICE_ISSUER_JOBS || !isTaskSubject(auth.sub)) {
-        return null;
-    }
-    return auth;
+    return { ...auth, kind: 'jwt', sub: auth.sub, res: auth.res, scopes: auth.scopes };
 }
 
 const CAPABILITY_SCOPE_VALUES: ReadonlySet<string> = new Set(TASK_CAPABILITY_SCOPES);
@@ -268,10 +269,12 @@ function readScopes(value: unknown): TaskCapabilityScope[] | null | 'invalid' {
     }
     const scopes: TaskCapabilityScope[] = [];
     for (const entry of value) {
-        if (!isCapabilityScope(entry)) {
+        if (typeof entry !== 'string' || entry.length === 0) {
             return 'invalid';
         }
-        scopes.push(entry);
+        if (isCapabilityScope(entry)) {
+            scopes.push(entry);
+        }
     }
     return scopes;
 }

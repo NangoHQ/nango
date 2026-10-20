@@ -155,26 +155,17 @@ export function hasScope(auth: InternalServiceAuth | undefined, scope: TaskCapab
     return isJobsTaskJwt(auth) && Boolean(auth.scopes?.includes(scope));
 }
 
-export function isResourceBound(
-    auth: InternalServiceAuth | undefined,
-    expected: Pick<TaskCapabilityResource, 'environmentId' | 'connectionId' | 'syncId'>
-): boolean {
-    if (!isJobsTaskJwt(auth) || !auth.res) {
+export function isResourceBound(auth: InternalServiceAuth | undefined, key: keyof TaskCapabilityResource, value: number | string | undefined): boolean {
+    if (value === undefined || !isJobsTaskJwt(auth) || !auth.res) {
         return false;
     }
-    if (auth.res.environmentId !== expected.environmentId || auth.res.connectionId !== expected.connectionId) {
-        return false;
-    }
-    if (expected.syncId !== undefined && auth.res.syncId !== expected.syncId) {
-        return false;
-    }
-    return true;
+    return auth.res[key] === value;
 }
 
 /**
  * When REQUIRED, the route's declared scope must be on the task capability token.
- * HMAC task tokens carry no scopes and always pass. A scope-less Ed25519 task JWT also passes
- * until the fallback below is removed.
+ * Non-JWT task auth (HMAC and legacy EdDSA) carries no scopes and always passes. `requireTaskBoundAuth`
+ * has already checked the task binding. A scope-less Ed25519 task JWT also passes until the fallback below is removed.
  */
 export function requireTaskScope(envs: InternalAuthEnvs, scope: TaskCapabilityScope): (req: Request, res: Response, next: NextFunction) => void {
     return (_req, res, next) => {
@@ -183,12 +174,12 @@ export function requireTaskScope(envs: InternalAuthEnvs, scope: TaskCapabilitySc
             return;
         }
         const auth = getInternalServiceAuth(res);
-        if (auth?.kind === 'hmac' && auth.op === 'task') {
+        if (auth && auth.kind !== 'jwt') {
             next();
             return;
         }
         // TODO(NAN-6636): remove this fallback in PR 5, at least 25h after capability tokens are deployed.
-        // It applies only to Ed25519 task JWTs minted before they carried scopes. HMAC task tokens are handled above.
+        // It applies only to Ed25519 task JWTs minted before they carried scopes. Non-JWT task auth is handled above.
         if (isJobsTaskJwt(auth) && (!auth.scopes || auth.scopes.length === 0)) {
             next();
             return;
