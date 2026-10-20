@@ -11,7 +11,7 @@ export function track<E extends AnalyticsEventNameFor<'web'>>(event: E, ...[prop
 }
 
 export function analyticsSessionHeaders(url: URL): Record<string, string> {
-    // The OAuth issuer can share this origin, and its CORS policy rejects the header, so match the path too.
+    // The OAuth issuer can share this origin. Its CORS policy rejects this header, so check the path too.
     if (url.origin !== new URL(globalEnv.dashboardApiUrl).origin || !url.pathname.startsWith('/api/v1/')) {
         return {};
     }
