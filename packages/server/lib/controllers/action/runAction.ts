@@ -4,7 +4,7 @@ import { executeAction } from '../../services/action.service.js';
 
 import type { ActionExecutionErrorCode } from '../../services/action.service.js';
 import type { LogContextOrigin } from '@nangohq/logs';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBTeam, EnvironmentWithoutSecrets } from '@nangohq/types';
 import type { Span } from 'dd-trace';
 import type { Response } from 'express';
 
@@ -36,7 +36,7 @@ export async function runAction({
     span
 }: {
     account: DBTeam;
-    environment: DBEnvironment;
+    environment: DBEnvironment | EnvironmentWithoutSecrets;
     connectionId: string;
     providerConfigKey: string;
     actionName: string;

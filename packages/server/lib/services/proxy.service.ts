@@ -33,6 +33,7 @@ import type {
     DBEnvironment,
     DBPlan,
     DBTeam,
+    EnvironmentWithoutSecrets,
     HTTP_METHOD,
     InternalProxyConfiguration,
     OperationActor,
@@ -47,7 +48,7 @@ const baseUrlOverrideDenylist = normalizeDenylist(envs.NANGO_PROXY_BASE_URL_OVER
 
 export interface ProxyServiceRequest {
     account: DBTeam;
-    environment: DBEnvironment;
+    environment: DBEnvironment | EnvironmentWithoutSecrets;
     plan: DBPlan | null;
     method: HTTP_METHOD;
     endpoint: string;

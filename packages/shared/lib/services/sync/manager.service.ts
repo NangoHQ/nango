@@ -32,6 +32,7 @@ import type {
     DBConnection,
     DBConnectionDecrypted,
     DBEnvironment,
+    EnvironmentWithoutSecrets,
     ReportedSyncJobStatus,
     SyncDeploymentResult
 } from '@nangohq/types';
@@ -301,7 +302,7 @@ export class SyncManagerService {
         deleteRecords
     }: {
         orchestrator: Orchestrator;
-        environment: DBEnvironment;
+        environment: DBEnvironment | EnvironmentWithoutSecrets;
         providerConfigKey: string;
         syncIdentifiers: { syncName: string; syncVariant: string }[];
         command: SyncCommand;

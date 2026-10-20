@@ -8,7 +8,6 @@ import type {
     AuthOperationType,
     DBAPISecret,
     DBConnection,
-    DBEnvironment,
     DBExternalWebhook,
     DBTeam,
     ErrorPayload,
@@ -47,7 +46,7 @@ export async function sendAuth({
     account
 }: {
     connection: DBConnection | (Pick<DBConnection, 'connection_id' | 'provider_config_key'> & Partial<Pick<DBConnection, 'webhook_url_override'>>); // Either a true connection or a fake one
-    environment: DBEnvironment;
+    environment: { id: number; name: string };
     secret: DBAPISecret['secret'];
     webhookSettings: DBExternalWebhook | null;
     auth_mode: AuthModeType | 'unknown';
