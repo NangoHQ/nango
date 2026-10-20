@@ -7,6 +7,7 @@ import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { runAction } from './runAction.js';
 
+import type { RequestEnvironment } from '../../utils/express.js';
 import type { PostPublicTriggerAction } from '@nangohq/types';
 
 const schemaHeaders = z.object({
@@ -21,7 +22,7 @@ const schemaBody = z.object({
     input: z.unknown()
 });
 
-export const postPublicTriggerAction = asyncWrapperWithEnvironment<PostPublicTriggerAction>(async (req, res) => {
+export const postPublicTriggerAction = asyncWrapperWithEnvironment<PostPublicTriggerAction, RequestEnvironment>(async (req, res) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
     if (!valHeaders.success) {
         res.status(400).send({ error: { code: 'invalid_headers', errors: zodErrorToHTTP(valHeaders.error) } });

@@ -6,6 +6,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
+import type { RequestEnvironment } from '../../utils/express.js';
 import type { GetAsyncActionResult } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
@@ -16,7 +17,7 @@ const paramValidation = z
     })
     .strict();
 
-export const getAsyncActionResult = asyncWrapperWithEnvironment<GetAsyncActionResult>(async (req, res) => {
+export const getAsyncActionResult = asyncWrapperWithEnvironment<GetAsyncActionResult, RequestEnvironment>(async (req, res) => {
     const paramValue = paramValidation.safeParse(req.params);
     if (!paramValue.success) {
         res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(paramValue.error) } });

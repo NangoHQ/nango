@@ -41,10 +41,10 @@ export function asyncWrapper<TEndpoint extends Endpoint<any>, Locals extends Rec
  * asyncWrapper for environment-scoped handlers: resolves the environment once and narrows it, so the
  * handler can use `res.locals.environment` directly.
  */
-export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>>(
+export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>, Environment extends DBEnvironment | TaskTokenEnvironment = DBEnvironment>(
     fn: (
         req: Request<TEndpoint['Params'], TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring']>,
-        res: Response<TEndpoint['Reply'], RequestLocalsWithEnvironment>,
+        res: Response<TEndpoint['Reply'], RequestLocalsWithEnvironment<Environment>>,
         next: NextFunction
     ) => Promise<void> | void
 ): RequestHandler<any, TEndpoint['Reply'], any, any, any> {
@@ -54,7 +54,7 @@ export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>>(
             return;
         }
 
-        await fn(req, res as Response<TEndpoint['Reply'], RequestLocalsWithEnvironment>, next);
+        await fn(req, res as Response<TEndpoint['Reply'], RequestLocalsWithEnvironment<Environment>>, next);
     });
 }
 
@@ -72,5 +72,19 @@ export function requireEnvironment(req: Request, res: Response<any, RequestLocal
         return null;
     }
 
+    return environment;
+}
+
+/** Routes that do not accept a task token. A task-token environment has no secret columns. */
+export function requireDbEnvironment(req: Request, res: Response<any, RequestLocals>): DBEnvironment | null {
+    const environment = requireEnvironment(req, res);
+    if (!environment) {
+        return null;
+    }
+    if (!('secret_key' in environment)) {
+        report(new Error('handler_requires_environment_secret'), { route: req.route?.path ?? req.originalUrl });
+        res.status(500).send({ error: { code: 'server_error' } });
+        return null;
+    }
     return environment;
 }

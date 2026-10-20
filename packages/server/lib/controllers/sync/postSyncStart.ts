@@ -8,6 +8,7 @@ import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/valid
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
+import type { RequestEnvironment } from '../../utils/express.js';
 import type { PostPublicSyncStart } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
@@ -21,7 +22,7 @@ const bodySchema = z.strictObject({
     connection_id: connectionIdSchema.optional()
 });
 
-export const postPublicSyncStart = asyncWrapperWithEnvironment<PostPublicSyncStart>(async (req, res) => {
+export const postPublicSyncStart = asyncWrapperWithEnvironment<PostPublicSyncStart, RequestEnvironment>(async (req, res) => {
     const parsedBody = bodySchema.safeParse(req.body);
     if (!parsedBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(parsedBody.error) } });

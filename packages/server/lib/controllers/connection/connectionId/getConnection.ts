@@ -9,6 +9,7 @@ import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/va
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
+import type { RequestEnvironment } from '../../../utils/express.js';
 import type { RetrievedConnection } from '@nangohq/shared';
 import type { ApiPublicConnectionFull, GetPublicConnection } from '@nangohq/types';
 
@@ -27,7 +28,7 @@ const paramValidation = z
     })
     .strict();
 
-export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnection>(async (req, res) => {
+export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnection, RequestEnvironment>(async (req, res) => {
     const queryParamValues = queryStringValidation.safeParse(req.query);
     if (!queryParamValues.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryParamValues.error) } });

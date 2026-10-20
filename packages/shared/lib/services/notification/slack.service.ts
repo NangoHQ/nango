@@ -14,7 +14,7 @@ import type { ServiceResponse } from '../../models/Generic.js';
 import type { Config } from '../../models/Provider.js';
 import type { NangoError } from '../../utils/error.js';
 import type { LogContextGetter } from '@nangohq/logs';
-import type { ConnectionJobs, DBConnection, DBConnectionDecrypted, DBEnvironment, DBSlackNotification, DBTeam } from '@nangohq/types';
+import type { ConnectionJobs, DBConnection, DBConnectionDecrypted, DBSlackNotification, DBTeam, TaskTokenEnvironment } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('SlackService');
@@ -128,7 +128,7 @@ export class SlackService {
         originalActivityLogId
     }: {
         account: DBTeam;
-        environment: DBEnvironment;
+        environment: TaskTokenEnvironment;
         connection: ConnectionJobs;
         name: string;
         type: string;
@@ -566,7 +566,7 @@ export class SlackService {
         lookupError = null
     }: {
         account: DBTeam;
-        environment: DBEnvironment;
+        environment: TaskTokenEnvironment;
         type: string;
         name: string;
         connection: ConnectionJobs;

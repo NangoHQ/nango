@@ -68,5 +68,13 @@ export interface RequestLocals {
     taskSubject?: string;
 }
 
-/** RequestLocals with the environment confirmed present — see `asyncWrapperWithEnvironment` and `requireEnvironment`. */
-export type RequestLocalsWithEnvironment = RequestLocals & { environment: DBEnvironment | TaskTokenEnvironment };
+/** Full environment, or the task-token environment that omits secret columns. */
+export type RequestEnvironment = DBEnvironment | TaskTokenEnvironment;
+
+/**
+ * RequestLocals with the environment confirmed present — see `asyncWrapperWithEnvironment` and `requireEnvironment`.
+ * Defaults to a full environment. Routes that accept a task token pass `RequestEnvironment`.
+ */
+export type RequestLocalsWithEnvironment<Environment extends DBEnvironment | TaskTokenEnvironment = DBEnvironment> = Omit<RequestLocals, 'environment'> & {
+    environment: Environment;
+};

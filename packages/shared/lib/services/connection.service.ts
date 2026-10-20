@@ -99,6 +99,7 @@ import type {
     SharedCredentials,
     SignatureCredentials,
     Tags,
+    TaskTokenEnvironment,
     TbaCredentials,
     TwoStepCredentials
 } from '@nangohq/types';
@@ -776,7 +777,7 @@ export class ConnectionService {
         refreshGithubAppJwtToken = false
     }: {
         account: DBTeam;
-        environment: DBEnvironment;
+        environment: TaskTokenEnvironment;
         connectionId: string;
         integrationId: string;
         forceRefresh?: boolean;

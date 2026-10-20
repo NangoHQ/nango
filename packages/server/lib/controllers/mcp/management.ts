@@ -11,7 +11,7 @@ import { createManagementMcpServer } from './managementServer.js';
 
 import type { RequestLocals } from '../../utils/express.js';
 import type { ManagementMcpEnvironment } from './managementTool.js';
-import type { GetManagementMcp, PostManagementMcp } from '@nangohq/types';
+import type { DBEnvironment, GetManagementMcp, PostManagementMcp } from '@nangohq/types';
 
 export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res) => {
     const { account, plan } = res.locals;
@@ -165,8 +165,8 @@ function getCustomerApiKeyId(locals: RequestLocals): number | undefined {
     return locals.apiKeyAuthSource === 'customer_key' ? locals.apiKeyId : undefined;
 }
 
-function requireApiKeyEnvironment(locals: RequestLocals) {
-    if (!locals.environment) {
+function requireApiKeyEnvironment(locals: RequestLocals): DBEnvironment {
+    if (!locals.environment || !('secret_key' in locals.environment)) {
         throw new Error('Management MCP API-key authentication requires an environment');
     }
     return locals.environment;

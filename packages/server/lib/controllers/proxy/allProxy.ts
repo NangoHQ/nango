@@ -11,6 +11,7 @@ import { egressTelemetryRecorder } from '../../utils/egressTelemetry.js';
 
 import type { ProxyServiceError, ProxyServiceResponse } from '../../services/proxy.service.js';
 import type { ServerEgressCallsite } from '../../utils/egressTelemetry.js';
+import type { RequestEnvironment } from '../../utils/express.js';
 import type { LogContext } from '@nangohq/logs';
 import type { AllPublicProxy, HTTP_METHOD, ProxyFile } from '@nangohq/types';
 import type { Request, Response } from 'express';
@@ -85,7 +86,7 @@ function applyFilteredResponseHeaders(res: Response, headers: Record<string, unk
     }
 }
 
-export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async (req, res, next) => {
+export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy, RequestEnvironment>(async (req, res, next) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
     if (!valHeaders.success) {
         res.status(400).send({ error: { code: 'invalid_headers', errors: zodErrorToHTTP(valHeaders.error) } });

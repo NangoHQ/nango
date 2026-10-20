@@ -18,12 +18,12 @@ import type { LogContext, LogContextGetter, LogContextStateless } from '@nangohq
 import type {
     ConnectionConfig,
     DBConnectionDecrypted,
-    DBEnvironment,
     DBTeam,
     IntegrationConfig,
     Provider,
     RefreshableCredentials,
     RefreshableProvider,
+    TaskTokenEnvironment,
     TestableCredentials,
     TestableProvider
 } from '@nangohq/types';
@@ -31,14 +31,14 @@ import type { Result } from '@nangohq/utils';
 
 interface RefreshProps {
     account: DBTeam;
-    environment: DBEnvironment;
+    environment: TaskTokenEnvironment;
     connection: DBConnectionDecrypted;
     integration: IntegrationConfig;
     logContextGetter: LogContextGetter;
     instantRefresh: boolean;
     onRefreshSuccess: (args: {
         connection: DBConnectionDecrypted;
-        environment: DBEnvironment;
+        environment: TaskTokenEnvironment;
         config: ProviderConfig;
         account: DBTeam;
         provider: Provider;
@@ -47,7 +47,7 @@ interface RefreshProps {
         connection: DBConnectionDecrypted;
         logCtx: LogContext;
         authError: { type: string; description: string };
-        environment: DBEnvironment;
+        environment: TaskTokenEnvironment;
         provider: Provider;
         config: ProviderConfig;
         account: DBTeam;

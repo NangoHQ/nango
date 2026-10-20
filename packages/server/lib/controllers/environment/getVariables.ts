@@ -3,9 +3,10 @@ import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/ut
 
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
+import type { RequestEnvironment } from '../../utils/express.js';
 import type { GetPublicEnvironmentVariables } from '@nangohq/types';
 
-export const getPublicEnvironmentVariables = asyncWrapperWithEnvironment<GetPublicEnvironmentVariables>(async (req, res) => {
+export const getPublicEnvironmentVariables = asyncWrapperWithEnvironment<GetPublicEnvironmentVariables, RequestEnvironment>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

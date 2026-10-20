@@ -177,10 +177,11 @@ function environmentFromRow(environment: DBEnvironment, secrets: { secret_key: s
     };
 }
 
-function taskTokenEnvironmentFromRow(environment: Omit<DBEnvironment, 'hmac_key' | 'otlp_settings'>): TaskTokenEnvironment {
-    const { secret_key: _secretKey, pending_secret_key: _pendingSecretKey, ...rest } = environment;
+function taskTokenEnvironmentFromRow(
+    environment: Omit<DBEnvironment, 'secret_key' | 'pending_secret_key' | 'hmac_key' | 'otlp_settings'>
+): TaskTokenEnvironment {
     return {
-        ...rest,
+        ...environment,
         ...environmentDates(environment),
         // The task-token query does not select these. Null keeps the row assignable without caching a credential.
         hmac_key: null,

@@ -8,6 +8,7 @@ import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import integrationService from '../../../services/integration.service.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
+import type { RequestEnvironment } from '../../../utils/express.js';
 import type { ApiPublicIntegrationInclude, GetPublicIntegration } from '@nangohq/types';
 
 export const validationParams = z
@@ -26,7 +27,7 @@ const validationQuery = z
     })
     .strict();
 
-export const getPublicIntegration = asyncWrapperWithEnvironment<GetPublicIntegration>(async (req, res) => {
+export const getPublicIntegration = asyncWrapperWithEnvironment<GetPublicIntegration, RequestEnvironment>(async (req, res) => {
     const valQuery = validationQuery.safeParse(req.query);
     if (!valQuery.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });

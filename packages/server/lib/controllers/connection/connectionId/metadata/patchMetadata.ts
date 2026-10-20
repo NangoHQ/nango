@@ -6,6 +6,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 
+import type { RequestEnvironment } from '../../../../utils/express.js';
 import type { ApiError, DBConnectionDecrypted, MetadataBody, UpdateMetadata } from '@nangohq/types';
 
 const validation = z
@@ -16,7 +17,7 @@ const validation = z
     })
     .strict();
 
-export const patchPublicMetadata = asyncWrapperWithEnvironment<UpdateMetadata>(async (req, res) => {
+export const patchPublicMetadata = asyncWrapperWithEnvironment<UpdateMetadata, RequestEnvironment>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

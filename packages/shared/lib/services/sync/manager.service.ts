@@ -31,9 +31,9 @@ import type {
     ConnectionInternal,
     DBConnection,
     DBConnectionDecrypted,
-    DBEnvironment,
     ReportedSyncJobStatus,
-    SyncDeploymentResult
+    SyncDeploymentResult,
+    TaskTokenEnvironment
 } from '@nangohq/types';
 
 // Should be in "logs" package but impossible thanks to CLI
@@ -301,7 +301,7 @@ export class SyncManagerService {
         deleteRecords
     }: {
         orchestrator: Orchestrator;
-        environment: DBEnvironment;
+        environment: TaskTokenEnvironment;
         providerConfigKey: string;
         syncIdentifiers: { syncName: string; syncVariant: string }[];
         command: SyncCommand;

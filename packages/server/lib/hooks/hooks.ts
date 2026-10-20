@@ -45,6 +45,7 @@ import type {
     RecentlyCreatedConnection,
     RecentlyFailedConnection,
     SignatureCredentials,
+    TaskTokenEnvironment,
     TbaCredentials
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -275,7 +276,7 @@ export const connectionRefreshSuccess = async ({
     connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     config: IntegrationConfig;
     account?: DBTeam;
-    environment?: DBEnvironment;
+    environment?: TaskTokenEnvironment;
     provider?: Provider;
 }): Promise<void> => {
     let clearedActiveAuthError = false;
@@ -340,7 +341,7 @@ export const connectionRefreshFailed = async ({
 }: {
     account: DBTeam;
     connection: DBConnection | DBConnectionDecrypted;
-    environment: DBEnvironment;
+    environment: TaskTokenEnvironment;
     provider: Provider;
     config: IntegrationConfig;
     authError: { type: string; description: string };
