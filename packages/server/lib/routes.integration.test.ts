@@ -4,7 +4,7 @@ import db from '@nangohq/database';
 import { sandboxApiKeyService } from '@nangohq/sandbox';
 import { seeders } from '@nangohq/shared';
 
-import { isError, runServer } from './utils/tests.js';
+import { getConnectSessionToken, isError, runServer } from './utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 describe('route', () => {
@@ -194,6 +194,57 @@ describe('route', () => {
             });
 
             expect(res.status).toBe(200);
+        });
+    });
+
+    describe('T15: existing credentials still authenticate', () => {
+        it('accepts a customer secret key', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await fetch(`${api.url}/integrations`, {
+                headers: { Authorization: `Bearer ${apiKey.secret}` }
+            });
+
+            expect(res.status).toBe(200);
+        });
+
+        it('accepts a sandbox key', async () => {
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+            const sandboxToken = (
+                await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+                    parentApiKeyId: apiKey.id,
+                    environmentId: env.id,
+                    purpose: 'dryrun',
+                    dryrunId: '00000000-0000-4000-8000-000000000002',
+                    expiresAt: new Date(Date.now() + 60 * 1000)
+                })
+            ).unwrap();
+
+            const res = await fetch(`${api.url}/providers`, {
+                headers: { Authorization: `Bearer ${sandboxToken}` }
+            });
+
+            expect(res.status).toBe(200);
+        });
+
+        it('accepts a connect session token', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const token = await getConnectSessionToken(api, apiKey.secret);
+            const res = await fetch(`${api.url}/integrations`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            expect(res.status).toBe(200);
+        });
+
+        it('accepts a customer secret key on the management MCP host', async () => {
+            // The OAuth issuer is not configured in this process, so management MCP uses secret-key auth.
+            // A successful secret there is the same authenticateSecretKey path an MCP OAuth miss falls through to.
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await fetch(`${api.url}/mcp`, {
+                headers: { Authorization: `Bearer ${apiKey.secret}`, Host: 'mcp-test.nango.dev' }
+            });
+
+            expect(res.status).toBe(405);
         });
     });
 });
