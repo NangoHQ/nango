@@ -2,6 +2,8 @@ export interface MigrationRow {
     accountId: string;
     currentPlan: string;
     withGrowthAddon: boolean;
+    migrationDate: string | null;
+    overrideScheduledPlanChange: boolean;
 }
 
 /** Minimal CSV reader supporting quoted fields and escaped quotes. */
@@ -66,7 +68,7 @@ export function parseMigrationCsv(contents: string): MigrationRow[] {
     }
 
     const normalizedHeader = header.map((column, index) => (index === 0 ? column.replace(/^\uFEFF/, '').trim() : column.trim()));
-    const required = ['account_id', 'current_plan', 'with_growth_addon'];
+    const required = ['account_id', 'current_plan', 'with_growth_addon', 'migration_date', 'override_scheduled_plan_change'];
     if (normalizedHeader.length !== required.length || required.some((column, index) => normalizedHeader[index] !== column)) {
         throw new Error(`CSV headers must be exactly: ${required.join(', ')}`);
     }
@@ -79,10 +81,12 @@ export function parseMigrationCsv(contents: string): MigrationRow[] {
             throw new Error(`CSV row ${line} must contain exactly ${required.length} columns`);
         }
 
-        const [accountIdCell = '', currentPlanCell = '', withGrowthAddonCell = ''] = cells;
+        const [accountIdCell = '', currentPlanCell = '', withGrowthAddonCell = '', migrationDateCell = '', overrideScheduledPlanChangeCell = ''] = cells;
         const accountId = accountIdCell.trim();
         const currentPlan = currentPlanCell.trim();
         const withGrowthAddon = withGrowthAddonCell.trim().toLowerCase();
+        const migrationDate = migrationDateCell.trim();
+        const overrideScheduledPlanChange = overrideScheduledPlanChangeCell.trim().toLowerCase();
         if (!/^\d+$/.test(accountId) || !Number.isSafeInteger(Number(accountId)) || Number(accountId) <= 0) {
             throw new Error(`CSV row ${line} has an invalid account_id: ${accountId || '(empty)'}`);
         }
@@ -92,13 +96,33 @@ export function parseMigrationCsv(contents: string): MigrationRow[] {
         if (withGrowthAddon !== 'true' && withGrowthAddon !== 'false') {
             throw new Error(`CSV row ${line} has an invalid with_growth_addon value: ${withGrowthAddon || '(empty)'}`);
         }
+        if (migrationDate && !isValidCalendarDate(migrationDate)) {
+            throw new Error(`CSV row ${line} has an invalid migration_date: ${migrationDate}`);
+        }
+        if (overrideScheduledPlanChange !== 'true' && overrideScheduledPlanChange !== 'false') {
+            throw new Error(`CSV row ${line} has an invalid override_scheduled_plan_change value: ${overrideScheduledPlanChange || '(empty)'}`);
+        }
         if (accountIds.has(accountId)) {
             throw new Error(`CSV row ${line} duplicates account_id: ${accountId}`);
         }
 
         accountIds.add(accountId);
-        rows.push({ accountId, currentPlan, withGrowthAddon: withGrowthAddon === 'true' });
+        rows.push({
+            accountId,
+            currentPlan,
+            withGrowthAddon: withGrowthAddon === 'true',
+            migrationDate: migrationDate || null,
+            overrideScheduledPlanChange: overrideScheduledPlanChange === 'true'
+        });
     }
 
     return rows;
+}
+
+function isValidCalendarDate(value: string): boolean {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return false;
+    }
+    const date = new Date(`${value}T00:00:00.000Z`);
+    return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
