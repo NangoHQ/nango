@@ -11,8 +11,8 @@ const CENTS_PER_TRANSFER_GB = 50;
 const SECONDS_PER_HOUR = 3600;
 const BYTES_PER_GB = 1_000_000_000;
 
-const MINIMUM_IN_CENTS = 5_000;
-const GROWTH_ADD_ON_IN_CENTS = 45_000;
+export const MINIMUM_IN_CENTS = 5_000;
+export const GROWTH_ADD_ON_IN_CENTS = 45_000;
 
 /** Quantities use their stored units: average connections, whole seconds, and bytes. */
 export type PayAsYouGoQuantities = Record<PayAsYouGoMetric, number>;

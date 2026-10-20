@@ -1,0 +1,31 @@
+---
+title: 'eWay-CRM - How do I link my account?'
+sidebarTitle: 'eWay-CRM'
+---
+
+## Overview
+
+To authenticate with eWay-CRM, you need:
+
+1. **Service URL** — your eWay-CRM Web Service address.
+
+Client ID and Client Secret are registered once on the integration itself, not per connection — see [How to register your own eWay-CRM OAuth app](/api-integrations/eway-crm/how-to-register-your-own-eway-crm-api-oauth-app) if you haven't done that yet.
+
+### Prerequisites
+
+- Your eWay-CRM instance must be configured to use Azure Auth (Microsoft Entra ID) — OAuth 2.0 isn't available otherwise.
+
+### Step 1: Finding your Web Service Address
+
+Your Service URL is the same address you use to connect Outlook to eWay-CRM (**eWay-CRM menu → About → Web Service Address** in Outlook, or ask your eWay-CRM administrator). It looks like a domain followed by a numeric instance ID, for example `free.eway-crm.com/31994`. Enter it without the `https://` prefix or a trailing slash.
+
+### Step 2: Enter your Service URL in the Connect UI
+
+1. Open the form where you need to authenticate with eWay-CRM.
+2. Enter your **Service URL** in the designated field.
+3. Submit the form — you'll be redirected to log in to eWay-CRM and authorize access.
+
+<img src="/api-integrations/eway-crm/form.png"/>
+
+
+You are now connected to eWay-CRM.

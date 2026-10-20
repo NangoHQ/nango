@@ -1,12 +1,12 @@
 import express from 'express';
 
 import { getManagementMcp, postManagementMcp } from './controllers/mcp/management.js';
-import { getManagementOAuthProtectedResourceMetadata, managementMcpAuth } from './controllers/mcp/managementAuth.js';
+import { getManagementOAuthProtectedResourceMetadata, getOpenAIAppsChallenge, managementMcpAuth } from './controllers/mcp/managementAuth.js';
 import { envs } from './env.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
+import { withEnvironmentTarget } from './middleware/environment-target.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
-import { withEnvironmentTarget } from './middleware/scope.middleware.js';
 
 import type { Request, RequestHandler } from 'express';
 
@@ -24,6 +24,7 @@ managementMcpRouter.use(
     }),
     jsonContentTypeMiddleware
 );
+managementMcpRouter.get('/.well-known/openai-apps-challenge', getOpenAIAppsChallenge);
 managementMcpRouter.get('/.well-known/oauth-protected-resource', getManagementOAuthProtectedResourceMetadata);
 managementMcpRouter.get('/.well-known/oauth-protected-resource/mcp', getManagementOAuthProtectedResourceMetadata);
 managementMcpRouter.route('/mcp').post(apiAuth, withEnvironmentTargetUnlessOAuth, postManagementMcp);

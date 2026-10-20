@@ -14,7 +14,7 @@ import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
 import { records } from '@nangohq/records';
-import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
+import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, productTracking, pubsub } from '@nangohq/shared';
 import { flags, getLogger, metrics, NANGO_VERSION, once, report } from '@nangohq/utils';
 
 import { destroyAuditDb, migrateAuditDb, startAuditPartitions } from './auditDb.js';
@@ -28,6 +28,7 @@ import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
 import { envs } from './env.js';
 import { migrateFleets, stopFleets } from './fleet.js';
+import { destroyHostedTelemetryDb, migrateHostedTelemetryDb, startHostedTelemetryPartitions } from './hostedTelemetryDb.js';
 import { beginShutdown } from './ready.js';
 import { router } from './routes.js';
 import { tasks } from './tasks/index.js';
@@ -88,12 +89,14 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await migrateFleets();
     await tasks.migrate();
     await migrateAuditDb();
+    await migrateHostedTelemetryDb();
     await db.destroy();
 } else {
     logger.info('Not migrating database');
 }
 
 const auditPartitions = startAuditPartitions();
+const hostedTelemetryPartitions = startHostedTelemetryPartitions();
 
 // Preload providers
 getProviders();
@@ -136,6 +139,8 @@ const close = once(() => {
         await stopFleets();
         await auditPartitions?.abort();
         await destroyAuditDb();
+        await hostedTelemetryPartitions?.abort();
+        await destroyHostedTelemetryDb();
         await tasks.stop();
         await db.destroy();
         await records.close();
@@ -145,6 +150,7 @@ const close = once(() => {
         await destroyFeatureFlags();
         await egressTelemetryRecorder.shutdown();
         await pubsub.disconnect();
+        await productTracking.shutdown();
 
         logger.close();
 

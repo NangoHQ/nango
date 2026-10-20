@@ -49,7 +49,7 @@ description: 'Access the Ironclad API in 2 minutes 💨'
 
         </Tabs>
 
-        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+        Or fetch credentials dynamically via the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
 
         <Note>
         The Ironclad API uses different base URLs depending on your environment. Nango automatically handles the correct base URL based on your environment configuration.
@@ -113,6 +113,7 @@ description: 'Access the Ironclad API in 2 minutes 💨'
       - **Production (NA)**: `https://na1.ironcladapp.com`
       - **Production (EU)**: `https://eu1.ironcladapp.com`  
       - **Demo**: `https://demo.ironcladapp.com`
+      - **Preview**: `https://preview.ironcladapp.com`
     - Every Ironclad API endpoint requires specific resource scopes (e.g., `public.workflows.createdWorkflows`). Check the API documentation for each endpoint to identify the necessary scopes.
     - Each Ironclad environment operates independently. OAuth applications created on one environment cannot be used on other environments and must be recreated separately for each environment you need to access.
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ironclad.mdx)</Note>

@@ -18,6 +18,7 @@ import {
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 
 import { bigQueryClient, slackService } from '../clients.js';
+import { envs } from '../env.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { pubsub } from '../utils/pubsub.js';
@@ -51,6 +52,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
     let providerConfig: Config | null | undefined;
     let syncConfig: DBSyncConfig | null = null;
     let endUser: NangoProps['endUser'] | null = null;
+    let functionName: DBFunctionConfig['name'] | undefined;
 
     try {
         const accountContext = await tracer.trace('function.prepare.accountContext', async () =>
@@ -74,7 +76,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
         const functions = await tracer.trace('function.prepare.functionConfig', async () =>
             functionConfigService.search(db.knex, {
                 environmentId: task.connection.environment_id,
-                filter: { integrationKey: task.connection.provider_config_key, id: task.functionConfigId, name: task.functionName }
+                filter: { integrationKey: task.connection.provider_config_key, uuid: task.functionUuid }
             })
         );
         if (functions.isErr()) {
@@ -82,12 +84,18 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
         }
         const func = functions.value[0];
         if (functions.value.length !== 1 || !func) {
-            throw new Error(`Function not found: ${task.functionName}`);
+            throw new Error(`Function not found: ${task.functionUuid}`);
         }
         const functionConfig = func.config;
+        functionName = functionConfig.name;
+        tracer.scope().active()?.addTags({
+            'function.name': functionConfig.name,
+            'function.id': functionConfig.id,
+            'function.uuid': functionConfig.uuid
+        });
         const functionVersion = func.currentVersion;
         if (!functionConfig.enabled) {
-            throw new Error(`Function is disabled: ${task.functionName}`);
+            throw new Error(`Function is disabled: ${functionConfig.name}`);
         }
         syncConfig = toLegacyConfig(functionConfig, functionVersion);
 
@@ -129,9 +137,9 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             void logCtx.warn(message, { cappingFunctionLogsStatus });
         }
 
-        void logCtx.info(`Starting function '${task.functionName}'${formatAttempts(task)}`, {
-            input: task.trigger.input,
-            function: task.functionName,
+        void logCtx.info(`Starting function '${functionConfig.name}'${formatAttempts(task)}`, {
+            input: envs.NANGO_LOG_FUNCTION_INPUT ? task.trigger.input : 'REDACTED',
+            function: functionConfig.name,
             connection: task.connection.connection_id,
             integration: task.connection.provider_config_key
         });
@@ -214,7 +222,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
                 environment_id: task.connection.environment_id,
                 provider_config_key: task.connection.provider_config_key
             },
-            functionName: task.functionName,
+            functionName: functionName || task.functionUuid, // fallback to functionUuid if failure happened before fetching the function config
             provider: providerConfig?.provider || 'unknown',
             providerConfigKey: task.connection.provider_config_key,
             activityLogId: logCtx?.id ?? task.activityLogId,

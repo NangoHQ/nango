@@ -26,7 +26,13 @@ export async function deleteConnectionData(connection: DBConnection, opts: Batch
         .where({ nango_connection_id: connection.id });
 
     await deleteSyncs(
-        resSyncs.map((res) => ({ id: res.sync.id, nangoConnectionId: connection.id, environmentId: connection.environment_id, models: res.syncConfig.models })),
+        resSyncs.map((res) => ({
+            id: res.sync.id,
+            nangoConnectionId: connection.id,
+            environmentId: connection.environment_id,
+            models: res.syncConfig.models,
+            variant: res.sync.variant
+        })),
         opts
     );
 

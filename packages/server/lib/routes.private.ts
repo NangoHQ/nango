@@ -44,6 +44,7 @@ import { postForgotPassword } from './controllers/v1/account/postForgotPassword.
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
+import { postAgentPlaygroundChat } from './controllers/v1/agentPlayground/postChat.js';
 import { getAuditTrail } from './controllers/v1/audit-trail/getAuditTrail.js';
 import { getAuditTrailExport } from './controllers/v1/audit-trail/getAuditTrailExport.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
@@ -134,6 +135,7 @@ import { getUser } from './controllers/v1/user/getUser.js';
 import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
 import authMiddleware from './middleware/access.middleware.js';
+import { agentPlaygroundRateLimit } from './middleware/agentPlaygroundRateLimit.middleware.js';
 import {
     auditAccountApiKeyCreated,
     auditAccountApiKeyDeleted,
@@ -382,6 +384,7 @@ web.route('/user/password').put(webAuth, auditAppAuthPasswordChanged, putUserPas
 
 // Plain (in-app support chat)
 web.route('/plain').get(webAuth, getPlainHmac);
+web.route('/agent-playground/chat').post(webAuth, can('environment:agent_sessions:write'), agentPlaygroundRateLimit, postAgentPlaygroundChat);
 
 // Sync / Flows
 web.route('/sync').get(webAuth, can('environment:syncs:read'), getConnectionSyncs);

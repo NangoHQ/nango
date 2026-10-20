@@ -1,0 +1,42 @@
+---
+title: PostHog (Capture API) - How do I link my account?
+sidebarTitle: PostHog (Capture API)
+---
+
+## Overview
+
+To authenticate with PostHog's Capture API, you need two things:
+1. **Hostname** - The domain your capture API requests are sent to.
+2. **Project Token** - A public, write-only key (starts with `phc_`) used to send events. It doesn't grant access to read any of your data.
+
+This guide will walk you through finding those values within PostHog.
+
+### Prerequisites:
+
+- You must set up an account with PostHog.
+
+#### Step 1: Finding your hostname
+
+Enter the value matching your PostHog setup:
+
+| Setup | Hostname |
+| ------ | --------- |
+| US Cloud | `us.i.posthog.com` |
+| EU Cloud | `eu.i.posthog.com` |
+| Self-hosted | your own PostHog domain |
+
+#### Step 2: Finding your Project Token
+
+1. Go to your project's **Settings**, then the **Settings - General** page.
+2. Copy the value labeled **Project token** (it starts with `phc_`).
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Hostname** and **Project Token**:
+1. Open the form where you need to authenticate with PostHog.
+2. Enter your **Hostname** and **Project Token** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/posthog-capture/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to PostHog's Capture API.

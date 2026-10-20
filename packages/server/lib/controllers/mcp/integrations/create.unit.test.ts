@@ -76,6 +76,7 @@ describe('createIntegrationsTool', () => {
                     display_name: 'GitHub Own',
                     logo: `${basePublicUrl}/images/template-logos/github.svg`,
                     forward_webhooks: false,
+                    missing_fields: [],
                     created_at: createdAt.toISOString(),
                     updated_at: updatedAt.toISOString()
                 }
@@ -241,6 +242,7 @@ function integrationFixture(): Config {
         missing_fields: [],
         display_name: 'GitHub Own',
         forward_webhooks: false,
+        allow_unverified_webhooks: false,
         shared_credentials_id: null,
         created_at: createdAt,
         updated_at: updatedAt

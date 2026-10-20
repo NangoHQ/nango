@@ -1,0 +1,148 @@
+import { productTracking } from '@nangohq/shared';
+
+import { isPlaygroundSession } from './agentPlaygroundTags.js';
+
+import type { AgentSession, AgentSessionMetaTool, AgentSessionToolSearchHit, HTTP_METHOD } from '@nangohq/types';
+
+interface Outcome {
+    logOperationId?: string | undefined;
+    errorCode?: string | undefined;
+}
+
+interface ToolCallParams extends Outcome {
+    /** Unset when the agent called an integration tool directly, by the name it is listed under. */
+    metaTool?: AgentSessionMetaTool | undefined;
+    session: AgentSession;
+    /** Unset when the call named a tool the session could not resolve to an integration. */
+    integrationId?: string | undefined;
+    /** Unset for a meta tool that runs no integration tool of its own, like asking for a connect link. */
+    toolName?: string | undefined;
+    /** Pinned tools are listed, searchable ones answer to their name without being listed. Both are callable directly. */
+    pinned?: boolean | undefined;
+    /** Names the underlying failure when the action ran and failed, rather than being rejected before it ran. */
+    underlyingErrorCode?: string | undefined;
+    /** Set when the tool ran on the integration's MCP server rather than as a deployed action. */
+    mcpTool?: boolean | undefined;
+}
+
+interface ToolSearchParams extends Outcome {
+    session: AgentSession;
+    query?: string | undefined;
+    matches: AgentSessionToolSearchHit[];
+    related: AgentSessionToolSearchHit[];
+}
+
+interface ProxyRequestParams extends Outcome {
+    session: AgentSession;
+    integrationId?: string | undefined;
+    method?: HTTP_METHOD | undefined;
+    provider?: string | undefined;
+    status?: number | undefined;
+    /** The provider's own error code, when the failure carried one. */
+    providerErrorCode?: string | undefined;
+}
+
+/**
+ * The account, the environment as is_production and the surface are stamped by the tracking context
+ * middleware, so nothing here passes them. No tool input and no provider response is sent, on purpose.
+ */
+export function trackAgentSessionCreated(session: AgentSession): void {
+    productTracking.track({
+        name: 'agents:session_start',
+        eventProperties: {
+            ...sessionProperties(session),
+            integration_count: Object.keys(session.compiledToolset).length,
+            is_tool_search_enabled: session.metaTools.nangoToolSearch,
+            is_execute_enabled: session.metaTools.nangoExecute,
+            is_proxy_enabled: session.metaTools.nangoProxy,
+            is_create_connection_enabled: session.metaTools.nangoCreateConnection.enabled
+        }
+    });
+}
+
+/** Terminations only. An expired session ends with no request behind it, the same gap the logs have. */
+export function trackAgentSessionTerminated(session: AgentSession): void {
+    productTracking.track({
+        name: 'agents:session_end',
+        eventProperties: {
+            ...sessionProperties(session),
+            session_duration_ms: (session.endedAt ?? new Date()).getTime() - session.createdAt.getTime()
+        }
+    });
+}
+
+export function trackAgentSessionToolCall({
+    metaTool,
+    session,
+    integrationId,
+    toolName,
+    pinned,
+    underlyingErrorCode,
+    mcpTool,
+    ...outcome
+}: ToolCallParams): void {
+    productTracking.track({
+        name: 'agents:tool_call_complete',
+        eventProperties: {
+            ...sessionProperties(session),
+            ...outcomeProperties(outcome),
+            ...(toolName ? { tool_name: toolName } : {}),
+            ...(metaTool ? { meta_tool: metaTool } : {}),
+            ...(pinned === undefined ? {} : { is_pinned: pinned }),
+            ...(integrationId ? { integration_id: integrationId } : {}),
+            ...(underlyingErrorCode ? { underlying_error_code: underlyingErrorCode } : {}),
+            ...(mcpTool ? { is_mcp_tool: true } : {})
+        }
+    });
+}
+
+export function trackAgentSessionProxyRequest({ session, integrationId, provider, method, status, providerErrorCode, ...outcome }: ProxyRequestParams): void {
+    productTracking.track({
+        name: 'agents:proxy_request_complete',
+        eventProperties: {
+            ...sessionProperties(session),
+            meta_tool: 'nango_proxy',
+            ...outcomeProperties(outcome),
+            ...(integrationId ? { integration_id: integrationId } : {}),
+            ...(method ? { http_method: method } : {}),
+            ...(provider ? { provider } : {}),
+            ...(status === undefined ? {} : { http_status: status }),
+            ...(providerErrorCode ? { provider_error_code: providerErrorCode } : {})
+        }
+    });
+}
+
+/**
+ * Carries the query as the agent sent it, which is what search quality is measured against. The
+ * results ride along so a query can be read next to what it returned, which is the exception the
+ * taxonomy grants this event: everywhere else a property is a primitive.
+ */
+export function trackAgentSessionToolSearch({ session, query, matches, related, ...outcome }: ToolSearchParams): void {
+    productTracking.track({
+        name: 'agents:tool_search_complete',
+        eventProperties: {
+            ...sessionProperties(session),
+            meta_tool: 'nango_tool_search',
+            ...(query === undefined ? {} : { query }),
+            match_count: matches.length,
+            related_count: related.length,
+            ...(matches[0] ? { top_match_confidence: matches[0].confidence } : {}),
+            ...outcomeProperties(outcome),
+            matches,
+            related
+        }
+    });
+}
+
+function sessionProperties(session: AgentSession): { agent_session_id: string; is_playground: boolean } {
+    return { agent_session_id: session.id, is_playground: isPlaygroundSession(session) };
+}
+
+/** One event per call, so whether it worked is a property and the code says why it did not. */
+function outcomeProperties({ logOperationId, errorCode }: Outcome): { is_success: boolean; log_operation_id?: string; error_code?: string } {
+    return {
+        is_success: !errorCode,
+        ...(logOperationId ? { log_operation_id: logOperationId } : {}),
+        ...(errorCode ? { error_code: errorCode } : {})
+    };
+}

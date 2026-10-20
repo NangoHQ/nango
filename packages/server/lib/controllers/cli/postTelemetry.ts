@@ -1,19 +1,24 @@
 import * as z from 'zod';
 
 import { productTracking } from '@nangohq/shared';
-import { cliTelemetryEvents, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { cliTelemetryCommands, legacyCliTelemetryEvents, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
-import type { PostCliTelemetry } from '@nangohq/types';
+import type { LegacyCliTelemetryEvent, PostCliTelemetry } from '@nangohq/types';
 
-const bodySchema = z
-    .object({
-        deviceId: z.string().uuid(),
-        event: z.enum(cliTelemetryEvents),
-        ephemeral: z.boolean().optional()
-    })
-    .strict();
+const common = {
+    deviceId: z.string().uuid(),
+    ephemeral: z.boolean().optional()
+};
+
+const bodySchema = z.union([
+    z.object({ ...common, command: z.enum(cliTelemetryCommands) }).strict(),
+    z
+        .object({ ...common, event: z.enum(Object.keys(legacyCliTelemetryEvents) as [LegacyCliTelemetryEvent, ...LegacyCliTelemetryEvent[]]) })
+        .strict()
+        .transform(({ event, ...rest }) => ({ ...rest, command: legacyCliTelemetryEvents[event] }))
+]);
 
 export const postCliTelemetry = asyncWrapper<PostCliTelemetry>((req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -28,8 +33,12 @@ export const postCliTelemetry = asyncWrapper<PostCliTelemetry>((req, res) => {
         return;
     }
 
-    const { deviceId, event, ephemeral } = val.data;
-    productTracking.trackAnonymous({ name: event, distinctId: deviceId, ...(ephemeral ? { eventProperties: { 'device-id-ephemeral': true } } : {}) });
+    const { deviceId, command, ephemeral } = val.data;
+    productTracking.trackAnonymous({
+        name: 'functions:command_start',
+        distinctId: deviceId,
+        eventProperties: { command, ...(ephemeral ? { is_device_ephemeral: true } : {}) }
+    });
 
     res.status(204).send();
 });

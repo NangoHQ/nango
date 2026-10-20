@@ -120,6 +120,9 @@ This guide shows you how to register your own GitHub App to obtain your OAuth cr
         1. Select the **Active** checkbox under **Webhooks**.
         2. Under **Webhook URL**, paste the webhook URL from Nango.
         3. Under **Webhook secret**, paste the webhook secret from Nango. This is required. GitHub only signs payloads when the secret is set, and Nango verifies every payload it receives. Keep it secure and never expose it publicly.
+
+           <img src="/api-integrations/github-app/webhook-secret.png" style={{ maxWidth: "500px" }} />
+
         4. Under **Subscribe to events**, select the events you want your app to receive, such as **Push**, **Pull request**, **Issues** or **Repository**.
         5. Save the changes.
 
@@ -131,6 +134,23 @@ This guide shows you how to register your own GitHub App to obtain your OAuth cr
         Follow the [_Quickstart_](/getting-started/quickstart).
     </Step>
 </Steps>
+
+## Add the webhook secret to an existing GitHub App
+
+If your GitHub App sends webhooks to Nango without a webhook secret, GitHub does not sign the payloads and Nango cannot verify them. Add the secret to start sending signed payloads. This applies to both **GitHub (App)** and **GitHub (App OAuth)** integrations.
+
+The secret is set once on the GitHub App and covers every installation. Your existing connections keep working, and your users don't need to reinstall or reauthorize anything.
+
+1. On your Nango integration page, copy the value under **Webhook Secret**.
+2. In your GitHub App settings, under **Webhook**, paste it into **Secret** and click **Save changes**.
+
+   <img src="/api-integrations/github-app/webhook-secret.png" style={{ maxWidth: "500px" }} />
+
+3. To confirm, open the **Advanced** tab of your GitHub App settings. New entries under **Recent Deliveries** should include an `X-Hub-Signature-256` header and a `200` response from Nango.
+
+<Note>
+Nango derives the webhook secret from the App ID, App Private Key and App Public Link. If you change any of them in Nango, copy the new **Webhook Secret** to your GitHub App again.
+</Note>
 
 ## Important considerations
 

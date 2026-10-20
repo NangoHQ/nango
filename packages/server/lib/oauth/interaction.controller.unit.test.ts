@@ -172,6 +172,39 @@ describe('OAuth consent interaction controller', () => {
         expect(next).not.toHaveBeenCalled();
     });
 
+    it('accepts the zero-valued user used by local no-auth mode', async () => {
+        const uid = 'interaction-id';
+        interactionDetailsMock.mockResolvedValue({
+            ...consentInteraction(uid),
+            session: { accountId: '0', uid: 'session-uid', cookie: 'session-cookie' }
+        });
+        sessionFindMock.mockResolvedValue({ accountId: '0', loginTs: Date.now() / 1000 - 60 });
+        knexMock.mockImplementation((table: string) => {
+            const row =
+                table === '_nango_users'
+                    ? { id: 0, account_id: 0, email: 'local@example.com', suspended: false }
+                    : { id: 0, uuid: 'local-account-uuid', name: 'Local account' };
+            const query = {
+                where: vi.fn(() => query),
+                first: vi.fn(() => Promise.resolve(row))
+            };
+            return query;
+        });
+        const req = {
+            params: { uid },
+            user: { id: 0, account_id: 0, authenticated_at: Date.now() / 1000 - 60 }
+        } as unknown as Request;
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = { status, send } as unknown as Response;
+        const next = vi.fn() as NextFunction;
+
+        await getOAuthConsentInteraction(req, res, next);
+
+        expect(status).toHaveBeenCalledWith(200);
+        expect(next).not.toHaveBeenCalled();
+    });
+
     it('reads a login prompt without submitting it', async () => {
         const uid = 'interaction-id';
         const authenticatedAt = Date.now() / 1000 - 60;

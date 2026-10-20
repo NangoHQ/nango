@@ -8,7 +8,7 @@ import type { IntegrationConfig } from './db.js';
 import type { Merge } from 'type-fest';
 
 export type ApiPublicIntegration = Merge<
-    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks'>,
+    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks' | 'missing_fields'>,
     ApiTimestamps
 > & {
     logo: string;
@@ -41,6 +41,13 @@ export interface ApiPublicIntegrationInclude {
               app_link: string | null;
               private_key: string | null;
           }
+        | {
+              type: AuthModes['MCP_OAUTH2_GENERIC'];
+              client_name: string | null;
+              client_uri: string | null;
+              client_logo_uri: string | null;
+          }
+        | { type: 'INTEGRATION_CONFIG'; auth_mode: AuthModeType; integration_config: Record<string, string> }
         | {
               type: AuthModes['MCP_OAUTH2'];
               client_id: string | null;
@@ -312,6 +319,7 @@ export type PatchIntegration = ApiEndpoint<{
               webhookSecret?: string | undefined;
               displayName?: string | undefined;
               forward_webhooks?: boolean | undefined;
+              allow_unverified_webhooks?: boolean | undefined;
               // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic, aws-sigv4).
               integrationConfig?: Record<string, string> | undefined;
           }
@@ -350,24 +358,30 @@ export type GetIntegrationFlows = ApiEndpoint<{
 export type ApiPublicIntegrationCredentials =
     | {
           type: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
-          client_id: string;
-          client_secret: string;
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
           scopes?: string | undefined;
           webhook_secret?: string | undefined;
       }
     | {
           type: Extract<AuthModeType, 'APP'>;
-          app_id: string;
-          app_link: string;
-          private_key: string;
+          app_id?: string | undefined;
+          app_link?: string | undefined;
+          private_key?: string | undefined;
       }
     | {
           type: Extract<AuthModeType, 'CUSTOM'>;
-          client_id: string;
-          client_secret: string;
-          app_id: string;
-          app_link: string;
-          private_key: string;
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
+          app_id?: string | undefined;
+          app_link?: string | undefined;
+          private_key?: string | undefined;
+      }
+    | {
+          type: Extract<AuthModeType, 'MCP_OAUTH2_GENERIC'>;
+          client_name?: string | undefined;
+          client_uri?: string | undefined;
+          client_logo_uri?: string | undefined;
       }
     | {
           type: Extract<AuthModeType, 'MCP_OAUTH2'>;

@@ -7,7 +7,6 @@ import { Button } from '@nangohq/design-system';
 
 import { Tag } from '@/components/ui/Tag';
 import DashboardLayout from '../../layout/DashboardLayout';
-import { track } from '../../utils/analytics';
 import { globalEnv } from '../../utils/env';
 import { cn } from '../../utils/utils';
 
@@ -36,7 +35,6 @@ export const ClassicGettingStarted: React.FC = () => {
 
         setHasVideo(true);
         try {
-            track('web:getting_started:video:play', {});
             // @ts-expect-error I don't understand
 
             new window.YT.Player('player', {
@@ -50,17 +48,6 @@ export const ClassicGettingStarted: React.FC = () => {
                     autohide: 1,
                     rel: 0, // remove recommendation
                     origin: new URL(globalEnv.publicUrl).origin
-                },
-                events: {
-                    onStateChange: (event: { data: number }) => {
-                        switch (event.data) {
-                            case 0:
-                                track('web:getting_started:video:end', {});
-                                break;
-                            default:
-                                break;
-                        }
-                    }
                 }
             });
         } catch {
@@ -94,7 +81,6 @@ export const ClassicGettingStarted: React.FC = () => {
                 <a
                     className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card focus:shadow-card focus:border-border-selected focus:outline-0"
                     href="https://nango.dev/docs/guides/auth/auth-guide"
-                    onClick={() => track('web:getting_started:authorize', {})}
                     target="_blank"
                     rel="noreferrer"
                 >
@@ -120,7 +106,6 @@ export const ClassicGettingStarted: React.FC = () => {
                 <a
                     className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/syncs/sync-functions"
-                    onClick={() => track('web:getting_started:read', {})}
                     target="_blank"
                     rel="noreferrer"
                 >
@@ -146,7 +131,6 @@ export const ClassicGettingStarted: React.FC = () => {
                 <a
                     className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/action-functions"
-                    onClick={() => track('web:getting_started:perform', {})}
                     target="_blank"
                     rel="noreferrer"
                 >
@@ -172,7 +156,6 @@ export const ClassicGettingStarted: React.FC = () => {
                 <a
                     className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/functions-guide"
-                    onClick={() => track('web:getting_started:custom', {})}
                     target="_blank"
                     rel="noreferrer"
                 >

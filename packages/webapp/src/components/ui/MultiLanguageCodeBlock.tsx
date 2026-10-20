@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { Button } from '@nangohq/design-system';
 
+import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { cn } from '../../utils/utils.js';
 import { CopyButton } from './CopyButton.js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './Select.js';
@@ -32,6 +33,7 @@ const highlight = {
 };
 
 export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ title, snippets, onExecute, ...props }) => {
+    const darkMode = useThemeStore(darkModeSelector);
     const [selectedSnippetIndex, setSelectedSnippetIndex] = useState(0);
     const [isExecuting, setIsExecuting] = useState(false);
 
@@ -97,7 +99,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                 <Prism
                     className="w-full min-w-0"
                     language={snippets[selectedSnippetIndex].language}
-                    colorScheme="dark"
+                    colorScheme={darkMode ? 'dark' : 'light'}
                     noCopy={true}
                     highlightLines={Object.fromEntries(snippets[selectedSnippetIndex].highlightedLines?.map((line) => [line, highlight]) ?? [])}
                 >
