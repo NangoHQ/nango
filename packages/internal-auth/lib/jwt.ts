@@ -120,6 +120,12 @@ export async function mint(signer: MintSigner, claims: MintClaims): Promise<stri
     const iat = claims.issuedAt ?? Math.floor(Date.now() / 1000);
     const payload: Record<string, unknown> = {};
     if (claims.res) {
+        if (!isPositiveInt(claims.res.environmentId) || !isPositiveInt(claims.res.connectionId)) {
+            throw new Error('task capability res requires a positive environmentId and connectionId');
+        }
+        if (claims.res.syncId !== undefined && claims.res.syncId.length === 0) {
+            throw new Error('task capability res.syncId must be a non-empty string');
+        }
         payload['res'] = claims.res;
     }
     if (claims.scopes !== undefined) {
