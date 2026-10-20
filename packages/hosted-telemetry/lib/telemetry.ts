@@ -59,11 +59,7 @@ export function createHostedTelemetry(store?: { knex: Knex; schema?: string; exp
         gauge: (name, value, attributes) => instrument(gauges, name, () => meter.createGauge(name)).record(value, attributes),
         histogram: (name, value, attributes) => instrument(histograms, name, () => meter.createHistogram(name)).record(value, attributes),
         shutdown: async () => {
-            try {
-                await provider?.forceFlush();
-            } finally {
-                await provider?.shutdown();
-            }
+            await provider?.shutdown();
         }
     };
 }
