@@ -45,6 +45,8 @@ if (globalEnv.publicPosthogKey) {
 
             return event;
         },
+        // Starting at load would record a BAA account before /meta says it may not be recorded.
+        disable_session_recording: true,
         session_recording: {
             maskAllInputs: true,
             // rrweb matches maskTextSelector against ancestors too, so a :not() opt-out can

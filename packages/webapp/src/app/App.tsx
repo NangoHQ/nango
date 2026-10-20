@@ -9,6 +9,7 @@ import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
 import { useTheme } from '@/lib/theme';
 import { useStore } from '@/store';
+import { useAnalytics } from '@/utils/analytics';
 import { globalEnv } from '@/utils/env';
 import { LocalStorageKeys } from '@/utils/local-storage';
 import { router } from './router';
@@ -20,9 +21,10 @@ const App = () => {
     // Sync persisted theme preference to the DOM
     useTheme();
     const [_, setLastEnvironment] = useLocalStorage(LocalStorageKeys.LastEnvironment);
-    const { user } = useUser();
+    const { user, loading: loadingUser } = useUser();
     const { data: metaData } = useMeta(!!user);
     const meta = metaData?.data;
+    useAnalytics({ user, loadingUser, meta });
 
     useEffect(() => {
         setShowGettingStarted(env === 'dev' && globalEnv.features.gettingStarted);
