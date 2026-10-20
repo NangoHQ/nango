@@ -175,7 +175,8 @@ export const HeroIllustration: React.FC = () => {
         };
 
         let onScreen = true;
-        let running = false;
+        let running = true;
+        frame = requestAnimationFrame(tick);
         const paused: Animation[] = [];
         const update = () => {
             const shouldRun = onScreen && !document.hidden;
