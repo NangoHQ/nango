@@ -3,6 +3,7 @@ import path from 'node:path';
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
+import { jwtHeaderAlg } from '@nangohq/internal-auth';
 import { accountService, environmentService, errorManager, ErrorSourceEnum, getPlan, isSandboxApiKey, LogActionEnum, userService } from '@nangohq/shared';
 import {
     Err,
@@ -29,6 +30,19 @@ import type { Result } from '@nangohq/utils';
 import type { NextFunction, Request, Response } from 'express';
 
 const logger = getLogger('AccessMiddleware');
+
+/** The token from an EdDSA Authorization header. Anything else returns undefined so the secret path can run. */
+export function eddsaBearerToken(header: string | undefined): string | undefined {
+    if (!header) {
+        return undefined;
+    }
+    const match = /^Bearer\s+(\S+)$/i.exec(header.trim());
+    const token = match?.[1];
+    if (!token || jwtHeaderAlg(token) !== 'EdDSA') {
+        return undefined;
+    }
+    return token;
+}
 
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
 const ignoreEnvPaths = [
@@ -123,6 +137,12 @@ export class AccessMiddleware {
             const authorizationHeader = req.get('authorization');
             if (!authorizationHeader) {
                 return Err('missing_auth_header');
+            }
+
+            // An EdDSA bearer is a task capability token, not a customer secret. Routes that did not
+            // opt in through withTaskCapability reject it here, before any secret lookup.
+            if (eddsaBearerToken(authorizationHeader)) {
+                return Err('unknown_account');
             }
 
             const secret = authorizationHeader.split('Bearer ').pop();

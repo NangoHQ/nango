@@ -29,6 +29,7 @@ import type {
     DBPlan,
     DBTeam,
     DBUser,
+    EnvironmentWithoutSecrets,
     PersistAuthContext,
     Result,
     SignupAcquisition
@@ -69,22 +70,27 @@ class ShadowAuthCache {
 
 const customerKeyShadowCache = new ShadowAuthCache('customer_key', envs.AUTH_SHADOW_CACHE_TTL_MS);
 
+export interface TaskTokenAccountContext {
+    account: DBTeam;
+    environment: EnvironmentWithoutSecrets;
+    plan: DBPlan | null;
+}
+
 /**
- * In-process cache of the persist auth context. Secret lookups and task-token lookups use
- * separate caches, both gated by AUTH_PERSIST_CONTEXT_CACHE_ENABLED. The cached
- * PersistAuthContext holds no secret material (account/environment ids, environment name,
- * and a few plan fields), so the only trade-off is staleness: a served entry can be up to
- * the TTL old, delaying visibility of revoked keys, deleted environments, and plan changes.
- * Enable/disable and TTL are configured via AUTH_PERSIST_CONTEXT_CACHE_* (see parse.ts).
+ * In-process cache of an auth context. Each instance has its own enabled flag, read per call so it
+ * can be toggled at runtime. TTL is a startup config shared with the persist cache. The only
+ * trade-off is staleness: a served entry can be up to the TTL old.
  */
-class PersistAuthContextCache {
-    // TTL is a startup config; the enabled flag is read per-call so it can be toggled at runtime.
-    private cache = new TTLFixedSizeMap<string, PersistAuthContext>(10_000, envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS);
+class AuthContextCache<T> {
+    private cache = new TTLFixedSizeMap<string, T>(10_000, envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS);
 
-    constructor(private readonly metricCache: string) {}
+    constructor(
+        private readonly metricCache: string,
+        private readonly enabled: () => boolean
+    ) {}
 
-    get(key: string): PersistAuthContext | undefined {
-        if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
+    get(key: string): T | undefined {
+        if (!this.enabled()) {
             return undefined;
         }
         const cached = this.cache.get(key);
@@ -92,8 +98,8 @@ class PersistAuthContextCache {
         return cached;
     }
 
-    set(key: string, context: PersistAuthContext): void {
-        if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
+    set(key: string, context: T): void {
+        if (!this.enabled()) {
             return;
         }
         // The cached instance is shared across requests; callers must not mutate it.
@@ -101,8 +107,9 @@ class PersistAuthContextCache {
     }
 }
 
-const persistSecretAuthCache = new PersistAuthContextCache('persist_internal_secret');
-const persistEnvironmentAuthCache = new PersistAuthContextCache('persist_environment');
+const persistSecretAuthCache = new AuthContextCache<PersistAuthContext>('persist_internal_secret', () => envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED);
+const persistEnvironmentAuthCache = new AuthContextCache<PersistAuthContext>('persist_environment', () => envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED);
+const taskTokenAuthCache = new AuthContextCache<TaskTokenAccountContext>('task_token', () => envs.AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED);
 
 interface PersistAuthContextRow {
     environment_id: number;
@@ -111,6 +118,77 @@ interface PersistAuthContextRow {
     plan_id: number | null;
     plan_name: DBPlan['name'] | null;
     records_store: DBPlan['records_store'] | null;
+}
+
+/** Stored columns of `_nango_environments`, excluding the secret columns a task token must never load. */
+const ENVIRONMENT_COLUMNS = [
+    'id',
+    'uuid',
+    'name',
+    'account_id',
+    'public_key',
+    'callback_url',
+    'webhook_url',
+    'webhook_url_secondary',
+    'hmac_enabled',
+    'always_send_webhook',
+    'send_auth_webhook',
+    'pending_public_key',
+    'slack_notifications',
+    'is_production',
+    'created_at',
+    'updated_at',
+    'deleted',
+    'deleted_at'
+] as const satisfies readonly (keyof EnvironmentWithoutSecrets)[];
+
+type EnvironmentColumnRow = {
+    [K in (typeof ENVIRONMENT_COLUMNS)[number] as `environment_${K}`]: EnvironmentWithoutSecrets[K];
+};
+
+function taskTokenAccountContextFromRow(row: { account: DBTeam; plan: DBPlan | null } & EnvironmentColumnRow): TaskTokenAccountContext {
+    return {
+        account: {
+            ...row.account,
+            created_at: new Date(row.account.created_at),
+            updated_at: new Date(row.account.updated_at)
+        },
+        environment: {
+            id: row.environment_id,
+            uuid: row.environment_uuid,
+            name: row.environment_name,
+            account_id: row.environment_account_id,
+            public_key: row.environment_public_key,
+            callback_url: row.environment_callback_url,
+            webhook_url: row.environment_webhook_url,
+            webhook_url_secondary: row.environment_webhook_url_secondary,
+            // Not columns. The dashboard environment endpoint fills these in; a raw row does not have them.
+            websockets_path: null,
+            hmac_enabled: row.environment_hmac_enabled,
+            always_send_webhook: row.environment_always_send_webhook,
+            send_auth_webhook: row.environment_send_auth_webhook,
+            ...(row.environment_pending_public_key != null ? { pending_public_key: row.environment_pending_public_key } : {}),
+            slack_notifications: row.environment_slack_notifications,
+            webhook_receive_url: null,
+            is_production: row.environment_is_production,
+            created_at: new Date(row.environment_created_at),
+            updated_at: new Date(row.environment_updated_at),
+            deleted: row.environment_deleted,
+            deleted_at: row.environment_deleted_at ? new Date(row.environment_deleted_at) : null
+        },
+        plan: row.plan
+            ? {
+                  ...row.plan,
+                  created_at: new Date(row.plan.created_at),
+                  updated_at: new Date(row.plan.updated_at),
+                  trial_start_at: row.plan.trial_start_at ? new Date(row.plan.trial_start_at) : row.plan.trial_start_at,
+                  trial_end_at: row.plan.trial_end_at ? new Date(row.plan.trial_end_at) : row.plan.trial_end_at,
+                  trial_end_notified_at: row.plan.trial_end_notified_at ? new Date(row.plan.trial_end_notified_at) : row.plan.trial_end_notified_at,
+                  orb_subscribed_at: row.plan.orb_subscribed_at ? new Date(row.plan.orb_subscribed_at) : row.plan.orb_subscribed_at,
+                  orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
+              }
+            : null
+    };
 }
 
 function persistAuthContextFromRow(row: PersistAuthContextRow): PersistAuthContext {
@@ -1029,6 +1107,47 @@ class AccountService {
 
         const context = persistAuthContextFromRow(row);
         persistEnvironmentAuthCache.set(cacheKey, context);
+        return context;
+    }
+
+    /**
+     * Account context for a verified task capability token. The environment id comes from the token.
+     * The query never selects secret_key, pending_secret_key, hmac_key or otlp_settings, and the
+     * result is cached without them. Ok(null) means the environment is missing or deleted.
+     */
+    async getTaskTokenAccountContext(environmentId: number): Promise<Result<TaskTokenAccountContext | null>> {
+        try {
+            return Ok(await this.resolveTaskTokenAccountContext(environmentId));
+        } catch (err) {
+            return Err(err instanceof Error ? err : new Error('failed_to_resolve_task_token_account_context', { cause: err }));
+        }
+    }
+
+    private async resolveTaskTokenAccountContext(environmentId: number): Promise<TaskTokenAccountContext | null> {
+        const cacheKey = String(environmentId);
+        const cached = taskTokenAuthCache.get(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
+        const row = await db.readOnly
+            .select<{ account: DBTeam; plan: DBPlan | null } & EnvironmentColumnRow>(
+                db.knex.raw('row_to_json(_nango_accounts.*) as account'),
+                db.knex.raw('row_to_json(plans.*) as plan'),
+                ...ENVIRONMENT_COLUMNS.map((column) => `_nango_environments.${column} as environment_${column}`)
+            )
+            .from('_nango_environments')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
+            .where('_nango_environments.id', environmentId)
+            .where('_nango_environments.deleted', false)
+            .first();
+        if (!row) {
+            return null;
+        }
+
+        const context = taskTokenAccountContextFromRow(row);
+        taskTokenAuthCache.set(cacheKey, context);
         return context;
     }
 
