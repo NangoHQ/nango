@@ -24,8 +24,8 @@ description: "Important developer & product updates, including deprecations & br
 <Update label="Scoped environment API keys from the API" description="October 19, 2026">
   The account-level API can now create Environment API keys with specific scopes, and update a key's name or scopes after creation.
 
-  - [Create an environment API key](/reference/backend/http-api/environments/create-api-key) accepts an optional `scopes` array. Without it, the key keeps full environment access as before.
-  - [Update an environment API key](/reference/backend/http-api/environments/update-api-key) changes the `display_name` or replaces the `scopes`. The secret stays the same, and requests that need a removed scope start failing with a 403.
+  - [Create environment API key](/reference/backend/http-api/environments/create-api-key) accepts an optional `scopes` array. Without it, the key keeps full environment access as before.
+  - [Update environment API key](/reference/backend/http-api/environments/update-api-key) changes the `display_name` or replaces the `scopes`. The secret stays the same, and requests that need a removed scope start failing with a 403.
 
   Both require an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the matching `account:environments:api_keys:*` scope.
 </Update>
