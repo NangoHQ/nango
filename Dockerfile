@@ -120,7 +120,7 @@ ENV NODE_ENV=production
 ENV GIT_HASH=$git_hash
 ENV DD_VERSION=$git_hash
 ENV DD_GIT_COMMIT_SHA=$git_hash
-ENV DD_GIT_REPOSITORY_URL=github.com/NangoHQ/nango
+ENV DD_GIT_REPOSITORY_URL=https://github.com/NangoHQ/nango
 ENV SERVER_RUN_MODE=DOCKERIZED
 
 EXPOSE 8080

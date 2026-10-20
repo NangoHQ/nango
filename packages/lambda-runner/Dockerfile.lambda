@@ -110,7 +110,7 @@ ARG git_hash
 ENV DD_LAMBDA_HANDLER="packages/lambda-runner/dist/index.handler"
 ENV DD_VERSION=$git_hash
 ENV DD_GIT_COMMIT_SHA=$git_hash
-ENV DD_GIT_REPOSITORY_URL=github.com/NangoHQ/nango
+ENV DD_GIT_REPOSITORY_URL=https://github.com/NangoHQ/nango
 RUN rm node_modules/datadog-lambda-js/dist/handler.js
 CMD ["node_modules/datadog-lambda-js/dist/handler.handler"]
 
