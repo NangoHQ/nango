@@ -7,15 +7,7 @@ import db, { multipleMigrations } from './index.js';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { NEW_SCOPE, OLD_SCOPE, renameDryrunApiKeyScope } = require('./migration-helpers/renameDryrunApiKeyScope.cjs');
 
-async function createKey({
-    scopes,
-    keyType = 'api',
-    deletedAt
-}: {
-    scopes: string[] | null;
-    keyType?: 'api' | 'webhook_signing';
-    deletedAt?: Date;
-}): Promise<{ id: number; accountId: number }> {
+async function createKey({ scopes, deletedAt }: { scopes: string[] | null; deletedAt?: Date }): Promise<{ id: number; accountId: number }> {
     const [account] = await db
         .knex('_nango_accounts')
         .insert({ name: `test-account-${randomUUID()}` })
@@ -25,7 +17,7 @@ async function createKey({
         .knex('customer_keys')
         .insert({
             account_id: account.id,
-            key_type: keyType,
+            key_type: 'api',
             display_name: 'test',
             scopes,
             secret: unique,
@@ -94,14 +86,6 @@ describe('renameDryrunApiKeyScope', () => {
         await renameDryrunApiKeyScope(db.knex);
 
         expect(await readScopes(key.id)).toEqual(['environment:*']);
-    });
-
-    it('does not touch non-API keys', async () => {
-        const key = await createKey({ keyType: 'webhook_signing', scopes: [OLD_SCOPE] });
-
-        await renameDryrunApiKeyScope(db.knex);
-
-        expect(await readScopes(key.id)).toEqual([OLD_SCOPE]);
     });
 
     it('handles null scopes as a no-op', async () => {

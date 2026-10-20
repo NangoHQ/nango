@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from './index.js';
 
@@ -102,9 +102,35 @@ async function withAccount(run: (accountId: number) => Promise<void>): Promise<v
     }
 }
 
+async function allowWebhookSigningKeyType(): Promise<void> {
+    await db.knex.raw(`ALTER TABLE customer_keys DROP CONSTRAINT IF EXISTS check_customer_keys_key_type`);
+    await db.knex.raw(`
+        ALTER TABLE customer_keys
+            ADD CONSTRAINT check_customer_keys_key_type
+            CHECK (key_type IN ('api', 'webhook_signing')) NOT VALID
+    `);
+    await db.knex.raw(`ALTER TABLE customer_keys VALIDATE CONSTRAINT check_customer_keys_key_type`);
+}
+
+async function narrowCustomerKeyTypeToApi(): Promise<void> {
+    await db.knex.raw(`ALTER TABLE customer_keys DROP CONSTRAINT IF EXISTS check_customer_keys_key_type`);
+    await db.knex.raw(`
+        ALTER TABLE customer_keys
+            ADD CONSTRAINT check_customer_keys_key_type
+            CHECK (key_type IN ('api')) NOT VALID
+    `);
+    await db.knex.raw(`ALTER TABLE customer_keys VALIDATE CONSTRAINT check_customer_keys_key_type`);
+}
+
 describe('copyWebhookSigningKeys', () => {
     beforeAll(async () => {
         await multipleMigrations();
+        await allowWebhookSigningKeyType();
+    });
+
+    afterAll(async () => {
+        await db.knex('customer_keys').where({ key_type: 'webhook_signing' }).delete();
+        await narrowCustomerKeyTypeToApi();
     });
 
     it('copies a live signing key and keeps its ciphertext and timestamps', async () => {
