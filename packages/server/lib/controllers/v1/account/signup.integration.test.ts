@@ -142,7 +142,7 @@ describe('POST /api/v1/account/signup', () => {
             oppref: 'synthetic_openai'
         };
         const headers: Record<string, string> = {};
-        if (scenario !== 'withdrawn') headers.Cookie = `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}`;
+        if (scenario !== 'withdrawn') headers['Cookie'] = `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}`;
         if (scenario === 'gpc') headers['sec-gpc'] = '1';
         try {
             const res = await api.fetch(route, {
