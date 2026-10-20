@@ -328,6 +328,15 @@ class CustomerKeyService {
         }
     }
 
+    private async readClockTimestamp(trx: Knex): Promise<Date> {
+        const { rows } = await trx.raw<{ rows: { ts: Date }[] }>('SELECT clock_timestamp() AS ts');
+        const stampedAt = rows[0]?.ts;
+        if (!stampedAt) {
+            throw new NangoError('impossible_condition');
+        }
+        return stampedAt;
+    }
+
     public async createWebhookSigningKey(
         trx: Knex,
         {
@@ -336,19 +345,15 @@ class CustomerKeyService {
             accountId: number;
             environmentId: number;
         }
-    ): Promise<Result<void>> {
+    ): Promise<Result<string>> {
         try {
             const plainText = uuid.v4();
             const encrypted = getEncryptionManager().encryptAPISecret({ secret: plainText, iv: '', tag: '' } as Parameters<
                 EncryptionManager['encryptAPISecret']
             >[0]);
-            const { rows } = await trx.raw<{ rows: { ts: Date }[] }>('SELECT clock_timestamp() AS ts');
-            const stampedAt = rows[0]?.ts;
-            if (!stampedAt) {
-                throw new NangoError('impossible_condition');
-            }
+            const stampedAt = await this.readClockTimestamp(trx);
             await this.upsertWebhookSigningKey(trx, environmentId, encrypted, stampedAt);
-            return Ok();
+            return Ok(plainText);
         } catch (err) {
             return Err(err);
         }
@@ -459,11 +464,7 @@ class CustomerKeyService {
             >[0]);
 
             const committed = await trx.transaction(async (innerTrx) => {
-                const { rows } = await innerTrx.raw<{ rows: { ts: Date }[] }>('SELECT clock_timestamp() AS ts');
-                const stampedAt = rows[0]?.ts;
-                if (!stampedAt) {
-                    throw new NangoError('impossible_condition');
-                }
+                const stampedAt = await this.readClockTimestamp(innerTrx);
 
                 const legacy = await this.webhookSigningKeyForEnv(innerTrx, envId).first();
                 const current = await innerTrx(WEBHOOK_SIGNING_KEYS_TABLE).where({ environment_id: envId }).first();

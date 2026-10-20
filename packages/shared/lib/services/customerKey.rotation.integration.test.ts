@@ -186,10 +186,19 @@ describe('webhook signing key rows', () => {
     });
 
     it('creates an environment signing key without a legacy row', async () => {
-        const { env } = await seedAccountEnvAndUser();
+        const { env, account } = await seedAccountEnvAndUser();
 
         expect(await legacySigningKey(env.id).first()).toBeUndefined();
-        expect(await plaintext(env.id)).toEqual(expect.any(String));
+
+        const created = await customerKeyService.createWebhookSigningKey(db.knex, {
+            accountId: account.id,
+            environmentId: env.id
+        });
+        if (created.isErr()) {
+            throw created.error;
+        }
+        expect(await plaintext(env.id)).toBe(created.value);
+        expect(await legacySigningKey(env.id).first()).toBeUndefined();
     });
 
     it('rotates a signing key that exists only in webhook_signing_keys', async () => {
