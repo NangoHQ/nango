@@ -75,7 +75,7 @@ export const FunctionPlaygroundDrawer: React.FC = () => {
             >
                 <div className="h-full overflow-y-auto">
                     <div className="flex h-14 items-center justify-between border-b border-border-muted px-6">
-                        <SheetTitle className="text-lg font-semibold">Function runner</SheetTitle>
+                        <SheetTitle className="text-lg font-semibold">Test run</SheetTitle>
                         <SheetClose
                             title="Close"
                             className="-mr-2 flex size-8 items-center justify-center bg-transparent text-text-muted transition-colors hover:text-text-strong focus:text-text-strong"

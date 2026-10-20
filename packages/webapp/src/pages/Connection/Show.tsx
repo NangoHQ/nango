@@ -136,7 +136,7 @@ export const ConnectionShow = () => {
                                     })
                                 }
                             >
-                                Runner
+                                Test run
                                 <ArrowUpRight className="size-3.5" />
                             </button>
                         )}

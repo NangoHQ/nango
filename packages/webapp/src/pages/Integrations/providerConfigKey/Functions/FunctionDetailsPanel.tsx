@@ -155,7 +155,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                                         });
                                     }}
                                 >
-                                    Run function <Play />
+                                    Test run function <Play />
                                 </Button>
                             </span>
                         </ConditionalTooltip>

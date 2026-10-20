@@ -124,7 +124,7 @@ export const ShowIntegration: React.FC = () => {
                     </TabsTrigger>
                     {canRunFunctions && (
                         <TabsTrigger value="run" className={integrationTabClassName}>
-                            Runner
+                            Test run
                             <ArrowUpRight className="size-3.5" />
                         </TabsTrigger>
                     )}
