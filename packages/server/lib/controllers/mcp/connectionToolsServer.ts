@@ -47,7 +47,7 @@ export async function createConnectionToolsMcpServer(
     if (actionsResult.isErr()) {
         return Err(actionsResult.error);
     }
-    const actions = actionsResult.value;
+    const { actions } = actionsResult.value;
 
     server.setRequestHandler('tools/list', () => {
         return {

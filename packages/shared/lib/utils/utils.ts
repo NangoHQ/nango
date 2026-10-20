@@ -237,6 +237,16 @@ function replaceHmacSha1HexExpression(str: string, resolveInner: (inner: string)
     });
 }
 
+function replaceHmacSha256HexExpression(str: string, resolveInner: (inner: string) => string): string {
+    return str.replace(/\${hmacSha256Hex\(([\s\S]*?)\)}/g, (match, inner) => {
+        const lastComma = inner.lastIndexOf(',');
+        if (lastComma === -1) return match;
+        const message = resolveInner(inner.slice(0, lastComma));
+        const key = resolveInner(inner.slice(lastComma + 1).trim());
+        return crypto.createHmac('sha256', key).update(message, 'utf8').digest('hex');
+    });
+}
+
 function formatAwsSigV4Date(date: Date): string {
     return date.toISOString().replace(/[:-]|\.\d{3}/g, '');
 }
@@ -307,6 +317,7 @@ export function interpolateString(str: string, replacers: Record<string, any>, o
     const effective = optionalReplacers ? { ...replacers, ...optionalReplacers } : replacers;
 
     str = replaceHmacSha1HexExpression(str, (inner) => interpolateString(inner, effective));
+    str = replaceHmacSha256HexExpression(str, (inner) => interpolateString(inner, effective));
     str = replaceAwsSigV4Expression(str, (inner) => interpolateString(inner, effective), effective);
 
     str = replaceBase64Expression(str, (inner) => interpolateString(inner, effective));
@@ -360,6 +371,7 @@ function resolveKey(key: string, replacers: Record<string, any>): any {
 }
 export function interpolateStringFromObject(str: string, replacers: Record<string, any>): string {
     str = replaceHmacSha1HexExpression(str, (inner) => interpolateStringFromObject(inner, replacers));
+    str = replaceHmacSha256HexExpression(str, (inner) => interpolateStringFromObject(inner, replacers));
     str = replaceAwsSigV4Expression(str, (inner) => interpolateStringFromObject(inner, replacers), replacers);
     str = replaceBase64Expression(str, (inner) => interpolateStringFromObject(inner, replacers));
     str = replaceSha256HexExpression(str, (inner) => interpolateString(inner, replacers));

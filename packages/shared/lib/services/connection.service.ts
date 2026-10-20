@@ -653,6 +653,27 @@ export class ConnectionService {
         return result || null;
     }
 
+    public async search(
+        db: Knex,
+        { environmentId, filter, limit }: { environmentId: number; filter: { connectionId?: string; integrationId?: string | undefined }; limit?: number }
+    ): Promise<Result<DBConnection[]>> {
+        try {
+            const query = db.from<DBConnection>('_nango_connections').select('*').where({ environment_id: environmentId, deleted: false }).orderBy('id');
+            if (filter.connectionId !== undefined) {
+                query.where('connection_id', filter.connectionId);
+            }
+            if (filter.integrationId !== undefined) {
+                query.where('provider_config_key', filter.integrationId);
+            }
+            if (limit !== undefined) {
+                query.limit(limit);
+            }
+            return Ok(await query);
+        } catch (err) {
+            return Err(new Error('failed_to_search_connections', { cause: err }));
+        }
+    }
+
     public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<ServiceResponse<DBConnectionDecrypted>> {
         const rawConnection = await db.knex
             .from(`_nango_connections`)

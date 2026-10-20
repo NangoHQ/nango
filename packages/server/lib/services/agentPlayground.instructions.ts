@@ -35,7 +35,19 @@ const RULES = `# Nango Agent Playground
 - Use an emoji where it adds warmth, such as 🎉 when a change went through or 📅 above a day's events. Vary them, and leave them out of failures, declines and error explanations, where a plain sentence reads better.`;
 
 /** `sessionInstructions` is what the agent session's MCP server sends on initialize, which covers the tools and integrations. */
-export function buildInstructions(timeZone: string, now: Date, sessionInstructions: string | undefined, unavailable: string[] = []): string {
+export function buildInstructions({
+    timeZone,
+    now,
+    sessionInstructions,
+    environmentName,
+    unavailable = []
+}: {
+    timeZone: string;
+    now: Date;
+    sessionInstructions: string | undefined;
+    environmentName: string;
+    unavailable?: string[];
+}): string {
     const local = new Intl.DateTimeFormat('en-GB', {
         timeZone,
         weekday: 'long',
@@ -47,7 +59,10 @@ export function buildInstructions(timeZone: string, now: Date, sessionInstructio
         hourCycle: 'h23'
     }).format(now);
 
-    const playground = [`The user's time zone is ${timeZone}. It is currently ${local} there.`];
+    const playground = [
+        `The user's time zone is ${timeZone}. It is currently ${local} there.`,
+        `Whenever you mention the Integrations tab, link it as [Integrations tab](/${encodeURIComponent(environmentName)}/integrations).`
+    ];
     if (unavailable.length > 0) {
         playground.push(
             `These apps are not set up in this environment yet: ${unavailable.join(', ')}. If the user asks for one, tell them to set it up in the Integrations tab and come back, and do not search for it, connect it or call its API.`

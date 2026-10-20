@@ -291,7 +291,8 @@ export function usePlayground(inputFields: InputField[]) {
                             sync_id: sync.id,
                             sync_name: sync.name,
                             sync_variant: sync.variant,
-                            provider: playgroundIntegration
+                            provider: playgroundIntegration,
+                            is_playground: true
                         })
                     });
                 }

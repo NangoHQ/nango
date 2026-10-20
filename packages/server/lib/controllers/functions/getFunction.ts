@@ -6,7 +6,7 @@ import { functionConfigService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
-import { toGetFunctionResponse } from './helpers.js';
+import { toGetFunctionResponse } from './formatter.js';
 
 import type { GetFunction } from '@nangohq/types';
 

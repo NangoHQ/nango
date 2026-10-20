@@ -133,6 +133,7 @@ export type * from './mfa/db.js';
 export type * from './function/config.js';
 export type * from './function/db.js';
 export type * from './function/trigger.js';
+export type * from './function/tool.js';
 export type * from './functions/api.js';
 export type * from './functions/domain.js';
 

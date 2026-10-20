@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { accountService, userService } from '@nangohq/shared';
+import { accountService, productTracking, userService } from '@nangohq/shared';
 import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -57,6 +57,7 @@ export const deleteTeamUser = asyncWrapper<DeleteTeamUser>(async (req, res) => {
         res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
         return;
     }
+    productTracking.track({ name: 'team:user_remove' });
 
     // TODO: destroy this user session to avoid desync
     // TODO: last user removed from a team should (soft) delete the team

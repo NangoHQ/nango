@@ -106,6 +106,12 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         isV1PassthroughEnabled(accountUuid: string) {
             return client.isEnabled('v1-passthrough', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether the legacy Connection MCP server is available for this account.
+         */
+        isConnectionMcpEnabled(accountUuid: string) {
+            return client.isEnabled('connection-mcp', { targetingKey: accountUuid, accountUuid }, true);
         }
     };
 }
