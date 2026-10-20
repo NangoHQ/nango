@@ -48,8 +48,10 @@ describe('migrateSchema', () => {
 
     it('can re-create everything after its migration record is gone, as after a rollback', async () => {
         await knex.raw(`DELETE FROM ??.??`, [schema, tableName]);
+        await knex.raw(`DROP TABLE ??.items`, [schema]);
         expect((await migrateSchema({ knex, schema, tableName, ...location })).isOk()).toBe(true);
         expect(await applied()).toEqual(['20260101000001_create_items']);
+        await expect(knex.withSchema(schema).table('items').insert({ id: 1 })).resolves.toBeDefined();
     });
 
     it('returns the failure instead of throwing when a migration cannot run', async () => {

@@ -109,6 +109,16 @@ describe('daily partition lifecycle', () => {
         expect(await partitions()).toHaveLength(2);
     });
 
+    it('leaves a detached table alone, even when its name looks expired', async () => {
+        (await ensureDailyPartitions({ knex, schema, table, dates: [new Date('2026-01-01T00:00:00Z')] })).unwrap();
+        await knex.raw(`ALTER TABLE ??.?? DETACH PARTITION ??.??`, [schema, table, schema, name('20260101')]);
+        (await ensureDailyPartitions({ knex, schema, table, dates: [new Date('2026-01-02T00:00:00Z')] })).unwrap();
+
+        const res = await dropExpiredDailyPartitions({ knex, schema, table, retentionDays: 90, now: new Date('2026-10-09T12:00:00Z') });
+        expect(res.isOk() && res.value).toEqual({ dropped: 1, skipped: 0 });
+        expect(await partitions()).toEqual([name('20260101')]);
+    });
+
     it('does not drop a partition placed in another schema', async () => {
         const from = dayjs('2026-01-01T00:00:00Z').utc();
         await knex.raw('CREATE SCHEMA IF NOT EXISTS ??', [foreignSchema]);
