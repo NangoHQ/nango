@@ -13907,11 +13907,18 @@ Use the Sync tools to set sync state or trigger syncs for an integration in the 
 
 ### Functions
 
-Use the Functions tools to inspect available functions and deploy templates in the authenticated Nango environment. `functions_list` includes deployed functions and Nango catalog actions. Catalog actions are available out of the box; use `deploy_template` when you want to enable a sync template or explicitly deploy a template.
+Use the Functions tools to inspect available functions and deploy templates in the authenticated Nango environment. `functions_list` includes deployed sync, action, and event functions, as well as Nango catalog actions. Catalog actions are available out of the box; use `deploy_template` when you want to enable a sync template or explicitly deploy a template.
+
+Tools are functions that can be called on demand: HTTP-triggered functions, deployed action functions, and Nango catalog actions. Use `tools_call` to call an enabled tool for a connection.
+
+<Warning>
+    A `tools_call` MCP request may time out within 90 seconds without canceling execution. After a timeout, the tool cannot return the result or an execution ID. Retrying starts another execution and may duplicate side effects. When the tool supports it, use input parameters that limit the amount of data processed to keep execution within the MCP timeout.
+</Warning>
 
 | Tool                    | Description                                                                   | Additional permission        |
 | ----------------------- | ----------------------------------------------------------------------------- | ---------------------------- |
 | `functions_list`        | List and filter available functions by integration, including Nango catalog actions. | `environment:functions:list` |
+| `tools_call`            | Call an enabled tool of an integration synchronously for a connection.        | `environment:functions:invocations`, `environment:actions:execute` |
 | `deploy_template`       | Deploy a function template.                                                   | `environment:deploy`         |
 | `get_deployment_status` | Retrieve a deployment's current status and result.                            | `environment:deploy`         |
 
