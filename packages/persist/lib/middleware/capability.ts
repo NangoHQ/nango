@@ -4,14 +4,13 @@ import {
     INTERNAL_SERVICE_ISSUER_JOBS,
     isResourceBound,
     isTaskBoundAuth,
-    jwtHeaderAlg,
     keyRegistryFromPublicKeys,
     verifyTaskCapabilityToken
 } from '@nangohq/internal-auth';
 import { accountService } from '@nangohq/shared';
 import { createRoute, ENVS, parseEnvs, stringifyError } from '@nangohq/utils';
 
-import { applyPersistAuthContext, authenticateSecret } from './auth.middleware.js';
+import { applyPersistAuthContext, authenticateSecret, eddsaBearerToken } from './auth.middleware.js';
 import { connectionOwnershipMiddleware } from './connectionOwnership.middleware.js';
 
 import type { AuthLocals } from './auth.middleware.js';
@@ -53,7 +52,7 @@ export function createPersistRoute<E extends Endpoint<any>>(
 function persistCapability(scope: TaskCapabilityScope | null, path: string, opts: PersistRouteOptions | undefined): RequestHandler {
     return (req, res, next) => {
         const authRes = res as Response<unknown, AuthLocals>;
-        const token = eddsaBearer(req);
+        const token = eddsaBearerToken(req.get('authorization'));
         if (token) {
             void authenticateTask(req, authRes, next, token, scope, path, opts);
             return;
@@ -125,18 +124,6 @@ async function authenticateTask(
     } catch (err) {
         res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(err)}` } });
     }
-}
-
-function eddsaBearer(req: Request): string | undefined {
-    const header = req.get('authorization');
-    if (!header) {
-        return undefined;
-    }
-    const secret = header.split('Bearer ').pop();
-    if (!secret || jwtHeaderAlg(secret) !== 'EdDSA') {
-        return undefined;
-    }
-    return secret;
 }
 
 function routeParam(req: Request, name: string): string | undefined {
