@@ -1303,6 +1303,7 @@
               "integrations/all/docuware",
               "api-integrations/domo",
               "api-integrations/dope-security",
+              "api-integrations/dot",
               "api-integrations/drata",
               "integrations/all/drchrono",
               "api-integrations/dropbox",

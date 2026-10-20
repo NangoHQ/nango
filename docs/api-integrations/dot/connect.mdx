@@ -1,0 +1,47 @@
+---
+title: 'Dot - How do I link my account?'
+sidebarTitle: 'Dot'
+---
+
+## Overview
+
+To authenticate with Dot, you need:
+
+1. **Region**: the address you open Dot at, `app.getdot.ai` (US) or `eu.getdot.ai` (EU).
+2. **API Token**: a Dot API token.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Dot account with the admin role. Only admins can create API tokens.
+
+### Step 1: Find your region
+
+Your region is the address you use to open Dot:
+
+| You open Dot at | Region to select |
+| --- | --- |
+| `https://app.getdot.ai` | `app.getdot.ai` (US) |
+| `https://eu.getdot.ai` | `eu.getdot.ai` (EU) |
+
+Create your API token in the same region.
+
+### Step 2: Create an API token
+
+1. Sign in to Dot and go to **Settings** > **Users**.
+2. In the **API Tokens** section, select **Create Token**.
+3. Choose the user the token acts as (yourself, if you leave it empty), enter a name such as `Nango`, and pick an expiration.
+4. Select **Create Token**, then copy the token. It starts with `dot-` and is only shown once.
+
+The token has the same data access as the user it belongs to. When it expires, the connection stops working until you enter a new token.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Dot.
+2. Select your **Region** and enter your **API Token** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/dot/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Dot.

@@ -7727,6 +7727,44 @@ dope-security:
             example: 7SBGztUm*****************************jfYlMM
             doc_section: '#step-1-creating-api-client-credentials'
 
+dot:
+    display_name: Dot
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            x-api-key: ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /api/auth/me
+    docs: https://nango.dev/docs/api-integrations/dot
+    docs_connect: https://nango.dev/docs/api-integrations/dot/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Region
+            description: 'The address you open Dot at: app.getdot.ai (US) or eu.getdot.ai (EU).'
+            format: hostname
+            enum:
+                - app.getdot.ai
+                - eu.getdot.ai
+            order: 1
+            doc_section: '#step-1-find-your-region'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Dot API token.
+            pattern: '^dot-[A-Za-z0-9_.-]+$'
+            example: dot-eyJhbGci************************
+            doc_section: '#step-2-create-an-api-token'
+
 dropbox:
     display_name: Dropbox
     categories:
