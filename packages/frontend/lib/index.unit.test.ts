@@ -68,4 +68,21 @@ describe('Nango.auth with credentials', () => {
             client_secret: 'my-client-secret'
         });
     });
+
+    it('should preserve special characters in authorization parameter names and values', async () => {
+        const nango = new Nango({ host, connectSessionToken });
+
+        await nango.auth('oauth2-cc-provider', {
+            credentials: { client_id: 'my-client-id', client_secret: 'my-client-secret' },
+            authorization_params: {
+                'custom&key': 'consent&scope=admin+read#fragment',
+                prompt: undefined
+            }
+        });
+
+        const { url } = lastRequest();
+        expect(url.searchParams.get('authorization_params[custom&key]')).toBe('consent&scope=admin+read#fragment');
+        expect(url.searchParams.get('authorization_params[prompt]')).toBe('undefined');
+        expect(url.searchParams.has('scope')).toBe(false);
+    });
 });
