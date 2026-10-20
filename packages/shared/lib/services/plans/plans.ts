@@ -391,6 +391,7 @@ function mergePlanFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPla
                 break;
             // BOOLEAN FLAGS - keep override if false
             case 'has_records_autopruning':
+            case 'has_overdue_invoices_banner':
             case 'auto_idle': {
                 overrides[key] = !currentPlan[key] ? false : newPlanDefinition.flags[key];
                 break;

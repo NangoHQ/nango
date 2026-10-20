@@ -45,6 +45,7 @@ describe('listIntegrationsTool', () => {
                         display_name: 'GitHub',
                         logo: `${basePublicUrl}/images/template-logos/github.svg`,
                         forward_webhooks: true,
+                        missing_fields: [],
                         created_at: createdAt.toISOString(),
                         updated_at: updatedAt.toISOString()
                     }

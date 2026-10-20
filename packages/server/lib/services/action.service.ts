@@ -88,7 +88,8 @@ export async function executeAction({
         span.setTag('nango.actionName', actionName)
             .setTag('nango.connectionId', connectionId)
             .setTag('nango.environmentId', environment.id)
-            .setTag('nango.providerConfigKey', providerConfigKey);
+            .setTag('nango.providerConfigKey', providerConfigKey)
+            .setTag('nango.actionKind', resolved.kind);
 
         logCtx = await logContextGetter.create(
             { operation: { type: 'action', action: 'run' }, expiresAt: defaultOperationExpiration.action(), actor },
@@ -98,7 +99,7 @@ export async function executeAction({
                 integration: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
                 connection: { id: connection.id, name: connection.connection_id },
                 syncConfig: loggedSyncConfig,
-                meta: truncateJson({ input })
+                meta: truncateJson({ input: envs.NANGO_LOG_FUNCTION_INPUT ? input : 'REDACTED' })
             }
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation));

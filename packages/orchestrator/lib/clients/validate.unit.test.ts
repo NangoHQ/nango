@@ -28,8 +28,7 @@ describe('validateTask', () => {
             scheduleId: 'c1952e1f-b385-4db0-b4ef-a7ad52a034c9',
             payload: {
                 type: 'function',
-                functionConfigId: 123,
-                functionName: 'my-function',
+                functionUuid: '11111111-1111-4111-8111-111111111111',
                 connection: { id: 1, connection_id: 'C', provider_config_key: 'P', environment_id: 2 },
                 trigger: { kind: 'schedule', input: null, connection: { connectionId: 'C', integrationId: 'P' } },
                 variant,
@@ -41,7 +40,7 @@ describe('validateTask', () => {
         expect(task.isFunction()).toBe(true);
         if (task.isFunction()) {
             expect(task).toMatchObject({
-                functionConfigId: 123,
+                functionUuid: '11111111-1111-4111-8111-111111111111',
                 async: true,
                 attempt: 1,
                 attemptMax: 1
@@ -55,7 +54,7 @@ describe('validateTask', () => {
         const result = validateTask({
             id: '4a14038c-3a57-4a4d-bb9e-c8a5e85474ae',
             name: 'function-task',
-            groupKey: 'function:environment:2:connection:1:function:my-function',
+            groupKey: 'function:environment:2:connection:1:function:11111111-1111-4111-8111-111111111111',
             groupMaxConcurrency: 1,
             state: 'STARTED',
             retryKey: 'retry-key',
@@ -74,9 +73,8 @@ describe('validateTask', () => {
             scheduleId: null,
             payload: {
                 type: 'function',
-                functionName: 'my-function',
+                functionUuid: '11111111-1111-4111-8111-111111111111',
                 activityLogId: 'activity-log-id',
-                functionConfigId: 123,
                 trigger: {
                     kind: 'http',
                     input: { value: 42 },
@@ -104,7 +102,7 @@ describe('validateTask', () => {
         expect(task.isFunction()).toBe(true);
         if (task.isFunction()) {
             expect(task).toMatchObject({
-                functionName: 'my-function',
+                functionUuid: '11111111-1111-4111-8111-111111111111',
                 trigger: expect.objectContaining({ kind: 'http', input: { value: 42 }, subscriptions: ['issues'] }),
                 async: false,
                 attempt: 1,
@@ -117,7 +115,7 @@ describe('validateTask', () => {
         const result = validateTask({
             id: '4a14038c-3a57-4a4d-bb9e-c8a5e85474ae',
             name: 'function-task',
-            groupKey: 'function:environment:2:connection:1:function:my-function',
+            groupKey: 'function:environment:2:connection:1:function:11111111-1111-4111-8111-111111111111',
             groupMaxConcurrency: 1,
             state: 'STARTED',
             retryKey: 'retry-key',
@@ -136,9 +134,8 @@ describe('validateTask', () => {
             scheduleId: null,
             payload: {
                 type: 'function',
-                functionName: 'my-function',
+                functionUuid: '11111111-1111-4111-8111-111111111111',
                 activityLogId: 'activity-log-id',
-                functionConfigId: 123,
                 trigger: {
                     kind: 'http',
                     request: { method, path: '/webhooks/github', headers: {}, query: {} },

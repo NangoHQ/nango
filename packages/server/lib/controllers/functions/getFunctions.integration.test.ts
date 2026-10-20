@@ -19,6 +19,7 @@ function version(
 ): Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> {
     return {
         description: `Function ${trigger.kind}`,
+        tags: {},
         file_location: `functions/${trigger.kind}`,
         version: 'test-version',
         source: 'repo',
@@ -102,7 +103,12 @@ describe(`GET ${route}`, () => {
         await seeders.createConfigSeed(env, 'stripe-123', 'stripe');
         const configs = (
             await functionConfigService.upsert(db.knex, [
-                { environmentId: env.id, integrationId: 'github-123', name: 'fetchIssues', version: version({ kind: 'http', subscriptions: ['push'] }) },
+                {
+                    environmentId: env.id,
+                    integrationId: 'github-123',
+                    name: 'fetchIssues',
+                    version: { ...version({ kind: 'http', subscriptions: ['push'] }), tags: { category: 'crm', entities: ['contacts', 'companies'] } }
+                },
                 { environmentId: env.id, integrationId: 'github-123', name: 'nightly', version: version({ kind: 'schedule', frequency: 'every day' }) },
                 { environmentId: env.id, integrationId: 'stripe-123', name: 'createCharge', version: version({ kind: 'http' }) },
                 { environmentId: env.id, integrationId: 'stripe-123', name: 'disabledOne', version: version({ kind: 'none' }) }
@@ -115,12 +121,14 @@ describe(`GET ${route}`, () => {
         isSuccess(all.json);
         expect(all.json.data.map((fn) => fn.name)).toEqual(['fetchIssues', 'nightly', 'createCharge', 'disabledOne']);
         expect(all.json.next_cursor).toBeNull();
+        expect(all.json.data[1]?.tags).toEqual({});
         expect(all.json.data[0]).toMatchObject({
             uuid: configs[0]!.config.uuid,
             integration_id: 'github-123',
             provider: 'github',
             name: 'fetchIssues',
             description: 'Function http',
+            tags: { category: 'crm', entities: ['contacts', 'companies'] },
             state: 'enabled',
             source: 'repo',
             trigger: { kind: 'http', subscriptions: ['push'] }

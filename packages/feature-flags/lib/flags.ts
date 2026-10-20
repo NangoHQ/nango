@@ -74,8 +74,9 @@ export function buildFlags(client: FeatureFlagsClient) {
             return client.isEnabled('allow-unauthorized-microsoft-teams-webhook', { targetingKey: accountUuid, accountUuid }, false);
         },
         /**
-         * Whether catalog actions are listed as enabled and runnable for this account.
-         * Default `false`.
+         * Whether every action is listed and run as enabled for this account.
+         * Catalog actions are included, and a deployed action is treated as enabled
+         * even when `_nango_sync_configs.enabled` is false. Default `false`.
          */
         hasCatalogTools(accountUuid: string) {
             return client.isEnabled('tools-catalog', { targetingKey: accountUuid, accountUuid }, false);
@@ -89,6 +90,28 @@ export function buildFlags(client: FeatureFlagsClient) {
         },
         isAgentPlaygroundEnabled(accountUuid: string) {
             return client.isEnabled('agent-playground', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether the deprecated `search` query param on GET /connections is still honored for this
+         * account. Default `false`: only accounts explicitly allowlisted in Unleash (the known existing
+         * users of this param) should have it enabled.
+         */
+        isConnectionsSearchParamEnabled(accountUuid: string) {
+            return client.isEnabled('connections-search-param', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether the deprecated `/v1/*` passthrough (legacy custom endpoint routing for syncs and
+         * actions) is still reachable for this account. Default `false`: only accounts explicitly
+         * allowlisted in Unleash (the known existing users of this passthrough) should have it enabled.
+         */
+        isV1PassthroughEnabled(accountUuid: string) {
+            return client.isEnabled('v1-passthrough', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether the legacy Connection MCP server is available for this account.
+         */
+        isConnectionMcpEnabled(accountUuid: string) {
+            return client.isEnabled('connection-mcp', { targetingKey: accountUuid, accountUuid }, true);
         }
     };
 }

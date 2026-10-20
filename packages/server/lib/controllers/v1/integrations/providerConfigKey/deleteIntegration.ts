@@ -1,4 +1,4 @@
-import { configService, getProvider } from '@nangohq/shared';
+import { configService, getProvider, productTracking } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { cleanupMcpClientRegistration, mcpRegistrationFromCustom } from '../../../../services/mcpClientRegistration.js';
@@ -43,6 +43,7 @@ export const deleteIntegration = asyncWrapperWithEnvironment<DeleteIntegration>(
 
     if (deleted) {
         await cleanupMcpClientRegistration(mcpRegistrationFromCustom(integration.custom), getProvider(integration.provider));
+        productTracking.track({ name: 'integrations:integration_delete', eventProperties: { provider: integration.provider } });
     }
 
     res.status(200).send({

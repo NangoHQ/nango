@@ -1,7 +1,7 @@
 import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { canHaveGrowthAddon, getPlanDefinition, handlePlanChanged, productTracking, setGrowthAddon } from '@nangohq/shared';
-import { Err, getLogger, Ok } from '@nangohq/utils';
+import { canHaveGrowthAddon, getPlanDefinition, handlePlanChanged, productTracking, setGrowthAddon, updatePlanByTeam } from '@nangohq/shared';
+import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { clearSpendAlertOnPlanChange } from './spendAlertNotification.service.js';
 
@@ -278,7 +278,7 @@ export async function upgradePlan(context: PlanChangeContext): Promise<Result<Pl
 
 /** Schedules a downgrade in Orb, which takes effect at the end of the current term. */
 export async function downgradePlan(context: PlanChangeContext): Promise<Result<void, PlanChangeError>> {
-    const { currentPlan, subscriptionId, requested } = context;
+    const { team, currentPlan, subscriptionId, requested } = context;
 
     if (requested.newPlanCode !== 'free' && (!currentPlan.stripe_payment_id || !currentPlan.stripe_customer_id)) {
         return Err(new PlanChangeError('not_linked_to_stripe'));
@@ -287,6 +287,15 @@ export async function downgradePlan(context: PlanChangeContext): Promise<Result<
     const resDowngrade = await billing.downgrade({ subscriptionId, planExternalId: requested.newPlanCode });
     if (resDowngrade.isErr()) {
         return Err(new PlanChangeError('downgrade_failed', { cause: resDowngrade.error }));
+    }
+
+    const { changeAt } = resDowngrade.value;
+    if (changeAt) {
+        const updated = await updatePlanByTeam(db.knex, { account_id: team.id, orb_future_plan: requested.newPlanCode, orb_future_plan_at: changeAt });
+        // Orb has scheduled the change, so failing the request here would only invite a second one
+        if (updated.isErr()) {
+            report(new Error('failed_to_record_scheduled_downgrade', { cause: updated.error }), { accountId: team.id });
+        }
     }
 
     return Ok(undefined);

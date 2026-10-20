@@ -47,8 +47,10 @@ import {
 import * as functionLifecycle from './functions/lifecycle/index.js';
 import {
     assertSafeOAuthUrl,
+    buildUnverifiedHttpsAgent,
     findOutboundUrlError,
     getOAuthAxiosRequestConfig,
+    getOAuthOutboundUrlPolicy,
     getOAuthRedirectPolicy,
     getOAuthSafeUndiciDispatcher
 } from './proxy/outbound-policy.js';
@@ -101,6 +103,7 @@ import type {
     TwoStepCredentials
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type https from 'node:https';
 import type { Agent } from 'undici';
 
 const logger = getLogger('Connection');
@@ -648,6 +651,27 @@ export class ConnectionService {
             .first();
 
         return result || null;
+    }
+
+    public async search(
+        db: Knex,
+        { environmentId, filter, limit }: { environmentId: number; filter: { connectionId?: string; integrationId?: string | undefined }; limit?: number }
+    ): Promise<Result<DBConnection[]>> {
+        try {
+            const query = db.from<DBConnection>('_nango_connections').select('*').where({ environment_id: environmentId, deleted: false }).orderBy('id');
+            if (filter.connectionId !== undefined) {
+                query.where('connection_id', filter.connectionId);
+            }
+            if (filter.integrationId !== undefined) {
+                query.where('provider_config_key', filter.integrationId);
+            }
+            if (limit !== undefined) {
+                query.limit(limit);
+            }
+            return Ok(await query);
+        } catch (err) {
+            return Err(new Error('failed_to_search_connections', { cause: err }));
+        }
     }
 
     public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<ServiceResponse<DBConnectionDecrypted>> {
@@ -2170,7 +2194,19 @@ export class ConnectionService {
         try {
             await assertSafeOAuthUrl(url);
 
-            const requestOptions = { headers, ...getOAuthAxiosRequestConfig() };
+            let httpsAgent: https.Agent | undefined;
+            if (provider.allow_unverified_https) {
+                httpsAgent = buildUnverifiedHttpsAgent({
+                    policy: getOAuthOutboundUrlPolicy(),
+                    allowSelfSignedCert: connectionConfig['allowSelfSignedCert'] === 'true'
+                });
+            }
+
+            const requestOptions = {
+                headers,
+                ...getOAuthAxiosRequestConfig(),
+                ...(httpsAgent && { httpsAgent })
+            };
 
             const bodyContent =
                 bodyFormat === 'xml'

@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { Ok } from '@nangohq/utils';
+
 import {
     auditFunctionDeleted,
     auditFunctionDeployedCli,
@@ -7,6 +9,9 @@ import {
     auditFunctionDeploymentBundle,
     auditFunctionUpdated,
     auditFunctionUpgraded,
+    auditFunctionVariantCreated,
+    auditFunctionVariantDeleted,
+    auditFunctionVariantUpdated,
     auditPreBuiltDeployed,
     auditPublicFunctionDeleted
 } from './function.middleware.js';
@@ -15,15 +20,71 @@ import { fakeReq, fakeRes, installAuditMockDefaults, locals, recordMock, resetAu
 import type { RequestHandler } from 'express';
 
 vi.mock('../../audit.js', async (importOriginal) => (await import('./testing.js')).auditModuleMock(importOriginal as never));
-vi.mock('@nangohq/shared', async (importOriginal) => (await import('./testing.js')).sharedModuleMock(importOriginal as never));
+const { searchFunctionMock } = vi.hoisted(() => ({ searchFunctionMock: vi.fn() }));
+vi.mock('@nangohq/shared', async (importOriginal) => ({
+    ...(await (await import('./testing.js')).sharedModuleMock(importOriginal as never)),
+    functionConfigService: { search: searchFunctionMock }
+}));
+
+const functionUuid = 'f0000000-0000-4000-8000-000000000001';
 
 describe('function audit middleware (unit)', () => {
     beforeEach(() => {
         installAuditMockDefaults();
+        searchFunctionMock.mockReset().mockResolvedValue(Ok([{ config: { name: 'fetchIssues' } }]));
     });
 
     afterEach(() => {
         resetAuditMocks();
+    });
+
+    it.each([
+        ['variant_created', auditFunctionVariantCreated],
+        ['variant_deleted', auditFunctionVariantDeleted],
+        ['variant_updated', auditFunctionVariantUpdated]
+    ] as const)('%s records the function, connection and variant for success, denial and failure', async (action, handler) => {
+        for (const [status, outcome] of [
+            [200, 'success'],
+            [403, 'denied'],
+            [500, 'failure']
+        ] as const) {
+            recordMock.mockClear();
+            const req = fakeReq({
+                params: { functionUuid, connectionId: 'connection', variant: action === 'variant_created' ? 'wrong-param-variant' : 'custom' },
+                body: { variant: action === 'variant_created' ? 'custom' : 'wrong-body-variant' }
+            });
+            const event = await runAudit(handler, req, fakeRes(secretKeyLocals, status));
+            expect(event).toMatchObject({
+                resource: 'function',
+                action,
+                outcome,
+                accountId: 42,
+                environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
+                actor: { type: 'api_key', id: 'c0000000-0000-4000-8000-000000000005', display: 'ci-key' },
+                targets: [{ type: 'function', id: functionUuid, display: 'fetchIssues' }],
+                metadata: { connectionId: 'connection', variant: 'custom' }
+            });
+            expect(searchFunctionMock).toHaveBeenCalledWith(expect.anything(), { environmentId: 9, filter: { uuid: functionUuid } });
+        }
+    });
+
+    it.each([
+        [200, 'success'],
+        [403, 'denied'],
+        [500, 'failure']
+    ] as const)('base variant update records settings on %s', async (status, outcome) => {
+        const req = fakeReq({ params: { functionUuid, connectionId: 'connection' }, body: { enabled: false, frequency: null } });
+        const event = await runAudit(auditFunctionVariantUpdated, req, fakeRes(secretKeyLocals, status));
+        expect(event).toMatchObject({
+            resource: 'function',
+            action: 'variant_updated',
+            outcome,
+            accountId: 42,
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
+            actor: { type: 'api_key', id: 'c0000000-0000-4000-8000-000000000005', display: 'ci-key' },
+            targets: [{ type: 'function', id: functionUuid, display: 'fetchIssues' }],
+            metadata: { connectionId: 'connection', variant: 'base', enabled: false, frequency: null }
+        });
     });
 
     it.each([

@@ -454,15 +454,16 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async downgrade(opts: PlanChangeRequest): Promise<Result<void>> {
+    async downgrade(opts: PlanChangeRequest): Promise<Result<{ changeAt: Date | null }>> {
         try {
-            await this.orbSDK.subscriptions.schedulePlanChange(opts.subscriptionId, {
+            const subscription = await this.orbSDK.subscriptions.schedulePlanChange(opts.subscriptionId, {
                 change_option: 'end_of_subscription_term',
                 auto_collection: true,
                 external_plan_id: opts.planExternalId
             });
 
-            return Ok(undefined);
+            // Every plan bills monthly, so the end of the term is the end of the current billing period
+            return Ok({ changeAt: subscription.current_billing_period_end_date ? new Date(subscription.current_billing_period_end_date) : null });
         } catch (err) {
             return Err(new Error('failed_to_downgrade_customer', { cause: err }));
         }

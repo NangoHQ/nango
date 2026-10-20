@@ -14,6 +14,7 @@ let api: Awaited<ReturnType<typeof runServer>>;
 
 const version = {
     description: 'Fetch an issue',
+    tags: { category: 'crm', entities: ['contacts', 'companies'] },
     file_location: 'github/functions/fetchIssue.js',
     version: 'test-version',
     source: 'repo',
@@ -21,12 +22,17 @@ const version = {
     requires: { connection: true, outbound: false, invoke: false },
     capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
     limits: { concurrency: { perConnection: 'max' } },
-    input_schema_ref: null,
-    output_schema_ref: null,
+    input_schema_ref: '#/definitions/FunctionInput_github_fetchIssue',
+    output_schema_ref: '#/definitions/FunctionOutput_github_fetchIssue',
     model_schema_refs: [],
     metadata_schema_ref: null,
     checkpoint_schema_ref: null,
-    json_schema: {}
+    json_schema: {
+        definitions: {
+            FunctionInput_github_fetchIssue: { type: 'object', properties: { id: { type: 'string' } } },
+            FunctionOutput_github_fetchIssue: { type: 'object', properties: { title: { type: 'string' } } }
+        }
+    }
 } satisfies Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'>;
 
 describe(`GET ${route}`, () => {
@@ -79,9 +85,18 @@ describe(`GET ${route}`, () => {
             provider: 'github',
             name: 'fetchIssue',
             description: 'Fetch an issue',
+            tags: { category: 'crm', entities: ['contacts', 'companies'] },
             state: 'enabled',
             source: 'repo',
             trigger: { kind: 'http' },
+            input_json_schema: {
+                $ref: '#/definitions/FunctionInput_github_fetchIssue',
+                definitions: { FunctionInput_github_fetchIssue: version.json_schema.definitions.FunctionInput_github_fetchIssue }
+            },
+            output_json_schema: {
+                $ref: '#/definitions/FunctionOutput_github_fetchIssue',
+                definitions: { FunctionOutput_github_fetchIssue: version.json_schema.definitions.FunctionOutput_github_fetchIssue }
+            },
             created_at: fn!.config.created_at.toISOString(),
             updated_at: fn!.config.updated_at.toISOString()
         });

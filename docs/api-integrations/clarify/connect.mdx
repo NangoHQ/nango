@@ -1,0 +1,47 @@
+---
+title: Clarify - How do I link my account?
+sidebarTitle: Clarify
+---
+
+## Overview
+
+To authenticate with Clarify, you need:
+
+1. **Workspace slug** — the short name for your workspace (not the full app URL).
+2. **API key** — a key from Clarify **Settings**, then **API Keys**. Keys are scoped to one workspace.
+
+### Prerequisites
+
+- You can sign in to the Clarify workspace you want to connect.
+
+### Instructions
+
+#### Step 1: Finding your workspace slug
+
+1. Sign in to [Clarify](https://app.clarify.ai).
+2. Open your workspace. The slug is the path segment after `/workspaces/` in the browser URL.
+
+For example, if the URL is `https://app.clarify.ai/workspaces/acme/`, the workspace slug is **`acme`**.
+
+In the Nango Connect form, enter **only the slug** (`acme`). Do not paste the full URL, and do not include `/workspaces/` or trailing slashes.
+
+Clarify also documents this as the `{slug}` segment of `https://api.clarify.ai/v1/workspaces/{slug}`.
+
+#### Step 2: Creating an API key
+
+1. In Clarify, open **Settings → Workspace → API keys**.
+2. Click **Create API key**.
+3. Enter a name, choose **Personal** or **Workspace**, and click **Create**.
+4. Copy the key immediately. Clarify shows it only once. Use a key from the same workspace as the slug in Step 1.
+
+<img src="/api-integrations/clarify/create-api-key.png" alt="Clarify Create API key dialog with name and type" />
+
+#### Step 3: Enter credentials in the Connect UI
+
+1. Open the Nango Connect form for Clarify (or **Add test connection** in the dashboard).
+2. Enter your **workspace slug** and **API key**.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/clarify/form.png" alt="Nango Connect form for Clarify with workspace slug and API key" style={{maxWidth: "450px" }} />
+
+You are now connected to Clarify.

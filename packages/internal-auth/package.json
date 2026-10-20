@@ -15,7 +15,8 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@nangohq/utils": "file:../utils"
+        "@nangohq/utils": "file:../utils",
+        "jose": "6.2.12"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",

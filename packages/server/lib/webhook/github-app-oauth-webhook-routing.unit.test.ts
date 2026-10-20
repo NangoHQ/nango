@@ -95,7 +95,7 @@ describe('github-app-oauth-webhook-routing', () => {
         expect(result.isErr()).toBe(true);
         expect(errType(result)).toBe('webhook_missing_signature');
         expect(execute).not.toHaveBeenCalled();
-        expect(markUnverified).toHaveBeenCalledWith({ reason: 'github_app_missing_signature', remediation: REMEDIATION });
+        expect(markUnverified).toHaveBeenCalledWith({ reason: 'github_app_missing_signature', remediation: REMEDIATION }, 'rejected');
     });
 
     it('does not finalize a pending connection from an unsigned installation event', async () => {
@@ -117,7 +117,7 @@ describe('github-app-oauth-webhook-routing', () => {
 
         expect(result.isOk()).toBe(true);
         expect(execute).toHaveBeenCalledOnce();
-        expect(markUnverified).toHaveBeenCalledWith({ reason: 'github_app_missing_signature', remediation: REMEDIATION });
+        expect(markUnverified).toHaveBeenCalledWith({ reason: 'github_app_missing_signature', remediation: REMEDIATION }, 'flag');
     });
 
     it('processes a missing signature header when the integration allows unverified webhooks', async () => {
@@ -127,7 +127,7 @@ describe('github-app-oauth-webhook-routing', () => {
 
         expect(result.isOk()).toBe(true);
         expect(execute).toHaveBeenCalledOnce();
-        expect(markUnverified).toHaveBeenCalledWith({ reason: 'github_app_missing_signature', remediation: REMEDIATION });
+        expect(markUnverified).toHaveBeenCalledWith({ reason: 'github_app_missing_signature', remediation: REMEDIATION }, 'setting');
     });
 
     it('rejects an invalid signature when the integration allows unverified webhooks', async () => {
