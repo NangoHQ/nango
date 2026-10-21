@@ -340,6 +340,10 @@ class CustomerKeyService {
         }
     ): Promise<Result<DBCustomerKey>> {
         try {
+            if (plainText.trim().length === 0) {
+                throw new Error('Webhook signing key cannot be blank');
+            }
+
             const hashed = await this.hashSecret(plainText);
             if (hashed.isErr()) {
                 throw hashed.error;
