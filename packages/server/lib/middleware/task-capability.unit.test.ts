@@ -3,7 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { ed25519TestMaterial, mintTaskCapabilityToken } from '@nangohq/internal-auth/testing';
 import { accountService } from '@nangohq/shared';
-import { Ok } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { DBTeam, EnvironmentWithoutSecrets } from '@nangohq/types';
@@ -137,6 +137,23 @@ describe('task capability on the server', () => {
         });
 
         expect(res.status).toBe(401);
+        expect(await res.json()).toMatchObject({ error: { code: 'invalid_secret_key_format' } });
         expect(environmentLookup).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 when the task environment lookup fails, and 401 when the environment is gone', async () => {
+        environmentLookup.mockResolvedValueOnce(Err(new Error('db down')));
+        const failed = await fetch(`${probeUrl}/proxy/check`, {
+            headers: { Authorization: `Bearer ${await token(['api:proxy'])}` }
+        });
+        expect(failed.status).toBe(500);
+        expect(await failed.json()).toEqual({ error: { code: 'server_error' } });
+
+        environmentLookup.mockResolvedValueOnce(Ok(null));
+        const missing = await fetch(`${probeUrl}/proxy/check`, {
+            headers: { Authorization: `Bearer ${await token(['api:proxy'])}` }
+        });
+        expect(missing.status).toBe(401);
+        expect(await missing.json()).toMatchObject({ error: { code: 'unknown_account' } });
     });
 });
