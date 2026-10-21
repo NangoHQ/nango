@@ -10270,8 +10270,6 @@ curl --request POST \
     "name": "staging",
     "is_production": false,
     "callback_url": "https://api.nango.dev/oauth/callback",
-    "hmac_key": null,
-    "hmac_enabled": false,
     "slack_notifications": false,
     "otlp_endpoint": null,
     "otlp_headers": [],
