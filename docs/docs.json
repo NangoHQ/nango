@@ -1372,6 +1372,7 @@
               "integrations/all/float",
               "api-integrations/folk",
               "api-integrations/followupboss",
+              "api-integrations/formstack-documents",
               "integrations/all/fortnox",
               "api-integrations/freeagent",
               "api-integrations/freeagent-sandbox",
