@@ -21,7 +21,7 @@ Connect to Pocket with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/public/recordings?page=1&limit=5" \
+            curl "https://api.nango.dev/proxy/v1/public/recordings?page=1&limit=5" \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to Pocket with Nango and see data flow in 2 minutes.
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/public/recordings',
+            endpoint: '/v1/public/recordings',
             params: { page: 1, limit: 5 },
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
@@ -62,16 +62,14 @@ Connect to Pocket with Nango and see data flow in 2 minutes.
     </Step>
 </Steps>
 
-<Note>
-Pocket wraps responses in a `{ success, data, pagination }` envelope. `GET /public/recordings` filters by UTC date only (`start_date`/`end_date` as `YYYY-MM-DD`) and paginates with `page`/`limit` (max 100); there is no updated-after cursor. Personal API keys read only their owner's recordings, and personal-key responses omit the `recorded_by` object (organization keys, created under Organization settings, can list organization recordings instead). Fetch full transcripts and summaries per recording with `GET /public/recordings/{id}?include_transcript=true&include_summarizations=true`.
-</Note>
-
 ## 📚 Pocket integration guides
 
 Nango maintained guides for common use cases.
 
 - [How do I link my Pocket account?](/api-integrations/pocket/connect)  
 Retrieve your API key from Pocket and connect it to Nango
+
+Official docs: [Pocket API docs](https://docs.heypocketai.com/docs/api)
 
 ## 🧩 Pre-built syncs & actions for Pocket
 
@@ -80,5 +78,12 @@ Explore Nango-provided actions in your dashboard. [Extend and customize them](/g
 import PreBuiltUseCases from "/snippets/generated/pocket/PreBuiltUseCases.mdx"
 
 <PreBuiltUseCases />
+
+## 🚨 API Gotchas
+
+- Pocket wraps responses in a `{ success, data, pagination }` envelope.
+- `GET /v1/public/recordings` filters by UTC date only (`start_date`/`end_date` as `YYYY-MM-DD`) and paginates with `page`/`limit` (max 100); there is no updated-after cursor.
+- Personal API keys read only their owner's recordings, and personal-key responses omit the `recorded_by` object (organization keys, created under Organization settings, can list organization recordings instead).
+- Fetch full transcripts and summaries per recording with `GET /v1/public/recordings/{id}?include_transcript=true&include_summarizations=true`.
 
 ---

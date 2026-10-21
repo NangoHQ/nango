@@ -20122,25 +20122,22 @@ pocket:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://public.heypocketai.com/api/v1
+        base_url: https://public.heypocketai.com/api
         headers:
             authorization: Bearer ${apiKey}
-        retry:
-            after:
-                - 'retry-after'
         verification:
             method: GET
             headers:
                 content-type: application/json
             endpoints:
-                - /public/recordings?page=1&limit=1
+                - /v1/public/recordings?page=1&limit=1
     docs: https://nango.dev/docs/api-integrations/pocket
     docs_connect: https://nango.dev/docs/api-integrations/pocket/connect
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your Pocket account (Settings -> Developer).
+            description: The API key for your Pocket account.
             pattern: '^pk_[A-Za-z0-9_-]+$'
             example: pk_*******************************************
             doc_section: '#step-1-obtaining-your-api-key'
