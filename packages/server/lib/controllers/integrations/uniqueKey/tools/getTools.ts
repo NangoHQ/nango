@@ -1,8 +1,7 @@
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import { functionConfigService, legacyFunctionService } from '@nangohq/shared';
+import { toolService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
@@ -54,38 +53,20 @@ export const getTools = asyncWrapperWithEnvironment<GetTools>(async (req, res) =
     const { cursor: afterName, limit } = query.data;
 
     try {
-        const [result, actionsResult] = await Promise.all([
-            functionConfigService.search(db.knex, {
-                environmentId: environment.id,
-                filter: { integrationKey: uniqueKey, enabled: true, trigger: { kind: 'http' } }
-            }),
-            legacyFunctionService.listActions({ environmentId: environment.id, providerConfigKey: uniqueKey })
-        ]);
-        if (actionsResult.isErr()) {
-            if (actionsResult.error.code === 'integration_not_found') {
+        const result = await toolService.listTools({ environmentId: environment.id, integrationKey: uniqueKey });
+        if (result.isErr()) {
+            if (result.error.code === 'integration_not_found') {
                 res.status(404).send({ error: { code: 'not_found', message: `Integration ${uniqueKey} was not found` } });
                 return;
             }
-            throw actionsResult.error;
-        }
-        if (result.isErr()) {
             throw result.error;
         }
-        const { actions, provider } = actionsResult.value;
-        const integration = { unique_key: uniqueKey, provider };
+        const integration = { unique_key: uniqueKey, provider: result.value.provider };
+        const tools = result.value.tools.map((tool) =>
+            tool.kind === 'function' ? toGetToolResponse(tool.fn) : listedActionToGetToolResponse(tool.action, integration)
+        );
 
-        // Build a map of tools containing, by order of priority:
-        // 1. tool functions
-        // 2. deployed actions
-        // 3. and catalog tools.
-        const tools = new Map(result.value.map((fn) => [fn.config.name, toGetToolResponse(fn)]));
-        for (const action of actions) {
-            if (action.enabled && !tools.has(action.name)) {
-                tools.set(action.name, listedActionToGetToolResponse(action, integration));
-            }
-        }
-
-        const sorted = [...tools.values()]
+        const sorted = tools
             .filter((tool) => afterName === undefined || tool.name > afterName)
             .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
         const page = sorted.slice(0, limit);

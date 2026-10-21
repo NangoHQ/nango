@@ -907,6 +907,7 @@
                           "reference/backend/http-api/environments/list-api-keys",
                           "reference/backend/http-api/environments/get-api-key",
                           "reference/backend/http-api/environments/create-api-key",
+                          "reference/backend/http-api/environments/update-api-key",
                           "reference/backend/http-api/environments/delete-api-key",
                           "reference/backend/http-api/environments/rotate-webhook-signing-key"
                         ]
@@ -1560,6 +1561,7 @@
               "api-integrations/linkly",
               "integrations/all/listmonk",
               "api-integrations/listrak",
+              "api-integrations/litmos",
               "api-integrations/liveswitch",
               "api-integrations/livetennisapi",
               "api-integrations/lob",

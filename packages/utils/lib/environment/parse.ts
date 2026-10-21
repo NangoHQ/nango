@@ -636,6 +636,7 @@ const ENVS_SHAPE = z.object({
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
     FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
+    FLAG_HOSTED_TELEMETRY_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog
@@ -849,8 +850,8 @@ const ENVS_SHAPE = z.object({
     NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL: z.url().optional(),
     NANGO_HOSTED_TELEMETRY_POSTGRES_POOL_MAX: z.coerce.number().int().positive().optional().default(5),
     NANGO_HOSTED_TELEMETRY_POSTGRES_SSL: z.stringbool().optional().default(false),
-    // Floored so a configuration mistake cannot drop the data an invoice depends on: one month plus a dispute window.
-    NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: z.coerce.number().int().min(45).optional().default(90),
+    // Floored so a configuration mistake cannot drop the data an invoice depends on: a full quarter.
+    NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: z.coerce.number().int().min(90).optional().default(90),
     NANGO_HOSTED_TELEMETRY_POSTGRES_PARTITION_INTERVAL_MS: z.coerce
         .number()
         .int()

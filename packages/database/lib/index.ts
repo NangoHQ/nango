@@ -68,6 +68,8 @@ export const schema = (): Knex.QueryBuilder => db.knex.queryBuilder();
 
 export const dbNamespace = '_nango_';
 
+export { getDbConfig };
+
 export type { Knex };
 
 export const multipleMigrations = async (): Promise<void> => {

@@ -99,7 +99,7 @@ export const AppSidebar: React.FC = () => {
                                     >
                                         <Link to={item.url}>
                                             <item.icon />
-                                            <span data-ph-unmask>{item.title}</span>
+                                            <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
                                     {item.onClose && (

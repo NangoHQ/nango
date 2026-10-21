@@ -75,7 +75,7 @@ export const EditableConnectionTags = ({ connectionId, providerConfigKey, tags }
             {!edit ? (
                 <>
                     {Object.keys(tags).length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2" data-ph-mask>
                             {Object.entries(tags).map(([key, value]) => (
                                 <KeyValueBadge label={key} key={key} variant="lighter">
                                     {value}

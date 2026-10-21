@@ -573,8 +573,10 @@ export class DryRunService {
                     require: (moduleName: string) => {
                         switch (moduleName) {
                             case 'url':
+                            case 'node:url':
                                 return url;
                             case 'crypto':
+                            case 'node:crypto':
                                 return crypto;
                             case 'nango':
                                 return nangoScript;

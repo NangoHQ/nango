@@ -1,8 +1,7 @@
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import { configService, functionConfigService, resolveRunnableTool } from '@nangohq/shared';
+import { configService, toolService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { scriptNameSchema } from '../../../../helpers/validation.js';
@@ -35,36 +34,29 @@ export const getTool = asyncWrapperWithEnvironment<GetTool>(async (req, res) => 
     const { environment } = res.locals;
     const { uniqueKey, name } = params.data;
 
-    const result = await functionConfigService.search(db.knex, {
-        environmentId: environment.id,
-        filter: { integrationKey: uniqueKey, name, enabled: true, trigger: { kind: 'http' } }
-    });
-    if (result.isErr()) {
-        tracer.scope().active()?.setTag('error', result.error);
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch tool' } });
-        return;
-    }
-
-    const fn = result.value[0];
-    if (fn) {
-        res.status(200).send(toGetToolResponse(fn));
-        return;
-    }
-
     try {
         const integration = await configService.getProviderConfig(uniqueKey, environment.id);
         if (!integration) {
             res.status(404).send({ error: { code: 'not_found', message: `Tool '${name}' for integration ${uniqueKey} was not found` } });
             return;
         }
-        const resolved = await resolveRunnableTool({
+        const resolved = await toolService.resolveTool({
             accountUuid: res.locals.account.uuid,
             environmentId: environment.id,
             integration,
             name
         });
-        if (resolved.kind !== 'missing' && (resolved.kind === 'catalog' || resolved.config.enabled)) {
-            res.status(200).send(actionToGetToolResponse(resolved, integration));
+        if (resolved.isErr()) {
+            throw resolved.error;
+        }
+        const tool = resolved.value;
+        if (tool.kind === 'function') {
+            if (tool.fn.config.enabled) {
+                res.status(200).send(toGetToolResponse(tool.fn));
+                return;
+            }
+        } else if (tool.kind !== 'missing' && (tool.kind === 'catalog' || tool.config.enabled)) {
+            res.status(200).send(actionToGetToolResponse(tool, integration));
             return;
         }
     } catch (err) {
