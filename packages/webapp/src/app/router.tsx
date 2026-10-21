@@ -1,6 +1,7 @@
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 import { PrivateRoute } from '@/components/patterns/PrivateRoute';
+import { RouteErrorPage } from '@/components/patterns/RouteErrorPage';
 import { SignedOutRoute } from '@/components/patterns/SignedOutRoute';
 import { FunctionPlayground } from '@/features/Playground';
 import { EmailVerified } from '@/pages/Account/EmailVerified';
@@ -171,7 +172,7 @@ const authRoutes = (() => {
     return [{ element: <SignedOutRoute />, children: signedOutOnlyRoutes }, ...alwaysOpenRoutes];
 })();
 
-export const router = sentryCreateBrowserRouter([
+const routes: RouteObject[] = [
     {
         path: '/oauth/consent/:uid/review',
         element: <OAuthConsent />
@@ -431,4 +432,6 @@ export const router = sentryCreateBrowserRouter([
         path: '*',
         element: <NotFound />
     }
-]);
+];
+
+export const router = sentryCreateBrowserRouter([{ errorElement: <RouteErrorPage />, children: routes }]);
