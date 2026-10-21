@@ -1494,6 +1494,7 @@
               "integrations/all/incident-io",
               "api-integrations/infor",
               "api-integrations/infor-cc",
+              "integrations/all/informa",
               "api-integrations/ingenious-build",
               "api-integrations/ingenious-build-pat",
               "integrations/all/insightly",

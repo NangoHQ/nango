@@ -9061,6 +9061,70 @@ integrations:
                 id: string
                 archived: boolean
                 writePermissions: string
+    informa:
+        actions:
+            get-product:
+                description: >
+                    Fetches an Informa EMPRESAS product by CIF (packaged reports or modular
+                    products). Does not fall back to another product if the request fails.
+                version: 1.0.0
+                endpoint:
+                    method: GET
+                    path: /product
+                    group: Products
+                input: InformaGetProductInput
+                output: InformaGetProductOutput
+            get-companies:
+                description: Searches Informa companies by denomination / name (get-companies).
+                version: 1.0.0
+                endpoint:
+                    method: GET
+                    path: /companies
+                    group: Search
+                input: InformaGetCompaniesInput
+                output: InformaProxyOutput
+            get-admin:
+                description: Searches Informa administrators and related companies (get-admin).
+                version: 1.0.0
+                endpoint:
+                    method: GET
+                    path: /admin
+                    group: Search
+                input: InformaGetAdminInput
+                output: InformaProxyOutput
+            get-tables:
+                description: Fetches Informa decoding tables for coded fields (get-tables).
+                version: 1.0.0
+                endpoint:
+                    method: GET
+                    path: /tables
+                    group: Reference
+                input: InformaGetTablesInput
+                output: InformaProxyOutput
+        models:
+            InformaGetProductInput:
+                product: string
+                cif: string
+                formato?: json | pdf
+                rai?: boolean
+                morosidad?: boolean
+            InformaGetProductOutput:
+                product: string
+                cif: string
+                formato: string
+                data: any
+            InformaGetCompaniesInput:
+                denominacion: string
+                extra?:
+                    __string: string
+            InformaGetAdminInput:
+                params:
+                    __string: string
+            InformaGetTablesInput:
+                params?:
+                    __string: string
+            InformaProxyOutput:
+                data: any
     instantly:
         actions:
             set-campaign-name:
