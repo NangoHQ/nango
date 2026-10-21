@@ -2969,8 +2969,6 @@ paths:
                                             - name
                                             - is_production
                                             - callback_url
-                                            - hmac_key
-                                            - hmac_enabled
                                             - slack_notifications
                                             - otlp_endpoint
                                             - otlp_headers
@@ -2991,12 +2989,6 @@ paths:
                                             callback_url:
                                                 type: string
                                                 format: uri
-                                            hmac_key:
-                                                type: [string, 'null']
-                                                deprecated: true
-                                            hmac_enabled:
-                                                type: boolean
-                                                deprecated: true
                                             slack_notifications:
                                                 type: boolean
                                             otlp_endpoint:
