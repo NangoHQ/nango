@@ -1,4 +1,4 @@
-import { HOSTED_TELEMETRY_TABLE } from '../schema.js';
+import { HOSTED_TELEMETRY_ATTRIBUTES_MAX_BYTES, HOSTED_TELEMETRY_TABLE } from '../schema.js';
 
 import type { Knex } from 'knex';
 
@@ -9,8 +9,7 @@ export async function up(knex: Knex, schema: string): Promise<void> {
             value      DOUBLE PRECISION NOT NULL CHECK (value NOT IN ('NaN', 'Infinity', '-Infinity')),
             metric     TEXT             NOT NULL,
             attributes JSONB            NOT NULL DEFAULT '{}' CHECK (jsonb_typeof(attributes) = 'object'),
-            -- Attributes are part of the key, and a btree entry cannot exceed ~2.7 KB: bound them well below it.
-            CONSTRAINT metrics_attributes_size CHECK (octet_length(attributes::text) <= 1024),
+            CONSTRAINT metrics_attributes_size CHECK (octet_length(attributes::text) <= ${HOSTED_TELEMETRY_ATTRIBUTES_MAX_BYTES}),
             PRIMARY KEY (metric, ts, attributes)
         ) PARTITION BY RANGE (ts)`,
         [schema, HOSTED_TELEMETRY_TABLE]

@@ -1,9 +1,10 @@
 import posthog from 'posthog-js';
 import { usePostHog } from 'posthog-js/react';
+import { useEffect } from 'react';
 
 import { globalEnv } from './env';
 
-import type { AccountGroupProperties, AnalyticsEventNameFor, AnalyticsEventPropertiesArgs, ApiUser } from '@nangohq/types';
+import type { AccountGroupProperties, AnalyticsEventNameFor, AnalyticsEventPropertiesArgs, ApiUser, GetMeta } from '@nangohq/types';
 
 /** Uses the `posthog` singleton so it works outside React components too. */
 export function track<E extends AnalyticsEventNameFor<'web'>>(event: E, ...[properties]: AnalyticsEventPropertiesArgs<E>) {
@@ -19,7 +20,7 @@ export function analyticsSessionHeaders(url: URL): Record<string, string> {
     return sessionId ? { 'X-Nango-Analytics-Session-Id': sessionId } : {};
 }
 
-// Every group() call with properties sends a $groupidentify event, and PrivateRoute identifies on each render.
+// Every group() call with properties sends a $groupidentify event, and useAnalytics identifies on each render.
 let sentAccountGroup: string | undefined;
 
 export function useAnalyticsIdentify() {
@@ -46,14 +47,67 @@ export function useAnalyticsIdentify() {
 // Opt-out persists in the browser. That keeps capturing off through the reload that starts an impersonation.
 export function stopAnalytics() {
     posthog?.opt_out_capturing();
-    posthog?.stopSessionRecording();
 }
 
-export function resumeAnalytics() {
+function resumeAnalytics() {
     if (posthog?.has_opted_out_capturing()) {
         posthog.opt_in_capturing({ captureEventName: false });
-        posthog.startSessionRecording();
     }
+}
+
+export function isSessionRecordingAllowed({
+    user,
+    loadingUser,
+    userErrorCode,
+    meta
+}: {
+    user: ApiUser | undefined;
+    loadingUser: boolean;
+    userErrorCode: string | undefined;
+    meta: GetMeta['Success']['data'] | undefined;
+}): boolean | undefined {
+    if (loadingUser) {
+        return undefined;
+    }
+    // Only a 401 proves the visitor is signed out. Any other failure may hide a signed-in BAA account.
+    if (!user) {
+        return userErrorCode === 'unauthorized';
+    }
+    // A recording already running from the sign-in page must stop until /meta rules out a BAA account.
+    if (!meta) {
+        return false;
+    }
+    return meta.hasBaa === false && !meta.debugMode;
+}
+
+export function useAnalytics(input: Parameters<typeof isSessionRecordingAllowed>[0]) {
+    const { user, meta } = input;
+    const identify = useAnalyticsIdentify();
+    const recording = isSessionRecordingAllowed(input);
+
+    // Keep this effect before the recording one. PostHog drops identify and recording while the browser is opted out.
+    useEffect(() => {
+        if (!user || !meta) {
+            return;
+        }
+        if (meta.debugMode) {
+            stopAnalytics();
+            return;
+        }
+        resumeAnalytics();
+        identify(user, meta.accountGroup);
+    }, [user, meta, identify]);
+
+    useEffect(() => {
+        if (recording === undefined) {
+            return;
+        }
+        if (recording) {
+            posthog?.startSessionRecording();
+        } else {
+            posthog?.stopSessionRecording();
+        }
+    }, [recording]);
 }
 
 export function resetAnalytics() {

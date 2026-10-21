@@ -4,23 +4,56 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
-<Update label="Playground page and Intercom webhooks" description="October 14, 2026">
-  - **Playground page:** The Function Playground is now a full page under Playground in the sidebar.
+<Update label="Agent Playground" description="October 20, 2026">
+  Try an AI agent on your own integrations before writing any code.
+
+  The new Agent Playground lets you connect your apps and ask a built-in AI agent to perform tasks directly in the Nango dashboard.
+
+  - **Explore use cases:** Start with a suggested prompt or type your own request.
+  - **See how each task runs:** Inspect tool calls to understand how the agent uses your integrations.
+  - **Validate ideas before building:** Try workflows with your connected accounts before adding them to your product.
+
+  Under the hood it is a regular [agent session](/guides/agent-sessions), so what you see is what your own agent would get.
+
+  [Try Agent Playground](https://app.nango.dev/dev/playground/agent).
+
+  ![Agent Playground answering a Google Calendar prompt](/images/changelog/agent-playground.png)
+</Update>
+---
+
+<Update label="Scoped environment API keys from the API" description="October 19, 2026">
+  The account-level API can now create Environment API keys with specific scopes, and update a key's name or scopes after creation.
+
+  - [Create environment API key](/reference/backend/http-api/environments/create-api-key) accepts an optional `scopes` array. Without it, the key keeps full environment access as before.
+  - [Update environment API key](/reference/backend/http-api/environments/update-api-key) changes the `display_name` or replaces the `scopes`. The secret stays the same, and requests that need a removed scope start failing with a 403.
+
+  Both require an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the matching `account:environments:api_keys:*` scope.
+</Update>
+---
+
+<Update label="Intercom webhooks and SAP Business One" description="October 14, 2026">
   - **Intercom webhooks:** Nango can receive and forward [webhooks from Intercom](/api-integrations/intercom/webhooks).
   - **SAP Business One:** Connections can opt in to skipping TLS certificate verification to support self-signed certificates. See [SAP Business One](/integrations/all/sap-business-one).
 </Update>
 ---
 
 <Update label="Auto Catalog for AI agents" description="October 13, 2026">
-  Every action in Nango's catalog is now available on your integrations out of the box, so AI agents can use them without any setup.
+  Give your AI agents access to Nango's catalog actions without deploying or updating them yourself.
 
-  - **Always current:** Catalog actions are maintained by Nango and update automatically, so agents always see the latest tools.
-  - **No more enabling actions manually:** All actions are enabled by default. Use [agent sessions](/guides/agent-sessions) to limit the toolset and control discovery for your AI agents.
+  Catalog actions are now available automatically on your integrations and can be used through agent sessions.
+
+  - **Enabled by default:** Discover the actions available for each API and use them without manually enabling or deploying each one.
+  - **Auto tool maintenance:** Catalog actions update automatically as Nango ships fixes and improvements.
+  - **Control what agents can do:** Use [agent sessions](/guides/agent-sessions) to choose which tools each agent can access.
+
+  Available on Nango Cloud and BYOC.
+
+  ![Catalog actions listed on an integration's Functions tab](/images/changelog/auto-catalog-actions.png)
 </Update>
 ---
 
 <Update label="MCP server tools in agent sessions" description="October 13, 2026">
-  Connected MCP servers now show up in agent sessions next to Nango actions. Their tools are searchable, pinnable, and covered by the same allow and deny lists, and every call goes through Nango with credential refresh and logs.
+  Connected third-party MCP servers now show up in agent sessions next to Nango actions. Their tools are searchable, pinnable, and covered by the same allow and deny lists, and every call goes through Nango with credential refresh and logs.
 
   Include an MCP integration such as [Notion (MCP)](/api-integrations/notion-mcp) or [Linear (MCP)](/api-integrations/linear-mcp) in the session's toolset, and its tools join the session alongside Nango actions.
 

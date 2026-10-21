@@ -255,6 +255,11 @@
         color-scheme: light;
     }
 
+    /* Connect UI declares no color-scheme, and a mismatch makes the browser paint the iframe opaque. */
+    iframe#connect-ui {
+        color-scheme: normal;
+    }
+
     button,
     [role='button'] {
         cursor: pointer;
