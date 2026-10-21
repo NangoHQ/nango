@@ -38,6 +38,8 @@ const TIMING = {
     trailLen: 26
 };
 const LOGO_WAIT = 400;
+const ROUNDS = 2;
+const HOVER_DELAY = 300;
 const CYCLE = DOT_ORDER.length * TIMING.gap + TIMING.travel + TIMING.pause;
 const EASE = 'cubic-bezier(.2,.8,.2,1)';
 const glowAt = (percent: number) => `color-mix(in srgb, var(--hero-glow) ${percent}%, transparent)`;
@@ -66,7 +68,9 @@ export const HeroIllustration: React.FC = () => {
 
             const anims: Animation[] = [];
             const play = (el: Element, keyframes: Keyframe[], options: KeyframeAnimationOptions) => {
-                anims.push(el.animate(keyframes, { fill: 'both', easing: EASE, ...options }));
+                const animation = el.animate(keyframes, { fill: 'both', easing: EASE, ...options });
+                anims.push(animation);
+                return animation;
             };
 
             const routes = new Map<string, { line: SVGPathElement; trail: SVGPathElement; dot: SVGCircleElement; flash: HTMLElement; length: number }>();
@@ -128,24 +132,32 @@ export const HeroIllustration: React.FC = () => {
                 { duration: TIMING.glowDur, delay: TIMING.boxIn + 200 }
             );
             // No backwards fill: during its delay it would hold the glow at full opacity over the fade-in above.
-            play(glow, [{ opacity: 1 }, { opacity: 0.65 }, { opacity: 1 }], {
-                duration: CYCLE,
-                delay: TIMING.dotsStart,
-                iterations: Infinity,
-                easing: 'ease-in-out',
-                fill: 'forwards'
-            });
+            const breathe = (delay: number) =>
+                play(glow, [{ opacity: 1 }, { opacity: 0.65 }, { opacity: 1 }], {
+                    duration: CYCLE,
+                    delay,
+                    iterations: ROUNDS,
+                    easing: 'ease-in-out',
+                    fill: 'forwards'
+                });
+            let breathing = breathe(TIMING.dotsStart);
 
             const flashedRound = new Map<string, number>();
             let elapsed = 0;
             let last: number | null = null;
             let frame = 0;
+            let looping = true;
             const tick = (now: number) => {
                 if (last !== null) {
                     elapsed += now - last;
                 }
                 last = now;
                 const t = elapsed - TIMING.dotsStart;
+                if (t >= ROUNDS * CYCLE) {
+                    looping = false;
+                    root.dataset['idle'] = '';
+                    return;
+                }
                 if (t >= 0) {
                     const round = Math.floor(t / CYCLE);
                     DOT_ORDER.forEach((provider, i) => {
@@ -169,7 +181,7 @@ export const HeroIllustration: React.FC = () => {
                         route.trail.style.strokeDashoffset = String(TIMING.trailLen - distance);
                         if (progress > 0.96 && flashedRound.get(provider) !== round) {
                             flashedRound.set(provider, round);
-                            route.flash.animate([{ opacity: 1 }, { opacity: 0 }], { duration: TIMING.flashDur, easing: 'ease-out' });
+                            route.flash.animate([{ opacity: 0.5 }, { opacity: 0 }], { duration: TIMING.flashDur, easing: 'ease-out' });
                         }
                     });
                 }
@@ -205,10 +217,36 @@ export const HeroIllustration: React.FC = () => {
             document.addEventListener('visibilitychange', update);
             update();
 
+            const replay = () => {
+                if (looping) {
+                    return;
+                }
+                looping = true;
+                delete root.dataset['idle'];
+                flashedRound.clear();
+                elapsed = TIMING.dotsStart;
+                last = null;
+                breathing.cancel();
+                breathing = breathe(0);
+                if (running) {
+                    frame = requestAnimationFrame(tick);
+                }
+            };
+            let hoverTimer = 0;
+            const onEnter = () => {
+                hoverTimer = window.setTimeout(replay, HOVER_DELAY);
+            };
+            const onLeave = () => clearTimeout(hoverTimer);
+            root.addEventListener('mouseenter', onEnter);
+            root.addEventListener('mouseleave', onLeave);
+
             return () => {
                 cancelAnimationFrame(frame);
+                clearTimeout(hoverTimer);
                 observer.disconnect();
                 document.removeEventListener('visibilitychange', update);
+                root.removeEventListener('mouseenter', onEnter);
+                root.removeEventListener('mouseleave', onLeave);
                 anims.forEach((a) => a.cancel());
             };
         };
@@ -237,7 +275,7 @@ export const HeroIllustration: React.FC = () => {
         <div
             ref={rootRef}
             aria-hidden
-            className="pointer-events-none relative shrink-0 [--hero-accent:var(--color-icon-brand)] [--hero-glow:color-mix(in_srgb,var(--hero-accent)_16%,transparent)] [--hero-line:var(--color-border-default)] dark:[--hero-glow:color-mix(in_srgb,var(--hero-accent)_18%,transparent)] dark:[--hero-line:color-mix(in_srgb,var(--hero-accent)_35%,transparent)]"
+            className="group relative shrink-0 select-none [--hero-accent:var(--color-icon-brand)] [--hero-glow:color-mix(in_srgb,var(--hero-accent)_16%,transparent)] [--hero-line:var(--color-border-default)] dark:[--hero-glow:color-mix(in_srgb,var(--hero-accent)_18%,transparent)] dark:[--hero-line:color-mix(in_srgb,var(--hero-accent)_35%,transparent)]"
             style={{ width: WIDTH, height: HEIGHT }}
         >
             <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="absolute inset-0 size-full overflow-visible">
@@ -269,11 +307,17 @@ export const HeroIllustration: React.FC = () => {
                                 data-part={`trail-${provider}`}
                                 d={path}
                                 fill="none"
-                                strokeWidth={1.5}
+                                strokeWidth={0.7}
                                 strokeLinecap="round"
+                                strokeOpacity={0.5}
                                 className="stroke-(--hero-accent) opacity-0"
                             />
-                            <circle data-part={`dot-${provider}`} r={2.5} className="fill-(--hero-accent) opacity-0 drop-shadow-[0_0_3px_var(--hero-accent)]" />
+                            <circle
+                                data-part={`dot-${provider}`}
+                                r={2.5}
+                                fillOpacity={0.5}
+                                className="fill-(--hero-accent) opacity-0 drop-shadow-[0_0_3px_var(--hero-accent)]"
+                            />
                         </g>
                     ))}
                 </g>
@@ -299,10 +343,12 @@ export const HeroIllustration: React.FC = () => {
             ))}
 
             <div className="absolute size-14" style={{ left: CENTER.x - 28, top: CENTER.y - 28 }}>
-                <div data-part="glow" className="absolute -inset-16 rounded-full motion-safe:opacity-0" style={{ background: GLOW_GRADIENT }} />
+                <div className="pointer-events-none absolute -inset-16 transition-opacity duration-700 group-data-idle:opacity-0">
+                    <div data-part="glow" className="size-full rounded-full motion-safe:opacity-0" style={{ background: GLOW_GRADIENT }} />
+                </div>
                 <div
                     data-part="box"
-                    className="absolute inset-0 rounded-ds-md border border-[color-mix(in_srgb,var(--hero-accent)_40%,white)] bg-white motion-safe:scale-50 motion-safe:opacity-0 dark:border-[color-mix(in_srgb,var(--hero-accent)_55%,black)] dark:bg-black"
+                    className="absolute inset-0 rounded-ds-md border border-[color-mix(in_srgb,var(--hero-accent)_40%,white)] bg-white transition-colors duration-700 group-data-idle:border-border-default motion-safe:scale-50 motion-safe:opacity-0 dark:border-[color-mix(in_srgb,var(--hero-accent)_55%,black)] dark:bg-black dark:group-data-idle:border-border-default"
                 />
                 <div data-part="mark" className="absolute inset-3.5 motion-safe:opacity-0">
                     <LogoInverted className="absolute inset-0 size-full text-text-strong" />
