@@ -517,9 +517,9 @@ describe('parse', () => {
         expect(res.NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS).toBe(90);
     });
 
-    it('should refuse a NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS below the 45-day floor', () => {
-        expect(parseEnvs(ENVS, { NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: '45' }).NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS).toBe(45);
-        expect(() => parseEnvs(ENVS, { NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: '44' })).toThrow();
+    it('should refuse a NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS below the 90-day floor', () => {
+        expect(parseEnvs(ENVS, { NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: '90' }).NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS).toBe(90);
+        expect(() => parseEnvs(ENVS, { NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: '89' })).toThrow();
         expect(() => parseEnvs(ENVS, { NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: '0' })).toThrow();
     });
 
