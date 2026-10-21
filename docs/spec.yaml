@@ -2949,7 +2949,7 @@ paths:
                                         signing_key:
                                             type: string
                                             format: uuid
-                                            description: Optional UUID to use as the initial webhook signing key. Preserved exactly as supplied. A UUID is generated when omitted.
+                                            description: Optional UUID to use as the initial webhook signing key. A UUID is generated when omitted.
                                             example: 5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f
             responses:
                 '200':
