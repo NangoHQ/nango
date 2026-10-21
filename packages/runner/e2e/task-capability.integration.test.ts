@@ -3,6 +3,8 @@ import { generateKeyPairSync } from 'node:crypto';
 import getPort from 'get-port';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { taskScopesForScriptType } from '@nangohq/internal-auth';
+import { mintTaskCapabilityToken } from '@nangohq/internal-auth/testing';
 import { Err, Ok } from '@nangohq/utils';
 
 import type { Server } from 'node:http';
@@ -21,7 +23,10 @@ process.env['NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED'] = 'true';
 describe('task capability token end to end', () => {
     const closers: (() => Promise<void>)[] = [];
     let persistUrl = '';
+    let apiUrl = '';
     let token = '';
+    let actionToken = '';
+    let providerConfigKey = '';
     let environmentId = 0;
     let nangoConnectionId = 0;
 
@@ -194,6 +199,8 @@ describe('task capability token end to end', () => {
 
         environmentId = env.id;
         nangoConnectionId = connection.id;
+        apiUrl = api.url;
+        providerConfigKey = uniqueKey;
         const props = {
             scriptType: 'sync' as const,
             host: api.url,
@@ -239,6 +246,7 @@ describe('task capability token end to end', () => {
         }
 
         const actionAuth = await runnerAuth('task-action', { ...props, scriptType: 'action', syncId: undefined });
+        actionToken = actionAuth.internalAuthToken ?? '';
         // The runner denylist always includes loopback, and loopback literals stay blocked, so this
         // proxy cannot reach a local stub. The policy error is local: an API 401 would be a different code.
         const ran = await exec({
@@ -286,6 +294,27 @@ describe('task capability token end to end', () => {
             headers: { Authorization: `Bearer ${token}` }
         });
         expect(forged.status).toBe(401);
+    });
+
+    it('accepts the action token on /proxy and rejects one without api:proxy', async () => {
+        const allowed = await fetch(`${apiUrl}/proxy/`, {
+            headers: { Authorization: `Bearer ${actionToken}`, 'Provider-Config-Key': providerConfigKey }
+        });
+        expect(allowed.status).toBe(400);
+        const allowedBody = (await allowed.json()) as { error: { code: string; errors: { path: string[] }[] } };
+        expect(allowedBody.error.code).toBe('invalid_headers');
+        expect(allowedBody.error.errors.map((issue) => issue.path.join('.'))).toContain('connection-id');
+
+        const withoutProxy = await mintTaskCapabilityToken({
+            privateKey: jobsPem,
+            taskId: 'task-action-no-proxy',
+            res: { environmentId, connectionId: nangoConnectionId },
+            scopes: taskScopesForScriptType('action').filter((scope) => scope !== 'api:proxy')
+        });
+        const denied = await fetch(`${apiUrl}/proxy/`, {
+            headers: { Authorization: `Bearer ${withoutProxy}`, 'Provider-Config-Key': providerConfigKey }
+        });
+        expect(denied.status).toBe(401);
     });
 });
 
