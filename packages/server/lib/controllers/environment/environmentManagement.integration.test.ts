@@ -21,7 +21,7 @@ let keyIndex = 0;
 
 async function seedAccount() {
     const seed = await seeders.seedAccountEnvAndUser();
-    await updatePlan(db.knex, { id: seed.plan.id, environments_max: 10 });
+    (await updatePlan(db.knex, { id: seed.plan.id, environments_max: 10 })).unwrap();
     return seed;
 }
 
@@ -256,7 +256,7 @@ describe('Public environment management', () => {
 
         it('should configure and return public settings with only create permission', async () => {
             const { account, plan } = await seedAccount();
-            await updatePlan(db.knex, { id: plan.id, has_otel: true });
+            (await updatePlan(db.knex, { id: plan.id, has_otel: true })).unwrap();
             const accountKey = await createAccountKey(account.id, ['account:environments:create']);
             const webhooks = {
                 primary_url: 'https://hooks.example.com/events',
@@ -326,11 +326,11 @@ describe('Public environment management', () => {
             const { account, plan } = await seedAccount();
             const key = await createAccountKey(account.id, ['account:environments:create']);
             const settings = { name: 'headers-only', otlp_headers: [{ name: 'Authorization', value: 'Bearer token' }] };
-            await updatePlan(db.knex, { id: plan.id, has_otel: false });
+            (await updatePlan(db.knex, { id: plan.id, has_otel: false })).unwrap();
             const denied = await api.fetch('/environments', { method: 'POST', token: key.secret, body: settings });
             expect(denied.res.status).toBe(403);
 
-            await updatePlan(db.knex, { id: plan.id, has_otel: true });
+            (await updatePlan(db.knex, { id: plan.id, has_otel: true })).unwrap();
             const created = await api.fetch('/environments', { method: 'POST', token: key.secret, body: settings });
             expect(created.res.status).toBe(200);
             isSuccess(created.json);
@@ -341,7 +341,7 @@ describe('Public environment management', () => {
         it('should enforce the environment limit from the account plan', async () => {
             const { account, plan } = await seedAccount();
             const key = await createAccountKey(account.id, ['account:environments:create']);
-            await updatePlan(db.knex, { id: plan.id, environments_max: 1 });
+            (await updatePlan(db.knex, { id: plan.id, environments_max: 1 })).unwrap();
 
             const res = await api.fetch('/environments', { method: 'POST', token: key.secret, body: { name: 'over-limit' } });
 
