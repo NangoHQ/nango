@@ -1,0 +1,30 @@
+---
+title: Belender - How do I link my account?
+sidebarTitle: Belender
+---
+
+## Overview
+
+To authenticate with Belender, you will need:
+1. **API Hostname** - Production (`api.belender.net`) or QA (`api.qa.belender.net`).
+2. **Email** - Your Belender account email.
+3. **Password** - Your Belender account password.
+
+### Prerequisites:
+
+- You must have a registered Belender account with API access.
+- You need Belender **package IDs** (UUIDs) for the packs you will request (they differ between QA and production).
+
+### Instructions:
+
+#### Step 1: Choosing your API hostname
+1. Use `api.belender.net` for production workloads.
+2. Use `api.qa.belender.net` for QA / staging.
+
+#### Step 2: Entering your Belender credentials
+1. Open the Connect UI form for Belender.
+2. Enter the **API Hostname** (without `https://`).
+3. Enter your Belender **Email** and **Password**.
+4. Submit the form. Nango will call `POST /login` and store the returned `access_token`.
+
+You are now connected to Belender. Use the Nango proxy for document flows (`/requests/...`, `/digital-power/send-job`), Cl@ve PIN / SMS steps, and document / fast-json retrieval (see the Belender integration docs).

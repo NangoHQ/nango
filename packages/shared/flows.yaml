@@ -2364,6 +2364,146 @@ integrations:
             Project:
                 projectId: number
                 todoSetId: number
+    belender:
+        actions:
+            check-clave-pin-service:
+                description: Checks whether a person has Cl@ve PIN available in Belender.
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /clave-pin/check-service
+                    group: Clave PIN
+                input: BelenderCheckClavePinInput
+                output: BelenderProxyOutput
+            create-clave-pin-request:
+                description: Creates a Belender Cl@ve PIN request.
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /clave-pin
+                    group: Clave PIN
+                input: BelenderCreateClavePinInput
+                output: BelenderProxyOutput
+            accept-clave-pin-terms:
+                description: Accepts terms for a Belender Cl@ve PIN request.
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /clave-pin/terms
+                    group: Clave PIN
+                input: BelenderTermsInput
+                output: BelenderProxyOutput
+            submit-clave-pin-otp:
+                description: Submits an OTP for a Belender Cl@ve PIN request (AEAT / SS steps).
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /clave-pin/otp
+                    group: Clave PIN
+                input: BelenderOtpInput
+                output: BelenderProxyOutput
+            resend-clave-pin-otp:
+                description: Resends the OTP for a Belender Cl@ve PIN request.
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /clave-pin/resend-otp
+                    group: Clave PIN
+                input: BelenderRequestIdInput
+                output: BelenderProxyOutput
+            create-sms-request:
+                description: Creates a Belender SMS verification request.
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /sms
+                    group: SMS
+                input: BelenderCreateSmsInput
+                output: BelenderProxyOutput
+            accept-sms-terms:
+                description: Accepts terms for a Belender SMS request.
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /sms/terms
+                    group: SMS
+                input: BelenderTermsInput
+                output: BelenderProxyOutput
+            submit-sms-otp:
+                description: Submits an OTP for a Belender SMS request.
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /sms/otp
+                    group: SMS
+                input: BelenderOtpInput
+                output: BelenderProxyOutput
+            resend-sms-otp:
+                description: Resends the OTP for a Belender SMS request.
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /sms/resend-otp
+                    group: SMS
+                input: BelenderRequestIdInput
+                output: BelenderProxyOutput
+            get-fast-json:
+                description: Fetches Belender standardized fast-json for a request (AEAT / SS payloads).
+                version: 1.0.0
+                endpoint:
+                    method: GET
+                    path: /requests/fast-json
+                    group: Documents
+                input: BelenderRequestIdInput
+                output: BelenderFastJsonOutput
+            get-document:
+                description: Downloads a document produced by a Belender request.
+                version: 1.0.0
+                endpoint:
+                    method: GET
+                    path: /requests/documents
+                    group: Documents
+                input: BelenderGetDocumentInput
+                output: BelenderGetDocumentOutput
+        models:
+            BelenderCheckClavePinInput:
+                document_number: string
+                document_expiration_date: string
+                document_support?: string
+            BelenderCreateClavePinInput:
+                package_id: string
+                document_number: string
+                document_expiration_date: string
+                check_legal?: boolean
+                document_support?: string
+                extra?: object
+            BelenderCreateSmsInput:
+                package_id: string
+                document_number: string
+                phone: string
+                birth_date: string
+                check_legal?: boolean
+                extra?: object
+            BelenderTermsInput:
+                request_id: string | number
+                terms_and_conditions: boolean
+            BelenderOtpInput:
+                request_id: string | number
+                code: string
+            BelenderRequestIdInput:
+                request_id: string | number
+            BelenderGetDocumentInput:
+                request_id: string | number
+                document_id: string | number
+            BelenderProxyOutput:
+                data: any
+            BelenderFastJsonOutput:
+                request_id: string | number
+                data: any
+            BelenderGetDocumentOutput:
+                request_id: string | number
+                document_id: string | number
+                data: any
     bill:
         actions:
             create-user:

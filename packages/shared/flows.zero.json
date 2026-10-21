@@ -126928,6 +126928,704 @@
         "sdkVersion": "0.71.13",
         "symLinkTargetName": null
     },
+
+
+    {
+        "providerConfigKey": "belender",
+        "actions": [
+            {
+                "type": "action",
+                "description": "Checks whether a person has Cl@ve PIN available in Belender.",
+                "endpoint": {
+                    "method": "POST",
+                    "path": "/clave-pin/check-service",
+                    "group": "Clave PIN"
+                },
+                "input": "ActionInput_belender_checkclavepinservice",
+                "name": "check-clave-pin-service",
+                "output": [
+                    "ActionOutput_belender_checkclavepinservice"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_belender_checkclavepinservice",
+                    "ActionOutput_belender_checkclavepinservice"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_belender_checkclavepinservice": {
+                            "type": "object",
+                            "properties": {
+                                "document_number": {
+                                    "type": "string"
+                                },
+                                "document_expiration_date": {
+                                    "type": "string"
+                                },
+                                "document_support": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "document_number",
+                                "document_expiration_date"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_belender_checkclavepinservice": {
+                            "type": "object",
+                            "properties": {
+                                "data": {}
+                            },
+                            "required": [
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Creates a Belender Cl@ve PIN request.",
+                "endpoint": {
+                    "method": "POST",
+                    "path": "/clave-pin",
+                    "group": "Clave PIN"
+                },
+                "input": "ActionInput_belender_createclavepinrequest",
+                "name": "create-clave-pin-request",
+                "output": [
+                    "ActionOutput_belender_createclavepinrequest"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_belender_createclavepinrequest",
+                    "ActionOutput_belender_createclavepinrequest"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_belender_createclavepinrequest": {
+                            "type": "object",
+                            "properties": {
+                                "package_id": {
+                                    "type": "string"
+                                },
+                                "document_number": {
+                                    "type": "string"
+                                },
+                                "document_expiration_date": {
+                                    "type": "string"
+                                },
+                                "check_legal": {
+                                    "type": "boolean"
+                                },
+                                "document_support": {
+                                    "type": "string"
+                                },
+                                "extra": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "required": [
+                                "package_id",
+                                "document_number",
+                                "document_expiration_date"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_belender_createclavepinrequest": {
+                            "type": "object",
+                            "properties": {
+                                "data": {}
+                            },
+                            "required": [
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Accepts terms for a Belender Cl@ve PIN request.",
+                "endpoint": {
+                    "method": "POST",
+                    "path": "/clave-pin/terms",
+                    "group": "Clave PIN"
+                },
+                "input": "ActionInput_belender_acceptclavepinterms",
+                "name": "accept-clave-pin-terms",
+                "output": [
+                    "ActionOutput_belender_acceptclavepinterms"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_belender_acceptclavepinterms",
+                    "ActionOutput_belender_acceptclavepinterms"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_belender_acceptclavepinterms": {
+                            "type": "object",
+                            "properties": {
+                                "request_id": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
+                                },
+                                "terms_and_conditions": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": [
+                                "request_id",
+                                "terms_and_conditions"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_belender_acceptclavepinterms": {
+                            "type": "object",
+                            "properties": {
+                                "data": {}
+                            },
+                            "required": [
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Submits an OTP for a Belender Cl@ve PIN request (AEAT / SS steps).",
+                "endpoint": {
+                    "method": "POST",
+                    "path": "/clave-pin/otp",
+                    "group": "Clave PIN"
+                },
+                "input": "ActionInput_belender_submitclavepinotp",
+                "name": "submit-clave-pin-otp",
+                "output": [
+                    "ActionOutput_belender_submitclavepinotp"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_belender_submitclavepinotp",
+                    "ActionOutput_belender_submitclavepinotp"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_belender_submitclavepinotp": {
+                            "type": "object",
+                            "properties": {
+                                "request_id": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
+                                },
+                                "code": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "request_id",
+                                "code"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_belender_submitclavepinotp": {
+                            "type": "object",
+                            "properties": {
+                                "data": {}
+                            },
+                            "required": [
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Resends the OTP for a Belender Cl@ve PIN request.",
+                "endpoint": {
+                    "method": "POST",
+                    "path": "/clave-pin/resend-otp",
+                    "group": "Clave PIN"
+                },
+                "input": "ActionInput_belender_resendclavepinotp",
+                "name": "resend-clave-pin-otp",
+                "output": [
+                    "ActionOutput_belender_resendclavepinotp"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_belender_resendclavepinotp",
+                    "ActionOutput_belender_resendclavepinotp"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_belender_resendclavepinotp": {
+                            "type": "object",
+                            "properties": {
+                                "request_id": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "request_id"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_belender_resendclavepinotp": {
+                            "type": "object",
+                            "properties": {
+                                "data": {}
+                            },
+                            "required": [
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Creates a Belender SMS verification request.",
+                "endpoint": {
+                    "method": "POST",
+                    "path": "/sms",
+                    "group": "SMS"
+                },
+                "input": "ActionInput_belender_createsmsrequest",
+                "name": "create-sms-request",
+                "output": [
+                    "ActionOutput_belender_createsmsrequest"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_belender_createsmsrequest",
+                    "ActionOutput_belender_createsmsrequest"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_belender_createsmsrequest": {
+                            "type": "object",
+                            "properties": {
+                                "package_id": {
+                                    "type": "string"
+                                },
+                                "document_number": {
+                                    "type": "string"
+                                },
+                                "phone": {
+                                    "type": "string"
+                                },
+                                "birth_date": {
+                                    "type": "string"
+                                },
+                                "check_legal": {
+                                    "type": "boolean"
+                                },
+                                "extra": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "required": [
+                                "package_id",
+                                "document_number",
+                                "phone",
+                                "birth_date"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_belender_createsmsrequest": {
+                            "type": "object",
+                            "properties": {
+                                "data": {}
+                            },
+                            "required": [
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Accepts terms for a Belender SMS request.",
+                "endpoint": {
+                    "method": "POST",
+                    "path": "/sms/terms",
+                    "group": "SMS"
+                },
+                "input": "ActionInput_belender_acceptsmsterms",
+                "name": "accept-sms-terms",
+                "output": [
+                    "ActionOutput_belender_acceptsmsterms"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_belender_acceptsmsterms",
+                    "ActionOutput_belender_acceptsmsterms"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_belender_acceptsmsterms": {
+                            "type": "object",
+                            "properties": {
+                                "request_id": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
+                                },
+                                "terms_and_conditions": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": [
+                                "request_id",
+                                "terms_and_conditions"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_belender_acceptsmsterms": {
+                            "type": "object",
+                            "properties": {
+                                "data": {}
+                            },
+                            "required": [
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Submits an OTP for a Belender SMS request.",
+                "endpoint": {
+                    "method": "POST",
+                    "path": "/sms/otp",
+                    "group": "SMS"
+                },
+                "input": "ActionInput_belender_submitsmsotp",
+                "name": "submit-sms-otp",
+                "output": [
+                    "ActionOutput_belender_submitsmsotp"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_belender_submitsmsotp",
+                    "ActionOutput_belender_submitsmsotp"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_belender_submitsmsotp": {
+                            "type": "object",
+                            "properties": {
+                                "request_id": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
+                                },
+                                "code": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "request_id",
+                                "code"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_belender_submitsmsotp": {
+                            "type": "object",
+                            "properties": {
+                                "data": {}
+                            },
+                            "required": [
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Resends the OTP for a Belender SMS request.",
+                "endpoint": {
+                    "method": "POST",
+                    "path": "/sms/resend-otp",
+                    "group": "SMS"
+                },
+                "input": "ActionInput_belender_resendsmsotp",
+                "name": "resend-sms-otp",
+                "output": [
+                    "ActionOutput_belender_resendsmsotp"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_belender_resendsmsotp",
+                    "ActionOutput_belender_resendsmsotp"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_belender_resendsmsotp": {
+                            "type": "object",
+                            "properties": {
+                                "request_id": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "request_id"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_belender_resendsmsotp": {
+                            "type": "object",
+                            "properties": {
+                                "data": {}
+                            },
+                            "required": [
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Fetches Belender standardized fast-json for a request (AEAT / SS payloads).",
+                "endpoint": {
+                    "method": "GET",
+                    "path": "/requests/fast-json",
+                    "group": "Documents"
+                },
+                "input": "ActionInput_belender_getfastjson",
+                "name": "get-fast-json",
+                "output": [
+                    "ActionOutput_belender_getfastjson"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_belender_getfastjson",
+                    "ActionOutput_belender_getfastjson"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_belender_getfastjson": {
+                            "type": "object",
+                            "properties": {
+                                "request_id": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "request_id"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_belender_getfastjson": {
+                            "type": "object",
+                            "properties": {
+                                "request_id": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
+                                },
+                                "data": {}
+                            },
+                            "required": [
+                                "request_id",
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Downloads a document produced by a Belender request.",
+                "endpoint": {
+                    "method": "GET",
+                    "path": "/requests/documents",
+                    "group": "Documents"
+                },
+                "input": "ActionInput_belender_getdocument",
+                "name": "get-document",
+                "output": [
+                    "ActionOutput_belender_getdocument"
+                ],
+                "scopes": [],
+                "usedModels": [
+                    "ActionInput_belender_getdocument",
+                    "ActionOutput_belender_getdocument"
+                ],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_belender_getdocument": {
+                            "type": "object",
+                            "properties": {
+                                "request_id": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
+                                },
+                                "document_id": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "request_id",
+                                "document_id"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "ActionOutput_belender_getdocument": {
+                            "type": "object",
+                            "properties": {
+                                "request_id": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
+                                },
+                                "document_id": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
+                                },
+                                "data": {}
+                            },
+                            "required": [
+                                "request_id",
+                                "document_id",
+                                "data"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            }
+        ],
+        "syncs": [],
+        "onEventScripts": {
+            "post-connection-creation": [],
+            "pre-connection-deletion": [],
+            "validate-connection": []
+        },
+        "sdkVersion": "0.71.12",
+        "symLinkTargetName": null
+    },
     {
         "providerConfigKey": "bigcommerce",
         "actions": [
