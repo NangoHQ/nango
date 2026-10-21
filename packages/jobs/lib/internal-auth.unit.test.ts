@@ -5,20 +5,26 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
     exportRunnerPublicKey,
     INTERNAL_SERVICE_AUDIENCE_JOBS,
+    INTERNAL_SERVICE_AUDIENCE_PERSIST,
     INTERNAL_SERVICE_AUDIENCE_RUNNER,
+    INTERNAL_SERVICE_AUDIENCE_SERVER,
     INTERNAL_SERVICE_ISSUER_JOBS,
     INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS,
     INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS,
     INTERNAL_SERVICE_TOKEN_TTL_SECS,
     keyRegistryFromPublicKeys,
     nodeSubject,
+    taskScopesForScriptType,
     taskSubject,
     verifyInternalServiceCredential,
     verifyInternalServiceToken,
-    verifyRunnerDispatchToken
+    verifyRunnerDispatchToken,
+    verifyTaskCapabilityToken
 } from '@nangohq/internal-auth';
 
-import { assertRunnerAuthMaterial, mintRunnerAuthEnv, mintRunnerDispatchToken, mintTaskAuthToken } from './internal-auth.js';
+import { assertRunnerAuthMaterial, mintRunnerAuthEnv, mintRunnerDispatchToken, mintTaskAuthToken, runnerAuth } from './internal-auth.js';
+
+import type { NangoProps } from '@nangohq/types';
 
 const { mockEnvs } = vi.hoisted(() => ({
     mockEnvs: {
@@ -26,7 +32,8 @@ const { mockEnvs } = vi.hoisted(() => ({
         NANGO_INTERNAL_AUTH_REQUIRED: false,
         NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: undefined as string | undefined,
         NANGO_INTERNAL_AUTH_JOBS_KEY_ID: undefined as string | undefined,
-        NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: undefined as { kid: string; publicKey: string }[] | undefined
+        NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: undefined as { kid: string; publicKey: string }[] | undefined,
+        NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY: false
     }
 }));
 
@@ -40,7 +47,30 @@ afterEach(() => {
     mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = undefined;
     mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = undefined;
     mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = undefined;
+    mockEnvs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY = false;
 });
+
+function capabilityProps(scriptType: NangoProps['scriptType']): NangoProps {
+    return {
+        scriptType,
+        secretKey: 'sk',
+        connectionId: 'conn-1',
+        nangoConnectionId: 9,
+        environmentId: 4,
+        environmentName: 'dev',
+        providerConfigKey: 'google',
+        provider: 'google',
+        team: { id: 1, name: 'team' },
+        ...(scriptType === 'sync' || scriptType === 'webhook' ? { syncId: '11111111-1111-4111-8111-111111111111' } : {}),
+        syncConfig: {} as NangoProps['syncConfig'],
+        activityLogId: 'log-1',
+        debug: false,
+        startedAt: new Date(),
+        endUser: null,
+        runnerFlags: {} as NangoProps['runnerFlags'],
+        logger: { level: 'info' }
+    };
+}
 
 describe('mintTaskAuthToken', () => {
     it('returns null when the signing key is unset', async () => {
@@ -84,6 +114,69 @@ describe('mintTaskAuthToken', () => {
         const payload = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
         expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + 60);
         expect(payload.exp).toBeLessThan(issuedAt + 65);
+    });
+});
+
+describe('runnerAuth', () => {
+    function jobsKey(): { pem: string; raw: string } {
+        const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+        return {
+            pem: privateKey.export({ format: 'pem', type: 'pkcs8' }).toString(),
+            raw: Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
+                .subarray(12)
+                .toString('base64url')
+        };
+    }
+
+    it('keeps the secret and omits taskAuthToken when no Ed25519 jobs key is configured', async () => {
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
+        const props = capabilityProps('sync');
+        const result = await runnerAuth('task-1', props);
+        expect(result.nangoProps.taskAuthToken).toBeUndefined();
+        expect(result.nangoProps.secretKey).toBe('sk');
+        expect(result.nangoProps).toBe(props);
+        expect(result.internalAuthToken).toEqual(expect.any(String));
+        expect(verifyInternalServiceToken(result.internalAuthToken!, 'jobs', 'sign')).toMatchObject({ kind: 'hmac', op: 'task', taskId: 'task-1' });
+    });
+
+    it('mints one capability token for the runner and for jobs, with the scopes for the script type', async () => {
+        const { pem, raw } = jobsKey();
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = pem;
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = 'jobs-2026-09';
+        const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: raw }], INTERNAL_SERVICE_ISSUER_JOBS);
+
+        const sync = await runnerAuth('task-sync', capabilityProps('sync'));
+        expect(sync.nangoProps.taskAuthToken).toBe(sync.internalAuthToken);
+        expect(sync.nangoProps.secretKey).toBe('sk');
+        const syncAuth = await verifyTaskCapabilityToken(sync.internalAuthToken!, INTERNAL_SERVICE_AUDIENCE_PERSIST, registry);
+        expect(syncAuth?.scopes).toEqual(taskScopesForScriptType('sync'));
+        expect(syncAuth?.res).toEqual({ environmentId: 4, connectionId: 9, syncId: '11111111-1111-4111-8111-111111111111' });
+        expect(await verifyTaskCapabilityToken(sync.internalAuthToken!, INTERNAL_SERVICE_AUDIENCE_SERVER, registry)).toMatchObject({ sub: 'task:task-sync' });
+        expect(await verifyTaskCapabilityToken(sync.internalAuthToken!, INTERNAL_SERVICE_AUDIENCE_JOBS, registry)).toMatchObject({ sub: 'task:task-sync' });
+
+        const action = await runnerAuth('task-action', capabilityProps('action'));
+        const actionAuth = await verifyTaskCapabilityToken(action.internalAuthToken!, INTERNAL_SERVICE_AUDIENCE_SERVER, registry);
+        expect(actionAuth?.scopes).toEqual(taskScopesForScriptType('action'));
+        expect(actionAuth?.scopes).not.toContain('persist:records');
+        expect(actionAuth?.res).toEqual({ environmentId: 4, connectionId: 9 });
+    });
+
+    it('removes secretKey when omit is set, and refuses to dispatch when no Ed25519 key can mint a token', async () => {
+        mockEnvs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY = true;
+        await expect(runnerAuth('task-1', capabilityProps('action'))).rejects.toThrow(/NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY/);
+
+        const { pem, raw } = jobsKey();
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = pem;
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = 'jobs-2026-09';
+        mockEnvs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY = true;
+        const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: raw }], INTERNAL_SERVICE_ISSUER_JOBS);
+        const result = await runnerAuth('task-1', capabilityProps('action'));
+        expect(result.nangoProps.secretKey).toBeUndefined();
+        expect(result.nangoProps).not.toHaveProperty('secretKey');
+        expect(result.nangoProps.taskAuthToken).toBe(result.internalAuthToken);
+        expect(await verifyTaskCapabilityToken(result.internalAuthToken!, INTERNAL_SERVICE_AUDIENCE_SERVER, registry)).toMatchObject({
+            scopes: taskScopesForScriptType('action')
+        });
     });
 });
 

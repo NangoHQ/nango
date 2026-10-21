@@ -7,7 +7,7 @@ import { BASE_VARIANT, executeUncontrolledFetch, InvalidRecordSDKError, NangoAct
 import { getCliTlsProps } from '../tls.js';
 
 import type { DryRunService } from './dryrun.service.js';
-import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
+import type { AdminAxiosProps, ListRecordsRequestConfig, NangoProps as NodeNangoProps } from '@nangohq/node';
 import type { ProxyConfiguration, UncontrolledFetchOptions, ZodCheckpoint } from '@nangohq/runner-sdk';
 import type { Checkpoint, GetPublicConnection, Metadata, NangoProps, NangoRecord, UserLogParameters } from '@nangohq/types';
 import type { AxiosError, AxiosResponse } from 'axios';
@@ -57,7 +57,7 @@ export class NangoActionCLI extends NangoActionBase<never, ZodCheckpoint> {
             this.stubbedCheckpoint = cliProps.stubbedCheckpoint;
         }
 
-        this.nango = new Nango({ isSync: false, dryRun: true, ...props }, getAxiosSettings(props));
+        this.nango = new Nango(cliNango(props, { isSync: false }), getAxiosSettings(props));
     }
 
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -199,7 +199,7 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
 
         this.dryRunService = cliProps.dryRunService;
 
-        this.nango = new Nango({ isSync: true, dryRun: true, ...props }, getAxiosSettings(props));
+        this.nango = new Nango(cliNango(props, { isSync: true }), getAxiosSettings(props));
     }
 
     // Can't double extends
@@ -433,6 +433,22 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
         this.log(`This has no effect locally. On a remote Nango instance, it would mark as deleted any records that were not saved since trackDeletesStart.`);
         return Promise.resolve({ deletedKeys: [] });
     }
+}
+
+/** The CLI's `@nangohq/node` client. A task token is passed as `apiKey`; a secret stays `secretKey`. */
+export function cliNango(props: NangoProps, opts: { isSync: boolean }): NodeNangoProps {
+    const shared = {
+        ...(props.host ? { host: props.host } : {}),
+        connectionId: props.connectionId,
+        providerConfigKey: props.providerConfigKey,
+        ...(props.activityLogId ? { activityLogId: props.activityLogId } : {}),
+        isSync: opts.isSync,
+        dryRun: true as const
+    };
+    if (props.taskAuthToken) {
+        return { ...shared, apiKey: props.taskAuthToken };
+    }
+    return { ...shared, secretKey: props.secretKey ?? '' };
 }
 
 function getAxiosSettings(props: NangoProps) {
