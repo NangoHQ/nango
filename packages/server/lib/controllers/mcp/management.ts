@@ -166,10 +166,10 @@ function getCustomerApiKeyId(locals: RequestLocals): number | undefined {
 }
 
 function requireApiKeyEnvironment(locals: RequestLocals): DBEnvironment {
-    if (!locals.environment || !isDbEnvironment(locals.environment)) {
+    if (!locals.environment || !isDbEnvironment(locals)) {
         throw new Error('Management MCP API-key authentication requires an environment');
     }
-    return locals.environment;
+    return locals.environment as DBEnvironment;
 }
 
 function requirePrincipal(locals: RequestLocals) {

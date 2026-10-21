@@ -146,6 +146,21 @@ type EnvironmentColumnRow = {
     [K in (typeof ENVIRONMENT_COLUMNS)[number] as `environment_${K}`]: EnvironmentWithoutSecrets[K];
 };
 
+function planFromRow(plan: DBPlan): DBPlan {
+    return {
+        ...plan,
+        created_at: new Date(plan.created_at),
+        updated_at: new Date(plan.updated_at),
+        trial_start_at: plan.trial_start_at ? new Date(plan.trial_start_at) : plan.trial_start_at,
+        trial_end_at: plan.trial_end_at ? new Date(plan.trial_end_at) : plan.trial_end_at,
+        trial_end_notified_at: plan.trial_end_notified_at ? new Date(plan.trial_end_notified_at) : plan.trial_end_notified_at,
+        orb_subscribed_at: plan.orb_subscribed_at ? new Date(plan.orb_subscribed_at) : plan.orb_subscribed_at,
+        orb_future_plan_at: plan.orb_future_plan_at ? new Date(plan.orb_future_plan_at) : plan.orb_future_plan_at,
+        growth_features_starts_at: plan.growth_features_starts_at ? new Date(plan.growth_features_starts_at) : plan.growth_features_starts_at,
+        growth_features_ends_at: plan.growth_features_ends_at ? new Date(plan.growth_features_ends_at) : plan.growth_features_ends_at
+    };
+}
+
 function taskTokenAccountContextFromRow(row: { account: DBTeam; plan: DBPlan | null } & EnvironmentColumnRow): TaskTokenAccountContext {
     return {
         account: {
@@ -176,18 +191,7 @@ function taskTokenAccountContextFromRow(row: { account: DBTeam; plan: DBPlan | n
             deleted: row.environment_deleted,
             deleted_at: row.environment_deleted_at ? new Date(row.environment_deleted_at) : null
         },
-        plan: row.plan
-            ? {
-                  ...row.plan,
-                  created_at: new Date(row.plan.created_at),
-                  updated_at: new Date(row.plan.updated_at),
-                  trial_start_at: row.plan.trial_start_at ? new Date(row.plan.trial_start_at) : row.plan.trial_start_at,
-                  trial_end_at: row.plan.trial_end_at ? new Date(row.plan.trial_end_at) : row.plan.trial_end_at,
-                  trial_end_notified_at: row.plan.trial_end_notified_at ? new Date(row.plan.trial_end_notified_at) : row.plan.trial_end_notified_at,
-                  orb_subscribed_at: row.plan.orb_subscribed_at ? new Date(row.plan.orb_subscribed_at) : row.plan.orb_subscribed_at,
-                  orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
-              }
-            : null
+        plan: row.plan ? planFromRow(row.plan) : null
     };
 }
 
@@ -813,18 +817,7 @@ class AccountService {
                     updated_at: new Date(row.environment.updated_at),
                     deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
                 },
-                plan: row.plan
-                    ? {
-                          ...row.plan,
-                          created_at: new Date(row.plan.created_at),
-                          updated_at: new Date(row.plan.updated_at),
-                          trial_start_at: row.plan.trial_start_at ? new Date(row.plan.trial_start_at) : row.plan.trial_start_at,
-                          trial_end_at: row.plan.trial_end_at ? new Date(row.plan.trial_end_at) : row.plan.trial_end_at,
-                          trial_end_notified_at: row.plan.trial_end_notified_at ? new Date(row.plan.trial_end_notified_at) : row.plan.trial_end_notified_at,
-                          orb_subscribed_at: row.plan.orb_subscribed_at ? new Date(row.plan.orb_subscribed_at) : row.plan.orb_subscribed_at,
-                          orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
-                      }
-                    : null,
+                plan: row.plan ? planFromRow(row.plan) : null,
                 secret: defaultSecret,
                 auth
             });
@@ -978,18 +971,7 @@ class AccountService {
                 created_at: new Date(row.account.created_at),
                 updated_at: new Date(row.account.updated_at)
             },
-            plan: row.plan
-                ? {
-                      ...row.plan,
-                      created_at: new Date(row.plan.created_at),
-                      updated_at: new Date(row.plan.updated_at),
-                      trial_start_at: row.plan.trial_start_at ? new Date(row.plan.trial_start_at) : row.plan.trial_start_at,
-                      trial_end_at: row.plan.trial_end_at ? new Date(row.plan.trial_end_at) : row.plan.trial_end_at,
-                      trial_end_notified_at: row.plan.trial_end_notified_at ? new Date(row.plan.trial_end_notified_at) : row.plan.trial_end_notified_at,
-                      orb_subscribed_at: row.plan.orb_subscribed_at ? new Date(row.plan.orb_subscribed_at) : row.plan.orb_subscribed_at,
-                      orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
-                  }
-                : null,
+            plan: row.plan ? planFromRow(row.plan) : null,
             ...environmentContext,
             principal: {
                 type: 'api_key',
@@ -1212,18 +1194,7 @@ class AccountService {
                 updated_at: new Date(row.environment.updated_at),
                 deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
             },
-            plan: row.plan
-                ? {
-                      ...row.plan,
-                      created_at: new Date(row.plan.created_at),
-                      updated_at: new Date(row.plan.updated_at),
-                      trial_start_at: row.plan.trial_start_at ? new Date(row.plan.trial_start_at) : row.plan.trial_start_at,
-                      trial_end_at: row.plan.trial_end_at ? new Date(row.plan.trial_end_at) : row.plan.trial_end_at,
-                      trial_end_notified_at: row.plan.trial_end_notified_at ? new Date(row.plan.trial_end_notified_at) : row.plan.trial_end_notified_at,
-                      orb_subscribed_at: row.plan.orb_subscribed_at ? new Date(row.plan.orb_subscribed_at) : row.plan.orb_subscribed_at,
-                      orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
-                  }
-                : null,
+            plan: row.plan ? planFromRow(row.plan) : null,
             secret: defaultSecret,
             auth: {
                 source: 'api_secret' as const,
