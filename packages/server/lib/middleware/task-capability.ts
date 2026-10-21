@@ -6,7 +6,7 @@ import {
     verifyTaskCapabilityToken
 } from '@nangohq/internal-auth';
 import { accountService, errorManager } from '@nangohq/shared';
-import { getLogger, stringifyError, tagTraceUser } from '@nangohq/utils';
+import { flagHasPlan, getLogger, stringifyError, tagTraceUser } from '@nangohq/utils';
 
 import { can } from '../authz/middleware.js';
 import { principalFor } from '../authz/principal.js';
@@ -80,12 +80,21 @@ async function authenticateTask(
         }
 
         const result = await accountService.getTaskTokenAccountContext(auth.res.environmentId);
-        if (result.isErr() || !result.value) {
+        if (result.isErr()) {
+            logger.error(`failed_task_token_account_context ${stringifyError(result.error)}`);
+            res.status(500).send({ error: { code: 'server_error' } });
+            return;
+        }
+        if (!result.value) {
             errorManager.errRes(res, 'unknown_account');
             return;
         }
 
         const context = result.value;
+        if (flagHasPlan && !context.plan) {
+            errorManager.errRes(res, 'plan_not_found');
+            return;
+        }
         const scopes: Scope[] = [...API_TASK_SCOPES[scope]];
         res.locals.authType = 'taskToken';
         res.locals.account = context.account;
@@ -107,6 +116,6 @@ async function authenticateTask(
         next();
     } catch (err) {
         logger.error(`failed_task_capability_auth ${stringifyError(err)}`);
-        errorManager.errRes(res, 'unknown_account');
+        res.status(500).send({ error: { code: 'server_error' } });
     }
 }
