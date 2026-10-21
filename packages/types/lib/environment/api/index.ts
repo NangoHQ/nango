@@ -74,8 +74,6 @@ export type PostPublicEnvironment = ApiEndpoint<{
             name: string;
             is_production: boolean;
             callback_url: string;
-            hmac_key: string | null;
-            hmac_enabled: boolean;
             slack_notifications: boolean;
             otlp_endpoint: string | null;
             otlp_headers: { name: string; value: string }[];
