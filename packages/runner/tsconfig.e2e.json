@@ -1,8 +1,12 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "rootDir": "e2e",
-        "outDir": "dist/e2e"
+        "composite": false,
+        "incremental": false,
+        "declaration": false,
+        "declarationMap": false,
+        "noEmit": true,
+        "rootDir": "e2e"
     },
     "references": [
         { "path": "../database" },

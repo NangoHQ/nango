@@ -56,9 +56,6 @@
             "path": "packages/runner"
         },
         {
-            "path": "packages/runner/tsconfig.e2e.json"
-        },
-        {
             "path": "packages/runner-sdk"
         },
         {
