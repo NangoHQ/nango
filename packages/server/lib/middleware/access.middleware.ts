@@ -31,7 +31,12 @@ import type { NextFunction, Request, Response } from 'express';
 
 const logger = getLogger('AccessMiddleware');
 
-/** The token from an EdDSA Authorization header. Anything else returns undefined so the secret path can run. */
+/**
+ * The token from an EdDSA Authorization header. Anything else returns undefined so the secret path can run.
+ *
+ * Copied from persist's auth middleware. It stays a copy: internal-auth exports `jwtHeaderAlg` and not
+ * a bearer parser, and this change adds no new export there.
+ */
 export function eddsaBearerToken(header: string | undefined): string | undefined {
     if (!header) {
         return undefined;

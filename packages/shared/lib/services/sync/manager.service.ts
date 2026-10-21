@@ -31,7 +31,6 @@ import type {
     ConnectionInternal,
     DBConnection,
     DBConnectionDecrypted,
-    DBEnvironment,
     EnvironmentWithoutSecrets,
     ReportedSyncJobStatus,
     SyncDeploymentResult
@@ -302,7 +301,7 @@ export class SyncManagerService {
         deleteRecords
     }: {
         orchestrator: Orchestrator;
-        environment: DBEnvironment | EnvironmentWithoutSecrets;
+        environment: EnvironmentWithoutSecrets;
         providerConfigKey: string;
         syncIdentifiers: { syncName: string; syncVariant: string }[];
         command: SyncCommand;

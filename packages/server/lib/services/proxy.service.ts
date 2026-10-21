@@ -30,7 +30,6 @@ import { capping } from '../utils/usage.js';
 import type { LogContext } from '@nangohq/logs';
 import type {
     ApiKeyPrincipal,
-    DBEnvironment,
     DBPlan,
     DBTeam,
     EnvironmentWithoutSecrets,
@@ -48,7 +47,7 @@ const baseUrlOverrideDenylist = normalizeDenylist(envs.NANGO_PROXY_BASE_URL_OVER
 
 export interface ProxyServiceRequest {
     account: DBTeam;
-    environment: DBEnvironment | EnvironmentWithoutSecrets;
+    environment: EnvironmentWithoutSecrets;
     plan: DBPlan | null;
     method: HTTP_METHOD;
     endpoint: string;

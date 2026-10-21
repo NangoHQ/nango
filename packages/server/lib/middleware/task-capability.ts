@@ -8,12 +8,11 @@ import {
 import { accountService, errorManager } from '@nangohq/shared';
 import { getLogger, stringifyError, tagTraceUser } from '@nangohq/utils';
 
-import { can, resolveEnvironment } from '../authz/middleware.js';
+import { can } from '../authz/middleware.js';
 import { principalFor } from '../authz/principal.js';
 import { envs } from '../env.js';
 import accessMiddleware, { eddsaBearerToken } from './access.middleware.js';
-import { egressMeterMiddleware } from './egress-meter.middleware.js';
-import { rateLimiterMiddleware } from './ratelimit.middleware.js';
+import { envAuth } from './env-auth.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { Scope } from '@nangohq/authz';
@@ -51,7 +50,8 @@ const jobsRegistry = keyRegistryFromPublicKeys(envs.NANGO_INTERNAL_AUTH_JOBS_PUB
 export function withTaskCapability(scope: ApiTaskScope, opts?: { beforeCan?: RequestHandler[] }): RequestHandler[] {
     const scopes = API_TASK_SCOPES[scope];
     const [required, ...rest] = scopes;
-    return [taskOrSecret(scope), rateLimiterMiddleware, egressMeterMiddleware, resolveEnvironment, ...(opts?.beforeCan ?? []), can(required, ...rest)];
+    // envAuth[0] is secret-key auth. taskOrSecret replaces it and keeps every middleware added after it.
+    return [taskOrSecret(scope), ...envAuth.slice(1), ...(opts?.beforeCan ?? []), can(required, ...rest)];
 }
 
 function taskOrSecret(scope: ApiTaskScope): RequestHandler {
