@@ -239,23 +239,32 @@ describe('task capability token end to end', () => {
         }
 
         const actionAuth = await runnerAuth('task-action', { ...props, scriptType: 'action', syncId: undefined });
-        // Runner outbound policy always rejects loopback, including 127.0.0.1, so the proxy target is a public host.
+        // The runner denylist always includes loopback, and loopback literals stay blocked, so this
+        // proxy cannot reach a local stub. The policy error is local: an API 401 would be a different code.
         const ran = await exec({
             nangoProps: actionAuth.nangoProps,
             code: `exports.default = async (nango) => {
                 const connection = await nango.getConnection();
-                const proxied = await nango.proxy({ method: 'GET', endpoint: '/', baseUrlOverride: 'https://example.com' });
+                let proxyFailure = null;
+                try {
+                    await nango.proxy({ method: 'GET', endpoint: '/', baseUrlOverride: 'http://127.0.0.1:9/' });
+                } catch (err) {
+                    proxyFailure = { code: err && err.code, status: (err && err.response && err.response.status) || null };
+                }
                 const triggered = await nango.triggerAction('${uniqueKey}', '${connectionId}', 'echo', { ping: true });
-                return { connectionId: connection.connection_id, proxyStatus: proxied.status, proxyBody: String(proxied.data), triggered };
+                return { connectionId: connection.connection_id, proxyFailure, triggered };
             };`
         });
         if (ran.isErr()) {
             throw ran.error;
         }
-        const output = ran.value.output as { connectionId: string; proxyStatus: number; proxyBody: string; triggered: { from: string } };
+        const output = ran.value.output as {
+            connectionId: string;
+            proxyFailure: { code: string; status: number | null };
+            triggered: { from: string };
+        };
         expect(output.connectionId).toBe(connectionId);
-        expect(output.proxyStatus).toBe(200);
-        expect(output.proxyBody).toContain('Example Domain');
+        expect(output.proxyFailure).toEqual({ code: 'base_url_override_not_allowed', status: null });
         expect(output.triggered).toEqual({ from: 'action' });
     }, 120_000);
 
