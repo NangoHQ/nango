@@ -75,13 +75,9 @@ export function requireEnvironment(req: Request, res: Response<any, RequestLocal
     return environment;
 }
 
-/**
- * Secret-bearing handlers accept every auth path except a task token. A task token never loads
- * secret columns. Other auth paths keep the environment row they loaded, even when a key such as
- * `otlp_settings` is absent.
- */
-export function isDbEnvironment(locals: Pick<RequestLocals, 'authType'>): boolean {
-    return locals.authType !== 'taskToken';
+/** A task-token request loads no secret columns. Every other auth path keeps the environment it loaded. */
+export function isTaskTokenRequest(locals: Pick<RequestLocals, 'authType'>): boolean {
+    return locals.authType === 'taskToken';
 }
 
 /**
@@ -113,7 +109,7 @@ export function requireDbEnvironment(req: Request, res: Response<any, RequestLoc
     if (!environment) {
         return null;
     }
-    if (!isDbEnvironment(res.locals)) {
+    if (isTaskTokenRequest(res.locals)) {
         report(new Error('handler_requires_environment_secrets'), { route: req.route?.path ?? req.originalUrl });
         res.status(500).send({ error: { code: 'server_error' } });
         return null;
