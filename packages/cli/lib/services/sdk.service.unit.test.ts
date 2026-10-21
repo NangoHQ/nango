@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { NangoActionBase } from '@nangohq/runner-sdk';
 
-import { NangoSyncCLI } from './sdk.js';
+import { cliNango, NangoSyncCLI } from './sdk.js';
 
 import type { DryRunService } from './dryrun.service.js';
 
@@ -144,5 +144,18 @@ describe('NangoSyncCLI - batchSave', () => {
 
             consoleWarnSpy.mockRestore();
         });
+    });
+});
+
+describe('cliNango', () => {
+    it('sends the secret and ignores a task token', () => {
+        const config = cliNango({ secretKey: 'sk', taskAuthToken: 'task-token', connectionId: 'c', providerConfigKey: 'github' } as any, { isSync: false });
+        expect(config).toMatchObject({ secretKey: 'sk', dryRun: true, isSync: false });
+        expect(config).not.toHaveProperty('apiKey');
+        expect(config).not.toHaveProperty('webhookSigningKey');
+    });
+
+    it('throws when the secret is missing', () => {
+        expect(() => cliNango({ taskAuthToken: 'task-token' } as any, { isSync: true })).toThrow('CLI dry run requires a secretKey');
     });
 });
