@@ -35,8 +35,8 @@ describe('task capability token end to end', () => {
         const { InMemorySlidingWindowRateLimiter } = await import('@nangohq/kvstore');
         const { getTestDbClient, Scheduler } = await import('@nangohq/scheduler');
         const { OrchestratorClient, OrchestratorProcessor } = await import('@nangohq/nango-orchestrator');
-        const { TaskEventsHandler } = await import('../../orchestrator/lib/events.js');
-        const { getServer } = await import('../../orchestrator/lib/server.js');
+        const { TaskEventsHandler } = await import('@nangohq/nango-orchestrator/dist/events.js');
+        const { getServer } = await import('@nangohq/nango-orchestrator/dist/server.js');
         const dbClient = getTestDbClient('task_capability_e2e');
         await dbClient.migrate();
         const eventsHandler = new TaskEventsHandler(dbClient.db);
@@ -70,10 +70,10 @@ describe('task capability token end to end', () => {
         const { migrateLogsMapping } = await import('@nangohq/logs');
         const { configService, connectionService, createPlan, createSync, createSyncJob, environmentService, getProvider, seeders, SyncJobsType, SyncStatus } =
             await import('@nangohq/shared');
-        const { runServer } = await import('../../server/lib/utils/tests.js');
-        const { server: persistServer } = await import('../../persist/lib/server.js');
-        const { exec } = await import('./exec.js');
-        const { runnerAuth } = await import('../../jobs/lib/internal-auth.js');
+        const { runServer } = await import('@nangohq/nango-server/dist/utils/tests.js');
+        const { server: persistServer } = await import('@nangohq/nango-persist/dist/server.js');
+        const { exec } = await import('@nangohq/nango-runner');
+        const { runnerAuth } = await import('@nangohq/nango-jobs/dist/internal-auth.js');
 
         await multipleMigrations();
         await records.migrate();
@@ -238,8 +238,7 @@ describe('task capability token end to end', () => {
             throw saved.error;
         }
 
-        const { syncId: _syncId, ...actionProps } = props;
-        const actionAuth = await runnerAuth('task-action', { ...actionProps, scriptType: 'action' });
+        const actionAuth = await runnerAuth('task-action', { ...props, scriptType: 'action', syncId: undefined });
         // Runner outbound policy always rejects loopback, including 127.0.0.1, so the proxy target is a public host.
         const ran = await exec({
             nangoProps: actionAuth.nangoProps,
