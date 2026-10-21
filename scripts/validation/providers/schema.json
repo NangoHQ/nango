@@ -45,6 +45,12 @@
                 "suffix": {
                     "type": "string"
                 },
+                "normalize": {
+                    "type": "string",
+                    "enum": [
+                        "hostname"
+                    ]
+                },
                 "optional": {
                     "type": "boolean"
                 },
@@ -818,6 +824,12 @@
                                 "suffix": {
                                     "type": "string"
                                 },
+                                "normalize": {
+                                    "type": "string",
+                                    "enum": [
+                                        "hostname"
+                                    ]
+                                },
                                 "doc_section": {
                                     "type": "string",
                                     "pattern": "^#[a-z0-9-]+$"
@@ -870,6 +882,12 @@
                                 },
                                 "suffix": {
                                     "type": "string"
+                                },
+                                "normalize": {
+                                    "type": "string",
+                                    "enum": [
+                                        "hostname"
+                                    ]
                                 },
                                 "doc_section": {
                                     "type": "string",
