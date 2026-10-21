@@ -12602,6 +12602,7 @@ hydradb:
         base_url: https://api.hydradb.com
         headers:
             authorization: Bearer ${apiKey}
+            api-version: '2'
         verification:
             method: GET
             endpoints:
