@@ -33,5 +33,6 @@
             "path": "../utils"
         }
     ],
-    "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]
+    "include": ["lib/**/*", "../utils/lib/vitest.d.ts"],
+    "exclude": ["lib/task-capability.integration.test.ts"]
 }

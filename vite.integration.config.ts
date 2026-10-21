@@ -34,7 +34,9 @@ function findSuitesUsingViMock(root: string): string[] {
     return found;
 }
 
-const needsOwnProcess = findSuitesUsingViMock('packages');
+// The task-capability end-to-end test sets the jobs public key before persist and the server
+// build their registries. A shared process has already loaded those modules.
+const needsOwnProcess = [...findSuitesUsingViMock('packages'), path.resolve('packages/runner/lib/task-capability.integration.test.ts')];
 
 const shared = {
     include: ['**/*.integration.{test,spec}.?(c|m)[jt]s?(x)'],
