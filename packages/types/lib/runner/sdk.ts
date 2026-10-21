@@ -16,7 +16,9 @@ export type ScriptType = 'function' | 'sync' | 'action' | 'webhook' | 'on-event'
 export interface NangoProps {
     scriptType: ScriptType;
     host?: string;
-    secretKey: string;
+    secretKey?: string | undefined;
+    /** Present when jobs minted a task capability token for this run. */
+    taskAuthToken?: string | undefined;
     team: Pick<DBTeam, 'id' | 'name'>;
     connectionId: string;
     environmentId: number;
