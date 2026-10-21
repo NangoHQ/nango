@@ -798,7 +798,7 @@ export class ConnectionService {
         refreshGithubAppJwtToken = false
     }: {
         account: DBTeam;
-        environment: DBEnvironment | EnvironmentWithoutSecrets;
+        environment: EnvironmentWithoutSecrets;
         connectionId: string;
         integrationId: string;
         forceRefresh?: boolean;
