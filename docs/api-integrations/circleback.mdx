@@ -61,16 +61,14 @@ Connect to Circleback with Nango and see data flow in 2 minutes.
     </Step>
 </Steps>
 
-<Note>
-Circleback API keys are personal: a key reads the meetings of the Circleback user who created it (`ownership=Mine` by default; `All` also includes meetings shared with that user). List endpoints return a bare JSON array and paginate with an opaque `cursor` query parameter advertised in the RFC 8288 `Link` response header (`rel="next"`); there is no server-side updated-after filter. Rate limits apply per Circleback account across all keys and OAuth tokens (Free: 3 requests/second and 20/minute; paid plans: 20/second and 300/minute); on a 429, wait for the `Retry-After` value before retrying. `GET /meeting/{meetingId}` returns 404 for both missing and inaccessible meeting IDs.
-</Note>
-
 ## 📚 Circleback integration guides
 
 Nango maintained guides for common use cases.
 
 - [How do I link my Circleback account?](/api-integrations/circleback/connect)  
 Retrieve your API key from Circleback and connect it to Nango
+
+Official docs: [Circleback API docs](https://circleback.ai/docs/api)
 
 ## 🧩 Pre-built syncs & actions for Circleback
 
@@ -79,5 +77,12 @@ Explore Nango-provided actions in your dashboard. [Extend and customize them](/g
 import PreBuiltUseCases from "/snippets/generated/circleback/PreBuiltUseCases.mdx"
 
 <PreBuiltUseCases />
+
+## 🚨 API Gotchas
+
+- Circleback API keys are personal: a key reads the meetings of the Circleback user who created it (`ownership=Mine` by default; `All` also includes meetings shared with that user). There is no workspace-wide key that reads other users' meetings.
+- List endpoints return a bare JSON array and paginate with an opaque `cursor` query parameter advertised in the RFC 8288 `Link` response header (`rel="next"`); page size is fixed server-side and there is no server-side updated-after filter.
+- Rate limits apply per Circleback account across all keys and OAuth tokens (Free: 3 requests/second and 20/minute; paid plans: 20/second and 300/minute); on a 429, wait for the `Retry-After` value before retrying.
+- `GET /meeting/{meetingId}` returns 404 for both missing and inaccessible meeting IDs.
 
 ---

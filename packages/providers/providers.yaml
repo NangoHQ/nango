@@ -5432,9 +5432,9 @@ circleback:
         base_url: https://circleback.ai/api
         headers:
             authorization: Bearer ${apiKey}
-        retry:
-            after:
-                - 'retry-after'
+        paginate:
+            type: link
+            link_rel_in_response_header: next
         verification:
             method: GET
             headers:
@@ -5447,7 +5447,7 @@ circleback:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your Circleback account (Settings -> API keys).
+            description: The API key for your Circleback account.
             pattern: '^cb_[A-Za-z0-9_-]+$'
             example: cb_*******************************************
             doc_section: '#step-1-obtaining-your-api-key'
