@@ -45,8 +45,8 @@ export const getPublicIntegration = asyncWrapperWithAnyEnvironment<GetPublicInte
 
     const queryInclude = new Set(query.include || []);
     if (queryInclude.size > 0 && authType !== 'secretKey' && authType !== 'taskToken') {
-        // Session tokens must not ask for webhook or credential includes. A task token may: the route's
-        // can() check already requires environment:integrations:read_credentials before credentials are returned.
+        // Session tokens must not ask for webhook or credential includes. A task token may. Credentials are
+        // returned only when principalCan(res.locals, 'environment:integrations:read_credentials') passes below.
         res.status(403).send({ error: { code: 'invalid_permissions', message: "Can't include credentials without a private key" } });
         return;
     }
