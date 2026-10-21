@@ -1,0 +1,22 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "e2e",
+        "outDir": "dist/e2e"
+    },
+    "references": [
+        { "path": "../database" },
+        { "path": "../jobs" },
+        { "path": "../kvstore" },
+        { "path": "../logs" },
+        { "path": "../orchestrator" },
+        { "path": "../persist" },
+        { "path": "../records" },
+        { "path": "../runner" },
+        { "path": "../scheduler" },
+        { "path": "../server" },
+        { "path": "../shared" },
+        { "path": "../utils" }
+    ],
+    "include": ["e2e/**/*"]
+}

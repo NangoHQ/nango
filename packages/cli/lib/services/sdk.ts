@@ -435,7 +435,7 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
     }
 }
 
-/** The CLI's `@nangohq/node` client. A task token is passed as `apiKey`; a secret stays `secretKey`. */
+/** The CLI's `@nangohq/node` client. A task token is `apiKey`. A secret still on the props is the webhook signing key; otherwise it stays `secretKey`. */
 export function cliNango(props: NangoProps, opts: { isSync: boolean }): NodeNangoProps {
     const shared = {
         ...(props.host ? { host: props.host } : {}),
@@ -446,7 +446,7 @@ export function cliNango(props: NangoProps, opts: { isSync: boolean }): NodeNang
         dryRun: true as const
     };
     if (props.taskAuthToken) {
-        return { ...shared, apiKey: props.taskAuthToken };
+        return { ...shared, apiKey: props.taskAuthToken, ...(props.secretKey ? { webhookSigningKey: props.secretKey } : {}) };
     }
     return { ...shared, secretKey: props.secretKey ?? '' };
 }
