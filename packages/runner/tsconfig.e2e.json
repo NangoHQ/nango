@@ -10,6 +10,7 @@
     },
     "references": [
         { "path": "../database" },
+        { "path": "../internal-auth" },
         { "path": "../jobs" },
         { "path": "../kvstore" },
         { "path": "../logs" },
