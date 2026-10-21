@@ -133,6 +133,7 @@ import {
 } from './middleware/audit/index.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
+import { apiAuth, envAuth } from './middleware/env-auth.js';
 import { withEnvironmentTarget } from './middleware/environment-target.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
@@ -143,8 +144,6 @@ import { isBinaryContentType } from './utils/utils.js';
 import type { RequestLocals } from './utils/express.js';
 import type { Request, RequestHandler } from 'express';
 
-const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
-const envAuth: RequestHandler[] = [...apiAuth, resolveEnvironment];
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const agentSessionAuth: RequestHandler[] = [authMiddleware.agentSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];

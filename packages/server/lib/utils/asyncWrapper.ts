@@ -75,8 +75,13 @@ export function requireEnvironment(req: Request, res: Response<any, RequestLocal
     return environment;
 }
 
-export function isDbEnvironment(environment: DBEnvironment | EnvironmentWithoutSecrets): environment is DBEnvironment {
-    return 'secret_key' in environment && 'pending_secret_key' in environment && 'hmac_key' in environment && 'otlp_settings' in environment;
+/**
+ * Secret-bearing handlers accept every auth path except a task token. A task token never loads
+ * secret columns. Other auth paths keep the environment row they loaded, even when a key such as
+ * `otlp_settings` is absent.
+ */
+export function isDbEnvironment(locals: Pick<RequestLocals, 'authType'>): boolean {
+    return locals.authType !== 'taskToken';
 }
 
 /**
@@ -100,18 +105,18 @@ export function asyncWrapperWithAnyEnvironment<TEndpoint extends Endpoint<any>>(
 }
 
 /**
- * Like `requireEnvironment`, and also refuses an environment that was loaded without its secrets.
- * Task-token routes must not use this: they are given `EnvironmentWithoutSecrets` on purpose.
+ * Like `requireEnvironment`, and refuses a task-token request. Those requests load no secret columns.
+ * Every other auth path is returned as the environment it loaded.
  */
 export function requireDbEnvironment(req: Request, res: Response<any, RequestLocals>): DBEnvironment | null {
     const environment = requireEnvironment(req, res);
     if (!environment) {
         return null;
     }
-    if (!isDbEnvironment(environment)) {
+    if (!isDbEnvironment(res.locals)) {
         report(new Error('handler_requires_environment_secrets'), { route: req.route?.path ?? req.originalUrl });
         res.status(500).send({ error: { code: 'server_error' } });
         return null;
     }
-    return environment;
+    return environment as DBEnvironment;
 }
