@@ -1,3 +1,5 @@
+import { request as httpRequest } from 'node:http';
+
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
@@ -238,13 +240,38 @@ describe('route', () => {
 
         it('accepts a customer secret key on the management MCP host', async () => {
             // The OAuth issuer is not configured in this process, so management MCP uses secret-key auth.
-            // A successful secret there is the same authenticateSecretKey path an MCP OAuth miss falls through to.
+            // Node fetch strips Host, which is how that router is selected. The integration env sets
+            // NANGO_MANAGEMENT_MCP_SERVER_URL to https://mcp-test.nango.dev.
             const { apiKey } = await seeders.seedAccountEnvAndUser();
-            const res = await fetch(`${api.url}/mcp`, {
-                headers: { Authorization: `Bearer ${apiKey.secret}`, Host: 'mcp-test.nango.dev' }
+            const metadata = await httpGet(`${api.url}/.well-known/oauth-protected-resource`, { Host: 'mcp-test.nango.dev' });
+            const res = await httpGet(`${api.url}/mcp`, {
+                Authorization: `Bearer ${apiKey.secret}`,
+                Host: 'mcp-test.nango.dev'
             });
 
+            expect(metadata).toEqual({ status: 404, json: { error: { code: 'not_found', message: 'Not found' } } });
             expect(res.status).toBe(405);
+            expect(res.json).toEqual({
+                jsonrpc: '2.0',
+                error: { code: -32000, message: 'Method not allowed.' },
+                id: null
+            });
         });
     });
 });
+
+function httpGet(url: string, headers: Record<string, string>): Promise<{ status: number; json: unknown }> {
+    const target = new URL(url);
+    return new Promise((resolve, reject) => {
+        const req = httpRequest({ hostname: target.hostname, port: target.port, path: `${target.pathname}${target.search}`, method: 'GET', headers }, (res) => {
+            const chunks: Buffer[] = [];
+            res.on('data', (chunk: Buffer) => chunks.push(chunk));
+            res.on('end', () => {
+                const body = Buffer.concat(chunks).toString();
+                resolve({ status: res.statusCode ?? 0, json: body ? (JSON.parse(body) as unknown) : null });
+            });
+        });
+        req.on('error', reject);
+        req.end();
+    });
+}
