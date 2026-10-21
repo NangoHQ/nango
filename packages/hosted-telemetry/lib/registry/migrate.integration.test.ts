@@ -35,7 +35,8 @@ const installation = (customerId: number, overrides: Partial<DBSelfHostingInstal
 
 beforeAll(async () => {
     const url = `postgres://${process.env['NANGO_DB_USER']}:${process.env['NANGO_DB_PASSWORD']}@${process.env['NANGO_DB_HOST']}:${process.env['NANGO_DB_PORT']}`;
-    knex = knexFactory({ client: 'pg', connection: { connectionString: url } });
+    // The main pool's search path: that is where the uuid extension lives once the main migrations have run.
+    knex = knexFactory({ client: 'pg', connection: { connectionString: url }, searchPath: [process.env['NANGO_DB_SCHEMA'] ?? 'nango', 'public'] });
     await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [schema]);
     (await migrateRegistry({ knex, schema })).unwrap();
 });
