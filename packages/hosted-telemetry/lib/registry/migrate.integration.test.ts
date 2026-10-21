@@ -76,6 +76,7 @@ describe('self-hosting registry', () => {
         expect(row?.id).toEqual(expect.any(Number));
         expect(row?.uuid).toBeUUID();
         expect(row?.created_at).toBeInstanceOf(Date);
+        expect(row?.updated_at).toBeInstanceOf(Date);
     });
 
     it('keeps installation names unique per customer, not across customers', async () => {
