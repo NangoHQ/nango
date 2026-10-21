@@ -106,8 +106,6 @@ export const postPublicEnvironment = asyncWrapper<PostPublicEnvironment>(async (
             name: environment.name,
             is_production: environment.is_production,
             callback_url: environment.callback_url || getGlobalOAuthCallbackUrl(),
-            hmac_key: environment.hmac_key,
-            hmac_enabled: environment.hmac_enabled,
             slack_notifications: environment.slack_notifications,
             otlp_endpoint: environment.otlp_settings?.endpoint ?? null,
             otlp_headers: Object.entries(environment.otlp_settings?.headers ?? {}).map(([name, value]) => ({ name, value })),

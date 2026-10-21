@@ -230,8 +230,6 @@ describe('Public environment management', () => {
                 name: 'managed-dev',
                 is_production: false,
                 callback_url: getGlobalOAuthCallbackUrl(),
-                hmac_key: null,
-                hmac_enabled: false,
                 slack_notifications: false,
                 otlp_endpoint: null,
                 otlp_headers: [],
@@ -275,8 +273,6 @@ describe('Public environment management', () => {
                 name: 'full-settings',
                 is_production: false,
                 callback_url: 'https://app.example.com/oauth/callback',
-                hmac_key: 'supplied-hmac-key',
-                hmac_enabled: true,
                 slack_notifications: true,
                 otlp_endpoint: 'https://otel.example.com',
                 otlp_headers: [
@@ -286,7 +282,12 @@ describe('Public environment management', () => {
                 webhooks
             };
 
-            const res = await api.fetch('/environments', { method: 'POST', token: accountKey.secret, body: settings });
+            const hmacSettings = {
+                hmac_key: 'supplied-hmac-key',
+                hmac_enabled: true
+            };
+
+            const res = await api.fetch('/environments', { method: 'POST', token: accountKey.secret, body: { ...settings, ...hmacSettings } });
 
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
