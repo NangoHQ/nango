@@ -124,7 +124,9 @@ describe('POST /api/v1/account/signup', () => {
     });
     it.each(['denied', 'withdrawn', 'gpc'] as const)('allows signup without advertising fields when consent is %s', async (scenario) => {
         const previous = envs.SIGNUP_AD_CONTEXT_ENABLED;
+        const previousCookieName = envs.SIGNUP_AD_CONTEXT_COOKIE_NAME;
         envs.SIGNUP_AD_CONTEXT_ENABLED = true;
+        envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_test';
         const track = vi.spyOn(productTracking, 'track');
         const now = Date.now();
         const context = {
@@ -157,13 +159,16 @@ describe('POST /api/v1/account/signup', () => {
             expect(fields.filter((key) => key.startsWith('advertising_') || key.startsWith('is_advertising_'))).toEqual([]);
         } finally {
             envs.SIGNUP_AD_CONTEXT_ENABLED = previous;
+            envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previousCookieName;
             track.mockRestore();
         }
     });
 
     it('passes permitted cookie context on one account event, without creating another conversion on retry', async () => {
         const previous = envs.SIGNUP_AD_CONTEXT_ENABLED;
+        const previousCookieName = envs.SIGNUP_AD_CONTEXT_COOKIE_NAME;
         envs.SIGNUP_AD_CONTEXT_ENABLED = true;
+        envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_test';
         const track = vi.spyOn(productTracking, 'track');
         const now = Date.now();
         const context = {
@@ -191,8 +196,7 @@ describe('POST /api/v1/account/signup', () => {
                     name: 'auth:account_create',
                     eventProperties: expect.objectContaining({
                         advertising_fbc: `fb.1.${now - 60_000}.synthetic_meta`,
-                        advertising_oppref: 'synthetic_openai',
-                        is_advertising_allowed: true
+                        advertising_oppref: 'synthetic_openai'
                     })
                 })
             );
@@ -201,6 +205,7 @@ describe('POST /api/v1/account/signup', () => {
             expect(track.mock.calls.filter(([e]) => e.name === 'auth:account_create')).toHaveLength(1);
         } finally {
             envs.SIGNUP_AD_CONTEXT_ENABLED = previous;
+            envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previousCookieName;
             track.mockRestore();
         }
     });

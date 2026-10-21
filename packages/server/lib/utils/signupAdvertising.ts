@@ -44,8 +44,6 @@ export function parseSignupAdvertising(raw: unknown, now = Date.now()): SignupAd
         if (c.observedAt > now || now - c.observedAt >= MAX_AGE_MS) return;
         const fresh = (at: number | undefined): at is number => at !== undefined && at <= c.observedAt && now - at < MAX_AGE_MS;
         const result: SignupAdvertising = {
-            is_advertising_allowed: true,
-            is_advertising_gpc: false,
             advertising_consent_method: c.method,
             advertising_consent_timestamp: new Date(c.observedAt).toISOString()
         };
@@ -61,6 +59,7 @@ export function parseSignupAdvertising(raw: unknown, now = Date.now()): SignupAd
 }
 
 export function signupAdvertisingFromRequest(req: Pick<Request, 'cookies' | 'headers'>, email: string): SignupAdvertising | undefined {
-    if (!envs.SIGNUP_AD_CONTEXT_ENABLED || req.headers['sec-gpc'] === '1' || email.toLowerCase().endsWith('@nango.dev')) return;
+    if (!envs.SIGNUP_AD_CONTEXT_ENABLED || !envs.SIGNUP_AD_CONTEXT_COOKIE_NAME || req.headers['sec-gpc'] === '1' || email.toLowerCase().endsWith('@nango.dev'))
+        return;
     return parseSignupAdvertising(req.cookies?.[envs.SIGNUP_AD_CONTEXT_COOKIE_NAME]);
 }

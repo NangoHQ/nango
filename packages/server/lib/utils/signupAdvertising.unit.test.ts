@@ -24,13 +24,12 @@ const accepted = {
 describe('optional signup ad context', () => {
     afterEach(() => {
         envs.SIGNUP_AD_CONTEXT_ENABLED = false;
+        envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_dev';
         vi.useRealTimers();
     });
 
     it('preserves each click time and only returns allowlisted event properties', () => {
         expect(parseSignupAdvertising(JSON.stringify(accepted), now)).toEqual({
-            is_advertising_allowed: true,
-            is_advertising_gpc: false,
             advertising_consent_method: 'explicit',
             advertising_consent_timestamp: '2026-10-20T12:00:00.000Z',
             advertising_fbc: `fb.1.${now - 60_000}.synthetic_meta`,
@@ -59,8 +58,7 @@ describe('optional signup ad context', () => {
 
     it('allows the CMP regional default only with known non-opt-in regional signals', () => {
         expect(parseSignupAdvertising(JSON.stringify({ ...accepted, method: 'implied', gdpr: false, lgpd: false, ccpa: true }), now)).toMatchObject({
-            advertising_consent_method: 'implied',
-            is_advertising_allowed: true
+            advertising_consent_method: 'implied'
         });
     });
 
@@ -82,8 +80,12 @@ describe('optional signup ad context', () => {
         expect(signupAdvertisingFromRequest(req, 'creator@example.invalid')).toBeDefined();
         expect(signupAdvertisingFromRequest({ ...req, headers: { 'sec-gpc': '1' } }, 'creator@example.invalid')).toBeUndefined();
         expect(signupAdvertisingFromRequest(req, 'creator@NANGO.DEV')).toBeUndefined();
+        envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_prod';
+        expect(signupAdvertisingFromRequest(req, 'creator@example.invalid')).toBeUndefined();
         expect(
             signupAdvertisingFromRequest({ cookies: { nango_signup_ads_prod: JSON.stringify(accepted) }, headers: {} }, 'creator@example.invalid')
-        ).toBeUndefined();
+        ).toBeDefined();
+        envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = undefined;
+        expect(signupAdvertisingFromRequest(req, 'creator@example.invalid')).toBeUndefined();
     });
 });

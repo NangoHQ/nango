@@ -21,10 +21,16 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007, ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: 0 });
     });
 
-    it.each([undefined, '', '   '])('defaults an unset or blank signup ad cookie name (%j)', (name) => {
+    it.each([undefined, '', '   '])('allows an unset or blank signup ad cookie name while disabled (%j)', (name) => {
         const res = parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_COOKIE_NAME: name });
         expect(res.SIGNUP_AD_CONTEXT_ENABLED).toBe(false);
-        expect(res.SIGNUP_AD_CONTEXT_COOKIE_NAME).toBe('nango_signup_ads_dev');
+        expect(res.SIGNUP_AD_CONTEXT_COOKIE_NAME).toBeUndefined();
+    });
+
+    it.each([undefined, '', '   '])('requires a cookie name when signup ad context is enabled (%j)', (name) => {
+        expect(() => parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_ENABLED: 'true', SIGNUP_AD_CONTEXT_COOKIE_NAME: name })).toThrowError(
+            /SIGNUP_AD_CONTEXT_COOKIE_NAME is required/
+        );
     });
 
     it('accepts a custom signup ad cookie name when enabled', () => {

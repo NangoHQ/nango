@@ -335,7 +335,9 @@ describe(`POST ${route}`, () => {
         const { envs } = await import('../../../../env.js');
         const { productTracking } = await import('@nangohq/shared');
         const previous = envs.SIGNUP_AD_CONTEXT_ENABLED;
+        const previousCookieName = envs.SIGNUP_AD_CONTEXT_COOKIE_NAME;
         envs.SIGNUP_AD_CONTEXT_ENABLED = true;
+        envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_test';
         const track = vi.spyOn(productTracking, 'track');
         const email = `${nanoid()}@example.com`;
         const now = Date.now();
@@ -371,6 +373,7 @@ describe(`POST ${route}`, () => {
             expect(track.mock.calls.filter(([e]) => e.name === 'auth:account_create')).toHaveLength(1);
         } finally {
             envs.SIGNUP_AD_CONTEXT_ENABLED = previous;
+            envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previousCookieName;
             track.mockRestore();
         }
     });

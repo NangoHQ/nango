@@ -741,13 +741,18 @@ const ENVS_SHAPE = z.object({
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
     NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),
 
-    // Optional website-to-signup ad context. Keep disabled until destination validation is complete.
+    // Optional website-to-signup ad context.
     SIGNUP_AD_CONTEXT_ENABLED: z.stringbool().optional().default(false),
     SIGNUP_AD_CONTEXT_COOKIE_NAME: z
         .string()
         .optional()
-        .transform((value) => presentEnv(value) ?? 'nango_signup_ads_dev')
-        .pipe(z.string().regex(/^[A-Za-z0-9_]{1,64}$/)),
+        .transform(presentEnv)
+        .pipe(
+            z
+                .string()
+                .regex(/^[A-Za-z0-9_]{1,64}$/)
+                .optional()
+        ),
 
     // PostHog
     PUBLIC_POSTHOG_KEY: z.string().optional(),
@@ -1168,6 +1173,15 @@ function checkInternalAuthKeyPair(
 }
 
 export const ENVS = ENVS_SHAPE.check((ctx) => {
+    if (ctx.value.SIGNUP_AD_CONTEXT_ENABLED && !ctx.value.SIGNUP_AD_CONTEXT_COOKIE_NAME) {
+        ctx.issues.push({
+            code: 'custom',
+            message: 'SIGNUP_AD_CONTEXT_COOKIE_NAME is required when SIGNUP_AD_CONTEXT_ENABLED is true',
+            path: ['SIGNUP_AD_CONTEXT_COOKIE_NAME'],
+            input: ctx.value.SIGNUP_AD_CONTEXT_COOKIE_NAME
+        });
+    }
+
     // EMAIL_HTTP_URL on its own selects the HTTP email provider, which cannot send without a body
     // template. Fail here so a half-configured provider surfaces at startup instead of on the
     // first email, and keep the error pointed at the var that is actually missing.
