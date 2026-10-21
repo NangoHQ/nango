@@ -669,18 +669,7 @@ class AccountService {
                 updated_at: new Date(res.environment.updated_at),
                 deleted_at: res.environment.deleted_at ? new Date(res.environment.deleted_at) : res.environment.deleted_at
             },
-            plan: res.plan
-                ? {
-                      ...res.plan,
-                      created_at: new Date(res.plan.created_at),
-                      updated_at: new Date(res.plan.updated_at),
-                      trial_start_at: res.plan.trial_start_at ? new Date(res.plan.trial_start_at) : res.plan.trial_start_at,
-                      trial_end_at: res.plan.trial_end_at ? new Date(res.plan.trial_end_at) : res.plan.trial_end_at,
-                      trial_end_notified_at: res.plan.trial_end_notified_at ? new Date(res.plan.trial_end_notified_at) : res.plan.trial_end_notified_at,
-                      orb_subscribed_at: res.plan.orb_subscribed_at ? new Date(res.plan.orb_subscribed_at) : res.plan.orb_subscribed_at,
-                      orb_future_plan_at: res.plan.orb_future_plan_at ? new Date(res.plan.orb_future_plan_at) : res.plan.orb_future_plan_at
-                  }
-                : null,
+            plan: res.plan ? planFromRow(res.plan) : null,
             secret: defaultSecret
         };
     }
