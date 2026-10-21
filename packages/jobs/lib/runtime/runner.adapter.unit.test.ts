@@ -1,3 +1,5 @@
+import { generateKeyPairSync } from 'node:crypto';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -18,7 +20,10 @@ const { getRunnerMock, getRunnersMock, mockEnvs } = vi.hoisted(() => ({
     getRunnersMock: vi.fn(),
     mockEnvs: {
         NANGO_INTERNAL_AUTH_SIGNING_KEY: undefined as string | undefined,
-        NANGO_INTERNAL_AUTH_REQUIRED: false
+        NANGO_INTERNAL_AUTH_REQUIRED: false,
+        NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: undefined as string | undefined,
+        NANGO_INTERNAL_AUTH_JOBS_KEY_ID: undefined as string | undefined,
+        NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY: false
     }
 }));
 
@@ -117,6 +122,9 @@ describe('RunnerRuntimeAdapter internal auth', () => {
 
     afterEach(() => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = undefined;
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = undefined;
+        mockEnvs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY = false;
     });
 
     it('omits internalAuthToken when the signing key is unset', async () => {
@@ -166,5 +174,26 @@ describe('RunnerRuntimeAdapter internal auth', () => {
             op: 'task',
             taskId: 'task-1'
         });
+    });
+
+    it('sends the capability token and drops secretKey when omit is set', async () => {
+        const { privateKey } = generateKeyPairSync('ed25519');
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = 'jobs-2026-09';
+        mockEnvs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY = true;
+        const adapter = new RunnerRuntimeAdapter();
+        const result = await adapter.invoke({ taskId: 'task-1', nangoProps: minimalNangoProps(), code: 'code', codeParams: {} });
+        expect(result.isOk()).toBe(true);
+        const sent = startMutate.mock.calls[0]?.[0] as { nangoProps: { secretKey?: string; taskAuthToken?: string }; internalAuthToken?: string };
+        expect(sent.nangoProps.secretKey).toBeUndefined();
+        expect(sent.nangoProps.taskAuthToken).toBe(sent.internalAuthToken);
+    });
+
+    it('fails dispatch when omit is set and no Ed25519 key is configured', async () => {
+        mockEnvs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY = true;
+        const adapter = new RunnerRuntimeAdapter();
+        const result = await adapter.invoke({ taskId: 'task-1', nangoProps: minimalNangoProps(), code: 'code', codeParams: {} });
+        expect(result.isErr()).toBe(true);
+        expect(startMutate).not.toHaveBeenCalled();
     });
 });

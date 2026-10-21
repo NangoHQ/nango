@@ -4,7 +4,7 @@ import { operationIdRegex } from '@nangohq/logs';
 
 import type { Feature } from '@nangohq/types';
 
-export const nangoPropsSchema = z.looseObject({
+const nangoPropsBase = z.looseObject({
     scriptType: z.enum(['function', 'action', 'webhook', 'sync', 'on-event']),
     connectionId: z.string().min(1),
     nangoConnectionId: z.number(),
@@ -52,7 +52,8 @@ export const nangoPropsSchema = z.looseObject({
     variant: z.string().optional(),
     syncJobId: z.number().max(Number.MAX_SAFE_INTEGER).optional(),
     activityLogId: operationIdRegex,
-    secretKey: z.string().min(1),
+    secretKey: z.string().min(1).optional(),
+    taskAuthToken: z.string().min(1).optional(),
     debug: z.boolean(),
     startedAt: z.coerce.date(),
     endUser: z.object({ id: z.number(), endUserId: z.string().nullable(), orgId: z.string().nullable() }).nullable(),
@@ -70,4 +71,8 @@ export const nangoPropsSchema = z.looseObject({
             level: z.enum(['debug', 'info', 'warn', 'error', 'off'])
         })
         .default({ level: 'info' })
+});
+
+export const nangoPropsSchema = nangoPropsBase.refine((props) => Boolean(props.secretKey) || Boolean(props.taskAuthToken), {
+    message: 'a runner payload needs a secretKey or a taskAuthToken'
 });
