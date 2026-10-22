@@ -14,6 +14,7 @@ export interface PlaygroundResult {
 }
 
 export interface PlaygroundState {
+    isOpen: boolean;
     integration: string | null;
     connection: string | null;
     function: string | null;
@@ -30,7 +31,7 @@ export interface PlaygroundState {
 
 interface PlaygroundStore extends PlaygroundState {
     abortActiveRun: (() => void) | null;
-    setIntegration: (value: string | null) => void;
+    setOpen: (value: boolean) => void;
     setConnection: (value: string | null) => void;
     setFunction: (name: string | null, type: PlaygroundFunctionType) => void;
     setInputValues: (values: Record<string, string>) => void;
@@ -48,6 +49,7 @@ interface PlaygroundStore extends PlaygroundState {
 }
 
 export const defaultPlaygroundState: PlaygroundState = {
+    isOpen: false,
     integration: null,
     connection: null,
     function: null,
@@ -66,7 +68,7 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
             ...defaultPlaygroundState,
             abortActiveRun: null,
 
-            setIntegration: (integration) => set({ integration, connection: null, function: null, functionType: null, inputValues: {} }),
+            setOpen: (isOpen) => set({ isOpen }),
 
             setConnection: (connection) => set({ connection }),
 
@@ -104,6 +106,7 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
             name: LocalStorageKeys.Playground,
             storage: createJSONStorage(() => sessionStorage),
             partialize: (s) => ({
+                isOpen: false,
                 integration: s.integration,
                 connection: s.connection,
                 function: s.function,

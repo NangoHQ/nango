@@ -3,6 +3,7 @@ import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalRespons
 import { ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
 import {
@@ -26,8 +27,10 @@ import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { useListIntegrations } from '@/hooks/useIntegration';
+import { useMeta } from '@/hooks/useMeta';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useUser } from '@/hooks/useUser';
-import { usePlaygroundToolbarSlot } from '@/pages/Playground/Show';
+import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { deleteAgentPlaygroundChat, openAgentPlaygroundChat, saveAgentPlaygroundChat } from '@/store/agentPlaygroundChat';
 import { analyticsSessionHeaders, track } from '@/utils/analytics';
@@ -61,10 +64,37 @@ function providerName(provider: string): string {
 
 export const AgentPlayground: React.FC = () => {
     const env = useStore((state) => state.env);
-    const toolbarSlot = usePlaygroundToolbarSlot();
+    const { data: meta } = useMeta();
+    const { can } = usePermissions();
+    const [toolbarSlot, setToolbarSlot] = useState<HTMLDivElement | null>(null);
     const [chatKey, setChatKey] = useState(0);
 
-    return <Chat key={`${env}-${chatKey}`} env={env} toolbarSlot={toolbarSlot} onNewChat={() => setChatKey((key) => key + 1)} />;
+    if (!meta) {
+        return null;
+    }
+    if (!meta.data.agentPlayground) {
+        return (
+            <DashboardLayout title="Agent Playground">
+                <p className="text-text-secondary">The Agent Playground is not enabled for this account.</p>
+            </DashboardLayout>
+        );
+    }
+    if (!can('environment:agent_sessions:write')) {
+        return (
+            <DashboardLayout title="Agent Playground">
+                <p className="text-text-secondary">{`Your role can't use the Agent Playground in this environment.`}</p>
+            </DashboardLayout>
+        );
+    }
+
+    return (
+        <DashboardLayout fullWidth className="h-full" title="Agent Playground" titleActions={<div ref={setToolbarSlot} />}>
+            <Helmet>
+                <title>Agent Playground - Nango</title>
+            </Helmet>
+            <Chat key={`${env}-${chatKey}`} env={env} toolbarSlot={toolbarSlot} onNewChat={() => setChatKey((key) => key + 1)} />
+        </DashboardLayout>
+    );
 };
 
 const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({ env, toolbarSlot, onNewChat }) => {
@@ -269,11 +299,9 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
         <div className="mx-auto flex h-full max-w-3xl flex-col">
             {toolbarSlot &&
                 createPortal(
-                    <div className="ml-auto">
-                        <Button onClick={onReset}>
-                            <Plus /> New chat
-                        </Button>
-                    </div>,
+                    <Button onClick={onReset}>
+                        <Plus /> New chat
+                    </Button>,
                     toolbarSlot
                 )}
 
@@ -606,8 +634,7 @@ const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced
 const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string, provider: string) => void }> = ({ composer, onPick }) => {
     return (
         <div className="flex flex-1 flex-col items-center text-center">
-            {/* basis-0 makes the 2:3 split ignore content height. */}
-            <div className="flex w-full flex-[2] basis-0 flex-col items-center justify-end pb-6">
+            <div className="flex w-full flex-1 flex-col items-center justify-end pb-6">
                 <LogoWolf
                     aria-hidden
                     className="pointer-events-none -mb-28 h-auto w-[337px] text-text-strong opacity-[0.06] [mask-image:linear-gradient(to_bottom,black_45px,transparent_199px)]"
@@ -615,7 +642,7 @@ const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string,
                 <h2 className="relative text-heading-medium text-text-strong">Explore how Nango works with an agent</h2>
             </div>
             {composer}
-            <div className="grid w-full flex-[3] basis-0 auto-rows-min grid-cols-2 gap-3 pt-6">
+            <div className="grid w-full flex-1 auto-rows-min grid-cols-2 gap-3 pt-6">
                 {STARTER_PROMPTS.map(({ prompt, provider }) => (
                     <button
                         key={prompt}
