@@ -12030,6 +12030,39 @@ halo-psa:
             secret: true
             doc_section: '#step-3-create-an-api-application'
 
+haus:
+    display_name: Haus
+    categories:
+        - analytics
+        - e-commerce
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://harbor.haus.io
+        query:
+            org_id: ${connectionConfig.orgId}
+    docs: https://nango.dev/docs/api-integrations/haus
+    docs_connect: https://nango.dev/docs/api-integrations/haus/connect
+    connection_config:
+        orgId:
+            type: string
+            title: Organization ID
+            description: The ID of your Haus organization.
+            doc_section: '#step-1-find-your-organization-id'
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: Token ID
+            description: Your Haus API token ID.
+            doc_section: '#step-2-create-an-api-token'
+        password:
+            type: string
+            title: Token Secret
+            description: Your Haus API token secret.
+            secret: true
+            doc_section: '#step-2-create-an-api-token'
+
 harvest:
     display_name: Harvest
     categories:
