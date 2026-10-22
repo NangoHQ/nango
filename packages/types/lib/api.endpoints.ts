@@ -102,8 +102,6 @@ import type {
     GetPublicIntegrationFunction,
     GetPublicIntegrationFunctions,
     GetPublicProviderTemplates,
-    GetTool,
-    GetTools,
     PatchConnectionFunction,
     PatchFunction,
     PatchFunctionVariant,
@@ -252,8 +250,6 @@ export type PublicApiEndpoints =
     | GetPublicFunctionCode
     | GetPublicIntegrationFunctions
     | GetPublicIntegrationFunction
-    | GetTool
-    | GetTools
     | PostToolCall
     | DeletePublicIntegrationFunction
     | GetPublicProviderTemplates
