@@ -42,6 +42,7 @@ describe('parse', () => {
     it('defaults NANGO_INTERNAL_AUTH_REQUIRED to false', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_INTERNAL_AUTH_REQUIRED).toBe(false);
+        expect(res.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY).toBe(false);
         expect(res.NANGO_INTERNAL_AUTH_TOKEN).toBeUndefined();
         expect(res.NANGO_INTERNAL_AUTH_SIGNING_KEY).toBeUndefined();
         expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_TOKEN_FILE');
