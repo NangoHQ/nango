@@ -1647,6 +1647,7 @@
               "integrations/all/namely",
               "integrations/all/namely-pat",
               "integrations/all/nationbuilder",
+              "api-integrations/navan",
               "api-integrations/neon",
               "api-integrations/neon-mcp",
               "api-integrations/nerdio",
