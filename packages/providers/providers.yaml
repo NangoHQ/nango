@@ -12030,6 +12030,39 @@ halo-psa:
             secret: true
             doc_section: '#step-3-create-an-api-application'
 
+haus:
+    display_name: Haus
+    categories:
+        - analytics
+        - e-commerce
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://harbor.haus.io
+        query:
+            org_id: ${connectionConfig.orgId}
+    docs: https://nango.dev/docs/api-integrations/haus
+    docs_connect: https://nango.dev/docs/api-integrations/haus/connect
+    connection_config:
+        orgId:
+            type: string
+            title: Organization ID
+            description: The ID of your Haus organization.
+            doc_section: '#step-1-find-your-organization-id'
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: Token ID
+            description: Your Haus API token ID.
+            doc_section: '#step-2-create-an-api-token'
+        password:
+            type: string
+            title: Token Secret
+            description: Your Haus API token secret.
+            secret: true
+            doc_section: '#step-2-create-an-api-token'
+
 harvest:
     display_name: Harvest
     categories:
@@ -20156,6 +20189,32 @@ pleo-api-key:
             example: pls_********************************_620d75
             pattern: '^pl[sp]_[a-f0-9]+_[a-f0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
+
+pocket:
+    display_name: Pocket
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public.heypocketai.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/public/recordings?page=1&limit=1
+    docs: https://nango.dev/docs/api-integrations/pocket
+    docs_connect: https://nango.dev/docs/api-integrations/pocket/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Pocket account.
+            pattern: '^pk_[A-Za-z0-9_-]+$'
+            example: pk_*******************************************
+            doc_section: '#step-1-obtaining-your-api-key'
 
 podium:
     display_name: Podium
