@@ -10240,7 +10240,7 @@ Creates a new environment. Additional environments are limited by your [pricing 
 
 Set `is_production: true` to create a production environment. This also requires `account:environments:set_production`. The reserved name `prod` is always production and cannot be combined with `is_production: false`.
 
-Pass `webhooks` to configure URLs, subscriptions, and an initial signing key. Supply a UUID in `webhooks.signing_key`, or omit it to generate one. See [Receive webhooks from Nango](/guides/platform/webhooks-from-nango) for delivery behavior, event types, and signature verification.
+Pass `webhooks` to configure URLs and subscriptions. Nango generates a webhook signing key for the new environment. See [Receive webhooks from Nango](/guides/platform/webhooks-from-nango) for delivery behavior, event types, and signature verification.
 
 The response returns the complete environment settings, including the plaintext webhook signing key and environment `uuid`. Use the `uuid` to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
 
@@ -10254,8 +10254,7 @@ curl --request POST \
     "name": "staging",
     "webhooks": {
       "primary_url": "https://app.example.com/webhooks/nango",
-      "on_sync_completion_always": false,
-      "signing_key": "5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f"
+      "on_sync_completion_always": false
     }
   }'
 ```
