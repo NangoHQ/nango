@@ -28,7 +28,7 @@ import { connectionRefreshFailed, connectionRefreshSuccess } from '../hooks/hook
 import { capping } from '../utils/usage.js';
 
 import type { LogContext } from '@nangohq/logs';
-import type { DBPlan, DBTeam, EnvironmentWithoutSecrets, HTTP_METHOD, InternalProxyConfiguration, OperationActor, ProxyFile, Result } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, InternalProxyConfiguration, OperationActor, ProxyFile, Result } from '@nangohq/types';
 import type { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 const MEMOIZED_CONNECTION_TTL = 60_000;
@@ -37,7 +37,7 @@ const baseUrlOverrideDenylist = normalizeDenylist(envs.NANGO_PROXY_BASE_URL_OVER
 
 export interface ProxyServiceRequest {
     account: DBTeam;
-    environment: EnvironmentWithoutSecrets;
+    environment: DBEnvironment;
     plan: DBPlan | null;
     method: HTTP_METHOD;
     endpoint: string;
