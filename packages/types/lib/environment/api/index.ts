@@ -63,7 +63,6 @@ export type PostPublicEnvironment = ApiEndpoint<{
                   on_sync_error?: boolean | undefined;
                   on_async_action_completion?: boolean | undefined;
                   on_connection_deletion?: boolean | undefined;
-                  signing_key?: string | undefined;
               }
             | undefined;
     };
