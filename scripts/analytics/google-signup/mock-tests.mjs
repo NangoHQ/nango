@@ -26,6 +26,7 @@ const globals = {
         timestamp: '2026-10-22T20:00:00Z',
         distinct_id: 'account-123',
         properties: {
+            is_signup_creator_internal: false,
             surface: 'server',
             host: 'https://api.nango.dev',
             $groups: { company: '123' },
@@ -115,14 +116,32 @@ add(
     },
     skip('SKIP: account mismatch')
 );
-for (const value of [true, null])
+for (const value of [true])
     add(
         `internal-${value}`,
         (c) => {
             c.globals.groups.company.properties.is_internal = value;
         },
-        skip('SKIP: internal or unknown company')
+        skip('SKIP: internal company conflict')
     );
+add('external-creator-before-company-classification', (c) => {
+    delete c.globals.groups.company.properties.is_internal;
+});
+for (const value of [true, null])
+    add(
+        `creator-internal-${value}`,
+        (c) => {
+            c.globals.event.properties.is_signup_creator_internal = value;
+        },
+        skip('SKIP: internal or unknown signup creator')
+    );
+add(
+    'creator-classification-missing',
+    (c) => {
+        delete c.globals.event.properties.is_signup_creator_internal;
+    },
+    skip('SKIP: internal or unknown signup creator')
+);
 for (const key of ['advertising_google_ad_user_data', 'advertising_google_ad_personalization', 'advertising_google_consent_method'])
     add(
         `missing-${key}`,

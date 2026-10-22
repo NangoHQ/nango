@@ -281,6 +281,7 @@ describe('POST /api/v1/account/signup', () => {
                     name: 'auth:account_create',
                     eventProperties: expect.objectContaining({
                         advertising_fbc: `fb.1.${now - 60_000}.synthetic_meta`,
+                        is_signup_creator_internal: false,
                         advertising_google_click_id: 'synthetic_google',
                         advertising_google_click_type: 'wbraid',
                         advertising_oppref: 'synthetic_openai'

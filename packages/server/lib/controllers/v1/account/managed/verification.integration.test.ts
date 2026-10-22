@@ -384,6 +384,7 @@ describe(`POST ${route}`, () => {
                 expect.objectContaining({
                     name: 'auth:account_create',
                     eventProperties: expect.objectContaining({
+                        is_signup_creator_internal: false,
                         advertising_google_click_id: 'synthetic_google',
                         advertising_google_click_type: 'wbraid',
                         advertising_oppref: 'synthetic_google_flow',
