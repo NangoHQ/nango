@@ -5,6 +5,8 @@ import { createNoopMeter } from '@opentelemetry/api';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 
+import { getLogger } from '@nangohq/utils';
+
 import { PostgresMetricExporter, PRODUCER_ID_ATTRIBUTE } from './exporter.js';
 import { HOSTED_TELEMETRY_SCHEMA } from './postgres/schema.js';
 
@@ -12,7 +14,10 @@ import type { HostedMetricName } from './catalog.js';
 import type { Attributes, Counter, Gauge, Histogram } from '@opentelemetry/api';
 import type { Knex } from 'knex';
 
+const logger = getLogger('hosted-telemetry');
+
 const EXPORT_INTERVAL_MS = 60_000;
+const TIMED_OUT = Symbol('timed out');
 
 export interface HostedTelemetry {
     increment(name: HostedMetricName, value?: number, attributes?: Attributes): void;
@@ -69,7 +74,10 @@ export function createHostedTelemetry(store?: { knex: Knex; schema?: string; exp
             const flushed = provider.shutdown();
 
             if (timeoutMs !== undefined) {
-                await Promise.race([flushed, setTimeout(timeoutMs, undefined, { ref: false })]);
+                const winner = await Promise.race([flushed, setTimeout(timeoutMs, TIMED_OUT, { ref: false })]);
+                if (winner === TIMED_OUT) {
+                    logger.warning(`Shutdown stopped waiting after ${timeoutMs}ms, the last window may not have been written`);
+                }
                 return;
             }
 
