@@ -9,6 +9,9 @@
             "path": "../migrations"
         },
         {
+            "path": "../types"
+        },
+        {
             "path": "../utils"
         }
     ],
