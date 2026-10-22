@@ -1,11 +1,11 @@
-import { ExternalLink, Play, Trash2 } from 'lucide-react';
+import { Ellipsis, ExternalLink, Play, SquareTerminal, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
-import { Badge, Button } from '@nangohq/design-system';
+import { Badge, Button, IconButton } from '@nangohq/design-system';
 
-import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { CopyButton } from '@/components/ui/CopyButton';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Spinner } from '@/components/ui/Spinner';
@@ -26,6 +26,8 @@ import type { ApiIntegration, ListedNangoFunction, NangoFunctionTemplate } from 
 import type { JSONSchema7 } from 'json-schema';
 
 type DetailsFunction = ListedNangoFunction | NangoFunctionTemplate;
+
+const menuItemClassName = 'text-body-medium-regular';
 
 function isListedFunction(fn: DetailsFunction): fn is ListedNangoFunction {
     return 'enabled' in fn;
@@ -100,6 +102,10 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
     });
     const canDelete = listed && fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn);
     const canUsePlayground = listed && fn.enabled && isSyncOrAction(fn);
+    const copyPullCommand = async () => {
+        await navigator.clipboard.writeText(pullCommand);
+        toast({ title: 'Pull command copied', variant: 'success' });
+    };
 
     return (
         <aside className="sticky top-0 flex max-h-[calc(100dvh-7rem)] min-h-[min(606px,calc(100dvh-7rem))] w-full flex-col overflow-y-auto overscroll-y-contain bg-surface-panel">
@@ -111,56 +117,61 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                     </div>
                     {fn.description && <p className="type-text-regular-xs text-text-secondary">{fn.description}</p>}
                 </div>
-                <div className="flex shrink-0 flex-col items-end gap-2">
-                    {canDelete && (
-                        <Button
-                            variant="link-danger"
-                            size="sm"
-                            loading={isDeleting}
-                            onClick={() =>
-                                void confirm({
-                                    title: 'Delete function?',
-                                    description:
-                                        fn.type === 'sync'
-                                            ? `You are about to permanently delete the sync "${fn.name}" and all of its synced records. This operation is not reversible, are you sure you wish to continue?`
-                                            : `You are about to permanently delete the action "${fn.name}". This operation is not reversible, are you sure you wish to continue?`,
-                                    confirmButtonText: 'Delete function',
-                                    confirmVariant: 'danger',
-                                    onConfirm: onDelete
-                                })
-                            }
-                        >
-                            Delete function <Trash2 />
-                        </Button>
-                    )}
-                    {canOpenPlayground && (
-                        <ConditionalTooltip
-                            condition={!canUsePlayground}
-                            content={listed ? 'Enable this function to run it.' : 'Deploy this template to run it.'}
-                            side="left"
-                            asChild
-                        >
-                            <span className="inline-flex">
-                                <Button
-                                    variant="link-accent"
-                                    size="sm"
-                                    disabled={!canUsePlayground}
-                                    onClick={() => {
-                                        if (!isListedFunction(fn) || !isSyncOrAction(fn)) return;
-                                        openPlaygroundWithContext({
-                                            source: 'function',
-                                            integration: integration.unique_key,
-                                            functionName: fn.name,
-                                            functionType: fn.type
-                                        });
-                                    }}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <IconButton variant="outline" size="sm" label="Function actions" loading={isDeleting}>
+                            <Ellipsis />
+                        </IconButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52">
+                        {canOpenPlayground && (
+                            <DropdownMenuItem
+                                className={menuItemClassName}
+                                disabled={!canUsePlayground}
+                                onSelect={() => {
+                                    if (!isListedFunction(fn) || !isSyncOrAction(fn)) return;
+                                    openPlaygroundWithContext({
+                                        source: 'function',
+                                        integration: integration.unique_key,
+                                        functionName: fn.name,
+                                        functionType: fn.type
+                                    });
+                                }}
+                            >
+                                <Play />
+                                Test run
+                            </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem className={menuItemClassName} onSelect={() => void copyPullCommand()}>
+                            <SquareTerminal />
+                            Copy pull command
+                        </DropdownMenuItem>
+                        {canDelete && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    className={menuItemClassName}
+                                    variant="destructive"
+                                    onSelect={() =>
+                                        void confirm({
+                                            title: 'Delete function?',
+                                            description:
+                                                fn.type === 'sync'
+                                                    ? `You are about to permanently delete the sync "${fn.name}" and all of its synced records. This operation is not reversible, are you sure you wish to continue?`
+                                                    : `You are about to permanently delete the action "${fn.name}". This operation is not reversible, are you sure you wish to continue?`,
+                                            confirmButtonText: 'Delete function',
+                                            confirmVariant: 'danger',
+                                            onConfirm: onDelete
+                                        })
+                                    }
                                 >
-                                    Test run function <Play />
-                                </Button>
-                            </span>
-                        </ConditionalTooltip>
-                    )}
-                </div>
+                                    <Trash2 />
+                                    Delete function
+                                </DropdownMenuItem>
+                            </>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
 
             <div className="pb-6">
