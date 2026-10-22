@@ -220,6 +220,31 @@ export const analyticsEventCatalogue = defineCatalogue({
         })
     },
 
+    'onboarding:connect_button_click': {
+        surface: 'web',
+        insight: 'How many accounts start the Getting Started flow by connecting GitHub',
+        fires: 'When someone clicks to connect GitHub on the Getting Started page',
+        properties: none
+    },
+    'onboarding:connection_create': {
+        surface: 'web',
+        insight: 'How many accounts that start Getting Started get through the GitHub connect flow',
+        fires: 'When the GitHub connection on the Getting Started page is created',
+        properties: none
+    },
+    'onboarding:run_complete': {
+        surface: 'web',
+        insight: 'How many accounts run the Getting Started code snippet, and how often it fails',
+        fires: 'When the Getting Started code snippet returns a result or an error',
+        properties: z.object({ is_success: z.boolean() })
+    },
+    'onboarding:create_button_click': {
+        surface: 'web',
+        insight: 'How many accounts finish Getting Started and go on to set up their own integration',
+        fires: 'When someone clicks to set up their own integration at the end of Getting Started',
+        properties: none
+    },
+
     'connections:create_button_click': {
         surface: 'web',
         insight: 'How many people start creating a connection, and for which provider',
@@ -257,9 +282,28 @@ export const analyticsEventCatalogue = defineCatalogue({
 
     'integrations:integration_create': {
         surface: 'server',
-        insight: 'How many accounts create integrations each week, and how many of those come from the Agent Playground',
-        fires: 'After an integration is created from the dashboard or by an Agent Playground starter',
-        properties: z.object({ provider: z.string(), is_playground: z.boolean() })
+        insight: "How many accounts create integrations each week, from where, and whether they use Nango's developer app or fill in their own credentials",
+        fires: 'After an integration is created from the dashboard, the API, the management MCP or an Agent Playground starter',
+        properties: z.object({
+            provider: z.string(),
+            is_playground: z.boolean(),
+            source: z.enum(['dashboard', 'api', 'mcp', 'playground']),
+            is_shared_credentials: z.boolean().optional(),
+            has_missing_fields: z.boolean().optional()
+        })
+    },
+    'integrations:filter_update': {
+        surface: 'web',
+        insight: 'How often people search their integrations list, and how often the search finds nothing',
+        fires: 'When someone stops typing in the integrations list search',
+        properties: z.object({ filter: z.enum(['search']), result_count: z.number() })
+    },
+    'integrations:create_page_view': {
+        surface: 'web',
+        insight:
+            "How many accounts open a provider's setup form, and how many leave it without creating an integration, split by whether Nango has a developer app for it",
+        fires: "When a provider's create integration form loads",
+        properties: z.object({ provider: z.string(), has_shared_credentials: z.boolean() })
     },
     'integrations:integration_update': {
         surface: 'server',
@@ -305,6 +349,18 @@ export const analyticsEventCatalogue = defineCatalogue({
         insight: "How many accounts run, pause or resume their connections' syncs from the dashboard each week",
         fires: 'After the dashboard sends a command to a sync and the server accepts it',
         properties: z.object({ command: z.enum(['run', 'full_resync', 'pause', 'resume', 'cancel']) })
+    },
+    'functions:function_view': {
+        surface: 'web',
+        insight: "How many accounts browse an integration's functions, and whether they look at catalog templates or functions they already deployed",
+        fires: "When a function's details open on an integration's Functions tab",
+        properties: z.object({ provider: z.string(), function_type: z.string(), is_deployed: z.boolean() })
+    },
+    'functions:deploy_create': {
+        surface: 'server',
+        insight: 'How many accounts deploy functions each week, from where, and whether they deploy templates or their own code',
+        fires: 'After the server accepts a function deployment from the CLI, the API, the dashboard or the management MCP',
+        properties: z.object({ source: z.enum(['cli', 'api', 'dashboard', 'mcp']), is_template: z.boolean(), function_count: z.number() })
     },
 
     'logs:filter_update': {

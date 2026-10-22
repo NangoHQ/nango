@@ -1,6 +1,6 @@
 import { getLocking } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
-import { deployBundle, prepareDeploymentBundle } from '@nangohq/shared';
+import { deployBundle, prepareDeploymentBundle, productTracking } from '@nangohq/shared';
 import { getLogger, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
@@ -87,6 +87,10 @@ export const postFunctionDeploymentBundle = asyncWrapperWithEnvironment<PostFunc
         const response = toResponse(prepared.value);
         void logCtx.info('Successfully deployed function bundle', { functionCount: body.functions.length, ...response });
         await logCtx.success();
+        productTracking.track({
+            name: 'functions:deploy_create',
+            eventProperties: { source: 'cli', is_template: false, function_count: body.functions.length }
+        });
         res.send(response);
     } finally {
         if (lock) {

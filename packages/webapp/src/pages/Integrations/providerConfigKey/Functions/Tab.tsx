@@ -17,6 +17,7 @@ import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useGetIntegrationFunction, useGetIntegrationFunctions, useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
 import { useMeta } from '@/hooks/useMeta';
 import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
 import { isSyncOrAction } from '@/utils/scripts';
 import { cn } from '@/utils/utils';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
@@ -355,6 +356,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const visibleSyncTemplates = typeFilter === 'sync' && !hasNextPage && !isPlaceholderData ? matchingSyncTemplates : [];
     const selectedFunction =
         listedMatch ?? templateMatch ?? (rawTemplateMatch?.deployed ? listedFromTemplate(rawTemplateMatch) : undefined) ?? linkedFunction?.data ?? null;
+    const hasSelectedFunction = selectedFunction !== null;
+    const isSelectedFunctionDeployed = selectedFunction !== null && 'enabled' in selectedFunction;
+
+    useEffect(() => {
+        if (!selectedFunctionName || !hasSelectedFunction) return;
+        track('functions:function_view', { provider: integration.provider, function_type: typeFilter, is_deployed: isSelectedFunctionDeployed });
+    }, [selectedFunctionName, hasSelectedFunction, isSelectedFunctionDeployed, integration.provider, typeFilter]);
 
     const tailScope = `${integration.unique_key}:${typeFilter}`;
     const incomingTailKeys = (typeFilter === 'action' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : []).map(templateSectionKey);

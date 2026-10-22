@@ -1,3 +1,5 @@
+import { productTracking } from '@nangohq/shared';
+
 import { makeAuditTarget } from '../../../audit.js';
 import * as functionDeploymentService from '../../../services/functionDeployment.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
@@ -29,12 +31,14 @@ export const deployFunctionTool = defineManagementMcpTool<typeof deployFunctionA
         openWorldHint: true
     },
     async handler({ args, environment, customerApiKeyId }) {
-        return (
-            await functionDeploymentService.deployFunction({
-                environment,
-                body: { type: 'function', ...args },
-                ...(customerApiKeyId ? { parentCustomerApiKeyId: customerApiKeyId } : {})
-            })
-        ).mapError((error) => deployFunctionServiceErrorToMcp(error));
+        const result = await functionDeploymentService.deployFunction({
+            environment,
+            body: { type: 'function', ...args },
+            ...(customerApiKeyId ? { parentCustomerApiKeyId: customerApiKeyId } : {})
+        });
+        if (result.isOk()) {
+            productTracking.track({ name: 'functions:deploy_create', eventProperties: { source: 'mcp', is_template: false, function_count: 1 } });
+        }
+        return result.mapError((error) => deployFunctionServiceErrorToMcp(error));
     }
 });

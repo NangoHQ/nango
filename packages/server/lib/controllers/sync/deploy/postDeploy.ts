@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
-import { cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences, NangoError, startTrial } from '@nangohq/shared';
+import { cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences, NangoError, productTracking, startTrial } from '@nangohq/shared';
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -101,6 +101,10 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
             }
         }
 
+        productTracking.track({
+            name: 'functions:deploy_create',
+            eventProperties: { source: 'cli', is_template: false, function_count: body.flowConfigs.length }
+        });
         res.send(syncConfigDeployResult.result);
     } finally {
         if (lock) {
