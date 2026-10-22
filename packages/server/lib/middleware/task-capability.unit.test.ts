@@ -73,7 +73,7 @@ describe('task capability on the server', () => {
         const app = express();
         app.use(publicAPI);
         const probed = express();
-        probed.get('/proxy/check', ...withTaskCapability('api:proxy'), (_req, res) => {
+        probed.get('/scoped/check', ...withTaskCapability('api:connection:read'), (_req, res) => {
             captured = res.locals;
             res.status(204).end();
         });
@@ -94,45 +94,52 @@ describe('task capability on the server', () => {
         captured = undefined;
     });
 
-    it('T11: a task token gets a 401 on a route without withTaskCapability', async () => {
-        const bearer = await token(['api:connection:read', 'api:sync:trigger']);
-        const patch = await fetch(`${url}/connections/abc`, { method: 'PATCH', headers: { Authorization: `Bearer ${bearer}` } });
+    it('T11: a task token gets a 401 on /proxy, GET /action/:id, and other routes without withTaskCapability', async () => {
+        const bearer = await token(['api:connection:read', 'api:action:trigger', 'api:sync:trigger']);
+        const headers = { Authorization: `Bearer ${bearer}` };
+        const patch = await fetch(`${url}/connections/abc`, { method: 'PATCH', headers });
         const pause = await fetch(`${url}/sync/pause`, {
             method: 'POST',
-            headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
+            headers: { ...headers, 'Content-Type': 'application/json' },
             body: '{}'
         });
+        const proxy = await fetch(`${url}/proxy/`, { headers });
+        const actionResult = await fetch(`${url}/action/11111111-1111-4111-8111-111111111111`, { headers });
 
         expect(patch.status).toBe(401);
         expect(pause.status).toBe(401);
+        expect(proxy.status).toBe(401);
+        expect(actionResult.status).toBe(401);
         expect(await patch.json()).toMatchObject({ error: { code: 'unknown_account' } });
         expect(await pause.json()).toMatchObject({ error: { code: 'unknown_account' } });
+        expect(await proxy.json()).toMatchObject({ error: { code: 'unknown_account' } });
+        expect(await actionResult.json()).toMatchObject({ error: { code: 'unknown_account' } });
         expect(secretLookup).not.toHaveBeenCalled();
         expect(environmentLookup).not.toHaveBeenCalled();
     });
 
     it('T12: a token without the route scope gets a 401, and a matching token sets taskToken locals', async () => {
-        const missing = await fetch(`${probeUrl}/proxy/check`, {
-            headers: { Authorization: `Bearer ${await token(['api:connection:read'])}` }
+        const missing = await fetch(`${probeUrl}/scoped/check`, {
+            headers: { Authorization: `Bearer ${await token(['api:action:trigger'])}` }
         });
         expect(missing.status).toBe(401);
         expect(environmentLookup).not.toHaveBeenCalled();
 
-        const present = await fetch(`${probeUrl}/proxy/check`, {
-            headers: { Authorization: `Bearer ${await token(['api:proxy'])}` }
+        const present = await fetch(`${probeUrl}/scoped/check`, {
+            headers: { Authorization: `Bearer ${await token(['api:connection:read'])}` }
         });
         expect(present.status).toBe(204);
         expect(captured?.authType).toBe('taskToken');
         expect(captured?.secret).toBeUndefined();
         expect(captured?.apiKeyAuthSource).toBe('task_token');
-        expect(captured?.apiKeyPrincipal?.scopes).toEqual(['environment:proxy']);
+        expect(captured?.apiKeyPrincipal?.scopes).toEqual(['environment:connections:read', 'environment:connections:read_credentials']);
         expect(captured?.principal?.subject.id).toBe('task:task-1');
         expect(secretLookup).not.toHaveBeenCalled();
     });
 
     it('an HS256 bearer stays on the secret path', async () => {
         const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
-        const res = await fetch(`${probeUrl}/proxy/check`, {
+        const res = await fetch(`${probeUrl}/scoped/check`, {
             headers: { Authorization: `Bearer ${header}.e30.sig` }
         });
 
@@ -143,15 +150,15 @@ describe('task capability on the server', () => {
 
     it('returns 500 when the task environment lookup fails, and 401 when the environment is gone', async () => {
         environmentLookup.mockResolvedValueOnce(Err(new Error('db down')));
-        const failed = await fetch(`${probeUrl}/proxy/check`, {
-            headers: { Authorization: `Bearer ${await token(['api:proxy'])}` }
+        const failed = await fetch(`${probeUrl}/scoped/check`, {
+            headers: { Authorization: `Bearer ${await token(['api:connection:read'])}` }
         });
         expect(failed.status).toBe(500);
         expect(await failed.json()).toEqual({ error: { code: 'server_error' } });
 
         environmentLookup.mockResolvedValueOnce(Ok(null));
-        const missing = await fetch(`${probeUrl}/proxy/check`, {
-            headers: { Authorization: `Bearer ${await token(['api:proxy'])}` }
+        const missing = await fetch(`${probeUrl}/scoped/check`, {
+            headers: { Authorization: `Bearer ${await token(['api:connection:read'])}` }
         });
         expect(missing.status).toBe(401);
         expect(await missing.json()).toMatchObject({ error: { code: 'unknown_account' } });
