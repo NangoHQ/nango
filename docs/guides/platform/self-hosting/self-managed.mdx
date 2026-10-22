@@ -298,7 +298,7 @@ The hostname must be different from the hostname in `NANGO_SERVER_URL`. Nango us
 
 The Agent Playground lets you try an AI agent on your integrations from the dashboard, before writing any code. It runs on [agent sessions](/guides/agent-sessions), so the agent reaches Nango's pre-built tools the same way your own agent would. It is off by default on self-hosted instances.
 
-To turn it on, set these on the server and jobs services:
+To turn it on, set these on the server service:
 
 ```bash
 NANGO_FLAG_PROVIDER=env
@@ -308,6 +308,8 @@ OPENAI_API_KEY=<your-openai-api-key>
 # Optional, defaults to gpt-6-luna
 NANGO_AGENT_PLAYGROUND_MODEL=<openai-model-id>
 ```
+
+Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the jobs service as well, because jobs runs the catalog actions the agent calls.
 
 The `tools-catalog` flag lets the agent run Nango's pre-built actions without deploying them first. The agent runs on OpenAI, so `OPENAI_API_KEY` is required, and messages from the chat are sent to OpenAI with that key. Without the key, the dashboard shows the playground as unavailable.
 
