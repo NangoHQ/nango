@@ -294,6 +294,25 @@ NANGO_MANAGEMENT_MCP_SERVER_URL=https://mcp.example.com
 
 The hostname must be different from the hostname in `NANGO_SERVER_URL`. Nango uses the request hostname to distinguish Management MCP traffic from the public API. Restart the Nango server after setting the environment variable; the Management MCP endpoint is then available at `https://mcp.example.com/mcp`.
 
+### Agent Playground
+
+The Agent Playground lets you try an AI agent on your own apps from the dashboard, before writing any code. It runs on an [agent session](/guides/agent-sessions), so the agent reaches Nango's pre-built tools the same way your own agent would. It is off by default on self-hosted instances.
+
+To turn it on, set these on the server and jobs services:
+
+```bash
+NANGO_FLAG_PROVIDER=env
+NANGO_FEATURE_FLAG_AGENT_PLAYGROUND=true
+NANGO_FEATURE_FLAG_TOOLS_CATALOG=true
+OPENAI_API_KEY=<your-openai-api-key>
+# Optional, defaults to gpt-6-luna
+NANGO_AGENT_PLAYGROUND_MODEL=<openai-model-id>
+```
+
+The `tools-catalog` flag lets the agent run Nango's pre-built actions without deploying them first. The agent runs on OpenAI, so `OPENAI_API_KEY` is required, and messages from the chat are sent to OpenAI with that key. Without the key, the dashboard shows the playground as unavailable.
+
+The agent works with the integrations set up in the environment. The starter prompts on the playground's landing page each need an integration for their app, such as Google Calendar or Slack, so create it in the Integrations tab with your own OAuth app before using a prompt.
+
 ### Connect UI
 
 Nango Connect is available for self-hosted deployments in the main Docker image.
