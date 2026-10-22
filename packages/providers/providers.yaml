@@ -4003,6 +4003,46 @@ boldsign:
         base_url: https://api.boldsign.com
     docs: https://nango.dev/docs/integrations/all/boldsign
 
+bluebeam:
+    display_name: Bluebeam
+    categories:
+        - productivity
+        - storage
+    auth_mode: OAUTH2
+    disable_pkce: true
+    authorization_url: https://${connectionConfig.apiHost}/oauth2/authorize
+    token_url: https://${connectionConfig.apiHost}/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+        headers:
+            client_id: ${clientId}
+    docs: https://nango.dev/docs/api-integrations/bluebeam
+    docs_connect: https://nango.dev/docs/api-integrations/bluebeam/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/bluebeam/how-to-register-your-own-bluebeam-oauth-app
+    connection_config:
+        apiHost:
+            type: string
+            title: API Host
+            description: The Bluebeam API host for your account's region.
+            format: hostname
+            enum:
+                - api.bluebeam.com
+                - api.bluebeamstudio.co.uk
+                - api.bluebeamstudio.com.au
+                - api.bluebeamstudio.de
+                - api.bluebeamstudio.se
+            doc_section: '#step-1-find-your-api-host'
+            order: 1
+
 bol-com:
     display_name: bol.com
     categories:

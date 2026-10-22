@@ -1165,6 +1165,7 @@
               "integrations/all/blackbaud-basic",
               "integrations/all/blandai",
               "api-integrations/bliro",
+              "api-integrations/bluebeam",
               "api-integrations/bol-com",
               "integrations/all/boldsign",
               "integrations/all/booking-com",
