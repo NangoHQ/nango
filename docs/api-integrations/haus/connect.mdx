@@ -14,13 +14,11 @@ This guide will show you how to get them.
 
 ### Prerequisites
 
-- A Haus account with access to your organization's API settings.
+- A Haus account with access to **Token Management** in your organization settings.
 
 ### Step 1: Find your organization ID
 
-1. Log in to [Haus](https://app.haus.io).
-2. Open your organization's API settings.
-3. Copy your **Organization ID**.
+Your Organization ID is shown in Haus when you connect your store to Attribution with the Haus Pixel. Copy it from there.
 
 <Tip>
 If you can't find your Organization ID, contact your Haus account team.
@@ -28,17 +26,21 @@ If you can't find your Organization ID, contact your Haus account team.
 
 ### Step 2: Create an API token
 
-1. In your organization's API settings, create a new API token.
-2. Copy the **Token ID** and **Token Secret**.
+1. Log in to [Haus](https://app.haus.io).
+2. Open the account menu and select **Organization settings**.
+3. Select the **Token Management** tab.
+4. In the **Haus Public API** section, click **Add Token**.
+5. Enter a **Token Name**, using only lowercase letters, numbers, underscores, and dashes, then click **Create Token**.
+6. Copy the **token_id** and **token_secret**.
 
 <Note>
-Save your Token Secret somewhere secure. You may not be able to view it again after leaving the page.
+Haus only shows the token_id and token_secret once. Save them somewhere secure before closing the dialog.
 </Note>
 
 ### Step 3: Enter your credentials in the Connect UI
 
 1. Open the form where you need to authenticate with Haus.
-2. Enter your **Organization ID**, **Token ID**, and **Token Secret** in the designated fields.
+2. Enter your **Organization ID**, your token_id as the **Token ID**, and your token_secret as the **Token Secret**.
 3. Submit the form, and you should be successfully authenticated.
 
 <img src="/api-integrations/haus/form.png" style={{maxWidth: "450px" }}/>

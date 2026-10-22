@@ -16,12 +16,12 @@ Connect to Haus with Nango and see data flow in 2 minutes.
     Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Organization ID, Token ID, and Token Secret. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step id="call-haus-api" title="Call the Haus API">
-    Let's make your first request to the Haus API. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, connection ID, and the endpoint you want to call:
+    Let's make your first request to the Haus Public API to list your experiments. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/<ENDPOINT>" \
+            curl "https://api.nango.dev/proxy/api/v1/public/experiments" \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to Haus with Nango and see data flow in 2 minutes.
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/<ENDPOINT>',
+            endpoint: '/api/v1/public/experiments',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
