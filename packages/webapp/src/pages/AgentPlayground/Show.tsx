@@ -640,7 +640,7 @@ const StarterPromptText: React.FC<{ prompt: string; name: string }> = ({ prompt,
     return (
         <>
             {prompt.slice(0, start)}
-            <span className="text-body-medium-medium">{name}</span>
+            <span className="type-text-medium-sm">{name}</span>
             {prompt.slice(start + name.length)}
         </>
     );
@@ -660,7 +660,7 @@ const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string,
                         key={prompt}
                         type="button"
                         onClick={() => onPick(prompt, provider)}
-                        className="group flex items-center gap-3 rounded-ds-xs border-ds-hairline border-border-muted px-3 py-[13px] text-left text-body-medium-regular text-text-default transition-[background-color,border-color,box-shadow] hover:border-border-strong hover:bg-surface-panel hover:shadow-container-panel"
+                        className="group flex items-center gap-3 rounded-ds-xs border-ds-hairline border-border-muted px-3 py-[13px] text-left type-text-regular-sm text-text-default transition-[background-color,border-color,box-shadow] hover:border-border-strong hover:bg-surface-panel hover:shadow-container-panel"
                     >
                         {/* Template logos pad their artwork, so a 25px box draws an 18px logo. */}
                         {provider === 'github' ? (
