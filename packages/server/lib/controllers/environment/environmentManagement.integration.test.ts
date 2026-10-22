@@ -266,8 +266,7 @@ describe('Public environment management', () => {
                 on_auth_refresh_error: false,
                 on_sync_error: false,
                 on_async_action_completion: false,
-                on_connection_deletion: false,
-                signing_key: uuidV7().toUpperCase()
+                on_connection_deletion: false
             };
             const settings = {
                 name: 'full-settings',
@@ -295,7 +294,8 @@ describe('Public environment management', () => {
                 ...settings,
                 id: expect.any(Number),
                 uuid: expect.any(String),
-                otlp_headers: [{ name: 'Authorization', value: 'Bearer final-token' }]
+                otlp_headers: [{ name: 'Authorization', value: 'Bearer final-token' }],
+                webhooks: { ...webhooks, signing_key: expect.any(String) }
             });
         });
 
@@ -303,7 +303,7 @@ describe('Public environment management', () => {
             null,
             { secondary_url: 'invalid-url' },
             { primary_url: 'https://nango.dev/webhooks' },
-            { signing_key: 'not-a-uuid' },
+            { signing_key: uuidV7() },
             { on_sync_error: 'true' },
             { unexpected: true }
         ])('should reject invalid webhook configuration %j before creation', async (webhooks) => {
