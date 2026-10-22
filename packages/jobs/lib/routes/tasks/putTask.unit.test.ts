@@ -156,7 +156,9 @@ describe('PUT /tasks/:taskId', () => {
         expect(handle).not.toHaveBeenCalled();
     });
 
-    it('still accepts a body from legacy task auth that carries no resource claim', async () => {
+    // HMAC task auth carries no res, so this route has nothing to compare and still forwards the body.
+    // When that fallback is removed, foreignProps must be rejected before handle().
+    it('still forwards the body for legacy HMAC task auth', async () => {
         const hmac: InternalServiceAuth = { kind: 'hmac', subject: 'jobs', audience: 'jobs', op: 'task', taskId };
         const res = await put(hmac, foreignProps);
 
