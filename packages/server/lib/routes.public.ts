@@ -133,17 +133,17 @@ import {
 } from './middleware/audit/index.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
+import { apiAuth, envAuth } from './middleware/env-auth.js';
 import { withEnvironmentTarget } from './middleware/environment-target.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
+import { withTaskCapability } from './middleware/task-capability.js';
 import { webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
 import type { RequestLocals } from './utils/express.js';
 import type { Request, RequestHandler } from 'express';
 
-const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
-const envAuth: RequestHandler[] = [...apiAuth, resolveEnvironment];
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const agentSessionAuth: RequestHandler[] = [authMiddleware.agentSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
@@ -312,9 +312,7 @@ publicAPI
     .route('/integrations/quickstart')
     .post(envAuth, auditPublicQuickstartIntegrationCreated, can('environment:integrations:create'), postPublicQuickstartIntegration);
 publicAPI.route('/integrations/:uniqueKey').patch(envAuth, auditPublicIntegrationUpdated, can('environment:integrations:update'), patchPublicIntegration);
-publicAPI
-    .route('/integrations/:uniqueKey')
-    .get(envAuth, can('environment:integrations:read', 'environment:integrations:read_credentials'), getPublicIntegration);
+publicAPI.route('/integrations/:uniqueKey').get(...withTaskCapability('api:integration:read'), getPublicIntegration);
 
 publicAPI.route('/integrations/:uniqueKey').delete(envAuth, auditPublicIntegrationDeleted, can('environment:integrations:delete'), deletePublicIntegration);
 publicAPI.route('/integrations/:uniqueKey/functions/:name/code').get(envAuth, can('environment:functions:read'), getFunctionCode);
@@ -395,17 +393,15 @@ publicAPI
 publicAPI.use('/connections', jsonContentTypeMiddleware);
 publicAPI.route('/connections').post(envAuth, auditConnectionCreated, can('environment:connections:create'), postPublicConnection);
 publicAPI.route('/connections').get(envAuth, can('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
-publicAPI.route('/connections/metadata').post(envAuth, can('environment:connections:update'), postPublicMetadata);
-publicAPI.route('/connections/metadata').patch(envAuth, can('environment:connections:update'), patchPublicMetadata);
-publicAPI
-    .route('/connections/:connectionId')
-    .get(envAuth, can('environment:connections:read', 'environment:connections:read_credentials'), getPublicConnection);
+publicAPI.route('/connections/metadata').post(...withTaskCapability('api:metadata:write'), postPublicMetadata);
+publicAPI.route('/connections/metadata').patch(...withTaskCapability('api:metadata:write'), patchPublicMetadata);
+publicAPI.route('/connections/:connectionId').get(...withTaskCapability('api:connection:read'), getPublicConnection);
 publicAPI.route('/connections/:connectionId').patch(envAuth, auditPublicConnectionUpdated, can('environment:connections:update'), patchPublicConnection);
 publicAPI.route('/connections/:connectionId').delete(envAuth, auditPublicConnectionDeleted, can('environment:connections:delete'), deletePublicConnection);
 
 // Config
 publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
-publicAPI.route('/environment-variables').get(envAuth, can('environment:variables:read'), getPublicEnvironmentVariables);
+publicAPI.route('/environment-variables').get(...withTaskCapability('api:env-vars:read'), getPublicEnvironmentVariables);
 
 publicAPI.use('/environment', jsonContentTypeMiddleware);
 publicAPI
@@ -432,9 +428,9 @@ publicAPI.route('/records/prune').patch(envAuth, can('environment:records:write'
 
 // Syncs (continued)
 publicAPI.use('/sync', jsonContentTypeMiddleware);
-publicAPI.route('/sync/trigger').post(envAuth, can('environment:syncs:execute'), postPublicTrigger);
+publicAPI.route('/sync/trigger').post(...withTaskCapability('api:sync:trigger'), postPublicTrigger);
 publicAPI.route('/sync/pause').post(envAuth, auditSyncPaused, can('environment:syncs:execute'), postPublicSyncPause);
-publicAPI.route('/sync/start').post(envAuth, auditSyncStarted, can('environment:syncs:execute'), postPublicSyncStart);
+publicAPI.route('/sync/start').post(...withTaskCapability('api:sync:trigger', { beforeCan: [auditSyncStarted] }), postPublicSyncStart);
 publicAPI.route('/sync/status').get(envAuth, can('environment:syncs:read'), getPublicSyncStatus);
 publicAPI.route('/sync/:name/variant/:variant').post(envAuth, auditSyncVariantCreated, can('environment:syncs:variant:create'), postSyncVariant);
 publicAPI.route('/sync/:name/variant/:variant').delete(envAuth, auditSyncVariantDeleted, can('environment:syncs:variant:delete'), deleteSyncVariant);
@@ -490,7 +486,7 @@ publicAPI
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);
-publicAPI.route('/action/trigger').post(envAuth, can('environment:actions:execute'), postPublicTriggerAction); //TODO: to deprecate
+publicAPI.route('/action/trigger').post(...withTaskCapability('api:action:trigger'), postPublicTriggerAction); //TODO: to deprecate
 publicAPI.route('/action/:id').get(envAuth, can('environment:actions:execute'), getAsyncActionResult);
 
 // Connect sessions

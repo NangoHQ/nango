@@ -1,5 +1,16 @@
 import type { Principal } from '@nangohq/authz';
-import type { AgentSession, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser, InternalEndUser } from '@nangohq/types';
+import type {
+    AgentSession,
+    ApiKeyPrincipal,
+    ConnectSession,
+    DBAPISecret,
+    DBEnvironment,
+    DBPlan,
+    DBTeam,
+    DBUser,
+    EnvironmentWithoutSecrets,
+    InternalEndUser
+} from '@nangohq/types';
 
 // Types are historically loose so we need to fix them at some point
 // export type RequestLocals =
@@ -24,7 +35,7 @@ import type { AgentSession, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvi
 
 export interface RequestLocals {
     // Set by every auth path.
-    authType: 'secretKey' | 'publicKey' | 'basic' | 'adminKey' | 'none' | 'session' | 'connectSession' | 'agentSession' | 'mcpOAuth';
+    authType: 'secretKey' | 'publicKey' | 'basic' | 'adminKey' | 'none' | 'session' | 'connectSession' | 'agentSession' | 'mcpOAuth' | 'taskToken';
     account: DBTeam;
     plan: DBPlan | null;
 
@@ -36,7 +47,8 @@ export interface RequestLocals {
     user: DBUser;
 
     // Set only by some auth paths, so a handler must check before use.
-    environment?: DBEnvironment;
+    // Task-token requests carry EnvironmentWithoutSecrets: the secret columns are never loaded.
+    environment?: DBEnvironment | EnvironmentWithoutSecrets;
     endUser?: InternalEndUser | null;
     lang?: string;
     secret?: DBAPISecret;
@@ -45,11 +57,14 @@ export interface RequestLocals {
     apiKeyId?: number;
     apiKeyUuid?: string;
     apiKeyDisplayName?: string;
-    apiKeyAuthSource?: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
+    apiKeyAuthSource?: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var' | 'task_token';
     sandboxTokenPurpose?: 'dryrun' | 'deploy';
     sandboxTokenDryrunId?: string;
     sandboxTokenDeploymentId?: string;
 }
 
-/** RequestLocals with the environment confirmed present — see `asyncWrapperWithEnvironment` and `requireEnvironment`. */
+/** RequestLocals with a full environment. Task-token routes must not use this: they have no secrets. */
 export type RequestLocalsWithEnvironment = RequestLocals & { environment: DBEnvironment };
+
+/** Task-token routes load no secret columns, so the environment is the wider type. */
+export type RequestLocalsWithAnyEnvironment = RequestLocals & { environment: DBEnvironment | EnvironmentWithoutSecrets };

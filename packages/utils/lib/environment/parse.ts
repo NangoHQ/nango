@@ -246,6 +246,9 @@ const ENVS_SHAPE = z.object({
     // changes stay visible until it elapses. Avoid raising it beyond 1 minute unless strictly
     // necessary — a larger TTL widens that eventual-consistency window. Read once at startup.
     AUTH_PERSIST_CONTEXT_CACHE_TTL_MS: z.coerce.number().int().positive().max(60_000).optional().default(60_000), // 1 minute
+    // In-process cache of the account context loaded for a task capability token. Separate from the
+    // persist cache so the two lookups can be toggled independently. Uses the persist TTL.
+    AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED: z.stringbool().optional().default(false),
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
