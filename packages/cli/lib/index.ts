@@ -297,6 +297,7 @@ program
     .option(
         '-i, --input [input]',
         'Optional: input to pass to the function. The `input` can be supplied in either JSON format or as a plain string. For example --input \'{"foo": "bar"}\'  --input \'foobar\'. ' +
+            'For event functions, pass --input \'{"event":"pre-connection-deletion"}\'. ' +
             'You can also pass a file path prefixed with `@` to the input and appended by `json`, for example @fixtures/data.json. Note that only json files can be passed.'
     )
     .option(
