@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1063
+Provider count: 1064
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -135,6 +135,7 @@ URL patterns:
 | `blackbaud-basic` | Blackbaud (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/blackbaud-basic.md) | [connect](https://nango.dev/docs/integrations/all/blackbaud-basic/connect.md) |  | crm |
 | `blandai` | BlandAI | API_KEY | [docs](https://nango.dev/docs/integrations/all/blandai.md) |  |  | support |
 | `bliro` | Bliro | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/bliro.md) | [connect](https://nango.dev/docs/api-integrations/bliro/connect.md) |  | communication |
+| `bluebeam` | Bluebeam | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/bluebeam.md) | [connect](https://nango.dev/docs/api-integrations/bluebeam/connect.md) | [setup](https://nango.dev/docs/api-integrations/bluebeam/how-to-register-your-own-bluebeam-oauth-app.md) | productivity, storage |
 | `bol-com` | bol.com | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/bol-com.md) | [connect](https://nango.dev/docs/api-integrations/bol-com/connect.md) |  | e-commerce |
 | `boldsign` | BoldSign | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/boldsign.md) |  |  | legal |
 | `booking-com` | Booking.com | BASIC | [docs](https://nango.dev/docs/integrations/all/booking-com.md) |  |  | e-commerce |
