@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { flags } from '@nangohq/utils';
 
-import { destroyHostedTelemetryDb, hostedTelemetryDb } from './hostedTelemetryDb.js';
+import { destroyHostedTelemetryDb, hostedTelemetryDb } from './db.js';
 
 const envs = vi.hoisted(() => ({
     NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL: undefined as string | undefined,
@@ -10,7 +10,7 @@ const envs = vi.hoisted(() => ({
     NANGO_HOSTED_TELEMETRY_POSTGRES_POOL_MAX: 5,
     NANGO_DB_APPLICATION_NAME: 'test'
 }));
-vi.mock('./env.js', () => ({ envs }));
+vi.mock('../env.js', () => ({ envs }));
 
 vi.mock('@nangohq/database', () => ({
     getDbConfig: ({ timeoutMs }: { timeoutMs: number }) => ({

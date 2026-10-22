@@ -1,4 +1,5 @@
-import { cancellableDaemon, metrics, stringifyError } from '@nangohq/utils';
+import { hostedTelemetry } from '@nangohq/hosted-telemetry';
+import { cancellableDaemon, isCloud, metrics, stringifyError } from '@nangohq/utils';
 
 import { GROUP_PREFIX_SEPARATOR } from './scheduler-config.js';
 import { logger } from './utils.js';
@@ -68,7 +69,12 @@ export class ConcurrencySampler {
             }
         }
         for (const [environmentId, concurrency] of perEnvironment) {
-            metrics.distribution(metrics.Types.ORCH_CONCURRENCY_ACTIVE, concurrency, { environmentId });
+            if (isCloud) {
+                metrics.distribution(metrics.Types.ORCH_CONCURRENCY_ACTIVE, concurrency, { environmentId });
+            } else {
+                // Self-hosted and BYOC concurrency metrics go to the hosted telemetry store.
+                hostedTelemetry.histogram('nango.hosted_metric.active_concurrency', concurrency, { environment_id: environmentId });
+            }
         }
     }
 }

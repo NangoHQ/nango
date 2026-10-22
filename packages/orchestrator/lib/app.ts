@@ -1,6 +1,7 @@
 import './tracer.js';
 
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
+import { destroyHostedTelemetryDb, hostedTelemetry, hostedTelemetryDb, initHostedTelemetry } from '@nangohq/hosted-telemetry';
 import { DatabaseClient, defaultDatabaseClientOptions, Scheduler } from '@nangohq/scheduler';
 import { metrics, once, report, stringifyError } from '@nangohq/utils';
 
@@ -33,6 +34,11 @@ const databaseUrl =
 
 try {
     await initializeFeatureFlags();
+
+    const telemetryDb = hostedTelemetryDb();
+    if (telemetryDb) {
+        initHostedTelemetry({ knex: telemetryDb });
+    }
 
     const immediateRateLimiter = await createImmediateRateLimiter(envs.ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN);
 
@@ -123,6 +129,8 @@ try {
             await immediateRateLimiter.destroy();
             await destroyFeatureFlags();
             await dbClient.destroy();
+            await hostedTelemetry.shutdown();
+            await destroyHostedTelemetryDb();
 
             logger.close();
 

@@ -1,11 +1,25 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { hostedTelemetry } from '@nangohq/hosted-telemetry';
 import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 import { Err, metrics, nanoid } from '@nangohq/utils';
 
 import { ConcurrencySampler } from './concurrency-sampler.js';
 
 import type { Task } from '@nangohq/scheduler';
+import type * as NangoUtils from '@nangohq/utils';
+
+// isCloud is a module-level constant computed from process.env at import time, so it is swapped through a getter
+const deployment = vi.hoisted(() => ({ isCloud: true }));
+vi.mock('@nangohq/utils', async () => {
+    const actual: typeof NangoUtils = await vi.importActual('@nangohq/utils');
+    return {
+        ...actual,
+        get isCloud() {
+            return deployment.isCloud;
+        }
+    };
+});
 
 describe('ConcurrencySampler', () => {
     const dbClient = getTestDbClient('orchestrator_concurrency_sampler');
@@ -28,6 +42,7 @@ describe('ConcurrencySampler', () => {
     });
 
     afterEach(async () => {
+        deployment.isCloud = true;
         vi.restoreAllMocks();
         await scheduler.stop();
         await dbClient.clearDatabase();
@@ -69,12 +84,30 @@ describe('ConcurrencySampler', () => {
         expect(duration).toHaveBeenCalledWith(metrics.Types.ORCH_CONCURRENCY_SAMPLING_DURATION_MS, expect.any(Number), { success: 'true' });
     });
 
+    it('should record to hosted telemetry outside cloud', async () => {
+        deployment.isCloud = false;
+        const env1 = randomEnvironmentId();
+        for (let i = 0; i < 2; i++) {
+            await immediate(scheduler, { groupKey: `sync:environment:${env1}` });
+        }
+        (await scheduler.dequeue({ groupKeyPattern: `sync:environment:${env1}`, limit: 2 })).unwrap();
+
+        const distribution = vi.spyOn(metrics, 'distribution').mockImplementation(() => {});
+        const histogram = vi.spyOn(hostedTelemetry, 'histogram').mockImplementation(() => {});
+
+        const sampler = new ConcurrencySampler({ scheduler, tickIntervalMs: 1000, queryTimeoutMs: 1000, onError: () => {} });
+        await sampler.run();
+
+        expect(histogram).toHaveBeenCalledWith('nango.hosted_metric.active_concurrency', 2, { environment_id: env1 });
+        expect(distribution).not.toHaveBeenCalled();
+    });
+
     it('should not emit samples when the count fails', async () => {
         vi.spyOn(scheduler.monitoring, 'concurrencyPerGroup').mockResolvedValue(Err(new Error('statement timeout')));
         const distribution = vi.spyOn(metrics, 'distribution').mockImplementation(() => {});
         const duration = vi.spyOn(metrics, 'duration').mockImplementation(() => {});
-        const sampler = new ConcurrencySampler({ scheduler, tickIntervalMs: 1000, queryTimeoutMs: 1000, onError: () => {} });
 
+        const sampler = new ConcurrencySampler({ scheduler, tickIntervalMs: 1000, queryTimeoutMs: 1000, onError: () => {} });
         await sampler.run();
 
         expect(distribution).not.toHaveBeenCalled();
