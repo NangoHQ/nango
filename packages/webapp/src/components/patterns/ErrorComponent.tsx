@@ -10,23 +10,44 @@ import { APIError, apiErrorCode, isNoSessionApiError } from '../../utils/api';
 
 import type { ApiError } from '@nangohq/types';
 
-export const ErrorPageComponent: React.FC<{ title: string; error: Error }> = ({ title, error }) => {
-    const code = apiErrorCode(error);
-    const status = error instanceof APIError ? error.res.status : 'none';
-    const supportId = code === 'generic_error_support' && error instanceof APIError ? String((error.json as ApiError<string>).error.payload) : undefined;
+function getSupportId(error: Error): string | undefined {
+    if (!(error instanceof APIError) || apiErrorCode(error) !== 'generic_error_support') {
+        return undefined;
+    }
+    return String((error.json as ApiError<string>).error.payload);
+}
+
+function getSentryTags(title: string, error: Error) {
+    const tags = {
+        error_page: title,
+        code: apiErrorCode(error),
+        status: error instanceof APIError ? error.res.status : 'none'
+    };
+    const supportId = getSupportId(error);
+    return supportId ? { ...tags, support_id: supportId } : tags;
+}
+
+function useReportErrorPage(title: string, error: Error) {
     // Every failed refetch hands this page a new error object. Report each kind of failure once.
     const reportedKey = useRef<string | null>(null);
-    const errorKey = `${error.name}:${code}:${status}`;
 
     useEffect(() => {
-        if (reportedKey.current === errorKey || code === 'not_found' || isNoSessionApiError(error)) {
+        const tags = getSentryTags(title, error);
+        const key = `${error.name}:${tags.code}:${tags.status}`;
+        if (key === reportedKey.current || tags.code === 'not_found' || isNoSessionApiError(error)) {
             return;
         }
-        reportedKey.current = errorKey;
-        Sentry.captureException(error, { tags: { error_page: title, code, status, ...(supportId ? { support_id: supportId } : {}) } });
-    }, [error, errorKey, title, code, status, supportId]);
 
-    if (code === 'not_found') {
+        reportedKey.current = key;
+        Sentry.captureException(error, { tags });
+    }, [title, error]);
+}
+
+export const ErrorPageComponent: React.FC<{ title: string; error: Error }> = ({ title, error }) => {
+    useReportErrorPage(title, error);
+    const supportId = getSupportId(error);
+
+    if (apiErrorCode(error) === 'not_found') {
         return <PageNotFound />;
     }
 
