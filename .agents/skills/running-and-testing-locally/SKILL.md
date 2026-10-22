@@ -34,7 +34,7 @@ Nango runs as a set of microservices (server, webapp, jobs, persist, orchestrato
 ## Step-by-Step Startup
 
 ```bash
-# 1. Install dependencies (always after branch switch or pull)
+# 1. Install dependencies (always after branch switch or pull; use `npm ci` in a fresh worktree)
 npm install
 
 # 2. Set up environment — check if .env exists first
