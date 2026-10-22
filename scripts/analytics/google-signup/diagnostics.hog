@@ -1,0 +1,50 @@
+// Consent is the signup-time snapshot, not a live withdrawal lookup.
+// One event/request isolates failures. No profile email, IP, value or inferred click IDs.
+fn timestampMs(value) {
+    if (typeof(value) != 'string' or not match(value, '^[0-9]{4}-[0-9]{2}-[0-9]{2}T')) { return 0 }
+    let parsed := 0
+    try { parsed := toUnixTimestampMilli(value) } catch { parsed := 0 }
+    return parsed
+}
+fn responseBody(response) {
+    // fetch decodes application/json. Refuse raw text rather than risk logging it in a parser exception.
+    if (typeof(response.body) == 'string' or response.body == null) { throw Error('Google returned non-JSON body') }
+    return response.body
+}
+
+// Manual read only. Never ingests or resends a conversion.
+if (inputs.deliveryApproved != true) { print('SKIP: diagnostics not approved'); return }
+if (typeof(inputs.requestId) != 'string' or not match(inputs.requestId, '^[A-Za-z0-9_-]{1,128}$')) { throw Error('Google diagnostics request ID missing') }
+if (empty(inputs.oauthClientId) or empty(inputs.oauthClientSecret) or empty(inputs.oauthRefreshToken)) { throw Error('Google OAuth configuration missing') }
+// A fresh access token per eligible invocation avoids persistent short-lived tokens.
+// Credentials belong only in encrypted secret inputs after explicit provisioning approval.
+let tokenResponse := fetch('https://oauth2.googleapis.com/token', {
+    'method': 'POST', 'headers': {'Content-Type': 'application/x-www-form-urlencoded'},
+    'body': concat('grant_type=refresh_token&client_id=', encodeURLComponent(inputs.oauthClientId), '&client_secret=', encodeURLComponent(inputs.oauthClientSecret), '&refresh_token=', encodeURLComponent(inputs.oauthRefreshToken))
+})
+if (tokenResponse.status < 200 or tokenResponse.status >= 300) { throw Error(concat('Google OAuth HTTP ', toString(tokenResponse.status))) }
+let token := responseBody(tokenResponse)
+if (typeof(token.access_token) != 'string' or empty(token.access_token) or lower(token.token_type ?? '') != 'bearer' or token.expires_in <= 0) { throw Error('Google OAuth response missing bearer token') }
+if (not empty(token.scope) and not has(splitByString(' ', token.scope), 'https://www.googleapis.com/auth/datamanager')) { throw Error('Google OAuth scope missing') }
+let response := fetch(concat('https://datamanager.googleapis.com/v1/requestStatus:retrieve?requestId=', encodeURLComponent(inputs.requestId)), {
+    'method': 'GET', 'headers': {'Authorization': concat('Bearer ', token.access_token)}
+})
+if (response.status < 200 or response.status >= 300) { throw Error(concat('Google diagnostics HTTP ', toString(response.status))) }
+let result := responseBody(response)
+if (length(result.requestStatusPerDestination ?? []) != 1) { throw Error('Google diagnostics expected one destination') }
+let status := result.requestStatusPerDestination[1]
+let state := status.requestStatus
+if (state != 'SUCCESS' and state != 'PROCESSING' and state != 'FAILED' and state != 'PARTIAL_SUCCESS') { throw Error('Google diagnostics unknown status') }
+print(concat('Google processing status: ', state))
+for (let warning in status.warningInfo.warningCounts ?? []) {
+    if (match(warning.reason ?? '', '^PROCESSING_WARNING_REASON_[A-Z_]+$')) { print(concat('Google processing warning: ', warning.reason)) }
+}
+if (state == 'PROCESSING') { print('Google still processing; repeat this read later, do not resend'); return }
+let duplicateOnly := not empty(status.errorInfo.errorCounts)
+for (let error in status.errorInfo.errorCounts ?? []) {
+    let reason := error.reason ?? ''
+    if (reason != 'PROCESSING_ERROR_REASON_DUPLICATE_TRANSACTION_ID') { duplicateOnly := false }
+    if (match(reason, '^PROCESSING_ERROR_REASON_[A-Z_]+$') or match(reason, '^PROCESSING_ERROR_[A-Z_]+$')) { print(concat('Google processing error: ', reason)) }
+}
+if ((state == 'FAILED' or state == 'PARTIAL_SUCCESS') and not duplicateOnly) { throw Error(concat('Google processing ', state)) }
+if (duplicateOnly) { print('Google already has this transaction for the conversion action') }

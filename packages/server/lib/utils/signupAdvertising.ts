@@ -1,6 +1,7 @@
 import * as z from 'zod';
 
 import { envs } from '../env.js';
+import { parseSignupGoogleAdvertising } from './signupGoogleAdvertising.js';
 
 import type { SignupAdvertising } from '@nangohq/types';
 import type { Request } from 'express';
@@ -59,7 +60,14 @@ export function parseSignupAdvertising(raw: unknown, now = Date.now()): SignupAd
 }
 
 export function signupAdvertisingFromRequest(req: Pick<Request, 'cookies' | 'headers'>, email: string): SignupAdvertising | undefined {
-    if (!envs.SIGNUP_AD_CONTEXT_ENABLED || !envs.SIGNUP_AD_CONTEXT_COOKIE_NAME || req.headers['sec-gpc'] === '1' || email.toLowerCase().endsWith('@nango.dev'))
-        return;
-    return parseSignupAdvertising(req.cookies?.[envs.SIGNUP_AD_CONTEXT_COOKIE_NAME]);
+    if (req.headers['sec-gpc'] === '1' || email.toLowerCase().endsWith('@nango.dev')) return;
+    const advertising =
+        envs.SIGNUP_AD_CONTEXT_ENABLED && envs.SIGNUP_AD_CONTEXT_COOKIE_NAME
+            ? parseSignupAdvertising(req.cookies?.[envs.SIGNUP_AD_CONTEXT_COOKIE_NAME])
+            : undefined;
+    const google =
+        envs.SIGNUP_GOOGLE_CONTEXT_ENABLED && envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME
+            ? parseSignupGoogleAdvertising(req.cookies?.[envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME])
+            : undefined;
+    return advertising || google ? { ...advertising, ...google } : undefined;
 }
