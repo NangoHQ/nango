@@ -2,9 +2,14 @@ import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import * as z from 'zod';
 
-import { NangoActionMock, NangoSyncMock } from './utils.js';
+import { createFunction } from '@nangohq/runner-sdk';
+
+import { ResponseCollector } from '../services/response-collector.service.js';
+import { fixturesPath } from '../tests/helpers.js';
+import { NangoActionMock, NangoSyncMock, replayFunction } from './utils.js';
 
 async function withMigrateMocksEnv<T>(value: string | undefined, fn: () => Promise<T>): Promise<T> {
     const previous = process.env['MIGRATE_MOCKS'];
@@ -326,6 +331,104 @@ describe('UnifiedFixtureProvider matching behavior', () => {
         expect(noParams.data).toEqual({ ok: true });
 
         await expect(nangoMock.get({ endpoint: '/foo', params: { q: '1' } })).rejects.toThrow('No mock found for GET foo');
+    });
+});
+
+describe('native fixture replay', () => {
+    const dirname = path.join(fixturesPath, 'replay/github/tests');
+
+    it.each([
+        { name: 'echo', source: '../functions/echo.ts' },
+        { name: 'fetch_repository_issue_details', source: '../tools/getIssue.ts' }
+    ])('replays the recorded $name function', async ({ name, source }) => {
+        const { default: definition } = await import(path.resolve(dirname, source));
+        await replayFunction({ dirname, name, definition });
+    });
+
+    it('rejects output that differs from the recorded response', async () => {
+        const { default: issueTool } = await import(path.resolve(dirname, '../tools/getIssue.ts'));
+        await expect(
+            replayFunction({
+                dirname,
+                name: 'fetch_repository_issue_details',
+                definition: issueTool,
+                mocks: { get: vi.fn().mockResolvedValue({ data: { title: 'Changed issue' } }) }
+            })
+        ).rejects.toThrow();
+    });
+
+    it('rejects a fixture without a recorded trigger', async () => {
+        const testsDir = await createTestDir('nango-native-trigger-');
+        try {
+            new ResponseCollector().saveUnifiedMock({
+                filePath: path.join(testsDir, 'schedule.test.json'),
+                input: undefined,
+                output: { kind: 'schedule', input: null }
+            });
+            const { default: definition } = await import(path.join(fixturesPath, 'zero/cases/createFunction.schedule.valid.ts'));
+            await expect(replayFunction({ dirname: testsDir, name: 'schedule', definition })).rejects.toThrow('Missing trigger in saved fixture for schedule');
+        } finally {
+            await fs.rm(path.dirname(testsDir), { recursive: true, force: true });
+        }
+    });
+
+    it('replays saved records, metadata, and initial checkpoints', async () => {
+        const testsDir = await createTestDir('nango-native-state-');
+        try {
+            const collector = new ResponseCollector();
+            collector.addBatchSave('Issue::replay', [{ id: '123', title: 'Recorded issue' }]);
+            collector.addBatchDelete('Issue::replay', [{ id: 'old', title: 'Deleted issue' }]);
+            collector.saveUnifiedMock({
+                filePath: path.join(testsDir, 'state.test.json'),
+                input: { id: '123' },
+                output: { account: 'updated', page: 2, cleared: true },
+                trigger: { kind: 'invoke', input: { id: '123' } },
+                stubbedMetadata: { account: 'initial' },
+                stubbedCheckpoint: { page: 1 },
+                variant: 'replay'
+            });
+
+            const definition = createFunction({
+                description: 'Replay local state and record changes',
+                requires: { outbound: false },
+                input: z.object({ id: z.string() }),
+                data: {
+                    models: { Issue: z.object({ id: z.string(), title: z.string() }) },
+                    metadata: z.object({ account: z.string() }),
+                    checkpoint: z.object({ page: z.number() })
+                },
+                output: z.object({ account: z.string(), page: z.number(), cleared: z.boolean() }),
+                exec: async (nango, trigger) => {
+                    await nango.batchSave([{ id: trigger.input.id, title: 'Recorded issue' }], 'Issue');
+                    await nango.batchDelete([{ id: 'old', title: 'Deleted issue' }], 'Issue');
+                    const checkpoint = await nango.getCheckpoint();
+                    await nango.saveCheckpoint({ page: (checkpoint?.page ?? 0) + 1 });
+                    const savedCheckpoint = await nango.getCheckpoint();
+                    await nango.clearCheckpoint();
+                    await nango.updateMetadata({ account: 'updated' });
+                    return {
+                        account: (await nango.getMetadata()).account,
+                        page: savedCheckpoint?.page ?? 0,
+                        cleared: (await nango.getCheckpoint()) === undefined
+                    };
+                }
+            });
+
+            await replayFunction({ dirname: testsDir, name: 'state', definition });
+            collector.addBatchSave('Issue::replay', [{ id: 'unexpected', title: 'Extra record' }]);
+            collector.saveUnifiedMock({
+                filePath: path.join(testsDir, 'state.test.json'),
+                input: { id: '123' },
+                output: { account: 'updated', page: 2, cleared: true },
+                trigger: { kind: 'invoke', input: { id: '123' } },
+                stubbedMetadata: { account: 'initial' },
+                stubbedCheckpoint: { page: 1 },
+                variant: 'replay'
+            });
+            await expect(replayFunction({ dirname: testsDir, name: 'state', definition })).rejects.toThrow('state: records for Issue::replay');
+        } finally {
+            await fs.rm(path.dirname(testsDir), { recursive: true, force: true });
+        }
     });
 });
 
