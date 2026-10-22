@@ -58,8 +58,7 @@ export const TASK_CAPABILITY_SCOPES = [
     'api:metadata:write',
     'api:env-vars:read',
     'api:sync:trigger',
-    'api:action:trigger',
-    'api:proxy'
+    'api:action:trigger'
 ] as const;
 
 export type TaskCapabilityScope = (typeof TASK_CAPABILITY_SCOPES)[number];
