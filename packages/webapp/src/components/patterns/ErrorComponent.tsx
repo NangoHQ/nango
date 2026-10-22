@@ -1,23 +1,29 @@
 import * as Sentry from '@sentry/react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 
 import { Alert, AlertDescription } from '@nangohq/design-system';
 
 import DashboardLayout from '../../layout/DashboardLayout';
 import PageNotFound from '../../pages/PageNotFound';
+import { APIError, apiErrorCode, isNoSessionApiError } from '../../utils/api';
 
 import type { ApiError } from '@nangohq/types';
 
-export const ErrorPageComponent: React.FC<{ title: string; error?: ApiError<string> }> = ({ title, error }) => {
-    const code = error?.error.code;
+export const ErrorPageComponent: React.FC<{ title: string; error: Error }> = ({ title, error }) => {
+    const code = apiErrorCode(error);
+    const status = error instanceof APIError ? error.res.status : 'none';
+    const supportId = code === 'generic_error_support' && error instanceof APIError ? String((error.json as ApiError<string>).error.payload) : undefined;
+    // Every failed refetch hands this page a new error object.
+    const reported = useRef(false);
 
     useEffect(() => {
-        if (code === 'not_found') {
+        if (reported.current || code === 'not_found' || isNoSessionApiError(error)) {
             return;
         }
-        Sentry.captureMessage('Error page shown', { tags: { error_page: title, code: code ?? 'unknown' } });
-    }, [title, code]);
+        reported.current = true;
+        Sentry.captureException(error, { tags: { error_page: title, code, status, ...(supportId ? { support_id: supportId } : {}) } });
+    }, [error, title, code, status, supportId]);
 
     if (code === 'not_found') {
         return <PageNotFound />;
@@ -31,9 +37,9 @@ export const ErrorPageComponent: React.FC<{ title: string; error?: ApiError<stri
             <Alert variant="danger">
                 <AlertDescription>
                     An error occurred, refresh your page or reach out to the support.{' '}
-                    {error?.error.code === 'generic_error_support' && (
+                    {supportId && (
                         <>
-                            (id: <span className="select-all">{error.error.payload as string}</span>)
+                            (id: <span className="select-all">{supportId}</span>)
                         </>
                     )}
                 </AlertDescription>

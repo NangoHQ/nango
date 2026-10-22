@@ -21,7 +21,7 @@ import { useStore } from '@/store';
 import { AuthBadge } from './components/AuthBadge';
 import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 
-import type { ApiIntegrationList, GetIntegrations } from '@nangohq/types';
+import type { ApiIntegrationList } from '@nangohq/types';
 
 export const IntegrationsList = () => {
     const navigate = useNavigate();
@@ -93,8 +93,8 @@ export const IntegrationsList = () => {
         [debouncedFilterIntegrations]
     );
 
-    if (error) {
-        return <ErrorPageComponent title="Integrations" error={error.json as GetIntegrations['Errors']} />;
+    if (error && !data) {
+        return <ErrorPageComponent title="Integrations" error={error} />;
     }
 
     return (
