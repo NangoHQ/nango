@@ -1,5 +1,6 @@
 import tracer from 'dd-trace';
 
+import { jwtHeaderAlg } from '@nangohq/internal-auth';
 import { accountService } from '@nangohq/shared';
 import { flagHasPlan, stringifyError, tagTraceUser } from '@nangohq/utils';
 
@@ -8,7 +9,39 @@ import type { NextFunction, Request, Response } from 'express';
 
 export type AuthLocals = PersistAuthContext;
 
-export const authMiddleware = async (req: Request, res: Response<any, AuthLocals>, next: NextFunction) => {
+export function applyPersistAuthContext(res: Response<any, AuthLocals>, accountContext: PersistAuthContext): boolean {
+    if (flagHasPlan && !accountContext.plan) {
+        res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: plan not found` } });
+        return false;
+    }
+
+    res.locals['account'] = accountContext.account;
+    res.locals['environment'] = accountContext.environment;
+    res.locals['plan'] = accountContext.plan;
+    tagTraceUser({ ...accountContext });
+    return true;
+}
+
+/**
+ * The token from an EdDSA `Authorization` header. The scheme match is anchored and
+ * case-insensitive (`Bearer`, `bearer`). Anything else returns undefined so the secret path can run.
+ */
+export function eddsaBearerToken(header: string | undefined): string | undefined {
+    if (!header) {
+        return undefined;
+    }
+    const match = /^Bearer\s+(\S+)$/i.exec(header.trim());
+    const token = match?.[1];
+    if (!token || jwtHeaderAlg(token) !== 'EdDSA') {
+        return undefined;
+    }
+    return token;
+}
+
+/**
+ * Secret-key authentication for a route that declared a scope.
+ */
+export async function authenticateSecret(req: Request, res: Response<any, AuthLocals>, next: NextFunction) {
     const authorizationHeader = req.get('authorization');
 
     if (!authorizationHeader) {
@@ -30,12 +63,12 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
 
     try {
         const result = await tracer.trace('persist.middleware.auth.getPersistAuthContext', async (span) => {
-            const res = await accountService.getPersistAuthContext(secret);
-            if (res.isErr()) {
+            const traced = await accountService.getPersistAuthContext(secret);
+            if (traced.isErr()) {
                 // Err is returned, not thrown, so the span must be failed explicitly
-                span?.setTag('error', res.error);
+                span?.setTag('error', traced.error);
             }
-            return res;
+            return traced;
         });
         if (result.isErr()) {
             res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(result.error)}` } });
@@ -50,17 +83,11 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
             res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: Matching environment not found` } });
             return;
         }
-        if (flagHasPlan && !accountContext.plan) {
-            res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: plan not found` } });
+        if (!applyPersistAuthContext(res, accountContext)) {
             return;
         }
-
-        res.locals['account'] = accountContext.account;
-        res.locals['environment'] = accountContext.environment;
-        res.locals['plan'] = accountContext.plan;
-        tagTraceUser({ ...accountContext });
         next();
     } catch (err) {
         res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(err)}` } });
     }
-};
+}
