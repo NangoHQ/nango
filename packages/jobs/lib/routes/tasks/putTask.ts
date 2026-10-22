@@ -1,9 +1,12 @@
 import * as z from 'zod';
 
+import { getInternalServiceAuth } from '@nangohq/internal-auth';
+import { getSyncJobByRunId } from '@nangohq/shared';
 import { validateRequest } from '@nangohq/utils';
 
 import { handle } from '../../execution/operations/handler.js';
 import { nangoPropsSchema } from '../../schemas/nango-props.js';
+import { taskPropsBoundToCapability } from './capability-props.js';
 
 import type { PutTask } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
@@ -45,6 +48,16 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<PutTask>) =>
     if (!nangoProps) {
         res.status(400).json({ error: { code: 'put_task_failed', message: 'missing nangoProps' } });
         return;
+    }
+    // HMAC and scope-less task JWTs have no `res` and stay on the previous path until PR 5.
+    // When internal auth is disabled the middleware does not verify a token, so there is no claim to compare.
+    const auth = getInternalServiceAuth(res);
+    if (auth?.kind === 'jwt' && auth.res) {
+        const syncJob = auth.res.syncId ? await getSyncJobByRunId(taskId) : null;
+        if (!taskPropsBoundToCapability(auth.res, nangoProps, taskId, syncJob)) {
+            res.status(401).json({ error: { code: 'put_task_failed', message: 'Unauthorized' } });
+            return;
+        }
     }
     await handle({
         taskId,
