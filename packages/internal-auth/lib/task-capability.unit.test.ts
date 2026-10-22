@@ -58,7 +58,8 @@ describe('T1', () => {
         for (const scope of SYNC_ONLY) {
             expect(actionScopes).not.toContain(scope);
         }
-        expect(actionScopes).toEqual(expect.arrayContaining(['persist:log', 'jobs:putTask', 'jobs:heartbeat', 'api:proxy']));
+        expect(actionScopes).toEqual(expect.arrayContaining(['persist:log', 'jobs:putTask', 'jobs:heartbeat', 'api:action:trigger']));
+        expect(actionScopes).not.toContain('api:proxy');
         expect(taskScopesForScriptType('on-event')).toEqual(actionScopes);
         expect(taskScopesForScriptType('function')).toEqual(actionScopes);
 
