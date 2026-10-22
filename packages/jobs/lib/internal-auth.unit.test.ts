@@ -161,6 +161,32 @@ describe('runnerAuth', () => {
         expect(actionAuth?.res).toEqual({ environmentId: 4, connectionId: 9 });
     });
 
+    it('verifies the sync and action tokens for persist and the server', async () => {
+        const { pem, raw } = jobsKey();
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = pem;
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = 'jobs-2026-09';
+        const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: raw }], INTERNAL_SERVICE_ISSUER_JOBS);
+
+        for (const scriptType of ['sync', 'action'] as const) {
+            const props = capabilityProps(scriptType);
+            const { internalAuthToken } = await runnerAuth(`task-${scriptType}`, props);
+            expect(internalAuthToken).toEqual(expect.any(String));
+            if (!internalAuthToken) {
+                return;
+            }
+            const res = {
+                environmentId: props.environmentId,
+                connectionId: props.nangoConnectionId,
+                ...(props.syncId ? { syncId: props.syncId } : {})
+            };
+            for (const audience of [INTERNAL_SERVICE_AUDIENCE_PERSIST, INTERNAL_SERVICE_AUDIENCE_SERVER]) {
+                const auth = await verifyTaskCapabilityToken(internalAuthToken, audience, registry);
+                expect(auth?.res).toEqual(res);
+                expect(auth?.scopes).toEqual(taskScopesForScriptType(scriptType));
+            }
+        }
+    });
+
     it('removes secretKey when omit is set, and refuses to dispatch when no Ed25519 key can mint a token', async () => {
         mockEnvs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY = true;
         await expect(runnerAuth('task-1', capabilityProps('action'))).rejects.toThrow(/NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY/);
