@@ -2,6 +2,7 @@ import { Buffer } from 'buffer';
 import * as crypto from 'crypto';
 import { createRequire } from 'module';
 import fs from 'node:fs';
+import path from 'node:path';
 import * as vm from 'node:vm';
 import * as url from 'url';
 
@@ -26,19 +27,24 @@ import * as nangoScript from '../sdkScripts.js';
 import { getConfig, getConnection, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { displayValidationError } from '../utils/errors.js';
 import { Err, Ok } from '../utils/result.js';
+import { tsToJsPath } from '../zeroYaml/compile.js';
 import { parseIntegrationDefinitions } from '../zeroYaml/definitions.js';
 import { ReadableError } from '../zeroYaml/utils.js';
 import { DiagnosticsMonitor, formatDiagnostics } from './diagnostics-monitor.service.js';
 import { ResponseCollector } from './response-collector.service.js';
-import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
+import { createFunctionCLI, NangoActionCLI, NangoSyncCLI } from './sdk.js';
 
 import type { GlobalOptions } from '../types.js';
+import type { FunctionConfig } from '../zeroYaml/definitions.js';
+import type { RecordedTrigger } from './response-collector.service.js';
 import type {
     Checkpoint,
     DBSyncConfig,
+    FunctionCapabilities,
+    FunctionTriggerDefinition,
+    HttpRequest,
     Metadata,
     NangoProps,
-    NangoYamlParsed,
     ParsedNangoAction,
     ParsedNangoSync,
     Result,
@@ -49,10 +55,11 @@ import type { AxiosResponse } from 'axios';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
-    connectionId: string;
+    connectionId?: string;
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
     input?: string;
+    triggerHttp?: string;
     metadata?: string;
     checkpoint?: string;
     optionalEnvironment?: string;
@@ -63,6 +70,20 @@ interface RunArgs extends GlobalOptions {
 }
 
 const require = createRequire(import.meta.url);
+
+const httpTriggerSchema = zod
+    .object({
+        method: zod.enum(['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'PROPFIND', 'REPORT']).default('POST'),
+        path: zod.string().startsWith('/').default('/'),
+        headers: zod
+            .record(zod.string(), zod.string())
+            .default({})
+            .transform((headers) => Object.fromEntries(Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value]))),
+        query: zod.record(zod.string(), zod.string()).default({}),
+        body: zod.json().default(null),
+        subscriptions: zod.array(zod.string()).optional()
+    })
+    .strict();
 
 /**
  * To avoid pre-installing too much things we dynamically load package inside local package.json
@@ -148,12 +169,6 @@ export class DryRunService {
             variant = BASE_VARIANT;
         }
 
-        if (!connectionId) {
-            const message = 'Connection id is required';
-            console.log(chalk.red(message));
-            return Err(message);
-        }
-
         const def = await parseIntegrationDefinitions({ fullPath: this.fullPath, debug });
         if (def.isErr()) {
             const message = def.error instanceof ReadableError ? def.error.toText() : def.error.message;
@@ -161,7 +176,7 @@ export class DryRunService {
             console.log(def.error instanceof ReadableError ? message : chalk.red(message));
             return Err(message);
         }
-        const parsed: NangoYamlParsed = def.value;
+        const parsed = def.value;
 
         if (options.optionalProviderConfigKey && !parsed.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
             const message = `Integration "${options.optionalProviderConfigKey}" does not exist`;
@@ -174,6 +189,7 @@ export class DryRunService {
 
         // Find the appropriate script to run
         let scriptInfo: ParsedNangoSync | ParsedNangoAction | undefined;
+        let functionInfo: FunctionConfig | undefined;
         for (const integration of parsed.integrations) {
             if (options.optionalProviderConfigKey && integration.providerConfigKey !== options.optionalProviderConfigKey) {
                 continue;
@@ -184,7 +200,7 @@ export class DryRunService {
                 if (script.name !== syncName) {
                     continue;
                 }
-                if (scriptInfo) {
+                if (scriptInfo || functionInfo) {
                     const message = `Multiple integrations contain a script named "${syncName}". Please use "--integration-id"`;
                     console.log(chalk.red(message));
                     return Err(message);
@@ -193,8 +209,21 @@ export class DryRunService {
                 providerConfigKey = integration.providerConfigKey;
             }
 
-            // If nothing that could still be a on-event script
-            if (!scriptInfo) {
+            for (const fn of parsed.functions ?? []) {
+                if (fn.integrationId !== integration.providerConfigKey || fn.name !== syncName) {
+                    continue;
+                }
+                if (scriptInfo || functionInfo) {
+                    const message = `Multiple integrations contain a script named "${syncName}". Please use "--integration-id"`;
+                    console.log(chalk.red(message));
+                    return Err(message);
+                }
+                functionInfo = fn;
+                providerConfigKey = fn.integrationId;
+            }
+
+            // If nothing matched, this could still be an on-event script.
+            if (!scriptInfo && !functionInfo) {
                 for (const script of Object.values(integration.onEventScripts).flat()) {
                     if (script !== syncName) {
                         continue;
@@ -210,7 +239,7 @@ export class DryRunService {
             }
         }
 
-        if ((!scriptInfo && !isOnEventScript) || !providerConfigKey) {
+        if ((!scriptInfo && !functionInfo && !isOnEventScript) || !providerConfigKey) {
             const message = `No script matched "${syncName}"${options.optionalProviderConfigKey ? ` for integration "${options.optionalProviderConfigKey}"` : ''}`;
             console.log(chalk.red(message));
             return Err(message);
@@ -219,16 +248,28 @@ export class DryRunService {
         if (debug && scriptInfo) {
             printDebug(`Found integration ${providerConfigKey}, ${scriptInfo.type} ${scriptInfo.name} `);
         }
+        if (debug && functionInfo) {
+            printDebug(`Found integration ${providerConfigKey}, function ${functionInfo.name} `);
+        }
 
-        const nangoConnectionRes = await getConnection(
-            providerConfigKey,
-            connectionId,
-            {
-                'Nango-Is-Sync': true,
-                'Nango-Is-Dry-Run': true
-            },
-            debug
-        );
+        const requiresConnection = functionInfo?.requires?.connection !== false;
+        if (requiresConnection && !connectionId) {
+            const message = 'Connection id is required';
+            console.log(chalk.red(message));
+            return Err(message);
+        }
+
+        const nangoConnectionRes = requiresConnection
+            ? await getConnection(
+                  providerConfigKey,
+                  connectionId!,
+                  {
+                      'Nango-Is-Sync': true,
+                      'Nango-Is-Dry-Run': true
+                  },
+                  debug
+              )
+            : Ok({ id: -1, connection_id: '', provider_config_key: providerConfigKey });
         if (nangoConnectionRes.isErr()) {
             console.log(chalk.red(nangoConnectionRes.error.message));
             return Err(nangoConnectionRes.error);
@@ -274,12 +315,51 @@ export class DryRunService {
         let type: ScriptFileType = 'syncs';
         if (scriptInfo?.type === 'action') {
             type = 'actions';
+        } else if (functionInfo) {
+            type = 'functions';
         } else if (isOnEventScript) {
             type = 'on-events';
         }
 
         let stubbedMetadata: Metadata | undefined = undefined;
         let normalizedInput;
+        let httpRequest: HttpRequest | undefined;
+        let httpSubscriptions: string[] | undefined;
+
+        if (options.triggerHttp !== undefined) {
+            if (actionInput !== undefined) {
+                const message = 'Use either --trigger-http or --input';
+                console.log(chalk.red(message));
+                return Err(message);
+            }
+            if (functionInfo?.trigger.kind !== 'http') {
+                const message = '--trigger-http is only supported for functions with an HTTP trigger';
+                console.log(chalk.red(message));
+                return Err(message);
+            }
+
+            const result = parseJsonArg(options.triggerHttp, 'trigger-http');
+            if (!result.ok) {
+                console.log(chalk.red(result.message));
+                return Err(result.message);
+            }
+            const parsedRequest = httpTriggerSchema.safeParse(result.value);
+            if (!parsedRequest.success) {
+                const message = `Invalid --trigger-http: ${parsedRequest.error.message}`;
+                console.log(chalk.red(message));
+                return Err(message);
+            }
+            const { subscriptions, ...request } = parsedRequest.data;
+            httpRequest = request;
+            httpSubscriptions = subscriptions;
+            normalizedInput = httpRequest.body;
+        }
+
+        if (actionInput !== undefined && functionInfo?.trigger.kind === 'schedule') {
+            const message = '--input is not supported for functions with a schedule trigger';
+            console.log(chalk.red(message));
+            return Err(message);
+        }
 
         if (actionInput) {
             const result = parseJsonArg(actionInput, 'input');
@@ -323,9 +403,9 @@ export class DryRunService {
                 id: -1,
                 sync_name: syncName,
                 file_location: '',
-                models: scriptInfo?.output || [],
+                models: functionInfo?.model_schema_refs?.map((ref) => ref.replace('#/definitions/', '')) || scriptInfo?.output || [],
                 model_schema: null,
-                input: scriptInfo?.input || null,
+                input: functionInfo?.input_schema_ref?.replace('#/definitions/', '') || scriptInfo?.input || null,
                 track_deletes: false,
                 type: scriptInfo?.type || 'sync',
                 active: true,
@@ -335,7 +415,7 @@ export class DryRunService {
                 nango_config_id: 1,
                 runs: '',
                 webhook_subscriptions: [],
-                models_json_schema: scriptInfo?.json_schema || null,
+                models_json_schema: functionInfo?.json_schema || scriptInfo?.json_schema || null,
                 created_at: new Date(),
                 updated_at: new Date(),
                 attributes: {},
@@ -352,7 +432,7 @@ export class DryRunService {
             }
             const nangoProps: NangoProps = {
                 isCLI: true,
-                scriptType: scriptInfo?.type || 'sync',
+                scriptType: functionInfo ? 'function' : scriptInfo?.type || 'sync',
                 host: resolveHostport(),
                 connectionId: nangoConnection.connection_id,
                 environmentId: -1,
@@ -393,8 +473,13 @@ export class DryRunService {
             const results = await this.runScript({
                 syncName,
                 nangoProps,
-                loadLocation: './',
+                loadLocation: this.fullPath,
+                ...(functionInfo && { filePath: functionInfo.filePath }),
+                ...(functionInfo && { functionCapabilities: functionInfo.capabilities, functionTrigger: functionInfo.trigger }),
+                ...(functionInfo && { functionOutputSchemaRef: functionInfo.output_schema_ref }),
                 input: normalizedInput,
+                ...(httpRequest && { httpRequest }),
+                ...(httpSubscriptions !== undefined && { httpSubscriptions }),
                 stubbedMetadata,
                 stubbedCheckpoint,
                 ...(options.diagnostics && { diagnostics: options.diagnostics })
@@ -419,8 +504,8 @@ export class DryRunService {
             }
 
             const resultOutput = [];
-            if (type === 'actions') {
-                if (!results.response) {
+            if (type === 'actions' || type === 'functions') {
+                if (!results.response || (type === 'functions' && results.response.output === undefined)) {
                     console.log(chalk.gray('no output'));
                     resultOutput.push(chalk.gray('no output'));
                 } else {
@@ -472,12 +557,10 @@ export class DryRunService {
                 }
 
                 if (options.saveResponses) {
-                    if (scriptInfo?.output) {
-                        for (const model of scriptInfo.output) {
-                            const modelFullName = nangoInstance.modelFullName(model);
-                            responseCollector.addBatchSave(modelFullName, nangoInstance.rawSaveOutput.get(modelFullName) || []);
-                            responseCollector.addBatchDelete(modelFullName, nangoInstance.rawDeleteOutput.get(modelFullName) || []);
-                        }
+                    for (const model of syncConfig.models) {
+                        const modelFullName = nangoInstance.modelFullName(model);
+                        responseCollector.addBatchSave(modelFullName, nangoInstance.rawSaveOutput.get(modelFullName) || []);
+                        responseCollector.addBatchDelete(modelFullName, nangoInstance.rawDeleteOutput.get(modelFullName) || []);
                     }
                 }
             }
@@ -488,6 +571,8 @@ export class DryRunService {
                     filePath: testFilePath,
                     input: normalizedInput,
                     output: results.response?.output,
+                    ...(httpRequest && { triggerHttp: httpRequest }),
+                    ...(functionInfo && { trigger: results.response?.trigger, stubbedCheckpoint, variant }),
                     stubbedMetadata: stubbedMetadata
                 });
                 console.log(chalk.green(`\n✅ Mocks saved to ${testFilePath}`));
@@ -507,7 +592,13 @@ export class DryRunService {
         syncName,
         nangoProps,
         loadLocation,
+        filePath,
+        functionCapabilities,
+        functionTrigger,
+        functionOutputSchemaRef,
         input,
+        httpRequest,
+        httpSubscriptions,
         stubbedMetadata,
         stubbedCheckpoint,
         diagnostics
@@ -515,12 +606,19 @@ export class DryRunService {
         syncName: string;
         nangoProps: NangoProps;
         loadLocation: string;
-        input: object;
+        filePath?: string;
+        functionCapabilities?: FunctionCapabilities;
+        functionTrigger?: FunctionTriggerDefinition;
+        functionOutputSchemaRef?: string | null;
+        input: HttpRequest['body'] | undefined;
+        httpRequest?: HttpRequest;
+        httpSubscriptions?: string[];
         stubbedMetadata: Metadata | undefined;
         stubbedCheckpoint: Checkpoint | undefined;
         diagnostics?: boolean;
     }): Promise<
-        { success: false; error: any; response: null } | { success: true; error: null; response: { output: any; nango: NangoSyncCLI | NangoActionCLI } }
+        | { success: false; error: any; response: null }
+        | { success: true; error: null; response: { output: any; nango: NangoSyncCLI | NangoActionCLI; trigger?: RecordedTrigger } }
     > {
         const drs = new DryRunService({
             environment: nangoProps.environmentName,
@@ -529,7 +627,9 @@ export class DryRunService {
             validation: this.validation
         });
         const nango =
-            nangoProps.scriptType === 'sync' || nangoProps.scriptType === 'webhook'
+            nangoProps.scriptType === 'sync' ||
+            nangoProps.scriptType === 'webhook' ||
+            (nangoProps.scriptType === 'function' && functionCapabilities?.usesRecords)
                 ? new NangoSyncCLI(nangoProps, { dryRunService: drs, stubbedMetadata, stubbedCheckpoint })
                 : new NangoActionCLI(nangoProps, { dryRunService: drs, stubbedCheckpoint });
 
@@ -542,7 +642,8 @@ export class DryRunService {
             const script = getIntegrationFile({
                 syncName,
                 nangoProps,
-                location: loadLocation
+                location: loadLocation,
+                ...(filePath && { filePath })
             });
             const isAction = nangoProps.scriptType === 'action';
 
@@ -625,6 +726,90 @@ export class DryRunService {
 
                 // Start diagnostics monitoring before script execution
                 monitor?.start();
+
+                if (nangoProps.scriptType === 'function') {
+                    const payload = scriptExports.default;
+                    if (payload.type !== 'function') {
+                        throw new Error('Incorrect script loaded for function');
+                    }
+                    if (nangoProps.syncConfig.input) {
+                        const valInput = validateData({
+                            version: nangoProps.syncConfig.version || '1',
+                            input,
+                            modelName: nangoProps.syncConfig.input,
+                            jsonSchema: nangoProps.syncConfig.models_json_schema
+                        });
+                        if (Array.isArray(valInput)) {
+                            nango.log('Invalid function input. Use `--validation` option to see the details', { level: 'warn' });
+                            if (nangoProps.runnerFlags.validateActionInput) {
+                                return {
+                                    success: false,
+                                    response: null,
+                                    error: new InvalidActionInputSDKError({ data: input, validation: valInput, model: nangoProps.syncConfig.input })
+                                };
+                            }
+                        }
+                    }
+                    const connection =
+                        payload.requires?.connection === false
+                            ? undefined
+                            : { connectionId: nangoProps.connectionId, integrationId: nangoProps.providerConfigKey };
+                    let trigger;
+                    switch (functionTrigger?.kind) {
+                        case 'schedule':
+                            trigger = { kind: 'schedule' as const, input: null, ...(connection && { connection }) };
+                            break;
+                        case 'event': {
+                            const requestedEvent = input && typeof input === 'object' && 'event' in input ? input['event'] : undefined;
+                            const event =
+                                functionTrigger.events.find((candidate) => candidate === requestedEvent) ??
+                                (requestedEvent === undefined && functionTrigger.events.length === 1 ? functionTrigger.events[0] : undefined);
+                            if (!event) {
+                                throw new Error(`Provide --input '{"event":"<event>"}' with one of: ${functionTrigger.events.join(', ')}`);
+                            }
+                            trigger = { kind: 'event' as const, input: { event }, ...(connection && { connection }) };
+                            break;
+                        }
+                        case 'http':
+                            trigger = {
+                                kind: 'http' as const,
+                                input: functionTrigger.debounce?.take === 'all' && !Array.isArray(input) ? [input] : input,
+                                ...(connection && { connection }),
+                                ...(httpSubscriptions !== undefined && { subscriptions: httpSubscriptions }),
+                                request: httpRequest ?? { method: 'POST' as const, path: '/', headers: {}, query: {}, body: input ?? null }
+                            };
+                            break;
+                        default:
+                            trigger = { kind: 'invoke' as const, input, ...(connection && { connection }) };
+                    }
+                    const functionNango = createFunctionCLI({
+                        nango,
+                        capabilities: functionCapabilities ?? payload.capabilities,
+                        requiresConnection: payload.requires?.connection !== false,
+                        stubbedMetadata
+                    });
+                    const output = await payload.exec(functionNango as any, trigger as any);
+                    if (functionOutputSchemaRef) {
+                        const modelNameOutput = functionOutputSchemaRef.replace('#/definitions/', '');
+                        const valOutput = validateData({
+                            version: nangoProps.syncConfig.version || '1',
+                            input: output,
+                            modelName: modelNameOutput,
+                            jsonSchema: nangoProps.syncConfig.models_json_schema
+                        });
+                        if (Array.isArray(valOutput)) {
+                            nango.log('Invalid function output. Use `--validation` option to see the details', { level: 'warn' });
+                            if (nangoProps.runnerFlags.validateActionOutput) {
+                                return {
+                                    success: false,
+                                    response: null,
+                                    error: new InvalidActionOutputSDKError({ data: output, validation: valOutput, model: modelNameOutput })
+                                };
+                            }
+                        }
+                    }
+                    return { success: true, error: null, response: { output, nango, trigger } };
+                }
 
                 if (isAction) {
                     // Validate action input against json schema
@@ -800,9 +985,22 @@ function readFile(rawFilePath: string): string | null {
     }
 }
 
-function getIntegrationFile({ syncName, location, nangoProps }: { syncName: string; nangoProps: NangoProps; location: string }): string | null {
+function getIntegrationFile({
+    syncName,
+    location,
+    nangoProps,
+    filePath
+}: {
+    syncName: string;
+    nangoProps: NangoProps;
+    location: string;
+    filePath?: string;
+}): string | null {
     try {
-        return fs.readFileSync(`${location}build/${nangoProps.providerConfigKey}_${nangoProps.scriptType}s_${syncName}.cjs`, 'utf8');
+        const bundleName = filePath
+            ? tsToJsPath(filePath.replace(/\.ts$/, '.js'))
+            : `${nangoProps.providerConfigKey}_${nangoProps.scriptType}s_${syncName}.cjs`;
+        return fs.readFileSync(path.join(location, 'build', bundleName), 'utf8');
     } catch (err) {
         console.log(err);
         return null;

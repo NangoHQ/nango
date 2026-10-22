@@ -43,10 +43,12 @@ const response = await nango.get({
   providerConfigKey: '<INTEGRATION-ID>',
   connectionId: '<CONNECTION-ID>',
   headers: {
-    'nango-proxy-authorization': `Bearer ${userToken}`
+    authorization: `Bearer ${userToken}`
   }
 });
 ```
+
+The SDK forwards these headers to Slack, replacing the default bot token. The same `headers` option works with `nango.proxy` inside functions. If you call the proxy over HTTP directly, send the header as `Nango-Proxy-Authorization`.
 
 ## When Creating Connections in Nango
 

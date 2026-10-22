@@ -13,5 +13,6 @@ export type {
     CreateSyncResponse,
     CreateToolProps,
     CreateToolResponse,
+    HttpResponse,
     ToolMeta
 } from '@nangohq/runner-sdk';

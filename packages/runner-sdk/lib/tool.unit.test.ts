@@ -3,6 +3,8 @@ import * as z from 'zod';
 
 import { createTool, toolMetaToTags } from './tool.js';
 
+import type { HttpResponse } from './function.js';
+
 type Has<T, K extends PropertyKey> = K extends keyof T ? true : false;
 
 describe('createTool', () => {
@@ -15,6 +17,7 @@ describe('createTool', () => {
             meta: { instructions: 'Use it to read one issue', requiredScopes: ['repo'], tags: { domain: 'issues' } },
             exec: (nango, trigger) => {
                 expectTypeOf<Has<typeof nango, 'proxy'>>().toEqualTypeOf<true>();
+                expectTypeOf(nango.get<{ title: string }>({ endpoint: '/issues/1' })).toEqualTypeOf<Promise<HttpResponse<{ title: string }>>>();
                 expectTypeOf<Has<typeof nango, 'getConnection'>>().toEqualTypeOf<true>();
                 expectTypeOf<Has<typeof nango, 'batchSave'>>().toEqualTypeOf<false>();
                 expectTypeOf<Has<typeof nango, 'getMetadata'>>().toEqualTypeOf<false>();

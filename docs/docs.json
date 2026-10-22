@@ -1749,6 +1749,7 @@
               "api-integrations/pleo",
               "api-integrations/pleo-api-key",
               "api-integrations/pleo-mcp",
+              "api-integrations/pocket",
               "integrations/all/podium",
               "api-integrations/podscribe",
               "api-integrations/posthog",

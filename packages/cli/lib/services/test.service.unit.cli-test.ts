@@ -1,10 +1,20 @@
+import { execFile } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { promisify } from 'node:util';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { generateActionTest, generateSyncTest, shouldProcessAction, shouldProcessSync, validateAndFilterIntegrations } from './test.service.js';
+import { fixturesPath } from '../tests/helpers.js';
+import {
+    generateActionTest,
+    generateFunctionTest,
+    generateSyncTest,
+    shouldProcessAction,
+    shouldProcessSync,
+    validateAndFilterIntegrations
+} from './test.service.js';
 
 import type { IntegrationDefinition } from './test.service.js';
 
@@ -500,6 +510,38 @@ describe('generateSyncTest', () => {
 
         // Array models should be joined as comma-separated string in the template
         expect(content).toContain('Model: "Contact,Account"');
+    });
+});
+
+describe('generateFunctionTest', () => {
+    it('generates runnable replay tests for a function and a renamed tool', async () => {
+        const projectPath = await fs.mkdtemp(path.join(os.tmpdir(), 'nango-native-replay-'));
+        try {
+            await fs.cp(path.join(fixturesPath, 'replay'), projectPath, { recursive: true });
+            const nodeModules = path.resolve(fixturesPath, '../../../node_modules');
+            await fs.symlink(nodeModules, path.join(projectPath, 'node_modules'), 'dir');
+            for (const fn of [
+                { name: 'echo', integrationId: 'github', filePath: './github/functions/echo.ts' },
+                { name: 'fetch_repository_issue_details', integrationId: 'github', filePath: './github/tools/getIssue.ts' }
+            ]) {
+                await generateFunctionTest({ fn, writePath: projectPath });
+            }
+            const configPath = path.join(projectPath, 'vite.config.mjs');
+            await fs.writeFile(
+                configPath,
+                `export default ${JSON.stringify({
+                    resolve: { alias: { 'nango/test': path.resolve(import.meta.dirname, '../testMocks/utils.ts') } },
+                    test: { include: ['github/tests/*.test.ts'] }
+                })};`
+            );
+            const { stdout } = await promisify(execFile)(process.execPath, [path.join(nodeModules, 'vitest/vitest.mjs'), 'run', '--config', configPath], {
+                cwd: projectPath,
+                timeout: 15000
+            });
+            expect(stdout).toContain('2 passed');
+        } finally {
+            await fs.rm(projectPath, { recursive: true, force: true });
+        }
     });
 });
 
