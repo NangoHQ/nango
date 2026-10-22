@@ -7,7 +7,8 @@ sidebarTitle: 'Navan'
 
 To authenticate with Navan, you need:
 
-1. **Client ID** and **Secret Key** — the credentials of a Navan API client.
+1. **Environment** — the Navan environment your credentials were issued for.
+2. **Client ID** and **Secret Key** — the credentials of a Navan API client.
 
 This guide will show you how to get them.
 
@@ -28,10 +29,20 @@ This guide will show you how to get them.
 Navan only shows the Secret Key once. Save it somewhere secure before leaving the page.
 </Note>
 
-### Step 2: Enter your credentials in the Connect UI
+### Step 2: Select your environment
+
+Navan credentials only work in the environment they were issued for. Select the matching **Environment**:
+
+| Environment | Value |
+| - | - |
+| Production (US) | `api.navan.com` |
+| Production (EU) | `app-fra.navan.com` |
+| Staging | `staging-prime.navan.com` |
+
+### Step 3: Enter your credentials in the Connect UI
 
 1. Open the form where you need to authenticate with Navan.
-2. Enter your **Client ID** and **Secret Key** in the designated fields.
+2. Select your **Environment**, then enter your **Client ID** and **Secret Key**.
 3. Submit the form, and you should be successfully authenticated.
 
 <img src="/api-integrations/navan/form.png" alt="Nango Connect UI form with Client ID and Secret Key fields" style={{maxWidth: "450px" }}/>

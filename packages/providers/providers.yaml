@@ -17068,13 +17068,25 @@ navan:
     categories:
         - erp
     auth_mode: OAUTH2_CC
-    token_url: https://app.navan.com/ta-auth/oauth/token
+    token_url: https://${connectionConfig.hostname}/ta-auth/oauth/token
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: https://api.navan.com
+        base_url: https://${connectionConfig.hostname}
     docs: https://nango.dev/docs/api-integrations/navan
     docs_connect: https://nango.dev/docs/api-integrations/navan/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Environment
+            description: The Navan environment your API credentials were issued for.
+            format: hostname
+            enum:
+                - api.navan.com
+                - app-fra.navan.com
+                - staging-prime.navan.com
+            doc_section: '#step-2-select-your-environment'
+            order: 1
     credentials:
         client_id:
             type: string
