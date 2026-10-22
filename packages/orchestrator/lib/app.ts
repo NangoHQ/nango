@@ -64,6 +64,9 @@ try {
             await immediateRateLimiter.destroy();
             await destroyFeatureFlags();
             await dbClient.destroy();
+            await hostedTelemetry
+                .shutdown({ timeoutMs: 5_000 })
+                .catch((err: unknown) => logger.error(`Failed to flush hosted telemetry: ${stringifyError(err)}`));
             logger.close();
 
             process.exit(1); // scheduler error is critical, we exit the process
