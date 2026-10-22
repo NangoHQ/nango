@@ -100,6 +100,15 @@ describe('error pages', () => {
         expect(mocks.captureException).toHaveBeenCalledTimes(1);
     });
 
+    it('reports again when a refetch fails differently', () => {
+        render(<ErrorPageComponent title="Integrations" error={new TypeError('Failed to fetch')} />);
+        const error = apiError(500, 'server_error');
+        render(<ErrorPageComponent title="Integrations" error={error} />);
+
+        expect(mocks.captureException).toHaveBeenCalledTimes(2);
+        expect(mocks.captureException).toHaveBeenLastCalledWith(error, expect.anything());
+    });
+
     it('tags the support id shown to the user', () => {
         const error = apiError(500, 'generic_error_support', 'abc123');
         render(<ErrorPageComponent title="Team Settings" error={error} />);

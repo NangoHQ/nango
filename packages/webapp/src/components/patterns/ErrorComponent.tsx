@@ -14,16 +14,17 @@ export const ErrorPageComponent: React.FC<{ title: string; error: Error }> = ({ 
     const code = apiErrorCode(error);
     const status = error instanceof APIError ? error.res.status : 'none';
     const supportId = code === 'generic_error_support' && error instanceof APIError ? String((error.json as ApiError<string>).error.payload) : undefined;
-    // Every failed refetch hands this page a new error object.
-    const reported = useRef(false);
+    // Every failed refetch hands this page a new error object. Report each kind of failure once.
+    const reportedKey = useRef<string | null>(null);
+    const errorKey = `${error.name}:${code}:${status}`;
 
     useEffect(() => {
-        if (reported.current || code === 'not_found' || isNoSessionApiError(error)) {
+        if (reportedKey.current === errorKey || code === 'not_found' || isNoSessionApiError(error)) {
             return;
         }
-        reported.current = true;
+        reportedKey.current = errorKey;
         Sentry.captureException(error, { tags: { error_page: title, code, status, ...(supportId ? { support_id: supportId } : {}) } });
-    }, [error, title, code, status, supportId]);
+    }, [error, errorKey, title, code, status, supportId]);
 
     if (code === 'not_found') {
         return <PageNotFound />;
