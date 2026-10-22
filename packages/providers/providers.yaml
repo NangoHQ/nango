@@ -4388,6 +4388,30 @@ builder-io-public:
             example: bb209fb71eh2412dbe0114bdae18fd15
             doc_section: '#step-2-finding-your-api-key'
 
+buildkite:
+    display_name: Buildkite
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.buildkite.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/access-token
+    docs: https://nango.dev/docs/api-integrations/buildkite
+    docs_connect: https://nango.dev/docs/api-integrations/buildkite/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Access Token
+            description: Your Buildkite API access token
+            pattern: '^(bkua_[A-Za-z0-9._-]+|[a-f0-9]{40})$'
+            example: bkua_MTA.4f6c********************************0f2a
+            doc_section: '#step-1-create-an-api-access-token'
+
 buildium:
     display_name: Buildium
     categories:
