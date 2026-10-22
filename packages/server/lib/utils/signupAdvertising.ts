@@ -1,5 +1,7 @@
 import * as z from 'zod';
 
+import { isInternalAccount } from '@nangohq/shared';
+
 import { envs } from '../env.js';
 import { parseSignupGoogleAdvertising } from './signupGoogleAdvertising.js';
 
@@ -60,7 +62,8 @@ export function parseSignupAdvertising(raw: unknown, now = Date.now()): SignupAd
 }
 
 export function signupAdvertisingFromRequest(req: Pick<Request, 'cookies' | 'headers'>, email: string): SignupAdvertising | undefined {
-    if (req.headers['sec-gpc'] === '1' || email.toLowerCase().endsWith('@nango.dev')) return;
+    const isSignupCreatorInternal = isInternalAccount([{ email }]);
+    if (req.headers['sec-gpc'] === '1' || isSignupCreatorInternal) return;
     const advertising =
         envs.SIGNUP_AD_CONTEXT_ENABLED && envs.SIGNUP_AD_CONTEXT_COOKIE_NAME
             ? parseSignupAdvertising(req.cookies?.[envs.SIGNUP_AD_CONTEXT_COOKIE_NAME])
@@ -69,5 +72,6 @@ export function signupAdvertisingFromRequest(req: Pick<Request, 'cookies' | 'hea
         envs.SIGNUP_GOOGLE_CONTEXT_ENABLED && envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME
             ? parseSignupGoogleAdvertising(req.cookies?.[envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME])
             : undefined;
-    return advertising || google ? { ...advertising, ...google } : undefined;
+    // The creator is known here before the account event, unlike the later async company update.
+    return advertising || google ? { ...advertising, ...google, ...(google ? { is_signup_creator_internal: isSignupCreatorInternal } : {}) } : undefined;
 }

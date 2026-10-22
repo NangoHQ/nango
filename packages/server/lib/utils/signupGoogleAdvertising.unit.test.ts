@@ -73,6 +73,22 @@ describe('separate optional Google signup context', () => {
             advertising_google_consent_method: 'implied'
         });
     });
+    it('derives creator classification only on permitted Google context, never from the cookie', () => {
+        vi.useFakeTimers().setSystemTime(now);
+        envs.SIGNUP_GOOGLE_CONTEXT_ENABLED = true;
+        const req = { cookies: { google_dev: JSON.stringify(accepted) }, headers: {} };
+        expect(signupAdvertisingFromRequest(req, 'external@example.com')).toMatchObject({ is_signup_creator_internal: false });
+        expect(signupAdvertisingFromRequest(req, 'external@nango.dev.example.com')).toMatchObject({ is_signup_creator_internal: false });
+        expect(signupAdvertisingFromRequest(req, 'internal@NANGO.DEV')).toBeUndefined();
+        expect(
+            signupAdvertisingFromRequest(
+                { ...req, cookies: { google_dev: JSON.stringify({ ...accepted, is_signup_creator_internal: false }) } },
+                'internal@nango.dev'
+            )
+        ).toBeUndefined();
+        expect(parseSignupGoogleAdvertising(JSON.stringify(accepted), now)).not.toHaveProperty('is_signup_creator_internal');
+        expect(parseSignupGoogleAdvertising(JSON.stringify({ ...accepted, is_signup_creator_internal: false }), now)).toBeUndefined();
+    });
     it('preserves legacy cookie parsing and independently gates both platforms', () => {
         vi.useFakeTimers().setSystemTime(now);
         const { clickType, clickId, clickAt, adUserData, adPersonalization, ...base } = accepted;
@@ -83,7 +99,8 @@ describe('separate optional Google signup context', () => {
         envs.SIGNUP_GOOGLE_CONTEXT_ENABLED = true;
         expect(signupAdvertisingFromRequest(req, 'creator@example.com')).toEqual({
             ...original,
-            ...parseSignupGoogleAdvertising(JSON.stringify(accepted), now)
+            ...parseSignupGoogleAdvertising(JSON.stringify(accepted), now),
+            is_signup_creator_internal: false
         });
         expect(signupAdvertisingFromRequest({ ...req, headers: { 'sec-gpc': '1' } }, 'creator@example.com')).toBeUndefined();
         expect(signupAdvertisingFromRequest(req, 'creator@NANGO.DEV')).toBeUndefined();

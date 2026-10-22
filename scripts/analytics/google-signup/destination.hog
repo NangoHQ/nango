@@ -15,7 +15,8 @@ fn responseBody(response) {
 if (event.event != 'auth:account_create' or event.properties.surface != 'server' or event.properties.host != 'https://api.nango.dev') { print('SKIP: wrong event or origin'); return }
 let companyId := event.properties.$groups.company
 if (typeof(companyId) != 'string' or not match(companyId, '^[1-9][0-9]*$') or event.distinct_id != concat('account-', companyId)) { print('SKIP: account mismatch'); return }
-if (groups.company.properties.is_internal != false) { print('SKIP: internal or unknown company'); return }
+if (event.properties.is_signup_creator_internal != false) { print('SKIP: internal or unknown signup creator'); return }
+if (groups.company.properties.is_internal == true) { print('SKIP: internal company conflict'); return }
 let p := event.properties
 let method := p.advertising_google_consent_method
 if ((method != 'explicit' and method != 'implied') or p.advertising_google_ad_user_data != 'granted' or p.advertising_google_ad_personalization != 'granted') { print('SKIP: Google consent missing'); return }
