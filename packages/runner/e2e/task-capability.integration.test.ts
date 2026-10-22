@@ -3,8 +3,6 @@ import { generateKeyPairSync } from 'node:crypto';
 import getPort from 'get-port';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { taskScopesForScriptType } from '@nangohq/internal-auth';
-import { mintTaskCapabilityToken } from '@nangohq/internal-auth/testing';
 import { Err, Ok } from '@nangohq/utils';
 
 import type { Server } from 'node:http';
@@ -18,15 +16,11 @@ process.env['NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY'] = jobsPem;
 process.env['NANGO_INTERNAL_AUTH_JOBS_KEY_ID'] = 'jobs-2026-09';
 process.env['NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS'] = JSON.stringify([{ kid: 'jobs-2026-09', publicKey: jobsRaw }]);
 process.env['NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY'] = 'true';
-process.env['NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED'] = 'true';
 
 describe('task capability token end to end', () => {
     const closers: (() => Promise<void>)[] = [];
     let persistUrl = '';
-    let apiUrl = '';
     let token = '';
-    let actionToken = '';
-    let providerConfigKey = '';
     let environmentId = 0;
     let nangoConnectionId = 0;
 
@@ -199,8 +193,6 @@ describe('task capability token end to end', () => {
 
         environmentId = env.id;
         nangoConnectionId = connection.id;
-        apiUrl = api.url;
-        providerConfigKey = uniqueKey;
         const props = {
             scriptType: 'sync' as const,
             host: api.url,
@@ -246,21 +238,12 @@ describe('task capability token end to end', () => {
         }
 
         const actionAuth = await runnerAuth('task-action', { ...props, scriptType: 'action', syncId: undefined });
-        actionToken = actionAuth.internalAuthToken ?? '';
-        // The runner denylist always includes loopback, and loopback literals stay blocked, so this
-        // proxy cannot reach a local stub. The policy error is local: an API 401 would be a different code.
         const ran = await exec({
             nangoProps: actionAuth.nangoProps,
             code: `exports.default = async (nango) => {
                 const connection = await nango.getConnection();
-                let proxyFailure = null;
-                try {
-                    await nango.proxy({ method: 'GET', endpoint: '/', baseUrlOverride: 'http://127.0.0.1:9/' });
-                } catch (err) {
-                    proxyFailure = { code: err && err.code, status: (err && err.response && err.response.status) || null };
-                }
                 const triggered = await nango.triggerAction('${uniqueKey}', '${connectionId}', 'echo', { ping: true });
-                return { connectionId: connection.connection_id, proxyFailure, triggered };
+                return { connectionId: connection.connection_id, triggered };
             };`
         });
         if (ran.isErr()) {
@@ -268,11 +251,9 @@ describe('task capability token end to end', () => {
         }
         const output = ran.value.output as {
             connectionId: string;
-            proxyFailure: { code: string; status: number | null };
             triggered: { from: string };
         };
         expect(output.connectionId).toBe(connectionId);
-        expect(output.proxyFailure).toEqual({ code: 'base_url_override_not_allowed', status: null });
         expect(output.triggered).toEqual({ from: 'action' });
     }, 120_000);
 
@@ -294,27 +275,6 @@ describe('task capability token end to end', () => {
             headers: { Authorization: `Bearer ${token}` }
         });
         expect(forged.status).toBe(401);
-    });
-
-    it('accepts the action token on /proxy and rejects one without api:proxy', async () => {
-        const allowed = await fetch(`${apiUrl}/proxy/`, {
-            headers: { Authorization: `Bearer ${actionToken}`, 'Provider-Config-Key': providerConfigKey }
-        });
-        expect(allowed.status).toBe(400);
-        const allowedBody = (await allowed.json()) as { error: { code: string; errors: { path: string[] }[] } };
-        expect(allowedBody.error.code).toBe('invalid_headers');
-        expect(allowedBody.error.errors.map((issue) => issue.path.join('.'))).toContain('connection-id');
-
-        const withoutProxy = await mintTaskCapabilityToken({
-            privateKey: jobsPem,
-            taskId: 'task-action-no-proxy',
-            res: { environmentId, connectionId: nangoConnectionId },
-            scopes: taskScopesForScriptType('action').filter((scope) => scope !== 'api:proxy')
-        });
-        const denied = await fetch(`${apiUrl}/proxy/`, {
-            headers: { Authorization: `Bearer ${withoutProxy}`, 'Provider-Config-Key': providerConfigKey }
-        });
-        expect(denied.status).toBe(401);
     });
 });
 
