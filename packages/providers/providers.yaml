@@ -5440,7 +5440,7 @@ circleback:
             headers:
                 content-type: application/json
             endpoints:
-                - /meetings
+                - /people?limit=1
     docs: https://nango.dev/docs/api-integrations/circleback
     docs_connect: https://nango.dev/docs/api-integrations/circleback/connect
     credentials:
