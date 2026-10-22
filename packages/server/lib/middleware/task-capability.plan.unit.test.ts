@@ -23,7 +23,7 @@ describe('task capability plan gate', () => {
     beforeAll(async () => {
         environmentLookup.mockResolvedValue(Ok({ account: { id: 1 }, environment: { id: 9, name: 'dev', account_id: 1 }, plan: null }) as never);
         const app = express();
-        app.get('/proxy/check', ...withTaskCapability('api:proxy'), (_req, res) => {
+        app.get('/scoped/check', ...withTaskCapability('api:connection:read'), (_req, res) => {
             res.status(204).end();
         });
         ({ url, close } = await listen(app));
@@ -39,9 +39,9 @@ describe('task capability plan gate', () => {
             privateKey: material.pem,
             taskId: 'task-1',
             res: { environmentId: 9, connectionId: 1 },
-            scopes: ['api:proxy']
+            scopes: ['api:connection:read']
         });
-        const res = await fetch(`${url}/proxy/check`, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(`${url}/scoped/check`, { headers: { Authorization: `Bearer ${token}` } });
 
         expect(res.status).toBe(500);
         expect(await res.json()).toMatchObject({ error: { code: 'unhandled_plan_not_found' } });

@@ -487,7 +487,7 @@ publicAPI
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);
 publicAPI.route('/action/trigger').post(...withTaskCapability('api:action:trigger'), postPublicTriggerAction); //TODO: to deprecate
-publicAPI.route('/action/:id').get(...withTaskCapability('api:action:trigger'), getAsyncActionResult);
+publicAPI.route('/action/:id').get(envAuth, can('environment:actions:execute'), getAsyncActionResult);
 
 // Connect sessions
 publicAPI.use('/connect', jsonContentTypeMiddleware);
@@ -510,4 +510,4 @@ publicAPI.use('/v1', jsonContentTypeMiddleware);
 publicAPI.route('/v1/*splat').all(envAuth, requireV1Passthrough, withEnvironmentTarget, allPublicV1);
 
 // Proxy
-publicAPI.route('/proxy{/*splat}').all(...withTaskCapability('api:proxy'), upload.any(), allPublicProxy);
+publicAPI.route('/proxy{/*splat}').all(envAuth, can('environment:proxy'), upload.any(), allPublicProxy);
