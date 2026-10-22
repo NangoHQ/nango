@@ -1,10 +1,12 @@
-import { ArrowUpRight } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { Link, Outlet, useLocation, useOutletContext, useParams } from 'react-router-dom';
 
+import { Button } from '@nangohq/design-system';
+
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Tabs, TabsList, TabsTrigger, tabsTriggerClassName } from '@/components/ui/Tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConnection } from '@/hooks/useConnections';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
@@ -118,16 +120,18 @@ export const ConnectionShow = () => {
                         </div>
                     </div>
 
-                    <TabsList>
-                        {tabs.map((tab) => (
-                            <TabsTrigger key={tab.segment} value={tab.segment} asChild>
-                                <Link to={`${basePath}/${tab.segment}`}>{tab.label}</Link>
-                            </TabsTrigger>
-                        ))}
+                    <div className="flex items-center justify-between gap-4">
+                        <TabsList className="w-fit">
+                            {tabs.map((tab) => (
+                                <TabsTrigger key={tab.segment} value={tab.segment} asChild>
+                                    <Link to={`${basePath}/${tab.segment}`}>{tab.label}</Link>
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
                         {canOpenPlayground && (
-                            <button
-                                type="button"
-                                className={tabsTriggerClassName}
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() =>
                                     openPlaygroundWithContext({
                                         source: 'connection',
@@ -136,11 +140,11 @@ export const ConnectionShow = () => {
                                     })
                                 }
                             >
+                                <Play />
                                 Test run
-                                <ArrowUpRight className="size-3.5" />
-                            </button>
+                            </Button>
                         )}
-                    </TabsList>
+                    </div>
                 </div>
 
                 <Outlet context={context} />
