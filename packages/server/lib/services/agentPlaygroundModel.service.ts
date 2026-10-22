@@ -17,7 +17,7 @@ export function createPlaygroundModel(): LanguageModel {
             middleware: defaultSettingsMiddleware({ settings: { providerOptions: { openai: { store: false } } } })
         });
     }
-    // Every deployed image is dockerized. isLocal is false locally too, because .env sets NANGO_CLOUD.
+    // Every deployed image is dockerized. isLocal is false on any machine that sets NANGO_CLOUD.
     if (isDocker) {
         return createKeyMissingModel();
     }
