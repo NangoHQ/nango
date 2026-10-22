@@ -316,7 +316,7 @@ export const HeroIllustration: React.FC = () => {
                                 data-part={`dot-${provider}`}
                                 r={2.5}
                                 fillOpacity={0.5}
-                                className="fill-(--hero-accent) opacity-0 drop-shadow-[0_0_3px_var(--hero-accent)]"
+                                className="fill-(--hero-accent) opacity-0 drop-shadow-[0_0_2px_var(--hero-glow)]"
                             />
                         </g>
                     ))}
