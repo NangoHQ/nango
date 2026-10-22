@@ -17096,6 +17096,47 @@ namely-pat:
             description: The Personal Access Token for your Namely account
             doc_section: '#step-2-generating-your-personal-access-token'
 
+navan:
+    display_name: Navan
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/ta-auth/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/navan
+    docs_connect: https://nango.dev/docs/api-integrations/navan/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Environment
+            description: The Navan environment your API credentials were issued for.
+            format: hostname
+            enum:
+                - api.navan.com
+                - app-fra.navan.com
+                - staging-prime.navan.com
+            doc_section: '#step-2-select-your-environment'
+            order: 1
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Navan API client ID.
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            example: 3c1e9a42-****-****-****-********7f05
+            doc_section: '#step-1-create-api-credentials'
+        client_secret:
+            type: string
+            title: Secret Key
+            description: Your Navan API secret key.
+            pattern: '^[0-9a-fA-F]{32}$'
+            example: 9d2b************************41c6
+            secret: true
+            doc_section: '#step-1-create-api-credentials'
+
 neon:
     display_name: Neon
     categories:
