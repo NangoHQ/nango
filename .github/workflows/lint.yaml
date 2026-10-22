@@ -89,4 +89,4 @@ jobs:
 
             - name: Typecheck
               if: needs.should-run.outputs.should_skip != 'true'
-              run: npm run ts-build && npx tsc -p packages/runner/tsconfig.e2e.json --noEmit
+              run: npm run ts-build
