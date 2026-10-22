@@ -8270,9 +8270,9 @@ The hostname must be different from the hostname in `NANGO_SERVER_URL`. Nango us
 
 ### Agent Playground
 
-The Agent Playground lets you try an AI agent on your own apps from the dashboard, before writing any code. It runs on an [agent session](/guides/agent-sessions), so the agent reaches Nango's pre-built tools the same way your own agent would. It is off by default on self-hosted instances.
+The Agent Playground lets you try an AI agent on your integrations from the dashboard, before writing any code. It runs on [agent sessions](/guides/agent-sessions), so the agent reaches Nango's pre-built tools the same way your own agent would. It is off by default on self-hosted instances.
 
-To turn it on, set these on the server and jobs services:
+To turn it on, set these on the server service:
 
 ```bash
 NANGO_FLAG_PROVIDER=env
@@ -8283,9 +8283,9 @@ OPENAI_API_KEY=<your-openai-api-key>
 NANGO_AGENT_PLAYGROUND_MODEL=<openai-model-id>
 ```
 
-The `tools-catalog` flag lets the agent run Nango's pre-built actions without deploying them first. The agent runs on OpenAI, so `OPENAI_API_KEY` is required, and messages from the chat are sent to OpenAI with that key. Without the key, the dashboard shows the playground as unavailable.
+Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the jobs service as well, because jobs runs the catalog actions the agent calls.
 
-The agent works with the integrations set up in the environment. The starter prompts on the playground's landing page each need an integration for their app, such as Google Calendar or Slack, so create it in the Integrations tab with your own OAuth app before using a prompt.
+The `tools-catalog` flag lets the agent run Nango's pre-built actions without deploying them first. The agent runs on OpenAI, so `OPENAI_API_KEY` is required, and messages from the chat are sent to OpenAI with that key. Without the key, the dashboard shows the playground as unavailable.
 
 ### Connect UI
 
