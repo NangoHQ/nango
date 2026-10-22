@@ -182,6 +182,9 @@ export const HeroIllustration: React.FC = () => {
                         if (progress > 0.96 && flashedRound.get(provider) !== round) {
                             flashedRound.set(provider, round);
                             route.flash.animate([{ opacity: 0.5 }, { opacity: 0 }], { duration: TIMING.flashDur, easing: 'ease-out' });
+                            if (round === ROUNDS - 1 && i === DOT_ORDER.length - 1) {
+                                root.dataset['idle'] = '';
+                            }
                         }
                     });
                 }
@@ -343,12 +346,12 @@ export const HeroIllustration: React.FC = () => {
             ))}
 
             <div className="absolute size-14" style={{ left: CENTER.x - 28, top: CENTER.y - 28 }}>
-                <div className="pointer-events-none absolute -inset-16 transition-opacity duration-700 group-data-idle:opacity-0">
+                <div className="pointer-events-none absolute -inset-16 transition-opacity duration-900 ease-out group-data-idle:opacity-0">
                     <div data-part="glow" className="size-full rounded-full motion-safe:opacity-0" style={{ background: GLOW_GRADIENT }} />
                 </div>
                 <div
                     data-part="box"
-                    className="absolute inset-0 rounded-ds-md border border-[color-mix(in_srgb,var(--hero-accent)_40%,white)] bg-white transition-colors duration-700 group-data-idle:border-border-default motion-safe:scale-50 motion-safe:opacity-0 dark:border-[color-mix(in_srgb,var(--hero-accent)_55%,black)] dark:bg-black dark:group-data-idle:border-border-default"
+                    className="absolute inset-0 rounded-ds-md border border-[color-mix(in_srgb,var(--hero-accent)_40%,white)] bg-white transition-colors duration-900 ease-out group-data-idle:border-border-default motion-safe:scale-50 motion-safe:opacity-0 dark:border-[color-mix(in_srgb,var(--hero-accent)_55%,black)] dark:bg-black dark:group-data-idle:border-border-default"
                 />
                 <div data-part="mark" className="absolute inset-3.5 motion-safe:opacity-0">
                     <LogoInverted className="absolute inset-0 size-full text-text-strong" />
