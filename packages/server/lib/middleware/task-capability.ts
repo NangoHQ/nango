@@ -32,8 +32,7 @@ export const API_TASK_SCOPES = {
     'api:metadata:write': ['environment:connections:update'],
     'api:env-vars:read': ['environment:variables:read'],
     'api:sync:trigger': ['environment:syncs:execute'],
-    'api:action:trigger': ['environment:tools:call'],
-    'api:proxy': ['environment:proxy']
+    'api:action:trigger': ['environment:tools:call']
 } as const satisfies Record<Extract<TaskCapabilityScope, `api:${string}`>, readonly Scope[]>;
 
 export type ApiTaskScope = keyof typeof API_TASK_SCOPES;

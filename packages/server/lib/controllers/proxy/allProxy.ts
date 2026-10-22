@@ -6,7 +6,7 @@ import { getHeaders, getLogger, redactHeaders, zodErrorToHTTP } from '@nangohq/u
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import proxyService from '../../services/proxy.service.js';
-import { asyncWrapperWithAnyEnvironment } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { egressTelemetryRecorder } from '../../utils/egressTelemetry.js';
 
 import type { ProxyServiceError, ProxyServiceResponse } from '../../services/proxy.service.js';
@@ -85,7 +85,7 @@ function applyFilteredResponseHeaders(res: Response, headers: Record<string, unk
     }
 }
 
-export const allPublicProxy = asyncWrapperWithAnyEnvironment<AllPublicProxy>(async (req, res, next) => {
+export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async (req, res, next) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
     if (!valHeaders.success) {
         res.status(400).send({ error: { code: 'invalid_headers', errors: zodErrorToHTTP(valHeaders.error) } });
