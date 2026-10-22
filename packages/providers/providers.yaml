@@ -20116,6 +20116,32 @@ pleo-api-key:
             pattern: '^pl[sp]_[a-f0-9]+_[a-f0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
 
+pocket:
+    display_name: Pocket
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public.heypocketai.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/public/recordings?page=1&limit=1
+    docs: https://nango.dev/docs/api-integrations/pocket
+    docs_connect: https://nango.dev/docs/api-integrations/pocket/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Pocket account.
+            pattern: '^pk_[A-Za-z0-9_-]+$'
+            example: pk_*******************************************
+            doc_section: '#step-1-obtaining-your-api-key'
+
 podium:
     display_name: Podium
     categories:
