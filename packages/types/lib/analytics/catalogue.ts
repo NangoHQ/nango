@@ -324,7 +324,7 @@ export const analyticsEventCatalogue = defineCatalogue({
 
     'auth:account_create': {
         surface: 'server',
-        insight: 'How many accounts sign up each week, and which website sources they first came from',
+        insight: 'Weekly signups and first website sources. Permitted advertising_* fields feed ad-platform conversion destinations.',
         fires: 'After a signup creates a new account, whichever way the person signed up',
         properties: z.object({
             acquisition_utm_source: z.string().optional(),
@@ -333,7 +333,12 @@ export const analyticsEventCatalogue = defineCatalogue({
             acquisition_utm_content: z.string().optional(),
             acquisition_utm_term: z.string().optional(),
             acquisition_referring_domain: z.string().optional(),
-            acquisition_landing_path: z.string().optional()
+            acquisition_landing_path: z.string().optional(),
+            advertising_consent_method: z.enum(['explicit', 'implied']).optional(),
+            advertising_consent_timestamp: z.string().optional(),
+            advertising_oppref_click_timestamp: z.string().optional(),
+            advertising_fbc: z.string().optional(),
+            advertising_oppref: z.string().optional()
         })
     },
     'auth:user_create': {

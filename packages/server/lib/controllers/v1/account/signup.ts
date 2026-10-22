@@ -12,6 +12,7 @@ import { identifyAccountMembership } from '../../../services/accountAnalytics.se
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
 import { signupAcquisitionSchema } from '../../../utils/signupAcquisition.js';
+import { signupAdvertisingFromRequest } from '../../../utils/signupAdvertising.js';
 
 import type { DBTeam, PostSignup, Role } from '@nangohq/types';
 
@@ -96,7 +97,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         }
 
         // Regular account
-        account = await accountService.createAccount({ name, email, foundUs, acquisition });
+        account = await accountService.createAccount({ name, email, foundUs, acquisition, advertising: signupAdvertisingFromRequest(req, email) });
         if (!account) {
             res.status(500).send({
                 error: { code: 'error_creating_account', message: 'There was a problem creating the account. Please reach out to support.' }
