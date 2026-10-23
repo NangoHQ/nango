@@ -19,7 +19,7 @@ const ts = new Date('2026-10-09T12:00:00Z');
 const row = (overrides: Record<string, unknown> = {}) => ({
     ts,
     value: 3,
-    metric: 'nango.functions.active_concurrency.max',
+    metric: 'nango.hosted_metric.active_concurrency.max',
     attributes: { environment_id: 1 },
     ...overrides
 });

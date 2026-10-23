@@ -29,7 +29,6 @@ vi.mock('../../hooks/useMeta', () => ({
     useMeta: () => ({ data: mocks.meta ? { data: mocks.meta } : undefined, error: mocks.metaError })
 }));
 vi.mock('../../hooks/usePermissions', () => ({ usePermissions: () => ({ can: () => true }) }));
-vi.mock('../../utils/analytics', () => ({ useAnalyticsIdentify: () => vi.fn(), resumeAnalytics: vi.fn(), stopAnalytics: vi.fn() }));
 vi.mock('../../store', () => ({
     useStore: (selector: (state: Record<string, unknown>) => unknown) => selector(mocks.storeState)
 }));

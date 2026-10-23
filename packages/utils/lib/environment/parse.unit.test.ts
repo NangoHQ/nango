@@ -21,6 +21,28 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007, ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: 0 });
     });
 
+    it.each([undefined, '', '   '])('allows an unset or blank signup ad cookie name while disabled (%j)', (name) => {
+        const res = parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_COOKIE_NAME: name });
+        expect(res.SIGNUP_AD_CONTEXT_ENABLED).toBe(false);
+        expect(res.SIGNUP_AD_CONTEXT_COOKIE_NAME).toBeUndefined();
+    });
+
+    it.each([undefined, '', '   '])('requires a cookie name when signup ad context is enabled (%j)', (name) => {
+        expect(() => parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_ENABLED: 'true', SIGNUP_AD_CONTEXT_COOKIE_NAME: name })).toThrowError(
+            /SIGNUP_AD_CONTEXT_COOKIE_NAME is required/
+        );
+    });
+
+    it('accepts a custom signup ad cookie name when enabled', () => {
+        const res = parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_ENABLED: 'true', SIGNUP_AD_CONTEXT_COOKIE_NAME: 'nango_signup_ads_prod' });
+        expect(res.SIGNUP_AD_CONTEXT_ENABLED).toBe(true);
+        expect(res.SIGNUP_AD_CONTEXT_COOKIE_NAME).toBe('nango_signup_ads_prod');
+    });
+
+    it.each(['invalid;name', 'a'.repeat(65)])('rejects an invalid nonempty signup ad cookie name', (name) => {
+        expect(() => parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_COOKIE_NAME: name })).toThrowError(/SIGNUP_AD_CONTEXT_COOKIE_NAME/);
+    });
+
     it('parses the local Nango user id as a non-negative integer', () => {
         expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '0' }).LOCAL_NANGO_USER_ID).toBe(0);
         expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '1e2' }).LOCAL_NANGO_USER_ID).toBe(100);
@@ -517,9 +539,9 @@ describe('parse', () => {
         expect(res.NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS).toBe(90);
     });
 
-    it('should refuse a NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS below the 45-day floor', () => {
-        expect(parseEnvs(ENVS, { NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: '45' }).NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS).toBe(45);
-        expect(() => parseEnvs(ENVS, { NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: '44' })).toThrow();
+    it('should refuse a NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS below the 90-day floor', () => {
+        expect(parseEnvs(ENVS, { NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: '90' }).NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS).toBe(90);
+        expect(() => parseEnvs(ENVS, { NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: '89' })).toThrow();
         expect(() => parseEnvs(ENVS, { NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: '0' })).toThrow();
     });
 
