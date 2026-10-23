@@ -359,7 +359,7 @@ paths:
                   required: false
                   schema:
                       type: string
-                      enum: [sync, action, on-event]
+                      enum: [sync, action, on-event, tool]
                   description: Filter by function type.
                 - name: search
                   in: query
@@ -424,7 +424,7 @@ paths:
     /integrations/{uniqueKey}/functions/{name}:
         get:
             summary: Get a function
-            description: Returns a single function available to an integration. This can be a deployed function or a Nango catalog action. Requires an API key with the `environment:functions:read` scope.
+            description: Returns a single function available to an integration, including HTTP-triggered tools and Nango catalog actions. When multiple types share a name, use the type filter to select one; otherwise the first match in the listing's stable order is returned. Requires an API key with the `environment:functions:read` scope.
             parameters:
                 - name: uniqueKey
                   in: path
@@ -443,7 +443,7 @@ paths:
                   required: false
                   schema:
                       type: string
-                      enum: [sync, action, on-event]
+                      enum: [sync, action, on-event, tool]
                   description: Disambiguates when multiple functions share the same name.
             responses:
                 '200':
@@ -3873,10 +3873,10 @@ components:
             properties:
                 id:
                     type: [number, 'null']
-                    description: Sync-config id. `null` for a Nango catalog action.
+                    description: Deployed function id. `null` for a Nango catalog action and for a tool, which is identified by its `uuid`.
                 enabled:
                     type: boolean
-                    description: Whether the function is enabled. Always `true` for actions, including a deployed action whose stored configuration is disabled. Syncs and on-event functions report the stored value.
+                    description: Whether the function is enabled. Always `true` for actions, including a deployed action whose stored configuration is disabled. Syncs, on-event functions, and tools report the stored value.
                 last_deployed:
                     type: [string, 'null']
                     format: date-time
@@ -3974,6 +3974,59 @@ components:
                     type: string
                     enum: [post-connection-creation, pre-connection-deletion, validate-connection]
 
+        NangoToolFunction:
+            type: object
+            description: An HTTP-triggered function with resolved input and output schemas.
+            required:
+                - name
+                - type
+                - uuid
+                - integration_id
+                - provider
+                - description
+                - input_json_schema
+                - output_json_schema
+                - meta
+            properties:
+                name:
+                    type: string
+                type:
+                    type: string
+                    enum: [tool]
+                uuid:
+                    type: string
+                    format: uuid
+                integration_id:
+                    type: string
+                provider:
+                    type: string
+                description:
+                    type: string
+                input_json_schema:
+                    type: [object, 'null']
+                    description: Input JSON Schema with its referenced definitions, or null when absent or unresolved.
+                output_json_schema:
+                    type: [object, 'null']
+                    description: Output JSON Schema with its referenced definitions, or null when absent or unresolved.
+                meta:
+                    type: object
+                    required: [tags]
+                    properties:
+                        instructions:
+                            type: string
+                        required_scopes:
+                            type: array
+                            items:
+                                type: string
+                        tags:
+                            type: object
+                            additionalProperties:
+                                oneOf:
+                                    - type: string
+                                    - type: array
+                                      items:
+                                          type: string
+
         ProviderTemplateFunction:
             description: A sync or action template function from the provider catalog (no deployment metadata).
             oneOf:
@@ -3981,7 +4034,7 @@ components:
                 - $ref: '#/components/schemas/NangoActionFunction'
 
         ListedNangoFunction:
-            description: A listed function (sync, action, or on-event) merged with its availability metadata.
+            description: A listed function (sync, action, on-event, or tool) merged with its availability metadata.
             oneOf:
                 - allOf:
                       - $ref: '#/components/schemas/NangoSyncFunction'
@@ -3991,6 +4044,9 @@ components:
                       - $ref: '#/components/schemas/FunctionAvailability'
                 - allOf:
                       - $ref: '#/components/schemas/NangoOnEventFunction'
+                      - $ref: '#/components/schemas/FunctionAvailability'
+                - allOf:
+                      - $ref: '#/components/schemas/NangoToolFunction'
                       - $ref: '#/components/schemas/FunctionAvailability'
 
         FunctionCompileRequest:
