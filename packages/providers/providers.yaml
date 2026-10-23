@@ -12740,6 +12740,60 @@ imanage:
             doc_section: '#step-3-choose-a-default-library-optional'
             order: 3
 
+inboxapp:
+    display_name: Inboxapp
+    categories:
+        - communication
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://inboxapp.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/team
+    docs: https://nango.dev/docs/api-integrations/inboxapp
+    docs_connect: https://nango.dev/docs/api-integrations/inboxapp/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Inboxapp API token, created under Settings → API.
+            doc_section: '#step-1-getting-your-api-token'
+
+inboxapp-mcp:
+    display_name: Inboxapp (MCP)
+    categories:
+        - communication
+        - crm
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://inboxapp.com/oauth/authorize
+    token_url: https://inboxapp.com/api/oauth/token
+    registration_url: https://inboxapp.com/api/oauth/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.inboxapp.com/mcp
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://mcp.inboxapp.com
+        headers:
+            accept: application/json,text/event-stream
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/inboxapp-mcp
+
 incident-io:
     display_name: Incident.io
     categories:
