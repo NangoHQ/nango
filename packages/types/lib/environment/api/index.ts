@@ -29,6 +29,27 @@ export type GetPublicEnvironments = ApiEndpoint<{
     };
 }>;
 
+export type GetPublicEnvironment = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/environments/:environmentUuid';
+    Params: { environmentUuid: string };
+    Querystring: { with_secrets?: 'true' | 'false' | undefined };
+    Success: {
+        data: {
+            id: number;
+            uuid: string;
+            name: string;
+            is_production: boolean;
+            callback_url: string;
+            slack_notifications: boolean;
+            otlp_endpoint: string | null;
+            otlp_headers?: { name: string; value: string }[];
+            webhooks: ApiWebhooks & { signing_key?: string };
+        };
+    };
+}>;
+
 export type PostEnvironment = ApiEndpoint<{
     Audit: AuditPolicy<'environment', 'created', 'account'>;
     Method: 'POST';

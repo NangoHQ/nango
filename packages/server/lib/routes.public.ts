@@ -50,6 +50,7 @@ import { deletePublicEnvironmentApiKey } from './controllers/environment/deleteA
 import { deletePublicEnvironment } from './controllers/environment/deleteEnvironment.js';
 import { getPublicEnvironmentApiKey } from './controllers/environment/getApiKey.js';
 import { getPublicEnvironmentApiKeys } from './controllers/environment/getApiKeys.js';
+import { getPublicEnvironment } from './controllers/environment/getEnvironment.js';
 import { getPublicEnvironments } from './controllers/environment/getEnvironments.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { patchPublicEnvironmentApiKey } from './controllers/environment/patchApiKey.js';
@@ -280,6 +281,7 @@ publicAPI.route('/providers/:provider/templates').get(envAuth, withEnvironmentTa
 
 publicAPI.use('/environments', jsonContentTypeMiddleware);
 publicAPI.route('/environments').get(apiAuth, can('account:environments:list'), getPublicEnvironments);
+publicAPI.route('/environments/:environmentUuid').get(apiAuth, can('account:environments:read'), getPublicEnvironment);
 publicAPI.route('/environments').post(apiAuth, auditPublicEnvironmentCreated, can('account:environments:create'), postPublicEnvironment);
 publicAPI.route('/environments/:environmentUuid').delete(apiAuth, auditPublicEnvironmentDeleted, can('account:environments:delete'), deletePublicEnvironment);
 publicAPI
