@@ -17,7 +17,7 @@ const hearAboutUsRoute = '/onboarding/hear-about-us';
 
 type Choice = 'join' | 'create';
 
-// Strips the default name signup gives every account in account.service.ts; keep the two in sync.
+// account.service.ts adds this suffix to every name at signup. Keep the two in sync.
 function toDisplayTeamName(accountName: string): string {
     return accountName.replace(/'s Team$/, '') || accountName;
 }
