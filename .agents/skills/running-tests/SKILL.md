@@ -35,7 +35,7 @@ All commands run from the **repo root**.
 
 ## Before Running Tests
 
-**Always run `npm install` first** — after pulling changes, switching branches, or in a fresh worktree. Missing deps cause import errors that look like code issues.
+**Always install dependencies first** — `npm install` after pulling changes or switching branches, `npm ci` in a fresh worktree. Missing deps cause import errors that look like code issues.
 
 ## Integration Test Requirements
 
