@@ -8721,7 +8721,7 @@ Also make sure `NANGO_ENTERPRISE=true` is set. See the [configuration reference]
 </Tabs>
 
 <Note>
-S3, GCS and Azure cannot be configured together. No other setting is needed to turn on the catalog: once an object store is configured, Nango reads catalog files from it.
+Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the server and jobs services. Once an object store is configured, Nango reads catalog files from it.
 </Note>
 
 ## Install the catalog
@@ -8760,7 +8760,7 @@ S3, GCS and Azure cannot be configured together. No other setting is needed to t
 
     ```bash
     cd ..  # leave the nango checkout from step 1
-    git clone https://<ACCESS-TOKEN>@github.com/NangoHQ/integration-templates
+    git clone https://github.com/NangoHQ/integration-templates
     cd integration-templates
     git checkout <COMMIT-SHA>
     npm ci
