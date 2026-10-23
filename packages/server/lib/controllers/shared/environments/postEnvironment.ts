@@ -89,5 +89,6 @@ export async function handlePostEnvironment({
         return;
     }
 
-    res.status(200).send({ data: { id: created.value.id, uuid: created.value.uuid, name: created.value.name } });
+    const { environment } = created.value;
+    res.status(200).send({ data: { id: environment.id, uuid: environment.uuid, name: environment.name } });
 }
