@@ -14,5 +14,5 @@
     ],
     "ext": "js,ts,json",
     "ignore": ["src/**/*.test.ts"],
-    "exec": "tsx -r dotenv/config lib/server.ts Dotenv_config_path=./../../.env"
+    "exec": "node --import tsx -r dotenv/config lib/server.ts Dotenv_config_path=./../../.env"
 }
