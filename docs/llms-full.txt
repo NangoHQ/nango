@@ -8867,7 +8867,7 @@ S3, GCS and Azure cannot be configured together. No other setting is needed to t
 
     1. In the dashboard, open an integration with templates provided by Nango (see [Use the template catalog](/guides/functions/functions-guide#option-1-use-the-template-catalog)).
     2. Select an action with source "Nango catalog".
-    3. Run the selected action via the [Trigger action API](/reference/backend/http-api/action/trigger) or using the "Test run" button. See [Action functions](/guides/functions/action-functions) for more on triggering actions.
+    3. Run the selected action via the [Trigger action API](/reference/backend/http-api/action/trigger) or using the "Test run" button.
   </Step>
 </Steps>
 
@@ -8877,18 +8877,12 @@ The catalog must stay in step with your Nango version. Whenever you upgrade your
 
 Repeat the [install steps](#install-the-catalog) using the new image tag. The access token from Nango is reusable, so you don't need to contact us again.
 
-Two behaviors to know about:
-
-- **Uploads don't remove old files** on Azure, and on AWS and GCP unless you pass `--delete` or `-d`.
-- **Existing deployments aren't updated.** A template you deployed before an upgrade keeps the files it was deployed with. To pick up a new catalog version, deploy the template again.
-
 ## Troubleshooting
 
 | Symptom | Likely cause |
 | --- | --- |
 | A template appears in the dashboard but the function stays `in progress` | The files aren't in the bucket, or they came from a different commit than the one your image expects. Redo steps 1 to 4. |
 | Template deploys fail on every attempt, even with files uploaded | Your image is older than `managed-1.6.18`. Upgrade first. |
-| Files appear under `templates-zero/integrations/` | The upload went one directory too deep. Upload each provider's folder to `templates-zero/`, as in step 4. |
 
 ## Related guides
 
