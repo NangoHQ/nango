@@ -8,23 +8,23 @@ export function configuration(diagnostics = false) {
         enabled: false,
         hog: readFileSync(new URL(diagnostics ? './diagnostics.hog' : './destination.hog', import.meta.url), 'utf8'),
         inputs_schema: [
-            ...['customerId', 'loginCustomerId', 'conversionActionId', 'startAt', ...(diagnostics ? ['requestId'] : [])].map((key) => ({
+            ...(diagnostics ? ['requestId'] : ['customerId', 'loginCustomerId', 'conversionActionId', 'startAt']).map((key) => ({
                 key,
                 type: 'string',
-                required: false,
+                required: true,
                 templating: false
             })),
             ...['oauthClientId', 'oauthClientSecret', 'oauthRefreshToken'].map((key) => ({
                 key,
                 type: 'string',
-                required: false,
+                required: true,
                 secret: true,
                 templating: false
             })),
             { key: 'deliveryApproved', type: 'boolean', required: true, default: false },
-            { key: 'validateOnly', type: 'boolean', required: true, default: true }
+            ...(!diagnostics ? [{ key: 'validateOnly', type: 'boolean', required: true, default: true }] : [])
         ],
-        inputs: { deliveryApproved: { value: false }, validateOnly: { value: true } },
+        inputs: { deliveryApproved: { value: false }, ...(!diagnostics ? { validateOnly: { value: true } } : {}) },
         filters: { events: [{ id: 'auth:account_create', type: 'events' }], filter_test_accounts: true }
     };
 }

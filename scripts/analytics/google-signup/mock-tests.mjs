@@ -293,7 +293,11 @@ export function invocations(id) {
                 hog:
                     "fn testFetch(url, options) { print(concat('TEST_CALL ', jsonStringify({'url': url, 'options': options}))); return mockResponses[url] }\n" +
                     c.config.hog.replaceAll('fetch(', 'testFetch('),
-                inputs: Object.fromEntries(Object.entries(c.inputs).map(([k, value]) => [k, { value }]))
+                inputs: Object.fromEntries(
+                    Object.entries(c.inputs)
+                        .filter(([key]) => c.config.inputs_schema.some((input) => input.key === key))
+                        .map(([key, value]) => [key, { value }])
+                )
             },
             globals: c.globals,
             mock_async_functions: true
