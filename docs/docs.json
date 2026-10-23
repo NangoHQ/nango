@@ -1680,6 +1680,7 @@
               "integrations/all/okta",
               "api-integrations/okta-api-key",
               "api-integrations/okta-cc",
+              "api-integrations/okta-oin-api-service",
               "integrations/all/okta-preview",
               "api-integrations/omni",
               "api-integrations/omnisend",
