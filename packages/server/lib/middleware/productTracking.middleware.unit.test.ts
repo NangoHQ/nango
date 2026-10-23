@@ -97,6 +97,16 @@ describe('productTrackingMiddleware', () => {
         expect(capture.mock.calls[0]![0].properties['$session_id']).toBe(sessionId);
     });
 
+    it('links an event from a request without the header to the session its handler set', () => {
+        const sessionId = '01a158ca-f1ba-7194-bcc8-9ecfef568776';
+        handleRequest((locals) => {
+            locals.account = { id: 42 } as DBTeam;
+            locals.analyticsSessionId = sessionId;
+        });
+
+        expect(capture.mock.calls[0]![0].properties['$session_id']).toBe(sessionId);
+    });
+
     it('ignores an analytics session header that is not a UUID', () => {
         handleRequest(
             (locals) => {
