@@ -61,13 +61,18 @@ try {
         onError: async (err) => {
             report(err);
             logger.error(`Scheduler error: ${stringifyError(err)}`);
-            await immediateRateLimiter.destroy();
-            await destroyFeatureFlags();
-            await dbClient.destroy();
-            await hostedTelemetry.shutdown();
-            logger.close();
-
-            process.exit(1); // scheduler error is critical, we exit the process
+            try {
+                await immediateRateLimiter.destroy();
+                await destroyFeatureFlags();
+                await dbClient.destroy();
+                await hostedTelemetry.shutdown();
+                await destroyHostedTelemetryDb();
+            } catch (cleanupErr) {
+                logger.error(`Failed to clean up after scheduler error: ${stringifyError(cleanupErr)}`);
+            } finally {
+                logger.close();
+                process.exit(1); // scheduler error is critical, we exit the process
+            }
         },
         config: buildSchedulerConfig(envs),
         onEvent: handleSchedulerEvent,
