@@ -42,7 +42,8 @@ async function handleSuccess({
         type: nangoProps.scriptType,
         success: true,
         durationMs: telemetryBag.durationMs,
-        runtime: functionRuntime
+        runtime: functionRuntime,
+        ...(interrupted ? { outcome: 'interrupted' } : {})
     });
 
     switch (nangoProps.scriptType) {
@@ -88,7 +89,9 @@ async function handleError({ taskId, nangoProps, error, telemetryBag, functionRu
         type: nangoProps.scriptType,
         success: false,
         durationMs: telemetryBag.durationMs,
-        runtime: functionRuntime
+        runtime: functionRuntime,
+        ...(error.type === 'execution_timeout' ? { outcome: 'execution_timeout' } : {}),
+        ...(error.type === 'function_runtime_timed_out' ? { outcome: 'runtime_timeout' } : {})
     });
 
     const formattedError = toNangoError({
