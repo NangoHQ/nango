@@ -62,6 +62,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Platform: Self-Hosting: Self-host Nango](https://nango.dev/docs/guides/platform/self-hosting/self-hosting.md): Run Nango outside our cloud: BYOC or Self-Managed.
 - [Platform: Self-Hosting: BYOC](https://nango.dev/docs/guides/platform/self-hosting/byoc.md): Nango-managed, in your cloud.
 - [Platform: Self-Hosting: Self-Managed](https://nango.dev/docs/guides/platform/self-hosting/self-managed.md): You deploy, you operate.
+- [Platform: Self-Hosting: Install the integration catalog](https://nango.dev/docs/guides/platform/self-hosting/install-integration-catalog.md): Upload Nango's pre-built integration catalog to your own object storage on AWS, GCP or Azure.
 - [Platform: Migrations: Migrate to checkpoints](https://nango.dev/docs/guides/platform/migrations/migrate-to-checkpoints.md): Guide to migrate your sync functions from nango.lastSyncDate to the new checkpointing system.
 - [Platform: Migrations: Migrate from end user](https://nango.dev/docs/guides/platform/migrations/migrate-from-end-user.md): Guide to migrate away from using end users in connections and connect sessions
 - [Platform: Migrations: Migrate from public key](https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key.md): Guide to migrate from using the public key (and HMAC) to a Connect session.
