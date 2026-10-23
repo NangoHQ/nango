@@ -1183,7 +1183,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
       For OAuth 2.0 providers, Nango shows **suggested scopes** — auto-discovered and refreshed at least monthly. They're suggestions; you can use any scope the provider supports.
 
       <Note>
-        For popular APIs, Nango ships a built-in shared developer app so you can test connections with zero setup. We strongly recommend registering your own OAuth app before going live — see [OAuth developer apps](#oauth-developer-apps) below.
+        For popular APIs, Nango provides pre-approved OAuth apps. They work in production, but we recommend registering your own OAuth app before you go live — see [Nango-managed OAuth apps](#nango-managed-oauth-apps) below.
       </Note>
     </Accordion>
 
