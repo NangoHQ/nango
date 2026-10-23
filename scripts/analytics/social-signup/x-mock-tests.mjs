@@ -35,6 +35,10 @@ function add(name, mutate = () => {}, expected = { status: 'success', calls: 1, 
 const skip = (log) => ({ status: 'success', calls: 0, log: `SKIP: ${log}` });
 add('accepted');
 add('duplicate');
+add('qa-metadata', (c) => {
+    c.globals.event.properties.meta_test_fixture = false;
+    c.globals.event.properties.acquisition_utm_campaign = 'paid_q4';
+});
 add(
     'dry-run',
     (c) => {
@@ -202,7 +206,11 @@ export function verify(results) {
                 consentMethod: 'explicit',
                 consentTimestamp: base.event.properties.advertising_x_consent_timestamp,
                 clickId: 'testclick',
-                clickTimestamp: base.event.properties.advertising_x_click_timestamp
+                clickTimestamp: base.event.properties.advertising_x_click_timestamp,
+                ...(typeof c.globals.event.properties.meta_test_fixture === 'boolean' ? { isTestFixture: c.globals.event.properties.meta_test_fixture } : {}),
+                ...(typeof c.globals.event.properties.acquisition_utm_campaign === 'string'
+                    ? { utmCampaign: c.globals.event.properties.acquisition_utm_campaign }
+                    : {})
             });
             payloads.set(c.name, call.options.body);
         }

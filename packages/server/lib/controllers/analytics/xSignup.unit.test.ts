@@ -24,11 +24,12 @@ const event = {
     clickTimestamp: '2026-10-23T06:00:00Z'
 };
 let config: XSignupAdapterConfig;
+const reportFailure = vi.fn();
 const limit = vi.fn(),
     lookup = vi.fn(),
     deliver = vi.fn();
 const app = express();
-app.use('/internal/analytics/x-signup', createXSignupRouter({ config: () => config, limit, lookup, deliver, now: () => now }));
+app.use('/internal/analytics/x-signup', createXSignupRouter({ config: () => config, limit, lookup, deliver, reportFailure, now: () => now }));
 let server: ReturnType<typeof createServer>, url: string;
 
 describe('route-scoped X adapter', () => {
@@ -55,6 +56,7 @@ describe('route-scoped X adapter', () => {
             pixelId: 'rh471',
             eventId: 'abc123'
         };
+        reportFailure.mockReset();
         limit.mockReset().mockResolvedValue(undefined);
         lookup.mockReset().mockResolvedValue({ createdAt: Date.parse(event.timestamp) - 10, isFirstActiveUserInternal: false, isInternal: false });
         deliver.mockReset().mockResolvedValue({ outcome: 'accepted', reason: 'receipt' });
@@ -98,7 +100,7 @@ describe('route-scoped X adapter', () => {
         for (const body of ['{PRIVATE_SENTINEL', JSON.stringify({ private: 'PRIVATE_SENTINEL'.repeat(1000) })]) {
             const response = await send(body);
             expect(response.status).toBe(400);
-            expect(await response.text()).not.toContain('PRIVATE_SENTINEL');
+            expect(await response.json()).toEqual({ outcome: 'rejected', reason: 'body' });
         }
         expect(lookup).not.toHaveBeenCalled();
         expect(deliver).not.toHaveBeenCalled();
@@ -137,6 +139,8 @@ describe('route-scoped X adapter', () => {
             expect(await response.text()).not.toContain('PRIVATE_SENTINEL');
         }
         expect(deliver).not.toHaveBeenCalled();
+        expect(reportFailure).toHaveBeenCalledWith('lookup');
+        expect(JSON.stringify(reportFailure.mock.calls)).not.toContain('PRIVATE_SENTINEL');
     });
     it('makes one attempt per request and lets PostHog own retryable outcomes', async () => {
         deliver.mockResolvedValueOnce({ outcome: 'retry', reason: 'transport_or_response' });

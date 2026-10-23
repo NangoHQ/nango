@@ -38,6 +38,7 @@ describe('parse', () => {
             SIGNUP_X_ACCESS_TOKEN_SECRET: 'fake-token-secret'
         };
         expect(parseEnvs(ENVS, config).SIGNUP_X_DELIVERY_ENABLED).toBe(true);
+        expect(parseEnvs(ENVS, { ...config, SIGNUP_X_EVENT_ID: 'tw-rh471-abc123' }).SIGNUP_X_EVENT_ID).toBe('tw-rh471-abc123');
         for (const key of Object.keys(config).filter((k) => k !== 'SIGNUP_X_DELIVERY_ENABLED')) {
             expect(() => parseEnvs(ENVS, { ...config, [key]: undefined })).toThrowError(new RegExp(key));
         }
@@ -49,8 +50,8 @@ describe('parse', () => {
             expect(() => parseEnvs(ENVS, { ...config, [key!]: value })).toThrowError(new RegExp(key!));
             try {
                 parseEnvs(ENVS, { ...config, [key!]: value });
-            } catch (error) {
-                expect(String(error)).not.toContain('PRIVATE_SENTINEL');
+            } catch (err) {
+                expect(String(err)).not.toContain('PRIVATE_SENTINEL');
             }
         }
         expect(parseEnvs(ENVS, { SIGNUP_X_ROUTE_SECRET: 'incomplete', SIGNUP_X_PIXEL_ID: '../bad' }).SIGNUP_X_DELIVERY_ENABLED).toBe(false);

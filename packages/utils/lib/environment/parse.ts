@@ -1264,7 +1264,7 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
             SIGNUP_X_ROUTE_SECRET: /^[A-Za-z0-9_-]{32,256}$/,
             SIGNUP_X_DELIVERY_START_AT: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/,
             SIGNUP_X_PIXEL_ID: /^[a-z0-9]{1,32}$/,
-            SIGNUP_X_EVENT_ID: /^[a-z0-9]{1,32}$/,
+            SIGNUP_X_EVENT_ID: /^[A-Za-z0-9_-]{1,128}$/,
             SIGNUP_X_CONSUMER_KEY: /^\S+$/,
             SIGNUP_X_CONSUMER_SECRET: /^\S+$/,
             SIGNUP_X_ACCESS_TOKEN: /^\S+$/,

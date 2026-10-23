@@ -5,6 +5,7 @@ import { createClient } from 'redis';
 import db from '@nangohq/database';
 import { getRedisClientOptions, getRedisUrl } from '@nangohq/kvstore';
 import { accountService, deliverXSignup, isInternalAccount, parseXSignupEnvelope, userService } from '@nangohq/shared';
+import { getLogger } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { safeCompare } from '../../webhook/signature.js';
@@ -23,6 +24,7 @@ interface Deps {
     lookup: (companyId: number) => Promise<{ createdAt: number; isFirstActiveUserInternal: boolean; isInternal: boolean } | undefined>;
     deliver: (event: XSignupEnvelope, config: XSignupCredentials) => Promise<XSignupDelivery>;
     now?: () => number;
+    reportFailure?: (stage: 'lookup' | 'delivery') => void;
 }
 
 /** Mounted before the internal router's general parsers/auth. Dedicated secret has only this route's authority. */
@@ -60,6 +62,7 @@ export function createXSignupRouter(deps: Deps) {
             res.status(400).json({ outcome: 'rejected', reason: 'event' });
             return;
         }
+        let stage: 'lookup' | 'delivery' = 'lookup';
         try {
             const account = await deps.lookup(Number(event.companyId));
             // Signup precedes the first user's commit; retry a short-lived missing lookup without blocking signup.
@@ -78,9 +81,11 @@ export function createXSignupRouter(deps: Deps) {
                 res.status(400).json({ outcome: 'rejected', reason: 'account' });
                 return;
             }
+            stage = 'delivery';
             const result = await deps.deliver(event, config);
             res.status(result.outcome === 'retry' ? 503 : 200).json(result);
         } catch {
+            deps.reportFailure?.(stage);
             res.status(503).json({ outcome: 'retry', reason: 'unavailable' });
         }
     });
@@ -143,5 +148,6 @@ export const xSignupRouter = createXSignupRouter({
         if (!account || !first) return;
         return { createdAt: account.created_at.getTime(), isFirstActiveUserInternal: isInternalAccount([first]), isInternal: isInternalAccount(users) };
     },
-    deliver: deliverXSignup
+    deliver: deliverXSignup,
+    reportFailure: (stage) => getLogger('XSignupAdapter').warning('X signup adapter unavailable', { stage })
 });

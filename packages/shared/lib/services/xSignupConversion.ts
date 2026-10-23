@@ -88,7 +88,7 @@ async function boundedJson(response: Response): Promise<unknown> {
 export async function deliverXSignup(c: XSignupEnvelope, config: XSignupCredentials, request: typeof fetch = fetch): Promise<XSignupDelivery> {
     if (
         !/^[a-z0-9]{1,32}$/.test(config.pixelId) ||
-        !/^[a-z0-9]{1,32}$/.test(config.eventId) ||
+        !/^[A-Za-z0-9_-]{1,128}$/.test(config.eventId) ||
         !config.consumerKey ||
         !config.consumerSecret ||
         !config.accessToken ||
@@ -113,7 +113,7 @@ export async function deliverXSignup(c: XSignupEnvelope, config: XSignupCredenti
         });
         if (response.status !== 200) {
             await response.body?.cancel().catch(() => undefined);
-            return { outcome: response.status === 429 || response.status >= 500 ? 'retry' : 'rejected', reason: 'http_status' };
+            return { outcome: response.status === 408 || response.status === 429 || response.status >= 500 ? 'retry' : 'rejected', reason: 'http_status' };
         }
         const receipt = z
             .object({ data: z.object({ conversions_processed: z.literal(1) }), errors: z.array(z.unknown()).max(0).optional() })

@@ -6,11 +6,13 @@ import { deliverXSignup, seeders } from '@nangohq/shared';
 import { envs } from '../../env.js';
 import { runServer } from '../../utils/tests.js';
 
-vi.mock('@nangohq/shared', async (importOriginal) => ({ ...(await importOriginal<typeof import('@nangohq/shared')>()), deliverXSignup: vi.fn() }));
+import type * as SharedModule from '@nangohq/shared';
+
+vi.mock('@nangohq/shared', async (importOriginal) => ({ ...(await importOriginal<typeof SharedModule>()), deliverXSignup: vi.fn() }));
 const config = {
     SIGNUP_X_DELIVERY_ENABLED: true,
     SIGNUP_X_ROUTE_SECRET: 'fake_route_secret_for_test_only_12345',
-    SIGNUP_X_DELIVERY_START_AT: '2026-10-23T00:00:00Z',
+    SIGNUP_X_DELIVERY_START_AT: new Date(Date.now() - 60_000).toISOString(),
     SIGNUP_X_PIXEL_ID: 'rh471',
     SIGNUP_X_EVENT_ID: 'abc123',
     SIGNUP_X_CONSUMER_KEY: 'fake',
@@ -95,7 +97,7 @@ describe('mounted X signup adapter with database and Redis', () => {
         for (const body of ['{PRIVATE_SENTINEL', JSON.stringify({ private: 'PRIVATE_SENTINEL'.repeat(1000) })]) {
             const response = await send(body);
             expect(response.status).toBe(400);
-            expect(await response.text()).not.toContain('PRIVATE_SENTINEL');
+            expect(await response.json()).toEqual({ outcome: 'rejected', reason: 'body' });
         }
         expect(deliverXSignup).not.toHaveBeenCalled();
     });

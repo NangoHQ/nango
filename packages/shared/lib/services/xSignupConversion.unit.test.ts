@@ -93,10 +93,10 @@ describe('X completed account conversion', () => {
         expect(JSON.parse(options?.body as string)).toEqual(xSignupPayload(event, config.eventId));
         expect(options?.body).not.toContain('fake-secret');
     });
-    it.each([400, 401, 403, 404, 429, 503])('maps HTTP %s without leaking raw errors or making its own retry', async (status) => {
+    it.each([400, 401, 403, 404, 408, 429, 503])('maps HTTP %s without leaking raw errors or making its own retry', async (status) => {
         const request = vi.fn<typeof fetch>().mockResolvedValue(response({ error: 'PRIVATE_SENTINEL' }, status));
         const result = await deliverXSignup(event, config, request);
-        expect(result).toEqual({ outcome: status === 429 || status >= 500 ? 'retry' : 'rejected', reason: 'http_status' });
+        expect(result).toEqual({ outcome: status === 408 || status === 429 || status >= 500 ? 'retry' : 'rejected', reason: 'http_status' });
         expect(request).toHaveBeenCalledTimes(1);
         expect(JSON.stringify(result)).not.toContain('PRIVATE_SENTINEL');
     });
@@ -113,15 +113,28 @@ describe('X completed account conversion', () => {
         });
     });
     it('bounds response bytes and sanitizes malformed bodies/timeouts/network exceptions', async () => {
-        for (const body of ['{PRIVATE_SENTINEL', 'x'.repeat(8193)]) {
+        for (const body of ['{PRIVATE_SENTINEL']) {
             const result = await deliverXSignup(event, config, vi.fn<typeof fetch>().mockResolvedValue(new Response(body)));
             expect(result.outcome).toBe('retry');
             expect(JSON.stringify(result)).not.toContain('PRIVATE_SENTINEL');
         }
+        const padded = JSON.stringify({ data: { conversions_processed: 1 }, padding: 'x'.repeat(8192) });
+        expect(await deliverXSignup(event, config, vi.fn<typeof fetch>().mockResolvedValue(new Response(padded)))).toEqual({
+            outcome: 'retry',
+            reason: 'invalid_receipt'
+        });
         const request = vi.fn<typeof fetch>().mockRejectedValue(new Error('PRIVATE_SENTINEL fake-secret'));
         expect(await deliverXSignup(event, config, request)).toEqual({ outcome: 'retry', reason: 'transport_or_response' });
         expect(request).toHaveBeenCalledTimes(1);
     });
+    it.each(['ol288', 'tw-rh471-abc123'])(
+        'preserves configured X event identifier %s without imposing an undocumented alphanumeric-only restriction',
+        async (eventId) => {
+            const request = vi.fn<typeof fetch>().mockResolvedValue(response({ data: { conversions_processed: 1 } }));
+            expect((await deliverXSignup(event, { ...config, eventId }, request)).outcome).toBe('accepted');
+            expect(JSON.parse(request.mock.calls[0]![1]!.body as string).conversions[0].event_id).toBe(eventId);
+        }
+    );
     it('refuses malformed config before signing or HTTP', async () => {
         for (const override of [{ pixelId: '../elsewhere' }, { eventId: '' }, { consumerSecret: '' }]) {
             const request = vi.fn<typeof fetch>();
