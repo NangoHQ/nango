@@ -4,12 +4,20 @@ import { getFlags } from '@nangohq/feature-flags';
 import { getCatalogTool, listCatalogTools } from '../../../catalog/actions.js';
 
 import type { CatalogTool } from '../../../catalog/actions.js';
-import type { FunctionListSource, FunctionSource, FunctionType, NangoConfigMetadata } from '@nangohq/types';
+import type { FunctionListSource, FunctionListType, FunctionSource, FunctionTags, NangoConfigMetadata } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 import type { Knex } from 'knex';
 
 export interface FunctionRow {
     id: number | null;
+    tool: {
+        uuid: string;
+        integration_id: string;
+        provider: string;
+        tags: FunctionTags;
+        input_schema_ref: string | null;
+        output_schema_ref: string | null;
+    } | null;
     name: string;
     type: string;
     metadata: NangoConfigMetadata | null;
@@ -48,7 +56,7 @@ async function catalogToolsEnabled(accountUuid: string | undefined): Promise<boo
     return getFlags().hasCatalogTools(accountUuid);
 }
 
-function catalogTools(provider: string | undefined, type: FunctionType | undefined, enabled: boolean): CatalogTool[] {
+function catalogTools(provider: string | undefined, type: FunctionListType | undefined, enabled: boolean): CatalogTool[] {
     if (!enabled || !provider || (type !== undefined && type !== 'action')) {
         return [];
     }
@@ -95,7 +103,7 @@ export async function findActiveByEnvironment({
 }: {
     environmentId: number;
     providerConfigKey: string;
-    type: FunctionType | undefined;
+    type: FunctionListType | undefined;
     search: string | undefined;
     limit: number;
     offset: number;
@@ -391,6 +399,36 @@ function activeSyncConfigBase({ environmentId, providerConfigKey }: { environmen
         .andWhere('sc.active', true);
 }
 
+function activeToolBase({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Knex.QueryBuilder {
+    return db.knex
+        .from({ fc: 'function_configs' })
+        .join({ nc: '_nango_configs' }, 'fc.nango_config_id', 'nc.id')
+        .join({ fv: 'function_config_versions' }, function () {
+            this.on('fv.id', 'fc.current_version_id').andOn('fv.function_config_id', 'fc.id');
+        })
+        .where('fc.environment_id', environmentId)
+        .andWhere('nc.environment_id', environmentId)
+        .andWhere('nc.unique_key', providerConfigKey)
+        .andWhere('nc.deleted', false)
+        .whereNull('fc.deleted_at')
+        .whereNull('fv.deleted_at')
+        .andWhereRaw("fv.trigger->>'kind' = 'http'");
+}
+
+function activeToolNamed(nameColumn: string): Knex.QueryBuilder {
+    return db.knex
+        .from({ fc: 'function_configs' })
+        .join({ fv: 'function_config_versions' }, function () {
+            this.on('fv.id', 'fc.current_version_id').andOn('fv.function_config_id', 'fc.id');
+        })
+        .whereRaw('?? = ??', ['fc.nango_config_id', 'nc.id'])
+        .whereRaw('?? = ??', ['fc.name', nameColumn])
+        .whereNull('fc.deleted_at')
+        .whereNull('fv.deleted_at')
+        .andWhereRaw("fv.trigger->>'kind' = 'http'")
+        .select(db.knex.raw('1'));
+}
+
 export async function findActiveByName({
     environmentId,
     providerConfigKey,
@@ -400,7 +438,7 @@ export async function findActiveByName({
     environmentId: number;
     providerConfigKey: string;
     name: string;
-    type: FunctionType | undefined;
+    type: FunctionListType | undefined;
 }): Promise<FunctionRow | undefined> {
     const config = await providerForConfig(environmentId, providerConfigKey);
     const toolsCatalogEnabled = await catalogToolsEnabled(config?.accountUuid);
@@ -424,16 +462,19 @@ function buildListingSubquery({
 }: {
     environmentId: number;
     providerConfigKey: string;
-    type: FunctionType | undefined;
+    type: FunctionListType | undefined;
     search: string | undefined;
     catalog?: CatalogTool[];
 }): Knex.Raw {
     const branches: Knex.QueryBuilder[] = [];
-    if (type !== 'on-event') {
+    if (type === undefined || type === 'sync' || type === 'action') {
         branches.push(buildSyncConfigBranch({ environmentId, providerConfigKey, type, search }));
     }
     if (type === undefined || type === 'on-event') {
         branches.push(buildOnEventBranch({ environmentId, providerConfigKey, search }));
+    }
+    if (type === undefined || type === 'tool') {
+        branches.push(buildToolBranch({ environmentId, providerConfigKey, search }));
     }
     if (catalog.length > 0 && type !== 'sync' && type !== 'on-event') {
         branches.push(buildCatalogBranch({ environmentId, providerConfigKey, catalog, search }));
@@ -496,7 +537,8 @@ function buildCatalogBranch({
         .andWhere('nc.deleted', false)
         .whereNotExists(
             activeSyncConfigBase({ environmentId, providerConfigKey }).andWhere('sc.type', 'action').whereRaw('sc.sync_name = c.name').select(db.knex.raw('1'))
-        );
+        )
+        .whereNotExists(activeToolNamed('c.name'));
 
     if (search) {
         query.andWhereRaw('c.name ILIKE ?', [`%${escapeLikePattern(search)}%`]);
@@ -520,7 +562,8 @@ function buildCatalogBranch({
         db.knex.raw('true AS enabled'),
         db.knex.raw('NULL::timestamptz AS last_deployed'),
         db.knex.raw(`'tools-catalog'::text AS source`),
-        db.knex.raw('NULL::text AS event')
+        db.knex.raw('NULL::text AS event'),
+        db.knex.raw('NULL::jsonb AS tool')
     );
 }
 
@@ -551,8 +594,13 @@ function buildSyncConfigBranch({
         'sc.enabled',
         'sc.created_at AS last_deployed',
         db.knex.raw('CAST(sc.source AS text) AS source'),
-        db.knex.raw('NULL::text AS event')
+        db.knex.raw('NULL::text AS event'),
+        db.knex.raw('NULL::jsonb AS tool')
     );
+
+    query.andWhere(function () {
+        this.whereNot('sc.type', 'action').orWhereNotExists(activeToolNamed('sc.sync_name'));
+    });
 
     if (type) {
         query.andWhere('sc.type', type);
@@ -596,13 +644,49 @@ function buildOnEventBranch({
             db.knex.raw('oes.active AS enabled'),
             db.knex.raw('oes.created_at AS last_deployed'),
             db.knex.raw(`'repo'::text AS source`),
-            db.knex.raw('CAST(oes.event AS text) AS event')
+            db.knex.raw('CAST(oes.event AS text) AS event'),
+            db.knex.raw('NULL::jsonb AS tool')
         );
 
     if (search) {
         query.andWhereILike('oes.name', `%${escapeLikePattern(search)}%`);
     }
 
+    return query;
+}
+
+function buildToolBranch({
+    environmentId,
+    providerConfigKey,
+    search
+}: {
+    environmentId: number;
+    providerConfigKey: string;
+    search: string | undefined;
+}): Knex.QueryBuilder {
+    const query = activeToolBase({ environmentId, providerConfigKey }).select(
+        db.knex.raw('NULL::int AS id'),
+        'fc.name',
+        db.knex.raw("'tool'::text AS type"),
+        db.knex.raw("jsonb_build_object('description', fv.description) AS metadata"),
+        db.knex.raw('NULL::text AS input'),
+        db.knex.raw('NULL::text[] AS returns'),
+        db.knex.raw('fv.json_schema::json AS json_schema'),
+        db.knex.raw('NULL::text AS runs'),
+        db.knex.raw('NULL::boolean AS auto_start'),
+        db.knex.raw('NULL::boolean AS track_deletes'),
+        'fc.enabled',
+        'fv.created_at AS last_deployed',
+        db.knex.raw('fv.source::text AS source'),
+        db.knex.raw('NULL::text AS event'),
+        db.knex.raw(`jsonb_build_object(
+                'uuid', fc.uuid, 'integration_id', nc.unique_key, 'provider', nc.provider,
+                'tags', fv.tags, 'input_schema_ref', fv.input_schema_ref, 'output_schema_ref', fv.output_schema_ref
+            ) AS tool`)
+    );
+    if (search) {
+        query.andWhereILike('fc.name', `%${escapeLikePattern(search)}%`);
+    }
     return query;
 }
 
