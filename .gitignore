@@ -17,4 +17,5 @@ temp
 .claude/settings.local.json
 CLAUDE.local.md
 .cursor/*.local.mdc
+scripts/metadata.json
 
