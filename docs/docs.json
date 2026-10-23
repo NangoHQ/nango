@@ -1221,6 +1221,7 @@
               "integrations/all/chorus",
               "api-integrations/cin7-core",
               "integrations/all/circle-so",
+              "api-integrations/circleback",
               "api-integrations/circleback-mcp",
               "api-integrations/cisco-duo-admin",
               "integrations/all/clari-copilot",

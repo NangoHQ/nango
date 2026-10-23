@@ -5487,6 +5487,35 @@ circle-so:
             title: API Key
             description: The API key for your Circle.so account
 
+circleback:
+    display_name: Circleback
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://circleback.ai/api
+        headers:
+            authorization: Bearer ${apiKey}
+        paginate:
+            type: link
+            link_rel_in_response_header: next
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /people?limit=1
+    docs: https://nango.dev/docs/api-integrations/circleback
+    docs_connect: https://nango.dev/docs/api-integrations/circleback/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Circleback account.
+            pattern: '^cb_[A-Za-z0-9_-]+$'
+            example: cb_*******************************************
+            doc_section: '#step-1-obtaining-your-api-key'
+
 circleback-mcp:
     display_name: Circleback (MCP)
     categories:
