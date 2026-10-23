@@ -308,10 +308,14 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     });
 
     const onRowClick = useCallback(
-        (name: string) => {
-            void setSelectedFunctionName(selectedFunctionName === name ? null : name);
+        (name: string, isDeployed: boolean) => {
+            const isOpening = selectedFunctionName !== name;
+            if (isOpening) {
+                track('functions:function_view', { provider: integration.provider, function_type: typeFilter, is_deployed: isDeployed });
+            }
+            void setSelectedFunctionName(isOpening ? name : null);
         },
-        [selectedFunctionName, setSelectedFunctionName]
+        [selectedFunctionName, setSelectedFunctionName, integration.provider, typeFilter]
     );
 
     const functions: ListedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
@@ -356,13 +360,6 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const visibleSyncTemplates = typeFilter === 'sync' && !hasNextPage && !isPlaceholderData ? matchingSyncTemplates : [];
     const selectedFunction =
         listedMatch ?? templateMatch ?? (rawTemplateMatch?.deployed ? listedFromTemplate(rawTemplateMatch) : undefined) ?? linkedFunction?.data ?? null;
-    const hasSelectedFunction = selectedFunction !== null;
-    const isSelectedFunctionDeployed = selectedFunction !== null && 'enabled' in selectedFunction && selectedFunction.id !== null;
-
-    useEffect(() => {
-        if (!selectedFunctionName || !hasSelectedFunction) return;
-        track('functions:function_view', { provider: integration.provider, function_type: typeFilter, is_deployed: isSelectedFunctionDeployed });
-    }, [selectedFunctionName, hasSelectedFunction, isSelectedFunctionDeployed, integration.provider, typeFilter]);
 
     const tailScope = `${integration.unique_key}:${typeFilter}`;
     const incomingTailKeys = (typeFilter === 'action' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : []).map(templateSectionKey);
@@ -442,7 +439,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     integration={integration}
                     showStatus={showStatus}
                     selected={row.template.name === selectedFunctionName}
-                    onSelect={() => onRowClick(row.template.name)}
+                    onSelect={() => onRowClick(row.template.name, false)}
                 />
             );
         }
@@ -454,7 +451,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                 integration={integration}
                 selected={row.fn.name === selectedFunctionName}
                 showStatus={showStatus}
-                onSelect={() => onRowClick(row.fn.name)}
+                onSelect={() => onRowClick(row.fn.name, row.fn.id !== null)}
             />
         );
     });

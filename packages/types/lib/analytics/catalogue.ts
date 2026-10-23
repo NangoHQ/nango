@@ -353,7 +353,7 @@ export const analyticsEventCatalogue = defineCatalogue({
     'functions:function_view': {
         surface: 'web',
         insight: "How many accounts browse an integration's functions, and whether they look at catalog templates or functions they already deployed",
-        fires: "When a function's details open on an integration's Functions tab",
+        fires: "When someone opens a function's details from the list on an integration's Functions tab",
         properties: z.object({ provider: z.string(), function_type: z.string(), is_deployed: z.boolean() })
     },
     'functions:deploy_create': {

@@ -99,7 +99,7 @@ export const IntegrationsList = () => {
     useEffect(() => {
         return () => {
             debouncedFilterIntegrations.cancel();
-            trackSearch.cancel();
+            trackSearch.flush();
         };
     }, [debouncedFilterIntegrations, trackSearch]);
 

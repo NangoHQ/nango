@@ -101,14 +101,18 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
             }
         }
 
-        productTracking.track({
-            name: 'functions:deploy_create',
-            eventProperties: {
-                source: 'cli',
-                is_template: false,
-                function_count: body.flowConfigs.length + (body.onEventScriptsByProvider?.reduce((total, provider) => total + provider.scripts.length, 0) ?? 0)
-            }
-        });
+        // A sandbox deploy is already tracked by the API or MCP call that started it.
+        if (!res.locals.sandboxTokenDeploymentId) {
+            productTracking.track({
+                name: 'functions:deploy_create',
+                eventProperties: {
+                    source: 'cli',
+                    is_template: false,
+                    function_count:
+                        body.flowConfigs.length + (body.onEventScriptsByProvider?.reduce((total, provider) => total + provider.scripts.length, 0) ?? 0)
+                }
+            });
+        }
         res.send(syncConfigDeployResult.result);
     } finally {
         if (lock) {

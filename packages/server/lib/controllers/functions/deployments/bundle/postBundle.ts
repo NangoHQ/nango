@@ -87,10 +87,13 @@ export const postFunctionDeploymentBundle = asyncWrapperWithEnvironment<PostFunc
         const response = toResponse(prepared.value);
         void logCtx.info('Successfully deployed function bundle', { functionCount: body.functions.length, ...response });
         await logCtx.success();
-        productTracking.track({
-            name: 'functions:deploy_create',
-            eventProperties: { source: 'cli', is_template: false, function_count: body.functions.length }
-        });
+        // A sandbox deploy is already tracked by the API or MCP call that started it.
+        if (!res.locals.sandboxTokenDeploymentId) {
+            productTracking.track({
+                name: 'functions:deploy_create',
+                eventProperties: { source: 'cli', is_template: false, function_count: body.functions.length }
+            });
+        }
         res.send(response);
     } finally {
         if (lock) {
