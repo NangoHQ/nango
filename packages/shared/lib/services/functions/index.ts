@@ -12,3 +12,6 @@ export type { DeploymentBundleReconciliation } from './reconcile.js';
 export { functionVersionHash } from './version.js';
 export { validateFunctionInput } from './models/validate.js';
 export { getFunctionMaxConcurrency, invokeFunction } from './invoke.js';
+export type { FunctionInvokeError } from './invoke.js';
+export * as toolService from './tools.js';
+export type { ResolvedTool } from './tools.js';
