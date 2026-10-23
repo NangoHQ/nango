@@ -61,20 +61,22 @@ export class ConcurrencySampler {
             logger.error(`ConcurrencySampler: ${stringifyError(res.error)}`);
             return;
         }
-        const perEnvironment = new Map<number, number>();
-        for (const [groupKey, count] of res.value) {
-            const environmentId = environmentIdFromGroupKey(groupKey);
-            if (environmentId !== null) {
-                perEnvironment.set(environmentId, (perEnvironment.get(environmentId) ?? 0) + count);
+
+        if (isCloud) {
+            const perEnvironment = new Map<number, number>();
+            for (const [groupKey, count] of res.value) {
+                const environmentId = environmentIdFromGroupKey(groupKey);
+                if (environmentId !== null) {
+                    perEnvironment.set(environmentId, (perEnvironment.get(environmentId) ?? 0) + count);
+                }
             }
-        }
-        for (const [environmentId, concurrency] of perEnvironment) {
-            if (isCloud) {
+            for (const [environmentId, concurrency] of perEnvironment) {
                 metrics.distribution(metrics.Types.ORCH_CONCURRENCY_ACTIVE, concurrency, { environmentId });
-            } else {
-                // Self-hosted and BYOC concurrency metrics go to the hosted telemetry store.
-                hostedTelemetry.histogram('nango.hosted_metric.active_concurrency', concurrency, { environment_id: environmentId });
             }
+        } else {
+            // Self-hosted/BYOC concurrency is metered deployment-wide and metrics go to the hosted telemetry store.
+            const concurrency = res.value.values().reduce((acc, c) => acc + c, 0);
+            hostedTelemetry.histogram('nango.hosted_metric.active_concurrency', concurrency);
         }
     }
 }
