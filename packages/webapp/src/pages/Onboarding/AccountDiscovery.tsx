@@ -74,6 +74,7 @@ export const AccountDiscovery: React.FC = () => {
                     isRequestingInvite={isRequestingInvite}
                     onRequestToJoin={requestToJoin}
                     onCreateOwnAccount={createOwnAccount}
+                    onChoiceChange={() => setRequestError(null)}
                 />
             )}
         </DefaultLayout>
@@ -100,8 +101,14 @@ const ChooseHowToStart: React.FC<{
     isRequestingInvite: boolean;
     onRequestToJoin: () => Promise<void>;
     onCreateOwnAccount: () => void;
-}> = ({ teamName, requestError, isRequestingInvite, onRequestToJoin, onCreateOwnAccount }) => {
+    onChoiceChange: () => void;
+}> = ({ teamName, requestError, isRequestingInvite, onRequestToJoin, onCreateOwnAccount, onChoiceChange }) => {
     const [choice, setChoice] = useState<Choice>('create');
+
+    const selectChoice = (value: Choice) => {
+        setChoice(value);
+        onChoiceChange();
+    };
 
     const submit = () => {
         if (choice === 'join') {
@@ -119,12 +126,12 @@ const ChooseHowToStart: React.FC<{
                     Choose how you want to get started. You can create your own account now and still join your team later.
                 </p>
             </div>
-            <fieldset className="flex flex-col gap-4">
+            <fieldset disabled={isRequestingInvite} className="flex flex-col gap-4">
                 <legend className="sr-only">How do you want to get started?</legend>
                 <ChoiceCard
                     value="join"
                     selected={choice === 'join'}
-                    onSelect={setChoice}
+                    onSelect={selectChoice}
                     icon={<Users className="size-4 shrink-0" />}
                     title={`Join the ${teamName} team`}
                     description={`We’ll ask ${teamName}’s admins to invite you. You’ll get access to the team’s account once one of them approves.`}
@@ -132,20 +139,22 @@ const ChooseHowToStart: React.FC<{
                 <ChoiceCard
                     value="create"
                     selected={choice === 'create'}
-                    onSelect={setChoice}
+                    onSelect={selectChoice}
                     icon={<User className="size-4 shrink-0" />}
                     title="Create my own account"
                     description="Start building right away with a new Nango account."
                 />
             </fieldset>
-            {choice === 'join' && requestError === 'retry' && (
+            {requestError === 'retry' && (
                 <Alert variant="danger">
                     <AlertDescription>We couldn&apos;t send your request. Please try again.</AlertDescription>
                 </Alert>
             )}
-            {choice === 'join' && requestError === 'contact_admin' && (
+            {requestError === 'contact_admin' && (
                 <Alert variant="danger">
-                    <AlertDescription>Please ask a team administrator to invite you directly.</AlertDescription>
+                    <AlertDescription>
+                        We couldn&apos;t send your request. Ask a team admin to invite you directly, or create your own account.
+                    </AlertDescription>
                 </Alert>
             )}
             <div className="flex flex-col">
@@ -167,7 +176,7 @@ const ChoiceCard: React.FC<{
 }> = ({ value, selected, onSelect, icon, title, description }) => (
     <label
         className={cn(
-            'flex cursor-pointer gap-4 rounded-xs border-[0.5px] bg-surface-panel px-4 py-3 transition-colors has-[:focus-visible]:shadow-focus-outline-default',
+            'flex cursor-pointer gap-4 has-[:disabled]:cursor-not-allowed rounded-xs border-[0.5px] bg-surface-panel px-4 py-3 transition-colors has-[:focus-visible]:shadow-focus-outline-default',
             selected ? 'border-border-selected shadow-xs' : 'border-border-default hover:border-border-strong'
         )}
     >
