@@ -22,6 +22,10 @@ This page is for **Self-Managed** instances only. If you run [BYOC](/guides/plat
 - Nango managed image `managed-1.6.18` or later
 - An object storage bucket (S3, GCS or Azure Blob Storage) already configured for your instance's compiled integration files
 - `git`, `node` and `npm` on the machine that builds the catalog
+- Your cloud provider's CLI, signed in with permission to write to the bucket, on the machine that uploads the catalog:
+  - AWS: [AWS CLI](https://aws.amazon.com/cli/) (`aws`)
+  - GCP: [`gsutil`](https://cloud.google.com/storage/docs/gsutil_install)
+  - Azure: [AzCopy](https://learn.microsoft.com/azure/storage/common/storage-use-azcopy-v10) (`azcopy`) for uploads and the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) (`az`) for verification
 - The access token from Nango to access the catalog repository (see above)
 
 ## Configure object storage
