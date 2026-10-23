@@ -74,3 +74,5 @@ export interface TelemetryBag extends Record<string, number> {
 }
 
 export type FunctionRuntime = 'runner' | 'lambda';
+
+export type FunctionExecutionOutcome = 'interrupted' | 'execution_timeout' | 'runtime_timeout';
