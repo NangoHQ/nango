@@ -72,6 +72,7 @@ import type {
     GetEnvironments,
     GetPublicApiKey,
     GetPublicApiKeys,
+    GetPublicEnvironment,
     GetPublicEnvironments,
     ListApiKeys,
     PatchApiKey,
@@ -257,6 +258,7 @@ export type PublicApiEndpoints =
     | AllPublicProxy
     | PostPublicEnvironment
     | DeletePublicEnvironment
+    | GetPublicEnvironment
     | GetPublicEnvironments
     | GetPublicApiKey
     | GetPublicApiKeys

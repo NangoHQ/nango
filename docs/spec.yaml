@@ -3054,6 +3054,121 @@ paths:
                 '500':
                     $ref: '#/components/responses/ServerError'
     /environments/{environmentUuid}:
+        get:
+            summary: Get an environment
+            description: >-
+                Retrieve an environment's configuration.
+            parameters:
+                - name: environmentUuid
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Environment UUID.
+                - name: with_secrets
+                  in: query
+                  required: false
+                  description: Include the webhook signing key and OpenTelemetry headers.
+                  schema:
+                      type: boolean
+                      default: false
+            responses:
+                '200':
+                    description: Successfully retrieved an environment
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: object
+                                        required:
+                                            - id
+                                            - uuid
+                                            - name
+                                            - is_production
+                                            - callback_url
+                                            - slack_notifications
+                                            - otlp_endpoint
+                                            - webhooks
+                                        properties:
+                                            id:
+                                                type: integer
+                                                example: 123
+                                            uuid:
+                                                type: string
+                                                format: uuid
+                                                example: 123e4567-e89b-12d3-a456-426614174000
+                                            name:
+                                                type: string
+                                                example: staging
+                                            is_production:
+                                                type: boolean
+                                            callback_url:
+                                                type: string
+                                                format: uri
+                                            slack_notifications:
+                                                type: boolean
+                                            otlp_endpoint:
+                                                type: [string, 'null']
+                                            otlp_headers:
+                                                description: Only included when with_secrets=true.
+                                                type: array
+                                                items:
+                                                    type: object
+                                                    required:
+                                                        - name
+                                                        - value
+                                                    properties:
+                                                        name:
+                                                            type: string
+                                                        value:
+                                                            type: string
+                                            webhooks:
+                                                type: object
+                                                required:
+                                                    - primary_url
+                                                    - secondary_url
+                                                    - on_sync_completion_always
+                                                    - on_auth_creation
+                                                    - on_auth_refresh_error
+                                                    - on_sync_error
+                                                    - on_async_action_completion
+                                                    - on_connection_deletion
+                                                properties:
+                                                    primary_url:
+                                                        type: [string, 'null']
+                                                    secondary_url:
+                                                        type: [string, 'null']
+                                                    on_sync_completion_always:
+                                                        type: boolean
+                                                    on_auth_creation:
+                                                        type: boolean
+                                                    on_auth_refresh_error:
+                                                        type: boolean
+                                                    on_sync_error:
+                                                        type: boolean
+                                                    on_async_action_completion:
+                                                        type: boolean
+                                                    on_connection_deletion:
+                                                        type: boolean
+                                                    signing_key:
+                                                        description: Current webhook signing key. Only included when with_secrets=true.
+                                                        type: string
+                                                        example: 5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/ServerError'
         delete:
             summary: Delete an environment
             description: Delete an environment

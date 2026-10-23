@@ -1,0 +1,64 @@
+---
+title: 'Get an environment'
+openapi: 'GET /environments/{environmentUuid}'
+---
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:read` scope.
+</Info>
+
+Retrieves environment's configuration.
+
+Set `with_secrets=true` to also return `webhooks.signing_key` and `otlp_headers`. This requires the additional `account:environments:read_secret` scope.
+
+<ResponseExample>
+```json Without secrets
+{
+  "data": {
+    "id": 123,
+    "uuid": "123e4567-e89b-12d3-a456-426614174001",
+    "name": "staging",
+    "is_production": false,
+    "callback_url": "https://api.nango.dev/oauth/callback",
+    "slack_notifications": false,
+    "otlp_endpoint": null,
+    "webhooks": {
+      "primary_url": "https://example.com/webhooks/nango",
+      "secondary_url": null,
+      "on_sync_completion_always": true,
+      "on_auth_creation": true,
+      "on_auth_refresh_error": true,
+      "on_sync_error": true,
+      "on_async_action_completion": true,
+      "on_connection_deletion": true
+    }
+  }
+}
+```
+
+```json With secrets
+{
+  "data": {
+    "id": 123,
+    "uuid": "123e4567-e89b-12d3-a456-426614174001",
+    "name": "staging",
+    "is_production": false,
+    "callback_url": "https://api.nango.dev/oauth/callback",
+    "slack_notifications": false,
+    "otlp_endpoint": null,
+    "otlp_headers": [],
+    "webhooks": {
+      "primary_url": "https://example.com/webhooks/nango",
+      "secondary_url": null,
+      "on_sync_completion_always": true,
+      "on_auth_creation": true,
+      "on_auth_refresh_error": true,
+      "on_sync_error": true,
+      "on_async_action_completion": true,
+      "on_connection_deletion": true,
+      "signing_key": "5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f"
+    }
+  }
+}
+```
+</ResponseExample>
