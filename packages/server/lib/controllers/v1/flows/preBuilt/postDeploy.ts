@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { productTracking } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
@@ -61,5 +62,6 @@ export const postPreBuiltDeploy = asyncWrapperWithEnvironment<PostPreBuiltDeploy
         }
     }
 
+    productTracking.track({ name: 'functions:deploy_create', eventProperties: { source: 'dashboard', is_template: true, function_count: 1 } });
     res.status(201).send({ data: { id: outcome.result.id! } });
 });
