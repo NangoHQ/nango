@@ -221,7 +221,7 @@ export const HeroIllustration: React.FC = () => {
             update();
 
             const replay = () => {
-                if (looping) {
+                if (looping || !running) {
                     return;
                 }
                 looping = true;
@@ -231,9 +231,7 @@ export const HeroIllustration: React.FC = () => {
                 last = null;
                 breathing.cancel();
                 breathing = breathe(0);
-                if (running) {
-                    frame = requestAnimationFrame(tick);
-                }
+                frame = requestAnimationFrame(tick);
             };
             let hoverTimer = 0;
             const onEnter = () => {
