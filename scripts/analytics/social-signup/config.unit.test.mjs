@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { test } from 'vitest';
 
 import { configuration } from './reddit-config.mjs';
+import { configuration as xConfiguration } from './x-config.mjs';
 
 test('Reddit configuration stays disabled and dry until separately approved', () => {
     const c = configuration();
@@ -20,4 +21,20 @@ test('operational identifiers and encrypted token are required without placehold
         assert.equal(key in c.inputs, false);
     }
     assert.equal(c.inputs_schema.find((i) => i.key === 'accessToken').secret, true);
+});
+
+test('X bridge is disabled, unapproved and dry; only dedicated encrypted route secret is configurable', () => {
+    const c = xConfiguration();
+    assert.equal(c.enabled, false);
+    assert.deepEqual(c.inputs, { deliveryApproved: { value: false }, dryRun: { value: true } });
+    assert.deepEqual(
+        c.inputs_schema.map((i) => i.key),
+        ['routeSecret', 'deliveryApproved', 'dryRun']
+    );
+    const secret = c.inputs_schema[0];
+    assert.equal(secret.secret, true);
+    assert.equal(secret.required, true);
+    assert.equal(secret.templating, false);
+    assert.equal('default' in secret, false);
+    assert.equal('routeSecret' in c.inputs, false);
 });

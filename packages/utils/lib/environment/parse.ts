@@ -788,6 +788,16 @@ const ENVS_SHAPE = z.object({
                 .optional()
         ),
 
+    SIGNUP_X_DELIVERY_ENABLED: z.stringbool().optional().default(false),
+    SIGNUP_X_ROUTE_SECRET: z.string().optional().transform(presentEnv),
+    SIGNUP_X_DELIVERY_START_AT: z.string().optional().transform(presentEnv),
+    SIGNUP_X_PIXEL_ID: z.string().optional().transform(presentEnv),
+    SIGNUP_X_EVENT_ID: z.string().optional().transform(presentEnv),
+    SIGNUP_X_CONSUMER_KEY: z.string().optional().transform(presentEnv),
+    SIGNUP_X_CONSUMER_SECRET: z.string().optional().transform(presentEnv),
+    SIGNUP_X_ACCESS_TOKEN: z.string().optional().transform(presentEnv),
+    SIGNUP_X_ACCESS_TOKEN_SECRET: z.string().optional().transform(presentEnv),
+
     // PostHog
     PUBLIC_POSTHOG_KEY: z.string().optional(),
     PUBLIC_POSTHOG_HOST: z.string().optional(),
@@ -1246,6 +1256,31 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
         }
         if (name && signupCookies.filter((other) => ctx.value[other] === name).length !== 1) {
             ctx.issues.push({ code: 'custom', message: 'Signup platform cookies must have different names', path: [key], input: name });
+        }
+    }
+
+    if (ctx.value.SIGNUP_X_DELIVERY_ENABLED) {
+        const checks = {
+            SIGNUP_X_ROUTE_SECRET: /^[A-Za-z0-9_-]{32,256}$/,
+            SIGNUP_X_DELIVERY_START_AT: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/,
+            SIGNUP_X_PIXEL_ID: /^[a-z0-9]{1,32}$/,
+            SIGNUP_X_EVENT_ID: /^[a-z0-9]{1,32}$/,
+            SIGNUP_X_CONSUMER_KEY: /^\S+$/,
+            SIGNUP_X_CONSUMER_SECRET: /^\S+$/,
+            SIGNUP_X_ACCESS_TOKEN: /^\S+$/,
+            SIGNUP_X_ACCESS_TOKEN_SECRET: /^\S+$/
+        };
+        for (const key of Object.keys(checks) as (keyof typeof checks)[]) {
+            const value = ctx.value[key];
+            if (!value || !checks[key].test(value) || (key === 'SIGNUP_X_DELIVERY_START_AT' && !z.iso.datetime().safeParse(value).success)) {
+                // Never include the secret value in validation diagnostics.
+                ctx.issues.push({
+                    code: 'custom',
+                    message: `${key} is required and must be valid when X delivery is enabled`,
+                    path: [key],
+                    input: '[redacted]'
+                });
+            }
         }
     }
 

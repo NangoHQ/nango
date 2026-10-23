@@ -1,0 +1,27 @@
+// No X OAuth credentials in PostHog. The backend repeats validation and corroborates the account.
+if (event.event != 'auth:account_create' or event.properties.surface != 'server' or event.properties.host != 'https://api.nango.dev') { print('SKIP: wrong event or origin'); return }
+let p := event.properties
+let companyId := p.$groups.company
+if (typeof(companyId) != 'string' or not match(companyId, '^[1-9][0-9]*$') or event.distinct_id != concat('account-', companyId)) { print('SKIP: account mismatch'); return }
+if (p.is_signup_creator_internal != false or groups.company.properties.is_internal == true) { print('SKIP: internal or unknown identity'); return }
+if ((p.advertising_x_consent_method != 'explicit' and p.advertising_x_consent_method != 'implied') or empty(p.advertising_x_consent_timestamp) or empty(p.advertising_x_click_timestamp)) { print('SKIP: X context missing'); return }
+let click := p.advertising_x_click_id
+if (typeof(click) != 'string' or not match(click, '^[A-Za-z0-9_-]{1,512}$')) { print('SKIP: X click missing'); return }
+if (p.meta_test_fixture == true or startsWith(p.acquisition_utm_campaign ?? '', 'om_') or startsWith(click, 'om_') or startsWith(click, 'synthetic_')) { print('SKIP: QA'); return }
+if (inputs.deliveryApproved != true) { print('SKIP: delivery not approved'); return }
+if (not match(inputs.routeSecret ?? '', '^[A-Za-z0-9_-]{32,256}$')) { throw Error('X adapter secret configuration missing') }
+if (inputs.dryRun != false) { print('X adapter dry run eligible; no request sent'); return }
+let response := null
+try { response := fetch('https://api.nango.dev/internal/analytics/x-signup', {
+    'method': 'POST', 'headers': {'Content-Type': 'application/json', 'Authorization': concat('Bearer ', inputs.routeSecret)},
+    'body': {'event': event.event, 'timestamp': event.timestamp, 'companyId': companyId, 'distinctId': event.distinct_id, 'surface': p.surface, 'host': p.host,
+        'isSignupCreatorInternal': p.is_signup_creator_internal, 'consentMethod': p.advertising_x_consent_method, 'consentTimestamp': p.advertising_x_consent_timestamp,
+        'clickId': click, 'clickTimestamp': p.advertising_x_click_timestamp}
+}) } catch { throw Error('X adapter transport failure') }
+// Report rejections as failed invocations. All scheduling/retry behavior belongs to PostHog.
+if (response.status == 400 or response.status == 401 or response.status == 403 or response.status == 404) { throw Error('X adapter delivery rejected; inspect setup or eligibility') }
+if (response.status != 200) { throw Error(concat('X adapter retryable HTTP ', toString(response.status))) }
+if (typeof(response.body) == 'string' or response.body == null) { throw Error('X adapter receipt invalid') }
+if (response.body.outcome == 'rejected') { throw Error('X conversion delivery rejected; inspect platform setup') }
+if (response.body.outcome != 'accepted' or response.body.reason != 'receipt') { throw Error('X adapter receipt invalid') }
+print('X conversion receipt accepted; attribution unverified')

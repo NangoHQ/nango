@@ -1,0 +1,27 @@
+# X signup adapter — default-off draft
+
+Depends on backend #8019 (which depends on Google #8017) and website #169/#168. No new infrastructure, queue, schema or dependency. This draft adds an internal backend route because custom X CAPI requires OAuth1.0a and Hog's documented runtime lacks HMAC-SHA1. The official GTM Pixel-token path is not assumed valid for custom delivery.
+
+## Boundary and retry owner
+
+An unsaved PostHog bridge posts a minimal server account-signup envelope to the fixed `https://api.nango.dev/internal/analytics/x-signup`. `x-config.mjs` defaults disabled, unapproved and dry. Its only credential input is an encrypted route-scoped bearer secret; it has no placeholder default and is required even to save a disabled PostHog configuration. X OAuth credentials stay on the backend.
+
+The route mounts before the internal router's general parsers. It requires its own secret, never the broad internal credential. When disabled it returns 404 before Redis, parsing, DB or HTTP. Its dedicated Redis limiter runs even before authentication (120 requests/IP/minute); unavailable Redis fails only this route with 503. Redis connection/command waits and queue size are bounded. Authenticated input is strictly limited to 8KB; parser errors never reach the generic JSON error handler that can echo body excerpts. No request bodies, authorization headers or raw outbound errors are logged by this implementation. Existing HTTP tracing is configured to record only `x-forwarded-for`; real deployment telemetry/redaction remains a validation gate.
+
+The backend revalidates event/origin, account distinct ID, server-derived external-creator assertion, click/consent times and QA exclusions. It checks the account row's creation time (within five minutes of the event), earliest active user's canonical internal-email classification, and current internal-account classification. Missing account/user data yields a retryable response. Consent and the original creator assertion remain authenticated event snapshots, not independently verified CMP evidence or immutable creator records. The bridge also rejects a conflicting internal PostHog group.
+
+One invocation makes **one** X attempt, with a five-second timeout, bounded receipt and redirects forbidden, using the existing `oauth-1.0a` dependency and Node crypto. The endpoint is fixed to `https://ads-api.x.com/12/measurement/conversions/{configuredPixelId}`. Payload contains only original `conversion_time`, configured signup `event_id`, `identifiers:[{twclid}]` and `conversion_id:nango:account_create:<company>`.
+
+**PostHog exclusively owns retries.** The route returns 503 for X 429/5xx, timeouts or ambiguous receipts. Terminal platform failures return a fixed rejected outcome; the bridge throws a sanitized delivery error. Operators see a failed PostHog invocation and its constant error in destination logs, rather than a successful invocation. PostHog may retry thrown terminal errors; its actual scheduling/limits must be verified before enabling, and the backend never adds retries. A valid receipt requires HTTP200, `conversions_processed:1` and no nonempty error array. No raw platform body or exception escapes. A timeout may occur after X received the event: retries retain the same conversion ID/time/event ID for documented deduplication, without exactly-once or retention guarantees. Delivery is conservatively capped at 24 hours; no replay/backfill.
+
+## Setup still required
+
+Review and deploy only after separate approval. Keep `SIGNUP_X_DELIVERY_ENABLED=false` by default. When enabled, environment validation requires `SIGNUP_X_ROUTE_SECRET`, `SIGNUP_X_DELIVERY_START_AT` (fresh UTC cutoff), `SIGNUP_X_PIXEL_ID`, `SIGNUP_X_EVENT_ID`, `SIGNUP_X_CONSUMER_KEY`, `SIGNUP_X_CONSUMER_SECRET`, `SIGNUP_X_ACCESS_TOKEN`, `SIGNUP_X_ACCESS_TOKEN_SECRET`. Only backend secrets and PostHog's route secret are provisioned by an authorized operator. Existing Redis must be reachable. Capture remains separately gated as described in README.
+
+Current signup event ID, OAuth app entitlement and authorized user permissions are unverified; historical pixel `rh471` is not current account proof. Confirm a dedicated completed-account event, approved OAuth credentials/ownership, consent-at-signup limitation, token rotation/revocation, network ingress/egress, real timeout/retry/redaction behavior, receipt and Events Manager reporting. No live requests, credentials, actions or platform settings were created by these tests. Disable the PostHog destination and backend delivery flag independently to roll back.
+
+## Checks
+
+Focused unit tests cover eligibility, known independently computed OAuth signature, stable dedup payload, fixed endpoints, response size, HTTP/transport errors and secret redaction. Mounted-route Docker tests use real account rows/Redis with X delivery mocked. `node scripts/analytics/social-signup/x-mock-tests.mjs generate <existing-function-id>` creates unsaved fake Hog fixtures; execute only with mocked HTTP and verify using the same script's `verify <results>` command. Runtime scheduling/live OAuth remain untested.
+
+Primary contracts: [X custom CAPI](https://docs.x.com/x-ads-api/measurement/web-conversions), [OAuth authentication](https://docs.x.com/x-ads-api/fundamentals/making-authenticated-requests), [conversion ID semantics](https://help.x.com/en/business-and-advertising/conversion-tracking-for-websites).

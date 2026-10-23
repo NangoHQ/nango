@@ -115,3 +115,6 @@ export {
     syncManager,
     userService
 };
+
+export { deliverXSignup, parseXSignupEnvelope, xSignupPayload } from './services/xSignupConversion.js';
+export type { XSignupCredentials, XSignupDelivery, XSignupEnvelope } from './services/xSignupConversion.js';
