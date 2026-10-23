@@ -36,7 +36,7 @@ export * from './services/sync/config/config.service.js';
 export * from './services/sync/config/endpoint.service.js';
 export * from './services/sync/config/deploy.service.js';
 export * from './services/endUser.service.js';
-export type { CreateEnvironmentError } from './services/environment.service.js';
+export type { CreateEnvironmentError, CreateEnvironmentSettings } from './services/environment.service.js';
 export type { RunSyncCommandErrorCode, RunSyncCommandResult } from './services/sync/manager.service.js';
 export * from './services/tags.service.js';
 export * from './services/tags/schema.js';

@@ -1,7 +1,16 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { v7 as uuidV7 } from 'uuid';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
-import { customerKeyService, environmentService, PROD_ENVIRONMENT_NAME, seeders, updatePlan } from '@nangohq/shared';
+import {
+    customerKeyService,
+    environmentService,
+    externalWebhookService,
+    getGlobalOAuthCallbackUrl,
+    PROD_ENVIRONMENT_NAME,
+    seeders,
+    updatePlan
+} from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
@@ -12,7 +21,7 @@ let keyIndex = 0;
 
 async function seedAccount() {
     const seed = await seeders.seedAccountEnvAndUser();
-    await updatePlan(db.knex, { id: seed.plan.id, environments_max: 10 });
+    (await updatePlan(db.knex, { id: seed.plan.id, environments_max: 10 })).unwrap();
     return seed;
 }
 
@@ -33,6 +42,10 @@ describe('Public environment management', () => {
 
     afterAll(() => {
         api.server.close();
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     describe('GET /environments', () => {
@@ -211,11 +224,141 @@ describe('Public environment management', () => {
 
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
-            expect(res.json.data).toEqual({ id: expect.any(Number), uuid: expect.any(String), name: 'managed-dev' });
+            expect(res.json.data).toStrictEqual({
+                id: expect.any(Number),
+                uuid: expect.any(String),
+                name: 'managed-dev',
+                is_production: false,
+                callback_url: getGlobalOAuthCallbackUrl(),
+                slack_notifications: false,
+                otlp_endpoint: null,
+                otlp_headers: [],
+                webhooks: {
+                    primary_url: null,
+                    secondary_url: null,
+                    on_sync_completion_always: true,
+                    on_auth_creation: true,
+                    on_auth_refresh_error: true,
+                    on_sync_error: true,
+                    on_async_action_completion: true,
+                    on_connection_deletion: true,
+                    signing_key: expect.any(String)
+                }
+            });
             expect(res.json.data.uuid).toBeUUID();
+            expect(res.json.data.webhooks.signing_key).toBeUUID();
+            const storedKey = (await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, res.json.data.id)).unwrap();
+            expect(res.json.data.webhooks.signing_key).toBe(storedKey);
 
             const environment = await environmentService.getByIdWithoutSecrets(res.json.data.id, account.id);
             expect(environment).toMatchObject({ account_id: account.id, name: 'managed-dev', is_production: false });
+        });
+
+        it('should configure and return public settings with only create permission', async () => {
+            const { account, plan } = await seedAccount();
+            (await updatePlan(db.knex, { id: plan.id, has_otel: true })).unwrap();
+            const accountKey = await createAccountKey(account.id, ['account:environments:create']);
+            const webhooks = {
+                primary_url: 'https://hooks.example.com/events',
+                secondary_url: '',
+                on_sync_completion_always: false,
+                on_auth_creation: false,
+                on_auth_refresh_error: false,
+                on_sync_error: false,
+                on_async_action_completion: false,
+                on_connection_deletion: false
+            };
+            const settings = {
+                name: 'full-settings',
+                is_production: false,
+                callback_url: 'https://app.example.com/oauth/callback',
+                slack_notifications: true,
+                otlp_endpoint: 'https://otel.example.com',
+                otlp_headers: [
+                    { name: 'Authorization', value: 'Bearer first-token' },
+                    { name: 'Authorization', value: 'Bearer final-token' }
+                ],
+                webhooks
+            };
+
+            const hmacSettings = {
+                hmac_key: 'supplied-hmac-key',
+                hmac_enabled: true
+            };
+
+            const res = await api.fetch('/environments', { method: 'POST', token: accountKey.secret, body: { ...settings, ...hmacSettings } });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json.data).toStrictEqual({
+                ...settings,
+                id: expect.any(Number),
+                uuid: expect.any(String),
+                otlp_headers: [{ name: 'Authorization', value: 'Bearer final-token' }],
+                webhooks: { ...webhooks, signing_key: expect.any(String) }
+            });
+        });
+
+        it.each([
+            null,
+            { secondary_url: 'invalid-url' },
+            { primary_url: 'https://nango.dev/webhooks' },
+            { signing_key: uuidV7() },
+            { on_sync_error: 'true' },
+            { unexpected: true }
+        ])('should reject invalid webhook configuration %j before creation', async (webhooks) => {
+            const { account } = await seedAccount();
+            const key = await createAccountKey(account.id, ['account:environments:create']);
+            const res = await api.fetch('/environments', {
+                method: 'POST',
+                token: key.secret,
+                // @ts-expect-error deliberately invalid input
+                body: { name: 'invalid-webhooks', webhooks }
+            });
+
+            expect(res.res.status).toBe(400);
+            isError(res.json);
+            expect(res.json.error.code).toBe('invalid_body');
+            await expect(db.knex('_nango_environments').where({ account_id: account.id, name: 'invalid-webhooks' })).resolves.toEqual([]);
+        });
+
+        it('should only allow otlp settings for entitled plans', async () => {
+            const { account, plan } = await seedAccount();
+            const key = await createAccountKey(account.id, ['account:environments:create']);
+            const settings = { name: 'headers-only', otlp_headers: [{ name: 'Authorization', value: 'Bearer token' }] };
+            (await updatePlan(db.knex, { id: plan.id, has_otel: false })).unwrap();
+            const denied = await api.fetch('/environments', { method: 'POST', token: key.secret, body: settings });
+            expect(denied.res.status).toBe(403);
+
+            (await updatePlan(db.knex, { id: plan.id, has_otel: true })).unwrap();
+            const created = await api.fetch('/environments', { method: 'POST', token: key.secret, body: settings });
+            expect(created.res.status).toBe(200);
+            isSuccess(created.json);
+            expect(created.json.data.otlp_endpoint).toBe('');
+            expect(created.json.data.otlp_headers).toStrictEqual(settings.otlp_headers);
+        });
+
+        it('should enforce the environment limit from the account plan', async () => {
+            const { account, plan } = await seedAccount();
+            const key = await createAccountKey(account.id, ['account:environments:create']);
+            (await updatePlan(db.knex, { id: plan.id, environments_max: 1 })).unwrap();
+
+            const res = await api.fetch('/environments', { method: 'POST', token: key.secret, body: { name: 'over-limit' } });
+
+            expect(res.res.status).toBe(400);
+            expect(res.json).toStrictEqual({ error: { code: 'resource_capped', message: 'Maximum number of environments reached' } });
+            await expect(db.knex('_nango_environments').where({ account_id: account.id, name: 'over-limit' })).resolves.toEqual([]);
+        });
+
+        it('should return a generic error when environment creation fails', async () => {
+            const { account } = await seedAccount();
+            const key = await createAccountKey(account.id, ['account:environments:create']);
+            vi.spyOn(externalWebhookService, 'update').mockRejectedValueOnce(new Error('sensitive database error'));
+
+            const res = await api.fetch('/environments', { method: 'POST', token: key.secret, body: { name: 'failed-creation' } });
+
+            expect(res.res.status).toBe(500);
+            expect(res.json).toStrictEqual({ error: { code: 'server_error', message: 'Failed to create environment' } });
         });
 
         it('should require set_production in addition to create for production environments', async () => {
