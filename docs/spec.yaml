@@ -2879,11 +2879,13 @@ paths:
                                     description: Custom OAuth callback URL for this environment.
                                 hmac_key:
                                     type: string
-                                    description: HMAC key used by the legacy public-key authorization flow.
+                                    deprecated: true
+                                    description: Legacy public-key authorization HMAC key. Use [Connect sessions](/guides/auth/auth-guide#guide) instead.
                                     maxLength: 1000
                                 hmac_enabled:
                                     type: boolean
-                                    description: Whether HMAC verification is enabled for the legacy public-key authorization flow.
+                                    deprecated: true
+                                    description: Whether legacy public-key authorization HMAC verification is enabled. Use [Connect sessions](/guides/auth/auth-guide#guide) instead.
                                 slack_notifications:
                                     type: boolean
                                     description: Whether Slack notifications are enabled for this environment.
@@ -2909,6 +2911,41 @@ paths:
                                                 type: string
                                                 minLength: 1
                                                 maxLength: 4000
+                                webhooks:
+                                    type: object
+                                    additionalProperties: false
+                                    description: Initial webhook settings. Omitted URLs default to null; omitted subscription flags default to true.
+                                    properties:
+                                        primary_url:
+                                            type: string
+                                            description: First webhook destination. Use an empty string for no destination.
+                                        secondary_url:
+                                            type: string
+                                            description: Second webhook destination. Webhooks are sent to both configured URLs. Use an empty string for no destination.
+                                        on_sync_completion_always:
+                                            type: boolean
+                                            default: true
+                                            description: Send sync completion webhooks even when no records were added, updated, or deleted.
+                                        on_auth_creation:
+                                            type: boolean
+                                            default: true
+                                            description: Send webhooks when connections are created.
+                                        on_auth_refresh_error:
+                                            type: boolean
+                                            default: true
+                                            description: Send webhooks when refreshing connection credentials fails.
+                                        on_sync_error:
+                                            type: boolean
+                                            default: true
+                                            description: Send webhooks when sync functions fail.
+                                        on_async_action_completion:
+                                            type: boolean
+                                            default: true
+                                            description: Send webhooks when asynchronous action functions complete.
+                                        on_connection_deletion:
+                                            type: boolean
+                                            default: true
+                                            description: Send webhooks when connections are deleted.
             responses:
                 '200':
                     description: Successfully created an environment
@@ -2925,20 +2962,83 @@ paths:
                                             - id
                                             - uuid
                                             - name
+                                            - is_production
+                                            - callback_url
+                                            - slack_notifications
+                                            - otlp_endpoint
+                                            - otlp_headers
+                                            - webhooks
                                         properties:
                                             id:
                                                 type: integer
-                                                description: Numeric environment ID.
                                                 example: 123
                                             uuid:
                                                 type: string
                                                 format: uuid
-                                                description: Environment UUID. Use this in later account-level API calls.
                                                 example: 123e4567-e89b-12d3-a456-426614174000
                                             name:
                                                 type: string
-                                                description: The environment name.
                                                 example: staging
+                                            is_production:
+                                                type: boolean
+                                            callback_url:
+                                                type: string
+                                                format: uri
+                                            slack_notifications:
+                                                type: boolean
+                                            otlp_endpoint:
+                                                type: [string, 'null']
+                                            otlp_headers:
+                                                type: array
+                                                items:
+                                                    type: object
+                                                    required:
+                                                        - name
+                                                        - value
+                                                    properties:
+                                                        name:
+                                                            type: string
+                                                        value:
+                                                            type: string
+                                            webhooks:
+                                                type: object
+                                                required:
+                                                    - primary_url
+                                                    - secondary_url
+                                                    - on_sync_completion_always
+                                                    - on_auth_creation
+                                                    - on_auth_refresh_error
+                                                    - on_sync_error
+                                                    - on_async_action_completion
+                                                    - on_connection_deletion
+                                                    - signing_key
+                                                properties:
+                                                    primary_url:
+                                                        type: [string, 'null']
+                                                    secondary_url:
+                                                        type: [string, 'null']
+                                                    on_sync_completion_always:
+                                                        type: boolean
+                                                        default: true
+                                                    on_auth_creation:
+                                                        type: boolean
+                                                        default: true
+                                                    on_auth_refresh_error:
+                                                        type: boolean
+                                                        default: true
+                                                    on_sync_error:
+                                                        type: boolean
+                                                        default: true
+                                                    on_async_action_completion:
+                                                        type: boolean
+                                                        default: true
+                                                    on_connection_deletion:
+                                                        type: boolean
+                                                        default: true
+                                                    signing_key:
+                                                        type: string
+                                                        format: uuid
+                                                        example: 5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
