@@ -103,7 +103,11 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
 
         productTracking.track({
             name: 'functions:deploy_create',
-            eventProperties: { source: 'cli', is_template: false, function_count: body.flowConfigs.length }
+            eventProperties: {
+                source: 'cli',
+                is_template: false,
+                function_count: body.flowConfigs.length + (body.onEventScriptsByProvider?.reduce((total, provider) => total + provider.scripts.length, 0) ?? 0)
+            }
         });
         res.send(syncConfigDeployResult.result);
     } finally {

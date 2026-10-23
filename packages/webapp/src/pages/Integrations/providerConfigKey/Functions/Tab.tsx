@@ -357,7 +357,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const selectedFunction =
         listedMatch ?? templateMatch ?? (rawTemplateMatch?.deployed ? listedFromTemplate(rawTemplateMatch) : undefined) ?? linkedFunction?.data ?? null;
     const hasSelectedFunction = selectedFunction !== null;
-    const isSelectedFunctionDeployed = selectedFunction !== null && 'enabled' in selectedFunction;
+    const isSelectedFunctionDeployed = selectedFunction !== null && 'enabled' in selectedFunction && selectedFunction.id !== null;
 
     useEffect(() => {
         if (!selectedFunctionName || !hasSelectedFunction) return;

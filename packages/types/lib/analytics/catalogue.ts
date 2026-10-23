@@ -288,8 +288,8 @@ export const analyticsEventCatalogue = defineCatalogue({
             provider: z.string(),
             is_playground: z.boolean(),
             source: z.enum(['dashboard', 'api', 'mcp', 'playground']),
-            is_shared_credentials: z.boolean().optional(),
-            has_missing_fields: z.boolean().optional()
+            is_shared_credentials: z.boolean(),
+            has_missing_fields: z.boolean()
         })
     },
     'integrations:filter_update': {

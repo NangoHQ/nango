@@ -43,7 +43,7 @@ export const createIntegrationsTool = defineManagementMcpTool<typeof createInteg
         });
 
         if (result.isOk()) {
-            trackIntegrationCreate(result.value.integration, 'mcp');
+            trackIntegrationCreate(result.value.integration, 'mcp', environment);
         }
 
         return result

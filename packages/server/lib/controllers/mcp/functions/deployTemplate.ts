@@ -42,7 +42,7 @@ export const deployTemplateTool = defineManagementMcpTool<typeof deployTemplateA
             body: { type: 'template', ...args }
         });
         if (result.isOk()) {
-            productTracking.track({ name: 'functions:deploy_create', eventProperties: { source: 'mcp', is_template: true, function_count: 1 } });
+            productTracking.track({ name: 'functions:deploy_create', environment, eventProperties: { source: 'mcp', is_template: true, function_count: 1 } });
         }
         return result.mapError((error) => deployTemplateServiceErrorToMcp(error));
     }

@@ -29,10 +29,12 @@ import type { Result } from '@nangohq/utils';
 
 export function trackIntegrationCreate(
     integration: Pick<IntegrationConfig, 'provider' | 'shared_credentials_id' | 'missing_fields'>,
-    source: Exclude<AnalyticsEventProperties<'integrations:integration_create'>['source'], 'playground'>
+    source: Exclude<AnalyticsEventProperties<'integrations:integration_create'>['source'], 'playground'>,
+    environment?: Pick<DBEnvironment, 'is_production'>
 ): void {
     productTracking.track({
         name: 'integrations:integration_create',
+        environment,
         eventProperties: {
             provider: integration.provider,
             is_playground: false,
