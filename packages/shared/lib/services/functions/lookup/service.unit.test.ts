@@ -35,14 +35,54 @@ const baseRow: FunctionRow = {
     enabled: true,
     last_deployed: new Date('2026-01-01T00:00:00.000Z'),
     source: 'repo',
-    event: null
+    event: null,
+    tool: null
 };
 
-describe('functions service', () => {
+describe('function lookup service', () => {
     beforeEach(() => {
         vi.resetAllMocks();
         mockGetIdByProviderConfigKey.mockResolvedValue(10);
         mockFindActiveByEnvironment.mockResolvedValue({ rows: [baseRow], total: 1 });
+    });
+
+    it('returns tools', async () => {
+        const input = { type: 'object', properties: { item: { $ref: '#/definitions/Item' } } } as const;
+        const item = { type: 'string' } as const;
+        mockFindActiveByEnvironment.mockResolvedValue({
+            rows: [
+                {
+                    ...baseRow,
+                    type: 'tool',
+                    json_schema: { definitions: { Input: input, Item: item, Other: { type: 'number' } } },
+                    tool: {
+                        uuid: '11111111-1111-4111-8111-111111111111',
+                        integration_id: 'github',
+                        provider: 'github',
+                        input_schema_ref: '#/definitions/Input',
+                        output_schema_ref: null,
+                        tags: { instructions: 'Read users', required_scopes: ['read'], category: 'crm' }
+                    }
+                }
+            ],
+            total: 1
+        });
+
+        const result = await listFunctions({ environmentId: 1, providerConfigKey: 'github', type: 'tool', search: undefined, limit: 20, offset: 0 });
+
+        const row = result.unwrap().rows[0];
+        if (row?.type !== 'tool') {
+            throw new Error('Expected a tool row');
+        }
+        expect(row).toMatchObject({
+            type: 'tool',
+            uuid: '11111111-1111-4111-8111-111111111111',
+            integration_id: 'github',
+            provider: 'github',
+            output_json_schema: null
+        });
+        expect(row.input_json_schema).toEqual({ $ref: '#/definitions/Input', definitions: { Input: input, Item: item } });
+        expect(row.meta).toEqual({ instructions: 'Read users', required_scopes: ['read'], tags: { category: 'crm' } });
     });
 
     it('returns mapped rows and total for valid functions', async () => {

@@ -25,11 +25,12 @@ import { FunctionSourceLabel } from './FunctionSourceLabel';
 import type { ApiIntegration, ListedNangoFunction, NangoFunctionTemplate } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
-type DetailsFunction = ListedNangoFunction | NangoFunctionTemplate;
+type ListedDetailsFunction = Exclude<ListedNangoFunction, { type: 'tool' }>;
+type DetailsFunction = ListedDetailsFunction | NangoFunctionTemplate;
 
 const menuItemClassName = 'text-body-medium-regular';
 
-function isListedFunction(fn: DetailsFunction): fn is ListedNangoFunction {
+function isListedFunction(fn: DetailsFunction): fn is ListedDetailsFunction {
     return 'enabled' in fn;
 }
 
