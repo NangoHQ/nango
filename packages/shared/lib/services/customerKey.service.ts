@@ -13,6 +13,7 @@ import type { Knex } from 'knex';
 
 const CUSTOMER_KEYS_TABLE = 'customer_keys';
 const CUSTOMER_KEYS_RELATIONS_TABLE = 'customer_keys_relations';
+const WEBHOOK_SIGNING_KEYS_TABLE = 'webhook_signing_keys';
 const webhookSigningKeyCache = new Map<number, { key: string; committedAt: number; expiresAt: number }>();
 const WEBHOOK_SIGNING_KEY_CACHE_TTL_MS = 300_000;
 // Internal safety limits — not product constraints, just protection against unbounded key creation.
@@ -372,6 +373,7 @@ class CustomerKeyService {
                 entity_type: 'environment',
                 entity_id: environmentId
             });
+            await this.copyWebhookSigningKey(trx, environmentId, created.id);
 
             created.secret = plainText; // Callers expect unencrypted secret.
             return Ok(created);
@@ -401,15 +403,50 @@ class CustomerKeyService {
         return key;
     }
 
-    private async readWebhookSigningKey(trx: Knex, envId: number): Promise<{ key: string; updatedAt: Date }> {
-        const row = await this.webhookSigningKeyForEnv(trx, envId).first();
+    private async copyWebhookSigningKey(trx: Knex, environmentId: number, customerKeyId: number): Promise<void> {
+        await trx.raw(
+            `INSERT INTO ${WEBHOOK_SIGNING_KEYS_TABLE} (environment_id, secret, iv, tag, created_at, updated_at)
+             SELECT ?, secret, iv, tag, created_at, updated_at
+             FROM ${CUSTOMER_KEYS_TABLE}
+             WHERE id = ?
+             ON CONFLICT (environment_id) DO UPDATE
+             SET secret = EXCLUDED.secret,
+                 iv = EXCLUDED.iv,
+                 tag = EXCLUDED.tag,
+                 updated_at = EXCLUDED.updated_at
+             WHERE ${WEBHOOK_SIGNING_KEYS_TABLE}.updated_at < EXCLUDED.updated_at`,
+            [environmentId, customerKeyId]
+        );
+    }
 
+    private async readWebhookSigningKey(trx: Knex, envId: number): Promise<{ key: string; updatedAt: Date }> {
+        const { rows } = await trx.raw<{ rows: { secret: string; iv: string; tag: string; updated_at: Date }[] }>(
+            `SELECT secret, iv, tag, updated_at
+             FROM (
+                 SELECT secret, iv, tag, updated_at, 1 AS source_rank
+                 FROM ${WEBHOOK_SIGNING_KEYS_TABLE}
+                 WHERE environment_id = ?
+                 UNION ALL
+                 SELECT ${CUSTOMER_KEYS_TABLE}.secret, ${CUSTOMER_KEYS_TABLE}.iv, ${CUSTOMER_KEYS_TABLE}.tag, ${CUSTOMER_KEYS_TABLE}.updated_at, 0 AS source_rank
+                 FROM ${CUSTOMER_KEYS_TABLE}
+                 JOIN ${CUSTOMER_KEYS_RELATIONS_TABLE} relation
+                   ON relation.customer_key_id = ${CUSTOMER_KEYS_TABLE}.id
+                  AND relation.entity_type = 'environment'
+                  AND relation.entity_id = ?
+                 WHERE ${CUSTOMER_KEYS_TABLE}.key_type = 'webhook_signing'
+                   AND ${CUSTOMER_KEYS_TABLE}.deleted_at IS NULL
+             ) signing_keys
+             ORDER BY updated_at DESC, source_rank DESC
+             LIMIT 1`,
+            [envId, envId]
+        );
+        const row = rows[0];
         if (!row) {
             throw new NangoError('no_webhook_signing_key', { environment_id: envId });
         }
 
         const decrypted = getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey;
-        return { key: decrypted.secret, updatedAt: row.updated_at };
+        return { key: decrypted.secret, updatedAt: new Date(row.updated_at) };
     }
 
     public async getWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<string>> {
@@ -452,7 +489,7 @@ class CustomerKeyService {
                 EncryptionManager['encryptAPISecret']
             >[0]);
 
-            const committedAt = await trx.transaction(async (innerTrx) => {
+            const committed = await trx.transaction(async (innerTrx) => {
                 const existing = await this.webhookSigningKeyForEnv(innerTrx, envId).forUpdate(CUSTOMER_KEYS_TABLE);
                 const current = existing[0];
                 if (!current) {
@@ -477,11 +514,13 @@ class CustomerKeyService {
                 if (updated.length !== 1 || !row) {
                     throw new CustomerKeyError('no_webhook_signing_key', { environmentId: envId });
                 }
-                return row.updated_at;
+
+                await this.copyWebhookSigningKey(innerTrx, envId, current.id);
+                return this.readWebhookSigningKey(innerTrx, envId);
             });
 
-            this.cacheWebhookSigningKey(envId, plainText, committedAt);
-            return Ok(plainText);
+            this.cacheWebhookSigningKey(envId, committed.key, committed.updatedAt);
+            return Ok(committed.key);
         } catch (err) {
             return Err(err);
         }
