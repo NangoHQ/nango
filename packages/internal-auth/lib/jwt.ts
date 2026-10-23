@@ -2,9 +2,9 @@ import { decodeProtectedHeader, importJWK, importPKCS8, jwtVerify, SignJWT } fro
 
 import { normalizePem } from '@nangohq/utils';
 
-import { INTERNAL_SERVICE_ISSUER_JOBS, INTERNAL_SERVICE_ISSUER_SERVER } from './constants.js';
+import { INTERNAL_SERVICE_ISSUER_JOBS, INTERNAL_SERVICE_ISSUER_SERVER, TASK_CAPABILITY_SCOPES } from './constants.js';
 
-import type { InternalServiceAuth, InternalServiceIssuer } from './constants.js';
+import type { InternalServiceAuth, InternalServiceIssuer, TaskCapabilityResource, TaskCapabilityScope } from './constants.js';
 import type { InternalAuthPublicKey } from '@nangohq/types';
 import type { CryptoKey } from 'jose';
 
@@ -57,9 +57,11 @@ export function signerForService(service: InternalAuthService, envs: SignerEnvs)
 
 export interface MintClaims {
     sub: string;
-    aud: string;
+    aud: string | readonly string[];
     ttlSecs: number;
     issuedAt?: number;
+    res?: TaskCapabilityResource;
+    scopes?: readonly TaskCapabilityScope[];
 }
 
 const privateKeyCache = new Map<string, Promise<CryptoKey>>();
@@ -116,11 +118,25 @@ function loadPublicKey(rawPublicKey: string): Promise<CryptoKey> {
 export async function mint(signer: MintSigner, claims: MintClaims): Promise<string> {
     const key = await loadPrivateKey(signer.privateKey);
     const iat = claims.issuedAt ?? Math.floor(Date.now() / 1000);
-    return await new SignJWT({})
+    const payload: Record<string, unknown> = {};
+    if (claims.res) {
+        if (!isPositiveInt(claims.res.environmentId) || !isPositiveInt(claims.res.connectionId)) {
+            throw new Error('task capability res requires a positive environmentId and connectionId');
+        }
+        if (claims.res.syncId !== undefined && claims.res.syncId.length === 0) {
+            throw new Error('task capability res.syncId must be a non-empty string');
+        }
+        payload['res'] = claims.res;
+    }
+    if (claims.scopes !== undefined) {
+        payload['scopes'] = [...claims.scopes];
+    }
+    const audience = typeof claims.aud === 'string' ? claims.aud : [...claims.aud];
+    return await new SignJWT(payload)
         .setProtectedHeader({ alg: 'EdDSA', typ: 'JWT', kid: signer.kid })
         .setIssuer(signer.iss)
         .setSubject(claims.sub)
-        .setAudience(claims.aud)
+        .setAudience(audience)
         .setIssuedAt(iat)
         .setExpirationTime(iat + claims.ttlSecs)
         .sign(key);
@@ -170,17 +186,101 @@ export async function verify(token: string, audience: string, registry: KeyRegis
         if (payload.iss !== entry.iss || typeof payload.sub !== 'string' || payload.sub.length === 0) {
             return { auth: null, kidBound: true };
         }
+        const res = readResource(payload['res']);
+        if (res === 'invalid') {
+            return { auth: null, kidBound: true };
+        }
+        const scopes = readScopes(payload['scopes']);
+        if (scopes === 'invalid') {
+            return { auth: null, kidBound: true };
+        }
         return {
             auth: {
                 kind: 'jwt',
                 subject: payload.sub,
                 sub: payload.sub,
                 issuer: entry.iss,
-                audience
+                audience,
+                ...(res ? { res } : {}),
+                ...(scopes ? { scopes } : {})
             },
             kidBound: true
         };
     } catch {
         return { auth: null, kidBound: true };
     }
+}
+
+export type TaskCapabilityAuth = InternalServiceAuth & {
+    kind: 'jwt';
+    sub: string;
+    res: TaskCapabilityResource;
+    scopes: readonly TaskCapabilityScope[];
+};
+
+/**
+ * Verify a task capability token for one audience. The caller builds `registry` once and passes it in.
+ * Returns null unless the token is an Ed25519 jobs task JWT with a valid `res` and at least one known scope.
+ */
+export async function verifyTaskCapabilityToken(token: string, audience: string, registry: KeyRegistry): Promise<TaskCapabilityAuth | null> {
+    const { auth } = await verify(token, audience, registry);
+    if (!auth?.res || !auth.scopes || auth.scopes.length === 0 || auth.issuer !== INTERNAL_SERVICE_ISSUER_JOBS || !isTaskSubject(auth.sub)) {
+        return null;
+    }
+    return { ...auth, kind: 'jwt', sub: auth.sub, res: auth.res, scopes: auth.scopes };
+}
+
+const CAPABILITY_SCOPE_VALUES: ReadonlySet<string> = new Set(TASK_CAPABILITY_SCOPES);
+
+function isTaskSubject(sub: string | undefined): sub is string {
+    return typeof sub === 'string' && sub.startsWith('task:') && sub.length > 'task:'.length;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isPositiveInt(value: unknown): value is number {
+    return typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
+}
+
+function readResource(value: unknown): TaskCapabilityResource | null | 'invalid' {
+    if (value === undefined) {
+        return null;
+    }
+    if (!isRecord(value) || !isPositiveInt(value['environmentId']) || !isPositiveInt(value['connectionId'])) {
+        return 'invalid';
+    }
+    const syncId = value['syncId'];
+    if (syncId !== undefined && (typeof syncId !== 'string' || syncId.length === 0)) {
+        return 'invalid';
+    }
+    const res: TaskCapabilityResource = { environmentId: value['environmentId'], connectionId: value['connectionId'] };
+    if (typeof syncId === 'string') {
+        res.syncId = syncId;
+    }
+    return res;
+}
+
+function isCapabilityScope(value: unknown): value is TaskCapabilityScope {
+    return typeof value === 'string' && CAPABILITY_SCOPE_VALUES.has(value);
+}
+
+function readScopes(value: unknown): TaskCapabilityScope[] | null | 'invalid' {
+    if (value === undefined) {
+        return null;
+    }
+    if (!Array.isArray(value)) {
+        return 'invalid';
+    }
+    const scopes: TaskCapabilityScope[] = [];
+    for (const entry of value) {
+        if (typeof entry !== 'string' || entry.length === 0) {
+            return 'invalid';
+        }
+        if (isCapabilityScope(entry)) {
+            scopes.push(entry);
+        }
+    }
+    return scopes;
 }

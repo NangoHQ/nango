@@ -1,9 +1,13 @@
+import type { ScriptType } from '@nangohq/types';
+
 export const INTERNAL_SERVICE_TOKEN_ISSUER = 'nango-internal';
 export const INTERNAL_SERVICE_ISSUER_JOBS = 'service:jobs';
 export const INTERNAL_SERVICE_ISSUER_SERVER = 'service:server';
 export const INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR = 'orchestrator';
 export const INTERNAL_SERVICE_AUDIENCE_JOBS = 'jobs';
 export const INTERNAL_SERVICE_AUDIENCE_RUNNER = 'runner';
+export const INTERNAL_SERVICE_AUDIENCE_PERSIST = 'persist';
+export const INTERNAL_SERVICE_AUDIENCE_SERVER = 'server';
 /** Short-lived service-to-service token. Minted per request. */
 export const INTERNAL_SERVICE_TOKEN_TTL_SECS = 300;
 /** Info string for HKDF-style Ed25519 seed from the jobs HMAC signing key. */
@@ -32,6 +36,51 @@ export interface InternalServiceAuth {
     issuer?: InternalServiceIssuer;
     /** Unified JWT `sub` (`service:*`, `task:<id>`, or `node:<id>`). */
     sub?: string;
+    /** Present on a task capability token. Absent on service, node, and legacy tokens. */
+    res?: TaskCapabilityResource;
+    scopes?: readonly TaskCapabilityScope[];
+}
+
+/** Every scope a runner task can be minted with. Sync-only scopes are omitted for other script types. */
+export const TASK_CAPABILITY_SCOPES = [
+    'persist:log',
+    'persist:records',
+    'persist:cursor',
+    'persist:checkpoint',
+    'persist:locks',
+    'persist:telemetry',
+    'persist:abort',
+    'persist:sync-conflict',
+    'jobs:putTask',
+    'jobs:heartbeat',
+    'api:connection:read',
+    'api:integration:read',
+    'api:metadata:write',
+    'api:env-vars:read',
+    'api:sync:trigger',
+    'api:action:trigger'
+] as const;
+
+export type TaskCapabilityScope = (typeof TASK_CAPABILITY_SCOPES)[number];
+
+export interface TaskCapabilityResource {
+    environmentId: number;
+    connectionId: number;
+    syncId?: string;
+}
+
+const SYNC_ONLY_SCOPES: ReadonlySet<TaskCapabilityScope> = new Set(['persist:records', 'persist:cursor', 'persist:sync-conflict']);
+
+export function taskScopesForScriptType(scriptType: ScriptType): readonly TaskCapabilityScope[] {
+    switch (scriptType) {
+        case 'sync':
+        case 'webhook':
+            return [...TASK_CAPABILITY_SCOPES];
+        case 'action':
+        case 'on-event':
+        case 'function':
+            return TASK_CAPABILITY_SCOPES.filter((scope) => !SYNC_ONLY_SCOPES.has(scope));
+    }
 }
 
 export function taskSubject(taskId: string): string {

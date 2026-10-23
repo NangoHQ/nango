@@ -2,7 +2,7 @@ import { INTERNAL_SERVICE_AUTH_LOCALS_KEY, INTERNAL_SERVICE_ISSUER_JOBS, INTERNA
 import { keyRegistryFromPublicKeys, mergeKeyRegistries } from './jwt.js';
 import { verifyInternalServiceCredential } from './verify.js';
 
-import type { InternalServiceAuth } from './constants.js';
+import type { InternalServiceAuth, TaskCapabilityResource, TaskCapabilityScope } from './constants.js';
 import type { InternalAuthEnvs } from './credential.js';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -134,6 +134,58 @@ export function requireFleetAuth(envs: InternalAuthEnvs): (req: Request, res: Re
         const auth = getInternalServiceAuth(res);
         const nodeId = routeParam(req, 'nodeId');
         if (isNodeBoundAuth(auth, nodeId)) {
+            next();
+            return;
+        }
+        unauthorized(res, 'unauthorized', 'Unauthorized');
+    };
+}
+
+function isJobsTaskJwt(auth: InternalServiceAuth | undefined): auth is InternalServiceAuth {
+    return Boolean(
+        auth?.kind === 'jwt' &&
+            auth.issuer === INTERNAL_SERVICE_ISSUER_JOBS &&
+            typeof auth.sub === 'string' &&
+            auth.sub.startsWith('task:') &&
+            auth.sub.length > 'task:'.length
+    );
+}
+
+export function hasScope(auth: InternalServiceAuth | undefined, scope: TaskCapabilityScope): boolean {
+    return isJobsTaskJwt(auth) && auth.res !== undefined && Boolean(auth.scopes?.includes(scope));
+}
+
+export function isResourceBound(auth: InternalServiceAuth | undefined, key: keyof TaskCapabilityResource, value: number | string | undefined): boolean {
+    if (value === undefined || !isJobsTaskJwt(auth) || !auth.res) {
+        return false;
+    }
+    return auth.res[key] === value;
+}
+
+/**
+ * When REQUIRED, the route's declared scope must be on the task capability token.
+ * Non-JWT task auth (HMAC and legacy EdDSA) carries no scopes and always passes. `requireTaskBoundAuth`
+ * has already checked the task binding. A scope-less Ed25519 task JWT also passes until the fallback below is removed.
+ */
+export function requireTaskScope(envs: InternalAuthEnvs, scope: TaskCapabilityScope): (req: Request, res: Response, next: NextFunction) => void {
+    return (_req, res, next) => {
+        if (!envs.NANGO_INTERNAL_AUTH_REQUIRED) {
+            next();
+            return;
+        }
+        const auth = getInternalServiceAuth(res);
+        if (auth && auth.kind !== 'jwt') {
+            next();
+            return;
+        }
+        // TODO(NAN-6636): remove this fallback in PR 5, at least 25h after capability tokens are deployed.
+        // It applies only to Ed25519 task JWTs minted before they carried a scopes claim. An explicit empty
+        // array is not that legacy token. Non-JWT task auth is handled above.
+        if (isJobsTaskJwt(auth) && auth.scopes === undefined) {
+            next();
+            return;
+        }
+        if (hasScope(auth, scope)) {
             next();
             return;
         }
