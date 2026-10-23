@@ -8662,6 +8662,238 @@ If `NANGO_LOGS_ENABLED` is `false`, logs are sent to stdout and can be viewed in
   </Accordion>
 </AccordionGroup>
 
+## Install the integration catalog
+
+Source: https://nango.dev/docs/guides/platform/self-hosting/install-integration-catalog.md
+Description: Upload Nango's pre-built integration catalog to your own object storage on AWS, GCP or Azure.
+
+The pre-built integration catalog is the set of Nango-maintained functions (actions and syncs) you can browse and deploy from the dashboard. On a [Self-Managed](/guides/platform/self-hosting/self-managed) instance, you upload the catalog's compiled files to your own object storage. Until you do, templates appear in the dashboard but fail when you run them.
+
+<Note>
+This page is for **Self-Managed** instances only. If you run [BYOC](/guides/platform/self-hosting/byoc), Nango installs and updates the catalog for you. You don't need to do anything.
+</Note>
+
+<Warning>
+**You need an access token from Nango.** The integration catalog repository is private. Before you start, contact Nango to get an access token for it:
+
+- Use your existing shared Slack channel with Nango, or
+- Email [support@nango.dev](mailto:support@nango.dev).
+</Warning>
+
+## Requirements
+
+- Nango managed image `managed-1.6.18` or later
+- An object storage bucket (S3, GCS or Azure Blob Storage) already configured for your instance's compiled integration files
+- `git`, `node` and `npm` on the machine that builds the catalog
+- Your cloud provider's CLI, signed in with permission to write to the bucket, on the machine that uploads the catalog:
+  - AWS: [AWS CLI](https://aws.amazon.com/cli/) (`aws`)
+  - GCP: [`gsutil`](https://cloud.google.com/storage/docs/gsutil_install)
+  - Azure: [AzCopy](https://learn.microsoft.com/azure/storage/common/storage-use-azcopy-v10) (`azcopy`) for uploads and the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) (`az`) for verification
+- The access token from Nango to access the catalog repository (see above)
+
+## Configure object storage
+
+Nango reads the catalog from the same object store it uses for your deployed functions. Set the variables for **one** provider on the server, jobs and runner services. If your instance already deploys functions to object storage, these are already set and you can skip this section.
+
+Also make sure `NANGO_ENTERPRISE=true` is set. See the [configuration reference](/guides/platform/self-hosting/self-managed#configuration-reference) for the full list.
+
+<Tabs>
+  <Tab title="AWS (S3)">
+    | Variable | Example | Purpose |
+    | --- | --- | --- |
+    | `AWS_INTEGRATIONS_BUCKET_NAME` | `my-company-nango-integrations` | S3 bucket for compiled integration files |
+    | `AWS_INTEGRATIONS_REGION` | `us-west-2` | Region of the bucket |
+
+    The workloads need permission to read and write objects in the bucket, for example through an IAM role.
+  </Tab>
+  <Tab title="GCP (GCS)">
+    | Variable | Example | Purpose |
+    | --- | --- | --- |
+    | `GCS_INTEGRATIONS_BUCKET_NAME` | `my-company-nango-integrations` | GCS bucket for compiled integration files |
+
+    Nango authenticates with Application Default Credentials, so the workloads need permission to read and write objects in the bucket.
+  </Tab>
+  <Tab title="Azure (Blob Storage)">
+    | Variable | Example | Purpose |
+    | --- | --- | --- |
+    | `AZURE_INTEGRATIONS_ACCOUNT_NAME` | `mycompanynango` | Storage account for compiled integration files |
+    | `AZURE_INTEGRATIONS_CONTAINER_NAME` | `integrations` | Blob container |
+    | `AZURE_INTEGRATIONS_ACCOUNT_KEY` | `••••••••` | Optional shared key. Omit it to use `DefaultAzureCredential` |
+
+    Set the account name and container name together.
+  </Tab>
+</Tabs>
+
+<Note>
+Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the server and jobs services. Once an object store is configured, Nango reads catalog files from it.
+</Note>
+
+## Install the catalog
+
+<Steps>
+  <Step id="find-the-matching-version" title="Find the matching catalog version">
+    Each Nango image ships with catalog metadata built from one specific commit of the `integration-templates` repository. The files you upload **must** come from that same commit. A mismatch fails at runtime.
+
+    Clone the Nango repo to determine the bundled version of the `integration-templates` metadata that corresponds to your image.
+
+    The image tag ends with the Nango commit it was built from:
+
+    ```
+    nangohq/nango:managed-1.6.18-0.71.11-fe85242b81ab9d3ac808a72ca7bdd2788c8e86fb
+                                         └──────────── Nango commit SHA ────────────┘
+    ```
+
+    Check out that commit and read the `integration-templates` commit from the last update to the bundled catalog metadata:
+
+    ```bash
+    git clone https://github.com/NangoHQ/nango
+    cd nango
+    git checkout <NANGO-COMMIT-SHA>
+    git log -1 --format=%s -- packages/shared/flows.zero.json
+    ```
+
+    The output looks like this. The SHA at the end is the `integration-templates` commit to use in the next step:
+
+    ```
+    chore(integration-templates): automatic update from https://github.com/NangoHQ/integration-templates/commit/<COMMIT-SHA>
+    ```
+  </Step>
+
+  <Step id="build-the-catalog" title="Build the catalog at that commit">
+    Clone the repository with your access token, check out the `integration-templates` commit from step 1, and compile:
+
+    ```bash
+    cd ..  # leave the nango checkout from step 1
+    git clone https://github.com/NangoHQ/integration-templates
+    cd integration-templates
+    git checkout <COMMIT-SHA>
+    npm ci
+    npm run compile:integrations
+    ```
+
+    This compiles every provider and takes several minutes. The script sets its own 8 GB Node heap, so don't override it. The output goes into `integrations/<provider>/build/`.
+  </Step>
+
+  <Step id="verify-the-build" title="Verify the build">
+    The compiled catalog metadata must be **byte-identical** to the metadata bundled in your image. Compare the build output against the file in the Nango checkout from step 1:
+
+    ```bash
+    # from the integration-templates directory
+    shasum -a 256 internal/flows.zero.json
+    shasum -a 256 ../nango/packages/shared/flows.zero.json
+    ```
+
+    The two hashes must match. If they differ, return to step 1, confirm you checked out the Nango commit from your image tag, and rebuild.
+  </Step>
+
+  <Step id="upload-the-catalog" title="Upload to your bucket">
+    Upload each provider's folder to the `templates-zero/` prefix in your bucket, so that `integrations/github/...` ends up at `templates-zero/github/...`.
+
+    <Tabs>
+      <Tab title="AWS (S3)">
+        ```bash
+        BUCKET=<your-bucket>
+
+        for dir in integrations/*/; do
+          [ -d "$dir/build" ] || continue
+          integration=$(basename "$dir")
+          aws s3 sync "$dir" "s3://$BUCKET/templates-zero/$integration"
+        done
+        ```
+
+        `aws s3 sync` uploads in parallel. Add `--delete` to also remove files that no longer exist in the catalog.
+      </Tab>
+      <Tab title="GCP (GCS)">
+        ```bash
+        BUCKET=<your-bucket>
+
+        for dir in integrations/*/; do
+          [ -d "$dir/build" ] || continue
+          integration=$(basename "$dir")
+          gsutil -m rsync -r "$dir" "gs://$BUCKET/templates-zero/$integration"
+        done
+        ```
+
+        `-m` uploads in parallel. Add `-d` to also remove files that no longer exist in the catalog.
+      </Tab>
+      <Tab title="Azure (Blob Storage)">
+        Use [AzCopy](https://learn.microsoft.com/azure/storage/common/storage-use-azcopy-v10), not `az storage blob upload-batch`. The Azure CLI uploads blobs one at a time and turns a full catalog into an hour-long step. AzCopy uploads in parallel and finishes in minutes.
+
+        ```bash
+        # Reuse your existing `az login` session
+        export AZCOPY_AUTO_LOGIN_TYPE=AZCLI
+
+        for dir in integrations/*/; do
+          [ -d "$dir/build" ] || continue
+          azcopy copy "$dir" \
+            "https://<ACCOUNT>.blob.core.windows.net/<CONTAINER>/templates-zero/" \
+            --recursive
+        done
+        ```
+
+        Authenticating through Microsoft Entra (instead of an account key) also works when shared key access is disabled on the storage account.
+
+        <Warning>
+        Azure uploads don't delete files that were removed from the catalog. A template removed upstream stays in the container until you delete it. This is harmless, but the container only grows.
+        </Warning>
+      </Tab>
+    </Tabs>
+
+    Uploads overwrite existing files, so it's safe to run them again.
+  </Step>
+
+  <Step id="verify-the-catalog" title="Verify the install">
+    First, check that a known file exists in your bucket:
+
+    <Tabs>
+      <Tab title="AWS (S3)">
+        ```bash
+        aws s3 ls "s3://$BUCKET/templates-zero/github/build/github_actions_create-issue.cjs"
+        ```
+      </Tab>
+      <Tab title="GCP (GCS)">
+        ```bash
+        gsutil ls "gs://$BUCKET/templates-zero/github/build/github_actions_create-issue.cjs"
+        ```
+      </Tab>
+      <Tab title="Azure (Blob Storage)">
+        ```bash
+        az storage blob exists \
+          --account-name <ACCOUNT> \
+          --container-name <CONTAINER> \
+          --auth-mode login \
+          --name "templates-zero/github/build/github_actions_create-issue.cjs"
+        ```
+      </Tab>
+    </Tabs>
+
+    Then confirm it works end to end:
+
+    1. In the dashboard, open an integration with templates provided by Nango (see [Use the template catalog](/guides/functions/functions-guide#option-1-use-the-template-catalog)).
+    2. Select an action with source "Nango catalog".
+    3. Run the selected action via the [Trigger action API](/reference/backend/http-api/action/trigger) or using the "Test run" button.
+  </Step>
+</Steps>
+
+## Update the catalog
+
+The catalog must stay in step with your Nango version. Whenever you upgrade your image:
+
+Repeat the [install steps](#install-the-catalog) using the new image tag. The access token from Nango is reusable, so you don't need to contact us again.
+
+## Troubleshooting
+
+| Symptom | Likely cause |
+| --- | --- |
+| A template appears in the dashboard but the function stays `in progress` | The files aren't in the bucket, or they came from a different commit than the one your image expects. Redo steps 1 to 4. |
+| Template deploys fail on every attempt, even with files uploaded | Your image is older than `managed-1.6.18`. Upgrade first. |
+
+## Related guides
+
+- [Self-Managed](/guides/platform/self-hosting/self-managed) - deployment, configuration reference and updates.
+- [BYOC](/guides/platform/self-hosting/byoc) - Nango manages the catalog for you.
+- [Self-hosting overview](/guides/platform/self-hosting) - architecture and object storage.
+
 ## Migrate to checkpoints
 
 Source: https://nango.dev/docs/guides/platform/migrations/migrate-to-checkpoints.md
