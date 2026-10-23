@@ -58,7 +58,7 @@ describe('GET /environments/:environmentUuid', () => {
     });
 
     it.each(['account:environments:create', 'account:environments:list', 'account:environments:read_secret'] satisfies AccountApiKeyScope[])(
-        "requires 'account:environments:read' scope",
+        "requires 'account:environments:read' scope when granted %s",
         async (...scopes) => {
             const { env, key } = await setup(scopes);
             const res = await getEnvironment(env.uuid, key.secret);
