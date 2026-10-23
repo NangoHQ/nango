@@ -24,6 +24,39 @@ describe('parse', () => {
         });
     }
 
+    it('X delivery is independently disabled and validates required config only when enabled without exposing values', () => {
+        expect(parseEnvs(ENVS, {}).SIGNUP_X_DELIVERY_ENABLED).toBe(false);
+        const config = {
+            SIGNUP_X_DELIVERY_ENABLED: 'true',
+            SIGNUP_X_ROUTE_SECRET: 'a'.repeat(32),
+            SIGNUP_X_DELIVERY_START_AT: '2026-10-23T00:00:00Z',
+            SIGNUP_X_PIXEL_ID: 'rh471',
+            SIGNUP_X_EVENT_ID: 'abc123',
+            SIGNUP_X_CONSUMER_KEY: 'fake-key',
+            SIGNUP_X_CONSUMER_SECRET: 'fake-secret',
+            SIGNUP_X_ACCESS_TOKEN: 'fake-token',
+            SIGNUP_X_ACCESS_TOKEN_SECRET: 'fake-token-secret'
+        };
+        expect(parseEnvs(ENVS, config).SIGNUP_X_DELIVERY_ENABLED).toBe(true);
+        expect(parseEnvs(ENVS, { ...config, SIGNUP_X_EVENT_ID: 'tw-rh471-abc123' }).SIGNUP_X_EVENT_ID).toBe('tw-rh471-abc123');
+        for (const key of Object.keys(config).filter((k) => k !== 'SIGNUP_X_DELIVERY_ENABLED')) {
+            expect(() => parseEnvs(ENVS, { ...config, [key]: undefined })).toThrowError(new RegExp(key));
+        }
+        for (const [key, value] of [
+            ['SIGNUP_X_ROUTE_SECRET', 'PRIVATE_SENTINEL'],
+            ['SIGNUP_X_PIXEL_ID', '../elsewhere'],
+            ['SIGNUP_X_DELIVERY_START_AT', '2026-02-31T00:00:00Z']
+        ]) {
+            expect(() => parseEnvs(ENVS, { ...config, [key!]: value })).toThrowError(new RegExp(key!));
+            try {
+                parseEnvs(ENVS, { ...config, [key!]: value });
+            } catch (err) {
+                expect(String(err)).not.toContain('PRIVATE_SENTINEL');
+            }
+        }
+        expect(parseEnvs(ENVS, { SIGNUP_X_ROUTE_SECRET: 'incomplete', SIGNUP_X_PIXEL_ID: '../bad' }).SIGNUP_X_DELIVERY_ENABLED).toBe(false);
+    });
+
     it('should parse correctly', () => {
         const res = parseEnvs(ENVS.required({ NANGO_DATABASE_URL: true }), { NANGO_DATABASE_URL: 'http://example.com' });
         expect(res).toMatchObject({ NANGO_DATABASE_URL: 'http://example.com' });

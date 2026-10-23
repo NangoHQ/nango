@@ -1,6 +1,7 @@
 import bodyParser from 'body-parser';
 import express from 'express';
 
+import { xSignupRouter } from './controllers/analytics/xSignup.js';
 import { postRollout } from './controllers/fleet/postRollout.js';
 import { getSharedCredentialsProviders } from './controllers/sharedCredentials/getListSharedCredentials.js';
 import { getSharedCredentialsProvider } from './controllers/sharedCredentials/id/getSharedCredential.js';
@@ -13,6 +14,9 @@ import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import type { RequestHandler } from 'express';
 
 export const internalApi = express.Router();
+
+// Route-specific bounded parser and dedicated auth must precede general internal parsers.
+internalApi.use('/analytics/x-signup', xSignupRouter);
 
 // --- Body
 const bodyLimit = '100kb';
