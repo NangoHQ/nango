@@ -21,6 +21,7 @@ export interface TrackingContext {
     environment?: Pick<DBEnvironment, 'is_production'> | null | undefined;
     user?: Pick<DBUser, 'id'> | null | undefined;
     plan?: TrackedPlan | null | undefined;
+    analyticsSessionId?: string | undefined;
 }
 
 /**
@@ -72,7 +73,8 @@ function resolveContext(explicit: TrackingContextInput): TrackingContext | typeo
         user: explicit.user ?? ambient?.user,
         // Without an explicit plan, an event uses the plan its request loaded during auth.
         // A plan change later in that request makes it stale, so `plan: null` turns the fallback off.
-        plan: explicit.plan === null ? null : (explicit.plan ?? ambient?.plan)
+        plan: explicit.plan === null ? null : (explicit.plan ?? ambient?.plan),
+        analyticsSessionId: explicit.analyticsSessionId ?? ambient?.analyticsSessionId
     };
 }
 
@@ -96,8 +98,11 @@ function commonProperties(surface: 'server' | 'cli'): Record<string, unknown> {
     };
 }
 
-function contextProperties({ environment }: TrackingContext): Record<string, unknown> {
-    return environment ? { is_production: environment.is_production } : {};
+function contextProperties({ environment, analyticsSessionId }: TrackingContext): Record<string, unknown> {
+    return {
+        ...(environment ? { is_production: environment.is_production } : {}),
+        ...(analyticsSessionId ? { $session_id: analyticsSessionId } : {})
+    };
 }
 
 // Keep person processing on for `account-<id>`: PostHog links no personless event to a group.
@@ -159,6 +164,7 @@ class ProductTracking {
         environment,
         user,
         plan,
+        analyticsSessionId,
         eventProperties
     }: { name: E } & AnalyticsEventPropertiesInput<E> & TrackingContextInput) {
         try {
@@ -166,7 +172,7 @@ class ProductTracking {
                 return;
             }
 
-            const resolved = resolveContext({ team, environment, user, plan });
+            const resolved = resolveContext({ team, environment, user, plan, analyticsSessionId });
             if (resolved === IMPERSONATED) {
                 return;
             }

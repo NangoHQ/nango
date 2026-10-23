@@ -4003,6 +4003,46 @@ boldsign:
         base_url: https://api.boldsign.com
     docs: https://nango.dev/docs/integrations/all/boldsign
 
+bluebeam:
+    display_name: Bluebeam
+    categories:
+        - productivity
+        - storage
+    auth_mode: OAUTH2
+    disable_pkce: true
+    authorization_url: https://${connectionConfig.apiHost}/oauth2/authorize
+    token_url: https://${connectionConfig.apiHost}/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+        headers:
+            client_id: ${clientId}
+    docs: https://nango.dev/docs/api-integrations/bluebeam
+    docs_connect: https://nango.dev/docs/api-integrations/bluebeam/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/bluebeam/how-to-register-your-own-bluebeam-oauth-app
+    connection_config:
+        apiHost:
+            type: string
+            title: API Host
+            description: The Bluebeam API host for your account's region.
+            format: hostname
+            enum:
+                - api.bluebeam.com
+                - api.bluebeamstudio.co.uk
+                - api.bluebeamstudio.com.au
+                - api.bluebeamstudio.de
+                - api.bluebeamstudio.se
+            doc_section: '#step-1-find-your-api-host'
+            order: 1
+
 bol-com:
     display_name: bol.com
     categories:
@@ -4387,6 +4427,30 @@ builder-io-public:
             pattern: '^[a-zA-Z0-9]+$'
             example: bb209fb71eh2412dbe0114bdae18fd15
             doc_section: '#step-2-finding-your-api-key'
+
+buildkite:
+    display_name: Buildkite
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.buildkite.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/access-token
+    docs: https://nango.dev/docs/api-integrations/buildkite
+    docs_connect: https://nango.dev/docs/api-integrations/buildkite/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Access Token
+            description: Your Buildkite API access token
+            pattern: '^(bkua_[A-Za-z0-9._-]+|[a-f0-9]{40})$'
+            example: bkua_MTA.4f6c********************************0f2a
+            doc_section: '#step-1-create-an-api-access-token'
 
 buildium:
     display_name: Buildium
@@ -12059,6 +12123,39 @@ halo-psa:
             secret: true
             doc_section: '#step-3-create-an-api-application'
 
+haus:
+    display_name: Haus
+    categories:
+        - analytics
+        - e-commerce
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://harbor.haus.io
+        query:
+            org_id: ${connectionConfig.orgId}
+    docs: https://nango.dev/docs/api-integrations/haus
+    docs_connect: https://nango.dev/docs/api-integrations/haus/connect
+    connection_config:
+        orgId:
+            type: string
+            title: Organization ID
+            description: The ID of your Haus organization.
+            doc_section: '#step-1-find-your-organization-id'
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: Token ID
+            description: Your Haus API token ID.
+            doc_section: '#step-2-create-an-api-token'
+        password:
+            type: string
+            title: Token Secret
+            description: Your Haus API token secret.
+            secret: true
+            doc_section: '#step-2-create-an-api-token'
+
 harvest:
     display_name: Harvest
     categories:
@@ -17092,6 +17189,47 @@ namely-pat:
             description: The Personal Access Token for your Namely account
             doc_section: '#step-2-generating-your-personal-access-token'
 
+navan:
+    display_name: Navan
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/ta-auth/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/navan
+    docs_connect: https://nango.dev/docs/api-integrations/navan/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Environment
+            description: The Navan environment your API credentials were issued for.
+            format: hostname
+            enum:
+                - api.navan.com
+                - app-fra.navan.com
+                - staging-prime.navan.com
+            doc_section: '#step-2-select-your-environment'
+            order: 1
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Navan API client ID.
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            example: 3c1e9a42-****-****-****-********7f05
+            doc_section: '#step-1-create-api-credentials'
+        client_secret:
+            type: string
+            title: Secret Key
+            description: Your Navan API secret key.
+            pattern: '^[0-9a-fA-F]{32}$'
+            example: 9d2b************************41c6
+            secret: true
+            doc_section: '#step-1-create-api-credentials'
+
 neon:
     display_name: Neon
     categories:
@@ -20144,6 +20282,32 @@ pleo-api-key:
             example: pls_********************************_620d75
             pattern: '^pl[sp]_[a-f0-9]+_[a-f0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
+
+pocket:
+    display_name: Pocket
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public.heypocketai.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/public/recordings?page=1&limit=1
+    docs: https://nango.dev/docs/api-integrations/pocket
+    docs_connect: https://nango.dev/docs/api-integrations/pocket/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Pocket account.
+            pattern: '^pk_[A-Za-z0-9_-]+$'
+            example: pk_*******************************************
+            doc_section: '#step-1-obtaining-your-api-key'
 
 podium:
     display_name: Podium

@@ -1,8 +1,8 @@
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 import { PrivateRoute } from '@/components/patterns/PrivateRoute';
+import { RouteErrorPage } from '@/components/patterns/RouteErrorPage';
 import { SignedOutRoute } from '@/components/patterns/SignedOutRoute';
-import { FunctionPlayground } from '@/features/Playground';
 import { EmailVerified } from '@/pages/Account/EmailVerified';
 import ForgotPassword from '@/pages/Account/ForgotPassword';
 import { InviteSignup } from '@/pages/Account/InviteSignup';
@@ -38,7 +38,6 @@ import { NotFound } from '@/pages/NotFound';
 import { OAuthConsent } from '@/pages/OAuth/Consent';
 import { AccountDiscovery } from '@/pages/Onboarding/AccountDiscovery';
 import { HearAboutUs } from '@/pages/Onboarding/HearAboutUs';
-import { PlaygroundShow } from '@/pages/Playground/Show';
 import { Root } from '@/pages/Root';
 import { TeamBilling } from '@/pages/Team/Billing/Show';
 import { TeamSettingsPage } from '@/pages/Team/Settings';
@@ -171,7 +170,7 @@ const authRoutes = (() => {
     return [{ element: <SignedOutRoute />, children: signedOutOnlyRoutes }, ...alwaysOpenRoutes];
 })();
 
-export const router = sentryCreateBrowserRouter([
+const routes: RouteObject[] = [
     {
         path: '/oauth/consent/:uid/review',
         element: <OAuthConsent />
@@ -374,17 +373,12 @@ export const router = sentryCreateBrowserRouter([
                     },
                     {
                         path: 'playground',
-                        element: <PlaygroundShow />,
                         handle: { breadcrumb: 'Playground' } as BreadcrumbHandle,
                         children: [
-                            { index: true, element: null },
+                            { index: true, element: <Navigate to="agent" replace /> },
                             {
                                 path: 'agent',
                                 element: <AgentPlayground />
-                            },
-                            {
-                                path: 'functions',
-                                element: <FunctionPlayground />
                             }
                         ]
                     },
@@ -431,4 +425,6 @@ export const router = sentryCreateBrowserRouter([
         path: '*',
         element: <NotFound />
     }
-]);
+];
+
+export const router = sentryCreateBrowserRouter([{ errorElement: <RouteErrorPage />, children: routes }]);

@@ -6,6 +6,7 @@ import { envs } from '../../../../env.js';
 import { identifyAccountMembership } from '../../../../services/accountAnalytics.service.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { signupAcquisitionSchema } from '../../../../utils/signupAcquisition.js';
+import { signupAdvertisingFromRequest } from '../../../../utils/signupAdvertising.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
 import { isOAuthConsentReturnTo, safeReturnTo } from '../returnTo.js';
 
@@ -199,7 +200,11 @@ export async function finalizeManagedAuthentication({
         } else if (organizationId) {
             const organization = await workos.organizations.getOrganization(organizationId);
 
-            const resAccount = await accountService.getOrCreateAccount(organization.name, state?.acquisition);
+            const resAccount = await accountService.getOrCreateAccount(
+                organization.name,
+                state?.acquisition,
+                signupAdvertisingFromRequest(req, authorizedUser.email)
+            );
             if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;
@@ -213,7 +218,12 @@ export async function finalizeManagedAuthentication({
                 return;
             }
 
-            const resAccount = await accountService.createAccount({ name, email: authorizedUser.email, acquisition: state?.acquisition });
+            const resAccount = await accountService.createAccount({
+                name,
+                email: authorizedUser.email,
+                acquisition: state?.acquisition,
+                advertising: signupAdvertisingFromRequest(req, authorizedUser.email)
+            });
             if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;
