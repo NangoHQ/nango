@@ -1,0 +1,82 @@
+---
+title: 'Okta (OIN API service)'
+sidebarTitle: 'Okta (OIN API service)'
+description: 'Integrate your application with Okta using an OIN API service integration'
+---
+
+## 🚀 Quickstart
+
+Connect an Okta Integration Network (OIN) API service integration to Nango.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Okta (OIN API service)_.
+    </Step>
+    <Step id="authorize-okta" title="Authorize Okta">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter the installation's Client ID, Client Secret, Okta Domain, and authorized scopes. Follow the [Connect guide](/api-integrations/okta-oin-api-service/connect) to obtain them. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-okta-api" title="Call the Okta API">
+    Make a request to list users. This requires the `okta.users.read` scope. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v1/users?limit=200" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v1/users',
+            params: { limit: 200 },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Okta (OIN API service) integration guides
+
+- [How do I link my account?](/api-integrations/okta-oin-api-service/connect)
+
+Official docs: [OIN API service integration submission and testing guide](https://developer.okta.com/docs/guides/submit-apiservice-app/main/)
+
+## API gotchas
+
+- This provider uses client-secret authentication with the **org authorization server** at `/oauth2/v1/token`. A custom authorization server such as `/oauth2/default` cannot issue tokens for Okta Management API scopes.
+- Use the credentials issued by an **OIN API service integration installation**. [Manually created API Services applications](https://developer.okta.com/docs/guides/implement-oauth-for-okta-serviceapp/main/) require `private_key_jwt` for `okta.*` scopes; use [Okta (Client Credentials)](/api-integrations/okta-cc) for those applications.
+- Request only scopes authorized during installation. See the [Okta Management API scopes](https://developer.okta.com/docs/api/oauth2/#okta-admin-management-api).
+- Client credentials do not use refresh tokens. Nango obtains a new access token using the installation's client ID and client secret when renewal is needed.
+
+## 🧩 Pre-built syncs & actions for Okta (OIN API service)
+
+import PreBuiltUseCases from "/snippets/generated/okta-oin-api-service/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
