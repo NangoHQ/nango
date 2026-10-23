@@ -28,6 +28,7 @@ export async function update(
                 | 'on_sync_error'
                 | 'on_async_action_completion'
                 | 'on_connection_deletion'
+                | 'on_auth_override'
             >
         >;
     }
