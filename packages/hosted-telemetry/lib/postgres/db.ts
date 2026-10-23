@@ -1,13 +1,20 @@
+import { setTimeout } from 'node:timers/promises';
+
 import knex from 'knex';
 
 import { getDbConfig } from '@nangohq/database';
-import { flags } from '@nangohq/utils';
+import { flags, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { migrate } from './migrate.js';
 import { startPartitionDaemon } from './partitions.js';
 
 import type { Knex } from 'knex';
+
+const logger = getLogger('hosted-telemetry');
+
+const DEFAULT_DESTROY_TIMEOUT_MS = 5_000;
+const TIMED_OUT = Symbol('timed out');
 
 let instance: Knex | undefined;
 
@@ -54,7 +61,20 @@ export function startHostedTelemetryPartitions(): { abort: () => Promise<void> }
     });
 }
 
-export async function destroyHostedTelemetryDb(): Promise<void> {
-    await instance?.destroy();
+/**
+ * Knex waits for every connection in use to be released before it closes the pool, so an export still running after
+ * a timed-out shutdown would hold this up. It stops waiting after `timeoutMs` (5s by default), and the connections left
+ * close when the process exits.
+ */
+export async function destroyHostedTelemetryDb({ timeoutMs = DEFAULT_DESTROY_TIMEOUT_MS }: { timeoutMs?: number } = {}): Promise<void> {
+    const db = instance;
     instance = undefined;
+    if (!db) {
+        return;
+    }
+
+    const winner = await Promise.race([db.destroy(), setTimeout(timeoutMs, TIMED_OUT, { ref: false })]);
+    if (winner === TIMED_OUT) {
+        logger.warning(`Pool destroy stopped waiting after ${timeoutMs}ms, a query was still holding a connection`);
+    }
 }

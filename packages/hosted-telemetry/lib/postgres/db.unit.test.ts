@@ -4,6 +4,14 @@ import { flags } from '@nangohq/utils';
 
 import { destroyHostedTelemetryDb, hostedTelemetryDb } from './db.js';
 
+import type * as NangoUtils from '@nangohq/utils';
+
+const logger = vi.hoisted(() => ({ debug: vi.fn(), info: vi.fn(), warning: vi.fn(), error: vi.fn() }));
+vi.mock('@nangohq/utils', async () => {
+    const actual: typeof NangoUtils = await vi.importActual('@nangohq/utils');
+    return { ...actual, getLogger: () => logger };
+});
+
 const envs = vi.hoisted(() => ({
     NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL: undefined as string | undefined,
     NANGO_HOSTED_TELEMETRY_POSTGRES_SSL: false,
@@ -54,5 +62,17 @@ describe('hostedTelemetryDb', () => {
             ssl: false
         });
         expect(hostedTelemetryDb()).toBe(first);
+    });
+
+    it('stops waiting on a pool that a running query keeps from closing, and hands out a new one after', async () => {
+        flags.hasHostedTelemetry = true;
+        const stuck = hostedTelemetryDb();
+        vi.spyOn(stuck!, 'destroy').mockReturnValue(new Promise(() => {}));
+
+        const startedAt = performance.now();
+        await expect(destroyHostedTelemetryDb({ timeoutMs: 50 })).resolves.toBeUndefined();
+        expect(performance.now() - startedAt).toBeLessThan(1_000);
+        expect(logger.warning).toHaveBeenCalledWith('Pool destroy stopped waiting after 50ms, a query was still holding a connection');
+        expect(hostedTelemetryDb()).not.toBe(stuck);
     });
 });
