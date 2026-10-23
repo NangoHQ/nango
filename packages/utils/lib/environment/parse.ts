@@ -765,6 +765,29 @@ const ENVS_SHAPE = z.object({
                 .optional()
         ),
 
+    SIGNUP_X_CONTEXT_ENABLED: z.stringbool().optional().default(false),
+    SIGNUP_X_CONTEXT_COOKIE_NAME: z
+        .string()
+        .optional()
+        .transform(presentEnv)
+        .pipe(
+            z
+                .string()
+                .regex(/^[A-Za-z0-9_]{1,64}$/)
+                .optional()
+        ),
+    SIGNUP_REDDIT_CONTEXT_ENABLED: z.stringbool().optional().default(false),
+    SIGNUP_REDDIT_CONTEXT_COOKIE_NAME: z
+        .string()
+        .optional()
+        .transform(presentEnv)
+        .pipe(
+            z
+                .string()
+                .regex(/^[A-Za-z0-9_]{1,64}$/)
+                .optional()
+        ),
+
     // PostHog
     PUBLIC_POSTHOG_KEY: z.string().optional(),
     PUBLIC_POSTHOG_HOST: z.string().optional(),
@@ -1207,6 +1230,23 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
             path: ['SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME'],
             input: ctx.value.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME
         });
+    }
+
+    const signupCookies = [
+        'SIGNUP_AD_CONTEXT_COOKIE_NAME',
+        'SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME',
+        'SIGNUP_X_CONTEXT_COOKIE_NAME',
+        'SIGNUP_REDDIT_CONTEXT_COOKIE_NAME'
+    ] as const;
+    for (const platform of ['X', 'REDDIT'] as const) {
+        const key = `SIGNUP_${platform}_CONTEXT_COOKIE_NAME` as const;
+        const name = ctx.value[key];
+        if (ctx.value[`SIGNUP_${platform}_CONTEXT_ENABLED`] && !name) {
+            ctx.issues.push({ code: 'custom', message: `${key} is required when enabled`, path: [key], input: name });
+        }
+        if (name && signupCookies.filter((other) => ctx.value[other] === name).length !== 1) {
+            ctx.issues.push({ code: 'custom', message: 'Signup platform cookies must have different names', path: [key], input: name });
+        }
     }
 
     // EMAIL_HTTP_URL on its own selects the HTTP email provider, which cannot send without a body
