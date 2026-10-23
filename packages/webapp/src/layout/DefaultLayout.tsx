@@ -14,7 +14,7 @@ export default function DefaultLayout({ children, className, wide = false }: Def
             <div
                 className={cn(
                     'flex flex-col items-center gap-5 bg-surface-page border-border-disabled rounded',
-                    wide ? 'w-[821px] max-w-full px-30 py-20' : 'w-[485px] min-w-[385px] p-15'
+                    wide ? 'w-[821px] max-w-full px-6 py-10 sm:px-30 sm:py-20' : 'w-[485px] min-w-[385px] p-15'
                 )}
             >
                 <LogoInverted className="size-12.5 text-text-strong" />

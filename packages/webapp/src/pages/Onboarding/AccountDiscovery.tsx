@@ -213,7 +213,7 @@ const RequestSent: React.FC<{ teamName: string; email: string | undefined; onCre
             <p>Want it faster? Ask a teammate who manages Nango at {teamName} to approve your request.</p>
         </div>
         <Separator />
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
             <span className="text-body-medium-regular text-text-secondary">Changed your mind?</span>
             <Button variant="outline" onClick={onCreateOwnAccount}>
                 Create my own account instead
