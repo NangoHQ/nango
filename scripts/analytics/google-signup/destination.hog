@@ -1,0 +1,70 @@
+// Consent is the signup-time snapshot, not a live withdrawal lookup.
+// One event/request isolates failures. No profile email, IP, value or inferred click IDs.
+fn timestampMs(value) {
+    if (typeof(value) != 'string' or not match(value, '^[0-9]{4}-[0-9]{2}-[0-9]{2}T')) { return 0 }
+    let parsed := 0
+    try { parsed := toUnixTimestampMilli(value) } catch { parsed := 0 }
+    return parsed
+}
+fn responseBody(response) {
+    // fetch decodes application/json. Refuse raw text rather than risk logging it in a parser exception.
+    if (typeof(response.body) == 'string' or response.body == null) { throw Error('Google returned non-JSON body') }
+    return response.body
+}
+
+if (event.event != 'auth:account_create' or event.properties.surface != 'server' or event.properties.host != 'https://api.nango.dev') { print('SKIP: wrong event or origin'); return }
+let companyId := event.properties.$groups.company
+if (typeof(companyId) != 'string' or not match(companyId, '^[1-9][0-9]*$') or event.distinct_id != concat('account-', companyId)) { print('SKIP: account mismatch'); return }
+if (event.properties.is_signup_creator_internal != false) { print('SKIP: internal or unknown signup creator'); return }
+if (groups.company.properties.is_internal == true) { print('SKIP: internal company conflict'); return }
+let p := event.properties
+let method := p.advertising_google_consent_method
+if ((method != 'explicit' and method != 'implied') or p.advertising_google_ad_user_data != 'granted' or p.advertising_google_ad_personalization != 'granted') { print('SKIP: Google consent missing'); return }
+let eventMs := timestampMs(event.timestamp)
+let consentMs := timestampMs(p.advertising_google_consent_timestamp)
+let startMs := timestampMs(inputs.startAt)
+let clickMs := timestampMs(p.advertising_google_click_timestamp)
+if (eventMs <= 0 or consentMs <= 0 or startMs <= 0 or clickMs <= 0) { print('SKIP: missing or invalid time'); return }
+if (eventMs < startMs) { print('SKIP: before launch'); return }
+if (consentMs > eventMs or eventMs - consentMs >= 86400000 or clickMs > consentMs or eventMs - clickMs >= 86400000) { print('SKIP: stale or future context'); return }
+let clickType := p.advertising_google_click_type
+let click := p.advertising_google_click_id
+if ((clickType != 'gclid' and clickType != 'wbraid' and clickType != 'gbraid') or typeof(click) != 'string' or not match(click, '^[A-Za-z0-9_-]{1,512}$')) { print('SKIP: missing or malformed Google click'); return }
+if (startsWith(p.acquisition_utm_campaign ?? '', 'om_') or p.meta_test_fixture == true or startsWith(click, 'om_') or startsWith(click, 'synthetic_')) { print('SKIP: QA'); return }
+if (inputs.deliveryApproved != true) { print('SKIP: delivery not approved'); return }
+if (not match(inputs.customerId ?? '', '^[0-9]{10}$') or not match(inputs.loginCustomerId ?? '', '^[0-9]{10}$') or not match(inputs.conversionActionId ?? '', '^[1-9][0-9]*$')) { throw Error('Google destination configuration missing') }
+if (empty(inputs.oauthClientId) or empty(inputs.oauthClientSecret) or empty(inputs.oauthRefreshToken)) { throw Error('Google OAuth configuration missing') }
+
+// A fresh access token per eligible invocation avoids persistent short-lived tokens.
+// Credentials belong only in encrypted secret inputs after explicit provisioning approval.
+let tokenResponse := fetch('https://oauth2.googleapis.com/token', {
+    'method': 'POST', 'headers': {'Content-Type': 'application/x-www-form-urlencoded'},
+    'body': concat('grant_type=refresh_token&client_id=', encodeURLComponent(inputs.oauthClientId), '&client_secret=', encodeURLComponent(inputs.oauthClientSecret), '&refresh_token=', encodeURLComponent(inputs.oauthRefreshToken))
+})
+if (tokenResponse.status < 200 or tokenResponse.status >= 300) { throw Error(concat('Google OAuth HTTP ', toString(tokenResponse.status))) }
+let token := responseBody(tokenResponse)
+if (typeof(token.access_token) != 'string' or empty(token.access_token) or lower(token.token_type ?? '') != 'bearer' or token.expires_in <= 0) { throw Error('Google OAuth response missing bearer token') }
+if (not empty(token.scope) and not has(splitByString(' ', token.scope), 'https://www.googleapis.com/auth/datamanager')) { throw Error('Google OAuth scope missing') }
+let identifiers := {}
+identifiers[clickType] := click
+let body := {
+    'destinations': [{'operatingAccount': {'accountType': 'GOOGLE_ADS', 'accountId': inputs.customerId}, 'loginAccount': {'accountType': 'GOOGLE_ADS', 'accountId': inputs.loginCustomerId}, 'productDestinationId': inputs.conversionActionId}],
+    'events': [{'adIdentifiers': identifiers, 'eventTimestamp': event.timestamp, 'transactionId': concat('nango:account_create:', companyId), 'eventSource': 'WEB',
+        'consent': {'adUserData': 'CONSENT_GRANTED', 'adPersonalization': 'CONSENT_GRANTED'}}],
+    // Fail closed to validation mode unless explicitly false.
+    'validateOnly': inputs.validateOnly != false
+}
+let response := fetch('https://datamanager.googleapis.com/v1/events:ingest', {
+    'method': 'POST', 'headers': {'Content-Type': 'application/json', 'Authorization': concat('Bearer ', token.access_token)}, 'body': body
+})
+if (response.status < 200 or response.status >= 300) { throw Error(concat('Google ingest HTTP ', toString(response.status))) }
+let receipt := responseBody(response)
+// Never print raw responses, identifiers, account IDs or OAuth credentials.
+for (let warning in receipt.fieldWarnings ?? []) {
+    let reason := warning.reason ?? ''
+    if (match(reason, '^WARNING_REASON_[A-Z_]+$')) { print(concat('Google field warning: ', reason)) }
+}
+if (body.validateOnly) { print('Google validation accepted; no conversion sent'); return }
+if (typeof(receipt.requestId) != 'string' or not match(receipt.requestId, '^[A-Za-z0-9_-]{1,128}$')) { throw Error('Google ingest missing request ID') }
+print(concat('Google ingestion accepted; diagnostics requestId=', receipt.requestId))
+// Accepted is not attributed or processed. A later diagnostics read is required.
