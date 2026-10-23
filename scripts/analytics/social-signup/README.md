@@ -26,7 +26,7 @@ Official custom CAPI uses OAuth1.0a and an existing pixel/signup event ID. The o
 
 ## Verification and references
 
-Browser tests: `node --import tsx --test tests/signup-*.test.ts` in the website. Backend uses scoped unit/catalogue/env tests, `npm run ts-build`, lint and signup/managed-auth integration tests. `mock-tests.mjs generate <existing-function-id>` produces unsaved fixtures with every HTTP call replaced; run through PostHog's mocked test-invocation endpoint, save results, then `mock-tests.mjs verify <results>`. These tests exercise real Hog control flow and exact payloads, not credentials, live transport or retry scheduling.
+Browser tests: `node --import tsx --test tests/signup-*.test.ts` in the website. Backend uses scoped unit/catalogue/env tests, `npm run ts-build`, lint and signup/managed-auth integration tests. `node scripts/analytics/social-signup/mock-tests.mjs generate <existing-function-id>` produces unsaved fixtures with every HTTP call replaced; run through PostHog's mocked test-invocation endpoint, save results, then `node scripts/analytics/social-signup/mock-tests.mjs verify <results>`. These tests exercise real Hog control flow and exact payloads, not credentials, live transport or retry scheduling.
 
 - [Reddit v3 contract](https://ads-api.reddit.com/docs/v3/operations/Post%20Conversion%20Events), [direct integration/dedup](https://ads-api.reddit.com/docs/v3/guides/programs/capi/direct-integration), [Event Testing](https://ads-api.reddit.com/docs/v3/guides/programs/capi/verify-events).
 - [X custom conversions](https://docs.x.com/x-ads-api/measurement/web-conversions), [GTM-specific token path](https://docs.x.com/x-ads-api/measurement/gtm-server-side).
