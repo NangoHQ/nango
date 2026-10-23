@@ -5,6 +5,7 @@ import { inviteEmail, productTracking, seeders, userService } from '@nangohq/sha
 import { nanoid } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
+import { socialSignupFixture } from '../../../utils/signupSocialAdvertising.testHelpers.js';
 import { isSuccess, runServer } from '../../../utils/tests.js';
 
 const route = '/api/v1/account/signup';
@@ -133,6 +134,7 @@ describe('POST /api/v1/account/signup', () => {
         if (!invitation) throw new Error('Invitation fixture missing');
         const track = vi.spyOn(productTracking, 'track');
         const now = Date.now();
+        const social = socialSignupFixture(now);
         const google = {
             version: 1,
             marketing: true,
@@ -152,11 +154,12 @@ describe('POST /api/v1/account/signup', () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 body: { email, name: 'Invite fixture', password: 'aZ1-foobar!!', token: invitation.token },
-                headers: { Cookie: `${envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(google))}` }
+                headers: { Cookie: `${envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(google))}; ${social.cookie}` }
             });
             expect(res.res.status).toBe(200);
             expect(track.mock.calls.map(([event]) => event.name)).toStrictEqual(['auth:user_create']);
         } finally {
+            social.restore();
             envs.SIGNUP_GOOGLE_CONTEXT_ENABLED = previous;
             envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME = previousName;
             track.mockRestore();
@@ -239,6 +242,7 @@ describe('POST /api/v1/account/signup', () => {
         envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_test';
         const track = vi.spyOn(productTracking, 'track');
         const now = Date.now();
+        const social = socialSignupFixture(now);
         const context = {
             version: 1,
             marketing: true,
@@ -270,7 +274,7 @@ describe('POST /api/v1/account/signup', () => {
             adPersonalization: 'granted'
         };
         const headers = {
-            Cookie: `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}; ${envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(google))}`
+            Cookie: `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}; ${envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(google))}; ${social.cookie}`
         };
         try {
             const first = await api.fetch(route, { method: 'POST', body, headers });
@@ -280,6 +284,7 @@ describe('POST /api/v1/account/signup', () => {
                 expect.objectContaining({
                     name: 'auth:account_create',
                     eventProperties: expect.objectContaining({
+                        ...social.expected,
                         advertising_fbc: `fb.1.${now - 60_000}.synthetic_meta`,
                         is_signup_creator_internal: false,
                         advertising_google_click_id: 'synthetic_google',
@@ -292,6 +297,7 @@ describe('POST /api/v1/account/signup', () => {
             expect(second.res.status).toBe(400);
             expect(track.mock.calls.filter(([e]) => e.name === 'auth:account_create')).toHaveLength(1);
         } finally {
+            social.restore();
             envs.SIGNUP_AD_CONTEXT_ENABLED = previous;
             envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previousCookieName;
             envs.SIGNUP_GOOGLE_CONTEXT_ENABLED = previousGoogleEnabled;

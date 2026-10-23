@@ -4,6 +4,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { mfaService, seeders, userService } from '@nangohq/shared';
 import { nanoid, normalizeEmail } from '@nangohq/utils';
 
+import { socialSignupFixture } from '../../../../utils/signupSocialAdvertising.testHelpers.js';
+
 import type { runServer as runServerType } from '../../../../utils/tests.js';
 
 const workosMocks = vi.hoisted(() => {
@@ -345,6 +347,7 @@ describe(`POST ${route}`, () => {
         const track = vi.spyOn(productTracking, 'track');
         const email = `${nanoid()}@example.com`;
         const now = Date.now();
+        const social = socialSignupFixture(now, envs);
         const context = {
             version: 1,
             marketing: true,
@@ -373,7 +376,7 @@ describe(`POST ${route}`, () => {
             adPersonalization: 'granted'
         };
         const headers = {
-            Cookie: `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}; ${envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(google))}`
+            Cookie: `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}; ${envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(google))}; ${social.cookie}`
         };
         workosMocks.authenticateWithCode.mockResolvedValue({ user: { email, firstName: 'Ad', lastName: 'Fixture' }, organizationId: undefined });
         try {
@@ -384,7 +387,7 @@ describe(`POST ${route}`, () => {
                 expect.objectContaining({
                     name: 'auth:account_create',
                     eventProperties: expect.objectContaining({
-                        is_signup_creator_internal: false,
+                        ...social.expected,
                         advertising_google_click_id: 'synthetic_google',
                         advertising_google_click_type: 'wbraid',
                         advertising_oppref: 'synthetic_google_flow',
@@ -396,6 +399,7 @@ describe(`POST ${route}`, () => {
             expect(second.status).toBe(302);
             expect(track.mock.calls.filter(([e]) => e.name === 'auth:account_create')).toHaveLength(1);
         } finally {
+            social.restore();
             envs.SIGNUP_AD_CONTEXT_ENABLED = previous;
             envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previousCookieName;
             envs.SIGNUP_GOOGLE_CONTEXT_ENABLED = previousGoogleEnabled;

@@ -5,6 +5,25 @@ import { describe, expect, it } from 'vitest';
 import { ENVS, parseEnvs } from './parse.js';
 
 describe('parse', () => {
+    for (const platform of ['X', 'REDDIT'] as const) {
+        const enabled = `SIGNUP_${platform}_CONTEXT_ENABLED` as const;
+        const cookie = `SIGNUP_${platform}_CONTEXT_COOKIE_NAME` as const;
+        it(`${platform} capture defaults off, requires an explicit isolated cookie when enabled`, () => {
+            expect(parseEnvs(ENVS, {})[enabled]).toBe(false);
+            for (const name of [undefined, '', '   ', 'bad;name', 'a'.repeat(65)]) {
+                expect(() => parseEnvs(ENVS, { [enabled]: 'true', [cookie]: name })).toThrowError();
+            }
+            expect(parseEnvs(ENVS, { [enabled]: 'true', [cookie]: 'isolated_cookie' })[enabled]).toBe(true);
+            for (const other of [
+                'SIGNUP_AD_CONTEXT_COOKIE_NAME',
+                'SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME',
+                platform === 'X' ? 'SIGNUP_REDDIT_CONTEXT_COOKIE_NAME' : 'SIGNUP_X_CONTEXT_COOKIE_NAME'
+            ]) {
+                expect(() => parseEnvs(ENVS, { [cookie]: 'same', [other]: 'same' })).toThrowError(/different names/);
+            }
+        });
+    }
+
     it('should parse correctly', () => {
         const res = parseEnvs(ENVS.required({ NANGO_DATABASE_URL: true }), { NANGO_DATABASE_URL: 'http://example.com' });
         expect(res).toMatchObject({ NANGO_DATABASE_URL: 'http://example.com' });

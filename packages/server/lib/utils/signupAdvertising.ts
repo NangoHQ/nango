@@ -4,6 +4,7 @@ import { isInternalAccount } from '@nangohq/shared';
 
 import { envs } from '../env.js';
 import { parseSignupGoogleAdvertising } from './signupGoogleAdvertising.js';
+import { parseSignupSocialAdvertising } from './signupSocialAdvertising.js';
 
 import type { SignupAdvertising } from '@nangohq/types';
 import type { Request } from 'express';
@@ -72,6 +73,16 @@ export function signupAdvertisingFromRequest(req: Pick<Request, 'cookies' | 'hea
         envs.SIGNUP_GOOGLE_CONTEXT_ENABLED && envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME
             ? parseSignupGoogleAdvertising(req.cookies?.[envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME])
             : undefined;
+    const x =
+        envs.SIGNUP_X_CONTEXT_ENABLED && envs.SIGNUP_X_CONTEXT_COOKIE_NAME
+            ? parseSignupSocialAdvertising(req.cookies?.[envs.SIGNUP_X_CONTEXT_COOKIE_NAME], 'x')
+            : undefined;
+    const reddit =
+        envs.SIGNUP_REDDIT_CONTEXT_ENABLED && envs.SIGNUP_REDDIT_CONTEXT_COOKIE_NAME
+            ? parseSignupSocialAdvertising(req.cookies?.[envs.SIGNUP_REDDIT_CONTEXT_COOKIE_NAME], 'reddit')
+            : undefined;
     // The creator is known here before the account event, unlike the later async company update.
-    return advertising || google ? { ...advertising, ...google, ...(google ? { is_signup_creator_internal: isSignupCreatorInternal } : {}) } : undefined;
+    return advertising || google || x || reddit
+        ? { ...advertising, ...google, ...x, ...reddit, ...(google || x || reddit ? { is_signup_creator_internal: isSignupCreatorInternal } : {}) }
+        : undefined;
 }
