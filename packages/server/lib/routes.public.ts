@@ -43,6 +43,7 @@ import { getPublicConnection } from './controllers/connection/connectionId/getCo
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
 import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
 import { patchPublicConnection } from './controllers/connection/connectionId/patchConnection.js';
+import { postToolCall } from './controllers/connection/connectionId/tools/postCall.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import { deletePublicEnvironmentApiKey } from './controllers/environment/deleteApiKey.js';
@@ -51,6 +52,7 @@ import { getPublicEnvironmentApiKey } from './controllers/environment/getApiKey.
 import { getPublicEnvironmentApiKeys } from './controllers/environment/getApiKeys.js';
 import { getPublicEnvironments } from './controllers/environment/getEnvironments.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
+import { patchPublicEnvironmentApiKey } from './controllers/environment/patchApiKey.js';
 import { postPublicEnvironmentApiKey } from './controllers/environment/postApiKey.js';
 import { postPublicEnvironment } from './controllers/environment/postEnvironment.js';
 import { postPublicRotateWebhookSigningKey } from './controllers/environment/postPublicRotateWebhookSigningKey.js';
@@ -75,7 +77,6 @@ import { getPublicIntegrationFunction } from './controllers/integrations/uniqueK
 import { getPublicIntegrationFunctions } from './controllers/integrations/uniqueKey/functions/getFunctions.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
-import { getTool } from './controllers/integrations/uniqueKey/tools/getTool.js';
 import { getConnectionToolsMcp, postConnectionToolsMcp, requireConnectionMcp } from './controllers/mcp/connectionTools.js';
 import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
@@ -111,6 +112,7 @@ import {
     auditFunctionVariantUpdated,
     auditPublicApiKeyCreated,
     auditPublicApiKeyDeleted,
+    auditPublicApiKeyUpdated,
     auditPublicConnectionDeleted,
     auditPublicConnectionUpdated,
     auditPublicEnvironmentCreated,
@@ -285,6 +287,7 @@ publicAPI
 publicAPI
     .route('/environments/:environmentUuid/api-keys/:keyUuid')
     .get(apiAuth, can('account:environments:api_keys:read'), getPublicEnvironmentApiKey)
+    .patch(apiAuth, auditPublicApiKeyUpdated, can('account:environments:api_keys:update'), patchPublicEnvironmentApiKey)
     .delete(apiAuth, auditPublicApiKeyDeleted, can('account:environments:api_keys:delete'), deletePublicEnvironmentApiKey);
 
 // @deprecated rollbacked for one customer, to delete asap
@@ -318,7 +321,6 @@ publicAPI
     .route('/integrations/:uniqueKey/functions/:name')
     .get(envAuth, can('environment:functions:read'), getPublicIntegrationFunction)
     .delete(envAuth, auditPublicFunctionDeleted, can('environment:functions:delete'), deletePublicIntegrationFunction);
-publicAPI.route('/integrations/:uniqueKey/tools/:name').get(envAuth, can('environment:functions:read'), getTool);
 
 // @deprecated connections
 publicAPI.use('/connection', jsonContentTypeMiddleware);
@@ -461,6 +463,9 @@ publicAPI.route('/functions/deployments/bundle').post(envAuth, auditFunctionDepl
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid/invocations')
     .post(envAuth, can('environment:functions:invocations'), postFunctionInvocation);
+publicAPI
+    .route('/connections/:connectionId/tools/:name/calls')
+    .post(envAuth, can('environment:functions:invocations'), can('environment:actions:execute'), postToolCall);
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid')
     .patch(envAuth, auditFunctionVariantUpdated, can('environment:functions:update'), patchConnectionFunction);

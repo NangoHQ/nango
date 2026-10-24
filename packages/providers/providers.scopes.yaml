@@ -1566,6 +1566,14 @@ blackbaud:
 bliro:
     - org:calls:read
 
+# source: https://support.bluebeam.com/developer/authentication-guide.html
+bluebeam:
+    - full_prime
+    - full_user
+    - jobs
+    - offline_access
+    - read_prime
+
 # source: https://account.boldsign.com/.well-known/openid-configuration (scopes_supported)
 boldsign:
     - BoldSign.Contacts.All

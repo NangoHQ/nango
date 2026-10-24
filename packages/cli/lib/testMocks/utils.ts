@@ -1379,11 +1379,12 @@ function isValidHttpUrl(str: string) {
     }
 }
 
-function get(obj: any, path: string, defaultValue: any = undefined) {
+function get(obj: any, path: string, defaultValue?: any) {
     const pathArray = path.split('.').filter(Boolean);
     const result = pathArray.reduce((acc, part) => acc && acc[part], obj);
     return result === undefined ? defaultValue : result;
 }
 
 export type { FixtureProvider };
+export { replayFunction } from './functions.js';
 export { LegacyFixtureProvider, NangoActionMock, NangoSyncMock, RecordingFixtureProvider, UnifiedFixtureProvider };

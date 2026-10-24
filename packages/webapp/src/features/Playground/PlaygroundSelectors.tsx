@@ -1,14 +1,12 @@
-import { ExternalLink, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
 import { Badge, Button, FieldLabel } from '@nangohq/design-system';
 
-import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { ComboboxSelect } from '@/components/ui/Combobox';
 import { useConnections } from '@/hooks/useConnections';
-import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePlaygroundStore } from '@/store/playground';
 
 import type { PlaygroundFunctionRow } from './usePlaygroundFunctions';
@@ -46,7 +44,6 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functions
     const playgroundFunction = usePlaygroundStore((s) => s.function);
     const playgroundFunctionType = usePlaygroundStore((s) => s.functionType);
     const connectionSearch = usePlaygroundStore((s) => s.connectionSearch);
-    const setPlaygroundIntegration = usePlaygroundStore((s) => s.setIntegration);
     const setPlaygroundConnection = usePlaygroundStore((s) => s.setConnection);
     const setPlaygroundFunction = usePlaygroundStore((s) => s.setFunction);
     const setPlaygroundResult = usePlaygroundStore((s) => s.setResult);
@@ -59,7 +56,6 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functions
     const [debouncedConnectionSearch, setDebouncedConnectionSearch] = useState('');
     useDebounce(() => setDebouncedConnectionSearch(connectionSearch || ''), 250, [connectionSearch]);
 
-    const { data: integrations } = useListIntegrations(env);
     const connectionsQuery = useConnections({
         env: playgroundIntegration ? env : '',
         integrationIds: playgroundIntegration ? [playgroundIntegration] : undefined,
@@ -95,31 +91,6 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functions
         return opts;
     }, [functions, playgroundFunction, selectedFunctionValue]);
 
-    const integrationOptions = useMemo(() => {
-        const list = integrations?.data ?? [];
-        const opts: ComboboxOption[] = list.map((i) => ({
-            value: i.unique_key,
-            label: i.display_name || i.unique_key,
-            filterValue: `${i.display_name ?? ''} ${i.unique_key ?? ''} ${i.provider ?? ''}`,
-            icon: <IntegrationLogo provider={i.provider} className="size-7 rounded-[3.7px] p-[3.48px] bg-transparent border-transparent" />
-        }));
-        if (playgroundIntegration && !opts.some((o) => o.value === playgroundIntegration)) {
-            opts.unshift({ value: playgroundIntegration, label: playgroundIntegration, filterValue: playgroundIntegration });
-        }
-        return opts;
-    }, [integrations, playgroundIntegration]);
-
-    const handleIntegrationChange = useCallback(
-        (val: string) => {
-            setPlaygroundIntegration(val);
-            setPlaygroundInputErrors({});
-            setPlaygroundResult(null);
-            setPlaygroundPendingOperationId(null);
-            setPlaygroundRunning(false);
-        },
-        [setPlaygroundIntegration, setPlaygroundInputErrors, setPlaygroundResult, setPlaygroundPendingOperationId, setPlaygroundRunning]
-    );
-
     const handleConnectionChange = useCallback(
         (val: string) => {
             setPlaygroundConnection(val);
@@ -145,27 +116,6 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functions
 
     return (
         <div className="grid grid-cols-[110px_1fr] items-center gap-x-4 gap-y-6">
-            <FieldLabel>Integration</FieldLabel>
-            <ComboboxSelect
-                className={selectTriggerClassName}
-                value={playgroundIntegration || ''}
-                onValueChange={handleIntegrationChange}
-                placeholder="Select integration"
-                disabled={running}
-                options={integrationOptions}
-                searchPlaceholder="Search integrations"
-                showCheckbox={false}
-                emptyText="No integrations found"
-                footer={
-                    <div className="flex items-center justify-between gap-3">
-                        <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">Need a new integration?</span>
-                        <Button type="button" variant="outline" size="sm" onClick={() => void navigate(`/${env}/integrations/create`)}>
-                            <Plus /> Create
-                        </Button>
-                    </div>
-                }
-            />
-
             <FieldLabel>Connection</FieldLabel>
             <ComboboxSelect
                 className={selectTriggerClassName}
@@ -211,8 +161,16 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functions
                     playgroundIntegration ? (
                         <div className="flex items-center justify-between gap-3">
                             <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">Activate more functions</span>
-                            <Button type="button" variant="outline" size="sm" onClick={() => void navigate(`/${env}/integrations/${playgroundIntegration}`)}>
-                                Activate <ExternalLink />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    usePlaygroundStore.getState().setOpen(false);
+                                    void navigate(`/${env}/integrations/${playgroundIntegration}/functions`);
+                                }}
+                            >
+                                Activate
                             </Button>
                         </div>
                     ) : undefined
