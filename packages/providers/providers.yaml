@@ -9072,6 +9072,45 @@ facebook-system-user:
             example: EAAM5b*******************TgZDZD
             doc_section: '#step-1-generating-a-system-user-access-token'
 
+famulor:
+    display_name: Famulor
+    categories:
+        - communication
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.famulor.io
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/me
+    docs: https://nango.dev/docs/api-integrations/famulor
+    docs_connect: https://nango.dev/docs/api-integrations/famulor/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Famulor workspace API key.
+            example: fam_xxxxxxxxxxxxxxxxxxxxxxxx
+            pattern: '^fam_[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-creating-a-famulor-api-key'
+
+famulor-mcp:
+    display_name: Famulor (MCP)
+    categories:
+        - communication
+        - mcp
+    auth_mode: MCP_OAUTH2_GENERIC
+    mcp_server_url: https://app.famulor.io/mcp
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://app.famulor.io
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/famulor-mcp
+
 fanvue:
     display_name: Fanvue
     categories:

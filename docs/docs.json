@@ -1351,6 +1351,8 @@
               "api-integrations/factorial-api-key",
               "integrations/all/fairing",
               "integrations/all/falai",
+              "api-integrations/famulor",
+              "api-integrations/famulor-mcp",
               "api-integrations/fanvue",
               "api-integrations/fathom",
               "api-integrations/fathom-oauth",
