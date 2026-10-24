@@ -18527,6 +18527,32 @@ omnisend:
             pattern: '^[A-Za-z0-9_-]+$'
             doc_section: '#step-2-create-an-omnisend-api-key'
 
+omnisend-oauth:
+    display_name: Omnisend (OAuth)
+    categories:
+        - marketing
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://app.omnisend.com/oauth2/authorize
+    token_url: https://app.omnisend.com/oauth2/token
+    disable_pkce: true
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.omnisend.com
+        headers:
+            omnisend-version: '2026-03-15'
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/omnisend-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/omnisend-oauth/how-to-register-your-own-omnisend-oauth-app
+
 openai:
     display_name: OpenAI
     categories:

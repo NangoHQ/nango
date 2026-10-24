@@ -1,0 +1,30 @@
+---
+title: 'How to register your own Omnisend OAuth app'
+sidebarTitle: 'Omnisend Setup'
+description: 'Obtain OAuth credentials from Omnisend and connect them to Nango'
+---
+
+This guide shows you how to obtain OAuth credentials (client ID & secret) from Omnisend. These are required to let your users grant your app access to their Omnisend account.
+
+<Steps>
+  <Step title="Create an Omnisend account">
+    If you don't have an Omnisend account, sign up at [omnisend.com](https://www.omnisend.com/).
+  </Step>
+  <Step title="Apply for OAuth credentials">
+    Omnisend issues OAuth credentials on request rather than self-serve. Apply through the form linked from [Omnisend's OAuth documentation](https://api-docs.omnisend.com/reference/oauth); Omnisend usually replies within a few business days.
+    1. When asked for a redirect URL, give: `https://api.nango.dev/oauth/callback` (or your [custom callback URL](/guides/auth/auth-guide#custom-oauth-callback-url-optional) if you set one).
+    2. Once approved, Omnisend sends your **Client ID** and **Client Secret**. Enter them in your Omnisend (OAuth) integration in Nango.
+
+    <Note>Omnisend expects the client credentials in the body of the token request; Nango sends them there by default.</Note>
+  </Step>
+  <Step title="Choose your scopes">
+    Each Omnisend endpoint lists the scope it needs. Scopes follow the `resource.read` / `resource.write` pattern, for example `contacts.read`, `segments.read`, `campaigns.read` or `email-templates.write`, and are space-separated. Request only what your app uses.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Omnisend's OAuth documentation](https://api-docs.omnisend.com/reference/oauth). Omnisend's AppMarket listing is a separate step after your integration is built.
+
+---
