@@ -49,6 +49,7 @@ export interface RequestLocals {
     sandboxTokenPurpose?: 'dryrun' | 'deploy';
     sandboxTokenDryrunId?: string;
     sandboxTokenDeploymentId?: string;
+    analyticsSessionId?: string;
 }
 
 /** RequestLocals with the environment confirmed present — see `asyncWrapperWithEnvironment` and `requireEnvironment`. */

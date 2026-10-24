@@ -3,6 +3,7 @@ import { acceptInvitation, accountService, expirePreviousInvitations, getInvitat
 import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
+import { parseAnalyticsSessionId } from '../../../../middleware/productTracking.middleware.js';
 import { identifyAccountMembership } from '../../../../services/accountAnalytics.service.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { signupAcquisitionSchema } from '../../../../utils/signupAcquisition.js';
@@ -43,6 +44,7 @@ export interface InviteAccountState {
     token?: string | undefined;
     returnTo?: string | undefined;
     acquisition?: SignupAcquisition | undefined;
+    analyticsSessionId?: string | undefined;
 }
 
 const MAX_MANAGED_AUTH_STATE_LENGTH = 16384;
@@ -57,6 +59,7 @@ export function encodeManagedAuthState(state: InviteAccountState): string {
     const continuation: InviteAccountState = {};
     if (state.token) continuation.token = state.token;
     else if (state.returnTo) continuation.returnTo = state.returnTo;
+    if (state.analyticsSessionId) continuation.analyticsSessionId = state.analyticsSessionId;
 
     if (state.acquisition) {
         const withAcquisition = encodeBoundedState({ ...continuation, acquisition: state.acquisition });
@@ -80,6 +83,8 @@ export function parseManagedAuthState(state: string): InviteAccountState | null 
         else if (typeof candidate['returnTo'] === 'string') result.returnTo = safeReturnTo(candidate['returnTo']);
         const acquisition = signupAcquisitionSchema.parse(candidate['acquisition']);
         if (acquisition) result.acquisition = acquisition;
+        const analyticsSessionId = parseAnalyticsSessionId(candidate['analyticsSessionId']);
+        if (analyticsSessionId) result.analyticsSessionId = analyticsSessionId;
         return Object.keys(result).length ? result : null;
     } catch {
         return null;
@@ -156,6 +161,9 @@ export async function finalizeManagedAuthentication({
     responseMode = 'redirect'
 }: FinalizeManagedAuthParams): Promise<void> {
     const state = parseManagedAuthState(encodedState || '');
+    if (state?.analyticsSessionId) {
+        res.locals['analyticsSessionId'] = state.analyticsSessionId;
+    }
     let invitation: DBInvitation | null = null;
     if (state?.token) {
         const validatedInvitation = validateInvitation(await getInvitation(state.token), authorizedUser.email);
