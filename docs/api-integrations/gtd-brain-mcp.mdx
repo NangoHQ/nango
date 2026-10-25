@@ -1,0 +1,98 @@
+---
+title: 'GTD Brain (MCP)'
+sidebarTitle: 'GTD Brain (MCP)'
+description: 'Integrate your application with the GTD Brain MCP server'
+---
+
+## 🚀 Quickstart
+
+Connect to GTD Brain (MCP) with Nango and start calling tools in minutes. GTD Brain MCP uses OAuth 2.1 with dynamic client registration, meaning no app registration is required.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _GTD Brain (MCP)_.
+    </Step>
+    <Step title="Authorize GTD Brain">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then sign in to GTD Brain with the code it emails you. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call a GTD Brain MCP tool">
+    Make your first MCP request (initialize handshake). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/gtdbrain/v1/mcp" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2025-06-18",
+                    "capabilities": {},
+                    "clientInfo": {
+                        "name": "nango-client",
+                        "version": "1.0.0"
+                    }
+                }
+              }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/api/gtdbrain/v1/mcp',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'initialize',
+                params: {
+                    protocolVersion: '2025-06-18',
+                    capabilities: {},
+                    clientInfo: {
+                        name: 'nango-client',
+                        version: '1.0.0'
+                    }
+                }
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 GTD Brain (MCP) guides
+
+Nango uses **dynamic client registration** with GTD Brain's OAuth server. You do not need to register an MCP application, just create the integration in Nango and authorize with your GTD Brain account (sign-in is an email code).
+
+GTD Brain is a Getting Things Done board. The server exposes 16 tools and 4 prompts: capture to Inbox, next actions by context, projects, waiting-for, card search and edits, and contexts. Cards are archived, never deleted. The tool list is public in the [server card](https://mcp.gtdbrain.com/.well-known/mcp/server-card.json); the server is published in the official MCP Registry as `com.gtdbrain/gtd-brain`.
+
+Official docs: [GTD Brain MCP](https://gtdbrain.com/connect?source=nango)
+
+---
