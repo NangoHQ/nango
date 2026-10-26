@@ -121,7 +121,7 @@ describe('pullFromCatalog', () => {
         fetchMock.mockReset();
     });
 
-    it('reports the catalog as unavailable when the server does not have the endpoint', async () => {
+    it('explains that the server is too old when it does not have the endpoint', async () => {
         const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
         mockResponse(404, '<!doctype html><pre>Cannot GET</pre>');
         const writeSpy = mockFsForWriting();
@@ -130,6 +130,6 @@ describe('pullFromCatalog', () => {
 
         expect(success).toBe(false);
         expect(writeSpy).not.toHaveBeenCalled();
-        expect(loggedMessages(consoleSpy)).toMatch(/not available on this Nango instance.*catalog_unavailable/);
+        expect(loggedMessages(consoleSpy)).toMatch(/doesn't support pulling from the catalog/);
     });
 });
