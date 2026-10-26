@@ -68,6 +68,7 @@ export const scriptNameSchema = z
     .regex(/^[a-zA-Z0-9_-]+$/)
     .max(255);
 export const functionTypeSchema = z.enum(['sync', 'action', 'on-event']);
+export const functionListTypeSchema = z.enum(['sync', 'action', 'on-event', 'tool']);
 // On-event functions can't be targeted by name alone yet, so deletion is limited to sync/action.
 export const deletableFunctionTypeSchema = z.enum(['sync', 'action']);
 export const paginationQueryFields = {
@@ -77,7 +78,7 @@ export const paginationQueryFields = {
 // Shared querystring fields for the function-list endpoints. The private route adds `env`; the public route
 // derives the environment from the secret key, so it spreads these as-is.
 export const functionListQueryFields = {
-    type: functionTypeSchema.optional(),
+    type: functionListTypeSchema.optional(),
     search: z.string().trim().min(1).max(255).optional(),
     ...paginationQueryFields
 };

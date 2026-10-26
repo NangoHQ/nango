@@ -4,6 +4,7 @@ import type { CreateConnectSessionError } from '../../../services/connectSession
 
 export function createConnectSessionServiceErrorToMcp(error: CreateConnectSessionError): Error {
     switch (error.code) {
+        case 'connection_not_found':
         case 'resource_capped':
         case 'docs_connect_override_forbidden':
         case 'invalid_connection_config':

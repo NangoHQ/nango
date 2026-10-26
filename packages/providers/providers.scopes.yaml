@@ -9081,6 +9081,9 @@ onelogin:
     - phone
     - profile
 
+# source: https://help.aconex.com/apis/implement-smart-construction-platform-oauth/ (no scopes parameter — API access is governed by the authenticated user's Aconex project permissions)
+oracle-aconex: []
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 oracle-cloud-identity: []
 
