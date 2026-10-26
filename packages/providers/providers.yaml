@@ -2464,6 +2464,39 @@ attentive-api-key:
             description: Your Attentive custom app API key.
             doc_section: '#step-1-create-a-custom-app'
 
+attentive-mcp:
+    display_name: Attentive (MCP)
+    categories:
+        - marketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp-auth.attentivemobile.com/oauth2/authorize
+    token_url: https://mcp-auth.attentivemobile.com/oauth2/token
+    registration_url: https://mcp-auth.attentivemobile.com/register
+    default_scopes:
+        - mcp
+        - offline_access
+    authorization_params:
+        response_type: code
+        resource: https://attentive-ui-mcp.attentivemobile.com/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp?readOnly=false
+    proxy:
+        base_url: https://attentive-ui-mcp.attentivemobile.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/attentive-mcp
+
 attio:
     display_name: Attio
     categories:
