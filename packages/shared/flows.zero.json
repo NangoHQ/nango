@@ -337763,6 +337763,2121 @@
             },
             {
                 "type": "action",
+                "description": "Search file contents across indexed GitHub repositories using code-search qualifiers.",
+                "endpoint": null,
+                "input": "ActionInput_github_app_oauth_searchcode",
+                "name": "search-code",
+                "output": ["ActionOutput_github_app_oauth_searchcode"],
+                "scopes": ["contents:read"],
+                "usedModels": ["ActionInput_github_app_oauth_searchcode", "ActionOutput_github_app_oauth_searchcode"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_github_app_oauth_searchcode": {
+                            "type": "object",
+                            "properties": {
+                                "q": {
+                                    "type": "string",
+                                    "pattern": "\\S",
+                                    "description": "Code search query with keywords and GitHub qualifiers. Example: \"addClass in:file language:js repo:jquery/jquery\"."
+                                },
+                                "sort": {
+                                    "description": "Sort order for results. The only supported value is \"indexed\", which sorts by how recently GitHub indexed the file.",
+                                    "type": "string",
+                                    "enum": ["indexed"]
+                                },
+                                "order": {
+                                    "description": "Direction of the sort. Only applies when sort is provided.",
+                                    "type": "string",
+                                    "enum": ["desc", "asc"]
+                                },
+                                "per_page": {
+                                    "description": "Number of results to return per page, from 1 to 100. GitHub defaults to 30.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100
+                                },
+                                "page": {
+                                    "description": "Page number of results to return, starting at 1. GitHub defaults to 1.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "required": ["q"],
+                            "additionalProperties": false,
+                            "description": "Parameters for searching code across GitHub repositories."
+                        },
+                        "ActionOutput_github_app_oauth_searchcode": {
+                            "type": "object",
+                            "properties": {
+                                "total_count": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991,
+                                    "description": "Total number of matching files, up to the GitHub search result cap."
+                                },
+                                "incomplete_results": {
+                                    "type": "boolean",
+                                    "description": "Whether the search timed out before returning all possible matches."
+                                },
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "File name of the matching code file."
+                                            },
+                                            "path": {
+                                                "type": "string",
+                                                "description": "Full path of the file within the repository."
+                                            },
+                                            "sha": {
+                                                "type": "string",
+                                                "description": "Git blob SHA of the matching file."
+                                            },
+                                            "url": {
+                                                "type": "string",
+                                                "description": "API URL of the matching file."
+                                            },
+                                            "html_url": {
+                                                "type": "string",
+                                                "description": "Web URL of the matching file."
+                                            },
+                                            "git_url": {
+                                                "type": "string",
+                                                "description": "Git API URL of the matching blob."
+                                            },
+                                            "repository": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "minimum": -9007199254740991,
+                                                        "maximum": 9007199254740991,
+                                                        "description": "Numeric GitHub repository ID."
+                                                    },
+                                                    "node_id": {
+                                                        "type": "string",
+                                                        "description": "GraphQL node ID of the repository."
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Repository name without the owner prefix."
+                                                    },
+                                                    "full_name": {
+                                                        "type": "string",
+                                                        "description": "Repository name including the owner, for example \"jquery/jquery\"."
+                                                    },
+                                                    "private": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the repository is private."
+                                                    },
+                                                    "html_url": {
+                                                        "type": "string",
+                                                        "description": "Web URL of the repository."
+                                                    },
+                                                    "description": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "string"
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ],
+                                                        "description": "Repository description, or null when none is set."
+                                                    },
+                                                    "fork": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the repository is a fork."
+                                                    },
+                                                    "owner": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "login": {
+                                                                "type": "string",
+                                                                "description": "Username of the repository owner."
+                                                            },
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "minimum": -9007199254740991,
+                                                                "maximum": 9007199254740991,
+                                                                "description": "Numeric GitHub user ID of the repository owner."
+                                                            },
+                                                            "avatar_url": {
+                                                                "type": "string",
+                                                                "description": "URL of the repository owner avatar image."
+                                                            },
+                                                            "html_url": {
+                                                                "type": "string",
+                                                                "description": "Web URL of the repository owner profile."
+                                                            }
+                                                        },
+                                                        "required": ["login", "id", "avatar_url", "html_url"],
+                                                        "additionalProperties": false,
+                                                        "description": "Owner of the repository."
+                                                    }
+                                                },
+                                                "required": ["id", "node_id", "name", "full_name", "private", "html_url", "description", "fork", "owner"],
+                                                "additionalProperties": false,
+                                                "description": "Repository that contains the matching file."
+                                            },
+                                            "score": {
+                                                "type": "number",
+                                                "description": "Relevance score assigned by GitHub search."
+                                            },
+                                            "file_size": {
+                                                "description": "Size of the file in bytes.",
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "language": {
+                                                "description": "Detected programming language of the file, or null when GitHub cannot detect one.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "last_modified_at": {
+                                                "description": "Timestamp when the file was last modified.",
+                                                "type": "string"
+                                            },
+                                            "line_numbers": {
+                                                "description": "Line numbers of the match when GitHub includes them.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "required": ["name", "path", "sha", "url", "html_url", "git_url", "repository", "score"],
+                                        "additionalProperties": false
+                                    },
+                                    "description": "Matching code files for the requested page."
+                                },
+                                "next_page": {
+                                    "description": "Page number to request next. Omitted on the last accessible page.",
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "required": ["total_count", "incomplete_results", "items"],
+                            "additionalProperties": false,
+                            "description": "A page of GitHub code search results."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Search commits across indexed repositories by message, author, or metadata qualifiers.",
+                "endpoint": null,
+                "input": "ActionInput_github_app_oauth_searchcommits",
+                "name": "search-commits",
+                "output": ["ActionOutput_github_app_oauth_searchcommits"],
+                "scopes": ["contents:read"],
+                "usedModels": ["ActionInput_github_app_oauth_searchcommits", "ActionOutput_github_app_oauth_searchcommits"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_github_app_oauth_searchcommits": {
+                            "type": "object",
+                            "properties": {
+                                "q": {
+                                    "type": "string",
+                                    "pattern": "\\S",
+                                    "description": "Search query using GitHub commit search qualifiers. Example: \"repo:octocat/Hello-World fix\" or \"author:octocat committer-date:>2024-01-01\"."
+                                },
+                                "sort": {
+                                    "description": "Field to sort results by. Omit for best-match ordering.",
+                                    "type": "string",
+                                    "enum": ["author-date", "committer-date"]
+                                },
+                                "order": {
+                                    "description": "Sort direction. Ignored unless sort is provided. Example: \"desc\".",
+                                    "type": "string",
+                                    "enum": ["desc", "asc"]
+                                },
+                                "per_page": {
+                                    "description": "Number of results per page, from 1 to 100. Defaults to 30.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100
+                                },
+                                "page": {
+                                    "description": "Page number of results to fetch, starting at 1. Defaults to 1.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "required": ["q"],
+                            "additionalProperties": false,
+                            "description": "Search query and pagination options for finding commits with the GitHub commit search API."
+                        },
+                        "ActionOutput_github_app_oauth_searchcommits": {
+                            "type": "object",
+                            "properties": {
+                                "total_count": {
+                                    "type": "number",
+                                    "description": "Total number of commits matching the query."
+                                },
+                                "incomplete_results": {
+                                    "type": "boolean",
+                                    "description": "Whether GitHub timed out before returning all matching commits."
+                                },
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "sha": {
+                                                "type": "string",
+                                                "description": "Commit SHA."
+                                            },
+                                            "node_id": {
+                                                "description": "GraphQL node ID of the commit search result.",
+                                                "type": "string"
+                                            },
+                                            "url": {
+                                                "type": "string",
+                                                "description": "API URL of the commit."
+                                            },
+                                            "html_url": {
+                                                "type": "string",
+                                                "description": "URL of the commit on GitHub."
+                                            },
+                                            "comments_url": {
+                                                "description": "API URL for comments on the commit.",
+                                                "type": "string"
+                                            },
+                                            "commit": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "message": {
+                                                        "type": "string",
+                                                        "description": "Full commit message, including the subject and body."
+                                                    },
+                                                    "author": {
+                                                        "description": "Git author identity recorded on the commit.",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "description": "Name recorded on the Git commit.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "email": {
+                                                                "description": "Email address recorded on the Git commit.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "date": {
+                                                                "description": "ISO 8601 timestamp recorded on the Git commit.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "committer": {
+                                                        "description": "Git committer identity recorded on the commit, or null when unavailable.",
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "name": {
+                                                                        "description": "Name recorded on the Git commit.",
+                                                                        "anyOf": [
+                                                                            {
+                                                                                "type": "string"
+                                                                            },
+                                                                            {
+                                                                                "type": "null"
+                                                                            }
+                                                                        ]
+                                                                    },
+                                                                    "email": {
+                                                                        "description": "Email address recorded on the Git commit.",
+                                                                        "anyOf": [
+                                                                            {
+                                                                                "type": "string"
+                                                                            },
+                                                                            {
+                                                                                "type": "null"
+                                                                            }
+                                                                        ]
+                                                                    },
+                                                                    "date": {
+                                                                        "description": "ISO 8601 timestamp recorded on the Git commit.",
+                                                                        "anyOf": [
+                                                                            {
+                                                                                "type": "string"
+                                                                            },
+                                                                            {
+                                                                                "type": "null"
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "additionalProperties": false
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "comment_count": {
+                                                        "description": "Number of comments on the commit.",
+                                                        "type": "number"
+                                                    },
+                                                    "url": {
+                                                        "description": "API URL of the commit.",
+                                                        "type": "string"
+                                                    },
+                                                    "verification": {
+                                                        "description": "Signature verification details for the commit.",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "verified": {
+                                                                "type": "boolean",
+                                                                "description": "Whether the commit signature was verified."
+                                                            },
+                                                            "reason": {
+                                                                "type": "string",
+                                                                "description": "Reason describing the verification result."
+                                                            },
+                                                            "payload": {
+                                                                "description": "Signed payload, or null when not present.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "signature": {
+                                                                "description": "Signature value, or null when not present.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "verified_at": {
+                                                                "description": "ISO 8601 verification timestamp, or null when not verified.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": ["verified", "reason"],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "required": ["message"],
+                                                "additionalProperties": false,
+                                                "description": "Git commit details, including message and author identities."
+                                            },
+                                            "author": {
+                                                "description": "GitHub account linked as the commit author, or null when not linked.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "login": {
+                                                                "type": "string",
+                                                                "description": "GitHub username of the account. Example: \"octocat\"."
+                                                            },
+                                                            "id": {
+                                                                "type": "number",
+                                                                "description": "Numeric GitHub account ID."
+                                                            },
+                                                            "node_id": {
+                                                                "description": "GraphQL node ID of the account.",
+                                                                "type": "string"
+                                                            },
+                                                            "name": {
+                                                                "description": "Display name of the account, if set.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "email": {
+                                                                "description": "Public email address of the account, if set.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "avatar_url": {
+                                                                "description": "URL of the account avatar image.",
+                                                                "type": "string"
+                                                            },
+                                                            "html_url": {
+                                                                "description": "URL of the account profile page.",
+                                                                "type": "string"
+                                                            },
+                                                            "type": {
+                                                                "description": "Account type, such as \"User\" or \"Organization\".",
+                                                                "type": "string"
+                                                            },
+                                                            "site_admin": {
+                                                                "description": "Whether the account is a GitHub site administrator.",
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": ["login", "id"],
+                                                        "additionalProperties": false
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "committer": {
+                                                "description": "GitHub account linked as the commit committer, or null when not linked.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "login": {
+                                                                "type": "string",
+                                                                "description": "GitHub username of the account. Example: \"octocat\"."
+                                                            },
+                                                            "id": {
+                                                                "type": "number",
+                                                                "description": "Numeric GitHub account ID."
+                                                            },
+                                                            "node_id": {
+                                                                "description": "GraphQL node ID of the account.",
+                                                                "type": "string"
+                                                            },
+                                                            "name": {
+                                                                "description": "Display name of the account, if set.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "email": {
+                                                                "description": "Public email address of the account, if set.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "avatar_url": {
+                                                                "description": "URL of the account avatar image.",
+                                                                "type": "string"
+                                                            },
+                                                            "html_url": {
+                                                                "description": "URL of the account profile page.",
+                                                                "type": "string"
+                                                            },
+                                                            "type": {
+                                                                "description": "Account type, such as \"User\" or \"Organization\".",
+                                                                "type": "string"
+                                                            },
+                                                            "site_admin": {
+                                                                "description": "Whether the account is a GitHub site administrator.",
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": ["login", "id"],
+                                                        "additionalProperties": false
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "parents": {
+                                                "description": "Parent commits of this commit.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "sha": {
+                                                            "description": "Parent commit SHA.",
+                                                            "type": "string"
+                                                        },
+                                                        "url": {
+                                                            "description": "API URL of the parent commit.",
+                                                            "type": "string"
+                                                        },
+                                                        "html_url": {
+                                                            "description": "URL of the parent commit on GitHub.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "repository": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "number",
+                                                        "description": "Numeric repository ID."
+                                                    },
+                                                    "node_id": {
+                                                        "description": "GraphQL node ID of the repository.",
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Repository name without the owner. Example: \"Hello-World\"."
+                                                    },
+                                                    "full_name": {
+                                                        "type": "string",
+                                                        "description": "Repository name including the owner. Example: \"octocat/Hello-World\"."
+                                                    },
+                                                    "private": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the repository is private."
+                                                    },
+                                                    "html_url": {
+                                                        "type": "string",
+                                                        "description": "URL of the repository on GitHub."
+                                                    },
+                                                    "description": {
+                                                        "description": "Repository description, or null when none is set.",
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "string"
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "fork": {
+                                                        "description": "Whether the repository is a fork.",
+                                                        "type": "boolean"
+                                                    },
+                                                    "archived": {
+                                                        "description": "Whether the repository is archived.",
+                                                        "type": "boolean"
+                                                    },
+                                                    "default_branch": {
+                                                        "description": "Name of the repository default branch. Example: \"main\".",
+                                                        "type": "string"
+                                                    },
+                                                    "language": {
+                                                        "description": "Primary language of the repository, or null when undetected.",
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "string"
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "stargazers_count": {
+                                                        "description": "Number of users who starred the repository.",
+                                                        "type": "number"
+                                                    },
+                                                    "owner": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "login": {
+                                                                "type": "string",
+                                                                "description": "GitHub username of the account. Example: \"octocat\"."
+                                                            },
+                                                            "id": {
+                                                                "type": "number",
+                                                                "description": "Numeric GitHub account ID."
+                                                            },
+                                                            "node_id": {
+                                                                "description": "GraphQL node ID of the account.",
+                                                                "type": "string"
+                                                            },
+                                                            "name": {
+                                                                "description": "Display name of the account, if set.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "email": {
+                                                                "description": "Public email address of the account, if set.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "avatar_url": {
+                                                                "description": "URL of the account avatar image.",
+                                                                "type": "string"
+                                                            },
+                                                            "html_url": {
+                                                                "description": "URL of the account profile page.",
+                                                                "type": "string"
+                                                            },
+                                                            "type": {
+                                                                "description": "Account type, such as \"User\" or \"Organization\".",
+                                                                "type": "string"
+                                                            },
+                                                            "site_admin": {
+                                                                "description": "Whether the account is a GitHub site administrator.",
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": ["login", "id"],
+                                                        "additionalProperties": false,
+                                                        "description": "Owner account of the repository."
+                                                    }
+                                                },
+                                                "required": ["id", "name", "full_name", "private", "html_url", "owner"],
+                                                "additionalProperties": false,
+                                                "description": "Repository containing the commit."
+                                            },
+                                            "score": {
+                                                "type": "number",
+                                                "description": "Search relevance score assigned by GitHub."
+                                            }
+                                        },
+                                        "required": ["sha", "url", "html_url", "commit", "repository", "score"],
+                                        "additionalProperties": false
+                                    },
+                                    "description": "Commits matching the search query on the requested page."
+                                },
+                                "next_page": {
+                                    "description": "Page number to request next. Omitted on the last accessible page.",
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "required": ["total_count", "incomplete_results", "items"],
+                            "additionalProperties": false,
+                            "description": "A page of GitHub commit search results."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Search issues and pull requests across indexed repositories using GitHub's issue-search qualifiers.",
+                "endpoint": null,
+                "input": "ActionInput_github_app_oauth_searchissuesandpullrequests",
+                "name": "search-issues-and-pull-requests",
+                "output": ["ActionOutput_github_app_oauth_searchissuesandpullrequests"],
+                "scopes": ["issues:read", "pull_requests:read"],
+                "usedModels": ["ActionInput_github_app_oauth_searchissuesandpullrequests", "ActionOutput_github_app_oauth_searchissuesandpullrequests"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_github_app_oauth_searchissuesandpullrequests": {
+                            "type": "object",
+                            "properties": {
+                                "q": {
+                                    "description": "Free-form issue search keywords and qualifiers appended to the generated query. Example: \"memory leak in:title\".",
+                                    "type": "string"
+                                },
+                                "repository": {
+                                    "description": "Limit results to one repository in \"owner/repo\" format. Example: \"octocat/Hello-World\".",
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "description": "Restrict results to issues (is:issue) or pull requests (is:pr). Omit to return both.",
+                                    "type": "string",
+                                    "enum": ["issue", "pull_request"]
+                                },
+                                "state": {
+                                    "description": "Restrict results to open or closed issues and pull requests.",
+                                    "type": "string",
+                                    "enum": ["open", "closed"]
+                                },
+                                "label": {
+                                    "description": "Only include items carrying this label. Example: \"bug\".",
+                                    "type": "string"
+                                },
+                                "assignee": {
+                                    "description": "Only include items assigned to this GitHub login. Example: \"octocat\".",
+                                    "type": "string"
+                                },
+                                "author": {
+                                    "description": "Only include items created by this GitHub login. Example: \"octocat\".",
+                                    "type": "string"
+                                },
+                                "sort": {
+                                    "description": "Field used to sort results. Defaults to best match. Example: \"created\".",
+                                    "type": "string",
+                                    "enum": [
+                                        "comments",
+                                        "reactions",
+                                        "reactions-+1",
+                                        "reactions--1",
+                                        "reactions-smile",
+                                        "reactions-thinking_face",
+                                        "reactions-heart",
+                                        "reactions-tada",
+                                        "interactions",
+                                        "created",
+                                        "updated"
+                                    ]
+                                },
+                                "order": {
+                                    "description": "Sort direction for the selected sort field. Defaults to \"desc\".",
+                                    "type": "string",
+                                    "enum": ["desc", "asc"]
+                                },
+                                "per_page": {
+                                    "description": "Number of results per page, from 1 to 100. Defaults to 30.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100
+                                },
+                                "page": {
+                                    "description": "Page number to fetch, starting at 1. Defaults to 1.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Filters and pagination for searching GitHub issues and pull requests."
+                        },
+                        "ActionOutput_github_app_oauth_searchissuesandpullrequests": {
+                            "type": "object",
+                            "properties": {
+                                "total_count": {
+                                    "type": "number",
+                                    "description": "Total number of items matching the query across all pages."
+                                },
+                                "incomplete_results": {
+                                    "type": "boolean",
+                                    "description": "Whether GitHub timed out before returning every matching result."
+                                },
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "number",
+                                                "description": "Numeric GitHub issue or pull request ID."
+                                            },
+                                            "number": {
+                                                "type": "number",
+                                                "description": "Repository-scoped issue or pull request number."
+                                            },
+                                            "title": {
+                                                "type": "string",
+                                                "description": "Issue or pull request title."
+                                            },
+                                            "state": {
+                                                "type": "string",
+                                                "description": "Current state, such as \"open\" or \"closed\"."
+                                            },
+                                            "state_reason": {
+                                                "description": "Reason the item was closed, such as \"completed\" or \"not_planned\".",
+                                                "type": "string"
+                                            },
+                                            "html_url": {
+                                                "type": "string",
+                                                "description": "URL of the issue or pull request on GitHub."
+                                            },
+                                            "url": {
+                                                "type": "string",
+                                                "description": "REST API URL of the issue or pull request."
+                                            },
+                                            "repository_url": {
+                                                "description": "REST API URL of the repository that contains the item.",
+                                                "type": "string"
+                                            },
+                                            "body": {
+                                                "description": "Markdown body of the issue or pull request.",
+                                                "type": "string"
+                                            },
+                                            "user": {
+                                                "description": "User who created the issue or pull request.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "login": {
+                                                        "type": "string",
+                                                        "description": "GitHub login of the user. Example: \"octocat\"."
+                                                    },
+                                                    "id": {
+                                                        "type": "number",
+                                                        "description": "Numeric GitHub user ID."
+                                                    },
+                                                    "html_url": {
+                                                        "type": "string",
+                                                        "description": "URL of the user profile on GitHub."
+                                                    }
+                                                },
+                                                "required": ["login", "id", "html_url"],
+                                                "additionalProperties": false
+                                            },
+                                            "labels": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "description": "Numeric GitHub label ID.",
+                                                            "type": "number"
+                                                        },
+                                                        "name": {
+                                                            "description": "Label name. Example: \"bug\".",
+                                                            "type": "string"
+                                                        },
+                                                        "color": {
+                                                            "description": "Six-character hex color of the label without a leading hash.",
+                                                            "type": "string"
+                                                        },
+                                                        "description": {
+                                                            "description": "Label description, when one is set.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "description": "Labels currently attached to the issue or pull request."
+                                            },
+                                            "assignees": {
+                                                "description": "Users currently assigned to the issue or pull request.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "login": {
+                                                            "type": "string",
+                                                            "description": "GitHub login of the user. Example: \"octocat\"."
+                                                        },
+                                                        "id": {
+                                                            "type": "number",
+                                                            "description": "Numeric GitHub user ID."
+                                                        },
+                                                        "html_url": {
+                                                            "type": "string",
+                                                            "description": "URL of the user profile on GitHub."
+                                                        }
+                                                    },
+                                                    "required": ["login", "id", "html_url"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "locked": {
+                                                "description": "Whether the conversation is locked.",
+                                                "type": "boolean"
+                                            },
+                                            "comments": {
+                                                "description": "Number of comments on the issue or pull request.",
+                                                "type": "number"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "description": "ISO 8601 timestamp when the issue or pull request was created."
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "description": "ISO 8601 timestamp when the issue or pull request was last updated."
+                                            },
+                                            "closed_at": {
+                                                "description": "ISO 8601 timestamp when the issue or pull request was closed, if it is closed.",
+                                                "type": "string"
+                                            },
+                                            "author_association": {
+                                                "description": "Author relationship to the repository, such as \"OWNER\", \"MEMBER\", or \"CONTRIBUTOR\".",
+                                                "type": "string"
+                                            },
+                                            "draft": {
+                                                "description": "Whether the pull request is a draft; only present for pull requests.",
+                                                "type": "boolean"
+                                            },
+                                            "is_pull_request": {
+                                                "type": "boolean",
+                                                "description": "Whether the search result is a pull request rather than an issue."
+                                            },
+                                            "pull_request": {
+                                                "description": "Pull request-specific URLs and merge details; only present for pull requests.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "merged_at": {
+                                                        "description": "ISO 8601 timestamp when the pull request was merged, if it was merged.",
+                                                        "type": "string"
+                                                    },
+                                                    "html_url": {
+                                                        "description": "URL of the pull request on GitHub.",
+                                                        "type": "string"
+                                                    },
+                                                    "url": {
+                                                        "description": "REST API URL of the pull request.",
+                                                        "type": "string"
+                                                    },
+                                                    "diff_url": {
+                                                        "description": "URL of the pull request diff.",
+                                                        "type": "string"
+                                                    },
+                                                    "patch_url": {
+                                                        "description": "URL of the pull request patch.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            "score": {
+                                                "description": "Relevance score assigned by GitHub search.",
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": [
+                                            "id",
+                                            "number",
+                                            "title",
+                                            "state",
+                                            "html_url",
+                                            "url",
+                                            "labels",
+                                            "created_at",
+                                            "updated_at",
+                                            "is_pull_request"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "description": "Issues and pull requests matching the query for the requested page."
+                                },
+                                "next_page": {
+                                    "description": "Page number to request next. Omitted on the last accessible page.",
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "required": ["total_count", "incomplete_results", "items"],
+                            "additionalProperties": false,
+                            "description": "Paginated GitHub issue and pull request search results."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Search for labels within a specific repository by name or description.",
+                "endpoint": null,
+                "input": "ActionInput_github_app_oauth_searchlabels",
+                "name": "search-labels",
+                "output": ["ActionOutput_github_app_oauth_searchlabels"],
+                "scopes": ["issues:read"],
+                "usedModels": ["ActionInput_github_app_oauth_searchlabels", "ActionOutput_github_app_oauth_searchlabels"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_github_app_oauth_searchlabels": {
+                            "type": "object",
+                            "properties": {
+                                "repository_id": {
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991,
+                                    "description": "Numeric ID of the repository to search labels in. Example: 1224437532"
+                                },
+                                "q": {
+                                    "type": "string",
+                                    "pattern": "\\S",
+                                    "description": "Search keywords matched against label names and descriptions. Qualifiers are not supported. Example: \"bug\""
+                                },
+                                "sort": {
+                                    "description": "Field used to sort the results. Defaults to best match when omitted.",
+                                    "type": "string",
+                                    "enum": ["created", "updated"]
+                                },
+                                "order": {
+                                    "description": "Sort direction, applied only when sort is set. Defaults to \"desc\".",
+                                    "type": "string",
+                                    "enum": ["asc", "desc"]
+                                },
+                                "per_page": {
+                                    "description": "Number of results to return per page, from 1 to 100. Defaults to 30.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100
+                                },
+                                "page": {
+                                    "description": "Page number of results to fetch, starting at 1. Defaults to 1.",
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "required": ["repository_id", "q"],
+                            "additionalProperties": false,
+                            "description": "Parameters for searching labels in a GitHub repository."
+                        },
+                        "ActionOutput_github_app_oauth_searchlabels": {
+                            "type": "object",
+                            "properties": {
+                                "total_count": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991,
+                                    "description": "Total number of labels matching the search query."
+                                },
+                                "incomplete_results": {
+                                    "type": "boolean",
+                                    "description": "Whether the search timed out and the results may be incomplete."
+                                },
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Numeric ID of the label."
+                                            },
+                                            "node_id": {
+                                                "type": "string",
+                                                "description": "GraphQL node ID of the label."
+                                            },
+                                            "url": {
+                                                "type": "string",
+                                                "description": "API URL of the label."
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "description": "Name of the label."
+                                            },
+                                            "color": {
+                                                "type": "string",
+                                                "description": "Hex color code of the label without the leading \"#\"."
+                                            },
+                                            "default": {
+                                                "type": "boolean",
+                                                "description": "Whether this is a default GitHub label."
+                                            },
+                                            "description": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "description": "Description of the label, or null when it has none."
+                                            },
+                                            "archived_at": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "description": "ISO 8601 timestamp when the label was archived, or null when it is not archived."
+                                            },
+                                            "archived_by": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "login": {
+                                                                "type": "string",
+                                                                "description": "Username of the user who archived the label."
+                                                            },
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "minimum": -9007199254740991,
+                                                                "maximum": 9007199254740991,
+                                                                "description": "Numeric ID of the user who archived the label."
+                                                            },
+                                                            "node_id": {
+                                                                "type": "string",
+                                                                "description": "GraphQL node ID of the user who archived the label."
+                                                            },
+                                                            "avatar_url": {
+                                                                "type": "string",
+                                                                "description": "Avatar URL of the user who archived the label."
+                                                            },
+                                                            "html_url": {
+                                                                "type": "string",
+                                                                "description": "GitHub profile URL of the user who archived the label."
+                                                            }
+                                                        },
+                                                        "required": ["login", "id", "node_id", "avatar_url", "html_url"],
+                                                        "additionalProperties": false
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "description": "User who archived the label, or null when it is not archived."
+                                            },
+                                            "score": {
+                                                "type": "number",
+                                                "description": "Relevance score assigned by GitHub search."
+                                            }
+                                        },
+                                        "required": ["id", "node_id", "url", "name", "color", "default", "description", "archived_at", "archived_by", "score"],
+                                        "additionalProperties": false
+                                    },
+                                    "description": "Labels matching the search query, ordered by the requested sort."
+                                },
+                                "next_page": {
+                                    "description": "Page number to request for the next set of results, omitted when there are no more results.",
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "required": ["total_count", "incomplete_results", "items"],
+                            "additionalProperties": false,
+                            "description": "A page of label search results from a GitHub repository."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Search public and accessible repositories using GitHub's repository-search qualifiers.",
+                "endpoint": null,
+                "input": "ActionInput_github_app_oauth_searchrepositories",
+                "name": "search-repositories",
+                "output": ["ActionOutput_github_app_oauth_searchrepositories"],
+                "scopes": ["metadata:read"],
+                "usedModels": ["ActionInput_github_app_oauth_searchrepositories", "ActionOutput_github_app_oauth_searchrepositories"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_github_app_oauth_searchrepositories": {
+                            "type": "object",
+                            "properties": {
+                                "q": {
+                                    "type": "string",
+                                    "pattern": "\\S",
+                                    "description": "Repository search query. Supports GitHub qualifiers such as `language:typescript`, `stars:>100`, `topic:javascript`, `org:NangoHQ`, `user:octocat`, and `fork:only`. Example: \"nango\"."
+                                },
+                                "sort": {
+                                    "description": "Field to sort results by. Defaults to GitHub best-match relevance when omitted.",
+                                    "type": "string",
+                                    "enum": ["stars", "forks", "help-wanted-issues", "updated"]
+                                },
+                                "order": {
+                                    "description": "Sort direction. Defaults to \"desc\" when `sort` is provided.",
+                                    "type": "string",
+                                    "enum": ["asc", "desc"]
+                                },
+                                "per_page": {
+                                    "description": "Number of results per page, from 1 to 100. Defaults to 30.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100
+                                },
+                                "page": {
+                                    "description": "Page number of results to return, starting at 1. Defaults to 1.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "required": ["q"],
+                            "additionalProperties": false,
+                            "description": "Parameters for searching GitHub repositories."
+                        },
+                        "ActionOutput_github_app_oauth_searchrepositories": {
+                            "type": "object",
+                            "properties": {
+                                "total_count": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991,
+                                    "description": "The total number of repositories matching the search query."
+                                },
+                                "incomplete_results": {
+                                    "type": "boolean",
+                                    "description": "Whether the search timed out and returned incomplete results."
+                                },
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "The unique numeric ID of the repository."
+                                            },
+                                            "node_id": {
+                                                "type": "string",
+                                                "description": "The GraphQL node ID of the repository."
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "description": "The repository name without the owner prefix."
+                                            },
+                                            "full_name": {
+                                                "type": "string",
+                                                "description": "The repository name including the owner prefix. Example: \"NangoHQ/nango\"."
+                                            },
+                                            "private": {
+                                                "type": "boolean",
+                                                "description": "Whether the repository is private."
+                                            },
+                                            "owner": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "login": {
+                                                        "type": "string",
+                                                        "description": "The owner login name. Example: \"NangoHQ\"."
+                                                    },
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "minimum": -9007199254740991,
+                                                        "maximum": 9007199254740991,
+                                                        "description": "The unique numeric ID of the owner."
+                                                    },
+                                                    "node_id": {
+                                                        "type": "string",
+                                                        "description": "The GraphQL node ID of the owner."
+                                                    },
+                                                    "avatar_url": {
+                                                        "type": "string",
+                                                        "description": "The URL of the owner avatar image."
+                                                    },
+                                                    "gravatar_id": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "string"
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ],
+                                                        "description": "The owner Gravatar ID, or null when not set."
+                                                    },
+                                                    "url": {
+                                                        "type": "string",
+                                                        "description": "The API URL for the owner."
+                                                    },
+                                                    "html_url": {
+                                                        "type": "string",
+                                                        "description": "The GitHub web URL for the owner."
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "The owner account type. Example: \"Organization\"."
+                                                    },
+                                                    "site_admin": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the owner is a GitHub site administrator."
+                                                    }
+                                                },
+                                                "required": ["login", "id", "node_id", "avatar_url", "gravatar_id", "url", "html_url", "type", "site_admin"],
+                                                "additionalProperties": false,
+                                                "description": "The account that owns the repository."
+                                            },
+                                            "html_url": {
+                                                "type": "string",
+                                                "description": "The GitHub web URL for the repository."
+                                            },
+                                            "description": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "description": "The repository description, or null when none is set."
+                                            },
+                                            "fork": {
+                                                "type": "boolean",
+                                                "description": "Whether the repository is a fork."
+                                            },
+                                            "url": {
+                                                "type": "string",
+                                                "description": "The API URL for the repository."
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "description": "The ISO 8601 timestamp when the repository was created."
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "description": "The ISO 8601 timestamp when the repository was last updated."
+                                            },
+                                            "pushed_at": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "description": "The ISO 8601 timestamp of the last push, or null when never pushed."
+                                            },
+                                            "homepage": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "description": "The repository homepage URL, or null when none is set."
+                                            },
+                                            "size": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "The repository size in kilobytes."
+                                            },
+                                            "stargazers_count": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "The number of users who starred the repository."
+                                            },
+                                            "watchers_count": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "The number of users watching the repository."
+                                            },
+                                            "language": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "description": "The primary programming language, or null when undetected."
+                                            },
+                                            "forks_count": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "The number of forks of the repository."
+                                            },
+                                            "open_issues_count": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "The number of open issues and pull requests."
+                                            },
+                                            "topics": {
+                                                "description": "The repository topics.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "visibility": {
+                                                "description": "The repository visibility. Example: \"public\".",
+                                                "type": "string"
+                                            },
+                                            "default_branch": {
+                                                "type": "string",
+                                                "description": "The default branch name. Example: \"main\"."
+                                            },
+                                            "archived": {
+                                                "type": "boolean",
+                                                "description": "Whether the repository is archived."
+                                            },
+                                            "license": {
+                                                "description": "The repository license, or null when no license is detected.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "key": {
+                                                                "type": "string",
+                                                                "description": "The machine-readable license key. Example: \"mit\"."
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "description": "The human-readable license name. Example: \"MIT License\"."
+                                                            },
+                                                            "spdx_id": {
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ],
+                                                                "description": "The SPDX license identifier, or null when unavailable."
+                                                            },
+                                                            "url": {
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ],
+                                                                "description": "The API URL for the license, or null when unavailable."
+                                                            },
+                                                            "node_id": {
+                                                                "description": "The GraphQL node ID of the license.",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["key", "name", "spdx_id", "url"],
+                                                        "additionalProperties": false
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "disabled": {
+                                                "description": "Whether the repository is disabled.",
+                                                "type": "boolean"
+                                            },
+                                            "is_template": {
+                                                "description": "Whether the repository is a template repository.",
+                                                "type": "boolean"
+                                            },
+                                            "score": {
+                                                "type": "number",
+                                                "description": "The search relevance score assigned to the repository by GitHub."
+                                            }
+                                        },
+                                        "required": [
+                                            "id",
+                                            "node_id",
+                                            "name",
+                                            "full_name",
+                                            "private",
+                                            "owner",
+                                            "html_url",
+                                            "description",
+                                            "fork",
+                                            "url",
+                                            "created_at",
+                                            "updated_at",
+                                            "pushed_at",
+                                            "homepage",
+                                            "size",
+                                            "stargazers_count",
+                                            "watchers_count",
+                                            "language",
+                                            "forks_count",
+                                            "open_issues_count",
+                                            "default_branch",
+                                            "archived",
+                                            "score"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "description": "The repositories matching the search query."
+                                },
+                                "next_page": {
+                                    "description": "Page number to request next. Omitted on the last accessible page.",
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "required": ["total_count", "incomplete_results", "items"],
+                            "additionalProperties": false,
+                            "description": "A page of GitHub repository search results."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Search GitHub topics (the tagging/categorization objects behind repository topic pages).",
+                "endpoint": null,
+                "input": "ActionInput_github_app_oauth_searchtopics",
+                "name": "search-topics",
+                "output": ["ActionOutput_github_app_oauth_searchtopics"],
+                "scopes": ["metadata:read"],
+                "usedModels": ["ActionInput_github_app_oauth_searchtopics", "ActionOutput_github_app_oauth_searchtopics"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_github_app_oauth_searchtopics": {
+                            "type": "object",
+                            "properties": {
+                                "q": {
+                                    "type": "string",
+                                    "pattern": "\\S",
+                                    "description": "Search keywords and qualifiers, for example \"javascript\" or \"ruby is:featured\"."
+                                },
+                                "per_page": {
+                                    "description": "Number of results per page (1-100). GitHub defaults to 30.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100
+                                },
+                                "page": {
+                                    "description": "Page number to fetch, starting at 1. GitHub defaults to 1.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "required": ["q"],
+                            "additionalProperties": false,
+                            "description": "Parameters for searching GitHub topics."
+                        },
+                        "ActionOutput_github_app_oauth_searchtopics": {
+                            "type": "object",
+                            "properties": {
+                                "total_count": {
+                                    "type": "number",
+                                    "description": "Total number of topics matching the query."
+                                },
+                                "incomplete_results": {
+                                    "type": "boolean",
+                                    "description": "Whether the search timed out before finding all matches."
+                                },
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "Canonical topic name, for example \"javascript\"."
+                                            },
+                                            "display_name": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "description": "Display name of the topic, or null when it has none."
+                                            },
+                                            "short_description": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "description": "Short description shown on topic pages, or null when absent."
+                                            },
+                                            "description": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "description": "Longer topic description, or null when absent."
+                                            },
+                                            "created_by": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "description": "User or organization that created the topic, or null when unknown."
+                                            },
+                                            "released": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "description": "Release information for the topic, or null when unspecified."
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "description": "ISO 8601 timestamp when the topic was created."
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "description": "ISO 8601 timestamp when the topic was last updated."
+                                            },
+                                            "featured": {
+                                                "type": "boolean",
+                                                "description": "Whether GitHub features the topic on the topics page."
+                                            },
+                                            "curated": {
+                                                "type": "boolean",
+                                                "description": "Whether the topic is curated by GitHub."
+                                            },
+                                            "score": {
+                                                "type": "number",
+                                                "description": "Search relevance score for the topic."
+                                            },
+                                            "repository_count": {
+                                                "description": "Number of repositories using the topic, or null when unavailable.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "logo_url": {
+                                                "description": "URL of the topic logo, or null when there is none.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "related": {
+                                                "description": "Related topics, or null when none are returned.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "topic_relation": {
+                                                                    "description": "Relation details for the related or aliased topic.",
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "id": {
+                                                                            "description": "Numeric identifier of the topic relation.",
+                                                                            "type": "number"
+                                                                        },
+                                                                        "name": {
+                                                                            "description": "Name of the related or aliased topic.",
+                                                                            "type": "string"
+                                                                        },
+                                                                        "topic_id": {
+                                                                            "description": "Numeric identifier of the related or aliased topic.",
+                                                                            "type": "number"
+                                                                        },
+                                                                        "relation_type": {
+                                                                            "description": "Type of relationship, such as related or alias.",
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "additionalProperties": false
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "aliases": {
+                                                "description": "Alternative topic names, or null when none are returned.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "topic_relation": {
+                                                                    "description": "Relation details for the related or aliased topic.",
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "id": {
+                                                                            "description": "Numeric identifier of the topic relation.",
+                                                                            "type": "number"
+                                                                        },
+                                                                        "name": {
+                                                                            "description": "Name of the related or aliased topic.",
+                                                                            "type": "string"
+                                                                        },
+                                                                        "topic_id": {
+                                                                            "description": "Numeric identifier of the related or aliased topic.",
+                                                                            "type": "number"
+                                                                        },
+                                                                        "relation_type": {
+                                                                            "description": "Type of relationship, such as related or alias.",
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "additionalProperties": false
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "required": [
+                                            "name",
+                                            "display_name",
+                                            "short_description",
+                                            "description",
+                                            "created_by",
+                                            "released",
+                                            "created_at",
+                                            "updated_at",
+                                            "featured",
+                                            "curated",
+                                            "score"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "description": "Topics matching the query, ordered by best match."
+                                },
+                                "next_page": {
+                                    "description": "Page number to request next. Omitted on the last accessible page.",
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "required": ["total_count", "incomplete_results", "items"],
+                            "additionalProperties": false,
+                            "description": "Topics matching the search query along with match metadata."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Search GitHub user and organization accounts using user-search qualifiers.",
+                "endpoint": null,
+                "input": "ActionInput_github_app_oauth_searchusers",
+                "name": "search-users",
+                "output": ["ActionOutput_github_app_oauth_searchusers"],
+                "scopes": ["metadata:read"],
+                "usedModels": ["ActionInput_github_app_oauth_searchusers", "ActionOutput_github_app_oauth_searchusers"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_github_app_oauth_searchusers": {
+                            "type": "object",
+                            "properties": {
+                                "q": {
+                                    "type": "string",
+                                    "pattern": "\\S",
+                                    "description": "Search keywords and qualifiers, for example \"octocat type:user\" or \"location:london followers:>100\"."
+                                },
+                                "sort": {
+                                    "description": "Field used to sort the results. Defaults to best match when omitted.",
+                                    "type": "string",
+                                    "enum": ["followers", "repositories", "joined"]
+                                },
+                                "order": {
+                                    "description": "Sort direction for the selected sort field. Ignored when sort is omitted.",
+                                    "type": "string",
+                                    "enum": ["desc", "asc"]
+                                },
+                                "per_page": {
+                                    "description": "Number of results per page, from 1 to 100. GitHub defaults to 30.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100
+                                },
+                                "page": {
+                                    "description": "Page number of results to fetch, starting at 1.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "required": ["q"],
+                            "additionalProperties": false,
+                            "description": "Input for searching GitHub user and organization accounts using user-search qualifiers."
+                        },
+                        "ActionOutput_github_app_oauth_searchusers": {
+                            "type": "object",
+                            "properties": {
+                                "total_count": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991,
+                                    "description": "Total number of accounts matching the query. GitHub exposes at most 1,000 results."
+                                },
+                                "incomplete_results": {
+                                    "type": "boolean",
+                                    "description": "True when GitHub timed out and the returned results may be incomplete."
+                                },
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "login": {
+                                                "type": "string",
+                                                "description": "User or organization login handle."
+                                            },
+                                            "id": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Unique numeric GitHub account ID."
+                                            },
+                                            "node_id": {
+                                                "description": "Global GraphQL node ID for the account.",
+                                                "type": "string"
+                                            },
+                                            "avatar_url": {
+                                                "description": "URL of the account avatar image.",
+                                                "type": "string"
+                                            },
+                                            "html_url": {
+                                                "description": "URL of the account profile page on GitHub.",
+                                                "type": "string"
+                                            },
+                                            "url": {
+                                                "description": "REST API URL for the account.",
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "description": "Account type, such as \"User\" or \"Organization\"."
+                                            },
+                                            "user_view_type": {
+                                                "description": "Profile visibility type reported by GitHub, such as \"public\" or \"private\".",
+                                                "type": "string"
+                                            },
+                                            "site_admin": {
+                                                "description": "Whether the account is a GitHub site administrator.",
+                                                "type": "boolean"
+                                            },
+                                            "score": {
+                                                "type": "number",
+                                                "description": "Search relevance score assigned by GitHub."
+                                            },
+                                            "name": {
+                                                "description": "Display name of the account, or null when not set.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "bio": {
+                                                "description": "Profile biography, or null when not set.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "company": {
+                                                "description": "Company listed on the profile, or null when not set.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "blog": {
+                                                "description": "Blog or website listed on the profile, or null when not set.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "location": {
+                                                "description": "Location listed on the profile, or null when not set.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "email": {
+                                                "description": "Public email address, or null when not set.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "hireable": {
+                                                "description": "Whether the account is marked as available for hire, or null when not set.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "public_repos": {
+                                                "description": "Number of public repositories owned by the account.",
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "public_gists": {
+                                                "description": "Number of public gists owned by the account.",
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "followers": {
+                                                "description": "Number of followers the account has.",
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "following": {
+                                                "description": "Number of accounts this account follows.",
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "created_at": {
+                                                "description": "ISO 8601 timestamp when the account was created.",
+                                                "type": "string"
+                                            },
+                                            "updated_at": {
+                                                "description": "ISO 8601 timestamp when the account was last updated.",
+                                                "type": "string"
+                                            },
+                                            "suspended_at": {
+                                                "description": "ISO 8601 timestamp when the account was suspended, or null when active.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "required": ["login", "id", "type", "score"],
+                                        "additionalProperties": false
+                                    },
+                                    "description": "User and organization accounts returned for the requested page."
+                                },
+                                "next_page": {
+                                    "description": "Next page number when more results are available; omitted on the last page.",
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "required": ["total_count", "incomplete_results", "items"],
+                            "additionalProperties": false,
+                            "description": "User and organization accounts matching the search query."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
                 "description": "Manually trigger a workflow run (the workflow must have a workflow_dispatch trigger defined).",
                 "endpoint": null,
                 "input": "ActionInput_github_app_oauth_triggerworkflowdispatch",

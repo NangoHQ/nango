@@ -318,6 +318,8 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
     To trigger re-authorization, use the same frontend flow as a new connection, but generate a reconnect session token on the backend. Pass the returned token to the Frontend SDK exactly like a normal session token. On success you'll receive an `auth` webhook with `operation = override`.
 
+    The connection keeps its connection ID. It also keeps its tags, unless the reconnect session passes non-empty `tags` or an `end_user`, which replace them.
+
     <Tabs>
       <Tab title="Node">
       ```ts
