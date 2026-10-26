@@ -1,9 +1,9 @@
 import { stringTimingSafeEqual } from '@nangohq/utils';
 
-import { verify as verifyUnifiedToken } from './core/verify.js';
 import { verifyRunnerDispatchToken } from './legacy/ed25519.js';
 import { jwtHeaderAlg, verifyInternalServiceToken } from './legacy/token.js';
 import { trimOrNull } from './nango/env.js';
+import { verify as verifyUnifiedToken } from './nango/verify.js';
 
 import type { KeyRegistry } from './core/registry.js';
 import type { InternalServiceAuth } from './nango/principals.js';

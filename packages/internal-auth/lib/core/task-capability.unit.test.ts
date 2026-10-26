@@ -6,6 +6,7 @@ import { internalServiceAuthMiddleware } from '../express/middleware.js';
 import { hasScope, isResourceBound, requireScope, requireTaskBoundAuth } from '../express/requires.js';
 import { createRunnerDispatchToken, exportRunnerPublicKey } from '../legacy/ed25519.js';
 import { createInternalServiceToken } from '../legacy/token.js';
+import { mint } from '../nango/mint.js';
 import {
     INTERNAL_SERVICE_AUDIENCE_JOBS,
     INTERNAL_SERVICE_AUDIENCE_PERSIST,
@@ -17,10 +18,9 @@ import {
     taskSubject
 } from '../nango/principals.js';
 import { TASK_CAPABILITY_SCOPES, taskScopesForScriptType } from '../nango/scopes.js';
+import { verify, verifyTaskCapabilityToken } from '../nango/verify.js';
 import { ed25519TestMaterial, mintTaskCapabilityToken } from '../testing.js';
-import { mint } from './mint.js';
 import { keyRegistryFromPublicKeys } from './registry.js';
-import { verify, verifyTaskCapabilityToken } from './verify.js';
 
 import type { InternalAuthEnvs } from '../nango/env.js';
 import type { TaskCapabilityResource } from '../nango/principals.js';
@@ -323,6 +323,27 @@ describe('requireScope', () => {
         } finally {
             await close();
             envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = undefined;
+        }
+    });
+
+    it('rejects a node HMAC token and the static token', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
+        envs.NANGO_INTERNAL_AUTH_TOKEN = 'static-secret';
+        const node = createInternalServiceToken({ op: 'node', nodeId: '1', expiresInSecs: 120 }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+        if (!node) {
+            throw new Error('expected a node token');
+        }
+        const { url, close } = await listen(scopeOnlyApp());
+        try {
+            const nodeRes = await fetch(`${url}/tasks/${TASK_ID}`, { method: 'PUT', headers: { Authorization: `Bearer ${node}` } });
+            const staticRes = await fetch(`${url}/tasks/${TASK_ID}`, { method: 'PUT', headers: { Authorization: 'Bearer static-secret' } });
+            expect(nodeRes.status).toBe(401);
+            expect(staticRes.status).toBe(401);
+        } finally {
+            await close();
+            envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
+            envs.NANGO_INTERNAL_AUTH_TOKEN = undefined;
         }
     });
 
