@@ -80,25 +80,30 @@ export const AppAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
         <Navigation defaultValue={provider.preConfigured ? 'template' : 'custom'} orientation="horizontal">
             <NavigationList>
                 {provider.preConfigured ? (
-                    <NavigationTrigger value="template">Nango developer app</NavigationTrigger>
+                    <NavigationTrigger value="template">Nango-managed app</NavigationTrigger>
                 ) : (
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <span>
                                 <NavigationTrigger value="template" disabled>
-                                    Nango developer app
+                                    Nango-managed app
                                 </NavigationTrigger>
                             </span>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom">Nango doesn&apos;t provide test credentials for this API yet</TooltipContent>
+                        <TooltipContent side="bottom">Nango doesn&apos;t have a managed app for this API yet</TooltipContent>
                     </Tooltip>
                 )}
-                <NavigationTrigger value="custom">Custom developer app</NavigationTrigger>
+                <NavigationTrigger value="custom">Custom app</NavigationTrigger>
             </NavigationList>
             <NavigationContent value="template">
                 <div className="flex flex-col gap-8">
                     <Alert variant="info">
-                        <AlertDescription>Nango provides developer apps for testing. Use your own developer app for production.</AlertDescription>
+                        <AlertDescription>Pre-approved apps that work in production. Review the trade-offs before you go live.</AlertDescription>
+                        <AlertActions>
+                            <AlertButtonLink to="https://nango.dev/docs/guides/auth/auth-guide#nango-managed-oauth-apps" target="_blank">
+                                Read the trade-offs <ExternalLinkIcon />
+                            </AlertButtonLink>
+                        </AlertActions>
                     </Alert>
 
                     <div className="flex flex-col gap-5">
@@ -128,7 +133,7 @@ export const AppAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
             <NavigationContent value="custom">
                 <div className="flex flex-col gap-8">
                     <Alert variant="info">
-                        <AlertTitle>Developer app setup guide</AlertTitle>
+                        <AlertTitle>App setup guide</AlertTitle>
                         <AlertDescription>Follow our step by step guide to use your own GitHub App.</AlertDescription>
                         <AlertActions>
                             <AlertButtonLink to={provider.docs} target="_blank">

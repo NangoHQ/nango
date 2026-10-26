@@ -1,7 +1,7 @@
 import { Server } from '@modelcontextprotocol/server';
 import tracer from 'dd-trace';
 
-import { configService, legacyFunctionService } from '@nangohq/shared';
+import { configService, functionLookupService } from '@nangohq/shared';
 import { Err, metrics, Ok } from '@nangohq/utils';
 
 import { executeAction } from '../../services/action.service.js';
@@ -43,7 +43,7 @@ export async function createConnectionToolsMcpServer(
         return Err(new Error(`Provider config ${providerConfigKey} not found`));
     }
 
-    const actionsResult = await legacyFunctionService.listActions({ environmentId: environment.id, providerConfigKey });
+    const actionsResult = await functionLookupService.listActions({ environmentId: environment.id, providerConfigKey });
     if (actionsResult.isErr()) {
         return Err(actionsResult.error);
     }

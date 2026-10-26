@@ -1,8 +1,8 @@
 export { deployBundle, prepareDeploymentBundle } from './deploy.js';
 export type { DeploymentBundleError, DeploymentBundlePreparationError } from './deploy.js';
-export * as legacyFunctionService from './legacy/index.js';
-export type { ListFunctionsError, ListFunctionsErrorCode } from './legacy/service.js';
-export type { ActionInputSchemaRow, IntegrationFunctionRow } from './legacy/models/functions.js';
+export * as functionLookupService from './lookup/index.js';
+export type { ListFunctionsError, ListFunctionsErrorCode } from './lookup/service.js';
+export type { ActionInputSchemaRow, IntegrationFunctionRow } from './lookup/models/functions.js';
 export * as functionConfigService from './models/functions.js';
 export * as functionInstanceService from './models/instances.js';
 export type { FunctionInstanceFilter } from './models/instances.js';
@@ -12,5 +12,3 @@ export type { DeploymentBundleReconciliation } from './reconcile.js';
 export { functionVersionHash } from './version.js';
 export { validateFunctionInput } from './models/validate.js';
 export { getFunctionMaxConcurrency, invokeFunction } from './invoke.js';
-export * as toolService from './tools.js';
-export type { ListedTool, ResolvedTool } from './tools.js';
