@@ -1,43 +1,16 @@
 import fs from 'node:fs';
 
-import axios, { AxiosError } from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { pullFromCatalog } from './pull.service.js';
+import { cliFetch } from '../tls.js';
+import { pullFromCatalog, pullFunction } from './pull.service.js';
 
-const RAW_BASE = 'https://raw.githubusercontent.com/NangoHQ/integration-templates/main/integrations';
-const API_BASE = 'https://api.github.com/repos/NangoHQ/integration-templates/contents/integrations';
+vi.mock('../tls.js', () => ({ cliFetch: vi.fn() }));
 
-function buildNotFoundError(url: string): AxiosError {
-    const err = new AxiosError('Not Found', '404', undefined, undefined, {
-        status: 404,
-        statusText: 'Not Found',
-        headers: {},
-        config: { url } as any,
-        data: ''
-    });
-    return err;
-}
+const fetchMock = vi.mocked(cliFetch);
 
-// `symlinks` maps an integration folder to its target (mirrors the GitHub Contents API symlink response).
-function mockGitHub(files: Record<string, string>, symlinks: Record<string, string> = {}) {
-    vi.spyOn(axios, 'get').mockImplementation((url: string) => {
-        if (url.startsWith(`${API_BASE}/`)) {
-            const integration = url.slice(`${API_BASE}/`.length);
-            if (Object.prototype.hasOwnProperty.call(symlinks, integration)) {
-                return Promise.resolve({
-                    data: { name: integration, path: `integrations/${integration}`, type: 'symlink', target: symlinks[integration] }
-                } as any);
-            }
-            // A real directory: resolveIntegrationFolder only checks Array.isArray, contents are irrelevant.
-            return Promise.resolve({ data: [] } as any);
-        }
-        const relative = url.replace(`${RAW_BASE}/`, '');
-        if (Object.prototype.hasOwnProperty.call(files, relative)) {
-            return Promise.resolve({ data: files[relative] } as any);
-        }
-        return Promise.reject(buildNotFoundError(url));
-    });
+function mockResponse(status: number, body: unknown) {
+    fetchMock.mockResolvedValue(new Response(typeof body === 'string' ? body : JSON.stringify(body), { status }));
 }
 
 function mockFsForWriting() {
@@ -48,9 +21,17 @@ function mockFsForWriting() {
     return writeSpy;
 }
 
+function requestedUrl(): URL {
+    return fetchMock.mock.calls[0]![0] as URL;
+}
+
+function loggedMessages(consoleSpy: ReturnType<typeof vi.spyOn>): string {
+    return consoleSpy.mock.calls.map((call) => String(call[0])).join('\n');
+}
+
 const baseOptions = {
     fullPath: '/project',
-    environmentName: 'catalog',
+    environmentName: 'dev',
     integrationId: 'github',
     name: 'list-repos',
     debug: false,
@@ -59,157 +40,96 @@ const baseOptions = {
     interactive: false
 };
 
-describe('pullFromCatalog', () => {
+describe.each([
+    { pull: pullFunction, endpoint: '/integrations/github/functions/list-repos/code' },
+    { pull: pullFromCatalog, endpoint: '/providers/github/templates/list-repos/code' }
+])('$pull.name', ({ pull, endpoint }) => {
+    let consoleSpy: ReturnType<typeof vi.spyOn>;
+
     beforeEach(() => {
-        vi.spyOn(console, 'log').mockImplementation(() => {});
+        vi.stubEnv('NANGO_SECRET_KEY_DEV', 'secret-dev');
+        consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     });
 
     afterEach(() => {
+        vi.unstubAllEnvs();
         vi.restoreAllMocks();
+        fetchMock.mockReset();
     });
 
-    it('writes the function file when a single match exists', async () => {
-        mockGitHub({
-            'github/actions/list-repos.ts': 'export default async function () {}'
-        });
+    it('writes the function returned by the server', async () => {
+        mockResponse(200, { type: 'action', code: 'action code' });
         const writeSpy = mockFsForWriting();
 
-        const success = await pullFromCatalog(baseOptions);
+        const success = await pull(baseOptions);
 
         expect(success).toBe(true);
-        const writtenPaths = writeSpy.mock.calls.map((call) => call[0] as string);
-        expect(writtenPaths).toContain('/project/github/actions/list-repos.ts');
+        expect(requestedUrl().pathname).toBe(endpoint);
+        expect(fetchMock.mock.calls[0]![1]).toMatchObject({ headers: { authorization: 'Bearer secret-dev' } });
+        expect(writeSpy).toHaveBeenCalledWith('/project/github/actions/list-repos.ts', 'action code', 'utf-8');
     });
 
-    it('returns false and reports ambiguity when 2+ folders contain the name', async () => {
-        mockGitHub({
-            'github/syncs/list-repos.ts': 'sync code',
-            'github/actions/list-repos.ts': 'action code'
-        });
+    it('passes the type to disambiguate', async () => {
+        mockResponse(200, { type: 'sync', code: 'sync code' });
         const writeSpy = mockFsForWriting();
-        const consoleSpy = vi.spyOn(console, 'log');
 
-        const success = await pullFromCatalog(baseOptions);
+        const success = await pull({ ...baseOptions, type: 'sync' });
+
+        expect(success).toBe(true);
+        expect(requestedUrl().searchParams.get('type')).toBe('sync');
+        expect(writeSpy).toHaveBeenCalledWith('/project/github/syncs/list-repos.ts', 'sync code', 'utf-8');
+    });
+
+    it('reports ambiguity without writing', async () => {
+        mockResponse(409, { error: { code: 'ambiguous_function', message: "Multiple functions named 'list-repos'" } });
+        const writeSpy = mockFsForWriting();
+
+        const success = await pull(baseOptions);
 
         expect(success).toBe(false);
-        // No source files written when ambiguous
-        const sourceWrites = writeSpy.mock.calls.filter((call) => (call[0] as string).endsWith('.ts'));
-        expect(sourceWrites).toHaveLength(0);
-        const messages = consoleSpy.mock.calls.map((call) => String(call[0])).join('\n');
-        expect(messages).toMatch(/Multiple functions named 'list-repos'/);
-        expect(messages).toMatch(/sync, action/);
+        expect(writeSpy).not.toHaveBeenCalled();
+        expect(loggedMessages(consoleSpy)).toMatch(/Re-run with --sync, --action, or --on-event/);
     });
 
-    it('succeeds when 2+ folders have a match but --type narrows to one', async () => {
-        mockGitHub({
-            'github/syncs/list-repos.ts': 'sync code',
-            'github/actions/list-repos.ts': 'action code'
-        });
+    it('reports server errors without writing', async () => {
+        mockResponse(404, { error: { code: 'unknown_function', message: 'Function not found' } });
         const writeSpy = mockFsForWriting();
-        const axiosSpy = vi.spyOn(axios, 'get');
 
-        const success = await pullFromCatalog({ ...baseOptions, type: 'action' });
+        const success = await pull(baseOptions);
 
-        expect(success).toBe(true);
-        // Only the actions folder should be probed
-        const probedPaths = axiosSpy.mock.calls.map((call) => call[0]).filter((u) => u.includes('list-repos.ts'));
-        expect(probedPaths).toEqual([`${RAW_BASE}/github/actions/list-repos.ts`]);
-        const writtenPaths = writeSpy.mock.calls.map((call) => call[0] as string);
-        expect(writtenPaths).toContain('/project/github/actions/list-repos.ts');
-        expect(writtenPaths).not.toContain('/project/github/syncs/list-repos.ts');
+        expect(success).toBe(false);
+        expect(writeSpy).not.toHaveBeenCalled();
+        expect(loggedMessages(consoleSpy)).toMatch(/Function not found.*unknown_function/);
     });
 
-    it('returns false with a not-found message when no match exists', async () => {
-        mockGitHub({});
+    it('rejects unsafe names before calling the server', async () => {
+        const success = await pull({ ...baseOptions, name: '../list-repos' });
+
+        expect(success).toBe(false);
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+});
+
+describe('pullFromCatalog', () => {
+    beforeEach(() => {
+        vi.stubEnv('NANGO_SECRET_KEY_DEV', 'secret-dev');
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+        vi.restoreAllMocks();
+        fetchMock.mockReset();
+    });
+
+    it('reports the catalog as unavailable when the server does not have the endpoint', async () => {
+        const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+        mockResponse(404, '<!doctype html><pre>Cannot GET</pre>');
         const writeSpy = mockFsForWriting();
-        const consoleSpy = vi.spyOn(console, 'log');
 
         const success = await pullFromCatalog(baseOptions);
 
         expect(success).toBe(false);
         expect(writeSpy).not.toHaveBeenCalled();
-        const messages = consoleSpy.mock.calls.map((call) => String(call[0])).join('\n');
-        expect(messages).toMatch(/not found in catalog/);
-    });
-
-    it('writes the companion .md file when present', async () => {
-        mockGitHub({
-            'github/actions/list-repos.ts': 'export default async function () {}',
-            'github/actions/list-repos.md': '# list-repos'
-        });
-        const writeSpy = mockFsForWriting();
-
-        const success = await pullFromCatalog(baseOptions);
-
-        expect(success).toBe(true);
-        const writtenPaths = writeSpy.mock.calls.map((call) => call[0] as string);
-        expect(writtenPaths).toContain('/project/github/actions/list-repos.ts');
-        expect(writtenPaths).toContain('/project/github/actions/list-repos.md');
-    });
-
-    it.each([
-        ['..', 'list-repos'],
-        ['github', '..'],
-        ['.', 'list-repos'],
-        ['github', '.'],
-        ['foo/bar', 'list-repos'],
-        ['github', 'foo\\bar']
-    ])('rejects path-traversal segments (%s, %s) without writing files', async (integrationId, name) => {
-        const writeSpy = mockFsForWriting();
-        const axiosSpy = vi.spyOn(axios, 'get');
-
-        const success = await pullFromCatalog({ ...baseOptions, integrationId, name });
-
-        expect(success).toBe(false);
-        expect(writeSpy).not.toHaveBeenCalled();
-        expect(axiosSpy).not.toHaveBeenCalled();
-    });
-
-    it('walks transitive dependencies imported via relative paths', async () => {
-        mockGitHub({
-            'github/actions/list-repos.ts': "import { toRepo } from '../mappers/toRepo.js';\nexport default async () => toRepo();",
-            'github/mappers/toRepo.ts': 'export const toRepo = () => ({});'
-        });
-        const writeSpy = mockFsForWriting();
-
-        const success = await pullFromCatalog(baseOptions);
-
-        expect(success).toBe(true);
-        const writtenPaths = writeSpy.mock.calls.map((call) => call[0] as string);
-        expect(writtenPaths).toContain('/project/github/actions/list-repos.ts');
-        expect(writtenPaths).toContain('/project/github/mappers/toRepo.ts');
-    });
-
-    it('fetches from the symlink target but writes under the requested integration name', async () => {
-        mockGitHub({ 'quickbooks/syncs/customers.ts': 'export default async function () {}' }, { 'quickbooks-sandbox': 'quickbooks' });
-        const writeSpy = mockFsForWriting();
-        const axiosSpy = vi.spyOn(axios, 'get');
-
-        const success = await pullFromCatalog({ ...baseOptions, integrationId: 'quickbooks-sandbox', name: 'customers', type: 'sync' });
-
-        expect(success).toBe(true);
-        // Content is fetched from the resolved target folder...
-        expect(axiosSpy.mock.calls.map((call) => call[0])).toContain(`${RAW_BASE}/quickbooks/syncs/customers.ts`);
-        // ...but written under the requested (symlink) name so deploy maps it to the right providerConfigKey.
-        const writtenPaths = writeSpy.mock.calls.map((call) => call[0] as string);
-        expect(writtenPaths).toContain('/project/quickbooks-sandbox/syncs/customers.ts');
-    });
-
-    it('localizes symlinked dependency paths too', async () => {
-        mockGitHub(
-            {
-                'quickbooks/syncs/customers.ts': "import { toCustomer } from '../mappers/toCustomer.js';\nexport default async () => toCustomer();",
-                'quickbooks/mappers/toCustomer.ts': 'export const toCustomer = () => ({});'
-            },
-            { 'quickbooks-sandbox': 'quickbooks' }
-        );
-        const writeSpy = mockFsForWriting();
-
-        const success = await pullFromCatalog({ ...baseOptions, integrationId: 'quickbooks-sandbox', name: 'customers', type: 'sync' });
-
-        expect(success).toBe(true);
-        const writtenPaths = writeSpy.mock.calls.map((call) => call[0] as string);
-        expect(writtenPaths).toContain('/project/quickbooks-sandbox/syncs/customers.ts');
-        expect(writtenPaths).toContain('/project/quickbooks-sandbox/mappers/toCustomer.ts');
+        expect(loggedMessages(consoleSpy)).toMatch(/not available on this Nango instance.*catalog_unavailable/);
     });
 });
