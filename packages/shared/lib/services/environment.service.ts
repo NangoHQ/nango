@@ -266,12 +266,14 @@ class EnvironmentService {
                 const webhookSettings = await externalWebhookService.upsert(innerTrx, {
                     environment_id: env.id,
                     data: {
-                        on_auth_creation: true,
-                        on_auth_refresh_error: true,
-                        on_sync_completion_always: true,
-                        on_sync_error: true,
-                        on_connection_deletion: true,
-                        ...webhooks
+                        primary_url: webhooks?.primary_url ?? null,
+                        secondary_url: webhooks?.secondary_url ?? null,
+                        on_auth_creation: webhooks?.on_auth_creation ?? true,
+                        on_auth_refresh_error: webhooks?.on_auth_refresh_error ?? true,
+                        on_sync_completion_always: webhooks?.on_sync_completion_always ?? true,
+                        on_sync_error: webhooks?.on_sync_error ?? true,
+                        on_async_action_completion: webhooks?.on_async_action_completion ?? true,
+                        on_connection_deletion: webhooks?.on_connection_deletion ?? true
                     }
                 });
                 if (webhookSettings.isErr()) {
