@@ -733,6 +733,36 @@ agentcard:
             pattern: '^acs_[A-Za-z0-9_-]{48}$'
             doc_section: '#step-2-copy-your-client-id-and-client-secret'
 
+aha:
+    display_name: Aha!
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.aha.io/oauth/authorize
+    token_url: https://${connectionConfig.subdomain}.aha.io/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.aha.io
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/aha
+    docs_connect: https://nango.dev/docs/api-integrations/aha/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/aha/how-to-register-your-own-aha-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: Aha! Subdomain
+            description: The subdomain of your Aha! account
+            pattern: '^[a-z0-9-]+$'
+            example: yourcompany
+            prefix: https://
+            suffix: .aha.io
+            doc_section: '#step-1-find-your-subdomain'
+
 ahrefs:
     display_name: Ahrefs
     categories:
