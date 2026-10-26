@@ -1,6 +1,28 @@
 import { describe, expect, it } from 'vitest';
 
-import { inAppPath, isNonEnvPath, MAX_NEXT_LENGTH, safeNextPath, signinPathWithNext } from './routes.js';
+import { envSwitchPath, inAppPath, isNonEnvPath, MAX_NEXT_LENGTH, safeNextPath, signinPathWithNext } from './routes.js';
+
+describe('envSwitchPath', () => {
+    it('swaps the env segment', () => {
+        expect(envSwitchPath('/dev/logs', 'prod')).toBe('/prod/logs');
+        expect(envSwitchPath('/dev/integrations', 'prod')).toBe('/prod/integrations');
+    });
+
+    it('redirects integration and connection subpages to their parent page', () => {
+        expect(envSwitchPath('/dev/integrations/github', 'prod')).toBe('/prod/integrations');
+        expect(envSwitchPath('/dev/connections/github/abc', 'prod')).toBe('/prod/connections');
+    });
+
+    it('redirects getting started to the env homepage outside dev', () => {
+        expect(envSwitchPath('/dev/getting-started', 'prod')).toBe('/prod');
+        expect(envSwitchPath('/prod/getting-started', 'dev')).toBe('/dev/getting-started');
+    });
+
+    it('stays on non-env pages', () => {
+        expect(envSwitchPath('/team-settings', 'prod')).toBeNull();
+        expect(envSwitchPath('/dev/team/billing', 'prod')).toBeNull();
+    });
+});
 
 describe('isNonEnvPath', () => {
     describe('direct non-env paths', () => {

@@ -60,3 +60,25 @@ export const isNonEnvPath = (pathname: string): boolean => {
     const withoutEnvSegment = pathname.replace(/^\/[^/]+/, '');
     return NON_ENV_PATH_PREFIXES.some((p) => withoutEnvSegment === p || withoutEnvSegment.startsWith(p + '/'));
 };
+
+export const envSwitchPath = (pathname: string, selected: string): string | null => {
+    if (isNonEnvPath(pathname)) {
+        return null;
+    }
+
+    const pathSegments = pathname.split('/').filter(Boolean);
+    pathSegments[0] = selected;
+
+    if (pathSegments[1] === 'integrations' && pathSegments.length > 2) {
+        return `/${selected}/integrations`;
+    }
+    if (pathSegments[1] === 'connections' && pathSegments.length > 2) {
+        return `/${selected}/connections`;
+    }
+
+    if (pathSegments[1] === 'getting-started' && selected !== 'dev') {
+        return `/${selected}`;
+    }
+
+    return `/${pathSegments.join('/')}`;
+};
