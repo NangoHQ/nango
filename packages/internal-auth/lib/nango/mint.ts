@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { signJwt } from '../core/mint.js';
+import { signJwt } from '../core/sign.js';
 import { INTERNAL_SERVICE_ISSUER_JOBS, INTERNAL_SERVICE_ISSUER_SERVER } from './principals.js';
 
 import type { InternalServiceIssuer, TaskCapabilityResource } from './principals.js';
