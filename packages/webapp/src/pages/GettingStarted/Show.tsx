@@ -38,38 +38,6 @@ export const GettingStarted: React.FC = () => {
         currentStep = 3;
     }
 
-    const onConnected = async (connectionId: string) => {
-        try {
-            const { res } = await patchGettingStarted(env, { connection_id: connectionId, step: 1 });
-            if (!res.ok) {
-                throw new Error('Failed to patch getting started');
-            }
-            await refetch({ throwOnError: true });
-        } catch {
-            toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
-        }
-    };
-
-    const onDisconnected = async () => {
-        try {
-            await refetch({ throwOnError: true });
-        } catch {
-            toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
-        }
-    };
-
-    const onExecuted = async () => {
-        try {
-            const { res } = await patchGettingStarted(env, { step: 2 });
-            if (!res.ok) {
-                throw new Error('Failed to patch getting started');
-            }
-            await refetch({ throwOnError: true });
-        } catch {
-            toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
-        }
-    };
-
     return (
         <DashboardLayout title="Getting started" className="flex flex-col gap-10">
             <Helmet>
@@ -90,8 +58,24 @@ export const GettingStarted: React.FC = () => {
                                 <FirstStep
                                     connection={gettingStarted?.connection ?? null}
                                     integration={gettingStarted?.meta.integration ?? null}
-                                    onConnected={(connectionId) => void onConnected(connectionId)}
-                                    onDisconnected={() => void onDisconnected()}
+                                    onConnected={async (connectionId) => {
+                                        try {
+                                            const { res } = await patchGettingStarted(env, { connection_id: connectionId, step: 1 });
+                                            if (!res.ok) {
+                                                throw new Error('Failed to patch getting started');
+                                            }
+                                            await refetch({ throwOnError: true });
+                                        } catch {
+                                            toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
+                                        }
+                                    }}
+                                    onDisconnected={async () => {
+                                        try {
+                                            await refetch({ throwOnError: true });
+                                        } catch {
+                                            toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
+                                        }
+                                    }}
                                 />
                             )
                         },
@@ -102,7 +86,17 @@ export const GettingStarted: React.FC = () => {
                                 <SecondStep
                                     connectionId={gettingStarted?.connection?.connection_id}
                                     providerConfigKey={gettingStarted?.meta.integration?.unique_key}
-                                    onExecuted={() => void onExecuted()}
+                                    onExecuted={async () => {
+                                        try {
+                                            const { res } = await patchGettingStarted(env, { step: 2 });
+                                            if (!res.ok) {
+                                                throw new Error('Failed to patch getting started');
+                                            }
+                                            await refetch({ throwOnError: true });
+                                        } catch {
+                                            toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
+                                        }
+                                    }}
                                     completed={currentStep >= 2}
                                 />
                             )
