@@ -43,32 +43,10 @@ describe('parse', () => {
         expect(() => parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_COOKIE_NAME: name })).toThrowError(/SIGNUP_AD_CONTEXT_COOKIE_NAME/);
     });
 
-    it.each([undefined, '', '   '])('allows an unset or blank Google signup cookie name while disabled (%j)', (name) => {
-        const res = parseEnvs(ENVS, { SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME: name });
-        expect(res.SIGNUP_GOOGLE_CONTEXT_ENABLED).toBe(false);
-        expect(res.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME).toBeUndefined();
-    });
-
-    it.each([undefined, '', '   '])('requires a cookie name when Google signup context is enabled (%j)', (name) => {
-        expect(() => parseEnvs(ENVS, { SIGNUP_GOOGLE_CONTEXT_ENABLED: 'true', SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME: name })).toThrowError(
-            /SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME is required/
-        );
-    });
-
-    it('accepts a custom Google signup cookie name when enabled', () => {
-        const res = parseEnvs(ENVS, { SIGNUP_GOOGLE_CONTEXT_ENABLED: 'true', SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME: 'nango_signup_ads_prod' });
-        expect(res.SIGNUP_GOOGLE_CONTEXT_ENABLED).toBe(true);
-        expect(res.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME).toBe('nango_signup_ads_prod');
-    });
-
-    it.each(['invalid;name', 'a'.repeat(65)])('rejects an invalid nonempty Google signup cookie name', (name) => {
-        expect(() => parseEnvs(ENVS, { SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME: name })).toThrowError(/SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME/);
-    });
-
-    it('rejects shared names for independent platform cookies', () => {
-        expect(() => parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_COOKIE_NAME: 'shared', SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME: 'shared' })).toThrowError(
-            /must have different names/
-        );
+    it('defaults the shared payload capability to legacy emission and requires an explicit supported version', () => {
+        expect(parseEnvs(ENVS, {}).SIGNUP_AD_CONTEXT_VERSION).toBe(1);
+        expect(parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_VERSION: '2' }).SIGNUP_AD_CONTEXT_VERSION).toBe(2);
+        expect(() => parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_VERSION: '3' })).toThrowError(/SIGNUP_AD_CONTEXT_VERSION/);
     });
 
     it('parses the local Nango user id as a non-negative integer', () => {

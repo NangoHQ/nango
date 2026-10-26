@@ -353,17 +353,15 @@ describe(`POST ${route}`, () => {
         const { productTracking } = await import('@nangohq/shared');
         const previous = envs.SIGNUP_AD_CONTEXT_ENABLED;
         const previousCookieName = envs.SIGNUP_AD_CONTEXT_COOKIE_NAME;
-        const previousGoogleEnabled = envs.SIGNUP_GOOGLE_CONTEXT_ENABLED;
-        const previousGoogleCookieName = envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME;
-        envs.SIGNUP_GOOGLE_CONTEXT_ENABLED = true;
-        envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME = 'nango_signup_google_test';
+        const previousVersion = envs.SIGNUP_AD_CONTEXT_VERSION;
+        envs.SIGNUP_AD_CONTEXT_VERSION = 2;
         envs.SIGNUP_AD_CONTEXT_ENABLED = true;
         envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_test';
         const track = vi.spyOn(productTracking, 'track');
         const email = `${nanoid()}@example.com`;
         const now = Date.now();
         const context = {
-            version: 1,
+            version: 2,
             marketing: true,
             gpc: false,
             method: 'implied',
@@ -371,27 +369,11 @@ describe(`POST ${route}`, () => {
             lgpd: false,
             ccpa: true,
             observedAt: now,
+            google: { clickType: 'wbraid', clickId: 'synthetic_google', clickAt: now - 1000 },
             opprefAt: now - 60_000,
             oppref: 'synthetic_google_flow'
         };
-        const google = {
-            version: 1,
-            marketing: true,
-            gpc: false,
-            method: context.method,
-            gdpr: context.gdpr,
-            lgpd: context.lgpd,
-            ccpa: context.ccpa,
-            observedAt: now,
-            clickType: 'wbraid',
-            clickId: 'synthetic_google',
-            clickAt: now - 1000,
-            adUserData: 'granted',
-            adPersonalization: 'granted'
-        };
-        const headers = {
-            Cookie: `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}; ${envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(google))}`
-        };
+        const headers = { Cookie: `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}` };
         workosMocks.authenticateWithCode.mockResolvedValue({ user: { email, firstName: 'Ad', lastName: 'Fixture' }, organizationId: undefined });
         try {
             const first = await fetch(`${api.url}/api/v1/login/callback?code=synthetic_code`, { redirect: 'manual', headers });
@@ -402,8 +384,8 @@ describe(`POST ${route}`, () => {
                     name: 'auth:account_create',
                     eventProperties: expect.objectContaining({
                         is_signup_creator_internal: false,
-                        advertising_google_click_id: 'synthetic_google',
                         advertising_google_click_type: 'wbraid',
+                        advertising_google_click_id: 'synthetic_google',
                         advertising_oppref: 'synthetic_google_flow',
                         advertising_consent_method: 'implied'
                     })
@@ -415,8 +397,7 @@ describe(`POST ${route}`, () => {
         } finally {
             envs.SIGNUP_AD_CONTEXT_ENABLED = previous;
             envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previousCookieName;
-            envs.SIGNUP_GOOGLE_CONTEXT_ENABLED = previousGoogleEnabled;
-            envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME = previousGoogleCookieName;
+            envs.SIGNUP_AD_CONTEXT_VERSION = previousVersion;
             track.mockRestore();
         }
     });

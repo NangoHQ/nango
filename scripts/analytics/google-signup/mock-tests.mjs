@@ -30,10 +30,10 @@ const globals = {
             surface: 'server',
             host: 'https://api.nango.dev',
             $groups: { company: '123' },
-            advertising_google_consent_method: 'explicit',
+            advertising_consent_method: 'explicit',
             advertising_google_ad_user_data: 'granted',
             advertising_google_ad_personalization: 'granted',
-            advertising_google_consent_timestamp: '2026-10-22T19:59:00Z',
+            advertising_consent_timestamp: '2026-10-22T19:59:00Z',
             advertising_google_click_timestamp: '2026-10-22T19:00:00Z',
             advertising_google_click_type: 'gclid',
             advertising_google_click_id: 'testclick',
@@ -142,7 +142,7 @@ add(
     },
     skip('SKIP: internal or unknown signup creator')
 );
-for (const key of ['advertising_google_ad_user_data', 'advertising_google_ad_personalization', 'advertising_google_consent_method'])
+for (const key of ['advertising_google_ad_user_data', 'advertising_google_ad_personalization', 'advertising_consent_method'])
     add(
         `missing-${key}`,
         (c) => {

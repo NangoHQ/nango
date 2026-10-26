@@ -106,35 +106,17 @@ describe('POST /api/v1/account/signup', () => {
         track.mockRestore();
     });
 
-    it('tracks only the user for an invite signup even when acquisition is sent', async () => {
+    it('tracks only the user for an invited signup even with a valid shared Google cookie', async () => {
         const { account, user: inviter } = await seeders.seedAccountEnvAndUser();
         const email = `${nanoid()}@example.com`;
         const invitation = await inviteEmail({ email, name: email, accountId: account.id, invitedByUserId: inviter.id, role: 'administrator', trx: db.knex });
-        const track = vi.spyOn(productTracking, 'track');
-
-        const res = await api.fetch(route, {
-            method: 'POST',
-            body: { email, name: 'Foobar', password: 'aZ1-foobar!!', token: invitation!.token, acquisition: { acquisition_utm_source: 'facebook' } }
-        });
-        expect(res.res.status).toBe(200);
-
-        const names = track.mock.calls.map(([event]) => event.name);
-        expect(names).toStrictEqual(['auth:user_create']);
-        track.mockRestore();
-    });
-    it('keeps a permitted Google click out of invited-user signup', async () => {
-        const previous = envs.SIGNUP_GOOGLE_CONTEXT_ENABLED;
-        const previousName = envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME;
-        envs.SIGNUP_GOOGLE_CONTEXT_ENABLED = true;
-        envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME = 'nango_signup_google_test';
-        const { account, user: inviter } = await seeders.seedAccountEnvAndUser();
-        const email = `${nanoid()}@example.com`;
-        const invitation = await inviteEmail({ email, name: email, accountId: account.id, invitedByUserId: inviter.id, role: 'administrator', trx: db.knex });
-        if (!invitation) throw new Error('Invitation fixture missing');
-        const track = vi.spyOn(productTracking, 'track');
+        const previous = { enabled: envs.SIGNUP_AD_CONTEXT_ENABLED, name: envs.SIGNUP_AD_CONTEXT_COOKIE_NAME, version: envs.SIGNUP_AD_CONTEXT_VERSION };
+        envs.SIGNUP_AD_CONTEXT_ENABLED = true;
+        envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_test';
+        envs.SIGNUP_AD_CONTEXT_VERSION = 2;
         const now = Date.now();
-        const google = {
-            version: 1,
+        const context = {
+            version: 2,
             marketing: true,
             gpc: false,
             method: 'explicit',
@@ -142,56 +124,37 @@ describe('POST /api/v1/account/signup', () => {
             lgpd: false,
             ccpa: false,
             observedAt: now,
-            clickType: 'gclid',
-            clickId: 'synthetic_google',
-            clickAt: now,
-            adUserData: 'granted',
-            adPersonalization: 'granted'
+            google: { clickType: 'gclid', clickId: 'synthetic_google', clickAt: now - 1000 }
         };
+        const track = vi.spyOn(productTracking, 'track');
         try {
             const res = await api.fetch(route, {
                 method: 'POST',
-                body: { email, name: 'Invite fixture', password: 'aZ1-foobar!!', token: invitation.token },
-                headers: { Cookie: `${envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(google))}` }
+                headers: { Cookie: `nango_signup_ads_test=${encodeURIComponent(JSON.stringify(context))}` },
+                body: { email, name: 'Foobar', password: 'aZ1-foobar!!', token: invitation!.token, acquisition: { acquisition_utm_source: 'facebook' } }
             });
             expect(res.res.status).toBe(200);
             expect(track.mock.calls.map(([event]) => event.name)).toStrictEqual(['auth:user_create']);
         } finally {
-            envs.SIGNUP_GOOGLE_CONTEXT_ENABLED = previous;
-            envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME = previousName;
+            envs.SIGNUP_AD_CONTEXT_ENABLED = previous.enabled;
+            envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previous.name;
+            envs.SIGNUP_AD_CONTEXT_VERSION = previous.version;
             track.mockRestore();
         }
     });
-    it.each(['denied', 'withdrawn', 'gpc'] as const)('allows signup without advertising fields when consent is %s', async (scenario) => {
-        const previous = envs.SIGNUP_AD_CONTEXT_ENABLED;
-        const previousCookieName = envs.SIGNUP_AD_CONTEXT_COOKIE_NAME;
-        const previousGoogleEnabled = envs.SIGNUP_GOOGLE_CONTEXT_ENABLED;
-        const previousGoogleCookieName = envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME;
-        envs.SIGNUP_GOOGLE_CONTEXT_ENABLED = true;
-        envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME = 'nango_signup_google_test';
-        envs.SIGNUP_AD_CONTEXT_ENABLED = true;
-        envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_test';
-        const track = vi.spyOn(productTracking, 'track');
-        const now = Date.now();
-        const context = {
-            version: 1,
-            marketing: scenario !== 'denied',
-            gpc: false,
-            method: 'explicit',
-            gdpr: true,
-            lgpd: false,
-            ccpa: false,
-            observedAt: now,
-            fbclidAt: now,
-            fbclid: 'synthetic_meta',
-            opprefAt: now,
-            oppref: 'synthetic_openai'
-        };
-        const headers: Record<string, string> = {};
-        if (scenario !== 'withdrawn') headers['Cookie'] = `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}`;
-        if (scenario !== 'withdrawn') {
-            const google = {
-                version: 1,
+    it.each(['denied', 'withdrawn', 'gpc', 'missing-version', 'invalid-version'] as const)(
+        'allows signup without advertising fields when consent is %s',
+        async (scenario) => {
+            const previous = envs.SIGNUP_AD_CONTEXT_ENABLED;
+            const previousCookieName = envs.SIGNUP_AD_CONTEXT_COOKIE_NAME;
+            const previousVersion = envs.SIGNUP_AD_CONTEXT_VERSION;
+            envs.SIGNUP_AD_CONTEXT_VERSION = 2;
+            envs.SIGNUP_AD_CONTEXT_ENABLED = true;
+            envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_test';
+            const track = vi.spyOn(productTracking, 'track');
+            const now = Date.now();
+            const context = {
+                version: scenario === 'missing-version' ? undefined : scenario === 'invalid-version' ? 3 : 2,
                 marketing: scenario !== 'denied',
                 gpc: false,
                 method: 'explicit',
@@ -199,48 +162,51 @@ describe('POST /api/v1/account/signup', () => {
                 lgpd: false,
                 ccpa: false,
                 observedAt: now,
-                clickType: 'gclid',
-                clickId: 'synthetic_google',
-                clickAt: now,
-                adUserData: 'granted',
-                adPersonalization: 'granted'
+                google: { clickType: 'wbraid', clickId: 'synthetic_google', clickAt: now - 1000 },
+                fbclidAt: now,
+                fbclid: 'synthetic_meta',
+                opprefAt: now,
+                oppref: 'synthetic_openai'
             };
-            headers['Cookie'] += `; ${envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(google))}`;
+            const headers: Record<string, string> = {};
+            if (scenario !== 'withdrawn') headers['Cookie'] = `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}`;
+            if (scenario === 'gpc') headers['sec-gpc'] = '1';
+            try {
+                const res = await api.fetch(route, {
+                    method: 'POST',
+                    body: { email: `${nanoid()}@example.com`, name: 'Consent fixture', password: 'aZ1-foobar!!' },
+                    headers
+                });
+                expect(res.res.status).toBe(200);
+                const accountEvents = track.mock.calls.filter(([event]) => event.name === 'auth:account_create');
+                expect(accountEvents).toHaveLength(1);
+                const fields = Object.keys(accountEvents[0]?.[0].eventProperties ?? {});
+                expect(fields.filter((key) => key.startsWith('advertising_') || key.startsWith('is_advertising_'))).toEqual([]);
+            } finally {
+                envs.SIGNUP_AD_CONTEXT_ENABLED = previous;
+                envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previousCookieName;
+                envs.SIGNUP_AD_CONTEXT_VERSION = previousVersion;
+                track.mockRestore();
+            }
         }
-        if (scenario === 'gpc') headers['sec-gpc'] = '1';
-        try {
-            const res = await api.fetch(route, {
-                method: 'POST',
-                body: { email: `${nanoid()}@example.com`, name: 'Consent fixture', password: 'aZ1-foobar!!' },
-                headers
-            });
-            expect(res.res.status).toBe(200);
-            const accountEvents = track.mock.calls.filter(([event]) => event.name === 'auth:account_create');
-            expect(accountEvents).toHaveLength(1);
-            const fields = Object.keys(accountEvents[0]?.[0].eventProperties ?? {});
-            expect(fields.filter((key) => key.startsWith('advertising_') || key.startsWith('is_advertising_'))).toEqual([]);
-        } finally {
-            envs.SIGNUP_AD_CONTEXT_ENABLED = previous;
-            envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previousCookieName;
-            envs.SIGNUP_GOOGLE_CONTEXT_ENABLED = previousGoogleEnabled;
-            envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME = previousGoogleCookieName;
-            track.mockRestore();
-        }
-    });
+    );
 
-    it('passes permitted cookie context on one account event, without creating another conversion on retry', async () => {
+    it.each([
+        { cookieVersion: 1, gate: 1 },
+        { cookieVersion: 1, gate: 2 },
+        { cookieVersion: 2, gate: 1 },
+        { cookieVersion: 2, gate: 2 }
+    ] as const)('preserves shared context for cookie $cookieVersion / gate $gate and deduplicates signup retries', async ({ cookieVersion, gate }) => {
         const previous = envs.SIGNUP_AD_CONTEXT_ENABLED;
         const previousCookieName = envs.SIGNUP_AD_CONTEXT_COOKIE_NAME;
-        const previousGoogleEnabled = envs.SIGNUP_GOOGLE_CONTEXT_ENABLED;
-        const previousGoogleCookieName = envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME;
-        envs.SIGNUP_GOOGLE_CONTEXT_ENABLED = true;
-        envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME = 'nango_signup_google_test';
+        const previousVersion = envs.SIGNUP_AD_CONTEXT_VERSION;
+        envs.SIGNUP_AD_CONTEXT_VERSION = gate;
         envs.SIGNUP_AD_CONTEXT_ENABLED = true;
         envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_test';
         const track = vi.spyOn(productTracking, 'track');
         const now = Date.now();
         const context = {
-            version: 1,
+            version: cookieVersion,
             marketing: true,
             gpc: false,
             method: 'explicit',
@@ -248,30 +214,14 @@ describe('POST /api/v1/account/signup', () => {
             lgpd: false,
             ccpa: false,
             observedAt: now,
+            google: { clickType: 'wbraid', clickId: 'synthetic_google', clickAt: now - 1000 },
             fbclidAt: now - 60_000,
             fbclid: 'synthetic_meta',
             opprefAt: now - 30_000,
             oppref: 'synthetic_openai'
         };
         const body = { email: `${nanoid()}@example.com`, name: 'Consent fixture', password: 'aZ1-foobar!!' };
-        const google = {
-            version: 1,
-            marketing: true,
-            gpc: false,
-            method: context.method,
-            gdpr: context.gdpr,
-            lgpd: context.lgpd,
-            ccpa: context.ccpa,
-            observedAt: now,
-            clickType: 'wbraid',
-            clickId: 'synthetic_google',
-            clickAt: now - 1000,
-            adUserData: 'granted',
-            adPersonalization: 'granted'
-        };
-        const headers = {
-            Cookie: `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}; ${envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(google))}`
-        };
+        const headers = { Cookie: `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}` };
         try {
             const first = await api.fetch(route, { method: 'POST', body, headers });
             expect(first.res.status).toBe(200);
@@ -281,21 +231,29 @@ describe('POST /api/v1/account/signup', () => {
                     name: 'auth:account_create',
                     eventProperties: expect.objectContaining({
                         advertising_fbc: `fb.1.${now - 60_000}.synthetic_meta`,
-                        is_signup_creator_internal: false,
-                        advertising_google_click_id: 'synthetic_google',
-                        advertising_google_click_type: 'wbraid',
                         advertising_oppref: 'synthetic_openai'
                     })
                 })
             );
+            const properties = track.mock.calls.find(([event]) => event.name === 'auth:account_create')?.[0].eventProperties;
+            if (cookieVersion === 2 && gate === 2) {
+                expect(properties).toMatchObject({
+                    is_signup_creator_internal: false,
+                    advertising_google_click_type: 'wbraid',
+                    advertising_google_click_id: 'synthetic_google'
+                });
+            } else {
+                expect(Object.keys(properties ?? {}).filter((key) => key.startsWith('advertising_google_') || key === 'is_signup_creator_internal')).toEqual(
+                    []
+                );
+            }
             const second = await api.fetch(route, { method: 'POST', body, headers });
             expect(second.res.status).toBe(400);
             expect(track.mock.calls.filter(([e]) => e.name === 'auth:account_create')).toHaveLength(1);
         } finally {
             envs.SIGNUP_AD_CONTEXT_ENABLED = previous;
             envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previousCookieName;
-            envs.SIGNUP_GOOGLE_CONTEXT_ENABLED = previousGoogleEnabled;
-            envs.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME = previousGoogleCookieName;
+            envs.SIGNUP_AD_CONTEXT_VERSION = previousVersion;
             track.mockRestore();
         }
     });

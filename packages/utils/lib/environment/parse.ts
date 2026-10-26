@@ -753,17 +753,12 @@ const ENVS_SHAPE = z.object({
                 .regex(/^[A-Za-z0-9_]{1,64}$/)
                 .optional()
         ),
-    SIGNUP_GOOGLE_CONTEXT_ENABLED: z.stringbool().optional().default(false),
-    SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME: z
-        .string()
+    // Shared payload capability; readers always accept v1/v2, but v1 emits only released matching fields.
+    SIGNUP_AD_CONTEXT_VERSION: z
+        .enum(['1', '2'])
         .optional()
-        .transform(presentEnv)
-        .pipe(
-            z
-                .string()
-                .regex(/^[A-Za-z0-9_]{1,64}$/)
-                .optional()
-        ),
+        .default('1')
+        .transform((v) => (v === '2' ? (2 as const) : (1 as const))),
 
     // PostHog
     PUBLIC_POSTHOG_KEY: z.string().optional(),
@@ -1190,22 +1185,6 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
             message: 'SIGNUP_AD_CONTEXT_COOKIE_NAME is required when SIGNUP_AD_CONTEXT_ENABLED is true',
             path: ['SIGNUP_AD_CONTEXT_COOKIE_NAME'],
             input: ctx.value.SIGNUP_AD_CONTEXT_COOKIE_NAME
-        });
-    }
-    if (ctx.value.SIGNUP_GOOGLE_CONTEXT_ENABLED && !ctx.value.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME) {
-        ctx.issues.push({
-            code: 'custom',
-            message: 'SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME is required when SIGNUP_GOOGLE_CONTEXT_ENABLED is true',
-            path: ['SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME'],
-            input: ctx.value.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME
-        });
-    }
-    if (ctx.value.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME && ctx.value.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME === ctx.value.SIGNUP_AD_CONTEXT_COOKIE_NAME) {
-        ctx.issues.push({
-            code: 'custom',
-            message: 'Google and Meta/OpenAI signup cookies must have different names',
-            path: ['SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME'],
-            input: ctx.value.SIGNUP_GOOGLE_CONTEXT_COOKIE_NAME
         });
     }
 

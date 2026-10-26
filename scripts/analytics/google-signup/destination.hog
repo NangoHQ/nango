@@ -18,10 +18,10 @@ if (typeof(companyId) != 'string' or not match(companyId, '^[1-9][0-9]*$') or ev
 if (event.properties.is_signup_creator_internal != false) { print('SKIP: internal or unknown signup creator'); return }
 if (groups.company.properties.is_internal == true) { print('SKIP: internal company conflict'); return }
 let p := event.properties
-let method := p.advertising_google_consent_method
+let method := p.advertising_consent_method
 if ((method != 'explicit' and method != 'implied') or p.advertising_google_ad_user_data != 'granted' or p.advertising_google_ad_personalization != 'granted') { print('SKIP: Google consent missing'); return }
 let eventMs := timestampMs(event.timestamp)
-let consentMs := timestampMs(p.advertising_google_consent_timestamp)
+let consentMs := timestampMs(p.advertising_consent_timestamp)
 let startMs := timestampMs(inputs.startAt)
 let clickMs := timestampMs(p.advertising_google_click_timestamp)
 if (eventMs <= 0 or consentMs <= 0 or startMs <= 0 or clickMs <= 0) { print('SKIP: missing or invalid time'); return }
