@@ -54,7 +54,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     const { email, password, name, token, foundUs, acquisition }: PostSignup['Body'] = val.data;
 
     // Before the user lookup, so an unverified disposable signup can't get a fresh verification email.
-    if (!token && isDisposableEmail(email)) {
+    if (!token && envs.AUTH_ALLOW_SIGNUP && isDisposableEmail(email)) {
         res.status(400).send({ error: { code: 'disposable_email', message: 'Please sign up with a permanent email address.' } });
         return;
     }

@@ -225,6 +225,9 @@ export async function finalizeManagedAuthentication({
 
                 const signinUrl = new URL('/signin', basePublicUrl);
                 signinUrl.searchParams.set('error', 'disposable_email');
+                if (state?.returnTo) {
+                    signinUrl.searchParams.set('next', state.returnTo);
+                }
                 respondWithSuccess(res, signinUrl.href, responseMode);
                 return;
             }
