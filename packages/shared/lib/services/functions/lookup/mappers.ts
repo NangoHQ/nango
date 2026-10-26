@@ -1,4 +1,4 @@
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, resolveSchemaRef } from '@nangohq/utils';
 
 import { eventTypeMapper } from '../../on-event-scripts.service.js';
 
@@ -22,6 +22,28 @@ export function toListedNangoFunction(row: FunctionRow): Result<ListedNangoFunct
     };
 
     switch (row.type) {
+        case 'tool': {
+            if (!row.tool) {
+                return Err(new Error('Missing tool function details'));
+            }
+            const { instructions, required_scopes, ...tags } = row.tool.tags;
+            return Ok({
+                ...base,
+                ...availability,
+                type: 'tool',
+                uuid: row.tool.uuid,
+                integration_id: row.tool.integration_id,
+                provider: row.tool.provider,
+                description: description ?? '',
+                input_json_schema: resolveSchemaRef(row.json_schema, row.tool.input_schema_ref),
+                output_json_schema: resolveSchemaRef(row.json_schema, row.tool.output_schema_ref),
+                meta: {
+                    tags,
+                    ...(typeof instructions === 'string' && { instructions }),
+                    ...(Array.isArray(required_scopes) && { required_scopes })
+                }
+            });
+        }
         case 'sync': {
             const out: ListedNangoSyncFunction = {
                 ...base,

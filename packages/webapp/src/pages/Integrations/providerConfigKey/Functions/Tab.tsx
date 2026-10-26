@@ -239,7 +239,7 @@ function FunctionListWithDetails({
             >
                 {children}
             </div>
-            {displayedFunction && (
+            {displayedFunction && displayedFunction.type !== 'tool' && (
                 <div
                     className={cn(
                         'w-1/2 shrink-0 border-y border-r border-border-muted bg-surface-panel transition-[translate,opacity] duration-250 ease-out motion-reduce:transition-none',
