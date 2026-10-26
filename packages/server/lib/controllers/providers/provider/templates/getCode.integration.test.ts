@@ -92,7 +92,7 @@ describe(`GET ${route}`, () => {
         expect(getFileSpy).not.toHaveBeenCalled();
     });
 
-    it('should return catalog_unavailable when the source is missing from storage', async () => {
+    it('should return source_unavailable when the source is missing from storage', async () => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
         vi.spyOn(remoteFileService, 'getFile').mockRejectedValue(new Error('NoSuchKey'));
 
@@ -100,7 +100,7 @@ describe(`GET ${route}`, () => {
 
         expect(res.res.status).toBe(404);
         isError(res.json);
-        expect(res.json.error.code).toBe('catalog_unavailable');
+        expect(res.json.error.code).toBe('source_unavailable');
     });
 
     it('should reject invalid function names', async () => {

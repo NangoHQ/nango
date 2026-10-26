@@ -40,6 +40,8 @@ export async function handleGetProviderTemplateCode({
         res.status(200).send({ type: match.type, code });
     } catch (err) {
         report(err, { provider, scriptName: name, scriptType: match.type });
-        res.status(404).send({ error: { code: 'catalog_unavailable', message: `The catalog is not available on this Nango instance` } });
+        res.status(404).send({
+            error: { code: 'source_unavailable', message: `Function '${name}' is listed in the catalog but its source could not be loaded` }
+        });
     }
 }
