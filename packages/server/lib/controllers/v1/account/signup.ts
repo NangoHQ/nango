@@ -11,6 +11,7 @@ import { sendVerificationEmail } from '../../../helpers/email.js';
 import { identifyAccountMembership } from '../../../services/accountAnalytics.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
+import { isDisposableEmail } from '../../../utils/disposableEmail.js';
 import { signupAcquisitionSchema } from '../../../utils/signupAcquisition.js';
 import { signupAdvertisingFromRequest } from '../../../utils/signupAdvertising.js';
 
@@ -93,6 +94,11 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     } else {
         if (!envs.AUTH_ALLOW_SIGNUP) {
             res.status(403).send({ error: { code: 'forbidden', message: 'Signup is disabled.' } });
+            return;
+        }
+
+        if (isDisposableEmail(email)) {
+            res.status(400).send({ error: { code: 'disposable_email', message: 'Please sign up with a permanent email address.' } });
             return;
         }
 
