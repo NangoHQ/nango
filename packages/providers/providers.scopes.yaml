@@ -6061,6 +6061,18 @@ lokalise:
 looker-oauth:
     - cors_api
 
+# source: https://developers.loyaltylion.com/api-reference/authentication/oauth
+loyaltylion:
+    - read_customers
+    - read_orders
+    - read_reviews
+    - read_unsubscribes
+    - write_configuration
+    - write_customers
+    - write_orders
+    - write_reviews
+    - write_unsubscribes
+
 # source: https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/
 mailchimp: []
 
