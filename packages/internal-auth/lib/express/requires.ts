@@ -29,15 +29,15 @@ export function bindingsFrom(auth: InternalServiceAuth | undefined): Partial<Rec
     if (auth.kind === 'jwt' && auth.issuer === INTERNAL_SERVICE_ISSUER_JOBS && auth.sub) {
         if (auth.sub.startsWith('task:') && auth.sub.length > 'task:'.length) {
             bindings.taskId = auth.sub.slice('task:'.length);
+            if (auth.res) {
+                bindings.environmentId = auth.res.environmentId;
+                bindings.connectionId = auth.res.connectionId;
+                if (auth.res.syncId !== undefined) {
+                    bindings.syncId = auth.res.syncId;
+                }
+            }
         } else if (auth.sub.startsWith('node:') && auth.sub.length > 'node:'.length) {
             bindings.nodeId = auth.sub.slice('node:'.length);
-        }
-        if (auth.res) {
-            bindings.environmentId = auth.res.environmentId;
-            bindings.connectionId = auth.res.connectionId;
-            if (auth.res.syncId !== undefined) {
-                bindings.syncId = auth.res.syncId;
-            }
         }
     } else if ((auth.kind === 'hmac' || auth.kind === 'eddsa') && auth.op === 'task' && auth.taskId) {
         bindings.taskId = auth.taskId;
@@ -47,9 +47,20 @@ export function bindingsFrom(auth: InternalServiceAuth | undefined): Partial<Rec
     return bindings;
 }
 
+function isTaskCredential(auth: InternalServiceAuth | undefined): boolean {
+    if (!auth) {
+        return false;
+    }
+    if ((auth.kind === 'hmac' || auth.kind === 'eddsa') && auth.op === 'task' && Boolean(auth.taskId)) {
+        return true;
+    }
+    return isJobsTaskJwt(auth);
+}
+
 /**
- * The request value must equal the binding. A missing binding is 401, except `{ allowAbsent: true }`,
- * which skips tokens that have no `res` (HMAC and scope-less JWTs) until that fallback is removed.
+ * The request value must equal the binding. A missing binding is 401, except `{ allowAbsent: true }`
+ * on a task credential that has no `res` (HMAC, legacy EdDSA, and scope-less task JWTs) until that
+ * fallback is removed. A request with no credential still fails.
  */
 export function requireBinding(
     envs: InternalAuthEnvs,
@@ -62,9 +73,10 @@ export function requireBinding(
             next();
             return;
         }
-        const expected = bindingsFrom(getInternalServiceAuth(res))[key];
+        const auth = getInternalServiceAuth(res);
+        const expected = bindingsFrom(auth)[key];
         if (expected === undefined) {
-            if (opts?.allowAbsent) {
+            if (opts?.allowAbsent && isTaskCredential(auth)) {
                 next();
                 return;
             }
@@ -127,8 +139,8 @@ export function isResourceBound(auth: InternalServiceAuth | undefined, key: keyo
 
 /**
  * When REQUIRED, the route's declared scope must be on the task capability token.
- * Non-JWT task auth (HMAC and legacy EdDSA) carries no scopes and always passes. A scope-less
- * Ed25519 task JWT also passes until the fallback below is removed.
+ * HMAC and legacy EdDSA task tokens carry no scopes and pass. Node tokens and the static token do not.
+ * A scope-less Ed25519 task JWT also passes until the fallback below is removed.
  */
 export function requireScope(envs: InternalAuthEnvs, scope: TaskCapabilityScope): (req: Request, res: Response, next: NextFunction) => void {
     return (_req, res, next) => {
@@ -137,13 +149,13 @@ export function requireScope(envs: InternalAuthEnvs, scope: TaskCapabilityScope)
             return;
         }
         const auth = getInternalServiceAuth(res);
-        if (auth && auth.kind !== 'jwt') {
+        if (auth && (auth.kind === 'hmac' || auth.kind === 'eddsa') && auth.op === 'task' && auth.taskId) {
             next();
             return;
         }
         // TODO(NAN-6636): remove this fallback in PR 5, at least 25h after capability tokens are deployed.
         // It applies only to Ed25519 task JWTs minted before they carried a scopes claim. An explicit empty
-        // array is not that legacy token. Non-JWT task auth is handled above.
+        // array is not that legacy token. HMAC and legacy EdDSA task tokens are handled above.
         if (isJobsTaskJwt(auth) && auth.scopes === undefined) {
             next();
             return;

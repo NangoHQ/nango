@@ -1,6 +1,6 @@
 import { generateKeyPairSync } from 'node:crypto';
 
-import { mint } from './core/mint.js';
+import { mint } from './nango/mint.js';
 import {
     INTERNAL_SERVICE_AUDIENCE_JOBS,
     INTERNAL_SERVICE_AUDIENCE_PERSIST,
