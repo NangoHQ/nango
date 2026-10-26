@@ -156,7 +156,7 @@ export const ConnectionRecordTable = ({
     const [search, setSearch] = useQueryState('search', parseSearch);
     const debouncedSearch = useDebouncedValue(search.trim(), 300);
 
-    const { data, error, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useConnectionRecords(
+    const { data, error, isLoading, isPlaceholderData, fetchNextPage, hasNextPage, isFetchingNextPage } = useConnectionRecords(
         {
             env,
             provider_config_key: providerConfigKey,
@@ -249,7 +249,11 @@ export const ConnectionRecordTable = ({
                 <>
                     <div
                         ref={scrollParentRef}
-                        className="w-full min-w-0 overflow-auto rounded border border-border-muted [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                        aria-busy={isPlaceholderData}
+                        className={cn(
+                            'w-full min-w-0 overflow-auto rounded border border-border-muted [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
+                            isPlaceholderData && 'pointer-events-none opacity-60'
+                        )}
                         style={{ height: scrollContainerHeight }}
                     >
                         <VirtualizedRecordRows scrollParentRef={scrollParentRef} records={records} onOpenPayload={setActiveRecordId} />
