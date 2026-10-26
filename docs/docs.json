@@ -1386,6 +1386,7 @@
               "api-integrations/freshsales",
               "integrations/all/freshservice",
               "api-integrations/freshservice-mcp",
+              "api-integrations/freshservice-oauth",
               "integrations/all/freshteam",
               "api-integrations/freshworks",
               "integrations/all/front",
