@@ -1,6 +1,6 @@
 import { metrics } from '@nangohq/utils';
 
-import type { FunctionExecutionOutcome, FunctionRuntime, UsageFunctionExecutionsEvent } from '@nangohq/types';
+import type { FunctionRuntime, UsageFunctionExecutionsEvent } from '@nangohq/types';
 
 type FunctionType = UsageFunctionExecutionsEvent['payload']['properties']['type'];
 
@@ -17,7 +17,7 @@ export function recordFunctionExecution({
     success: boolean;
     durationMs: number;
     runtime: FunctionRuntime | undefined;
-    outcome?: FunctionExecutionOutcome | undefined;
+    outcome?: string | undefined;
 }): void {
     metrics.duration(metrics.Types.FUNCTION_DURATION_MS, Math.max(0, durationMs), {
         accountId,
