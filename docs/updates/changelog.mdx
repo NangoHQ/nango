@@ -7,7 +7,7 @@ description: "Important developer & product updates, including deprecations & br
 <Update label="Reconnect connections from agent sessions" description="October 26, 2026">
   Agents can now get a broken connection fixed without leaving the session.
 
-  When a tool fails because the connection is missing a scope or its credentials expired, the agent calls `nango_create_connection` with `reconnect: true` and hands the user a reconnect link. The user authorizes the same connection again, and the agent retries the tool in the same session. The connection keeps its ID and tags.
+  When a connection's credentials expire or it is missing a scope, the user gets a reconnect link and authorizes the same connection again. The session keeps working on it, and the connection keeps its ID and tags. It is available whenever `nango_create_connection` is enabled.
 
   See [reconnecting a connection](/guides/agent-sessions#reconnecting-a-connection).
 
