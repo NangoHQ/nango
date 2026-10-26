@@ -1,4 +1,5 @@
 import { decodeProtectedHeader, importJWK, importPKCS8, jwtVerify, SignJWT } from 'jose';
+import * as z from 'zod';
 
 import { normalizePem } from '@nangohq/utils';
 
@@ -64,6 +65,14 @@ export interface MintClaims {
     scopes?: readonly TaskCapabilityScope[];
 }
 
+const resourceIdError = 'task capability res requires a positive environmentId and connectionId';
+
+const taskCapabilityResourceSchema = z.object({
+    environmentId: z.int().positive({ error: resourceIdError }),
+    connectionId: z.int().positive({ error: resourceIdError }),
+    syncId: z.string().min(1, { error: 'task capability res.syncId must be a non-empty string' }).optional()
+});
+
 const privateKeyCache = new Map<string, Promise<CryptoKey>>();
 const publicKeyCache = new Map<string, Promise<CryptoKey>>();
 
@@ -120,13 +129,7 @@ export async function mint(signer: MintSigner, claims: MintClaims): Promise<stri
     const iat = claims.issuedAt ?? Math.floor(Date.now() / 1000);
     const payload: Record<string, unknown> = {};
     if (claims.res) {
-        if (!isPositiveInt(claims.res.environmentId) || !isPositiveInt(claims.res.connectionId)) {
-            throw new Error('task capability res requires a positive environmentId and connectionId');
-        }
-        if (claims.res.syncId !== undefined && claims.res.syncId.length === 0) {
-            throw new Error('task capability res.syncId must be a non-empty string');
-        }
-        payload['res'] = claims.res;
+        payload['res'] = taskCapabilityResourceSchema.parse(claims.res);
     }
     if (claims.scopes !== undefined) {
         payload['scopes'] = [...claims.scopes];
