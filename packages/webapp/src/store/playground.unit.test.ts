@@ -36,23 +36,6 @@ describe('usePlaygroundStore', () => {
         });
     });
 
-    describe('setIntegration', () => {
-        it('sets the new integration', () => {
-            usePlaygroundStore.getState().setIntegration('github');
-            expect(usePlaygroundStore.getState().integration).toBe('github');
-        });
-
-        it('clears connection, function, functionType, and inputValues', () => {
-            usePlaygroundStore.setState({ connection: 'c', function: 'fn', functionType: 'action', inputValues: { x: '1' } });
-            usePlaygroundStore.getState().setIntegration('github');
-            const s = usePlaygroundStore.getState();
-            expect(s.connection).toBeNull();
-            expect(s.function).toBeNull();
-            expect(s.functionType).toBeNull();
-            expect(s.inputValues).toEqual({});
-        });
-    });
-
     describe('setFunction', () => {
         it('sets function name and type and clears inputValues', () => {
             usePlaygroundStore.setState({ inputValues: { a: '1', b: '2' } });

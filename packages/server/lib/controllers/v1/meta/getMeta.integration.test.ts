@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 
@@ -40,6 +41,17 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, { method: 'GET', session });
         isSuccess(res.json);
         expect(res.json.data.accountGroup).toStrictEqual({ name: account.name, plan: plan.name, created_date: new Date(account.created_at).toISOString() });
+    });
+
+    it.each([false, true])('returns hasBaa %s from the account', async (hasBaa) => {
+        const { account, user } = await seeders.seedAccountEnvAndUser();
+        await db.knex('_nango_accounts').where({ id: account.id }).update({ has_baa: hasBaa });
+        const session = await authenticateUser(api, user);
+        // @ts-expect-error type declares `env` but the controller rejects any query param
+        const res = await api.fetch(route, { method: 'GET', session });
+
+        isSuccess(res.json);
+        expect(res.json.data.hasBaa).toBe(hasBaa);
     });
 
     it('returns the tools-catalog flag for the account', async () => {

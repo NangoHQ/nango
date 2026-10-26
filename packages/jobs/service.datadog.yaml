@@ -1,0 +1,1 @@
+{ 'apiVersion': 'v3', 'kind': 'service', 'metadata': { 'name': 'nango-jobs' }, 'spec': { 'languages': ['javascript'], 'type': 'web' } }

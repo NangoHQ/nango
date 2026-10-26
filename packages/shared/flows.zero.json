@@ -392038,7 +392038,7 @@
                 "output": ["ActionOutput_google_drive_createfolder"],
                 "scopes": ["https://www.googleapis.com/auth/drive.file"],
                 "usedModels": ["ActionInput_google_drive_createfolder", "ActionOutput_google_drive_createfolder"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_google_drive_createfolder": {
@@ -393627,7 +393627,7 @@
                 "output": ["ActionOutput_google_drive_movefile"],
                 "scopes": ["https://www.googleapis.com/auth/drive.file"],
                 "usedModels": ["ActionInput_google_drive_movefile", "ActionOutput_google_drive_movefile"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_google_drive_movefile": {
@@ -394100,7 +394100,7 @@
                 "output": ["ActionOutput_google_drive_uploaddocument"],
                 "scopes": ["https://www.googleapis.com/auth/drive.file"],
                 "usedModels": ["ActionInput_google_drive_uploaddocument", "ActionOutput_google_drive_uploaddocument"],
-                "version": "2.0.2",
+                "version": "2.0.3",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_google_drive_uploaddocument": {
@@ -405460,6 +405460,2775 @@
                     }
                 },
                 "features": []
+            }
+        ],
+        "onEventScripts": {
+            "post-connection-creation": [],
+            "pre-connection-deletion": [],
+            "validate-connection": []
+        },
+        "sdkVersion": "0.71.13",
+        "symLinkTargetName": null
+    },
+    {
+        "providerConfigKey": "google-tasks",
+        "actions": [
+            {
+                "type": "action",
+                "description": "Complete a task, verify its final state, and report any subtasks that were auto-completed as a side effect.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_completetaskandverify",
+                "name": "complete-task-and-verify",
+                "output": ["ActionOutput_google_tasks_completetaskandverify"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_completetaskandverify", "ActionOutput_google_tasks_completetaskandverify"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_completetaskandverify": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "ID of the task list that contains the task. Use \"@default\" for the authenticated user's default list. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
+                                },
+                                "task": {
+                                    "type": "string",
+                                    "description": "ID of the task to mark as completed. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
+                                }
+                            },
+                            "required": ["tasklist", "task"],
+                            "additionalProperties": false,
+                            "description": "Identifies the task to complete within a task list."
+                        },
+                        "ActionOutput_google_tasks_completetaskandverify": {
+                            "type": "object",
+                            "properties": {
+                                "task": {
+                                    "type": "object",
+                                    "properties": {
+                                        "kind": {
+                                            "description": "Resource type; always \"tasks#task\".",
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Task identifier. Task ids are globally unique and survive a move to another task list. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
+                                        },
+                                        "etag": {
+                                            "description": "ETag of the task resource; changes whenever the task is modified.",
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "description": "Title of the task.",
+                                            "type": "string"
+                                        },
+                                        "updated": {
+                                            "description": "Last modification time of the task as an RFC 3339 timestamp. Example: \"2026-10-15T16:24:29.043Z\"",
+                                            "type": "string"
+                                        },
+                                        "selfLink": {
+                                            "description": "URL that points to this task.",
+                                            "type": "string"
+                                        },
+                                        "parent": {
+                                            "description": "Identifier of the parent task; omitted for top-level tasks.",
+                                            "type": "string"
+                                        },
+                                        "position": {
+                                            "description": "Lexicographic position of the task among its siblings.",
+                                            "type": "string"
+                                        },
+                                        "notes": {
+                                            "description": "Free-form notes attached to the task.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "Task status, either \"needsAction\" or \"completed\".",
+                                            "type": "string"
+                                        },
+                                        "due": {
+                                            "description": "Due date as an RFC 3339 timestamp; only the date portion is stored. Example: \"2026-12-31T00:00:00.000Z\"",
+                                            "type": "string"
+                                        },
+                                        "completed": {
+                                            "description": "Completion time as an RFC 3339 timestamp; present only once the task is completed.",
+                                            "type": "string"
+                                        },
+                                        "deleted": {
+                                            "description": "True when the task has been deleted; deleted tasks are returned as tombstones rather than 404.",
+                                            "type": "boolean"
+                                        },
+                                        "hidden": {
+                                            "description": "True when the task is hidden because it was completed before its list was last cleared.",
+                                            "type": "boolean"
+                                        },
+                                        "links": {
+                                            "description": "Read-only collection of links attached to the task.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "description": "Type of the link, for example \"email\", \"generic\", \"chat_message\", or \"keep_note\".",
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "description": "Description of the link; may be an empty string.",
+                                                        "type": "string"
+                                                    },
+                                                    "link": {
+                                                        "description": "The URL of the link.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "A read-only link attached to a task."
+                                            }
+                                        },
+                                        "webViewLink": {
+                                            "description": "Absolute link to the task in the Google Tasks web UI.",
+                                            "type": "string"
+                                        },
+                                        "assignmentInfo": {
+                                            "description": "Context for tasks assigned from surfaces such as Docs or Chat Spaces.",
+                                            "type": "object",
+                                            "properties": {
+                                                "linkToTask": {
+                                                    "description": "Absolute link to the original task in the surface it was assigned from.",
+                                                    "type": "string"
+                                                },
+                                                "surfaceType": {
+                                                    "description": "Type of surface the assigned task originates from, for example \"DOCUMENT\" or \"SPACE\".",
+                                                    "type": "string"
+                                                },
+                                                "driveResourceInfo": {
+                                                    "description": "Information about the Drive file the task originates from.",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "driveFileId": {
+                                                            "description": "Identifier of the originating file in the Drive API.",
+                                                            "type": "string"
+                                                        },
+                                                        "resourceKey": {
+                                                            "description": "Resource key required to access files shared via a shared link.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "spaceInfo": {
+                                                    "description": "Information about the Chat space the task originates from.",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "space": {
+                                                            "description": "The Chat space the task originates from, formatted as \"spaces/{space}\".",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false,
+                                    "description": "The completed task as read back from the provider after the update."
+                                },
+                                "cascadedSubtasks": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "kind": {
+                                                "description": "Resource type; always \"tasks#task\".",
+                                                "type": "string"
+                                            },
+                                            "id": {
+                                                "type": "string",
+                                                "description": "Task identifier. Task ids are globally unique and survive a move to another task list. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
+                                            },
+                                            "etag": {
+                                                "description": "ETag of the task resource; changes whenever the task is modified.",
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "description": "Title of the task.",
+                                                "type": "string"
+                                            },
+                                            "updated": {
+                                                "description": "Last modification time of the task as an RFC 3339 timestamp. Example: \"2026-10-15T16:24:29.043Z\"",
+                                                "type": "string"
+                                            },
+                                            "selfLink": {
+                                                "description": "URL that points to this task.",
+                                                "type": "string"
+                                            },
+                                            "parent": {
+                                                "description": "Identifier of the parent task; omitted for top-level tasks.",
+                                                "type": "string"
+                                            },
+                                            "position": {
+                                                "description": "Lexicographic position of the task among its siblings.",
+                                                "type": "string"
+                                            },
+                                            "notes": {
+                                                "description": "Free-form notes attached to the task.",
+                                                "type": "string"
+                                            },
+                                            "status": {
+                                                "description": "Task status, either \"needsAction\" or \"completed\".",
+                                                "type": "string"
+                                            },
+                                            "due": {
+                                                "description": "Due date as an RFC 3339 timestamp; only the date portion is stored. Example: \"2026-12-31T00:00:00.000Z\"",
+                                                "type": "string"
+                                            },
+                                            "completed": {
+                                                "description": "Completion time as an RFC 3339 timestamp; present only once the task is completed.",
+                                                "type": "string"
+                                            },
+                                            "deleted": {
+                                                "description": "True when the task has been deleted; deleted tasks are returned as tombstones rather than 404.",
+                                                "type": "boolean"
+                                            },
+                                            "hidden": {
+                                                "description": "True when the task is hidden because it was completed before its list was last cleared.",
+                                                "type": "boolean"
+                                            },
+                                            "links": {
+                                                "description": "Read-only collection of links attached to the task.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "description": "Type of the link, for example \"email\", \"generic\", \"chat_message\", or \"keep_note\".",
+                                                            "type": "string"
+                                                        },
+                                                        "description": {
+                                                            "description": "Description of the link; may be an empty string.",
+                                                            "type": "string"
+                                                        },
+                                                        "link": {
+                                                            "description": "The URL of the link.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "A read-only link attached to a task."
+                                                }
+                                            },
+                                            "webViewLink": {
+                                                "description": "Absolute link to the task in the Google Tasks web UI.",
+                                                "type": "string"
+                                            },
+                                            "assignmentInfo": {
+                                                "description": "Context for tasks assigned from surfaces such as Docs or Chat Spaces.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "linkToTask": {
+                                                        "description": "Absolute link to the original task in the surface it was assigned from.",
+                                                        "type": "string"
+                                                    },
+                                                    "surfaceType": {
+                                                        "description": "Type of surface the assigned task originates from, for example \"DOCUMENT\" or \"SPACE\".",
+                                                        "type": "string"
+                                                    },
+                                                    "driveResourceInfo": {
+                                                        "description": "Information about the Drive file the task originates from.",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "driveFileId": {
+                                                                "description": "Identifier of the originating file in the Drive API.",
+                                                                "type": "string"
+                                                            },
+                                                            "resourceKey": {
+                                                                "description": "Resource key required to access files shared via a shared link.",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "spaceInfo": {
+                                                        "description": "Information about the Chat space the task originates from.",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "space": {
+                                                                "description": "The Chat space the task originates from, formatted as \"spaces/{space}\".",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false,
+                                        "description": "A Google Tasks task."
+                                    },
+                                    "description": "Direct subtasks that are completed after the update, i.e. auto-completed as a side effect of completing the task."
+                                }
+                            },
+                            "required": ["task", "cascadedSubtasks"],
+                            "additionalProperties": false,
+                            "description": "The verified completed task together with any subtasks that were auto-completed by the cascade."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Mark a task as completed. NOTE: if this task has subtasks, they are auto-completed too - see comments.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_completetask",
+                "name": "complete-task",
+                "output": ["ActionOutput_google_tasks_completetask"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_completetask", "ActionOutput_google_tasks_completetask"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_completetask": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "Task list identifier. Use \"@default\" to target the primary task list. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
+                                },
+                                "task": {
+                                    "type": "string",
+                                    "description": "Identifier of the task to mark as completed. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
+                                }
+                            },
+                            "required": ["tasklist", "task"],
+                            "additionalProperties": false,
+                            "description": "Identifies the task to mark as completed."
+                        },
+                        "ActionOutput_google_tasks_completetask": {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                    "description": "Resource type; always \"tasks#task\".",
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "Task identifier. Task ids are globally unique and survive a move to another task list. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
+                                },
+                                "etag": {
+                                    "description": "ETag of the task resource; changes whenever the task is modified.",
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "description": "Title of the task.",
+                                    "type": "string"
+                                },
+                                "updated": {
+                                    "description": "Last modification time of the task as an RFC 3339 timestamp. Example: \"2026-10-15T16:24:29.043Z\"",
+                                    "type": "string"
+                                },
+                                "selfLink": {
+                                    "description": "URL that points to this task.",
+                                    "type": "string"
+                                },
+                                "parent": {
+                                    "description": "Identifier of the parent task; omitted for top-level tasks.",
+                                    "type": "string"
+                                },
+                                "position": {
+                                    "description": "Lexicographic position of the task among its siblings.",
+                                    "type": "string"
+                                },
+                                "notes": {
+                                    "description": "Free-form notes attached to the task.",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "description": "Task status, either \"needsAction\" or \"completed\".",
+                                    "type": "string"
+                                },
+                                "due": {
+                                    "description": "Due date as an RFC 3339 timestamp; only the date portion is stored. Example: \"2026-12-31T00:00:00.000Z\"",
+                                    "type": "string"
+                                },
+                                "completed": {
+                                    "description": "Completion time as an RFC 3339 timestamp; present only once the task is completed.",
+                                    "type": "string"
+                                },
+                                "deleted": {
+                                    "description": "True when the task has been deleted; deleted tasks are returned as tombstones rather than 404.",
+                                    "type": "boolean"
+                                },
+                                "hidden": {
+                                    "description": "True when the task is hidden because it was completed before its list was last cleared.",
+                                    "type": "boolean"
+                                },
+                                "links": {
+                                    "description": "Read-only collection of links attached to the task.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "description": "Type of the link, for example \"email\", \"generic\", \"chat_message\", or \"keep_note\".",
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "description": "Description of the link; may be an empty string.",
+                                                "type": "string"
+                                            },
+                                            "link": {
+                                                "description": "The URL of the link.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "description": "A read-only link attached to a task."
+                                    }
+                                },
+                                "webViewLink": {
+                                    "description": "Absolute link to the task in the Google Tasks web UI.",
+                                    "type": "string"
+                                },
+                                "assignmentInfo": {
+                                    "description": "Context for tasks assigned from surfaces such as Docs or Chat Spaces.",
+                                    "type": "object",
+                                    "properties": {
+                                        "linkToTask": {
+                                            "description": "Absolute link to the original task in the surface it was assigned from.",
+                                            "type": "string"
+                                        },
+                                        "surfaceType": {
+                                            "description": "Type of surface the assigned task originates from, for example \"DOCUMENT\" or \"SPACE\".",
+                                            "type": "string"
+                                        },
+                                        "driveResourceInfo": {
+                                            "description": "Information about the Drive file the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "driveFileId": {
+                                                    "description": "Identifier of the originating file in the Drive API.",
+                                                    "type": "string"
+                                                },
+                                                "resourceKey": {
+                                                    "description": "Resource key required to access files shared via a shared link.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "spaceInfo": {
+                                            "description": "Information about the Chat space the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "space": {
+                                                    "description": "The Chat space the task originates from, formatted as \"spaces/{space}\".",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "The task resource returned after it was marked as completed."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Create a new task in a list, optionally as a subtask of an existing task and/or positioned after a specific sibling.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_createtask",
+                "name": "create-task",
+                "output": ["ActionOutput_google_tasks_createtask"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_createtask", "ActionOutput_google_tasks_createtask"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_createtask": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "Task list identifier to create the task in. Use \"@default\" for the authenticated user's default list."
+                                },
+                                "title": {
+                                    "type": "string",
+                                    "description": "Title of the new task (maximum 1024 characters)."
+                                },
+                                "notes": {
+                                    "description": "Notes describing the task (maximum 8192 characters).",
+                                    "type": "string"
+                                },
+                                "due": {
+                                    "description": "Due date as an RFC 3339 timestamp. Only the date portion is stored.",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "description": "Status of the task. Defaults to \"needsAction\" when omitted.",
+                                    "type": "string",
+                                    "enum": ["needsAction", "completed"]
+                                },
+                                "parent": {
+                                    "description": "Identifier of the parent task to create this task under. Omit to create a top-level task.",
+                                    "type": "string"
+                                },
+                                "previous": {
+                                    "description": "Identifier of the sibling task to place this new task immediately after. Omit to place it first among its siblings.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["tasklist", "title"],
+                            "additionalProperties": false,
+                            "description": "Parameters for creating a new task in a Google Tasks list."
+                        },
+                        "ActionOutput_google_tasks_createtask": {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                    "description": "Resource type; always \"tasks#task\".",
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "Task identifier. Task ids are globally unique and survive a move to another task list. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
+                                },
+                                "etag": {
+                                    "description": "ETag of the task resource; changes whenever the task is modified.",
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "description": "Title of the task.",
+                                    "type": "string"
+                                },
+                                "updated": {
+                                    "description": "Last modification time of the task as an RFC 3339 timestamp. Example: \"2026-10-15T16:24:29.043Z\"",
+                                    "type": "string"
+                                },
+                                "selfLink": {
+                                    "description": "URL that points to this task.",
+                                    "type": "string"
+                                },
+                                "parent": {
+                                    "description": "Identifier of the parent task; omitted for top-level tasks.",
+                                    "type": "string"
+                                },
+                                "position": {
+                                    "description": "Lexicographic position of the task among its siblings.",
+                                    "type": "string"
+                                },
+                                "notes": {
+                                    "description": "Free-form notes attached to the task.",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "description": "Task status, either \"needsAction\" or \"completed\".",
+                                    "type": "string"
+                                },
+                                "due": {
+                                    "description": "Due date as an RFC 3339 timestamp; only the date portion is stored. Example: \"2026-12-31T00:00:00.000Z\"",
+                                    "type": "string"
+                                },
+                                "completed": {
+                                    "description": "Completion time as an RFC 3339 timestamp; present only once the task is completed.",
+                                    "type": "string"
+                                },
+                                "deleted": {
+                                    "description": "True when the task has been deleted; deleted tasks are returned as tombstones rather than 404.",
+                                    "type": "boolean"
+                                },
+                                "hidden": {
+                                    "description": "True when the task is hidden because it was completed before its list was last cleared.",
+                                    "type": "boolean"
+                                },
+                                "links": {
+                                    "description": "Read-only collection of links attached to the task.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "description": "Type of the link, for example \"email\", \"generic\", \"chat_message\", or \"keep_note\".",
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "description": "Description of the link; may be an empty string.",
+                                                "type": "string"
+                                            },
+                                            "link": {
+                                                "description": "The URL of the link.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "description": "A read-only link attached to a task."
+                                    }
+                                },
+                                "webViewLink": {
+                                    "description": "Absolute link to the task in the Google Tasks web UI.",
+                                    "type": "string"
+                                },
+                                "assignmentInfo": {
+                                    "description": "Context for tasks assigned from surfaces such as Docs or Chat Spaces.",
+                                    "type": "object",
+                                    "properties": {
+                                        "linkToTask": {
+                                            "description": "Absolute link to the original task in the surface it was assigned from.",
+                                            "type": "string"
+                                        },
+                                        "surfaceType": {
+                                            "description": "Type of surface the assigned task originates from, for example \"DOCUMENT\" or \"SPACE\".",
+                                            "type": "string"
+                                        },
+                                        "driveResourceInfo": {
+                                            "description": "Information about the Drive file the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "driveFileId": {
+                                                    "description": "Identifier of the originating file in the Drive API.",
+                                                    "type": "string"
+                                                },
+                                                "resourceKey": {
+                                                    "description": "Resource key required to access files shared via a shared link.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "spaceInfo": {
+                                            "description": "Information about the Chat space the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "space": {
+                                                    "description": "The Chat space the task originates from, formatted as \"spaces/{space}\".",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "The task created in the Google Tasks list."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Create a new, empty task list.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_createtasklist",
+                "name": "create-tasklist",
+                "output": ["ActionOutput_google_tasks_createtasklist"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_createtasklist", "ActionOutput_google_tasks_createtasklist"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_createtasklist": {
+                            "type": "object",
+                            "properties": {
+                                "title": {
+                                    "type": "string",
+                                    "description": "Title of the task list to create. Maximum length is 1024 characters. Example: \"My Tasks\""
+                                }
+                            },
+                            "required": ["title"],
+                            "additionalProperties": false,
+                            "description": "Input for creating a new task list."
+                        },
+                        "ActionOutput_google_tasks_createtasklist": {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                    "description": "Resource type; always \"tasks#taskList\".",
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "Task list identifier. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
+                                },
+                                "etag": {
+                                    "description": "ETag of the task list; changes whenever the list is modified.",
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "description": "Title of the task list. Example: \"My Tasks\"",
+                                    "type": "string"
+                                },
+                                "updated": {
+                                    "description": "Last modification time of the task list as an RFC 3339 timestamp. Example: \"2025-11-11T21:17:21.284Z\"",
+                                    "type": "string"
+                                },
+                                "selfLink": {
+                                    "description": "URL that points to this task list.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "The newly created task list, including its provider-assigned ID and timestamps."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Permanently delete a task from a task list.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_deletetask",
+                "name": "delete-task",
+                "output": ["ActionOutput_google_tasks_deletetask"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_deletetask", "ActionOutput_google_tasks_deletetask"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_deletetask": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "Task list ID that contains the task. Use \"@default\" for the user's default list. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
+                                },
+                                "task": {
+                                    "type": "string",
+                                    "description": "Task ID to delete. Example: \"YmFJWEFwdXBBTUZ0WkJIdg\""
+                                }
+                            },
+                            "required": ["tasklist", "task"],
+                            "additionalProperties": false,
+                            "description": "Identifies the task to permanently delete."
+                        },
+                        "ActionOutput_google_tasks_deletetask": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "ID of the task that was deleted."
+                                },
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "ID of the task list the task was deleted from."
+                                },
+                                "deleted": {
+                                    "type": "boolean",
+                                    "description": "True once the provider confirms the deletion. A later fetch of the same task returns a tombstone with deleted set to true."
+                                }
+                            },
+                            "required": ["id", "tasklist", "deleted"],
+                            "additionalProperties": false,
+                            "description": "Confirmation that the task was deleted."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Permanently delete a task list and every task inside it.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_deletetasklist",
+                "name": "delete-tasklist",
+                "output": ["ActionOutput_google_tasks_deletetasklist"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_deletetasklist", "ActionOutput_google_tasks_deletetasklist"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_deletetasklist": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "Task list ID to delete, or \"@default\" for the authenticated user's default list. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
+                                }
+                            },
+                            "required": ["tasklist"],
+                            "additionalProperties": false,
+                            "description": "Identifies the task list to permanently delete."
+                        },
+                        "ActionOutput_google_tasks_deletetasklist": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "Identifier passed to the action: the deleted task list ID, or the \"@default\" alias if one was supplied."
+                                },
+                                "deleted": {
+                                    "type": "boolean",
+                                    "description": "True when the provider confirmed the deletion with a 204 No Content response."
+                                }
+                            },
+                            "required": ["id", "deleted"],
+                            "additionalProperties": false,
+                            "description": "Result of the task list deletion."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Find a task by title in the task list with a given name, creating the list and/or the task only when they do not exist yet.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_findorcreatetaskintasklist",
+                "name": "find-or-create-task-in-tasklist",
+                "output": ["ActionOutput_google_tasks_findorcreatetaskintasklist"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_findorcreatetaskintasklist", "ActionOutput_google_tasks_findorcreatetaskintasklist"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_findorcreatetaskintasklist": {
+                            "type": "object",
+                            "properties": {
+                                "listName": {
+                                    "type": "string",
+                                    "description": "Exact, case-sensitive title of the task list to use. The list is created if no list with this title exists yet. Example: \"Groceries\""
+                                },
+                                "title": {
+                                    "type": "string",
+                                    "description": "Exact, case-sensitive title of the task to find. A new task with this title is created only if the list has no matching task. Example: \"Buy milk\""
+                                },
+                                "notes": {
+                                    "description": "Notes for the task. Only used when a new task is created. Maximum length: 8192 characters.",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "description": "Task status. Only used when a new task is created; defaults to \"needsAction\" when omitted.",
+                                    "type": "string",
+                                    "enum": ["needsAction", "completed"]
+                                },
+                                "due": {
+                                    "description": "Due date as an RFC 3339 timestamp. Only used when a new task is created; only the date portion is stored.",
+                                    "type": "string"
+                                },
+                                "parent": {
+                                    "description": "Identifier of the parent task. When set, only subtasks of this parent match, and a newly created task is created as its subtask. When omitted, a task with the title matches anywhere in the list.",
+                                    "type": "string"
+                                },
+                                "previous": {
+                                    "description": "Identifier of the previous sibling task. Only used to position a newly created task.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["listName", "title"],
+                            "additionalProperties": false,
+                            "description": "Input for finding a task by title in the task list with a given name, creating the list and/or the task when missing."
+                        },
+                        "ActionOutput_google_tasks_findorcreatetaskintasklist": {
+                            "type": "object",
+                            "properties": {
+                                "task": {
+                                    "type": "object",
+                                    "properties": {
+                                        "kind": {
+                                            "description": "Resource type; always \"tasks#task\".",
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Task identifier. Task ids are globally unique and survive a move to another task list. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
+                                        },
+                                        "etag": {
+                                            "description": "ETag of the task resource; changes whenever the task is modified.",
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "description": "Title of the task.",
+                                            "type": "string"
+                                        },
+                                        "updated": {
+                                            "description": "Last modification time of the task as an RFC 3339 timestamp. Example: \"2026-10-15T16:24:29.043Z\"",
+                                            "type": "string"
+                                        },
+                                        "selfLink": {
+                                            "description": "URL that points to this task.",
+                                            "type": "string"
+                                        },
+                                        "parent": {
+                                            "description": "Identifier of the parent task; omitted for top-level tasks.",
+                                            "type": "string"
+                                        },
+                                        "position": {
+                                            "description": "Lexicographic position of the task among its siblings.",
+                                            "type": "string"
+                                        },
+                                        "notes": {
+                                            "description": "Free-form notes attached to the task.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "Task status, either \"needsAction\" or \"completed\".",
+                                            "type": "string"
+                                        },
+                                        "due": {
+                                            "description": "Due date as an RFC 3339 timestamp; only the date portion is stored. Example: \"2026-12-31T00:00:00.000Z\"",
+                                            "type": "string"
+                                        },
+                                        "completed": {
+                                            "description": "Completion time as an RFC 3339 timestamp; present only once the task is completed.",
+                                            "type": "string"
+                                        },
+                                        "deleted": {
+                                            "description": "True when the task has been deleted; deleted tasks are returned as tombstones rather than 404.",
+                                            "type": "boolean"
+                                        },
+                                        "hidden": {
+                                            "description": "True when the task is hidden because it was completed before its list was last cleared.",
+                                            "type": "boolean"
+                                        },
+                                        "links": {
+                                            "description": "Read-only collection of links attached to the task.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "description": "Type of the link, for example \"email\", \"generic\", \"chat_message\", or \"keep_note\".",
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "description": "Description of the link; may be an empty string.",
+                                                        "type": "string"
+                                                    },
+                                                    "link": {
+                                                        "description": "The URL of the link.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "A read-only link attached to a task."
+                                            }
+                                        },
+                                        "webViewLink": {
+                                            "description": "Absolute link to the task in the Google Tasks web UI.",
+                                            "type": "string"
+                                        },
+                                        "assignmentInfo": {
+                                            "description": "Context for tasks assigned from surfaces such as Docs or Chat Spaces.",
+                                            "type": "object",
+                                            "properties": {
+                                                "linkToTask": {
+                                                    "description": "Absolute link to the original task in the surface it was assigned from.",
+                                                    "type": "string"
+                                                },
+                                                "surfaceType": {
+                                                    "description": "Type of surface the assigned task originates from, for example \"DOCUMENT\" or \"SPACE\".",
+                                                    "type": "string"
+                                                },
+                                                "driveResourceInfo": {
+                                                    "description": "Information about the Drive file the task originates from.",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "driveFileId": {
+                                                            "description": "Identifier of the originating file in the Drive API.",
+                                                            "type": "string"
+                                                        },
+                                                        "resourceKey": {
+                                                            "description": "Resource key required to access files shared via a shared link.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "spaceInfo": {
+                                                    "description": "Information about the Chat space the task originates from.",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "space": {
+                                                            "description": "The Chat space the task originates from, formatted as \"spaces/{space}\".",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false,
+                                    "description": "The existing task that matched, or the newly created task."
+                                },
+                                "tasklist": {
+                                    "type": "object",
+                                    "properties": {
+                                        "kind": {
+                                            "description": "Resource type; always \"tasks#taskList\".",
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Task list identifier. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
+                                        },
+                                        "etag": {
+                                            "description": "ETag of the task list; changes whenever the list is modified.",
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "description": "Title of the task list. Example: \"My Tasks\"",
+                                            "type": "string"
+                                        },
+                                        "updated": {
+                                            "description": "Last modification time of the task list as an RFC 3339 timestamp. Example: \"2025-11-11T21:17:21.284Z\"",
+                                            "type": "string"
+                                        },
+                                        "selfLink": {
+                                            "description": "URL that points to this task list.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false,
+                                    "description": "The task list that holds the task."
+                                },
+                                "tasklistCreated": {
+                                    "type": "boolean",
+                                    "description": "True if a new task list was created because no existing list matched listName."
+                                },
+                                "taskCreated": {
+                                    "type": "boolean",
+                                    "description": "True if a new task was created; false if an existing task with the same title was found and returned unchanged."
+                                }
+                            },
+                            "required": ["task", "tasklist", "tasklistCreated", "taskCreated"],
+                            "additionalProperties": false,
+                            "description": "The found or created task, the resolved task list, and whether each one was newly created."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Retrieve a single task by its list ID and task ID - including a deleted task, which is returned as a tombstone rather than a 404.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_gettask",
+                "name": "get-task",
+                "output": ["ActionOutput_google_tasks_gettask"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_gettask", "ActionOutput_google_tasks_gettask"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_gettask": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "Task list identifier. Use the list ID, or \"@default\" for the user's default task list."
+                                },
+                                "task": {
+                                    "type": "string",
+                                    "description": "Task identifier of the task to retrieve."
+                                }
+                            },
+                            "required": ["tasklist", "task"],
+                            "additionalProperties": false,
+                            "description": "Identifies the task to retrieve within a specific task list."
+                        },
+                        "ActionOutput_google_tasks_gettask": {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                    "description": "Resource type; always \"tasks#task\".",
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "Task identifier. Task ids are globally unique and survive a move to another task list. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
+                                },
+                                "etag": {
+                                    "description": "ETag of the task resource; changes whenever the task is modified.",
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "description": "Title of the task.",
+                                    "type": "string"
+                                },
+                                "updated": {
+                                    "description": "Last modification time of the task as an RFC 3339 timestamp. Example: \"2026-10-15T16:24:29.043Z\"",
+                                    "type": "string"
+                                },
+                                "selfLink": {
+                                    "description": "URL that points to this task.",
+                                    "type": "string"
+                                },
+                                "parent": {
+                                    "description": "Identifier of the parent task; omitted for top-level tasks.",
+                                    "type": "string"
+                                },
+                                "position": {
+                                    "description": "Lexicographic position of the task among its siblings.",
+                                    "type": "string"
+                                },
+                                "notes": {
+                                    "description": "Free-form notes attached to the task.",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "description": "Task status, either \"needsAction\" or \"completed\".",
+                                    "type": "string"
+                                },
+                                "due": {
+                                    "description": "Due date as an RFC 3339 timestamp; only the date portion is stored. Example: \"2026-12-31T00:00:00.000Z\"",
+                                    "type": "string"
+                                },
+                                "completed": {
+                                    "description": "Completion time as an RFC 3339 timestamp; present only once the task is completed.",
+                                    "type": "string"
+                                },
+                                "deleted": {
+                                    "description": "True when the task has been deleted; deleted tasks are returned as tombstones rather than 404.",
+                                    "type": "boolean"
+                                },
+                                "hidden": {
+                                    "description": "True when the task is hidden because it was completed before its list was last cleared.",
+                                    "type": "boolean"
+                                },
+                                "links": {
+                                    "description": "Read-only collection of links attached to the task.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "description": "Type of the link, for example \"email\", \"generic\", \"chat_message\", or \"keep_note\".",
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "description": "Description of the link; may be an empty string.",
+                                                "type": "string"
+                                            },
+                                            "link": {
+                                                "description": "The URL of the link.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "description": "A read-only link attached to a task."
+                                    }
+                                },
+                                "webViewLink": {
+                                    "description": "Absolute link to the task in the Google Tasks web UI.",
+                                    "type": "string"
+                                },
+                                "assignmentInfo": {
+                                    "description": "Context for tasks assigned from surfaces such as Docs or Chat Spaces.",
+                                    "type": "object",
+                                    "properties": {
+                                        "linkToTask": {
+                                            "description": "Absolute link to the original task in the surface it was assigned from.",
+                                            "type": "string"
+                                        },
+                                        "surfaceType": {
+                                            "description": "Type of surface the assigned task originates from, for example \"DOCUMENT\" or \"SPACE\".",
+                                            "type": "string"
+                                        },
+                                        "driveResourceInfo": {
+                                            "description": "Information about the Drive file the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "driveFileId": {
+                                                    "description": "Identifier of the originating file in the Drive API.",
+                                                    "type": "string"
+                                                },
+                                                "resourceKey": {
+                                                    "description": "Resource key required to access files shared via a shared link.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "spaceInfo": {
+                                            "description": "Information about the Chat space the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "space": {
+                                                    "description": "The Chat space the task originates from, formatted as \"spaces/{space}\".",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "The retrieved task, including tombstone fields such as deleted and hidden."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Fetch a task list with all of its tasks, with the subtask hierarchy reconstructed into a nested tree.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_gettasklistfulltree",
+                "name": "get-tasklist-full-tree",
+                "output": ["ActionOutput_google_tasks_gettasklistfulltree"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_gettasklistfulltree", "ActionOutput_google_tasks_gettasklistfulltree"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_gettasklistfulltree": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "Task list identifier or the special \"@default\" alias for the authenticated user's primary list. Example: \"@default\""
+                                },
+                                "showCompleted": {
+                                    "description": "Include completed tasks. Defaults to true.",
+                                    "type": "boolean"
+                                },
+                                "showHidden": {
+                                    "description": "Include tasks hidden by a previous clear-completed call. Defaults to true.",
+                                    "type": "boolean"
+                                },
+                                "showDeleted": {
+                                    "description": "Include deleted-task tombstones (status \"deleted\"). Defaults to false.",
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": ["tasklist"],
+                            "additionalProperties": false,
+                            "description": "Input for fetching one task list and reconstructing its full nested task tree."
+                        },
+                        "ActionOutput_google_tasks_gettasklistfulltree": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Task list identifier."
+                                        },
+                                        "title": {
+                                            "description": "Task list title.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false,
+                                    "description": "Metadata of the requested task list."
+                                },
+                                "tree": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/__schema0"
+                                    },
+                                    "description": "Top-level tasks of the list, each with its subtasks nested under children."
+                                }
+                            },
+                            "required": ["tasklist", "tree"],
+                            "additionalProperties": false,
+                            "description": "A task list plus all of its tasks reconstructed into a nested parent/child tree.",
+                            "definitions": {
+                                "__schema0": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Task identifier."
+                                        },
+                                        "title": {
+                                            "description": "Task title.",
+                                            "type": "string"
+                                        },
+                                        "notes": {
+                                            "description": "Free-form notes attached to the task.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "Task status, either \"needsAction\" or \"completed\".",
+                                            "type": "string"
+                                        },
+                                        "due": {
+                                            "description": "Due date of the task in RFC 3339 format.",
+                                            "type": "string"
+                                        },
+                                        "completed": {
+                                            "description": "Completion timestamp in RFC 3339 format, present on completed tasks.",
+                                            "type": "string"
+                                        },
+                                        "deleted": {
+                                            "description": "True when the task has been deleted (only returned when showDeleted is true).",
+                                            "type": "boolean"
+                                        },
+                                        "hidden": {
+                                            "description": "True when the task was hidden by a clear-completed call (only returned when showHidden is true).",
+                                            "type": "boolean"
+                                        },
+                                        "parent": {
+                                            "description": "Identifier of the parent task, present only on subtasks.",
+                                            "type": "string"
+                                        },
+                                        "position": {
+                                            "description": "Lexicographic value used to order sibling tasks.",
+                                            "type": "string"
+                                        },
+                                        "updated": {
+                                            "description": "Last modification timestamp in RFC 3339 format.",
+                                            "type": "string"
+                                        },
+                                        "selfLink": {
+                                            "description": "API URL of the task.",
+                                            "type": "string"
+                                        },
+                                        "webViewLink": {
+                                            "description": "Google Tasks web URL of the task.",
+                                            "type": "string"
+                                        },
+                                        "links": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "description": "Link type, for example \"email\".",
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "description": "Human-readable description of the link.",
+                                                        "type": "string"
+                                                    },
+                                                    "link": {
+                                                        "description": "The link URL.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            "description": "External links attached to the task."
+                                        },
+                                        "children": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/__schema0"
+                                            },
+                                            "description": "Nested subtasks ordered by position."
+                                        }
+                                    },
+                                    "required": ["id", "links", "children"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Retrieve a single task list by its ID (or the literal alias `@default` for the user's default list).",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_gettasklist",
+                "name": "get-tasklist",
+                "output": ["ActionOutput_google_tasks_gettasklist"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_gettasklist", "ActionOutput_google_tasks_gettasklist"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_gettasklist": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "Task list identifier, or the literal alias \"@default\" for the authenticated user's default task list. Example: \"@default\" or \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
+                                }
+                            },
+                            "required": ["tasklist"],
+                            "additionalProperties": false,
+                            "description": "Identifies which task list to retrieve."
+                        },
+                        "ActionOutput_google_tasks_gettasklist": {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                    "description": "Resource type; always \"tasks#taskList\".",
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "Task list identifier. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
+                                },
+                                "etag": {
+                                    "description": "ETag of the task list; changes whenever the list is modified.",
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "description": "Title of the task list. Example: \"My Tasks\"",
+                                    "type": "string"
+                                },
+                                "updated": {
+                                    "description": "Last modification time of the task list as an RFC 3339 timestamp. Example: \"2025-11-11T21:17:21.284Z\"",
+                                    "type": "string"
+                                },
+                                "selfLink": {
+                                    "description": "URL that points to this task list.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "A Google Tasks task list."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "List all of the user's task lists.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_listtasklists",
+                "name": "list-tasklists",
+                "output": ["ActionOutput_google_tasks_listtasklists"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_listtasklists", "ActionOutput_google_tasks_listtasklists"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_listtasklists": {
+                            "type": "object",
+                            "properties": {
+                                "maxResults": {
+                                    "description": "Maximum number of task lists to return in one page (1-1000). Defaults to 1000.",
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 1000
+                                },
+                                "cursor": {
+                                    "description": "Pagination cursor from the previous response nextCursor. Omit for the first page.",
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Pagination options for listing the authenticated user's task lists."
+                        },
+                        "ActionOutput_google_tasks_listtasklists": {
+                            "type": "object",
+                            "properties": {
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "kind": {
+                                                "description": "Resource type; always \"tasks#taskList\".",
+                                                "type": "string"
+                                            },
+                                            "id": {
+                                                "type": "string",
+                                                "description": "Task list identifier. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
+                                            },
+                                            "etag": {
+                                                "description": "ETag of the task list; changes whenever the list is modified.",
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "description": "Title of the task list. Example: \"My Tasks\"",
+                                                "type": "string"
+                                            },
+                                            "updated": {
+                                                "description": "Last modification time of the task list as an RFC 3339 timestamp. Example: \"2025-11-11T21:17:21.284Z\"",
+                                                "type": "string"
+                                            },
+                                            "selfLink": {
+                                                "description": "URL that points to this task list.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false,
+                                        "description": "A Google Tasks task list."
+                                    },
+                                    "description": "Task lists owned by the authenticated user."
+                                },
+                                "nextCursor": {
+                                    "description": "Cursor to pass as cursor to fetch the next page; absent when there are no more pages.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["items"],
+                            "additionalProperties": false,
+                            "description": "A page of the authenticated user's task lists."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "List tasks in a given task list, with optional filters for completed, hidden, and deleted tasks and date or update ranges.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_listtasks",
+                "name": "list-tasks",
+                "output": ["ActionOutput_google_tasks_listtasks"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_listtasks", "ActionOutput_google_tasks_listtasks"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_listtasks": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "Task list identifier, or \"@default\" for the authenticated user's default list. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\"."
+                                },
+                                "maxResults": {
+                                    "description": "Maximum number of tasks to return per page (1-100). Defaults to 20.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100
+                                },
+                                "cursor": {
+                                    "description": "Pagination cursor from the previous response nextCursor. Omit for the first page.",
+                                    "type": "string"
+                                },
+                                "showCompleted": {
+                                    "description": "Whether to return completed tasks. Defaults to true.",
+                                    "type": "boolean"
+                                },
+                                "showDeleted": {
+                                    "description": "Whether to return deleted tasks as tombstones. Defaults to false.",
+                                    "type": "boolean"
+                                },
+                                "showHidden": {
+                                    "description": "Whether to return hidden tasks (completed tasks cleared from a first-party client). Defaults to false.",
+                                    "type": "boolean"
+                                },
+                                "showAssigned": {
+                                    "description": "Whether to return tasks assigned to the user from Docs or Chat Spaces. Defaults to false.",
+                                    "type": "boolean"
+                                },
+                                "completedMin": {
+                                    "description": "Lower bound (RFC 3339 timestamp) for a task's completion date.",
+                                    "type": "string"
+                                },
+                                "completedMax": {
+                                    "description": "Upper bound (RFC 3339 timestamp) for a task's completion date.",
+                                    "type": "string"
+                                },
+                                "dueMin": {
+                                    "description": "Lower bound (RFC 3339 timestamp) for a task's due date.",
+                                    "type": "string"
+                                },
+                                "dueMax": {
+                                    "description": "Upper bound (RFC 3339 timestamp) for a task's due date.",
+                                    "type": "string"
+                                },
+                                "updatedMin": {
+                                    "description": "Lower bound (RFC 3339 timestamp) for a task's last modification time.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["tasklist"],
+                            "additionalProperties": false,
+                            "description": "Filters and pagination for listing tasks in a task list."
+                        },
+                        "ActionOutput_google_tasks_listtasks": {
+                            "type": "object",
+                            "properties": {
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "kind": {
+                                                "description": "Resource type; always \"tasks#task\".",
+                                                "type": "string"
+                                            },
+                                            "id": {
+                                                "type": "string",
+                                                "description": "Task identifier. Task ids are globally unique and survive a move to another task list. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
+                                            },
+                                            "etag": {
+                                                "description": "ETag of the task resource; changes whenever the task is modified.",
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "description": "Title of the task.",
+                                                "type": "string"
+                                            },
+                                            "updated": {
+                                                "description": "Last modification time of the task as an RFC 3339 timestamp. Example: \"2026-10-15T16:24:29.043Z\"",
+                                                "type": "string"
+                                            },
+                                            "selfLink": {
+                                                "description": "URL that points to this task.",
+                                                "type": "string"
+                                            },
+                                            "parent": {
+                                                "description": "Identifier of the parent task; omitted for top-level tasks.",
+                                                "type": "string"
+                                            },
+                                            "position": {
+                                                "description": "Lexicographic position of the task among its siblings.",
+                                                "type": "string"
+                                            },
+                                            "notes": {
+                                                "description": "Free-form notes attached to the task.",
+                                                "type": "string"
+                                            },
+                                            "status": {
+                                                "description": "Task status, either \"needsAction\" or \"completed\".",
+                                                "type": "string"
+                                            },
+                                            "due": {
+                                                "description": "Due date as an RFC 3339 timestamp; only the date portion is stored. Example: \"2026-12-31T00:00:00.000Z\"",
+                                                "type": "string"
+                                            },
+                                            "completed": {
+                                                "description": "Completion time as an RFC 3339 timestamp; present only once the task is completed.",
+                                                "type": "string"
+                                            },
+                                            "deleted": {
+                                                "description": "True when the task has been deleted; deleted tasks are returned as tombstones rather than 404.",
+                                                "type": "boolean"
+                                            },
+                                            "hidden": {
+                                                "description": "True when the task is hidden because it was completed before its list was last cleared.",
+                                                "type": "boolean"
+                                            },
+                                            "links": {
+                                                "description": "Read-only collection of links attached to the task.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "description": "Type of the link, for example \"email\", \"generic\", \"chat_message\", or \"keep_note\".",
+                                                            "type": "string"
+                                                        },
+                                                        "description": {
+                                                            "description": "Description of the link; may be an empty string.",
+                                                            "type": "string"
+                                                        },
+                                                        "link": {
+                                                            "description": "The URL of the link.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "A read-only link attached to a task."
+                                                }
+                                            },
+                                            "webViewLink": {
+                                                "description": "Absolute link to the task in the Google Tasks web UI.",
+                                                "type": "string"
+                                            },
+                                            "assignmentInfo": {
+                                                "description": "Context for tasks assigned from surfaces such as Docs or Chat Spaces.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "linkToTask": {
+                                                        "description": "Absolute link to the original task in the surface it was assigned from.",
+                                                        "type": "string"
+                                                    },
+                                                    "surfaceType": {
+                                                        "description": "Type of surface the assigned task originates from, for example \"DOCUMENT\" or \"SPACE\".",
+                                                        "type": "string"
+                                                    },
+                                                    "driveResourceInfo": {
+                                                        "description": "Information about the Drive file the task originates from.",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "driveFileId": {
+                                                                "description": "Identifier of the originating file in the Drive API.",
+                                                                "type": "string"
+                                                            },
+                                                            "resourceKey": {
+                                                                "description": "Resource key required to access files shared via a shared link.",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "spaceInfo": {
+                                                        "description": "Information about the Chat space the task originates from.",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "space": {
+                                                                "description": "The Chat space the task originates from, formatted as \"spaces/{space}\".",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false,
+                                        "description": "A Google Tasks task."
+                                    },
+                                    "description": "Tasks in the list that match the requested filters."
+                                },
+                                "nextCursor": {
+                                    "description": "Cursor to pass as cursor to fetch the next page; absent when there are no more results.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["items"],
+                            "additionalProperties": false,
+                            "description": "A page of tasks from a Google Tasks list."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Move a task to a new parent and/or sibling position within the same list, or to a different task list entirely.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_movetask",
+                "name": "move-task",
+                "output": ["ActionOutput_google_tasks_movetask"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_movetask", "ActionOutput_google_tasks_movetask"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_movetask": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "Identifier of the task list that currently contains the task. Use \"@default\" for the authenticated user's default list. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
+                                },
+                                "task": {
+                                    "type": "string",
+                                    "description": "Identifier of the task to move. Example: \"Nng3cXVvc0ZvRGlCZVNmRA\""
+                                },
+                                "parent": {
+                                    "description": "Identifier of the new parent task. Omit or pass null to move the task to the top level. Must be an existing, non-hidden task in the same list. Example: \"dl85dnNkNF9XNlprcTNaZA\"",
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "previous": {
+                                    "description": "Identifier of the new previous sibling task; the moved task is placed immediately after it. Omit or pass null to move it to the first position among its siblings. Must be an existing, non-hidden task in the same list. Example: \"dl85dnNkNF9XNlprcTNaZA\"",
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "destinationTasklist": {
+                                    "description": "Identifier of a different task list to move the task into. Omit to move the task within its current list. Example: \"TVhPREw3WDBsYkJGUlVpMg\"",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["tasklist", "task"],
+                            "additionalProperties": false,
+                            "description": "Identifies the task to move and the target parent, sibling position, and/or destination list."
+                        },
+                        "ActionOutput_google_tasks_movetask": {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                    "description": "Resource type; always \"tasks#task\".",
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "Task identifier. Task ids are globally unique and survive a move to another task list. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
+                                },
+                                "etag": {
+                                    "description": "ETag of the task resource; changes whenever the task is modified.",
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "description": "Title of the task.",
+                                    "type": "string"
+                                },
+                                "updated": {
+                                    "description": "Last modification time of the task as an RFC 3339 timestamp. Example: \"2026-10-15T16:24:29.043Z\"",
+                                    "type": "string"
+                                },
+                                "selfLink": {
+                                    "description": "URL that points to this task.",
+                                    "type": "string"
+                                },
+                                "parent": {
+                                    "description": "Identifier of the parent task; omitted for top-level tasks.",
+                                    "type": "string"
+                                },
+                                "position": {
+                                    "description": "Lexicographic position of the task among its siblings.",
+                                    "type": "string"
+                                },
+                                "notes": {
+                                    "description": "Free-form notes attached to the task.",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "description": "Task status, either \"needsAction\" or \"completed\".",
+                                    "type": "string"
+                                },
+                                "due": {
+                                    "description": "Due date as an RFC 3339 timestamp; only the date portion is stored. Example: \"2026-12-31T00:00:00.000Z\"",
+                                    "type": "string"
+                                },
+                                "completed": {
+                                    "description": "Completion time as an RFC 3339 timestamp; present only once the task is completed.",
+                                    "type": "string"
+                                },
+                                "deleted": {
+                                    "description": "True when the task has been deleted; deleted tasks are returned as tombstones rather than 404.",
+                                    "type": "boolean"
+                                },
+                                "hidden": {
+                                    "description": "True when the task is hidden because it was completed before its list was last cleared.",
+                                    "type": "boolean"
+                                },
+                                "links": {
+                                    "description": "Read-only collection of links attached to the task.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "description": "Type of the link, for example \"email\", \"generic\", \"chat_message\", or \"keep_note\".",
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "description": "Description of the link; may be an empty string.",
+                                                "type": "string"
+                                            },
+                                            "link": {
+                                                "description": "The URL of the link.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "description": "A read-only link attached to a task."
+                                    }
+                                },
+                                "webViewLink": {
+                                    "description": "Absolute link to the task in the Google Tasks web UI.",
+                                    "type": "string"
+                                },
+                                "assignmentInfo": {
+                                    "description": "Context for tasks assigned from surfaces such as Docs or Chat Spaces.",
+                                    "type": "object",
+                                    "properties": {
+                                        "linkToTask": {
+                                            "description": "Absolute link to the original task in the surface it was assigned from.",
+                                            "type": "string"
+                                        },
+                                        "surfaceType": {
+                                            "description": "Type of surface the assigned task originates from, for example \"DOCUMENT\" or \"SPACE\".",
+                                            "type": "string"
+                                        },
+                                        "driveResourceInfo": {
+                                            "description": "Information about the Drive file the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "driveFileId": {
+                                                    "description": "Identifier of the originating file in the Drive API.",
+                                                    "type": "string"
+                                                },
+                                                "resourceKey": {
+                                                    "description": "Resource key required to access files shared via a shared link.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "spaceInfo": {
+                                            "description": "Information about the Chat space the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "space": {
+                                                    "description": "The Chat space the task originates from, formatted as \"spaces/{space}\".",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "The moved task returned by the provider, reflecting its new list, parent, and position."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Partially update a task (PATCH): only the fields you pass change and everything else is left untouched. Use update-task to replace the whole task.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_patchtask",
+                "name": "patch-task",
+                "output": ["ActionOutput_google_tasks_patchtask"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_patchtask", "ActionOutput_google_tasks_patchtask"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_patchtask": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "Identifier of the task list that contains the task, or \"@default\" for the authenticated user's primary list."
+                                },
+                                "task": {
+                                    "type": "string",
+                                    "description": "Identifier of the task to patch."
+                                },
+                                "title": {
+                                    "description": "New title for the task. Omit to leave the current title unchanged.",
+                                    "type": "string"
+                                },
+                                "notes": {
+                                    "description": "New free-form notes for the task. Set to null or an empty string to clear the notes. Omit to leave them unchanged.",
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "status": {
+                                    "description": "New completion status for the task. Omit to leave the current status unchanged.",
+                                    "type": "string",
+                                    "enum": ["needsAction", "completed"]
+                                },
+                                "due": {
+                                    "description": "New due date as an RFC 3339 timestamp; only the date portion is stored. Set to null or an empty string to clear the due date. Omit to leave it unchanged.",
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            },
+                            "required": ["tasklist", "task"],
+                            "additionalProperties": false,
+                            "description": "Fields to partially update on an existing Google Task; only the provided fields are changed."
+                        },
+                        "ActionOutput_google_tasks_patchtask": {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                    "description": "Resource type; always \"tasks#task\".",
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "Task identifier. Task ids are globally unique and survive a move to another task list. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
+                                },
+                                "etag": {
+                                    "description": "ETag of the task resource; changes whenever the task is modified.",
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "description": "Title of the task.",
+                                    "type": "string"
+                                },
+                                "updated": {
+                                    "description": "Last modification time of the task as an RFC 3339 timestamp. Example: \"2026-10-15T16:24:29.043Z\"",
+                                    "type": "string"
+                                },
+                                "selfLink": {
+                                    "description": "URL that points to this task.",
+                                    "type": "string"
+                                },
+                                "parent": {
+                                    "description": "Identifier of the parent task; omitted for top-level tasks.",
+                                    "type": "string"
+                                },
+                                "position": {
+                                    "description": "Lexicographic position of the task among its siblings.",
+                                    "type": "string"
+                                },
+                                "notes": {
+                                    "description": "Free-form notes attached to the task.",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "description": "Task status, either \"needsAction\" or \"completed\".",
+                                    "type": "string"
+                                },
+                                "due": {
+                                    "description": "Due date as an RFC 3339 timestamp; only the date portion is stored. Example: \"2026-12-31T00:00:00.000Z\"",
+                                    "type": "string"
+                                },
+                                "completed": {
+                                    "description": "Completion time as an RFC 3339 timestamp; present only once the task is completed.",
+                                    "type": "string"
+                                },
+                                "deleted": {
+                                    "description": "True when the task has been deleted; deleted tasks are returned as tombstones rather than 404.",
+                                    "type": "boolean"
+                                },
+                                "hidden": {
+                                    "description": "True when the task is hidden because it was completed before its list was last cleared.",
+                                    "type": "boolean"
+                                },
+                                "links": {
+                                    "description": "Read-only collection of links attached to the task.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "description": "Type of the link, for example \"email\", \"generic\", \"chat_message\", or \"keep_note\".",
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "description": "Description of the link; may be an empty string.",
+                                                "type": "string"
+                                            },
+                                            "link": {
+                                                "description": "The URL of the link.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "description": "A read-only link attached to a task."
+                                    }
+                                },
+                                "webViewLink": {
+                                    "description": "Absolute link to the task in the Google Tasks web UI.",
+                                    "type": "string"
+                                },
+                                "assignmentInfo": {
+                                    "description": "Context for tasks assigned from surfaces such as Docs or Chat Spaces.",
+                                    "type": "object",
+                                    "properties": {
+                                        "linkToTask": {
+                                            "description": "Absolute link to the original task in the surface it was assigned from.",
+                                            "type": "string"
+                                        },
+                                        "surfaceType": {
+                                            "description": "Type of surface the assigned task originates from, for example \"DOCUMENT\" or \"SPACE\".",
+                                            "type": "string"
+                                        },
+                                        "driveResourceInfo": {
+                                            "description": "Information about the Drive file the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "driveFileId": {
+                                                    "description": "Identifier of the originating file in the Drive API.",
+                                                    "type": "string"
+                                                },
+                                                "resourceKey": {
+                                                    "description": "Resource key required to access files shared via a shared link.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "spaceInfo": {
+                                            "description": "Information about the Chat space the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "space": {
+                                                    "description": "The Chat space the task originates from, formatted as \"spaces/{space}\".",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "The task after the partial update, with all of its current fields."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Mark a completed task as not done again, undoing its completion and un-hiding it if it was hidden.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_reopentask",
+                "name": "reopen-task",
+                "output": ["ActionOutput_google_tasks_reopentask"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_reopentask", "ActionOutput_google_tasks_reopentask"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_reopentask": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "Task list ID, or \"@default\" for the authenticated user's primary list. Example: \"@default\""
+                                },
+                                "task": {
+                                    "type": "string",
+                                    "description": "ID of the task to reopen. Example: \"WnpnNlRJR2tYYjJGLVFJZg\""
+                                }
+                            },
+                            "required": ["tasklist", "task"],
+                            "additionalProperties": false,
+                            "description": "Identifies the task to reopen within a task list."
+                        },
+                        "ActionOutput_google_tasks_reopentask": {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                    "description": "Resource type; always \"tasks#task\".",
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "Task identifier. Task ids are globally unique and survive a move to another task list. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
+                                },
+                                "etag": {
+                                    "description": "ETag of the task resource; changes whenever the task is modified.",
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "description": "Title of the task.",
+                                    "type": "string"
+                                },
+                                "updated": {
+                                    "description": "Last modification time of the task as an RFC 3339 timestamp. Example: \"2026-10-15T16:24:29.043Z\"",
+                                    "type": "string"
+                                },
+                                "selfLink": {
+                                    "description": "URL that points to this task.",
+                                    "type": "string"
+                                },
+                                "parent": {
+                                    "description": "Identifier of the parent task; omitted for top-level tasks.",
+                                    "type": "string"
+                                },
+                                "position": {
+                                    "description": "Lexicographic position of the task among its siblings.",
+                                    "type": "string"
+                                },
+                                "notes": {
+                                    "description": "Free-form notes attached to the task.",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "description": "Task status, either \"needsAction\" or \"completed\".",
+                                    "type": "string"
+                                },
+                                "due": {
+                                    "description": "Due date as an RFC 3339 timestamp; only the date portion is stored. Example: \"2026-12-31T00:00:00.000Z\"",
+                                    "type": "string"
+                                },
+                                "completed": {
+                                    "description": "Completion time as an RFC 3339 timestamp; present only once the task is completed.",
+                                    "type": "string"
+                                },
+                                "deleted": {
+                                    "description": "True when the task has been deleted; deleted tasks are returned as tombstones rather than 404.",
+                                    "type": "boolean"
+                                },
+                                "hidden": {
+                                    "description": "True when the task is hidden because it was completed before its list was last cleared.",
+                                    "type": "boolean"
+                                },
+                                "links": {
+                                    "description": "Read-only collection of links attached to the task.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "description": "Type of the link, for example \"email\", \"generic\", \"chat_message\", or \"keep_note\".",
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "description": "Description of the link; may be an empty string.",
+                                                "type": "string"
+                                            },
+                                            "link": {
+                                                "description": "The URL of the link.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "description": "A read-only link attached to a task."
+                                    }
+                                },
+                                "webViewLink": {
+                                    "description": "Absolute link to the task in the Google Tasks web UI.",
+                                    "type": "string"
+                                },
+                                "assignmentInfo": {
+                                    "description": "Context for tasks assigned from surfaces such as Docs or Chat Spaces.",
+                                    "type": "object",
+                                    "properties": {
+                                        "linkToTask": {
+                                            "description": "Absolute link to the original task in the surface it was assigned from.",
+                                            "type": "string"
+                                        },
+                                        "surfaceType": {
+                                            "description": "Type of surface the assigned task originates from, for example \"DOCUMENT\" or \"SPACE\".",
+                                            "type": "string"
+                                        },
+                                        "driveResourceInfo": {
+                                            "description": "Information about the Drive file the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "driveFileId": {
+                                                    "description": "Identifier of the originating file in the Drive API.",
+                                                    "type": "string"
+                                                },
+                                                "resourceKey": {
+                                                    "description": "Resource key required to access files shared via a shared link.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "spaceInfo": {
+                                            "description": "Information about the Chat space the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "space": {
+                                                    "description": "The Chat space the task originates from, formatted as \"spaces/{space}\".",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "The reopened task as returned by the provider."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Replace a task (full PUT): notes, status, and due are cleared or reset when omitted. Use patch-task to change only some fields.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_updatetask",
+                "name": "update-task",
+                "output": ["ActionOutput_google_tasks_updatetask"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_updatetask", "ActionOutput_google_tasks_updatetask"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_updatetask": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "Task list identifier that owns the task. Use \"@default\" for the authenticated user's default list. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
+                                },
+                                "task": {
+                                    "type": "string",
+                                    "description": "Identifier of the task to replace. Example: \"NGhVdGtWUGotQ0JqcnVKWg\""
+                                },
+                                "title": {
+                                    "type": "string",
+                                    "description": "Title of the task. Maximum length: 1024 characters. Required because this call replaces the whole task."
+                                },
+                                "notes": {
+                                    "description": "Notes describing the task. Maximum length: 8192 characters. Omit or pass null to clear the notes.",
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "status": {
+                                    "description": "Task status. \"completed\" marks the task done and stamps the completion time; \"needsAction\" reopens it. Omit or pass null to reset it to \"needsAction\".",
+                                    "anyOf": [
+                                        {
+                                            "type": "string",
+                                            "enum": ["needsAction", "completed"]
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "due": {
+                                    "description": "Due date as an RFC 3339 timestamp. Only the date is stored, the time is discarded. Omit or pass null to clear the due date. Example: \"2026-12-31T00:00:00.000Z\"",
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            },
+                            "required": ["tasklist", "task", "title"],
+                            "additionalProperties": false,
+                            "description": "Input for replacing a task with a full PUT request. Every writable field you omit is cleared."
+                        },
+                        "ActionOutput_google_tasks_updatetask": {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                    "description": "Resource type; always \"tasks#task\".",
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "Task identifier. Task ids are globally unique and survive a move to another task list. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
+                                },
+                                "etag": {
+                                    "description": "ETag of the task resource; changes whenever the task is modified.",
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "description": "Title of the task.",
+                                    "type": "string"
+                                },
+                                "updated": {
+                                    "description": "Last modification time of the task as an RFC 3339 timestamp. Example: \"2026-10-15T16:24:29.043Z\"",
+                                    "type": "string"
+                                },
+                                "selfLink": {
+                                    "description": "URL that points to this task.",
+                                    "type": "string"
+                                },
+                                "parent": {
+                                    "description": "Identifier of the parent task; omitted for top-level tasks.",
+                                    "type": "string"
+                                },
+                                "position": {
+                                    "description": "Lexicographic position of the task among its siblings.",
+                                    "type": "string"
+                                },
+                                "notes": {
+                                    "description": "Free-form notes attached to the task.",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "description": "Task status, either \"needsAction\" or \"completed\".",
+                                    "type": "string"
+                                },
+                                "due": {
+                                    "description": "Due date as an RFC 3339 timestamp; only the date portion is stored. Example: \"2026-12-31T00:00:00.000Z\"",
+                                    "type": "string"
+                                },
+                                "completed": {
+                                    "description": "Completion time as an RFC 3339 timestamp; present only once the task is completed.",
+                                    "type": "string"
+                                },
+                                "deleted": {
+                                    "description": "True when the task has been deleted; deleted tasks are returned as tombstones rather than 404.",
+                                    "type": "boolean"
+                                },
+                                "hidden": {
+                                    "description": "True when the task is hidden because it was completed before its list was last cleared.",
+                                    "type": "boolean"
+                                },
+                                "links": {
+                                    "description": "Read-only collection of links attached to the task.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "description": "Type of the link, for example \"email\", \"generic\", \"chat_message\", or \"keep_note\".",
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "description": "Description of the link; may be an empty string.",
+                                                "type": "string"
+                                            },
+                                            "link": {
+                                                "description": "The URL of the link.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "description": "A read-only link attached to a task."
+                                    }
+                                },
+                                "webViewLink": {
+                                    "description": "Absolute link to the task in the Google Tasks web UI.",
+                                    "type": "string"
+                                },
+                                "assignmentInfo": {
+                                    "description": "Context for tasks assigned from surfaces such as Docs or Chat Spaces.",
+                                    "type": "object",
+                                    "properties": {
+                                        "linkToTask": {
+                                            "description": "Absolute link to the original task in the surface it was assigned from.",
+                                            "type": "string"
+                                        },
+                                        "surfaceType": {
+                                            "description": "Type of surface the assigned task originates from, for example \"DOCUMENT\" or \"SPACE\".",
+                                            "type": "string"
+                                        },
+                                        "driveResourceInfo": {
+                                            "description": "Information about the Drive file the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "driveFileId": {
+                                                    "description": "Identifier of the originating file in the Drive API.",
+                                                    "type": "string"
+                                                },
+                                                "resourceKey": {
+                                                    "description": "Resource key required to access files shared via a shared link.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "spaceInfo": {
+                                            "description": "Information about the Chat space the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "space": {
+                                                    "description": "The Chat space the task originates from, formatted as \"spaces/{space}\".",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "The task as returned by Google Tasks after the full replacement."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Rename a task list. The title is the only writable task list field, so this full PUT update only changes the title.",
+                "endpoint": null,
+                "input": "ActionInput_google_tasks_updatetasklist",
+                "name": "update-tasklist",
+                "output": ["ActionOutput_google_tasks_updatetasklist"],
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "usedModels": ["ActionInput_google_tasks_updatetasklist", "ActionOutput_google_tasks_updatetasklist"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_tasks_updatetasklist": {
+                            "type": "object",
+                            "properties": {
+                                "tasklist": {
+                                    "type": "string",
+                                    "description": "Task list identifier to rename, or \"@default\" for the primary list. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
+                                },
+                                "title": {
+                                    "type": "string",
+                                    "description": "New title for the task list. Maximum length: 1024 characters. Example: \"Groceries\""
+                                }
+                            },
+                            "required": ["tasklist", "title"],
+                            "additionalProperties": false,
+                            "description": "Input for renaming a task list."
+                        },
+                        "ActionOutput_google_tasks_updatetasklist": {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                    "description": "Resource type; always \"tasks#taskList\".",
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "Task list identifier. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
+                                },
+                                "etag": {
+                                    "description": "ETag of the task list; changes whenever the list is modified.",
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "description": "Title of the task list. Example: \"My Tasks\"",
+                                    "type": "string"
+                                },
+                                "updated": {
+                                    "description": "Last modification time of the task list as an RFC 3339 timestamp. Example: \"2025-11-11T21:17:21.284Z\"",
+                                    "type": "string"
+                                },
+                                "selfLink": {
+                                    "description": "URL that points to this task list.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "The updated task list returned by the provider."
+                        }
+                    }
+                },
+                "features": []
+            }
+        ],
+        "syncs": [
+            {
+                "type": "sync",
+                "description": "Sync metadata (title, updated timestamp) for every task list in the account.",
+                "auto_start": true,
+                "endpoints": [],
+                "input": null,
+                "name": "task-lists",
+                "output": ["TaskList"],
+                "runs": "every hour",
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "sync_type": "full",
+                "track_deletes": false,
+                "usedModels": ["TaskList"],
+                "version": "1.0.0",
+                "webhookSubscriptions": [],
+                "json_schema": {
+                    "definitions": {
+                        "TaskList": {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                    "description": "Resource type; always \"tasks#taskList\".",
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "Task list identifier. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
+                                },
+                                "etag": {
+                                    "description": "ETag of the task list; changes whenever the list is modified.",
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "description": "Title of the task list. Example: \"My Tasks\"",
+                                    "type": "string"
+                                },
+                                "updated": {
+                                    "description": "Last modification time of the task list as an RFC 3339 timestamp. Example: \"2025-11-11T21:17:21.284Z\"",
+                                    "type": "string"
+                                },
+                                "selfLink": {
+                                    "description": "URL that points to this task list.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "A Google Tasks task list."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "sync",
+                "description": "Sync every task across every task list in the account, incrementally, including completed, hidden, and assigned tasks; deleted tasks and tasks of deleted lists are removed.",
+                "auto_start": true,
+                "endpoints": [],
+                "input": null,
+                "name": "tasks",
+                "output": ["Task"],
+                "runs": "every hour",
+                "scopes": ["https://www.googleapis.com/auth/tasks"],
+                "sync_type": "full",
+                "track_deletes": false,
+                "usedModels": ["Task"],
+                "version": "1.0.0",
+                "webhookSubscriptions": [],
+                "json_schema": {
+                    "definitions": {
+                        "Task": {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                    "description": "Resource type; always \"tasks#task\".",
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "Task identifier. Task ids are globally unique and survive a move to another task list. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
+                                },
+                                "etag": {
+                                    "description": "ETag of the task resource; changes whenever the task is modified.",
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "description": "Title of the task.",
+                                    "type": "string"
+                                },
+                                "updated": {
+                                    "type": "string",
+                                    "description": "Last modification time of the task in RFC 3339 format, used as the incremental watermark."
+                                },
+                                "selfLink": {
+                                    "description": "URL that points to this task.",
+                                    "type": "string"
+                                },
+                                "parent": {
+                                    "description": "Identifier of the parent task; omitted for top-level tasks.",
+                                    "type": "string"
+                                },
+                                "position": {
+                                    "description": "Lexicographic position of the task among its siblings.",
+                                    "type": "string"
+                                },
+                                "notes": {
+                                    "description": "Free-form notes attached to the task.",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "description": "Task status, either \"needsAction\" or \"completed\".",
+                                    "type": "string"
+                                },
+                                "due": {
+                                    "description": "Due date as an RFC 3339 timestamp; only the date portion is stored. Example: \"2026-12-31T00:00:00.000Z\"",
+                                    "type": "string"
+                                },
+                                "completed": {
+                                    "description": "Completion time as an RFC 3339 timestamp; present only once the task is completed.",
+                                    "type": "string"
+                                },
+                                "hidden": {
+                                    "description": "True when the task is hidden because it was completed before its list was last cleared.",
+                                    "type": "boolean"
+                                },
+                                "links": {
+                                    "description": "Read-only collection of links attached to the task.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "description": "Type of the link, for example \"email\", \"generic\", \"chat_message\", or \"keep_note\".",
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "description": "Description of the link; may be an empty string.",
+                                                "type": "string"
+                                            },
+                                            "link": {
+                                                "description": "The URL of the link.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "description": "A read-only link attached to a task."
+                                    }
+                                },
+                                "webViewLink": {
+                                    "description": "Absolute link to the task in the Google Tasks web UI.",
+                                    "type": "string"
+                                },
+                                "assignmentInfo": {
+                                    "description": "Context for tasks assigned from surfaces such as Docs or Chat Spaces.",
+                                    "type": "object",
+                                    "properties": {
+                                        "linkToTask": {
+                                            "description": "Absolute link to the original task in the surface it was assigned from.",
+                                            "type": "string"
+                                        },
+                                        "surfaceType": {
+                                            "description": "Type of surface the assigned task originates from, for example \"DOCUMENT\" or \"SPACE\".",
+                                            "type": "string"
+                                        },
+                                        "driveResourceInfo": {
+                                            "description": "Information about the Drive file the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "driveFileId": {
+                                                    "description": "Identifier of the originating file in the Drive API.",
+                                                    "type": "string"
+                                                },
+                                                "resourceKey": {
+                                                    "description": "Resource key required to access files shared via a shared link.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "spaceInfo": {
+                                            "description": "Information about the Chat space the task originates from.",
+                                            "type": "object",
+                                            "properties": {
+                                                "space": {
+                                                    "description": "The Chat space the task originates from, formatted as \"spaces/{space}\".",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
+                                "tasklistId": {
+                                    "type": "string",
+                                    "description": "Id of the task list that currently contains the task. Updated in place when the task is moved to another list."
+                                }
+                            },
+                            "required": ["id", "updated", "tasklistId"],
+                            "additionalProperties": false,
+                            "description": "A single Google Task. The record id is the Google task id, which is globally unique and survives moves between task lists."
+                        }
+                    }
+                },
+                "features": ["checkpoints"]
             }
         ],
         "onEventScripts": {

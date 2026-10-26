@@ -31,7 +31,8 @@ import type {
     DBUser,
     PersistAuthContext,
     Result,
-    SignupAcquisition
+    SignupAcquisition,
+    SignupAdvertising
 } from '@nangohq/types';
 
 const hashLocalCache = new FixedSizeMap<string, string>(10_000);
@@ -260,11 +261,11 @@ class AccountService {
         return account[0].uuid;
     }
 
-    async getOrCreateAccount(name: string, acquisition?: SignupAcquisition): Promise<DBTeam | null> {
+    async getOrCreateAccount(name: string, acquisition?: SignupAcquisition, advertising?: SignupAdvertising): Promise<DBTeam | null> {
         const account = await db.knex.select('*').from<DBTeam>(`_nango_accounts`).where({ name });
 
         if (account == null || account.length == 0 || !account[0]) {
-            return await this.createAccount({ name, acquisition });
+            return await this.createAccount({ name, acquisition, advertising });
         }
 
         return account[0];
@@ -279,13 +280,15 @@ class AccountService {
         email,
         foundUs = '',
         isSignup = true,
-        acquisition
+        acquisition,
+        advertising
     }: {
         name: string;
         email?: string | undefined;
         foundUs?: string | undefined;
         isSignup?: boolean;
         acquisition?: SignupAcquisition | undefined;
+        advertising?: SignupAdvertising | undefined;
     }): Promise<DBTeam | null> {
         const account = await db.knex.transaction(async (trx) => {
             const emailTeamName = emailToTeamName({ email });
@@ -319,7 +322,11 @@ class AccountService {
 
         // After the transaction, so a rolled-back account is never counted.
         if (account && isSignup) {
-            productTracking.track({ name: 'auth:account_create', team: account, ...(acquisition ? { eventProperties: { ...acquisition } } : {}) });
+            productTracking.track({
+                name: 'auth:account_create',
+                team: account,
+                ...(acquisition || advertising ? { eventProperties: { ...acquisition, ...advertising } } : {})
+            });
             if (acquisition) {
                 productTracking.identifyAccountGroup(account.id, acquisition);
             }
