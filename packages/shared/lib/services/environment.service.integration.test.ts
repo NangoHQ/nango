@@ -156,6 +156,34 @@ describe('Environment service', () => {
         await expect(externalWebhookService.get(created.environment.id)).resolves.toStrictEqual(created.webhooks);
     });
 
+    it('should ignore invalid fields in supplied webhook settings', async () => {
+        const account = await createAccount();
+        const existing = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
+        const webhooks = {
+            primary_url: 'https://example.com/webhook',
+            on_sync_error: false,
+            id: -1,
+            environment_id: existing.environment.id,
+            created_at: new Date('2000-01-01'),
+            updated_at: new Date('2000-01-01'),
+            unexpected_column: 'ignored'
+        };
+
+        const created = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid(), webhooks })).unwrap();
+
+        expect(created.webhooks).toMatchObject({
+            environment_id: created.environment.id,
+            primary_url: webhooks.primary_url,
+            on_sync_error: false
+        });
+        expect(created.webhooks.id).not.toBe(webhooks.id);
+        expect(created.webhooks.created_at).not.toEqual(webhooks.created_at);
+        expect(created.webhooks.updated_at).not.toEqual(webhooks.updated_at);
+        expect(created.webhooks).not.toHaveProperty('unexpected_column');
+        await expect(externalWebhookService.get(existing.environment.id)).resolves.toStrictEqual(existing.webhooks);
+        await expect(externalWebhookService.get(created.environment.id)).resolves.toStrictEqual(created.webhooks);
+    });
+
     it('should preserve defaults for unset webhook settings', async () => {
         const account = await createAccount();
         const created = (
