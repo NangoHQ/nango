@@ -1956,6 +1956,32 @@ appstle-subscriptions:
             example: lBfFAdbxUxyv6jYRgOmrEVNkijCKD10T
             pattern: ^[a-zA-Z0-9]+$
 
+arcsite:
+    display_name: ArcSite
+    categories:
+        - design
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.arcsite.com/
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/projects?per_page=1
+    docs: https://nango.dev/docs/api-integrations/arcsite
+    docs_connect: https://nango.dev/docs/api-integrations/arcsite/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your ArcSite API token
+            secret: true
+            example: 8CeN****************_A
+            pattern: '^[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-create-an-api-token'
+
 asana:
     display_name: Asana
     categories:
