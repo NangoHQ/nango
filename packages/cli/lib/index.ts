@@ -647,7 +647,7 @@ program
     .argument('<integration>', 'Integration name')
     .argument('<name>', 'Function name')
     .option('-c, --catalog', 'Pull from the public catalog')
-    .option('-e, --env <environment>', 'Pull from a deployed function in this environment')
+    .option('-e, --env <environment>', 'Environment to pull from')
     .option('-s, --sync', 'Disambiguate to a sync when multiple functions share the name')
     .option('-a, --action', 'Disambiguate to an action when multiple functions share the name')
     .option('--on-event', 'Disambiguate to an on-event script when multiple functions share the name')
@@ -666,15 +666,6 @@ program
         const precheck = await verificationService.ensureZeroYaml({ fullPath, debug });
         if (!precheck) return;
 
-        if (opts.catalog && opts.env) {
-            console.error(chalk.red('Specify only one of --catalog or --env <environment>.'));
-            console.error(chalk.gray('Examples:'));
-            console.error(chalk.gray('  nango pull github list-repos --catalog'));
-            console.error(chalk.gray('  nango pull github list-repos --env dev'));
-            process.exitCode = 1;
-            return;
-        }
-
         const typeFlags = [opts.sync && 'sync', opts.action && 'action', opts.onEvent && 'on-event'].filter(Boolean) as ScriptTypeLiteral[];
         if (typeFlags.length > 1) {
             console.error(chalk.red('Specify at most one of --sync, --action, --on-event.'));
@@ -683,8 +674,21 @@ program
         }
         const type = typeFlags[0];
 
-        const baseOptions = {
+        let environmentName: string;
+        try {
+            environmentName = await new Ensure(interactive).environment(opts.env, debug);
+        } catch (err: any) {
+            console.error(chalk.red(err.message));
+            if (err instanceof MissingArgumentError) {
+                this.outputHelp();
+            }
+            process.exitCode = 1;
+            return;
+        }
+
+        const pullOptions = {
             fullPath,
+            environmentName,
             integrationId: integration,
             name,
             type,
@@ -694,23 +698,7 @@ program
             interactive
         };
 
-        let success: boolean;
-        if (opts.catalog) {
-            success = await pullFromCatalog(baseOptions);
-        } else {
-            let environmentName: string;
-            try {
-                environmentName = await new Ensure(interactive).environment(opts.env, debug);
-            } catch (err: any) {
-                console.error(chalk.red(err.message));
-                if (err instanceof MissingArgumentError) {
-                    this.outputHelp();
-                }
-                process.exitCode = 1;
-                return;
-            }
-            success = await pullFunction({ ...baseOptions, environmentName });
-        }
+        const success = opts.catalog ? await pullFromCatalog(pullOptions) : await pullFunction(pullOptions);
 
         if (!success) {
             process.exitCode = 1;
