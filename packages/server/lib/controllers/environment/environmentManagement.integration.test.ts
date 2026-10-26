@@ -11,6 +11,7 @@ import {
     seeders,
     updatePlan
 } from '@nangohq/shared';
+import { Err } from '@nangohq/utils';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
@@ -353,7 +354,7 @@ describe('Public environment management', () => {
         it('should return a generic error when environment creation fails', async () => {
             const { account } = await seedAccount();
             const key = await createAccountKey(account.id, ['account:environments:create']);
-            vi.spyOn(externalWebhookService, 'update').mockRejectedValueOnce(new Error('sensitive database error'));
+            vi.spyOn(externalWebhookService, 'upsert').mockResolvedValueOnce(Err(new Error('sensitive database error')));
 
             const res = await api.fetch('/environments', { method: 'POST', token: key.secret, body: { name: 'failed-creation' } });
 
