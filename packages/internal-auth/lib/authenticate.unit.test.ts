@@ -2,10 +2,10 @@ import { sign } from 'node:crypto';
 
 import { describe, expect, it } from 'vitest';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, INTERNAL_SERVICE_AUDIENCE_RUNNER } from './constants.js';
-import { deriveRunnerEd25519PrivateKey, exportRunnerPublicKey } from './ed25519.js';
-import { createInternalServiceToken, createRunnerDispatchToken, verifyRunnerDispatchToken } from './token.js';
-import { verifyInternalServiceCredential } from './verify.js';
+import { verifyInternalServiceCredential } from './authenticate.js';
+import { createRunnerDispatchToken, deriveRunnerEd25519PrivateKey, exportRunnerPublicKey, verifyRunnerDispatchToken } from './legacy/ed25519.js';
+import { createInternalServiceToken } from './legacy/token.js';
+import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, INTERNAL_SERVICE_AUDIENCE_RUNNER } from './nango/principals.js';
 
 const signingKey = 'test-signing-key';
 

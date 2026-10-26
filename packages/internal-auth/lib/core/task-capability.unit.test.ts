@@ -2,6 +2,10 @@ import express from 'express';
 import { importPKCS8, SignJWT } from 'jose';
 import { describe, expect, it } from 'vitest';
 
+import { internalServiceAuthMiddleware } from '../express/middleware.js';
+import { hasScope, isResourceBound, requireScope, requireTaskBoundAuth } from '../express/requires.js';
+import { createRunnerDispatchToken, exportRunnerPublicKey } from '../legacy/ed25519.js';
+import { createInternalServiceToken } from '../legacy/token.js';
 import {
     INTERNAL_SERVICE_AUDIENCE_JOBS,
     INTERNAL_SERVICE_AUDIENCE_PERSIST,
@@ -10,19 +14,17 @@ import {
     INTERNAL_SERVICE_ISSUER_JOBS,
     INTERNAL_SERVICE_ISSUER_SERVER,
     nodeSubject,
-    TASK_CAPABILITY_SCOPES,
-    taskScopesForScriptType,
     taskSubject
-} from './constants.js';
-import { exportRunnerPublicKey } from './ed25519.js';
-import { keyRegistryFromPublicKeys, mint, verify, verifyTaskCapabilityToken } from './jwt.js';
-import { hasScope, internalServiceAuthMiddleware, isResourceBound, requireTaskBoundAuth, requireTaskScope } from './middleware.js';
-import { ed25519TestMaterial, mintTaskCapabilityToken } from './testing.js';
-import { createInternalServiceToken, createRunnerDispatchToken } from './token.js';
+} from '../nango/principals.js';
+import { TASK_CAPABILITY_SCOPES, taskScopesForScriptType } from '../nango/scopes.js';
+import { ed25519TestMaterial, mintTaskCapabilityToken } from '../testing.js';
+import { mint } from './mint.js';
+import { keyRegistryFromPublicKeys } from './registry.js';
+import { verify, verifyTaskCapabilityToken } from './verify.js';
 
-import type { TaskCapabilityResource } from './constants.js';
-import type { InternalAuthEnvs } from './credential.js';
-import type { KeyRegistry } from './jwt.js';
+import type { InternalAuthEnvs } from '../nango/env.js';
+import type { TaskCapabilityResource } from '../nango/principals.js';
+import type { KeyRegistry } from './registry.js';
 
 const KID = 'jobs-2026-09';
 const TASK_ID = '11111111-1111-4111-8111-111111111111';
@@ -214,10 +216,10 @@ const envs: InternalAuthEnvs = { NANGO_INTERNAL_AUTH_REQUIRED: true };
 function scopedJobsApp() {
     const server = express();
     server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_JOBS, envs }));
-    server.put('/tasks/:taskId', requireTaskBoundAuth(envs), requireTaskScope(envs, 'jobs:putTask'), (_req, res) => {
+    server.put('/tasks/:taskId', requireTaskBoundAuth(envs), requireScope(envs, 'jobs:putTask'), (_req, res) => {
         res.status(204).end();
     });
-    server.post('/tasks/:taskId/heartbeat', requireTaskBoundAuth(envs), requireTaskScope(envs, 'jobs:heartbeat'), (_req, res) => {
+    server.post('/tasks/:taskId/heartbeat', requireTaskBoundAuth(envs), requireScope(envs, 'jobs:heartbeat'), (_req, res) => {
         res.status(201).end();
     });
     return server;
@@ -226,7 +228,7 @@ function scopedJobsApp() {
 function scopeOnlyApp() {
     const server = express();
     server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_JOBS, envs }));
-    server.put('/tasks/:taskId', requireTaskScope(envs, 'jobs:putTask'), (_req, res) => {
+    server.put('/tasks/:taskId', requireScope(envs, 'jobs:putTask'), (_req, res) => {
         res.status(204).end();
     });
     return server;
@@ -248,7 +250,7 @@ async function listen(server: ReturnType<typeof express>) {
     });
 }
 
-describe('requireTaskScope', () => {
+describe('requireScope', () => {
     it('always accepts an HMAC task token, and accepts a scope-less Ed25519 task JWT until PR 5', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
@@ -356,7 +358,7 @@ describe('requireTaskScope', () => {
         }
         const server = express();
         server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_RUNNER, envs }));
-        server.put('/tasks/:taskId', requireTaskBoundAuth(envs), requireTaskScope(envs, 'jobs:putTask'), (_req, res) => {
+        server.put('/tasks/:taskId', requireTaskBoundAuth(envs), requireScope(envs, 'jobs:putTask'), (_req, res) => {
             res.status(204).end();
         });
         const { url, close } = await listen(server);

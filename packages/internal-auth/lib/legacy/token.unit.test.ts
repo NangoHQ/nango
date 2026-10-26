@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_RUNNER, INTERNAL_SERVICE_TOKEN_ISSUER } from './constants.js';
+import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_RUNNER, INTERNAL_SERVICE_TOKEN_ISSUER } from '../nango/principals.js';
 import { createInternalServiceToken, isJwtShape, verifyInternalServiceToken } from './token.js';
 
 const signingKey = 'test-signing-key';

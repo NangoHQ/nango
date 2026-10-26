@@ -1,6 +1,6 @@
 import { createRouteFetch } from '@nangohq/utils';
 
-import { getInternalAuthBearerHeaderIfPresent } from './credential.js';
+import { getInternalAuthBearerHeaderIfPresent } from './nango/env.js';
 
 import type { Endpoint } from '@nangohq/types';
 import type { Route } from '@nangohq/utils';

@@ -1,11 +1,12 @@
 import { stringTimingSafeEqual } from '@nangohq/utils';
 
-import { trimOrNull } from './credential.js';
-import { verify as verifyUnifiedToken } from './jwt.js';
-import { jwtHeaderAlg, verifyInternalServiceToken, verifyRunnerDispatchToken } from './token.js';
+import { verify as verifyUnifiedToken } from './core/verify.js';
+import { verifyRunnerDispatchToken } from './legacy/ed25519.js';
+import { jwtHeaderAlg, verifyInternalServiceToken } from './legacy/token.js';
+import { trimOrNull } from './nango/env.js';
 
-import type { InternalServiceAuth } from './constants.js';
-import type { KeyRegistry } from './jwt.js';
+import type { KeyRegistry } from './core/registry.js';
+import type { InternalServiceAuth } from './nango/principals.js';
 
 export interface InternalServiceCredentials {
     signingKey?: string | undefined;
