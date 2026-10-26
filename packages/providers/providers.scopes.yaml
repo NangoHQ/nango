@@ -119,6 +119,9 @@ adp-workforce-now-next-gen: []
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 adyen: []
 
+# source: https://www.aha.io/api/oauth2 (Aha! OAuth2 has no scopes)
+aha: []
+
 # source: https://id.aimfox.com/realms/aimfox-prod/.well-known/openid-configuration (scopes_supported)
 aimfox-oauth:
     - acr
