@@ -3,7 +3,7 @@ import { importPKCS8, SignJWT } from 'jose';
 import { describe, expect, it } from 'vitest';
 
 import { internalServiceAuthMiddleware } from '../express/middleware.js';
-import { hasScope, isResourceBound, requireScope, requireTaskBoundAuth } from '../express/requires.js';
+import { hasScope, isResourceBound, requireBinding, requireScope, routeParam } from '../express/requires.js';
 import { createRunnerDispatchToken, exportRunnerPublicKey } from '../legacy/ed25519.js';
 import { createInternalServiceToken } from '../legacy/token.js';
 import { mint } from '../nango/mint.js';
@@ -216,12 +216,22 @@ const envs: InternalAuthEnvs = { NANGO_INTERNAL_AUTH_REQUIRED: true };
 function scopedJobsApp() {
     const server = express();
     server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_JOBS, envs }));
-    server.put('/tasks/:taskId', requireTaskBoundAuth(envs), requireScope(envs, 'jobs:putTask'), (_req, res) => {
-        res.status(204).end();
-    });
-    server.post('/tasks/:taskId/heartbeat', requireTaskBoundAuth(envs), requireScope(envs, 'jobs:heartbeat'), (_req, res) => {
-        res.status(201).end();
-    });
+    server.put(
+        '/tasks/:taskId',
+        requireBinding(envs, 'taskId', (req) => routeParam(req, 'taskId')),
+        requireScope(envs, 'jobs:putTask'),
+        (_req, res) => {
+            res.status(204).end();
+        }
+    );
+    server.post(
+        '/tasks/:taskId/heartbeat',
+        requireBinding(envs, 'taskId', (req) => routeParam(req, 'taskId')),
+        requireScope(envs, 'jobs:heartbeat'),
+        (_req, res) => {
+            res.status(201).end();
+        }
+    );
     return server;
 }
 
@@ -365,7 +375,7 @@ describe('requireScope', () => {
         }
     });
 
-    it('accepts an eddsa task token after requireTaskBoundAuth', async () => {
+    it('accepts an eddsa task token when the task id matches', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const signingKey = 'sign';
         const publicKey = exportRunnerPublicKey(signingKey);
@@ -379,9 +389,14 @@ describe('requireScope', () => {
         }
         const server = express();
         server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_RUNNER, envs }));
-        server.put('/tasks/:taskId', requireTaskBoundAuth(envs), requireScope(envs, 'jobs:putTask'), (_req, res) => {
-            res.status(204).end();
-        });
+        server.put(
+            '/tasks/:taskId',
+            requireBinding(envs, 'taskId', (req) => routeParam(req, 'taskId')),
+            requireScope(envs, 'jobs:putTask'),
+            (_req, res) => {
+                res.status(204).end();
+            }
+        );
         const { url, close } = await listen(server);
         try {
             const res = await fetch(`${url}/tasks/${TASK_ID}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });

@@ -12,7 +12,7 @@ function unauthorized(res: Response): void {
     res.status(401).json({ error: { code: 'unauthorized', message: 'Unauthorized' } });
 }
 
-function routeParam(req: Request, name: string): string | undefined {
+export function routeParam(req: Request, name: string): string | undefined {
     const value = req.params[name];
     return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
@@ -47,26 +47,11 @@ export function bindingsFrom(auth: InternalServiceAuth | undefined): Partial<Rec
     return bindings;
 }
 
-function isTaskCredential(auth: InternalServiceAuth | undefined): boolean {
-    if (!auth) {
-        return false;
-    }
-    if ((auth.kind === 'hmac' || auth.kind === 'eddsa') && auth.op === 'task' && Boolean(auth.taskId)) {
-        return true;
-    }
-    return isJobsTaskJwt(auth);
-}
-
-/**
- * The request value must equal the binding. A missing binding is 401, except `{ allowAbsent: true }`
- * on a task credential that has no `res` (HMAC, legacy EdDSA, and scope-less task JWTs) until that
- * fallback is removed. A request with no credential still fails.
- */
+/** The request value must equal the binding. A missing binding is 401. */
 export function requireBinding(
     envs: InternalAuthEnvs,
     key: BindingKey,
-    read: (req: Request) => string | number | undefined,
-    opts?: { allowAbsent?: boolean }
+    read: (req: Request) => string | number | undefined
 ): (req: Request, res: Response, next: NextFunction) => void {
     return (req, res, next) => {
         if (!envs.NANGO_INTERNAL_AUTH_REQUIRED) {
@@ -76,10 +61,6 @@ export function requireBinding(
         const auth = getInternalServiceAuth(res);
         const expected = bindingsFrom(auth)[key];
         if (expected === undefined) {
-            if (opts?.allowAbsent && isTaskCredential(auth)) {
-                next();
-                return;
-            }
             unauthorized(res);
             return;
         }
@@ -104,16 +85,6 @@ export function isNodeBoundAuth(auth: InternalServiceAuth | undefined, nodeId: s
         return false;
     }
     return bindingsFrom(auth).nodeId === nodeId;
-}
-
-/** When REQUIRED, the matched route's `:taskId` must equal the signed task. */
-export function requireTaskBoundAuth(envs: InternalAuthEnvs): (req: Request, res: Response, next: NextFunction) => void {
-    return requireBinding(envs, 'taskId', (req) => routeParam(req, 'taskId'));
-}
-
-/** When REQUIRED, the matched route's `:nodeId` must equal the signed node. */
-export function requireFleetAuth(envs: InternalAuthEnvs): (req: Request, res: Response, next: NextFunction) => void {
-    return requireBinding(envs, 'nodeId', (req) => routeParam(req, 'nodeId'));
 }
 
 function isJobsTaskJwt(auth: InternalServiceAuth | undefined): auth is InternalServiceAuth {

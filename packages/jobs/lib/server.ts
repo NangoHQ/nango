@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, internalServiceAuthMiddleware, requireBinding } from '@nangohq/internal-auth';
+import { INTERNAL_SERVICE_AUDIENCE_JOBS, internalServiceAuthMiddleware, requireBinding, routeParam } from '@nangohq/internal-auth';
 import { serverRequestSizeLimit } from '@nangohq/nango-orchestrator';
 import { createRoute } from '@nangohq/utils';
 
@@ -15,11 +15,6 @@ import type { ResDefaultErrors } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 export const server = express();
-
-function routeParam(req: Request, name: string): string | undefined {
-    const value = req.params[name];
-    return typeof value === 'string' && value.length > 0 ? value : undefined;
-}
 
 createRoute(server, getHealthHandler);
 server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_JOBS, envs }));
