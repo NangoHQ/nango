@@ -9941,6 +9941,43 @@ freshservice-mcp:
             pattern: '^[A-Za-z0-9_]+$'
             doc_section: '#step-1-finding-your-freshservice-api-key'
 
+freshservice-oauth:
+    alias: freshworks
+    display_name: Freshservice (OAuth)
+    categories:
+        - support
+    authorization_url: https://${connectionConfig.orgSubdomain}.myfreshworks.com/org/oauth/v2/authorize
+    token_url: https://${connectionConfig.orgSubdomain}.myfreshworks.com/org/oauth/v2/token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshservice.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/freshservice-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/freshservice-oauth/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/freshservice-oauth/how-to-register-your-own-freshservice-oauth-app
+    connection_config:
+        orgSubdomain:
+            type: string
+            title: Freshworks organization subdomain
+            description: The subdomain of your Freshworks organization URL.
+            pattern: '^[a-z0-9-]+$'
+            example: acme
+            prefix: https://
+            suffix: .myfreshworks.com
+            doc_section: '#step-1-find-your-freshworks-organization-subdomain'
+            order: 1
+        subdomain:
+            type: string
+            title: Freshservice subdomain
+            description: The subdomain of your Freshservice account.
+            pattern: '^[a-z0-9_-]+$'
+            example: acme
+            prefix: https://
+            suffix: .freshservice.com
+            doc_section: '#step-2-find-your-freshservice-subdomain'
+            order: 2
+
 freshteam:
     display_name: Freshteam
     categories:

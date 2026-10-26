@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1059
+Provider count: 1060
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -352,6 +352,7 @@ URL patterns:
 | `freshsales` | Freshsales | API_KEY | [docs](https://nango.dev/docs/api-integrations/freshsales.md) | [connect](https://nango.dev/docs/api-integrations/freshsales/connect.md) |  | crm |
 | `freshservice` | Freshservice | BASIC | [docs](https://nango.dev/docs/integrations/all/freshservice.md) | [connect](https://nango.dev/docs/integrations/all/freshservice/connect.md) |  | support |
 | `freshservice-mcp` | Freshservice (MCP) | API_KEY | [docs](https://nango.dev/docs/api-integrations/freshservice-mcp.md) | [connect](https://nango.dev/docs/api-integrations/freshservice-mcp/connect.md) |  | support, mcp |
+| `freshservice-oauth` | Freshservice (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/freshservice-oauth.md) | [connect](https://nango.dev/docs/api-integrations/freshservice-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/freshservice-oauth/how-to-register-your-own-freshservice-oauth-app.md) | support |
 | `freshteam` | Freshteam | API_KEY | [docs](https://nango.dev/docs/integrations/all/freshteam.md) | [connect](https://nango.dev/docs/integrations/all/freshteam/connect.md) |  | hr, ats |
 | `freshworks` | Freshworks | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/freshworks.md) | [connect](https://nango.dev/docs/api-integrations/freshworks/connect.md) | [setup](https://nango.dev/docs/api-integrations/freshworks/how-to-register-your-own-freshworks-api-oauth-app.md) | crm, support |
 | `front` | Front | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/front.md) |  |  | support, ticketing |
