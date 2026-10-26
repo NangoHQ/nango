@@ -18261,6 +18261,55 @@ okta-cc:
             example: okta.users.read okta.users.manage okta.groups.read
             doc_section: '#step-4-grant-api-scopes-to-your-application'
 
+okta-oin-api-service:
+    display_name: Okta (OIN API service)
+    categories:
+        - dev-tools
+        - iam
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/oauth2/v1/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        retry:
+            at:
+                - 'x-rate-limit-reset'
+        paginate:
+            type: 'link'
+            limit_name_in_request: 'limit'
+            link_rel_in_response_header: 'next'
+    docs: https://nango.dev/docs/api-integrations/okta-oin-api-service
+    docs_connect: https://nango.dev/docs/api-integrations/okta-oin-api-service/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID issued when installing your OIN API service integration
+            doc_section: '#step-2-copy-the-installation-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret shown once when installing your OIN API service integration
+            secret: true
+            doc_section: '#step-2-copy-the-installation-credentials'
+    connection_config:
+        hostname:
+            type: string
+            title: Okta Domain
+            description: The full hostname of the Okta org where your OIN API service integration is installed
+            format: hostname
+            prefix: https://
+            example: dev-12345678.okta.com
+            doc_section: '#step-2-copy-the-installation-credentials'
+        oauth_scopes:
+            type: string
+            title: Scopes
+            description: Space-separated list of Okta Management API scopes authorized when installing your OIN API service integration
+            example: okta.users.read
+            doc_section: '#step-1-install-the-api-service-integration'
+
 okta-preview:
     alias: okta
     display_name: Okta (Preview)
