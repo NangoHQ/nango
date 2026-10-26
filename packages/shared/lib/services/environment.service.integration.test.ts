@@ -191,13 +191,11 @@ describe('Environment service', () => {
             return stage === 'signing key' ? Err(expectedFailure) : created;
         });
 
-        const updateWebhooks = externalWebhookService.update;
-        const webhookSpy = vi.spyOn(externalWebhookService, 'update').mockImplementationOnce(async (trx, options) => {
-            const updated = await updateWebhooks(trx, options);
-            if (stage === 'webhook configuration') {
-                throw expectedFailure;
-            }
-            return updated;
+        const upsertWebhooks = externalWebhookService.upsert;
+        const webhookSpy = vi.spyOn(externalWebhookService, 'upsert').mockImplementationOnce(async (trx, options) => {
+            const updated = await upsertWebhooks(trx, options);
+            expect(updated.isOk()).toBe(true);
+            return stage === 'webhook configuration' ? Err(expectedFailure) : updated;
         });
 
         const result = await environmentService.createEnvironment(db.knex, { accountId: account.id, name, webhookSigningKey });
@@ -228,6 +226,13 @@ describe('Environment service', () => {
         await expect(db.knex('customer_keys').where({ account_id: account.id })).resolves.toEqual([]);
         await expect(db.knex('customer_keys_relations').where({ entity_type: 'environment', entity_id: environmentId })).resolves.toEqual([]);
         await expect(db.knex('_nango_external_webhooks').where({ environment_id: environmentId })).resolves.toEqual([]);
+    });
+
+    it('should return an error when a webhook upsert fails in the database', async () => {
+        const result = await externalWebhookService.upsert(db.knex, { environment_id: -1, data: { primary_url: 'https://example.com/webhook' } });
+
+        expect(result.isErr()).toBe(true);
+        await expect(externalWebhookService.get(-1)).resolves.toBeNull();
     });
 
     it('should reject creating environment named prod as a non-production environment', async () => {

@@ -71,7 +71,7 @@ export const patchWebhook = asyncWrapperWithEnvironment<PatchWebhook>(async (req
         return;
     }
 
-    const updated = await externalWebhookService.update(db.knex, { environment_id: environment.id, data: data });
+    const updated = await externalWebhookService.upsert(db.knex, { environment_id: environment.id, data: data });
     if (updated.isErr()) {
         tracer.scope().active()?.setTag('error', updated.error);
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to update webhook configuration' } });

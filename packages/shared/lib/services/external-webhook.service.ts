@@ -11,7 +11,7 @@ export async function get(id: number): Promise<DBExternalWebhook | null> {
     return result || null;
 }
 
-export async function update(
+export async function upsert(
     trx: Knex,
     {
         environment_id,

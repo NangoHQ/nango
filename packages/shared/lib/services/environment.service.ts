@@ -263,7 +263,7 @@ class EnvironmentService {
                     throw createdWebhookKey.error;
                 }
 
-                const webhookSettings = await externalWebhookService.update(innerTrx, {
+                const webhookSettings = await externalWebhookService.upsert(innerTrx, {
                     environment_id: env.id,
                     data: {
                         on_auth_creation: true,
