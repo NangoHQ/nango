@@ -19,7 +19,7 @@ vi.mock('../../hooks/useGettingStarted', () => ({
     useGettingStarted: () => ({ data: mocks.data, error: mocks.error, refetch: vi.fn(), isLoading: false }),
     patchGettingStarted: vi.fn()
 }));
-vi.mock('./FirstStep', () => ({ FirstStep: () => null }));
+vi.mock('./FirstStep', () => ({ FirstStep: () => <p>first step</p> }));
 vi.mock('./SecondStep', () => ({ SecondStep: () => null }));
 vi.mock('./ThirdStep', () => ({ ThirdStep: () => null }));
 vi.mock('../../hooks/useToast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
@@ -78,7 +78,7 @@ describe('GettingStarted', () => {
         const router = await render();
 
         expect(router.state.location.pathname).toBe('/dev/getting-started');
-        expect(container.textContent).toContain('Try connecting Nango with Github');
+        expect(container.textContent).toContain('first step');
         expect(container.textContent).not.toContain('An error occurred');
     });
 });
