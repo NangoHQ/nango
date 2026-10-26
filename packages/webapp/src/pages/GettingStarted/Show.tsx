@@ -3,8 +3,8 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
-import { SlackIcon } from '@/assets/SlackIcon';
-import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
+import { SlackIcon } from '../../assets/SlackIcon';
+import { ErrorPageComponent } from '../../components/patterns/ErrorComponent';
 import { patchGettingStarted, useGettingStarted } from '../../hooks/useGettingStarted';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';

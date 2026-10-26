@@ -22,6 +22,8 @@ vi.mock('../../hooks/useGettingStarted', () => ({
 vi.mock('./FirstStep', () => ({ FirstStep: () => <p>first step</p> }));
 vi.mock('./SecondStep', () => ({ SecondStep: () => null }));
 vi.mock('./ThirdStep', () => ({ ThirdStep: () => null }));
+vi.mock('../../assets/SlackIcon', () => ({ SlackIcon: () => null }));
+vi.mock('../PageNotFound', () => ({ default: () => null }));
 vi.mock('../../hooks/useToast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('../../store', () => ({ useStore: (selector: (state: Record<string, unknown>) => unknown) => selector({ env: 'dev' }) }));
 vi.mock('../../layout/DashboardLayout', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
