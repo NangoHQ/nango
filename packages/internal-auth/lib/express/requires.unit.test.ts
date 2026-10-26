@@ -8,10 +8,9 @@ import { mint } from '../nango/mint.js';
 import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_ISSUER_JOBS, nodeSubject, taskSubject } from '../nango/principals.js';
 import { taskScopesForScriptType } from '../nango/scopes.js';
 import { internalServiceAuthMiddleware } from './middleware.js';
-import { requireBinding } from './requires.js';
+import { requireBinding, routeParam } from './requires.js';
 
 import type { InternalAuthEnvs } from '../nango/env.js';
-import type { Request } from 'express';
 
 const TASK_ID = '11111111-1111-4111-8111-111111111111';
 
@@ -22,11 +21,6 @@ function ed25519Material(): { pem: string; raw: string } {
         .subarray(12)
         .toString('base64url');
     return { pem, raw };
-}
-
-function routeParam(req: Request, name: string): string | undefined {
-    const value = req.params[name];
-    return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
 function envsFor(raw: string): InternalAuthEnvs {
@@ -113,19 +107,18 @@ describe('requireBinding', () => {
         }
     });
 
-    it('skips an HMAC token when the binding is absent and rejects a capability token for a different environment', async () => {
+    it('rejects a capability token for a different environment', async () => {
         const { pem, raw } = ed25519Material();
         const envs = envsFor(raw);
         const server = express();
         server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_JOBS, envs }));
         server.get(
             '/environment/:environmentId',
-            requireBinding(envs, 'environmentId', (req) => routeParam(req, 'environmentId'), { allowAbsent: true }),
+            requireBinding(envs, 'environmentId', (req) => routeParam(req, 'environmentId')),
             (_req, res) => {
                 res.status(204).end();
             }
         );
-        const hmac = createInternalServiceToken({ taskId: TASK_ID, expiresInSecs: 60 }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
         const jwt = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
             {
@@ -138,10 +131,8 @@ describe('requireBinding', () => {
         );
         const { url, close } = await listen(server);
         try {
-            const hmacRes = await fetch(`${url}/environment/9`, { headers: { Authorization: `Bearer ${hmac}` } });
             const mismatch = await fetch(`${url}/environment/9`, { headers: { Authorization: `Bearer ${jwt}` } });
             const match = await fetch(`${url}/environment/4`, { headers: { Authorization: `Bearer ${jwt}` } });
-            expect(hmacRes.status).toBe(204);
             expect(mismatch.status).toBe(401);
             expect(match.status).toBe(204);
         } finally {
@@ -174,25 +165,6 @@ describe('requireBinding', () => {
         const { url, close } = await listen(server);
         try {
             const res = await fetch(`${url}/environment/4`, { headers: { Authorization: `Bearer ${token}` } });
-            expect(res.status).toBe(401);
-        } finally {
-            await close();
-        }
-    });
-
-    it('rejects a request with no credential when allowAbsent is set', async () => {
-        const envs = envsFor('unused');
-        const server = express();
-        server.get(
-            '/environment/:environmentId',
-            requireBinding(envs, 'environmentId', (req) => routeParam(req, 'environmentId'), { allowAbsent: true }),
-            (_req, res) => {
-                res.status(204).end();
-            }
-        );
-        const { url, close } = await listen(server);
-        try {
-            const res = await fetch(`${url}/environment/4`);
             expect(res.status).toBe(401);
         } finally {
             await close();
