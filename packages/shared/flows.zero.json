@@ -653072,7 +653072,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["ContentMetadata"],
-                "version": "3.0.2",
+                "version": "3.0.3",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
