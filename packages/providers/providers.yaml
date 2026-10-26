@@ -18675,6 +18675,26 @@ optum-real:
             secret: true
             doc_section: '#step-2-get-your-credentials'
 
+oracle-aconex:
+    display_name: Oracle Aconex
+    categories:
+        - productivity
+        - storage
+    auth_mode: OAUTH2
+    authorization_url: https://constructionandengineering.oraclecloud.com/auth/authorize
+    token_url: https://constructionandengineering.oraclecloud.com/auth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.aconex.com
+    docs: https://nango.dev/docs/api-integrations/oracle-aconex
+    setup_guide_url: https://nango.dev/docs/api-integrations/oracle-aconex/how-to-register-your-own-oracle-aconex-oauth-app
+
 oracle-hcm:
     display_name: Oracle Fusion Cloud (HCM)
     categories:

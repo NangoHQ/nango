@@ -1696,6 +1696,7 @@
               "integrations/all/openai-admin",
               "api-integrations/openrouter",
               "api-integrations/optum-real",
+              "api-integrations/oracle-aconex",
               "api-integrations/oracle-cloud-identity",
               "integrations/all/oracle-hcm",
               "api-integrations/orange-logic",
