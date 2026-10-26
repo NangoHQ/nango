@@ -1,15 +1,16 @@
 import { generateKeyPairSync } from 'node:crypto';
 
+import { mint } from './core/mint.js';
 import {
     INTERNAL_SERVICE_AUDIENCE_JOBS,
     INTERNAL_SERVICE_AUDIENCE_PERSIST,
     INTERNAL_SERVICE_AUDIENCE_SERVER,
     INTERNAL_SERVICE_ISSUER_JOBS,
     taskSubject
-} from './constants.js';
-import { mint } from './jwt.js';
+} from './nango/principals.js';
 
-import type { TaskCapabilityResource, TaskCapabilityScope } from './constants.js';
+import type { TaskCapabilityResource } from './nango/principals.js';
+import type { TaskCapabilityScope } from './nango/scopes.js';
 
 export function ed25519TestMaterial(): { pem: string; raw: string } {
     const { publicKey, privateKey } = generateKeyPairSync('ed25519');

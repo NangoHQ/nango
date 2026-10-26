@@ -3,6 +3,8 @@ import { generateKeyPairSync } from 'node:crypto';
 import express from 'express';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { mint } from '../core/mint.js';
+import { createInternalServiceToken } from '../legacy/token.js';
 import {
     INTERNAL_SERVICE_AUDIENCE_JOBS,
     INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR,
@@ -10,12 +12,11 @@ import {
     INTERNAL_SERVICE_ISSUER_SERVER,
     nodeSubject,
     taskSubject
-} from './constants.js';
-import { mint } from './jwt.js';
-import { internalServiceAuthMiddleware, requireFleetAuth, requireTaskBoundAuth } from './middleware.js';
-import { createInternalServiceToken } from './token.js';
+} from '../nango/principals.js';
+import { internalServiceAuthMiddleware } from './middleware.js';
+import { requireFleetAuth, requireTaskBoundAuth } from './requires.js';
 
-import type { InternalAuthEnvs } from './credential.js';
+import type { InternalAuthEnvs } from '../nango/env.js';
 
 const envs: InternalAuthEnvs = {
     NANGO_INTERNAL_AUTH_REQUIRED: false
