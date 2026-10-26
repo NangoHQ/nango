@@ -1,4 +1,4 @@
-import { legacyFunctionService } from '@nangohq/shared';
+import { functionLookupService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import type { McpServerDiscovery } from './agentSessionMcpDiscovery.service.js';
@@ -60,7 +60,7 @@ export async function compileToolset({
     mcpServers?: Map<string, McpServerDiscovery> | undefined;
 }): Promise<Result<AgentSessionCompiledToolset, AgentSessionToolsetCompilationError>> {
     const named = namedIntegrations({ toolset, pinnedTools, connectedIntegrations });
-    const functions = await legacyFunctionService.findIntegrationFunctions({ environmentId, providerConfigKeys: named });
+    const functions = await functionLookupService.findIntegrationFunctions({ environmentId, providerConfigKeys: named });
 
     return compileToolsetFromFunctions({ toolset, pinnedTools, connectedIntegrations, functions, mcpServers });
 }

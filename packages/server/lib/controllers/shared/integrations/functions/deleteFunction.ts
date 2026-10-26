@@ -1,4 +1,4 @@
-import { configService, legacyFunctionService } from '@nangohq/shared';
+import { configService, functionLookupService } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
 import { startFunctionDeletion } from '../../../../tasks/startFunctionDeletion.js';
@@ -26,7 +26,7 @@ export async function handleDeleteIntegrationFunction({
         return;
     }
 
-    const fnResult = await legacyFunctionService.getFunction({
+    const fnResult = await functionLookupService.getFunction({
         environmentId: environment.id,
         providerConfigKey,
         name,
@@ -43,6 +43,10 @@ export async function handleDeleteIntegrationFunction({
     }
 
     const fn = fnResult.value;
+    if (fn.type === 'tool') {
+        res.status(400).send({ error: { code: 'invalid_request', message: 'Tool functions cannot be deleted through this endpoint' } });
+        return;
+    }
     if (fn.source === 'repo') {
         res.status(400).send({
             error: { code: 'function_managed_by_deploy', message: 'repo functions are deleted through `nango deploy`, not this endpoint' }

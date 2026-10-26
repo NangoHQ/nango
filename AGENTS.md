@@ -1,5 +1,5 @@
 Use `npm` as the project package manager.
-After running the initial `npm install` or `npm ci`, run `npm run prepare` to install Husky git hooks.
+Install a fresh clone or worktree with `npm ci`, not `npm install`: `npm install` into an empty `node_modules` rewrites `package-lock.json`. After that, run `npm run prepare` to install Husky git hooks.
 
 ## Linting & formatting
 
