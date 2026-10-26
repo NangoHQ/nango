@@ -66,7 +66,10 @@ describe.each([
         expect(success).toBe(true);
         expect(requestedUrl().pathname).toBe(endpoint);
         expect(fetchMock.mock.calls[0]![1]).toMatchObject({ headers: { authorization: 'Bearer secret-dev' } });
-        expect(writeSpy).toHaveBeenCalledWith('/project/github/actions/list-repos.ts', 'action code', 'utf-8');
+        expect(writeSpy.mock.calls).toEqual([
+            ['/project/github/actions/list-repos.ts', 'action code', 'utf-8'],
+            ['/project/index.ts', "\nimport './github/actions/list-repos.js';\n", 'utf-8']
+        ]);
     });
 
     it('passes the type to disambiguate', async () => {
