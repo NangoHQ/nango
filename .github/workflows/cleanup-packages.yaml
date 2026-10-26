@@ -1,0 +1,24 @@
+name: Clean up CI package versions
+
+on:
+    schedule:
+        - cron: '0 3 * * *'
+    workflow_dispatch:
+
+jobs:
+    delete-old-versions:
+        runs-on: ubuntu-latest
+        permissions:
+            packages: write
+        strategy:
+            fail-fast: false
+            matrix:
+                package: [cli, types, node, nango-yaml, providers, runner-sdk, frontend, egress]
+        steps:
+            - uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5.0.0
+              with:
+                  package-name: ${{ matrix.package }}
+                  package-type: npm
+                  delete-only-pre-release-versions: 'true'
+                  # About nine days of CI runs, each of which installs the version it just published
+                  min-versions-to-keep: 300
