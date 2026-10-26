@@ -51,7 +51,7 @@ export async function pullFromCatalog(options: PullOptions): Promise<boolean> {
         label: `catalog/${integrationId}/${name}`,
         endpoint: `/providers/${encodeURIComponent(integrationId)}/templates/${encodeURIComponent(name)}/code`,
         // Servers released before the catalog endpoint answer with a bare 404.
-        missingRouteError: { code: 'catalog_unavailable', message: 'The catalog is not available on this Nango instance' }
+        missingRouteMessage: "This Nango instance doesn't support pulling from the catalog"
     });
 }
 
@@ -59,10 +59,23 @@ async function pullCode(
     options: PullOptions & {
         label: string;
         endpoint: string;
-        missingRouteError?: { code: string; message: string };
+        missingRouteMessage?: string;
     }
 ): Promise<boolean> {
-    const { fullPath, environmentName, integrationId, name, type, debug, force, autoConfirm, interactive = true, label, endpoint, missingRouteError } = options;
+    const {
+        fullPath,
+        environmentName,
+        integrationId,
+        name,
+        type,
+        debug,
+        force,
+        autoConfirm,
+        interactive = true,
+        label,
+        endpoint,
+        missingRouteMessage
+    } = options;
 
     if (isUnsafeName(integrationId)) {
         console.log(chalk.red(`Invalid integration name: '${integrationId}'.`));
@@ -88,11 +101,18 @@ async function pullCode(
         const res = await cliFetch(url, { headers: { authorization: `Bearer ${process.env['NANGO_SECRET_KEY']}` } });
         const body = (await res.json().catch(() => null)) as { type: ScriptTypeLiteral; code: string } | { error: { code: string; message?: string } } | null;
 
-        if (!res.ok || !body || 'error' in body) {
-            const error = body && 'error' in body ? body.error : res.status === 404 && missingRouteError ? missingRouteError : { code: String(res.status) };
+        if (res.status === 404 && !body && missingRouteMessage) {
             spinner.fail(`Failed to pull '${name}'`);
-            console.log(chalk.red(`\n${error.message ?? 'Unknown error'} ${chalk.gray(`(${error.code})`)}`));
-            if (error.code === 'ambiguous_function') {
+            console.log(chalk.red(`\n${missingRouteMessage}`));
+            return false;
+        }
+
+        if (!res.ok || !body || 'error' in body) {
+            const errCode = body && 'error' in body ? body.error.code : String(res.status);
+            const errMessage = body && 'error' in body ? (body.error.message ?? 'Unknown error') : 'Unknown error';
+            spinner.fail(`Failed to pull '${name}'`);
+            console.log(chalk.red(`\n${errMessage} ${chalk.gray(`(${errCode})`)}`));
+            if (errCode === 'ambiguous_function') {
                 console.log(chalk.gray(`Re-run with --sync, --action, or --on-event to disambiguate.`));
             }
             return false;
