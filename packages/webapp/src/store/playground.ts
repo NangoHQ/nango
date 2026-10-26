@@ -3,7 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { LocalStorageKeys } from '../utils/local-storage';
 
-export type PlaygroundFunctionType = 'action' | 'sync' | null;
+export type PlaygroundFunctionType = 'action' | 'sync' | 'tool' | null;
 
 export interface PlaygroundResult {
     success: boolean;
