@@ -15019,6 +15019,21 @@ lovable-mcp:
         base_url: https://mcp.lovable.dev/
     docs: https://nango.dev/docs/api-integrations/lovable-mcp
 
+loyaltylion:
+    display_name: LoyaltyLion
+    categories:
+        - e-commerce
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://app.loyaltylion.com/oauth/authorize
+    token_url: https://app.loyaltylion.com/oauth/access-token
+    disable_pkce: true
+    scope_separator: ','
+    proxy:
+        base_url: https://api.loyaltylion.com
+    docs: https://nango.dev/docs/api-integrations/loyaltylion
+    setup_guide_url: https://nango.dev/docs/api-integrations/loyaltylion/how-to-register-your-own-loyaltylion-oauth-app
+
 lucid-scim:
     display_name: Lucid (SCIM)
     categories:
