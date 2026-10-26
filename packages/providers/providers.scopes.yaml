@@ -119,6 +119,9 @@ adp-workforce-now-next-gen: []
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 adyen: []
 
+# source: https://www.aha.io/api/oauth2 (Aha! OAuth2 has no scopes)
+aha: []
+
 # source: https://id.aimfox.com/realms/aimfox-prod/.well-known/openid-configuration (scopes_supported)
 aimfox-oauth:
     - acr
@@ -2997,6 +3000,176 @@ freshbooks:
     - user:time_entries:write
     - user:uploads:read
     - user:uploads:write
+
+# source: https://api.freshservice.com/
+freshservice-oauth:
+    - freshservice.agentgroups.manage
+    - freshservice.agentgroups.manage.itsm
+    - freshservice.agents.fields.view
+    - freshservice.agents.manage
+    - freshservice.agents.roles.view
+    - freshservice.alerts.delete
+    - freshservice.alerts.edit
+    - freshservice.alerts.view
+    - freshservice.announcements.create
+    - freshservice.announcements.delete
+    - freshservice.announcements.edit
+    - freshservice.announcements.view
+    - freshservice.asset_types.create
+    - freshservice.asset_types.delete
+    - freshservice.asset_types.edit
+    - freshservice.asset_types.view
+    - freshservice.assets.delete
+    - freshservice.assets.manage
+    - freshservice.assets.view
+    - freshservice.audit_log.view
+    - freshservice.business_hours.view
+    - freshservice.canned_responses.view
+    - freshservice.changes.create
+    - freshservice.changes.delete
+    - freshservice.changes.edit
+    - freshservice.changes.notes.create
+    - freshservice.changes.notes.delete
+    - freshservice.changes.notes.edit
+    - freshservice.changes.notes.view
+    - freshservice.changes.tasks.create
+    - freshservice.changes.tasks.delete
+    - freshservice.changes.tasks.edit
+    - freshservice.changes.tasks.view
+    - freshservice.changes.time_entries.create
+    - freshservice.changes.time_entries.delete
+    - freshservice.changes.time_entries.edit
+    - freshservice.changes.time_entries.view
+    - freshservice.changes.view
+    - freshservice.contract_types.view
+    - freshservice.contracts.create
+    - freshservice.contracts.edit
+    - freshservice.contracts.view
+    - freshservice.departments.delete
+    - freshservice.departments.fields.view
+    - freshservice.departments.manage
+    - freshservice.departments.view
+    - freshservice.journey_request.cancel
+    - freshservice.journey_request.create
+    - freshservice.journey_request.delete
+    - freshservice.journey_request.edit
+    - freshservice.journey_request.view
+    - freshservice.journey_requests.view
+    - freshservice.journeys.configs.fields.view
+    - freshservice.journeys.view
+    - freshservice.locations.create
+    - freshservice.locations.delete
+    - freshservice.locations.edit
+    - freshservice.locations.view
+    - freshservice.objects.manage
+    - freshservice.offboarding_requests.create
+    - freshservice.offboarding_requests.fields.view
+    - freshservice.offboarding_requests.view
+    - freshservice.onboarding_requests.create
+    - freshservice.onboarding_requests.fields.view
+    - freshservice.onboarding_requests.view
+    - freshservice.oncall.manage
+    - freshservice.oncall.override.manage
+    - freshservice.oncall.view
+    - freshservice.pir_template.manage
+    - freshservice.problems.create
+    - freshservice.problems.delete
+    - freshservice.problems.edit
+    - freshservice.problems.fields.view
+    - freshservice.problems.notes.create
+    - freshservice.problems.notes.delete
+    - freshservice.problems.notes.edit
+    - freshservice.problems.notes.view
+    - freshservice.problems.tasks.create
+    - freshservice.problems.tasks.delete
+    - freshservice.problems.tasks.edit
+    - freshservice.problems.tasks.view
+    - freshservice.problems.time_entries.create
+    - freshservice.problems.time_entries.delete
+    - freshservice.problems.time_entries.edit
+    - freshservice.problems.time_entries.view
+    - freshservice.problems.view
+    - freshservice.products.create
+    - freshservice.products.delete
+    - freshservice.products.update
+    - freshservice.products.view
+    - freshservice.projects.fields.view
+    - freshservice.projects.manage
+    - freshservice.projects.tasks.create
+    - freshservice.projects.tasks.delete
+    - freshservice.projects.tasks.edit
+    - freshservice.projects.view
+    - freshservice.purchase_orders.create
+    - freshservice.purchase_orders.delete
+    - freshservice.purchase_orders.edit
+    - freshservice.purchase_orders.view
+    - freshservice.releases.create
+    - freshservice.releases.delete
+    - freshservice.releases.edit
+    - freshservice.releases.notes.create
+    - freshservice.releases.notes.delete
+    - freshservice.releases.notes.edit
+    - freshservice.releases.notes.view
+    - freshservice.releases.tasks.create
+    - freshservice.releases.tasks.delete
+    - freshservice.releases.tasks.edit
+    - freshservice.releases.tasks.view
+    - freshservice.releases.time_entries.create
+    - freshservice.releases.time_entries.delete
+    - freshservice.releases.time_entries.edit
+    - freshservice.releases.time_entries.view
+    - freshservice.releases.view
+    - freshservice.requesters.create
+    - freshservice.requesters.delete
+    - freshservice.requesters.edit
+    - freshservice.requesters.fields.view
+    - freshservice.requesters.manage
+    - freshservice.requesters.view
+    - freshservice.service_catalog.edit
+    - freshservice.service_catalog.view
+    - freshservice.sla_policies.view
+    - freshservice.solutions.delete
+    - freshservice.solutions.manage
+    - freshservice.solutions.publish
+    - freshservice.solutions.view
+    - freshservice.statuspage.incidents.delete
+    - freshservice.statuspage.incidents.publish
+    - freshservice.statuspage.incidents.view
+    - freshservice.statuspage.maintenances.delete
+    - freshservice.statuspage.maintenances.publish
+    - freshservice.statuspage.maintenances.view
+    - freshservice.statuspage.subscribers.delete
+    - freshservice.statuspage.subscribers.manage
+    - freshservice.statuspage.subscribers.view
+    - freshservice.statuspage.view
+    - freshservice.tickets.conversations.create
+    - freshservice.tickets.conversations.delete
+    - freshservice.tickets.conversations.edit
+    - freshservice.tickets.conversations.view
+    - freshservice.tickets.create
+    - freshservice.tickets.delete
+    - freshservice.tickets.edit
+    - freshservice.tickets.fields.manage
+    - freshservice.tickets.tasks.create
+    - freshservice.tickets.tasks.delete
+    - freshservice.tickets.tasks.edit
+    - freshservice.tickets.tasks.view
+    - freshservice.tickets.time_entries.create
+    - freshservice.tickets.time_entries.delete
+    - freshservice.tickets.time_entries.edit
+    - freshservice.tickets.time_entries.view
+    - freshservice.tickets.view
+    - freshservice.users.manage
+    - freshservice.users.view
+    - freshservice.vendors.create
+    - freshservice.vendors.delete
+    - freshservice.vendors.edit
+    - freshservice.vendors.view
+    - freshservice.workspaces.create
+    - freshservice.workspaces.delete
+    - freshservice.workspaces.edit
+    - freshservice.workspaces.form.view
+    - freshservice.workspaces.view
 
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 front: []
@@ -9089,6 +9262,9 @@ onelogin:
     - params
     - phone
     - profile
+
+# source: https://help.aconex.com/apis/implement-smart-construction-platform-oauth/ (no scopes parameter — API access is governed by the authenticated user's Aconex project permissions)
+oracle-aconex: []
 
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 oracle-cloud-identity: []

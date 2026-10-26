@@ -1,4 +1,4 @@
-import { legacyFunctionService } from '@nangohq/shared';
+import { functionLookupService } from '@nangohq/shared';
 
 import { defineManagementMcpTool } from '../managementTool.js';
 import { listFunctionsServiceErrorToMcp } from './errors.js';
@@ -16,7 +16,7 @@ export const listFunctionsTool = defineManagementMcpTool<typeof listFunctionsArg
     requiredScopes: { every: ['environment:functions:list'] },
     audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, environment }) {
-        const result = await legacyFunctionService.listFunctions({
+        const result = await functionLookupService.listFunctions({
             environmentId: environment.id,
             providerConfigKey: args.integration_id,
             type: args.type,

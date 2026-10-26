@@ -3,7 +3,7 @@ import { AxiosError } from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Nango } from '@nangohq/node';
-import { ExecutionAbortedSDKError } from '@nangohq/runner-sdk';
+import { ExecutionAbortedSDKError, ExecutionInterruptedSDKError, ExecutionTimeoutSDKError } from '@nangohq/runner-sdk';
 import { ProxyRequest } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
@@ -1104,5 +1104,42 @@ describe('createFunctionFacade', () => {
             await expect(facade.batchSave([{ id: '1' }], 'SomeModel')).resolves.toBe(true);
             expect(persistClient.postRecords).toHaveBeenCalledOnce();
         });
+    });
+});
+
+describe('execution lifecycle', () => {
+    beforeEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    const buildSync = () => {
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        // killAfterMs is in the past, so the kill threshold is already exceeded
+        return new NangoSyncRunner({ ...nangoProps, lifecycle: { interruptAfterMs: -2, killAfterMs: -1 } }, { persistClient, locks });
+    };
+
+    it('throws a timeout error when past the kill threshold and no checkpoint was saved', async () => {
+        const nango = buildSync();
+        vi.spyOn(nango, 'getCheckpointRange').mockReturnValue(null);
+        await expect(nango.proxy({ endpoint: '/issues' })).rejects.toThrow(ExecutionTimeoutSDKError);
+    });
+
+    it('throws a timeout error when past the kill threshold and the checkpoint did not change', async () => {
+        const nango = buildSync();
+        vi.spyOn(nango, 'getCheckpointRange').mockReturnValue({ from: { cursor: 'a' }, to: { cursor: 'a' } });
+        await expect(nango.proxy({ endpoint: '/issues' })).rejects.toThrow(ExecutionTimeoutSDKError);
+    });
+
+    it('throws an interrupted error when past the kill threshold and the checkpoint moved forward', async () => {
+        const nango = buildSync();
+        vi.spyOn(nango, 'getCheckpointRange').mockReturnValue({ from: { cursor: 'a' }, to: { cursor: 'b' } });
+        await expect(nango.proxy({ endpoint: '/issues' })).rejects.toThrow(ExecutionInterruptedSDKError);
+    });
+
+    it('throws an interrupted error when the first checkpoint was saved', async () => {
+        const nango = buildSync();
+        vi.spyOn(nango, 'getCheckpointRange').mockReturnValue({ from: null, to: { cursor: 'a' } });
+        await expect(nango.proxy({ endpoint: '/issues' })).rejects.toThrow(ExecutionInterruptedSDKError);
     });
 });

@@ -58,6 +58,7 @@
         "cookie-parser": "1.4.7",
         "cors": "2.8.5",
         "dd-trace": "5.117.0",
+        "disposable-email-domains-js": "1.26.0",
         "dotenv": "16.5.0",
         "exponential-backoff": "3.1.1",
         "express": "5.1.0",
