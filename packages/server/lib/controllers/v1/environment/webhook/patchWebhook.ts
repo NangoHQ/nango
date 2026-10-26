@@ -1,3 +1,4 @@
+import tracer from 'dd-trace';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
@@ -70,7 +71,12 @@ export const patchWebhook = asyncWrapperWithEnvironment<PatchWebhook>(async (req
         return;
     }
 
-    await externalWebhookService.update(db.knex, { environment_id: environment.id, data: data });
+    const updated = await externalWebhookService.update(db.knex, { environment_id: environment.id, data: data });
+    if (updated.isErr()) {
+        tracer.scope().active()?.setTag('error', updated.error);
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to update webhook configuration' } });
+        return;
+    }
     productTracking.track({ name: 'environments:environment_update', eventProperties: { section: 'webhooks' } });
 
     res.status(200).send({ success: true });

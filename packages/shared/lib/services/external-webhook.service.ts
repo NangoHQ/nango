@@ -1,6 +1,8 @@
 import db from '@nangohq/database';
+import { Err, Ok } from '@nangohq/utils';
 
 import type { DBExternalWebhook } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
 export async function get(id: number): Promise<DBExternalWebhook | null> {
@@ -31,19 +33,23 @@ export async function update(
             >
         >;
     }
-): Promise<DBExternalWebhook> {
-    const [webhook] = await trx
-        .from<DBExternalWebhook>('_nango_external_webhooks')
-        .insert({
-            environment_id,
-            ...data
-        })
-        .onConflict('environment_id')
-        .merge()
-        .returning('*');
+): Promise<Result<DBExternalWebhook>> {
+    try {
+        const [webhook] = await trx
+            .from<DBExternalWebhook>('_nango_external_webhooks')
+            .insert({
+                environment_id,
+                ...data
+            })
+            .onConflict('environment_id')
+            .merge()
+            .returning('*');
 
-    if (!webhook) {
-        throw new Error('failed_to_upsert_external_webhook');
+        if (!webhook) {
+            return Err(new Error('failed_to_upsert_external_webhook'));
+        }
+        return Ok(webhook);
+    } catch (err) {
+        return Err(err);
     }
-    return webhook;
 }

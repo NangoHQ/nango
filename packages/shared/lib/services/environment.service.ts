@@ -274,8 +274,11 @@ class EnvironmentService {
                         ...webhooks
                     }
                 });
+                if (webhookSettings.isErr()) {
+                    throw webhookSettings.error;
+                }
 
-                return { environment: env, webhooks: webhookSettings, webhookSigningKey: createdWebhookKey.value.secret };
+                return { environment: env, webhooks: webhookSettings.value, webhookSigningKey: createdWebhookKey.value.secret };
             });
 
             await onNewEnvironment(trx, { accountId, environmentId: created.environment.id, isProduction: isProduction.value });
