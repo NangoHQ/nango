@@ -56,7 +56,7 @@ export interface MintClaims {
 
 const resourceIdError = 'task capability res requires a positive environmentId and connectionId';
 
-const taskCapabilityResourceSchema = z.object({
+export const taskCapabilityResourceSchema = z.object({
     environmentId: z.int().positive({ error: resourceIdError }),
     connectionId: z.int().positive({ error: resourceIdError }),
     syncId: z.string().min(1, { error: 'task capability res.syncId must be a non-empty string' }).optional()

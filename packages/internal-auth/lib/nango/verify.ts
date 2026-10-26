@@ -1,4 +1,5 @@
 import { verifyKidJwt } from '../core/verify.js';
+import { taskCapabilityResourceSchema } from './mint.js';
 import { INTERNAL_SERVICE_ISSUER_JOBS, INTERNAL_SERVICE_ISSUER_SERVER } from './principals.js';
 import { TASK_CAPABILITY_SCOPES } from './scopes.js';
 
@@ -75,28 +76,17 @@ function isTaskSubject(sub: string | undefined): sub is string {
     return typeof sub === 'string' && sub.startsWith('task:') && sub.length > 'task:'.length;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function isPositiveInt(value: unknown): value is number {
-    return typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
-}
-
 function readResource(value: unknown): TaskCapabilityResource | null | 'invalid' {
     if (value === undefined) {
         return null;
     }
-    if (!isRecord(value) || !isPositiveInt(value['environmentId']) || !isPositiveInt(value['connectionId'])) {
+    const parsed = taskCapabilityResourceSchema.safeParse(value);
+    if (!parsed.success) {
         return 'invalid';
     }
-    const syncId = value['syncId'];
-    if (syncId !== undefined && (typeof syncId !== 'string' || syncId.length === 0)) {
-        return 'invalid';
-    }
-    const res: TaskCapabilityResource = { environmentId: value['environmentId'], connectionId: value['connectionId'] };
-    if (typeof syncId === 'string') {
-        res.syncId = syncId;
+    const res: TaskCapabilityResource = { environmentId: parsed.data.environmentId, connectionId: parsed.data.connectionId };
+    if (parsed.data.syncId !== undefined) {
+        res.syncId = parsed.data.syncId;
     }
     return res;
 }
