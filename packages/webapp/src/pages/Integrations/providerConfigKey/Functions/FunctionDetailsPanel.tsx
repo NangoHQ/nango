@@ -11,7 +11,7 @@ import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from
 import { Spinner } from '@/components/ui/Spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { useDeleteIntegrationFunction, useGetIntegration } from '@/hooks/useIntegration';
+import { useDeleteIntegrationFunction } from '@/hooks/useIntegration';
 import { useGetIntegrationFunctionCode, useGetTemplateFunctionCode } from '@/hooks/useIntegrationFunctions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
@@ -52,8 +52,6 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
     const inputSchema = useMemo(() => getInputSchema(fn), [fn]);
     const outputSchemas = useMemo(() => getOutputSchemas(fn), [fn]);
     const listed = isListedFunction(fn);
-    const { data: integrationDetails } = useGetIntegration(env, integration.unique_key);
-    const repoProvider = integrationDetails?.data.symLinkTargetName ?? integration.provider;
     const {
         data: codeData,
         isPending: deployedCodePending,
@@ -70,14 +68,15 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
         isPending: templateCodePending,
         error: templateCodeError
     } = useGetTemplateFunctionCode({
-        provider: repoProvider,
+        env,
+        provider: integration.provider,
         name: fn.name,
         type: fn.type,
         enabled: !listed && activeTab === 'code'
     });
     const codePending = listed ? deployedCodePending : templateCodePending;
     const codeError = listed ? deployedCodeError : templateCodeError;
-    const code = listed ? codeData?.code : templateCode;
+    const code = listed ? codeData?.code : templateCode?.code;
 
     const onDelete = useCallback(async () => {
         try {
@@ -99,7 +98,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
         integration: integration.unique_key,
         name: fn.name,
         type: fn.type,
-        source: listed ? { env } : { catalog: true }
+        source: { env, catalog: !listed }
     });
     const canDelete = listed && fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn);
     const canUsePlayground = listed && fn.enabled && isSyncOrAction(fn);
