@@ -3731,6 +3731,7 @@ paths:
                 Create a new connect session to reconnect to a specific integration. The token is used like a standard connect session.
                 Only connections created with a connect session are compatible with this endpoint.
                 Use this method when a user needs to input new credentials or to manually refresh token.
+                The connection keeps its connection ID. When the user authorizes, the connection's tags are replaced by the ones built from `tags` and `end_user`. If that leaves no tags, for example when neither is passed or `tags` is `{}`, the connection keeps its existing tags.
             requestBody:
                 required: true
                 content:

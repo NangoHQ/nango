@@ -454,7 +454,7 @@ A result the server marks with `isError` reaches the agent unchanged. When the c
 
 - **Timeout:** a tool has 60 seconds to answer. The agent is told it may still have run, so it checks before calling again.
 - **Too large:** results are capped at 5 MB. The agent is told to narrow its input.
-- **Refused:** a `403` on one tool, for example a missing OAuth scope, fails that tool only. A `401`, or a `403` before any tool runs, means the connection needs reconnecting.
+- **Refused:** a `403` on one tool, for example a missing OAuth scope, fails that tool only. A `401`, or a `403` before any tool runs, means the connection needs reconnecting, see [reconnecting a connection](#reconnecting-a-connection).
 
 ## Meta tools
 
@@ -529,14 +529,19 @@ Lets the agent get the user to connect an integration that has none, instead of 
 
 The agent passes the link to the user, who authorizes it the same way as any [connect link](/guides/auth/share-connect-link), and the tools for that integration work for the rest of the session once the connection is created.
 
-For an integration that is already connected, the agent passes `reconnect` to get a [reconnect link](/reference/backend/http-api/connect/sessions/reconnect) instead, for example after the integration's scopes changed. The user authorizes the same connection again, so it keeps its connection ID and tags.
-
-```json
-{ "integration": "notion", "reconnect": true }
-```
-
 Nango tags the new connection with `nango/agent_session` so the session can find it. You can configure the tool to add your own tags, allowing the next session to use tag selectors to include the connection:
 
 ```json
 { "meta_tools": { "nango_create_connection": { "enabled": true, "tags": { "organization_id": "acme" } } } }
 ```
+
+#### Reconnecting a connection
+
+A connection can stop working mid-session: its credentials expired and can no longer be refreshed, or a tool needs a scope the connection was not granted. With `nango_create_connection` enabled, the agent can get the user to reconnect it without leaving the session. It needs no extra configuration.
+
+The user gets a [reconnect link](/guides/auth/auth-guide#build-reauthorization) and authorizes the session's existing connection again. A reconnect requests the integration's current scopes, so it fixes a missing scope the user declined the first time, or one you have since added to the integration. The session's tools then run on the new credentials.
+
+- **Same connection:** it keeps its connection ID and its tags. The tags configured on the tool are only added to new connections.
+- **Works for either kind of connection:** one the session resolved from the tenant when it was created, or one the agent created during the session.
+- **Nothing to reconnect:** if the integration has no connection yet, the user gets a link to create one instead.
+- **Deleted connection:** a deleted connection cannot be reconnected, so a new session is needed.
