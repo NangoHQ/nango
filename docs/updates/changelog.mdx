@@ -4,6 +4,19 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="Reconnect connections from agent sessions" description="October 26, 2026">
+  Agents can now get a broken connection fixed without leaving the session.
+
+  When a connection's credentials expire and can no longer be refreshed, or it is missing a scope, the user gets a reconnect link and authorizes the same connection again. The session keeps working on it, and the connection keeps its ID and tags. It is available whenever `nango_create_connection` is enabled.
+
+  See [reconnecting a connection](/guides/agent-sessions#reconnecting-a-connection).
+
+  [Reconnect sessions](/reference/backend/http-api/connect/sessions/reconnect) also no longer clear a connection's tags when the request passes neither `tags` nor `end_user`.
+
+  ![An agent asking the user to reconnect Linear after its credentials were rejected](/images/changelog/agent-session-reconnect.png)
+</Update>
+---
+
 <Update label="Agent Playground" description="October 20, 2026">
   Try an AI agent on your own integrations before writing any code.
 

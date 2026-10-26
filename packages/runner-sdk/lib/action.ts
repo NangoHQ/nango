@@ -1,3 +1,5 @@
+import { isDeepStrictEqual } from 'node:util';
+
 import { getProvider } from '@nangohq/providers';
 
 import { ActionError, ExecutionAbortedSDKError, ExecutionInterruptedSDKError, ExecutionTimeoutSDKError, UnknownProviderSDKError } from './errors.js';
@@ -9,6 +11,7 @@ import type { Nango } from '@nangohq/node';
 import type {
     ApiPublicAllAuthCredentials,
     ApiPublicConnectionFull,
+    CheckpointRange,
     EnvironmentVariable,
     GetPublicConnection,
     GetPublicIntegration,
@@ -161,8 +164,17 @@ export abstract class NangoActionBase<
         }
         // function exceeded its maximum execution time
         if (this.lifecycle?.killAfter && new Date() > this.lifecycle.killAfter) {
+            const range = this.getCheckpointRange();
+            if (range?.to && !isDeepStrictEqual(range.from, range.to)) {
+                throw new ExecutionInterruptedSDKError();
+            }
+
             throw new ExecutionTimeoutSDKError();
         }
+    }
+
+    protected getCheckpointRange(): CheckpointRange | null {
+        return null;
     }
 
     protected throwIfInterrupted(): void {
