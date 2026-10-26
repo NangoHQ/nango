@@ -498,7 +498,7 @@ export type GetPublicProviderTemplates = ApiEndpoint<{
 
 type ProviderTemplateCodeError =
     | ApiError<'unknown_function'>
-    | ApiError<'catalog_unavailable'>
+    | ApiError<'source_unavailable'>
     | ApiError<'ambiguous_function', undefined, { matches: { type: FunctionType; name: string }[] }>;
 
 export type GetPublicProviderTemplateCode = ApiEndpoint<{
