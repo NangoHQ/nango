@@ -168,6 +168,10 @@ Set one object store. On AWS, set `AWS_INTEGRATIONS_BUCKET_NAME`. On Google Clou
 This is the *minimum* set to get a production instance running. The sections below cover what each optional subsystem (logs, encryption, audit trail, Redis, hardening) additionally needs.
 </Tip>
 
+### Pre-built integrations
+
+Nango's pre-built integration catalog is not bundled with the image. To make its templates work on your instance, upload the catalog's compiled files to the same object store you configured above. See [Pre-built integrations for self-managed Nango instances](/guides/platform/self-hosting/install-integration-catalog) for the full instructions.
+
 ### Encryption key
 
 You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. It encrypts credentials in the control-plane database as well as data in the records cache. Without this key, credentials are stored unencrypted.
