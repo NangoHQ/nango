@@ -40,12 +40,12 @@ export type PostPublicTriggerAction = ApiEndpoint<{
     Success: any;
 }>;
 
-export type PostInternalTriggerFunction = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+export type PostInternalInvokeFunction = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'data-plane operation' };
     Method: 'POST';
-    Path: '/api/v1/trigger/function';
+    Path: '/api/v1/functions/invoke';
     Body: {
-        type: 'action' | 'sync';
+        type: 'action' | 'sync' | 'tool';
         function_name: string;
         provider_config_key: string;
         connection_id: string;

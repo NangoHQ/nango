@@ -77,6 +77,7 @@ import { patchFlowEnable } from './controllers/v1/flows/id/patchEnable.js';
 import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js';
 import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.js';
 import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.js';
+import { postInvokeFunction } from './controllers/v1/functions/postInvoke.js';
 import { getGettingStarted } from './controllers/v1/gettingStarted/getGettingStarted.js';
 import { patchGettingStarted } from './controllers/v1/gettingStarted/patchGettingStarted.js';
 import { getIntegrations } from './controllers/v1/integrations/getIntegrations.js';
@@ -130,7 +131,6 @@ import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
 import { patchTeamUser } from './controllers/v1/team/users/patchTeamUser.js';
-import { postTriggerFunction } from './controllers/v1/trigger/postTriggerFunction.js';
 import { getUser } from './controllers/v1/user/getUser.js';
 import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
@@ -397,7 +397,7 @@ web.route('/flows/:id/frequency').patch(webAuth, auditSyncFrequencyChanged, can(
 web.route('/flows/:id/download').get(webAuth, can('environment:functions:read'), getFlowDownload);
 web.route('/flow/:flowName').get(webAuth, can('environment:functions:read'), flowController.getFlow.bind(syncController));
 
-web.route('/trigger/function').post(webAuth, can('environment:syncs:execute'), postTriggerFunction);
+web.route('/functions/invoke').post(webAuth, can('environment:syncs:execute'), postInvokeFunction);
 
 // Getting Started
 web.route('/getting-started').get(webAuth, getGettingStarted);

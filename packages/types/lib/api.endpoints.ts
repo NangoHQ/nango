@@ -17,7 +17,7 @@ import type {
     PostSignup,
     PutResetPassword
 } from './account/api.js';
-import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, PostPublicTriggerAction } from './action/api.js';
+import type { GetAsyncActionResult, GetPublicV1, PostInternalInvokeFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
 import type { DeleteAgentSession, PostAgentSessions } from './agent/api.js';
 import type { GetAgentSessionMcp, PostAgentSessionMcp } from './agent/mcp.api.js';
@@ -361,7 +361,7 @@ export type PrivateApiEndpoints =
     | PutConnectUISettings
     | GetProviders
     | GetProvider
-    | PostInternalTriggerFunction
+    | PostInternalInvokeFunction
     | GetMFAStatus
     | PostMFAEnrollment
     | PostMFAActivation

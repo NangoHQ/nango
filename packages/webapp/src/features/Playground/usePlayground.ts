@@ -127,7 +127,7 @@ export function usePlayground(inputFields: InputField[]) {
                     setRunning(false);
                     return;
                 }
-                response = await apiFetch(`/api/v1/trigger/function?env=${env}`, {
+                response = await apiFetch(`/api/v1/functions/invoke?env=${env}`, {
                     method: 'POST',
                     signal: controller.signal,
                     body: JSON.stringify({
@@ -139,7 +139,7 @@ export function usePlayground(inputFields: InputField[]) {
                     })
                 });
             } else {
-                response = await apiFetch(`/api/v1/trigger/function?env=${env}`, {
+                response = await apiFetch(`/api/v1/functions/invoke?env=${env}`, {
                     method: 'POST',
                     signal: controller.signal,
                     body: JSON.stringify({
