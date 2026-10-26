@@ -53,6 +53,12 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
 
     const { email, password, name, token, foundUs, acquisition }: PostSignup['Body'] = val.data;
 
+    // Before the user lookup, so an unverified disposable signup can't get a fresh verification email.
+    if (!token && isDisposableEmail(email)) {
+        res.status(400).send({ error: { code: 'disposable_email', message: 'Please sign up with a permanent email address.' } });
+        return;
+    }
+
     const existingUser = await userService.getUserByEmail(email);
     if (existingUser) {
         if (!existingUser.email_verified) {
@@ -94,11 +100,6 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     } else {
         if (!envs.AUTH_ALLOW_SIGNUP) {
             res.status(403).send({ error: { code: 'forbidden', message: 'Signup is disabled.' } });
-            return;
-        }
-
-        if (isDisposableEmail(email)) {
-            res.status(400).send({ error: { code: 'disposable_email', message: 'Please sign up with a permanent email address.' } });
             return;
         }
 

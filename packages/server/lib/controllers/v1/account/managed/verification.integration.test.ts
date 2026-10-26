@@ -87,6 +87,23 @@ describe(`POST ${route}`, () => {
         expect(await userService.getUserByEmail(email)).toBeNull();
     });
 
+    it('should not create an account for a disposable email', async () => {
+        const email = `${nanoid()}@mailinator.com`;
+
+        workosMocks.authenticateWithCode.mockResolvedValue({
+            user: { email, firstName: 'Managed', lastName: 'User' },
+            organizationId: undefined
+        });
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, {
+            redirect: 'manual'
+        });
+
+        expect(callbackRes.status).toBe(302);
+        expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/signin?error=disposable_email');
+        expect(await userService.getUserByEmail(email)).toBeNull();
+    });
+
     it('should let an existing managed user resume OAuth consent', async () => {
         const { user } = await seeders.seedAccountEnvAndUser();
         const returnTo = '/oauth/consent/interaction-id/review';

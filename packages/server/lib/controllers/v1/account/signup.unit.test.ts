@@ -15,6 +15,7 @@ const {
     mockGetInvitation,
     mockGetPlan,
     mockGetAccountById,
+    mockCreateAccount,
     mockGetUserByEmail,
     mockPbkdf2,
     mockCreateUser,
@@ -26,6 +27,7 @@ const {
         mockGetInvitation: vi.fn(),
         mockGetPlan: vi.fn(),
         mockGetAccountById: vi.fn(),
+        mockCreateAccount: vi.fn(),
         mockGetUserByEmail: vi.fn(),
         mockPbkdf2: vi.fn(),
         mockCreateUser: vi.fn(),
@@ -41,7 +43,8 @@ vi.mock('@nangohq/database', () => ({
 vi.mock('@nangohq/shared', () => ({
     acceptInvitation: mockAcceptInvitation,
     accountService: {
-        getAccountById: mockGetAccountById
+        getAccountById: mockGetAccountById,
+        createAccount: mockCreateAccount
     },
     getInvitation: mockGetInvitation,
     getPlan: mockGetPlan,
@@ -228,6 +231,8 @@ describe('signup', () => {
         expect(status).toHaveBeenCalledWith(400);
         const payload = send.mock.calls[0]?.[0] as { error: { code: string } } | undefined;
         expect(payload?.error.code).toBe('disposable_email');
+        expect(mockGetUserByEmail).not.toHaveBeenCalled();
+        expect(mockCreateAccount).not.toHaveBeenCalled();
         expect(mockCreateUser).not.toHaveBeenCalled();
     });
 

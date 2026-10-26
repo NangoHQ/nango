@@ -5,6 +5,7 @@ import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 import { envs } from '../../../../env.js';
 import { identifyAccountMembership } from '../../../../services/accountAnalytics.service.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
+import { isDisposableEmail } from '../../../../utils/disposableEmail.js';
 import { signupAcquisitionSchema } from '../../../../utils/signupAcquisition.js';
 import { signupAdvertisingFromRequest } from '../../../../utils/signupAdvertising.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
@@ -215,6 +216,16 @@ export async function finalizeManagedAuthentication({
         } else {
             if (!envs.AUTH_ALLOW_SIGNUP) {
                 res.status(403).send({ error: { code: 'forbidden', message: 'Signup is disabled.' } });
+                return;
+            }
+
+            if (isDisposableEmail(authorizedUser.email)) {
+                clearManagedAuthEmailVerification(req);
+                req.audit = { ...req.audit, managedSignup: false };
+
+                const signinUrl = new URL('/signin', basePublicUrl);
+                signinUrl.searchParams.set('error', 'disposable_email');
+                respondWithSuccess(res, signinUrl.href, responseMode);
                 return;
             }
 
