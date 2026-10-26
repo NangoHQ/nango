@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isNonEnvPath, MAX_NEXT_LENGTH, safeNextPath, signinPathWithNext } from './routes.js';
+import { inAppPath, isNonEnvPath, MAX_NEXT_LENGTH, safeNextPath, signinPathWithNext } from './routes.js';
 
 describe('isNonEnvPath', () => {
     describe('direct non-env paths', () => {
@@ -81,6 +81,22 @@ describe('signinPathWithNext', () => {
 
     it('flags an expired session when there is no destination', () => {
         expect(signinPathWithNext(location('/'), { expired: true })).toBe('/signin?error=session_expired');
+    });
+});
+
+describe('inAppPath', () => {
+    it('keeps a dashboard path with its search and hash', () => {
+        expect(inAppPath('/dev/integrations')).toBe('/dev/integrations');
+        expect(inAppPath('/dev/logs?states=failed#top')).toBe('/dev/logs?states=failed#top');
+    });
+
+    it('rejects URLs that leave the dashboard', () => {
+        expect(inAppPath('https://evil.example/steal')).toBeUndefined();
+        expect(inAppPath('//evil.example/steal')).toBeUndefined();
+        expect(inAppPath('/\\evil.example/steal')).toBeUndefined();
+        expect(inAppPath('/\t/evil.example/steal')).toBeUndefined();
+        expect(inAppPath('/..//evil.example/steal')).toBeUndefined();
+        expect(inAppPath('javascript:alert(1)')).toBeUndefined();
     });
 });
 

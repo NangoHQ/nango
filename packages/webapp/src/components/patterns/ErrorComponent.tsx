@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/react';
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 
 import { Alert, AlertDescription } from '@nangohq/design-system';
@@ -8,7 +10,16 @@ import PageNotFound from '../../pages/PageNotFound';
 import type { ApiError } from '@nangohq/types';
 
 export const ErrorPageComponent: React.FC<{ title: string; error?: ApiError<string> }> = ({ title, error }) => {
-    if (error?.error.code === 'not_found') {
+    const code = error?.error.code;
+
+    useEffect(() => {
+        if (code === 'not_found') {
+            return;
+        }
+        Sentry.captureMessage('Error page shown', { tags: { error_page: title, code: code ?? 'unknown' } });
+    }, [title, code]);
+
+    if (code === 'not_found') {
         return <PageNotFound />;
     }
 

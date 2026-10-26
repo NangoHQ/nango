@@ -29,7 +29,7 @@ export function usePlayground(inputFields: InputField[]) {
     const setInputErrors = usePlaygroundStore((s) => s.setInputErrors);
     const setAbortActiveRun = usePlaygroundStore((s) => s.setAbortActiveRun);
 
-    // No unmount cleanup: a run outlives a tab switch, and an environment switch must still be able to cancel it.
+    // No unmount cleanup: a run outlives navigation, and an environment switch must still be able to cancel it.
     useEffect(() => {
         setAbortActiveRun(() => {
             activeRun.controller?.abort();

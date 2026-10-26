@@ -64,9 +64,9 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, isSync, inputFields, in
                             return (
                                 <div key={field.name} className="flex flex-col gap-1">
                                     <div className="flex items-center justify-between gap-3">
-                                        <span className="text-text-strong text-body-medium-medium">
+                                        <span className="text-text-strong text-body-medium-regular">
                                             {field.name}
-                                            {field.required && <span className="text-status-danger-text text-body-medium-medium">*</span>}
+                                            {field.required && <span className="text-status-danger-text text-body-medium-regular">*</span>}
                                         </span>
                                         <CatalogBadge variant="light">{field.type}</CatalogBadge>
                                     </div>
@@ -107,9 +107,9 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, isSync, inputFields, in
                 {inputFields.map((field) => (
                     <div key={field.name} className="flex flex-col gap-1">
                         <div className="flex items-center justify-between gap-3">
-                            <span className="text-text-strong text-body-medium-medium">
+                            <span className="text-text-strong text-body-medium-regular">
                                 {field.name}
-                                {field.required && <span className="text-status-danger-text text-body-medium-medium">*</span>}
+                                {field.required && <span className="text-status-danger-text text-body-medium-regular">*</span>}
                             </span>
                             <CatalogBadge variant="light">{field.type}</CatalogBadge>
                         </div>

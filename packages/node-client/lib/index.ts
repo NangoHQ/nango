@@ -34,7 +34,6 @@ import type {
     GetPublicProvider,
     GetPublicProviders,
     GetPublicProviderTemplates,
-    GetTool,
     NangoRecord,
     OAuth1Token,
     OpenAIFunction,
@@ -45,7 +44,8 @@ import type {
     PostPublicIntegration,
     PostPublicQuickstartIntegration,
     PostPublicTrigger,
-    PostSyncVariant
+    PostSyncVariant,
+    PostToolCall
 } from '@nangohq/types';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
@@ -324,17 +324,26 @@ export class Nango {
     }
 
     /**
-     * Retrieves a tool of an integration
-     * @param uniqueKey - The unique key of the integration
-     * @param name - The name of the tool
-     * @returns A promise that resolves with the tool
+     * Calls a tool of an integration with the provided input.
+     * @param connectionId - The connection ID to use for the tool call
+     * @param name - The name of the tool to call
+     * @param body - Contains the input to pass to the tool
+     * @param headers - Optional headers, such as 'provider-config-key'
+     * @returns A promise that resolves with the tool's output
      */
-    public async getTool({ uniqueKey, name }: GetTool['Params']): Promise<GetTool['Success']> {
-        const headers = { 'Content-Type': 'application/json' };
-
-        const url = new URL(`${this.serverUrl}/integrations/${uniqueKey}/tools/${name}`);
-
-        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
+    public async callTool(
+        { connectionId, name }: PostToolCall['Params'],
+        body: PostToolCall['Body'],
+        headers?: PostToolCall['Headers']
+    ): Promise<PostToolCall['Success']> {
+        const url = `${this.serverUrl}/connections/${encodeURIComponent(connectionId)}/tools/${encodeURIComponent(name)}/calls`;
+        const requestHeaders: CustomHeaders = { 'Content-Type': 'application/json' };
+        if (headers?.['provider-config-key'] !== undefined) {
+            requestHeaders['provider-config-key'] = headers['provider-config-key'];
+        }
+        const response = await this.http.post(url, body, {
+            headers: this.enrichHeaders(requestHeaders)
+        });
         return response.data;
     }
 
