@@ -13,9 +13,8 @@ describe('envSwitchPath', () => {
         expect(envSwitchPath('/dev/connections/github/abc', 'prod')).toBe('/prod/connections');
     });
 
-    it('redirects getting started to the env homepage outside dev', () => {
+    it('redirects getting started to the env homepage', () => {
         expect(envSwitchPath('/dev/getting-started', 'prod')).toBe('/prod');
-        expect(envSwitchPath('/prod/getting-started', 'dev')).toBe('/dev/getting-started');
     });
 
     it('stays on non-env pages', () => {

@@ -76,7 +76,7 @@ export const envSwitchPath = (pathname: string, selected: string): string | null
         return `/${selected}/connections`;
     }
 
-    if (pathSegments[1] === 'getting-started' && selected !== 'dev') {
+    if (pathSegments[1] === 'getting-started') {
         return `/${selected}`;
     }
 
