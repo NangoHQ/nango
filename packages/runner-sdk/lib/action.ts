@@ -173,7 +173,7 @@ export abstract class NangoActionBase<
         }
     }
 
-    public getCheckpointRange(): CheckpointRange | null {
+    protected getCheckpointRange(): CheckpointRange | null {
         return null;
     }
 
