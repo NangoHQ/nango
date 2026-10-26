@@ -496,6 +496,31 @@ export type GetPublicProviderTemplates = ApiEndpoint<{
     Success: ProviderTemplatesSuccess;
 }>;
 
+type ProviderTemplateCodeError =
+    | ApiError<'unknown_function'>
+    | ApiError<'catalog_unavailable'>
+    | ApiError<'ambiguous_function', undefined, { matches: { type: FunctionType; name: string }[] }>;
+
+export type GetPublicProviderTemplateCode = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/providers/:provider/templates/:name/code';
+    Params: { provider: string; name: string };
+    Querystring: { type?: FunctionType | undefined };
+    Success: { type: FunctionType; code: string };
+    Error: ProviderTemplateCodeError;
+}>;
+
+export type GetProviderTemplateCode = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/providers/:providerConfigKey/templates/:name/code';
+    Params: { providerConfigKey: string; name: string };
+    Querystring: { env: string; type?: FunctionType | undefined };
+    Success: { type: FunctionType; code: string };
+    Error: ProviderTemplateCodeError;
+}>;
+
 export type GetIntegrationTemplates = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
