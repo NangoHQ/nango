@@ -403769,6 +403769,336 @@
             },
             {
                 "type": "action",
+                "description": "Fetch a single slide (or other page type) by its object ID.",
+                "endpoint": null,
+                "input": "ActionInput_google_slides_getslide",
+                "name": "get-slide",
+                "output": ["ActionOutput_google_slides_getslide"],
+                "scopes": ["https://www.googleapis.com/auth/presentations"],
+                "usedModels": ["ActionInput_google_slides_getslide", "ActionOutput_google_slides_getslide"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_google_slides_getslide": {
+                            "type": "object",
+                            "properties": {
+                                "presentationId": {
+                                    "type": "string",
+                                    "description": "ID of the presentation that contains the page. Example: \"1AbCdEfGhIjKlMnOpQrStUvWxYz\""
+                                },
+                                "pageId": {
+                                    "type": "string",
+                                    "description": "Object ID of the page to fetch, such as a slide, layout, master, or notes page. Example: \"slide_1\""
+                                }
+                            },
+                            "required": ["presentationId", "pageId"],
+                            "additionalProperties": false,
+                            "description": "Identifies the presentation and the page to fetch from Google Slides."
+                        },
+                        "ActionOutput_google_slides_getslide": {
+                            "type": "object",
+                            "properties": {
+                                "objectId": {
+                                    "type": "string",
+                                    "description": "Unique object ID of the page."
+                                },
+                                "pageType": {
+                                    "description": "Page type, such as SLIDE, LAYOUT, MASTER, NOTES, or NOTES_MASTER; omitted for ordinary slides.",
+                                    "type": "string"
+                                },
+                                "revisionId": {
+                                    "description": "Revision ID of the presentation at the time the page was read.",
+                                    "type": "string"
+                                },
+                                "pageElements": {
+                                    "description": "Elements on the page; omitted entirely when the page has no elements.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "objectId": {
+                                                "type": "string",
+                                                "description": "Unique object ID of the page element."
+                                            },
+                                            "type": {
+                                                "description": "Element type, such as IMAGE, SHAPE, TABLE, or GROUP; omitted for some shape elements.",
+                                                "type": "string"
+                                            },
+                                            "size": {
+                                                "description": "Rendered size of the element.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "width": {
+                                                        "description": "Width of the page element.",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "magnitude": {
+                                                                "description": "Numeric value of the dimension.",
+                                                                "type": "number"
+                                                            },
+                                                            "unit": {
+                                                                "description": "Unit of the dimension, such as \"EMU\" or \"PT\".",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "height": {
+                                                        "description": "Height of the page element.",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "magnitude": {
+                                                                "description": "Numeric value of the dimension.",
+                                                                "type": "number"
+                                                            },
+                                                            "unit": {
+                                                                "description": "Unit of the dimension, such as \"EMU\" or \"PT\".",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            "transform": {
+                                                "description": "Placement and scaling of the element on the page.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "scaleX": {
+                                                        "description": "Horizontal scale factor of the element.",
+                                                        "type": "number"
+                                                    },
+                                                    "scaleY": {
+                                                        "description": "Vertical scale factor of the element.",
+                                                        "type": "number"
+                                                    },
+                                                    "shearX": {
+                                                        "description": "Horizontal shear factor of the element.",
+                                                        "type": "number"
+                                                    },
+                                                    "shearY": {
+                                                        "description": "Vertical shear factor of the element.",
+                                                        "type": "number"
+                                                    },
+                                                    "translateX": {
+                                                        "description": "Horizontal translation of the element in EMUs.",
+                                                        "type": "number"
+                                                    },
+                                                    "translateY": {
+                                                        "description": "Vertical translation of the element in EMUs.",
+                                                        "type": "number"
+                                                    },
+                                                    "unit": {
+                                                        "description": "Unit of the transform, typically \"EMU\".",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            "title": {
+                                                "description": "Accessible title of the element.",
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "description": "Accessible description of the element.",
+                                                "type": "string"
+                                            },
+                                            "shape": {
+                                                "description": "Shape data when the element is a shape or text box.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "shapeType": {
+                                                        "description": "Shape type, such as TEXT_BOX, RECTANGLE, or ELLIPSE.",
+                                                        "type": "string"
+                                                    },
+                                                    "text": {
+                                                        "description": "Text content of the shape, including paragraphs and text runs.",
+                                                        "type": "object",
+                                                        "propertyNames": {
+                                                            "type": "string"
+                                                        },
+                                                        "additionalProperties": {}
+                                                    },
+                                                    "placeholder": {
+                                                        "description": "Placeholder metadata when the shape is a placeholder.",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "description": "Placeholder type, such as TITLE, BODY, or CENTERED_TITLE.",
+                                                                "type": "string"
+                                                            },
+                                                            "index": {
+                                                                "description": "Index of the placeholder among placeholders of the same type.",
+                                                                "type": "number"
+                                                            },
+                                                            "parentObjectId": {
+                                                                "description": "Object ID of the layout or master placeholder this placeholder inherits from.",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "shapeProperties": {
+                                                        "description": "Fill, outline, shadow, and autofit properties of the shape.",
+                                                        "type": "object",
+                                                        "propertyNames": {
+                                                            "type": "string"
+                                                        },
+                                                        "additionalProperties": {}
+                                                    }
+                                                },
+                                                "additionalProperties": {}
+                                            },
+                                            "image": {
+                                                "description": "Image data when the element is an image.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "contentUrl": {
+                                                        "description": "Ephemeral URL where the stored image can be fetched.",
+                                                        "type": "string"
+                                                    },
+                                                    "sourceUrl": {
+                                                        "description": "Original image URL supplied when the image was inserted.",
+                                                        "type": "string"
+                                                    },
+                                                    "imageProperties": {
+                                                        "description": "Crop, transparency, and outline properties of the image.",
+                                                        "type": "object",
+                                                        "propertyNames": {
+                                                            "type": "string"
+                                                        },
+                                                        "additionalProperties": {}
+                                                    }
+                                                },
+                                                "additionalProperties": {}
+                                            },
+                                            "table": {
+                                                "description": "Table data when the element is a table.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "rows": {
+                                                        "description": "Number of rows in the table.",
+                                                        "type": "number"
+                                                    },
+                                                    "columns": {
+                                                        "description": "Number of columns in the table.",
+                                                        "type": "number"
+                                                    },
+                                                    "tableRows": {
+                                                        "description": "Rows and cells of the table, including their text and properties.",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "propertyNames": {
+                                                                "type": "string"
+                                                            },
+                                                            "additionalProperties": {}
+                                                        }
+                                                    }
+                                                },
+                                                "additionalProperties": {}
+                                            },
+                                            "line": {
+                                                "description": "Line data when the element is a line connector.",
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            },
+                                            "video": {
+                                                "description": "Video data when the element is a video embed.",
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            },
+                                            "wordArt": {
+                                                "description": "Word art data when the element is word art.",
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            },
+                                            "sheetsChart": {
+                                                "description": "Chart data when the element is an embedded Google Sheets chart.",
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            },
+                                            "linkedChart": {
+                                                "description": "Chart data when the element is a linked chart.",
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            },
+                                            "elementGroup": {
+                                                "description": "Group data when the element groups other page elements.",
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "required": ["objectId"],
+                                        "additionalProperties": {}
+                                    }
+                                },
+                                "pageProperties": {
+                                    "description": "Background fill and other page-level properties.",
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                },
+                                "slideProperties": {
+                                    "description": "Layout, master, notes page, and skipped state for slide pages.",
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                },
+                                "layoutProperties": {
+                                    "description": "Layout metadata for layout pages.",
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                },
+                                "notesProperties": {
+                                    "description": "Speaker notes metadata for notes pages.",
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                },
+                                "commentsViewMode": {
+                                    "description": "Whether comments are shown or hidden for the page.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["objectId"],
+                            "additionalProperties": {},
+                            "description": "A Google Slides page, which can be a slide, layout, master, notes page, or notes master."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
                 "description": "Combine two or more page elements on a slide into a single group.",
                 "endpoint": null,
                 "input": "ActionInput_google_slides_groupobjects",
