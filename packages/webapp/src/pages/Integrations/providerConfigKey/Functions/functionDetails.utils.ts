@@ -68,7 +68,7 @@ export function toFunctionDetails(fn: DetailsFunction, { env, integration }: { e
                       const output = displaySchema(schema?.definitions?.[name], schema);
                       return output ? [{ name, schema: output }] : [];
                   }),
-        pullCommand: buildPullCommand({ integration, name: fn.name, type: fn.type, source: listed ? { env } : { catalog: true } }),
+        pullCommand: buildPullCommand({ integration, name: fn.name, type: fn.type, source: listed ? { env } : { env, catalog: true } }),
         code: listed ? { kind: 'deployed', type: fn.type } : { kind: 'template', type: fn.type }
     };
 }
