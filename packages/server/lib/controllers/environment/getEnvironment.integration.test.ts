@@ -97,10 +97,12 @@ describe('GET /environments/:environmentUuid', () => {
                     otlp_settings: { endpoint: 'https://example.com/otlp', headers: { Authorization: 'private-token' } }
                 });
             // The endpoint expects a webhook configuration
-            await externalWebhookService.update(db.knex, {
-                environment_id: env.id,
-                data: { ...flags, primary_url: 'https://example.com/primary', secondary_url: 'https://example.com/secondary' }
-            });
+            (
+                await externalWebhookService.upsert(db.knex, {
+                    environment_id: env.id,
+                    data: { ...flags, primary_url: 'https://example.com/primary', secondary_url: 'https://example.com/secondary' }
+                })
+            ).unwrap();
             const res = await getEnvironment(env.uuid, key.secret, withSecrets ? { with_secrets: withSecrets } : {});
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
