@@ -141,14 +141,34 @@ describe('GET /environments/:environmentUuid', () => {
         expect(res.json.data.otlp_headers).toEqual([]);
     });
 
-    it('returns 500 when the environment webhook configuration is missing', async () => {
+    it.each([undefined, 'false', 'true'] as const)('returns defaults for missing webhook configuration with with_secrets=%s', async (withSecrets) => {
         const { env, key } = await setup(['account:*']);
         await db.knex('_nango_external_webhooks').where({ environment_id: env.id }).delete();
+        const signingKey = withSecrets === 'true' ? (await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, env.id)).unwrap() : undefined;
         const secretRead = vi.spyOn(customerKeyService, 'getUncachedWebhookSigningKeyForEnv');
-        const res = await getEnvironment(env.uuid, key.secret, { with_secrets: 'true' });
-        expect(res.res.status).toBe(500);
-        expect(res.json).toEqual({ error: { code: 'server_error', message: 'Failed to retrieve webhook configuration' } });
-        expect(secretRead).not.toHaveBeenCalled();
+
+        const res = await getEnvironment(env.uuid, key.secret, withSecrets === undefined ? {} : { with_secrets: withSecrets });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        expect(res.json.data.webhooks).toEqual({
+            primary_url: null,
+            secondary_url: null,
+            on_auth_creation: false,
+            on_auth_refresh_error: false,
+            on_sync_completion_always: false,
+            on_sync_error: false,
+            on_async_action_completion: false,
+            on_connection_deletion: false,
+            ...(signingKey !== undefined && { signing_key: signingKey })
+        });
+        if (withSecrets === 'true') {
+            expect(secretRead).toHaveBeenCalledWith(db.knex, env.id);
+        } else {
+            expect(secretRead).not.toHaveBeenCalled();
+            expect(res.json.data).not.toHaveProperty('otlp_headers');
+        }
+        await expect(externalWebhookService.get(env.id)).resolves.toBeNull();
     });
 
     it('returns 500 rather than silently omitting an unavailable signing key', async () => {

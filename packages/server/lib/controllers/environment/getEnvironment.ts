@@ -47,11 +47,6 @@ export const getPublicEnvironment = asyncWrapper<GetPublicEnvironment>(async (re
     span?.setTag('nango.accountId', account.id).setTag('nango.environmentId', environment.id);
 
     const webhooks = await externalWebhookService.get(environment.id);
-    if (!webhooks) {
-        span?.setTag('error', new Error('Missing environment webhook configuration'));
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to retrieve webhook configuration' } });
-        return;
-    }
 
     const data: GetPublicEnvironment['Success']['data'] = {
         id: environment.id,
@@ -61,7 +56,18 @@ export const getPublicEnvironment = asyncWrapper<GetPublicEnvironment>(async (re
         callback_url: environment.callback_url || getGlobalOAuthCallbackUrl(),
         slack_notifications: environment.slack_notifications,
         otlp_endpoint: environment.otlp_settings?.endpoint ?? null,
-        webhooks: omit(webhooks, ['id', 'environment_id', 'created_at', 'updated_at'])
+        webhooks: webhooks
+            ? omit(webhooks, ['id', 'environment_id', 'created_at', 'updated_at'])
+            : {
+                  primary_url: null,
+                  secondary_url: null,
+                  on_auth_creation: false,
+                  on_auth_refresh_error: false,
+                  on_sync_completion_always: false,
+                  on_sync_error: false,
+                  on_async_action_completion: false,
+                  on_connection_deletion: false
+              }
     };
 
     if (withSecrets) {
