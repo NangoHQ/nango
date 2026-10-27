@@ -30,6 +30,7 @@ import { Err, Ok } from '../utils/result.js';
 import { tsToJsPath } from '../zeroYaml/compile.js';
 import { parseIntegrationDefinitions } from '../zeroYaml/definitions.js';
 import { ReadableError } from '../zeroYaml/utils.js';
+import { installBotbuilderZodCompat } from './botbuilderZod.js';
 import { DiagnosticsMonitor, formatDiagnostics } from './diagnostics-monitor.service.js';
 import { ResponseCollector } from './response-collector.service.js';
 import { createFunctionCLI, NangoActionCLI, NangoSyncCLI } from './sdk.js';
@@ -92,6 +93,9 @@ async function loadDynamicModule(moduleName: string) {
     try {
         // Resolve module path from user's working directory
         const modulePath = require.resolve(moduleName, { paths: [process.cwd()] });
+        if (moduleName === 'botbuilder') {
+            installBotbuilderZodCompat(modulePath);
+        }
 
         // Convert to file URL for dynamic import()
         const moduleUrl = url.pathToFileURL(modulePath).href;
