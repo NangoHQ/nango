@@ -2,7 +2,8 @@ import { gunzipSync } from 'node:zlib';
 
 import { DeleteObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
-import { exec, HttpLocks, jobsClient, PersistClient } from '@nangohq/runner';
+import { exec, HttpLocks, jobsClient } from '@nangohq/runner';
+import { PersistClient } from '@nangohq/runner/persist';
 import { loadProviders } from '@nangohq/shared';
 import { ENVS, getLogger, parseEnvs } from '@nangohq/utils';
 

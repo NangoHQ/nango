@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { PersistClient } from '@nangohq/nango-runner';
+import { PersistClient } from '@nangohq/nango-runner/persist';
 import { accountService, secretService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 

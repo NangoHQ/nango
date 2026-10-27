@@ -5,6 +5,20 @@
     "type": "module",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./client": {
+            "types": "./dist/client.d.ts",
+            "default": "./dist/client.js"
+        },
+        "./persist": {
+            "types": "./dist/clients/persist.d.ts",
+            "default": "./dist/clients/persist.js"
+        }
+    },
     "private": true,
     "scripts": {
         "start": "node dist/app.js",
