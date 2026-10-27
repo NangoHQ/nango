@@ -733,6 +733,36 @@ agentcard:
             pattern: '^acs_[A-Za-z0-9_-]{48}$'
             doc_section: '#step-2-copy-your-client-id-and-client-secret'
 
+aha:
+    display_name: Aha!
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.aha.io/oauth/authorize
+    token_url: https://${connectionConfig.subdomain}.aha.io/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.aha.io
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/aha
+    docs_connect: https://nango.dev/docs/api-integrations/aha/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/aha/how-to-register-your-own-aha-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: Aha! Subdomain
+            description: The subdomain of your Aha! account
+            pattern: '^[a-z0-9-]+$'
+            example: yourcompany
+            prefix: https://
+            suffix: .aha.io
+            doc_section: '#step-1-find-your-subdomain'
+
 ahrefs:
     display_name: Ahrefs
     categories:
@@ -1956,6 +1986,32 @@ appstle-subscriptions:
             example: lBfFAdbxUxyv6jYRgOmrEVNkijCKD10T
             pattern: ^[a-zA-Z0-9]+$
 
+arcsite:
+    display_name: ArcSite
+    categories:
+        - design
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.arcsite.com/
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/projects?per_page=1
+    docs: https://nango.dev/docs/api-integrations/arcsite
+    docs_connect: https://nango.dev/docs/api-integrations/arcsite/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your ArcSite API token
+            secret: true
+            example: 8CeN****************_A
+            pattern: '^[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-create-an-api-token'
+
 asana:
     display_name: Asana
     categories:
@@ -2433,6 +2489,39 @@ attentive-api-key:
             title: API Key
             description: Your Attentive custom app API key.
             doc_section: '#step-1-create-a-custom-app'
+
+attentive-mcp:
+    display_name: Attentive (MCP)
+    categories:
+        - marketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp-auth.attentivemobile.com/oauth2/authorize
+    token_url: https://mcp-auth.attentivemobile.com/oauth2/token
+    registration_url: https://mcp-auth.attentivemobile.com/register
+    default_scopes:
+        - mcp
+        - offline_access
+    authorization_params:
+        response_type: code
+        resource: https://attentive-ui-mcp.attentivemobile.com/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp?readOnly=false
+    proxy:
+        base_url: https://attentive-ui-mcp.attentivemobile.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/attentive-mcp
 
 attio:
     display_name: Attio
@@ -5486,6 +5575,35 @@ circle-so:
             type: string
             title: API Key
             description: The API key for your Circle.so account
+
+circleback:
+    display_name: Circleback
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://circleback.ai/api
+        headers:
+            authorization: Bearer ${apiKey}
+        paginate:
+            type: link
+            link_rel_in_response_header: next
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /people?limit=1
+    docs: https://nango.dev/docs/api-integrations/circleback
+    docs_connect: https://nango.dev/docs/api-integrations/circleback/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Circleback account.
+            pattern: '^cb_[A-Za-z0-9_-]+$'
+            example: cb_*******************************************
+            doc_section: '#step-1-obtaining-your-api-key'
 
 circleback-mcp:
     display_name: Circleback (MCP)
@@ -10004,6 +10122,43 @@ freshservice-mcp:
             example: Xk9T************************************************_p4W
             pattern: '^[A-Za-z0-9_]+$'
             doc_section: '#step-1-finding-your-freshservice-api-key'
+
+freshservice-oauth:
+    alias: freshworks
+    display_name: Freshservice (OAuth)
+    categories:
+        - support
+    authorization_url: https://${connectionConfig.orgSubdomain}.myfreshworks.com/org/oauth/v2/authorize
+    token_url: https://${connectionConfig.orgSubdomain}.myfreshworks.com/org/oauth/v2/token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshservice.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/freshservice-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/freshservice-oauth/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/freshservice-oauth/how-to-register-your-own-freshservice-oauth-app
+    connection_config:
+        orgSubdomain:
+            type: string
+            title: Freshworks organization subdomain
+            description: The subdomain of your Freshworks organization URL.
+            pattern: '^[a-z0-9-]+$'
+            example: acme
+            prefix: https://
+            suffix: .myfreshworks.com
+            doc_section: '#step-1-find-your-freshworks-organization-subdomain'
+            order: 1
+        subdomain:
+            type: string
+            title: Freshservice subdomain
+            description: The subdomain of your Freshservice account.
+            pattern: '^[a-z0-9_-]+$'
+            example: acme
+            prefix: https://
+            suffix: .freshservice.com
+            doc_section: '#step-2-find-your-freshservice-subdomain'
+            order: 2
 
 freshteam:
     display_name: Freshteam
@@ -14990,6 +15145,21 @@ lovable-mcp:
         base_url: https://mcp.lovable.dev/
     docs: https://nango.dev/docs/api-integrations/lovable-mcp
 
+loyaltylion:
+    display_name: LoyaltyLion
+    categories:
+        - e-commerce
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://app.loyaltylion.com/oauth/authorize
+    token_url: https://app.loyaltylion.com/oauth/access-token
+    disable_pkce: true
+    scope_separator: ','
+    proxy:
+        base_url: https://api.loyaltylion.com
+    docs: https://nango.dev/docs/api-integrations/loyaltylion
+    setup_guide_url: https://nango.dev/docs/api-integrations/loyaltylion/how-to-register-your-own-loyaltylion-oauth-app
+
 lucid-scim:
     display_name: Lucid (SCIM)
     categories:
@@ -18646,6 +18816,26 @@ optum-real:
             secret: true
             doc_section: '#step-2-get-your-credentials'
 
+oracle-aconex:
+    display_name: Oracle Aconex
+    categories:
+        - productivity
+        - storage
+    auth_mode: OAUTH2
+    authorization_url: https://constructionandengineering.oraclecloud.com/auth/authorize
+    token_url: https://constructionandengineering.oraclecloud.com/auth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.aconex.com
+    docs: https://nango.dev/docs/api-integrations/oracle-aconex
+    setup_guide_url: https://nango.dev/docs/api-integrations/oracle-aconex/how-to-register-your-own-oracle-aconex-oauth-app
+
 oracle-hcm:
     display_name: Oracle Fusion Cloud (HCM)
     categories:
@@ -19802,6 +19992,31 @@ pinterest:
     proxy:
         base_url: https://api.pinterest.com
     docs: https://nango.dev/docs/integrations/all/pinterest
+
+publora:
+    display_name: Publora
+    categories:
+        - marketing
+        - social
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.publora.com
+        headers:
+            x-publora-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/platform-connections
+    docs: https://nango.dev/docs/api-integrations/publora
+    docs_connect: https://nango.dev/docs/api-integrations/publora/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Publora API key.
+            pattern: '^sk_[a-z0-9]{8}(_[a-z0-9]{8})?\.[a-f0-9]{52}$'
+            example: sk_mrmbzomn_1a2b3c4d.964793af****************************************0ab
+            doc_section: '#step-1-creating-your-api-key'
 
 rocketlane:
     display_name: Rocketlane

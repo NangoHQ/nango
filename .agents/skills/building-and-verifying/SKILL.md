@@ -16,7 +16,8 @@ Nango is a TypeScript monorepo using npm workspaces and TypeScript project refer
 | `npm run ts-build` | Full TypeScript build with project refs | After cross-package changes |
 | `npx tsc -p packages/server/tsconfig.build.json --noEmit` | Type-check single package | Quick check during development |
 | `npm run ts-clean && npm run ts-build` | Clean rebuild | When incremental build gives stale errors |
-| `npm install` | Install deps + link workspaces | After changing dependencies or in fresh worktree |
+| `npm install` | Install deps + link workspaces | After changing dependencies |
+| `npm ci` | Install deps from the lockfile, never rewriting it | In a fresh worktree or checkout |
 
 All commands run from the **repo root**.
 
@@ -33,7 +34,7 @@ Build order follows `tsconfig.build.json` references:
 
 ## Build Workflow
 
-**Always run `npm install` before building** — after pulling new changes, switching branches, or in a fresh worktree/checkout. Missing or outdated `node_modules` causes `Cannot find module` errors that look like code issues but are just missing deps.
+**Always install dependencies before building** — `npm install` after pulling new changes or switching branches, `npm ci` in a fresh worktree/checkout. Missing or outdated `node_modules` causes `Cannot find module` errors that look like code issues but are just missing deps.
 
 ```bash
 # Standard build flow
@@ -56,10 +57,10 @@ npx tsc -p packages/shared/tsconfig.build.json && npx tsc -p packages/server/tsc
 
 ## New Worktree Setup
 
-Fresh worktrees need dependencies installed:
+Fresh worktrees need dependencies installed. Use `npm ci`: `npm install` into an empty `node_modules` rewrites `package-lock.json`.
 
 ```bash
-npm install
+npm ci
 ```
 
 Without this, `npx tsc` and other tools won't be available.

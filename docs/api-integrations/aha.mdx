@@ -1,0 +1,89 @@
+---
+title: 'Aha!'
+sidebarTitle: 'Aha!'
+description: 'Integrate your application with the Aha! API'
+---
+
+## 🚀 Quickstart
+
+Connect to Aha! with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Aha!_.
+    </Step>
+    <Step id="authorize-aha" title="Authorize Aha!">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Aha! subdomain and log in to Aha!. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-aha-api" title="Call the Aha! API">
+    Let's make your first request to the Aha! API to fetch the current user. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v1/me" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v1/me',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Aha! integration guides
+
+- [How do I link my account?](/api-integrations/aha/connect)  
+Find your Aha! subdomain and sign in to connect your Aha! account.
+
+- [How to register your own Aha! OAuth app](/api-integrations/aha/how-to-register-your-own-aha-oauth-app)  
+Register an OAuth app with Aha! and obtain credentials to connect it to Nango.
+
+Official docs: [Aha! API documentation](https://www.aha.io/api)
+
+## 🚨 API gotchas
+
+- Aha! access tokens don't expire and Aha! doesn't issue refresh tokens. A token stays valid until the user revokes the app in Aha!.
+- Aha! has no OAuth scopes. A token has the same access as the user who authorized the app.
+- Every API request goes to the account's own domain (`https://<subdomain>.aha.io`), so each connection needs the subdomain.
+- Aha! allows up to 300 requests per minute and 20 per second per account, and returns `429` when either limit is exceeded. Nango retries after the time in the `X-Ratelimit-Reset` header.
+
+## 🧩 Pre-built syncs & actions for Aha!
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/aha/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -1,0 +1,43 @@
+---
+title: 'How to register your own LoyaltyLion OAuth app'
+sidebarTitle: 'LoyaltyLion setup'
+description: 'Request OAuth credentials from LoyaltyLion and connect them to Nango'
+---
+
+This guide shows you how to register an OAuth app with LoyaltyLion to obtain your client ID and client secret. These are required to let merchants grant your app access to their LoyaltyLion store.
+
+<Note>
+OAuth is only available to LoyaltyLion partners building apps used across many stores. To integrate with a single store, use a LoyaltyLion API key instead.
+</Note>
+
+<Steps>
+  <Step id="prepare-app-details" title="Prepare your app details">
+    LoyaltyLion registers OAuth apps manually. Gather the following:
+
+    | Field | Value |
+    |-------|-------|
+    | **name** | Your company or app name. |
+    | **description** | A short description of your app, up to 150 characters. |
+    | **url** | The URL of your company or app. |
+    | **image_url** | Your company logo, or a link to your press pack. |
+    | **install_url** | Your app's login or homepage URL (must be `https`). LoyaltyLion requires this field, but Nango doesn't use it, since connections start from your app via Nango. |
+    | **redirect_url** | `https://api.nango.dev/oauth/callback` |
+
+    Merchants see your app name, description, and logo when they approve access.
+  </Step>
+  <Step id="request-oauth-app" title="Request your OAuth app">
+    Email the details to [partnersupport@loyaltylion.com](mailto:partnersupport@loyaltylion.com) and ask for an OAuth app to be registered.
+  </Step>
+  <Step id="copy-credentials" title="Copy your credentials">
+    Once LoyaltyLion approves your app, they send you a **client ID** and **client secret**. Enter them in your LoyaltyLion integration in Nango, along with the scopes your app needs, such as `read_customers` or `write_orders`.
+
+    Keep your client secret private. If you think it has been compromised, contact LoyaltyLion immediately.
+  </Step>
+  <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+LoyaltyLion access tokens are permanent and don't need refreshing. For more details, see [LoyaltyLion's OAuth documentation](https://developers.loyaltylion.com/api-reference/authentication/oauth).
+
+---
