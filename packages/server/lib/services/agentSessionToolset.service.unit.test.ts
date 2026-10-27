@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { compileToolsetFromFunctions } from './agentSessionToolset.service.js';
+import { compileToolsetFromFunctions, withDiscoveredMcpTools } from './agentSessionToolset.service.js';
 
 import type { McpServerDiscovery } from './agentSessionMcpDiscovery.service.js';
 import type { AgentSessionToolsetCompilationError } from './agentSessionToolset.service.js';
@@ -320,5 +320,97 @@ describe('compileToolsetFromFunctions with MCP servers', () => {
         expect(linear.mcpServer).toBe('unavailable');
         expect(linear.pinned).toEqual([]);
         expect(names(linear.searchable)).toEqual(['deployed_action']);
+    });
+});
+
+describe('MCP servers connected mid-session', () => {
+    const inputSchema = { type: 'object', properties: { query: { type: 'string' } } } as const;
+
+    function mcpTool(name: string) {
+        return { name, description: `${name} description`, inputSchema };
+    }
+
+    const notionMcpFunctions: IntegrationFunctionRow[] = [emptyIntegration('notion-mcp'), action('notion-mcp', 'deployed_action')];
+
+    function compilePending({ toolset, pinnedTools }: { toolset: AgentSessionToolsetPolicy; pinnedTools?: AgentSessionPinnedTools | undefined }) {
+        return compileToolsetFromFunctions({
+            toolset,
+            pinnedTools,
+            connectedIntegrations: [],
+            functions: notionMcpFunctions,
+            hasMcpServer: () => true
+        });
+    }
+
+    it('keeps the policy of an MCP server that is not connected yet', () => {
+        const notion = integration(
+            compilePending({ toolset: { 'notion-mcp': { allow: '*', deny: ['delete_page'] } }, pinnedTools: { 'notion-mcp': ['search'] } }).unwrap(),
+            'notion-mcp'
+        );
+
+        expect(notion.mcpServer).toBeUndefined();
+        expect(notion.pendingMcpServer).toEqual({ allow: '*', deny: ['delete_page'], pinned: ['search'] });
+        expect(names(notion.searchable)).toEqual(['deployed_action']);
+    });
+
+    it('keeps no policy for an integration without an MCP server', () => {
+        const notion = integration(
+            compileToolsetFromFunctions({
+                toolset: '*',
+                pinnedTools: undefined,
+                connectedIntegrations: [],
+                functions: notionMcpFunctions,
+                hasMcpServer: () => false
+            }).unwrap(),
+            'notion-mcp'
+        );
+
+        expect(notion.pendingMcpServer).toBeUndefined();
+    });
+
+    it('still rejects a pinned name the toolset denies', () => {
+        const compiled = expectError(
+            compilePending({ toolset: { 'notion-mcp': { allow: '*', deny: ['search'] } }, pinnedTools: { 'notion-mcp': ['search'] } })
+        );
+
+        expect(compiled.code).toBe('tool_not_in_toolset');
+    });
+
+    it('adds the tools the server listed through the kept policy', () => {
+        const pending = integration(
+            compilePending({
+                toolset: { 'notion-mcp': { allow: '*', deny: ['delete_page'] } },
+                pinnedTools: { 'notion-mcp': ['search'] }
+            }).unwrap(),
+            'notion-mcp'
+        );
+
+        const notion = withDiscoveredMcpTools({
+            integration: pending,
+            discovery: { status: 'available', tools: [mcpTool('search'), mcpTool('fetch'), mcpTool('delete_page'), mcpTool('deployed_action')] }
+        });
+
+        expect(notion.mcpServer).toBe('available');
+        expect(notion.pendingMcpServer).toBeUndefined();
+        expect(names(notion.pinned)).toEqual(['search']);
+        expect(notion.pinned[0]?.mcp).toEqual({ inputSchema });
+        expect(names(notion.searchable)).toEqual(['deployed_action', 'fetch']);
+        expect(notion.searchable[0]?.mcp).toBeUndefined();
+    });
+
+    it('marks the server unavailable when it could not be listed', () => {
+        const pending = integration(compilePending({ toolset: '*' }).unwrap(), 'notion-mcp');
+
+        const notion = withDiscoveredMcpTools({ integration: pending, discovery: { status: 'unavailable' } });
+
+        expect(notion.mcpServer).toBe('unavailable');
+        expect(notion.pendingMcpServer).toBeUndefined();
+        expect(names(notion.searchable)).toEqual(['deployed_action']);
+    });
+
+    it('leaves an integration that was already listed alone', () => {
+        const listed: AgentSessionCompiledIntegration = { provider: 'notion-mcp', pinned: [], searchable: [], mcpServer: 'available' };
+
+        expect(withDiscoveredMcpTools({ integration: listed, discovery: { status: 'available', tools: [mcpTool('search')] } })).toBe(listed);
     });
 });
