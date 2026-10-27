@@ -105,7 +105,6 @@
             "js-yaml": "3.15.2"
         },
         "dd-trace": "5.117.0",
-        "@azure/msal-node": "7.1.1",
         "@elastic/transport": {
             "undici": "6.29.1"
         },
