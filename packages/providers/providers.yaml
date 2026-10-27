@@ -8944,6 +8944,45 @@ ergo:
             example: ergo_api_at-48b49ba4********************************************************an1X
             doc_section: '#step-1-obtaining-your-token'
 
+erpnext:
+    display_name: ERPNext
+    categories:
+        - erp
+        - accounting
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        verification:
+            method: GET
+            endpoints:
+                - /api/method/frappe.auth.get_logged_user
+    docs: https://nango.dev/docs/api-integrations/erpnext
+    docs_connect: https://nango.dev/docs/api-integrations/erpnext/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Site Domain
+            description: The domain of your ERPNext site.
+            format: hostname
+            example: mycompany.frappe.cloud
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-erpnext-domain'
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: The API Key generated for your ERPNext user.
+            example: a1b2c3d4e5f6a7b
+            doc_section: '#step-2-generating-your-api-key-and-secret'
+        password:
+            type: string
+            title: API Secret
+            description: The API Secret generated for your ERPNext user.
+            secret: true
+            example: 3f9a1c*****7e2b
+            doc_section: '#step-2-generating-your-api-key-and-secret'
+
 evaluagent:
     display_name: EvaluAgent
     categories:
