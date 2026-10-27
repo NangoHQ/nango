@@ -5,7 +5,7 @@ import type { Knex } from 'knex';
 export async function up(knex: Knex, schema: string): Promise<void> {
     await knex.raw(
         `CREATE TABLE IF NOT EXISTS ??.?? (
-            id         SERIAL PRIMARY KEY,
+            id         INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             name       TEXT NOT NULL,
             created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
