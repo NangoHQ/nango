@@ -67,7 +67,7 @@ export async function pullFromCatalog(options: PullOptions): Promise<boolean> {
         fetchCode: async (pathAndQuery) => {
             for (const { environmentName, secretKey } of findSecretKeys()) {
                 const res = await fetchWithSecretKey(new URL(pathAndQuery, resolveHostport(environmentName)), secretKey, debug);
-                if (res.status !== 401) {
+                if (res.status !== 401 && res.status !== 403) {
                     return res;
                 }
                 printDebug(`Secret key for '${environmentName ?? 'default'}' was rejected, trying the next one`, debug);

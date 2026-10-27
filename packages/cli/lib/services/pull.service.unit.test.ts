@@ -179,6 +179,19 @@ describe('pullFromCatalog', () => {
         expect(writeSpy).toHaveBeenCalledWith('/project/github/actions/list-repos.ts', 'action code', 'utf-8');
     });
 
+    it('moves on to the next secret key when one is not allowed to read the catalog', async () => {
+        stubSecretKeys({ NANGO_SECRET_KEY: 'secret-account-level', NANGO_SECRET_KEY_DEV: 'secret-dev' });
+        fetchMock
+            .mockResolvedValueOnce(new Response(JSON.stringify({ error: { code: 'forbidden' } }), { status: 403 }))
+            .mockResolvedValueOnce(new Response(JSON.stringify({ type: 'action', code: 'action code' }), { status: 200 }));
+        mockFsForWriting();
+
+        const success = await pullFromCatalog(baseOptions);
+
+        expect(success).toBe(true);
+        expect(requestedSecretKeys()).toEqual(['Bearer secret-account-level', 'Bearer secret-dev']);
+    });
+
     it('does not try other secret keys when the error is not about the key', async () => {
         stubSecretKeys({ NANGO_SECRET_KEY: 'secret-default', NANGO_SECRET_KEY_DEV: 'secret-dev' });
         mockResponse(404, { error: { code: 'unknown_function', message: 'Function not found' } });
