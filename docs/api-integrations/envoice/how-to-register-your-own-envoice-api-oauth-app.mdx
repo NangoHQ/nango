@@ -19,10 +19,13 @@ This guide shows you how to register your own app with Envoice to obtain your OA
   <Step id="get-credentials" title="Get your credentials">
     Envoice sends your **Client ID** and **Client Secret** by email. Enter them in your Envoice integration in Nango.
 
-    Envoice issues separate development keys for its sandbox (`https://demo-api.envoice.eu/partner`) and production keys for its live environment. This integration uses the live environment, so use your production keys.
+    Envoice issues separate development keys for its sandbox (`demo-api.envoice.eu`) and production keys for its live environment (`api.envoice.eu`). Use the keys that match the environment your connections will use. To use both, create one Nango integration for each set of keys.
   </Step>
   <Step id="select-scopes" title="Select your scopes">
     In your Envoice integration in Nango, add the scopes your app needs, for example `accounting.transactions.read` to read invoices. Include `offline_access` so Envoice issues a refresh token.
+  </Step>
+  <Step id="pick-environment" title="Pick your environment">
+    When you create a connection, choose the **Environment** that matches your keys: `api.envoice.eu` for live (the default) or `demo-api.envoice.eu` for the sandbox. If you create connections through the API or a headless flow, set `environment` in the connection config; if you leave it out, Nango uses the live environment.
   </Step>
   <Step id="next" title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
