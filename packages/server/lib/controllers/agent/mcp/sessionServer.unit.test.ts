@@ -54,7 +54,7 @@ describe('createAgentSessionMcpServer', () => {
     beforeEach(() => {
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
         findActionInputs.mockReset().mockResolvedValue(new Map());
-        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ kind: 'none' }));
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
     });
 
     async function listTools(compiledToolset: AgentSessionCompiledToolset) {
