@@ -168,7 +168,7 @@ export function compileToolsetFromFunctions({
             provider: integration.provider,
             pinned: allowed.filter((action) => pinnedNames.has(action.name)).map(toCompiledTool),
             searchable: allowed.filter((action) => !pinnedNames.has(action.name)).map(toCompiledTool),
-            ...mcpServerState(integration, { ...policy, pinned: [...pinnedNames] })
+            ...mcpServerState(integration, { status: 'pending', ...policy, pinnedNames: [...pinnedNames] })
         });
     }
 
@@ -190,28 +190,32 @@ export function withDiscoveredMcpTools({
     integration: AgentSessionCompiledIntegration;
     discovery: McpServerDiscovery;
 }): AgentSessionCompiledIntegration {
-    const { pendingMcpServer: policy, ...compiled } = integration;
+    const policy = pendingMcpServerOf(integration);
     if (!policy) {
         return integration;
     }
 
     if (discovery.status === 'unavailable') {
-        return { ...compiled, mcpServer: 'unavailable' };
+        return { ...integration, mcpServer: 'unavailable' };
     }
 
     // The compiled tools are the deployed actions, which keep their name over a server tool.
-    const taken = new Set([...compiled.pinned, ...compiled.searchable].map((tool) => tool.name));
-    const pinnedNames = new Set(policy.pinned);
+    const taken = new Set([...integration.pinned, ...integration.searchable].map((tool) => tool.name));
+    const pinnedNames = new Set(policy.pinnedNames);
     const allowed = discovery.tools
         .filter((tool) => !taken.has(tool.name) && isAllowed(tool.name, policy))
         .map((tool) => toCompiledTool(toIntegrationTool(tool)));
 
     return {
-        ...compiled,
-        pinned: [...compiled.pinned, ...allowed.filter((tool) => pinnedNames.has(tool.name))],
-        searchable: [...compiled.searchable, ...allowed.filter((tool) => !pinnedNames.has(tool.name))],
+        ...integration,
+        pinned: [...integration.pinned, ...allowed.filter((tool) => pinnedNames.has(tool.name))],
+        searchable: [...integration.searchable, ...allowed.filter((tool) => !pinnedNames.has(tool.name))],
         mcpServer: 'available'
     };
+}
+
+export function pendingMcpServerOf(integration: AgentSessionCompiledIntegration): AgentSessionPendingMcpServer | undefined {
+    return typeof integration.mcpServer === 'object' ? integration.mcpServer : undefined;
 }
 
 /**
@@ -433,12 +437,9 @@ function markPendingMcpServers({
     }
 }
 
-function mcpServerState(
-    integration: IntegrationFunctions,
-    policy: AgentSessionPendingMcpServer
-): Pick<AgentSessionCompiledIntegration, 'mcpServer' | 'pendingMcpServer'> {
+function mcpServerState(integration: IntegrationFunctions, pending: AgentSessionPendingMcpServer): Pick<AgentSessionCompiledIntegration, 'mcpServer'> {
     if (integration.mcpServer === 'pending') {
-        return { pendingMcpServer: policy };
+        return { mcpServer: pending };
     }
 
     return integration.mcpServer ? { mcpServer: integration.mcpServer } : {};

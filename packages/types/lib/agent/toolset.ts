@@ -27,19 +27,19 @@ export interface AgentSessionCompiledTool {
 export type AgentSessionMcpServerStatus = 'available' | 'unavailable';
 
 /**
- * The policy an MCP server's tools go through once the integration is connected in the session. It is
- * dropped once the server has been listed.
+ * An MCP server that was not connected when the session was created. It keeps the policy its tools go
+ * through once the agent connects it and the server is listed.
  */
 export interface AgentSessionPendingMcpServer extends AgentSessionIntegrationPolicy {
-    readonly pinned: readonly string[];
+    readonly status: 'pending';
+    readonly pinnedNames: readonly string[];
 }
 
 export interface AgentSessionCompiledIntegration {
     readonly provider: string;
     readonly pinned: AgentSessionCompiledTool[];
     readonly searchable: AgentSessionCompiledTool[];
-    readonly mcpServer?: AgentSessionMcpServerStatus;
-    readonly pendingMcpServer?: AgentSessionPendingMcpServer;
+    readonly mcpServer?: AgentSessionMcpServerStatus | AgentSessionPendingMcpServer;
 }
 
 export type AgentSessionCompiledToolset = Record<string, AgentSessionCompiledIntegration>;
