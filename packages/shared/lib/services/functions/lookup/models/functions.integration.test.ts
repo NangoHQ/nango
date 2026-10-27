@@ -7,7 +7,7 @@ import { createConfigSeed } from '../../../../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../../../../seeders/environment.seeder.js';
 import { getCatalogTool } from '../../../catalog/actions.js';
 import * as functionConfigService from '../../models/functions.js';
-import { findActionInputSchemas, findActiveFunctionAvailability, findIntegrationFunctions } from './functions.js';
+import { findActiveFunctionAvailability, findInputSchemas, findIntegrationFunctions } from './functions.js';
 
 import type { DBEnvironment, DBFunctionConfigVersion, DBSyncConfig, IntegrationConfig, NangoConfigMetadata } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
@@ -300,7 +300,7 @@ describe(findIntegrationFunctions, () => {
     });
 });
 
-describe(findActionInputSchemas, () => {
+describe(findInputSchemas, () => {
     beforeAll(async () => {
         await multipleMigrations();
     });
@@ -319,7 +319,7 @@ describe(findActionInputSchemas, () => {
             modelsJsonSchema: objectInput
         });
 
-        const rows = await findActionInputSchemas({
+        const rows = await findInputSchemas({
             environmentId: environment.id,
             actions: [{ integrationId: 'gmail', name: 'send_email' }]
         });
@@ -345,7 +345,7 @@ describe(findActionInputSchemas, () => {
         await insertTool({ environment, integrationId: 'gmail', name: 'send_email' });
         await insertTool({ environment, integrationId: 'gmail', name: 'draft_email', enabled: false });
 
-        const rows = await findActionInputSchemas({
+        const rows = await findInputSchemas({
             environmentId: environment.id,
             actions: [
                 { integrationId: 'gmail', name: 'send_email' },
@@ -365,7 +365,7 @@ describe(findActionInputSchemas, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: gmail, name: 'send_email', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration: zendesk, name: 'create_ticket', type: 'action' });
 
-        const rows = await findActionInputSchemas({
+        const rows = await findInputSchemas({
             environmentId: environment.id,
             actions: [
                 { integrationId: 'gmail', name: 'send_email' },
@@ -374,7 +374,7 @@ describe(findActionInputSchemas, () => {
         });
 
         expect(rows.map((row) => row.name).sort()).toStrictEqual(['create_ticket', 'send_email']);
-        expect(await findActionInputSchemas({ environmentId: environment.id, actions: [] })).toStrictEqual([]);
+        expect(await findInputSchemas({ environmentId: environment.id, actions: [] })).toStrictEqual([]);
     });
 
     it("does not pair an integration with another integration's tool of the same name", async () => {
@@ -386,7 +386,7 @@ describe(findActionInputSchemas, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: gmail, name: 'send_email', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration: outlook, name: 'send_email', type: 'action' });
 
-        const rows = await findActionInputSchemas({
+        const rows = await findInputSchemas({
             environmentId: environment.id,
             actions: [{ integrationId: 'gmail', name: 'send_email' }]
         });
@@ -405,7 +405,7 @@ describe(findActionInputSchemas, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'removed', type: 'action', deleted: true });
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'kept', type: 'action' });
 
-        const rows = await findActionInputSchemas({
+        const rows = await findInputSchemas({
             environmentId: environment.id,
             actions: ['sync_pages', 'turned_off', 'old_version', 'removed', 'kept'].map((name) => ({ integrationId: 'notion', name }))
         });
@@ -422,7 +422,7 @@ describe(findActionInputSchemas, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'turned_off', type: 'action', enabled: false });
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'kept', type: 'action' });
 
-        const rows = await findActionInputSchemas({
+        const rows = await findInputSchemas({
             environmentId: environment.id,
             actions: ['turned_off', 'kept'].map((name) => ({ integrationId: 'notion', name }))
         });
@@ -444,7 +444,7 @@ describe(findActionInputSchemas, () => {
             input: 'DeployedInput'
         });
 
-        const rows = await findActionInputSchemas({
+        const rows = await findInputSchemas({
             environmentId: environment.id,
             actions: [{ integrationId: 'github', name: 'create-issue' }]
         });
@@ -458,7 +458,7 @@ describe(findActionInputSchemas, () => {
         const environment = await createEnvironmentSeed(account.id);
         await createConfigSeed(environment, 'github', 'github');
 
-        const rows = await findActionInputSchemas({
+        const rows = await findInputSchemas({
             environmentId: environment.id,
             actions: [{ integrationId: 'github', name: 'create-issue' }]
         });
@@ -472,7 +472,7 @@ describe(findActionInputSchemas, () => {
         await createConfigSeed(environment, 'github', 'github');
 
         const catalog = getCatalogTool('github', 'create-issue');
-        const rows = await findActionInputSchemas({
+        const rows = await findInputSchemas({
             environmentId: environment.id,
             actions: [{ integrationId: 'github', name: 'create-issue' }]
         });
@@ -493,7 +493,7 @@ describe(findActionInputSchemas, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'mine', type: 'action' });
         await insertSyncConfig({ environmentId: other.id, integration: otherNotion, name: 'theirs', type: 'action' });
 
-        const rows = await findActionInputSchemas({
+        const rows = await findInputSchemas({
             environmentId: environment.id,
             actions: [
                 { integrationId: 'notion', name: 'mine' },

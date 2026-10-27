@@ -352,7 +352,7 @@ export interface ActionInputSchemaRow {
  * deployed row contributes no schema. The catalog is never a fallback for an occupied name,
  * and catalog schemas are returned only for unoccupied names.
  */
-export async function findActionInputSchemas({
+export async function findInputSchemas({
     environmentId,
     actions
 }: {
