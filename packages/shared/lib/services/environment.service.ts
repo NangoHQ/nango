@@ -24,7 +24,7 @@ export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
 
 export type CreateEnvironmentErrorCode = 'invalid_is_prod_flag' | 'conflict' | 'resource_capped' | 'creation_failed';
 
-type CreateEnvironmentSettings = {
+export type CreateEnvironmentSettings = {
     accountId: number;
     name: string;
     isProduction?: boolean;
