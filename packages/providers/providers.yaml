@@ -11665,16 +11665,22 @@ grain-api-key:
             method: GET
             headers:
                 content-type: application/json
+                public-api-version: '2026-10-01'
             endpoints:
-                - /_/public-api/me
+                - /_/public-api/v2/token-info
         headers:
             authorization: Bearer ${apiKey}
-    docs: https://nango.dev/docs/integrations/all/grain-api-key
+            public-api-version: '2026-10-01'
+    docs: https://nango.dev/docs/api-integrations/grain-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/grain-api-key/connect
     credentials:
         apiKey:
             type: string
-            title: API Key
-            description: The personal access token to your Grain account
+            title: Personal Access Token
+            description: The personal access token for your Grain account.
+            example: grain_pat_cLLG****_************************************giM7
+            pattern: '^grain_pat_[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generate-a-personal-access-token'
 
 greenfield-meditech:
     display_name: MEDITECH Greenfield
