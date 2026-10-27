@@ -79,7 +79,7 @@ describe('Exec', () => {
         exports.default = {
             type: 'function',
             exec: async () => {
-                const { TeamsActivityHandler, TurnContext } = require('botbuilder');
+                const { TeamsActivityHandler, TurnContext } = require('botbuilder').default;
                 let meeting = null;
                 const bot = new TeamsActivityHandler();
                 bot.onTeamsMeetingStartEvent(async (parsed) => {

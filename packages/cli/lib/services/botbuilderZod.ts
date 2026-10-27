@@ -1,12 +1,15 @@
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
-import type * as zod from 'zod';
-
 const require = createRequire(import.meta.url);
 
-// botbuilder@4.23.3 calls Zod 3.25 `.nonstrict()`, an alias of `.passthrough()` removed in Zod 4.
-function installNonstrict(zodNs: typeof zod) {
+type ZodCompat = {
+    object: (shape: Record<string, unknown>) => object;
+    string: () => unknown;
+};
+
+// botbuilder@4.23.3 calls Zod 3.25 `.nonstrict()` and reads `ZodError.errors`. Zod 4 removed both.
+function installZod3Compat(zodNs: ZodCompat) {
     const zodObjectProto = Object.getPrototypeOf(zodNs.object({})) as {
         nonstrict?: () => unknown;
         passthrough: () => unknown;
@@ -16,14 +19,35 @@ function installNonstrict(zodNs: typeof zod) {
             return this.passthrough();
         };
     }
+
+    // Zod 4 constructs errors with $constructor, so the instance prototype is not ZodError.prototype.
+    let sample: unknown;
+    try {
+        (zodNs.object({ a: zodNs.string() }) as { parse: (input: unknown) => unknown }).parse({ a: 1 });
+    } catch (err) {
+        sample = err;
+    }
+    if (!sample || typeof sample !== 'object') {
+        return;
+    }
+    const errorProto = Object.getPrototypeOf(sample) as { errors?: unknown };
+    if (!errorProto || Object.prototype.hasOwnProperty.call(errorProto, 'errors')) {
+        return;
+    }
+    Object.defineProperty(errorProto, 'errors', {
+        get(this: { issues: unknown }) {
+            return this.issues;
+        },
+        configurable: true
+    });
 }
 
-/** Patch the zod copy botbuilder will load. Zod 3 already has `.nonstrict()`, so this is a no-op there. */
+/** Patch the zod copy botbuilder will load. Zod 3 already has these, so this is a no-op there. */
 export function installBotbuilderZodCompat(botbuilderEntry: string): void {
     const zodPath = require.resolve('zod', { paths: [path.dirname(botbuilderEntry)] });
-    const loaded = require(zodPath) as typeof zod & { default?: typeof zod };
-    installNonstrict(loaded);
+    const loaded = require(zodPath) as ZodCompat & { default?: ZodCompat };
+    installZod3Compat(loaded);
     if (loaded.default && loaded.default !== loaded) {
-        installNonstrict(loaded.default);
+        installZod3Compat(loaded.default);
     }
 }
