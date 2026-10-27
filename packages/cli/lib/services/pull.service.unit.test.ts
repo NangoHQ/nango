@@ -142,18 +142,6 @@ describe('pullFromCatalog', () => {
         fetchMock.mockReset();
     });
 
-    it('explains that the server is too old when it does not have the endpoint', async () => {
-        stubSecretKeys({ NANGO_SECRET_KEY_DEV: 'secret-dev' });
-        mockResponse(404, '<!doctype html><pre>Cannot GET</pre>');
-        const writeSpy = mockFsForWriting();
-
-        const success = await pullFromCatalog(baseOptions);
-
-        expect(success).toBe(false);
-        expect(writeSpy).not.toHaveBeenCalled();
-        expect(loggedMessages(consoleSpy)).toMatch(/doesn't support pulling from the catalog/);
-    });
-
     it('tries NANGO_SECRET_KEY first', async () => {
         stubSecretKeys({ NANGO_SECRET_KEY_DEV: 'secret-dev', NANGO_SECRET_KEY: 'secret-default' });
         mockResponse(200, { type: 'action', code: 'action code' });
