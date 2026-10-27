@@ -66,6 +66,53 @@ describe('Exec', () => {
         expect(res.unwrap().output).toEqual({ kind: 'invoke', value: 42, variant: 'canary' });
     });
 
+    it('executes a function that uses botbuilder', async () => {
+        const nangoProps = {
+            ...getNangoProps(),
+            scriptType: 'function' as const,
+            syncId: undefined,
+            syncJobId: undefined,
+            syncConfig: { sync_name: 'teams-function' } as DBSyncConfig
+        };
+        // TeamsActivityHandler parses this payload with Zod 3 `.nonstrict()`. An extra key must not throw.
+        const code = `
+        exports.default = {
+            type: 'function',
+            exec: async () => {
+                const { TeamsActivityHandler, TurnContext } = require('botbuilder');
+                let meeting = null;
+                const bot = new TeamsActivityHandler();
+                bot.onTeamsMeetingStartEvent(async (parsed) => {
+                    meeting = { id: parsed.id, title: parsed.title, startTime: parsed.startTime.toISOString() };
+                });
+                const activity = {
+                    type: 'event',
+                    channelId: 'msteams',
+                    name: 'application/vnd.microsoft.meetingStart',
+                    value: {
+                        Id: 'meet-1',
+                        JoinUrl: 'https://teams.example/join',
+                        MeetingType: 'scheduled',
+                        Title: 'Standup',
+                        StartTime: '2026-10-27T09:00:00.000Z',
+                        Unexpected: 'extra'
+                    }
+                };
+                await bot.run(new TurnContext({}, activity));
+                return meeting;
+            }
+        }
+        `;
+
+        const res = await exec({ nangoProps, code });
+
+        expect(res.unwrap().output).toEqual({
+            id: 'meet-1',
+            title: 'Standup',
+            startTime: '2026-10-27T09:00:00.000Z'
+        });
+    });
+
     it('execute code', async () => {
         const nangoProps = getNangoProps();
         const code = `
