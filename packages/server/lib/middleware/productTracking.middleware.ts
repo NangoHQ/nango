@@ -7,6 +7,14 @@ import type { NextFunction, Request, Response } from 'express';
 
 const ANALYTICS_SESSION_HEADER = 'X-Nango-Analytics-Session-Id';
 
+export function parseAnalyticsSessionId(value: unknown): string | undefined {
+    return typeof value === 'string' && isUuid(value) ? value : undefined;
+}
+
+export function analyticsSessionIdFromRequest(req: Request): string | undefined {
+    return parseAnalyticsSessionId(req.get(ANALYTICS_SESSION_HEADER));
+}
+
 /**
  * Give every posthog event emitted while handling a request the account, environment and user of that
  * request, so no call site has to pass them. The plan rides on the account group, not on events.
@@ -14,15 +22,14 @@ const ANALYTICS_SESSION_HEADER = 'X-Nango-Analytics-Session-Id';
  * Mounted before auth, so the locals are read when an event is emitted and not here.
  */
 export function productTrackingMiddleware(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
-    const header = req.get(ANALYTICS_SESSION_HEADER);
-    const analyticsSessionId = header && isUuid(header) ? header : undefined;
+    const analyticsSessionId = analyticsSessionIdFromRequest(req);
     withProductTrackingContext(
         () => ({
             team: res.locals['account'],
             environment: res.locals['environment'],
             user: res.locals['user'],
             plan: res.locals['plan'],
-            analyticsSessionId,
+            analyticsSessionId: res.locals['analyticsSessionId'] ?? analyticsSessionId,
             impersonated: req.session?.debugMode === true
         }),
         next

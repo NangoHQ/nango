@@ -3,6 +3,7 @@ import * as z from 'zod';
 import { baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { getWorkOSClient } from '../../../../clients/workos.client.js';
+import { analyticsSessionIdFromRequest } from '../../../../middleware/productTracking.middleware.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { signupAcquisitionSchema } from '../../../../utils/signupAcquisition.js';
 import { encodeManagedAuthState } from './auth.js';
@@ -41,7 +42,12 @@ export const postManagedSignup = asyncWrapper<PostManagedSignup>((req, res) => {
         clientId: process.env['WORKOS_CLIENT_ID'] || '',
         provider: body.provider,
         redirectUri: `${baseUrl}/api/v1/login/callback`,
-        state: encodeManagedAuthState({ token: body.token, returnTo: body.returnTo, acquisition: body.acquisition })
+        state: encodeManagedAuthState({
+            token: body.token,
+            returnTo: body.returnTo,
+            acquisition: body.acquisition,
+            analyticsSessionId: analyticsSessionIdFromRequest(req)
+        })
     });
 
     res.send({ data: { url: oAuthUrl } });
