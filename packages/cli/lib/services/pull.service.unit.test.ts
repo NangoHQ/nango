@@ -29,6 +29,22 @@ function loggedMessages(consoleSpy: ReturnType<typeof vi.spyOn>): string {
     return consoleSpy.mock.calls.map((call) => String(call[0])).join('\n');
 }
 
+function stubSecretKeys(keys: Record<string, string>) {
+    for (const variable of Object.keys(process.env)) {
+        if (variable.startsWith('NANGO_SECRET_KEY')) {
+            vi.stubEnv(variable, undefined);
+        }
+    }
+    vi.stubEnv('NANGO_SECRET_KEY', undefined);
+    for (const [variable, value] of Object.entries(keys)) {
+        vi.stubEnv(variable, value);
+    }
+}
+
+function requestedSecretKeys(): string[] {
+    return fetchMock.mock.calls.map((call) => (call[1]!.headers as Record<string, string>)['authorization']!);
+}
+
 const baseOptions = {
     fullPath: '/project',
     environmentName: 'dev',
@@ -47,7 +63,7 @@ describe.each([
     let consoleSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
-        vi.stubEnv('NANGO_SECRET_KEY_DEV', 'secret-dev');
+        stubSecretKeys({ NANGO_SECRET_KEY_DEV: 'secret-dev' });
         consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     });
 
@@ -114,8 +130,10 @@ describe.each([
 });
 
 describe('pullFromCatalog', () => {
+    let consoleSpy: ReturnType<typeof vi.spyOn>;
+
     beforeEach(() => {
-        vi.stubEnv('NANGO_SECRET_KEY_DEV', 'secret-dev');
+        consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     });
 
     afterEach(() => {
@@ -125,7 +143,7 @@ describe('pullFromCatalog', () => {
     });
 
     it('explains that the server is too old when it does not have the endpoint', async () => {
-        const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+        stubSecretKeys({ NANGO_SECRET_KEY_DEV: 'secret-dev' });
         mockResponse(404, '<!doctype html><pre>Cannot GET</pre>');
         const writeSpy = mockFsForWriting();
 
@@ -134,5 +152,63 @@ describe('pullFromCatalog', () => {
         expect(success).toBe(false);
         expect(writeSpy).not.toHaveBeenCalled();
         expect(loggedMessages(consoleSpy)).toMatch(/doesn't support pulling from the catalog/);
+    });
+
+    it('tries NANGO_SECRET_KEY first', async () => {
+        stubSecretKeys({ NANGO_SECRET_KEY_DEV: 'secret-dev', NANGO_SECRET_KEY: 'secret-default' });
+        mockResponse(200, { type: 'action', code: 'action code' });
+        mockFsForWriting();
+
+        const success = await pullFromCatalog(baseOptions);
+
+        expect(success).toBe(true);
+        expect(requestedSecretKeys()).toEqual(['Bearer secret-default']);
+    });
+
+    it('moves on to the next secret key when one is rejected', async () => {
+        stubSecretKeys({ NANGO_SECRET_KEY: 'secret-revoked', NANGO_SECRET_KEY_DEV: 'secret-dev' });
+        fetchMock
+            .mockResolvedValueOnce(new Response(JSON.stringify({ error: { code: 'unknown_error' } }), { status: 401 }))
+            .mockResolvedValueOnce(new Response(JSON.stringify({ type: 'action', code: 'action code' }), { status: 200 }));
+        const writeSpy = mockFsForWriting();
+
+        const success = await pullFromCatalog(baseOptions);
+
+        expect(success).toBe(true);
+        expect(requestedSecretKeys()).toEqual(['Bearer secret-revoked', 'Bearer secret-dev']);
+        expect(writeSpy).toHaveBeenCalledWith('/project/github/actions/list-repos.ts', 'action code', 'utf-8');
+    });
+
+    it('does not try other secret keys when the error is not about the key', async () => {
+        stubSecretKeys({ NANGO_SECRET_KEY: 'secret-default', NANGO_SECRET_KEY_DEV: 'secret-dev' });
+        mockResponse(404, { error: { code: 'unknown_function', message: 'Function not found' } });
+
+        const success = await pullFromCatalog(baseOptions);
+
+        expect(success).toBe(false);
+        expect(requestedSecretKeys()).toEqual(['Bearer secret-default']);
+    });
+
+    it('reports that no secret key is valid when every key is rejected', async () => {
+        stubSecretKeys({ NANGO_SECRET_KEY: 'secret-revoked', NANGO_SECRET_KEY_DEV: 'secret-also-revoked' });
+        fetchMock.mockImplementation(() => Promise.resolve(new Response(JSON.stringify({ error: { code: 'unknown_error' } }), { status: 401 })));
+        const writeSpy = mockFsForWriting();
+
+        const success = await pullFromCatalog(baseOptions);
+
+        expect(success).toBe(false);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(writeSpy).not.toHaveBeenCalled();
+        expect(loggedMessages(consoleSpy)).toMatch(/No valid Nango secret key found/);
+    });
+
+    it('reports that no secret key is valid when none is set', async () => {
+        stubSecretKeys({});
+
+        const success = await pullFromCatalog(baseOptions);
+
+        expect(success).toBe(false);
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(loggedMessages(consoleSpy)).toMatch(/No valid Nango secret key found/);
     });
 });
