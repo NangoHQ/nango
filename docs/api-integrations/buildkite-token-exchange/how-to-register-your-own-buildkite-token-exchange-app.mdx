@@ -1,0 +1,67 @@
+---
+title: 'How to register your own Buildkite Token Exchange App'
+sidebarTitle: 'Buildkite (Token Exchange) setup'
+description: 'Create a Buildkite Token Exchange App and connect it to Nango'
+---
+
+This guide shows you how to create a Buildkite Token Exchange App. Nango signs a JWT with your app's private key and exchanges it for short-lived API tokens.
+
+You need:
+- A Buildkite **Enterprise** plan. Token exchange isn't available on other plans.
+- Organization administrator permissions in Buildkite.
+
+<Steps>
+  <Step id="generate-signing-key" title="Generate a signing key">
+    Create a private key and a JWKS containing its public key. Buildkite supports RSA keys (`RS256`) and EC P-256 keys (`ES256`).
+
+    <Tabs>
+      <Tab title="RSA (RS256)">
+        ```bash
+        openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out private.pem
+
+        node -e "const c=require('crypto'),fs=require('fs');const k=c.createPublicKey(fs.readFileSync('private.pem')).export({format:'jwk'});console.log(JSON.stringify({keys:[{...k,kid:'nango-1',alg:'RS256',use:'sig'}]}))"
+        ```
+      </Tab>
+      <Tab title="EC (ES256)">
+        ```bash
+        openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out private.pem
+
+        node -e "const c=require('crypto'),fs=require('fs');const k=c.createPublicKey(fs.readFileSync('private.pem')).export({format:'jwk'});console.log(JSON.stringify({keys:[{...k,kid:'nango-1',alg:'ES256',use:'sig'}]}))"
+        ```
+      </Tab>
+    </Tabs>
+
+    The second command prints your JWKS. Buildkite requires a `kid` on every key. Here it's `nango-1`, and that's your **Key ID**. Keep `private.pem` secret.
+  </Step>
+  <Step id="create-app" title="Create a Token Exchange App">
+    1. In Buildkite, go to **Organization Settings** > **Integrations** > **Token Exchange Apps**.
+    2. Click **Create a Token Exchange App**.
+    3. Fill in:
+       - **Name** and **Description**
+       - **JWKS** — paste the JSON from the previous step, or an `https://` URL that serves it.
+       - **Grantable Scopes** — the scopes tokens from this app can have, such as `read_pipelines` and `read_builds`.
+       - **Default Scopes** — required for Nango. Nango doesn't send a `scope` parameter, so every token gets these scopes. If you leave them empty, token requests fail.
+       - **Allowed IPs for Token Exchange Requests** and **Allowed IPs for Minted Token Usage** (optional) — Nango both requests the tokens and calls the API with them. If you restrict either, include all of [Nango's IP addresses](/guides/platform/security#ip-allowlist).
+       - **Max Token TTL (seconds)** — up to 86,400 (24 hours). Tokens last one hour by default, capped at this value.
+    4. Save the app.
+  </Step>
+  <Step id="copy-client-id" title="Copy your Client ID">
+    Copy the **Client ID** from the app's page.
+  </Step>
+  <Step id="add-to-nango" title="Add your app to Nango">
+    In your Buildkite (Token Exchange) integration in Nango, enter:
+    - **Client ID** — from the previous step.
+    - **Key ID** — the `kid` from your JWKS.
+    - **Private Key** — the full contents of `private.pem`, including the `BEGIN` and `END` lines.
+    - **Signing Algorithm** — `RS256` for an RSA key, `ES256` for an EC key.
+
+    <Accordion title="For agents">
+      Create the integration with the [create integration](/reference/backend/http-api/integration/create) API (`POST /integrations`) with `provider: "buildkite-token-exchange"` and `"integration_config": { "clientId": "...", "keyId": "...", "privateKey": "<PEM>", "algorithm": "RS256" }`. Each connection then needs `organizationSlug` and `userEmail` in its connection config.
+    </Accordion>
+  </Step>
+  <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Buildkite's OAuth token exchange documentation](https://buildkite.com/docs/apis/oauth-token-exchange).

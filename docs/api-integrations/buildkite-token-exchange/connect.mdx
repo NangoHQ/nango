@@ -1,0 +1,41 @@
+---
+title: 'Buildkite (Token Exchange) - How do I link my account?'
+sidebarTitle: 'Buildkite (Token Exchange)'
+---
+
+## Overview
+
+To connect with Buildkite using token exchange, you need:
+
+1. **Organization Slug** — the Buildkite organization the token is for.
+2. **User Email** — the email of the Buildkite user the token acts as.
+
+API calls run with that user's permissions, limited to the scopes of the Token Exchange App.
+
+### Prerequisites
+
+- A Buildkite organization on the Enterprise plan, with a Token Exchange App set up in Nango. See the [setup guide](/api-integrations/buildkite-token-exchange/how-to-register-your-own-buildkite-token-exchange-app).
+
+### Step 1: Find your organization slug
+
+1. Log in to [Buildkite](https://buildkite.com).
+2. Look at the URL in your browser's address bar. It follows the pattern `buildkite.com/acme-inc`. Your organization slug is the part after `buildkite.com/`, such as `acme-inc`.
+
+<Note>Use the slug from the URL, not the organization's display name. You can also enter the organization's UUID, which stays the same if the organization is renamed.</Note>
+
+### Step 2: Choose the user
+
+Pick the Buildkite user the token should act as, such as a dedicated service account. The user must:
+
+- be an active member of the organization from step 1.
+- have a verified email address on their Buildkite account.
+
+### Step 3: Enter your details in the Connect UI
+
+1. Open the form where you need to authenticate with Buildkite (Token Exchange).
+2. Enter your **Organization Slug** and the user's **User Email**.
+3. Click **Connect**.
+
+<img src="/api-integrations/buildkite-token-exchange/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Buildkite.
