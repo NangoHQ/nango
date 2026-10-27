@@ -1206,6 +1206,7 @@
               "api-integrations/canva-mcp",
               "integrations/all/canva-scim",
               "api-integrations/canvas-lms",
+              "api-integrations/cch-axcess",
               "api-integrations/cdw",
               "api-integrations/cerby",
               "integrations/all/certn",
