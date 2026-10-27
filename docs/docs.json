@@ -1193,6 +1193,7 @@
               "api-integrations/builder-io-private",
               "api-integrations/builder-io-public",
               "api-integrations/buildkite",
+              "api-integrations/buildkite-token-exchange",
               "integrations/all/buildium",
               "integrations/all/builtwith",
               "integrations/all/bullhorn",
