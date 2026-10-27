@@ -11,6 +11,36 @@ import type { Result } from '@nangohq/utils';
 
 export type ResolvedTool = { kind: 'function'; fn: CurrentFunctionConfig } | ResolveRunnableToolResult;
 
+export type FoundToolFunction = { kind: 'enabled'; fn: CurrentFunctionConfig } | { kind: 'disabled' } | { kind: 'none' };
+
+/**
+ * Finds the tool function a name resolves to. A disabled one is still found, because it shadows
+ * same-named actions and catalog tools.
+ */
+export async function findToolFunction({
+    environmentId,
+    integrationKey,
+    name
+}: {
+    environmentId: number;
+    integrationKey: string;
+    name: string;
+}): Promise<Result<FoundToolFunction>> {
+    const functions = await search(db.knex, {
+        environmentId,
+        filter: { integrationKey, name, trigger: { kind: 'http' } }
+    });
+    if (functions.isErr()) {
+        return Err(functions.error);
+    }
+
+    const fn = functions.value[0];
+    if (!fn) {
+        return Ok({ kind: 'none' });
+    }
+    return Ok(fn.config.enabled ? { kind: 'enabled', fn } : { kind: 'disabled' });
+}
+
 /**
  * Resolves an enabled tool by name, by order of priority:
  * 1. tool functions, disabled ones resolving to missing so they shadow same-named actions
@@ -28,17 +58,18 @@ export async function resolveTool({
     integration: Pick<IntegrationConfig, 'id' | 'provider' | 'unique_key'>;
     name: string;
 }): Promise<Result<ResolvedTool>> {
-    const functions = await search(db.knex, {
-        environmentId,
-        filter: { integrationKey: integration.unique_key, name, trigger: { kind: 'http' } }
-    });
-    if (functions.isErr()) {
-        return Err(functions.error);
+    const found = await findToolFunction({ environmentId, integrationKey: integration.unique_key, name });
+    if (found.isErr()) {
+        return Err(found.error);
     }
 
-    const fn = functions.value[0];
-    if (fn) {
-        return Ok(fn.config.enabled ? { kind: 'function', fn } : { kind: 'missing' });
+    switch (found.value.kind) {
+        case 'enabled':
+            return Ok({ kind: 'function', fn: found.value.fn });
+        case 'disabled':
+            return Ok({ kind: 'missing' });
+        case 'none':
+            break;
     }
 
     try {

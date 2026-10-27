@@ -193,6 +193,31 @@ describe('compileToolset', () => {
         expect(compiled.code).toBe('unsupported_function_type');
     });
 
+    it('exposes enabled tool functions alongside actions', () => {
+        const compiled = compileToolsetFromFunctions({
+            toolset: { notion: { allow: ['read_doc', 'summarize_doc'], deny: [] } },
+            pinnedTools: { notion: ['summarize_doc'] },
+            connectedIntegrations: ['notion'],
+            functions: [...functions, action('notion', 'summarize_doc', { type: 'tool' })]
+        }).unwrap();
+
+        expect(names(integration(compiled, 'notion').pinned)).toEqual(['summarize_doc']);
+        expect(names(integration(compiled, 'notion').searchable)).toEqual(['read_doc']);
+    });
+
+    it('rejects a disabled tool function as unknown', () => {
+        const compiled = expectError(
+            compileToolsetFromFunctions({
+                toolset: { notion: { allow: ['summarize_doc'], deny: [] } },
+                pinnedTools: undefined,
+                connectedIntegrations: ['notion'],
+                functions: [...functions, action('notion', 'summarize_doc', { type: 'tool', enabled: false })]
+            })
+        );
+
+        expect(compiled.code).toBe('unknown_tool');
+    });
+
     it('rejects a pinned tool the toolset denies', () => {
         const compiled = expectError(compile({ toolset: { notion: { allow: ['read_doc'], deny: [] } }, pinnedTools: { notion: ['delete_doc'] } }));
 

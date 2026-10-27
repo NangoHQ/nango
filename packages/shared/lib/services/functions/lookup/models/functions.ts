@@ -1,5 +1,6 @@
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
+import { SCHEMA_REF_PREFIX } from '@nangohq/utils';
 
 import { getCatalogTool, listCatalogTools } from '../../../catalog/actions.js';
 
@@ -157,15 +158,18 @@ export interface IntegrationFunctionRow {
     integration_id: string;
     provider: string;
     name: string | null;
-    type: 'sync' | 'action' | null;
+    type: 'sync' | 'action' | 'tool' | null;
     description: string | null;
     enabled: boolean | null;
 }
 
 /**
- * Returns every integration in the environment alongside its available sync and action
+ * Returns every integration in the environment alongside its available sync, action and tool
  * functions (deployed rows plus catalog actions), one row per function and a single
  * row with null function columns for an integration that has none.
+ *
+ * A tool function shadows a deployed or catalog action of the same name, disabled or not, the
+ * same way tool resolution does.
  *
  * Built for compiling an agent session toolset, which has to tell "this integration does
  * not exist" apart from "it exists and has no tools", and has to see syncs so that naming
@@ -206,10 +210,63 @@ export async function findIntegrationFunctions({
         query.whereIn('nc.unique_key', providerConfigKeys);
     }
 
-    return appendCatalogActions(environmentId, await query);
+    const [deployedRows, toolRows] = await Promise.all([query, findToolFunctions({ environmentId, providerConfigKeys })]);
+    return appendCatalogActions(environmentId, withToolFunctions(deployedRows, toolRows));
 }
 
 type DeployedFunctionRow = IntegrationFunctionRow;
+
+async function findToolFunctions({
+    environmentId,
+    providerConfigKeys
+}: {
+    environmentId: number;
+    providerConfigKeys: string[] | undefined;
+}): Promise<IntegrationFunctionRow[]> {
+    const query = activeToolsInEnvironment(environmentId).select<IntegrationFunctionRow[]>(
+        'nc.unique_key AS integration_id',
+        'nc.provider',
+        'fc.name',
+        db.knex.raw("'tool' AS type"),
+        'fv.description',
+        'fc.enabled'
+    );
+
+    if (providerConfigKeys) {
+        query.whereIn('nc.unique_key', providerConfigKeys);
+    }
+
+    return await query;
+}
+
+/**
+ * Drops the actions a tool function shadows, and the empty row of an integration whose only
+ * functions are tools.
+ */
+function withToolFunctions(deployedRows: DeployedFunctionRow[], toolRows: IntegrationFunctionRow[]): DeployedFunctionRow[] {
+    if (toolRows.length === 0) {
+        return deployedRows;
+    }
+
+    const toolNames = new Set(toolRows.map((row) => `${row.integration_id}:${row.name}`));
+    const integrationsWithTools = new Set(toolRows.map((row) => row.integration_id));
+    const kept = deployedRows.filter((row) => {
+        if (row.name === null) {
+            return !integrationsWithTools.has(row.integration_id);
+        }
+        return row.type !== 'action' || !toolNames.has(`${row.integration_id}:${row.name}`);
+    });
+
+    return [...kept, ...toolRows].sort(byIntegrationThenName);
+}
+
+function byIntegrationThenName(a: IntegrationFunctionRow, b: IntegrationFunctionRow): number {
+    const integration = a.integration_id.localeCompare(b.integration_id);
+    if (integration !== 0) {
+        return integration;
+    }
+    return (a.name ?? '').localeCompare(b.name ?? '');
+}
 
 async function appendCatalogActions(environmentId: number, deployedRows: DeployedFunctionRow[]): Promise<IntegrationFunctionRow[]> {
     const accountUuid = await accountUuidForEnvironment(environmentId);
@@ -231,7 +288,7 @@ async function appendCatalogActions(environmentId: number, deployedRows: Deploye
             continue;
         }
 
-        const deployedActionNames = new Set(group.filter((row) => row.type === 'action' && row.name).map((row) => row.name as string));
+        const deployedActionNames = new Set(group.filter((row) => (row.type === 'action' || row.type === 'tool') && row.name).map((row) => row.name as string));
         const deployed = group.filter((row) => row.name !== null).map((row) => toFunctionRow(row, true));
         const catalog = listCatalogTools(sample.provider)
             .filter((action) => !deployedActionNames.has(action.name))
@@ -259,13 +316,7 @@ async function appendCatalogActions(environmentId: number, deployedRows: Deploye
         }
     }
 
-    merged.sort((a, b) => {
-        const integration = a.integration_id.localeCompare(b.integration_id);
-        if (integration !== 0) {
-            return integration;
-        }
-        return (a.name ?? '').localeCompare(b.name ?? '');
-    });
+    merged.sort(byIntegrationThenName);
     return merged;
 }
 
@@ -288,10 +339,11 @@ export interface ActionInputSchemaRow {
 }
 
 /**
- * Returns the input model name and schema definitions for named actions, across as many
- * integrations as the caller asks for in one query.
+ * Returns the input model name and schema definitions for named actions and tool functions,
+ * across as many integrations as the caller asks for in one query.
  *
- * An active deployed action occupies the name. When tools-catalog is on, that row contributes
+ * A tool function occupies the name ahead of everything else, and a disabled one contributes no
+ * schema. Otherwise an active deployed action occupies the name. When tools-catalog is on, that row contributes
  * its schema even if `_nango_sync_configs.enabled` is false. When the flag is off, a disabled
  * deployed row contributes no schema. The catalog is never a fallback for an occupied name,
  * and catalog schemas are returned only for unoccupied names.
@@ -307,7 +359,13 @@ export async function findActionInputSchemas({
         return [];
     }
 
-    const activeRows = await db.knex
+    const pairs = actions.map((action) => [action.integrationId, action.name]);
+    const toolQuery = activeToolsInEnvironment(environmentId)
+        .whereIn(['nc.unique_key', 'fc.name'], pairs)
+        .select<
+            { integration_id: string; name: string; enabled: boolean; input_schema_ref: string | null; json_schema: JSONSchema7 | null }[]
+        >('nc.unique_key AS integration_id', 'fc.name', 'fc.enabled', 'fv.input_schema_ref', 'fv.json_schema');
+    const actionQuery = db.knex
         .from({ sc: '_nango_sync_configs' })
         .join({ nc: '_nango_configs' }, 'sc.nango_config_id', 'nc.id')
         .where('nc.environment_id', environmentId)
@@ -316,21 +374,24 @@ export async function findActionInputSchemas({
         .andWhere('sc.deleted', false)
         .andWhere('sc.active', true)
         .andWhere('sc.type', 'action')
-        .whereIn(
-            ['nc.unique_key', 'sc.sync_name'],
-            actions.map((action) => [action.integrationId, action.name])
-        )
-        .select<(ActionInputSchemaRow & { enabled: boolean })[]>(
-            'nc.unique_key AS integration_id',
-            'sc.sync_name AS name',
-            'sc.input',
-            'sc.models_json_schema',
-            'sc.enabled'
-        );
+        .whereIn(['nc.unique_key', 'sc.sync_name'], pairs)
+        .select<
+            (ActionInputSchemaRow & { enabled: boolean })[]
+        >('nc.unique_key AS integration_id', 'sc.sync_name AS name', 'sc.input', 'sc.models_json_schema', 'sc.enabled');
+    const [toolRows, actionRows] = await Promise.all([toolQuery, actionQuery]);
 
-    const occupied = new Set(activeRows.map((row) => `${row.integration_id}:${row.name}`));
+    const toolNames = new Set(toolRows.map((row) => `${row.integration_id}:${row.name}`));
+    const activeRows = actionRows.filter((row) => !toolNames.has(`${row.integration_id}:${row.name}`));
+    const occupied = new Set([...toolNames, ...activeRows.map((row) => `${row.integration_id}:${row.name}`)]);
     const forceActionsEnabled = activeRows.some((row) => !row.enabled) && (await catalogToolsEnabled(await accountUuidForEnvironment(environmentId)));
-    const deployed: ActionInputSchemaRow[] = [];
+    const deployed: ActionInputSchemaRow[] = toolRows
+        .filter((row) => row.enabled)
+        .map((row) => ({
+            integration_id: row.integration_id,
+            name: row.name,
+            input: row.input_schema_ref?.startsWith(SCHEMA_REF_PREFIX) ? row.input_schema_ref.slice(SCHEMA_REF_PREFIX.length) : row.input_schema_ref,
+            models_json_schema: row.json_schema as ActionInputSchemaRow['models_json_schema']
+        }));
     for (const row of activeRows) {
         if (!row.enabled && !forceActionsEnabled) {
             continue;
@@ -391,7 +452,7 @@ function activeSyncConfigBase({ environmentId, providerConfigKey }: { environmen
         .andWhere('sc.active', true);
 }
 
-function activeToolBase({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Knex.QueryBuilder {
+function activeToolsInEnvironment(environmentId: number): Knex.QueryBuilder {
     return db.knex
         .from({ fc: 'function_configs' })
         .join({ nc: '_nango_configs' }, 'fc.nango_config_id', 'nc.id')
@@ -400,11 +461,14 @@ function activeToolBase({ environmentId, providerConfigKey }: { environmentId: n
         })
         .where('fc.environment_id', environmentId)
         .andWhere('nc.environment_id', environmentId)
-        .andWhere('nc.unique_key', providerConfigKey)
         .andWhere('nc.deleted', false)
         .whereNull('fc.deleted_at')
         .whereNull('fv.deleted_at')
         .andWhereRaw("fv.trigger->>'kind' = 'http'");
+}
+
+function activeToolBase({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Knex.QueryBuilder {
+    return activeToolsInEnvironment(environmentId).andWhere('nc.unique_key', providerConfigKey);
 }
 
 function activeToolNamed(nameColumn: string): Knex.QueryBuilder {
