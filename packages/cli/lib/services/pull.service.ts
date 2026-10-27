@@ -55,13 +55,21 @@ export async function pullFunction(options: PullOptions & { environmentName: str
 /**
  * The catalog is the same in every environment, so any valid secret key works.
  * Keys are tried one after the other until one is accepted.
+ *
+ * `integrationId` is the provider to read from the catalog. `target` is the integration the function is written for, and defaults to the provider.
  */
-export async function pullFromCatalog(options: PullOptions): Promise<boolean> {
-    const { integrationId, name, debug } = options;
+export async function pullFromCatalog(options: PullOptions & { target?: string | undefined }): Promise<boolean> {
+    const { integrationId: provider, target = provider, name, debug } = options;
+    if (isUnsafeName(provider)) {
+        console.log(chalk.red(`Invalid provider name: '${provider}'.`));
+        return false;
+    }
+
     return await pullCode({
         ...options,
-        label: `catalog/${integrationId}/${name}`,
-        endpoint: `/providers/${encodeURIComponent(integrationId)}/templates/${encodeURIComponent(name)}/code`,
+        integrationId: target,
+        label: `catalog/${provider}/${name}`,
+        endpoint: `/providers/${encodeURIComponent(provider)}/templates/${encodeURIComponent(name)}/code`,
         fetchCode: async (pathAndQuery) => {
             for (const { environmentName, secretKey } of findSecretKeys()) {
                 const res = await fetchWithSecretKey(new URL(pathAndQuery, resolveHostport(environmentName)), secretKey, debug);
