@@ -1,0 +1,39 @@
+---
+title: 'ArcSite - How do I link my account?'
+sidebarTitle: 'ArcSite'
+---
+
+## Overview
+
+To authenticate with ArcSite, you need:
+
+1. **API Token** - A token that lets Nango call the ArcSite API on behalf of your company.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- An ArcSite account with access to the admin console.
+
+### Step 1: Create an API token
+
+1. Log in to ArcSite and open the [API Tokens](https://user.arcsite.com/admin/apitokens) page in the admin console.
+2. Click **Generate new token**, enter a description, and click **OK**.
+
+<img src="/api-integrations/arcsite/generate_token.png"/>
+
+3. Copy the generated token.
+
+<Note>
+API requests count toward your company's limit of 5,000 requests per hour, shared by all of its API tokens.
+</Note>
+
+### Step 2: Enter your token in the Connect UI
+
+1. Open the form where you need to authenticate with ArcSite.
+2. Enter your **API Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/arcsite/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to ArcSite.
