@@ -1,15 +1,17 @@
 import tracer from 'dd-trace';
 
+import { invokeFunction, toolService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { executeAction } from '../../../../services/action.service.js';
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
 import { callRemoteTool, withRemoteMcpSession } from '../../../../services/remoteMcp.service.js';
+import { getOrchestrator } from '../../../../utils/utils.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { notConnectedGuidance } from '../notConnectedGuidance.js';
 import { resolveSessionConnection } from '../sessionConnection.js';
 import { defineAgentSessionMcpTool, RemoteToolResult } from '../sessionTool.js';
-import { actionExecutionErrorToMcp, remoteMcpErrorToMcp } from './errors.js';
+import { actionExecutionErrorToMcp, functionInvokeErrorToMcp, remoteMcpErrorToMcp, toolUnavailableError } from './errors.js';
 import { executeInputSchema } from './schema.js';
 
 import type { AgentSessionMcpContext } from '../sessionTool.js';
@@ -137,6 +139,42 @@ export async function executeSessionTool({
             .setTag('nango.environmentId', environment.id)
             .setTag('nango.providerConfigKey', integrationId)
             .setTag('nango.actionName', toolName);
+
+        const toolFunction = await toolService.findToolFunction({ environmentId: environment.id, integrationKey: integrationId, name: toolName });
+        if (toolFunction.isErr()) {
+            span.setTag('nango.error', toolFunction.error);
+            track({ errorCode: 'internal_error' });
+            return Err(toolFunction.error);
+        }
+
+        // A disabled tool function still shadows the action it shares a name with.
+        if (toolFunction.value.kind === 'disabled') {
+            track({ errorCode: 'tool_not_in_session' });
+            return Err(toolUnavailableError({ integrationId, toolName }));
+        }
+
+        if (toolFunction.value.kind === 'enabled') {
+            const result = await invokeFunction({
+                account,
+                environment,
+                connectionId: connection.connectionId,
+                functionUuid: toolFunction.value.fn.config.uuid,
+                input,
+                request: { method: 'POST', path: '/mcp', headers: {}, query: {} },
+                invocationType: 'wait',
+                orchestrator: getOrchestrator(),
+                actor: { kind: 'session', id: session.id }
+            });
+
+            if (result.isErr()) {
+                span.setTag('nango.error', result.error);
+                track({ errorCode: result.error.code });
+                return Err(functionInvokeErrorToMcp({ error: result.error, integrationId, toolName }));
+            }
+
+            track({});
+            return Ok('data' in result.value ? result.value.data : null);
+        }
 
         const { logCtx, result } = await executeAction({
             account,

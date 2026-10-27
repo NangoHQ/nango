@@ -2,7 +2,7 @@ import { Client } from '@modelcontextprotocol/client';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import { seeders, toolService } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
 import { actionInputSchemaOf, buildSessionTools, createAgentSessionMcpServer, listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
@@ -54,6 +54,7 @@ describe('createAgentSessionMcpServer', () => {
     beforeEach(() => {
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
         findActionInputs.mockReset().mockResolvedValue(new Map());
+        vi.spyOn(toolService, 'findToolFunction').mockResolvedValue(Ok({ kind: 'none' }));
     });
 
     async function listTools(compiledToolset: AgentSessionCompiledToolset) {

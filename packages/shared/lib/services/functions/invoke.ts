@@ -18,7 +18,8 @@ import type {
     DBTeam,
     FunctionInvocationErrorCode,
     FunctionInvocationType,
-    FunctionTrigger
+    FunctionTrigger,
+    OperationActor
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
@@ -49,7 +50,8 @@ export async function invokeFunction({
     request,
     invocationType,
     options,
-    orchestrator
+    orchestrator,
+    actor
 }: {
     account: DBTeam;
     environment: DBEnvironment;
@@ -60,6 +62,7 @@ export async function invokeFunction({
     invocationType: FunctionInvocationType;
     options?: Record<string, unknown> | undefined;
     orchestrator: Orchestrator;
+    actor?: OperationActor | undefined;
 }): Promise<Result<FunctionInvocationResult, FunctionInvokeError>> {
     return tracer.trace('nango.function.invocation', async (span) => {
         span.addTags({
@@ -144,7 +147,7 @@ export async function invokeFunction({
         const timeoutMs = executionTimeoutMs(invocationType);
 
         const logCtx = await logContextGetter.create(
-            { operation: { type: 'function', action: 'invoke' }, expiresAt: new Date(Date.now() + timeoutMs).toISOString() },
+            { operation: { type: 'function', action: 'invoke' }, expiresAt: new Date(Date.now() + timeoutMs).toISOString(), actor },
             {
                 account,
                 environment,
