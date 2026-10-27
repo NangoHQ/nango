@@ -62,8 +62,6 @@ export async function pullFromCatalog(options: PullOptions): Promise<boolean> {
         ...options,
         label: `catalog/${integrationId}/${name}`,
         endpoint: `/providers/${encodeURIComponent(integrationId)}/templates/${encodeURIComponent(name)}/code`,
-        // Servers released before the catalog endpoint answer with a bare 404.
-        missingRouteMessage: "This Nango instance doesn't support pulling from the catalog",
         fetchCode: async (pathAndQuery) => {
             for (const { environmentName, secretKey } of findSecretKeys()) {
                 const res = await fetchWithSecretKey(new URL(pathAndQuery, resolveHostport(environmentName)), secretKey, debug);
@@ -100,10 +98,9 @@ async function pullCode(
         label: string;
         endpoint: string;
         fetchCode: FetchCode;
-        missingRouteMessage?: string;
     }
 ): Promise<boolean> {
-    const { fullPath, integrationId, name, type, debug, force, autoConfirm, interactive = true, label, endpoint, fetchCode, missingRouteMessage } = options;
+    const { fullPath, integrationId, name, type, debug, force, autoConfirm, interactive = true, label, endpoint, fetchCode } = options;
 
     if (isUnsafeName(integrationId)) {
         console.log(chalk.red(`Invalid integration name: '${integrationId}'.`));
@@ -126,12 +123,6 @@ async function pullCode(
         }
 
         const body = (await res.json().catch(() => null)) as { type: ScriptTypeLiteral; code: string } | { error: { code: string; message?: string } } | null;
-
-        if (res.status === 404 && !body && missingRouteMessage) {
-            spinner.fail(`Failed to pull '${name}'`);
-            console.log(chalk.red(`\n${missingRouteMessage}`));
-            return false;
-        }
 
         if (!res.ok || !body || 'error' in body) {
             const errCode = body && 'error' in body ? body.error.code : String(res.status);
