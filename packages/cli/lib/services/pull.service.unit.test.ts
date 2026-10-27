@@ -142,6 +142,39 @@ describe('pullFromCatalog', () => {
         fetchMock.mockReset();
     });
 
+    it('writes the function for the target integration', async () => {
+        stubSecretKeys({ NANGO_SECRET_KEY_DEV: 'secret-dev' });
+        mockResponse(200, { type: 'action', code: 'action code' });
+        const writeSpy = mockFsForWriting();
+
+        const success = await pullFromCatalog({ ...baseOptions, target: 'my-github' });
+
+        expect(success).toBe(true);
+        expect(requestedUrl().pathname).toBe('/providers/github/templates/list-repos/code');
+        expect(writeSpy.mock.calls).toEqual([
+            ['/project/my-github/actions/list-repos.ts', 'action code', 'utf-8'],
+            ['/project/index.ts', "\nimport './my-github/actions/list-repos.js';\n", 'utf-8']
+        ]);
+    });
+
+    it.each(['../github', '..'])('rejects the unsafe target %s before calling the server', async (target) => {
+        stubSecretKeys({ NANGO_SECRET_KEY_DEV: 'secret-dev' });
+
+        const success = await pullFromCatalog({ ...baseOptions, target });
+
+        expect(success).toBe(false);
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('rejects an unsafe provider before calling the server', async () => {
+        stubSecretKeys({ NANGO_SECRET_KEY_DEV: 'secret-dev' });
+
+        const success = await pullFromCatalog({ ...baseOptions, integrationId: '..', target: 'my-github' });
+
+        expect(success).toBe(false);
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
     it('ignores NANGO_SECRET_KEY', async () => {
         stubSecretKeys({ NANGO_SECRET_KEY: 'secret-default', NANGO_SECRET_KEY_DEV: 'secret-dev' });
         mockResponse(200, { type: 'action', code: 'action code' });
