@@ -8974,6 +8974,7 @@ erpnext:
             title: API Key
             description: The API Key generated for your ERPNext user.
             example: a1b2c3d4e5f6a7b
+            pattern: '^[a-f0-9]{15}$'
             doc_section: '#step-2-generating-your-api-key-and-secret'
         password:
             type: string
@@ -8981,6 +8982,7 @@ erpnext:
             description: The API Secret generated for your ERPNext user.
             secret: true
             example: 3f9a1c*****7e2b
+            pattern: '^[a-f0-9]{15}$'
             doc_section: '#step-2-generating-your-api-key-and-secret'
 
 evaluagent:
