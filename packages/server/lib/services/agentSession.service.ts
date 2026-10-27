@@ -409,7 +409,7 @@ export async function fillPendingMcpServer(
     try {
         await trx<DBAgentSession>(AGENT_SESSIONS_TABLE)
             .where({ id })
-            .whereRaw(`compiled_toolset -> ? -> 'pendingMcpServer' IS NOT NULL`, [integrationId])
+            .whereRaw(`compiled_toolset -> ? -> 'mcpServer' ->> 'status' = 'pending'`, [integrationId])
             .update({
                 compiled_toolset: trx.raw('compiled_toolset || ?::jsonb', [JSON.stringify({ [integrationId]: integration })]),
                 updated_at: new Date()

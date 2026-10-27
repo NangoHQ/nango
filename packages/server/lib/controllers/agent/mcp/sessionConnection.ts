@@ -68,7 +68,7 @@ export async function withConnectionsCreatedInSession(session: AgentSession): Pr
 }
 
 export function hasPendingMcpServers(session: AgentSession): boolean {
-    return Object.values(session.compiledToolset).some((integration) => integration.pendingMcpServer);
+    return Object.values(session.compiledToolset).some((integration) => agentSessionToolsetService.pendingMcpServerOf(integration));
 }
 
 /**
@@ -87,7 +87,9 @@ export async function withMcpToolsDiscovered({
     session: AgentSession;
 }): Promise<AgentSession> {
     const connections = Object.entries(session.compiledToolset).flatMap(([integrationId, integration]) =>
-        integration.pendingMcpServer && Object.hasOwn(session.resolvedConnections, integrationId) && session.resolvedConnections[integrationId]
+        agentSessionToolsetService.pendingMcpServerOf(integration) &&
+        Object.hasOwn(session.resolvedConnections, integrationId) &&
+        session.resolvedConnections[integrationId]
             ? [session.resolvedConnections[integrationId]]
             : []
     );

@@ -11,8 +11,13 @@ import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedCon
 const inputSchema = { type: 'object', properties: {} };
 
 const TOOLSET: AgentSessionCompiledToolset = {
-    'notion-mcp': { provider: 'notion-mcp', pinned: [], searchable: [], pendingMcpServer: { allow: '*', deny: ['delete_page'], pinned: ['search'] } },
-    'linear-mcp': { provider: 'linear-mcp', pinned: [], searchable: [], pendingMcpServer: { allow: '*', deny: [], pinned: [] } }
+    'notion-mcp': {
+        provider: 'notion-mcp',
+        pinned: [],
+        searchable: [],
+        mcpServer: { status: 'pending', allow: '*', deny: ['delete_page'], pinnedNames: ['search'] }
+    },
+    'linear-mcp': { provider: 'linear-mcp', pinned: [], searchable: [], mcpServer: { status: 'pending', allow: '*', deny: [], pinnedNames: [] } }
 };
 
 const NOTION_CREATED_IN_SESSION = { integrationId: 'notion-mcp', provider: 'notion-mcp', connectionId: 'notion-new', internalConnectionId: 10, configId: 20 };

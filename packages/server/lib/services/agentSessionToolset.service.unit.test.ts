@@ -348,8 +348,7 @@ describe('MCP servers connected mid-session', () => {
             'notion-mcp'
         );
 
-        expect(notion.mcpServer).toBeUndefined();
-        expect(notion.pendingMcpServer).toEqual({ allow: '*', deny: ['delete_page'], pinned: ['search'] });
+        expect(notion.mcpServer).toEqual({ status: 'pending', allow: '*', deny: ['delete_page'], pinnedNames: ['search'] });
         expect(names(notion.searchable)).toEqual(['deployed_action']);
     });
 
@@ -365,7 +364,7 @@ describe('MCP servers connected mid-session', () => {
             'notion-mcp'
         );
 
-        expect(notion.pendingMcpServer).toBeUndefined();
+        expect(notion.mcpServer).toBeUndefined();
     });
 
     it('still rejects a pinned name the toolset denies', () => {
@@ -391,7 +390,6 @@ describe('MCP servers connected mid-session', () => {
         });
 
         expect(notion.mcpServer).toBe('available');
-        expect(notion.pendingMcpServer).toBeUndefined();
         expect(names(notion.pinned)).toEqual(['search']);
         expect(notion.pinned[0]?.mcp).toEqual({ inputSchema });
         expect(names(notion.searchable)).toEqual(['deployed_action', 'fetch']);
@@ -404,7 +402,6 @@ describe('MCP servers connected mid-session', () => {
         const notion = withDiscoveredMcpTools({ integration: pending, discovery: { status: 'unavailable' } });
 
         expect(notion.mcpServer).toBe('unavailable');
-        expect(notion.pendingMcpServer).toBeUndefined();
         expect(names(notion.searchable)).toEqual(['deployed_action']);
     });
 
