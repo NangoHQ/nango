@@ -1,4 +1,4 @@
-import { getRunnerClient } from '@nangohq/nango-runner/client';
+import { getRunnerClient } from '@nangohq/nango-runner';
 
 import { envs } from '../env.js';
 import { runnerHttpOpts, RunnerType } from './runner.js';

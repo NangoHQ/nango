@@ -2,9 +2,9 @@ import { gunzipSync } from 'node:zlib';
 
 import { DeleteObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
-import { abortCheckIntervalMs, exec, heartbeatIntervalMs, HttpLocks, jobsClient, PersistClient, syncConflictTtlMs } from '@nangohq/runner';
+import { exec, HttpLocks, jobsClient, PersistClient } from '@nangohq/runner';
 import { loadProviders } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { ENVS, getLogger, parseEnvs } from '@nangohq/utils';
 
 import { lambdaInvocationSchema } from './schemas.js';
 
@@ -14,6 +14,7 @@ import type { Context } from 'aws-lambda';
 
 const logger = getLogger('lambda-function-runner');
 const s3 = new S3Client();
+const envs = parseEnvs(ENVS);
 
 function getNangoHost() {
     return process.env['NANGO_HOST'] || 'http://server.internal.nango';
@@ -94,7 +95,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
             environmentId: nangoProps.environmentId,
             scriptType: nangoProps.scriptType,
             syncId: nangoProps.syncId,
-            ttlMs: syncConflictTtlMs
+            ttlMs: envs.RUNNER_HEARTBEAT_INTERVAL_MS * envs.RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER
         });
         if (conflictRes.isErr()) {
             logger.error('Conflicting sync detected', { syncId: nangoProps.syncId });
@@ -106,7 +107,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
     const startTime = Date.now();
 
     const abortController = new AbortController();
-    const heartbeatTimeoutMs = request.nangoProps.heartbeatTimeoutSecs ? request.nangoProps.heartbeatTimeoutSecs * 1000 : heartbeatIntervalMs * 3;
+    const heartbeatTimeoutMs = request.nangoProps.heartbeatTimeoutSecs ? request.nangoProps.heartbeatTimeoutSecs * 1000 : envs.RUNNER_HEARTBEAT_INTERVAL_MS * 3;
 
     const abort = setInterval(async () => {
         try {
@@ -119,7 +120,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
         } catch {
             // best-effort abort poll; retry on next interval
         }
-    }, abortCheckIntervalMs);
+    }, envs.RUNNER_ABORT_CHECK_INTERVAL_MS);
 
     const heartbeat = setInterval(async () => {
         if (lastSuccessHeartbeatAt && lastSuccessHeartbeatAt + heartbeatTimeoutMs < Date.now()) {
@@ -140,13 +141,13 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
                 scriptType: nangoProps.scriptType,
                 syncId: nangoProps.syncId,
                 refresh: true,
-                ttlMs: syncConflictTtlMs
+                ttlMs: envs.RUNNER_HEARTBEAT_INTERVAL_MS * envs.RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER
             });
             if (refreshRes.isErr()) {
                 logger.error('Failed to refresh sync conflict lock', { error: refreshRes.error });
             }
         }
-    }, heartbeatIntervalMs);
+    }, envs.RUNNER_HEARTBEAT_INTERVAL_MS);
     try {
         const [code, codeParams] = await Promise.all([getCode(request), getCodeParams(request)]);
         if (code === '') {
