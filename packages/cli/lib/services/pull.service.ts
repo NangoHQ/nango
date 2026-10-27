@@ -68,18 +68,15 @@ export async function pullFromCatalog(options: PullOptions): Promise<boolean> {
                 if (res.status !== 401 && res.status !== 403) {
                     return res;
                 }
-                printDebug(`Secret key for '${environmentName ?? 'default'}' was rejected, trying the next one`, debug);
+                printDebug(`Secret key for '${environmentName}' was rejected, trying the next one`, debug);
             }
-            return { failure: 'No valid Nango secret key found. Set NANGO_SECRET_KEY in your .env file.' };
+            return { failure: 'No valid Nango secret key found. Set NANGO_SECRET_KEY_<ENV> (e.g. NANGO_SECRET_KEY_DEV) in your .env file.' };
         }
     });
 }
 
-function findSecretKeys(): { environmentName: string | undefined; secretKey: string }[] {
-    const keys: { environmentName: string | undefined; secretKey: string }[] = [];
-    if (process.env['NANGO_SECRET_KEY']) {
-        keys.push({ environmentName: undefined, secretKey: process.env['NANGO_SECRET_KEY'] });
-    }
+function findSecretKeys(): { environmentName: string; secretKey: string }[] {
+    const keys: { environmentName: string; secretKey: string }[] = [];
     for (const [variable, value] of Object.entries(process.env)) {
         if (variable.startsWith(SECRET_KEY_PREFIX) && value) {
             keys.push({ environmentName: variable.slice(SECRET_KEY_PREFIX.length).toLowerCase(), secretKey: value });
