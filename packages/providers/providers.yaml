@@ -9049,6 +9049,35 @@ expensify:
     docs: https://nango.dev/docs/integrations/all/expensify
     docs_connect: https://nango.dev/docs/integrations/all/expensify/connect
 
+extensiv:
+    display_name: Extensiv
+    categories:
+        - e-commerce
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.cartrover.com
+        retry:
+            remaining: 'x-cartrover-api-minute-hits-remaining'
+    credentials_verification_script: extensivCredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/extensiv
+    docs_connect: https://nango.dev/docs/api-integrations/extensiv/connect
+    credentials:
+        username:
+            type: string
+            title: API User
+            description: The API User of your Extensiv Integration Manager API keys.
+            example: 10859Ab3*****
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-create-your-api-keys'
+        password:
+            type: string
+            title: API Key
+            description: The API Key of your Extensiv Integration Manager API keys.
+            secret: true
+            example: Xk9T***********
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-create-your-api-keys'
+
 factorial:
     display_name: Factorial (OAuth)
     categories:
