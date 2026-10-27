@@ -328,55 +328,32 @@ class CustomerKeyService {
         }
     }
 
+    private async readClockTimestamp(trx: Knex): Promise<Date> {
+        const { rows } = await trx.raw<{ rows: { ts: Date }[] }>('SELECT clock_timestamp() AS ts');
+        const stampedAt = rows[0]?.ts;
+        if (!stampedAt) {
+            throw new NangoError('impossible_condition');
+        }
+        return stampedAt;
+    }
+
     public async createWebhookSigningKey(
         trx: Knex,
         {
-            accountId,
             environmentId
         }: {
             accountId: number;
             environmentId: number;
         }
-    ): Promise<Result<DBCustomerKey>> {
+    ): Promise<Result<string>> {
         try {
             const plainText = uuid.v4();
-
-            const hashed = await this.hashSecret(plainText);
-            if (hashed.isErr()) {
-                throw hashed.error;
-            }
-
-            const customerKey = {
-                account_id: accountId,
-                key_type: 'webhook_signing' as const,
-                display_name: 'Webhook signing',
-                scopes: null,
-                secret: plainText,
-                iv: '',
-                tag: '',
-                hashed: hashed.value,
-                last_used_at: null,
-                deleted_at: null
-            } satisfies Partial<DBCustomerKey>;
-
-            const encrypted = getEncryptionManager().encryptAPISecret(
-                customerKey as Parameters<EncryptionManager['encryptAPISecret']>[0]
-            ) as typeof customerKey;
-
-            const [created] = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE).insert(encrypted).returning('*');
-            if (!created) {
-                throw new NangoError('impossible_condition');
-            }
-
-            await trx<DBCustomerKeyRelation>(CUSTOMER_KEYS_RELATIONS_TABLE).insert({
-                customer_key_id: created.id,
-                entity_type: 'environment',
-                entity_id: environmentId
-            });
-            await this.copyWebhookSigningKey(trx, environmentId, created.id);
-
-            created.secret = plainText; // Callers expect unencrypted secret.
-            return Ok(created);
+            const encrypted = getEncryptionManager().encryptAPISecret({ secret: plainText, iv: '', tag: '' } as Parameters<
+                EncryptionManager['encryptAPISecret']
+            >[0]);
+            const stampedAt = await this.readClockTimestamp(trx);
+            await this.upsertWebhookSigningKey(trx, environmentId, encrypted, stampedAt);
+            return Ok(plainText);
         } catch (err) {
             return Err(err);
         }
@@ -403,19 +380,22 @@ class CustomerKeyService {
         return key;
     }
 
-    private async copyWebhookSigningKey(trx: Knex, environmentId: number, customerKeyId: number): Promise<void> {
+    private async upsertWebhookSigningKey(
+        trx: Knex,
+        environmentId: number,
+        encrypted: { secret: string; iv: string; tag: string },
+        updatedAt: Date
+    ): Promise<void> {
         await trx.raw(
             `INSERT INTO ${WEBHOOK_SIGNING_KEYS_TABLE} (environment_id, secret, iv, tag, created_at, updated_at)
-             SELECT ?, secret, iv, tag, created_at, updated_at
-             FROM ${CUSTOMER_KEYS_TABLE}
-             WHERE id = ?
+             VALUES (?, ?, ?, ?, ?, ?)
              ON CONFLICT (environment_id) DO UPDATE
              SET secret = EXCLUDED.secret,
                  iv = EXCLUDED.iv,
                  tag = EXCLUDED.tag,
                  updated_at = EXCLUDED.updated_at
              WHERE ${WEBHOOK_SIGNING_KEYS_TABLE}.updated_at < EXCLUDED.updated_at`,
-            [environmentId, customerKeyId]
+            [environmentId, encrypted.secret, encrypted.iv, encrypted.tag, updatedAt, updatedAt]
         );
     }
 
@@ -479,43 +459,20 @@ class CustomerKeyService {
     public async rotateWebhookSigningKey(trx: Knex, envId: number): Promise<Result<string>> {
         try {
             const plainText = uuid.v4();
-
-            const hashed = await this.hashSecret(plainText);
-            if (hashed.isErr()) {
-                throw hashed.error;
-            }
-
             const encrypted = getEncryptionManager().encryptAPISecret({ secret: plainText, iv: '', tag: '' } as Parameters<
                 EncryptionManager['encryptAPISecret']
             >[0]);
 
             const committed = await trx.transaction(async (innerTrx) => {
-                const existing = await this.webhookSigningKeyForEnv(innerTrx, envId).forUpdate(CUSTOMER_KEYS_TABLE);
-                const current = existing[0];
-                if (!current) {
-                    throw new CustomerKeyError('no_webhook_signing_key', { environmentId: envId });
-                }
-                if (existing.length > 1) {
-                    throw new CustomerKeyError('multiple_webhook_signing_keys', { environmentId: envId });
-                }
+                const stampedAt = await this.readClockTimestamp(innerTrx);
 
-                const updated = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-                    .where({ id: current.id })
-                    .update({
-                        secret: encrypted.secret,
-                        iv: encrypted.iv,
-                        tag: encrypted.tag,
-                        hashed: hashed.value,
-                        updated_at: innerTrx.raw('clock_timestamp()') as unknown as Date
-                    })
-                    .returning('updated_at');
-
-                const row = updated[0];
-                if (updated.length !== 1 || !row) {
+                const legacy = await this.webhookSigningKeyForEnv(innerTrx, envId).first();
+                const current = await innerTrx(WEBHOOK_SIGNING_KEYS_TABLE).where({ environment_id: envId }).first();
+                if (!legacy && !current) {
                     throw new CustomerKeyError('no_webhook_signing_key', { environmentId: envId });
                 }
 
-                await this.copyWebhookSigningKey(innerTrx, envId, current.id);
+                await this.upsertWebhookSigningKey(innerTrx, envId, encrypted, stampedAt);
                 return this.readWebhookSigningKey(innerTrx, envId);
             });
 
