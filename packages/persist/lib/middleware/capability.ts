@@ -1,4 +1,4 @@
-import { hasScope, INTERNAL_SERVICE_AUDIENCE_PERSIST, isResourceBound, isTaskBoundAuth, verifyTaskCapabilityToken } from '@nangohq/internal-auth';
+import { hasScope, INTERNAL_SERVICE_AUDIENCE_PERSIST, isResourceBound, isTaskBoundAuth, routeParam, verifyTaskCapabilityToken } from '@nangohq/internal-auth';
 import { accountService } from '@nangohq/shared';
 import { createRoute, stringifyError } from '@nangohq/utils';
 
@@ -123,12 +123,6 @@ async function authenticateTask(
     }
 }
 
-// Copied from the private helper in internal-auth/lib/middleware.ts. That package does not export it.
-function routeParam(req: Request, name: string): string | undefined {
-    const value = req.params[name];
-    return typeof value === 'string' && value.length > 0 ? value : undefined;
-}
-
 function positiveInt(value: string | undefined): number | undefined {
     if (value === undefined) {
         return undefined;
@@ -148,7 +142,6 @@ function bodySyncId(body: unknown): string | undefined {
     return typeof syncId === 'string' ? syncId : undefined;
 }
 
-// Copied from the private helper in internal-auth/lib/middleware.ts. That package does not export it.
 function unauthorized(res: Response): void {
     res.status(401).json({ error: { code: 'unauthorized', message: 'Unauthorized' } });
 }
