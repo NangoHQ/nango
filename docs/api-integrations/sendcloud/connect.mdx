@@ -19,8 +19,13 @@ Nango exchanges these keys for an OAuth2 access token on your behalf. This guide
 
 1. Log in to your Sendcloud account and go to [Integrations](https://app.sendcloud.com/v2/settings/integrations/manage).
 2. Find **Sendcloud API** in the list of integrations and click **Connect**.
+
+<img src="/api-integrations/sendcloud/01-sendcloud-integrations-sendcloud-api.png" />
+
 3. Enter a name for the API integration and click **Save**.
 4. Sendcloud automatically generates a **Public Key** and a **Secret Key** for the integration. Copy both.
+
+<img src="/api-integrations/sendcloud/02-sendcloud-api-integration-keys.png" />
 
 <Tip>
 When you add the API integration, Sendcloud offers a **Use OAuth2 authentication** setting. It enforces OAuth2 authentication instead of Basic authentication for that integration. Nango authenticates with OAuth2, so you can turn it on.
@@ -38,6 +43,8 @@ Once you have your **Public Key** and **Secret Key**:
 2. Enter your **Public Key** in the **Client ID** field.
 3. Enter your **Secret Key** in the **Client Secret** field.
 4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/sendcloud/form.png" style={{maxWidth: "450px" }}/>
 
 You are now connected to Sendcloud.
 
