@@ -140,25 +140,24 @@ export async function executeSessionTool({
             .setTag('nango.providerConfigKey', integrationId)
             .setTag('nango.actionName', toolName);
 
-        const toolFunction = await toolService.findToolFunction({ environmentId: environment.id, integrationKey: integrationId, name: toolName });
-        if (toolFunction.isErr()) {
-            span.setTag('nango.error', toolFunction.error);
+        const tool = await toolService.findTool({ environmentId: environment.id, integrationKey: integrationId, name: toolName });
+        if (tool.isErr()) {
+            span.setTag('nango.error', tool.error);
             track({ errorCode: 'internal_error' });
-            return Err(toolFunction.error);
+            return Err(tool.error);
         }
 
-        // A disabled tool function still shadows the action it shares a name with.
-        if (toolFunction.value.kind === 'disabled') {
+        if (tool.value.kind === 'disabled') {
             track({ errorCode: 'tool_not_in_session' });
             return Err(toolUnavailableError({ integrationId, toolName }));
         }
 
-        if (toolFunction.value.kind === 'enabled') {
+        if (tool.value.kind === 'enabled') {
             const result = await invokeFunction({
                 account,
                 environment,
                 connectionId: connection.connectionId,
-                functionUuid: toolFunction.value.fn.config.uuid,
+                functionUuid: tool.value.fn.config.uuid,
                 input,
                 request: { method: 'POST', path: '/mcp', headers: {}, query: {} },
                 invocationType: 'wait',

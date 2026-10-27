@@ -39,12 +39,12 @@ vi.mock('../../../../utils/utils.js', () => ({ getOrchestrator: () => ({}) }));
 
 const { executeSessionTool, executeTool } = await import('./execute.js');
 
-const TOOL_FUNCTION = {
+const TOOL = {
     config: { uuid: '11111111-1111-4111-8111-111111111111', name: 'read_doc', enabled: true }
 } as functionConfigService.CurrentFunctionConfig;
 
 beforeEach(() => {
-    vi.spyOn(toolService, 'findToolFunction').mockResolvedValue(Ok({ kind: 'none' }));
+    vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ kind: 'none' }));
     invokeFunction.mockReset().mockResolvedValue(Ok({ data: { ok: true } }));
 });
 
@@ -370,17 +370,17 @@ describe('executeSessionTool', () => {
         expect(errorOf(result).message).toBe('Internal error');
     });
 
-    it('runs a tool function by invoking it as the session', async () => {
-        vi.spyOn(toolService, 'findToolFunction').mockResolvedValue(Ok({ kind: 'enabled', fn: TOOL_FUNCTION }));
+    it('runs a tool by invoking it as the session', async () => {
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ kind: 'enabled', fn: TOOL }));
 
         const result = await execute('read_doc', { input: { id: '1' } });
 
         expect(result.unwrap()).toStrictEqual({ ok: true });
-        expect(toolService.findToolFunction).toHaveBeenCalledWith({ environmentId: 1, integrationKey: 'notion', name: 'read_doc' });
+        expect(toolService.findTool).toHaveBeenCalledWith({ environmentId: 1, integrationKey: 'notion', name: 'read_doc' });
         expect(invokeFunction).toHaveBeenCalledWith(
             expect.objectContaining({
                 connectionId: 'notion-acme',
-                functionUuid: TOOL_FUNCTION.config.uuid,
+                functionUuid: TOOL.config.uuid,
                 input: { id: '1' },
                 invocationType: 'wait',
                 actor: { kind: 'session', id: 'session-1' }
@@ -389,8 +389,8 @@ describe('executeSessionTool', () => {
         expect(executeAction).not.toHaveBeenCalled();
     });
 
-    it('refuses a disabled tool function rather than running the action it shadows', async () => {
-        vi.spyOn(toolService, 'findToolFunction').mockResolvedValue(Ok({ kind: 'disabled' }));
+    it('refuses a disabled tool rather than running the action it shadows', async () => {
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ kind: 'disabled' }));
 
         const result = await execute('read_doc');
 
@@ -422,8 +422,8 @@ describe('executeSessionTool', () => {
         { code: 'validation_error', expected: 'invalid_input' },
         { code: 'function_failed', cause: new NangoError('function_failure'), expected: 'tool_failed' },
         { code: 'server_error', expected: undefined }
-    ])('maps a tool function $code to $expected', async ({ code, cause, expected }) => {
-        vi.spyOn(toolService, 'findToolFunction').mockResolvedValue(Ok({ kind: 'enabled', fn: TOOL_FUNCTION }));
+    ])('maps a tool $code to $expected', async ({ code, cause, expected }) => {
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ kind: 'enabled', fn: TOOL }));
         invokeFunction.mockResolvedValue(Err(functionInvokeError(code, { cause })));
 
         const result = await execute('read_doc');
@@ -434,8 +434,8 @@ describe('executeSessionTool', () => {
         }
     });
 
-    it('tells the agent which part of its input a tool function rejected', async () => {
-        vi.spyOn(toolService, 'findToolFunction').mockResolvedValue(Ok({ kind: 'enabled', fn: TOOL_FUNCTION }));
+    it('tells the agent which part of its input a tool rejected', async () => {
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ kind: 'enabled', fn: TOOL }));
         invokeFunction.mockResolvedValue(Err(functionInvokeError('validation_error', { errors: [{ path: '/id', message: 'must be string' }] })));
 
         const result = await execute('read_doc');

@@ -168,7 +168,7 @@ export interface IntegrationFunctionRow {
  * functions (deployed rows plus catalog actions), one row per function and a single
  * row with null function columns for an integration that has none.
  *
- * A tool function shadows a deployed or catalog action of the same name, disabled or not, the
+ * A tool shadows a deployed or catalog action of the same name, disabled or not, the
  * same way tool resolution does.
  *
  * Built for compiling an agent session toolset, which has to tell "this integration does
@@ -210,13 +210,13 @@ export async function findIntegrationFunctions({
         query.whereIn('nc.unique_key', providerConfigKeys);
     }
 
-    const [deployedRows, toolRows] = await Promise.all([query, findToolFunctions({ environmentId, providerConfigKeys })]);
-    return appendCatalogActions(environmentId, withToolFunctions(deployedRows, toolRows));
+    const [deployedRows, toolRows] = await Promise.all([query, findTools({ environmentId, providerConfigKeys })]);
+    return appendCatalogActions(environmentId, withTools(deployedRows, toolRows));
 }
 
 type DeployedFunctionRow = IntegrationFunctionRow;
 
-async function findToolFunctions({
+async function findTools({
     environmentId,
     providerConfigKeys
 }: {
@@ -240,10 +240,10 @@ async function findToolFunctions({
 }
 
 /**
- * Drops the actions a tool function shadows, and the empty row of an integration whose only
+ * Drops the actions a tool shadows, and the empty row of an integration whose only
  * functions are tools.
  */
-function withToolFunctions(deployedRows: DeployedFunctionRow[], toolRows: IntegrationFunctionRow[]): DeployedFunctionRow[] {
+function withTools(deployedRows: DeployedFunctionRow[], toolRows: IntegrationFunctionRow[]): DeployedFunctionRow[] {
     if (toolRows.length === 0) {
         return deployedRows;
     }
@@ -257,15 +257,13 @@ function withToolFunctions(deployedRows: DeployedFunctionRow[], toolRows: Integr
         return row.type !== 'action' || !toolNames.has(`${row.integration_id}:${row.name}`);
     });
 
-    return [...kept, ...toolRows].sort(byIntegrationThenName);
-}
-
-function byIntegrationThenName(a: IntegrationFunctionRow, b: IntegrationFunctionRow): number {
-    const integration = a.integration_id.localeCompare(b.integration_id);
-    if (integration !== 0) {
-        return integration;
-    }
-    return (a.name ?? '').localeCompare(b.name ?? '');
+    return [...kept, ...toolRows].sort((a, b) => {
+        const integration = a.integration_id.localeCompare(b.integration_id);
+        if (integration !== 0) {
+            return integration;
+        }
+        return (a.name ?? '').localeCompare(b.name ?? '');
+    });
 }
 
 async function appendCatalogActions(environmentId: number, deployedRows: DeployedFunctionRow[]): Promise<IntegrationFunctionRow[]> {
@@ -316,7 +314,13 @@ async function appendCatalogActions(environmentId: number, deployedRows: Deploye
         }
     }
 
-    merged.sort(byIntegrationThenName);
+    merged.sort((a, b) => {
+        const integration = a.integration_id.localeCompare(b.integration_id);
+        if (integration !== 0) {
+            return integration;
+        }
+        return (a.name ?? '').localeCompare(b.name ?? '');
+    });
     return merged;
 }
 
@@ -339,10 +343,10 @@ export interface ActionInputSchemaRow {
 }
 
 /**
- * Returns the input model name and schema definitions for named actions and tool functions,
+ * Returns the input model name and schema definitions for named actions and tools,
  * across as many integrations as the caller asks for in one query.
  *
- * A tool function occupies the name ahead of everything else, and a disabled one contributes no
+ * A tool occupies the name ahead of everything else, and a disabled one contributes no
  * schema. Otherwise an active deployed action occupies the name. When tools-catalog is on, that row contributes
  * its schema even if `_nango_sync_configs.enabled` is false. When the flag is off, a disabled
  * deployed row contributes no schema. The catalog is never a fallback for an occupied name,
