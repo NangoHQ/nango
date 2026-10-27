@@ -28,6 +28,7 @@ on:
                     - persist
                     - orchestrator
                     - metering
+                    - selfHosting
                     - connect_ui
                     - app_ui
                     - lambda
@@ -204,6 +205,7 @@ jobs:
                   yq eval '.spec.values.persist.image.tag = "${{ github.sha }}"' -i apps/${{ inputs.stage }}/nango-values.yaml
                   yq eval '.spec.values.orchestrator.image.tag = "${{ github.sha }}"' -i apps/${{ inputs.stage }}/nango-values.yaml
                   yq eval '.spec.values.metering.image.tag = "${{ github.sha }}"' -i apps/${{ inputs.stage }}/nango-values.yaml
+                  yq eval '.spec.values.selfHosting.image.tag = "${{ github.sha }}"' -i apps/${{ inputs.stage }}/nango-values.yaml
 
                   # Commit and push the changes
                   git add apps/${{ inputs.stage }}/nango-values.yaml
