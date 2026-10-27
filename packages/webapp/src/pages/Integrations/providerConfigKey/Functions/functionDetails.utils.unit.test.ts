@@ -113,4 +113,11 @@ describe('toFunctionDetails', () => {
             pullCommand: 'nango pull github template --catalog -a'
         });
     });
+
+    it('targets the integration when pulling a template for an integration not named after its provider', () => {
+        const template: NangoFunctionTemplate = { name: 'template', type: 'action', input: 'Input', returns: [], json_schema: action.json_schema };
+        expect(toFunctionDetails(template, { ...context, integration: 'my-github' }).pullCommand).toBe(
+            'nango pull github template --catalog --target my-github -a'
+        );
+    });
 });
