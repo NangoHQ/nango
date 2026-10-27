@@ -14,7 +14,7 @@ export async function up(knex: Knex, schema: string): Promise<void> {
         )`,
         [schema, INSTALLATION_KEYS_TABLE, schema, INSTALLATIONS_TABLE]
     );
-    await knex.raw(`CREATE INDEX IF NOT EXISTS ?? ON ??.?? (installation_id) WHERE deleted_at IS NULL`, [
+    await knex.raw(`CREATE INDEX IF NOT EXISTS ?? ON ??.?? (installation_id)`, [
         `${INSTALLATION_KEYS_TABLE}_installation_id_idx`,
         schema,
         INSTALLATION_KEYS_TABLE
