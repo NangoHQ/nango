@@ -207,8 +207,22 @@ describe('createConnectionTool', () => {
 
         const result = await callCreateConnection({ integration: 'slack' });
 
-        expect(codeOf(result)).toBe('connect_link_failed');
+        expect(codeOf(result)).toBe('session_creation_failed');
+        expect(errorOf(result).message).toContain('nope');
         expect(errorOf(result).message).toContain('Trying once more is reasonable');
+    });
+
+    it('tells the agent not to retry when the account is at its connection limit', async () => {
+        vi.spyOn(agentSessionConnectionsService, 'findConnectionCreatedForSession').mockResolvedValue(null);
+        vi.spyOn(connectSessionService, 'createConnectSession').mockResolvedValue(
+            Err(new connectSessionService.CreateConnectSessionError({ code: 'resource_capped', message: 'Reached maximum number of allowed connections.' }))
+        );
+
+        const result = await callCreateConnection({ integration: 'slack' });
+
+        expect(codeOf(result)).toBe('resource_capped');
+        expect(errorOf(result).message).toContain('Reached maximum number of allowed connections.');
+        expect(errorOf(result).message).toContain('Trying again will not help');
     });
 
     it('rejects a missing integration argument', async () => {

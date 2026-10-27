@@ -906,6 +906,7 @@
                         "group": "Environments",
                         "pages": [
                           "reference/backend/http-api/environments/list",
+                          "reference/backend/http-api/environments/get",
                           "reference/backend/http-api/environments/create",
                           "reference/backend/http-api/environments/delete",
                           "reference/backend/http-api/environments/list-api-keys",
@@ -1207,6 +1208,7 @@
               "api-integrations/canva-mcp",
               "integrations/all/canva-scim",
               "api-integrations/canvas-lms",
+              "api-integrations/cch-axcess",
               "api-integrations/cdw",
               "api-integrations/cerby",
               "integrations/all/certn",
@@ -1353,6 +1355,7 @@
               "integrations/all/exact-online",
               "integrations/all/exist",
               "integrations/all/expensify",
+              "api-integrations/extensiv",
               "api-integrations/facebook",
               "api-integrations/facebook-system-user",
               "integrations/all/factorial",
