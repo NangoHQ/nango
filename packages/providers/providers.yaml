@@ -4997,7 +4997,7 @@ cch-axcess:
         integratorKey:
             type: string
             title: Integrator Key
-            description: Your CCH Axcess API subscription key, also called the integrator key. Sent as the IntegratorKey header on every request.
+            description: Your CCH Axcess API subscription key.
             secret: true
             doc_section: '#get-integrator-key'
             order: 1
