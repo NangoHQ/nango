@@ -23418,7 +23418,8 @@ sendcloud:
     token_request_auth_method: basic
     token_params:
         grant_type: client_credentials
-        scope: api
+    default_scopes:
+        - api
     proxy:
         base_url: https://panel.sendcloud.sc
     docs: https://nango.dev/docs/api-integrations/sendcloud
