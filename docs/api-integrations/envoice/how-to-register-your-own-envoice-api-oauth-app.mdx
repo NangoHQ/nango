@@ -1,0 +1,32 @@
+---
+title: 'How to register your own Envoice OAuth app'
+sidebarTitle: 'Envoice setup'
+description: 'Request an OAuth app from Envoice and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Envoice to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Envoice company.
+
+<Steps>
+  <Step id="request-app" title="Request an OAuth app">
+    Envoice has no self-service developer portal. Email [developer@envoice.eu](mailto:developer@envoice.eu) to request a new application registration. In the request, include:
+    - Your application's name, which Envoice shows to users on the consent screen.
+    - The redirect URI: `https://api.nango.dev/oauth/callback`
+
+    <Note>
+    The redirect URI must match exactly, including the `https` scheme, case, and any trailing `/`. IP addresses are not allowed.
+    </Note>
+  </Step>
+  <Step id="get-credentials" title="Get your credentials">
+    Envoice sends your **Client ID** and **Client Secret** by email. Enter them in your Envoice integration in Nango.
+
+    Envoice issues separate development keys for its sandbox (`https://demo-api.envoice.eu/partner`) and production keys for its live environment. This integration uses the live environment, so use your production keys.
+  </Step>
+  <Step id="select-scopes" title="Select your scopes">
+    In your Envoice integration in Nango, add the scopes your app needs, for example `accounting.transactions.read` to read invoices. Include `offline_access` so Envoice issues a refresh token.
+  </Step>
+  <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Envoice's OAuth 2.0 documentation](https://envoice.stoplight.io/docs/envoice-api/656d3e27e550b-o-auth-2-0-for-server-side-web-apps).

@@ -2760,6 +2760,20 @@ emarsys-oauth:
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 employment-hero: []
 
+# source: https://envoice.stoplight.io/docs/envoice-api/656d3e27e550b-o-auth-2-0-for-server-side-web-apps (Scopes, Offline access) + https://envoice.stoplight.io/docs/envoice-api/12dab89109ded-envoice-api (OpenAPI oauth2 scopes)
+envoice:
+    - accounting.attachments
+    - accounting.attachments.read
+    - accounting.contacts
+    - accounting.contacts.read
+    - accounting.settings
+    - accounting.settings.read
+    - accounting.transactions
+    - accounting.transactions.read
+    - offline_access
+    - user.billing.accounts.read
+    - user.organisations
+
 # source: https://developers.envoy.com/hub/docs/scopes
 envoy:
     - companies.read

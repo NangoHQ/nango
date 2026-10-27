@@ -1333,6 +1333,7 @@
               "api-integrations/embat",
               "integrations/all/employment-hero",
               "integrations/all/entrata",
+              "api-integrations/envoice",
               "integrations/all/envoy",
               "api-integrations/epc-gov-uk",
               "api-integrations/epic",

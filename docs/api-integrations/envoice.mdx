@@ -1,0 +1,88 @@
+---
+title: 'Envoice'
+sidebarTitle: 'Envoice'
+description: 'Integrate your application with the Envoice API'
+---
+
+## 🚀 Quickstart
+
+Connect to Envoice with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Envoice_.
+    </Step>
+    <Step id="authorize-envoice" title="Authorize Envoice">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then log in to Envoice and choose the company to connect. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-envoice-api" title="Call the Envoice API">
+    Let's make your first request to the Envoice API to list the company's chart of accounts. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/account" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/account',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Envoice integration guides
+
+- [How to register your own Envoice OAuth app](/api-integrations/envoice/how-to-register-your-own-envoice-api-oauth-app)  
+Request an OAuth app from Envoice and obtain credentials to connect it to Nango.
+
+Official docs: [Envoice API documentation](https://envoice.stoplight.io/docs/envoice-api)
+
+## 🚨 API gotchas
+
+- Every request must name the Envoice company in the `Envoice-Tenant-Id` header. Envoice returns the company's `tenantId` with the authorization code, Nango stores it on the connection, and the proxy adds the header for you.
+- Envoice only issues a refresh token when you request the `offline_access` scope. Nango requests it by default if you configure no scopes; if you set your own scopes, include `offline_access`.
+- Access tokens expire after one hour. A refresh token expires after 100 days without use, and then the user must authorize again.
+- Envoice has no self-service developer portal. You request an OAuth app, with its redirect URIs, by email.
+- This integration uses Envoice's live environment (`https://api.envoice.eu/partner`). Envoice's sandbox is at `https://demo-api.envoice.eu/partner` and uses separate development credentials.
+- Envoice asks clients to retry `429` and `5xx` responses with truncated exponential backoff.
+
+## 🧩 Pre-built syncs & actions for Envoice
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/envoice/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

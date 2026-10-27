@@ -8545,6 +8545,39 @@ entrata:
             suffix: .entrata.com
             prefix: https://
 
+envoice:
+    display_name: Envoice
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://api.envoice.eu/partner/authorize
+    token_url: https://api.envoice.eu/partner/access_token
+    authorization_method: header
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    redirect_uri_metadata:
+        - tenantId
+    proxy:
+        base_url: https://api.envoice.eu/partner
+        headers:
+            envoice-tenant-id: ${connectionConfig.tenantId}
+    docs: https://nango.dev/docs/api-integrations/envoice
+    setup_guide_url: https://nango.dev/docs/api-integrations/envoice/how-to-register-your-own-envoice-api-oauth-app
+    connection_config:
+        tenantId:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 envoy:
     display_name: Envoy
     categories:
