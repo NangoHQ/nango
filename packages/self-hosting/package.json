@@ -6,7 +6,9 @@
     "types": "./dist/index.js",
     "private": true,
     "scripts": {
-        "build": "rimraf ./dist && tsc"
+        "build": "rimraf ./dist && tsc",
+        "start": "node dist/app.js",
+        "dev": "nodemon"
     },
     "repository": {
         "type": "git",
@@ -14,9 +16,12 @@
         "directory": "packages/self-hosting"
     },
     "dependencies": {
+        "@nangohq/database": "file:../database",
         "@nangohq/migrations": "file:../migrations",
         "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils",
+        "dd-trace": "5.117.0",
+        "express": "5.1.0",
         "knex": "3.1.0"
     },
     "devDependencies": {
