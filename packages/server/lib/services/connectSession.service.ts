@@ -179,6 +179,7 @@ export type CreateConnectSessionErrorCode =
     | 'token_creation_failed';
 
 const RETRYABLE_CREATE_CONNECT_SESSION_ERRORS: Record<CreateConnectSessionErrorCode, boolean> = {
+    connection_not_found: false,
     resource_capped: false,
     integration_not_found: false,
     invalid_connection_config: false,
