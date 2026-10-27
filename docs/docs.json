@@ -1646,6 +1646,7 @@
               "integrations/all/missive",
               "integrations/all/mixpanel",
               "api-integrations/modjo-ai",
+              "api-integrations/modjo-ai-v2",
               "api-integrations/modmed",
               "api-integrations/modmed-fhir",
               "api-integrations/mollie",
