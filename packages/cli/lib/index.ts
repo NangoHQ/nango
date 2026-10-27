@@ -14,7 +14,6 @@ import figlet from 'figlet';
 import { getVersionOutput } from './cli.js';
 import { NangoCliExitCode } from './exit-codes.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
-import { cloneTemplate } from './services/clone.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
 import { DryRunService } from './services/dryrun.service.js';
 import { Ensure } from './services/ensure.service.js';
@@ -625,21 +624,13 @@ program
     });
 
 program
-    .command('clone')
-    .description('Clone integration templates from the integration-templates repository')
-    .argument('<template>', 'Template to clone (e.g., "github", "github/actions", "github/actions/list-repos")')
-    .option('-f, --force', 'Overwrite existing files without prompting', false)
-    .action(async function (this: Command, template: string) {
-        const { debug, autoConfirm, force } = this.opts<GlobalOptions & { force: boolean }>();
-        const fullPath = process.cwd();
-
-        const precheck = await verificationService.ensureZeroYaml({ fullPath, debug });
-        if (!precheck) return;
-
-        const success = await cloneTemplate({ fullPath, templatePath: template, debug, force, autoConfirm });
-        if (!success) {
-            process.exitCode = 1;
-        }
+    .command('clone', { hidden: true })
+    .argument('[template]')
+    .allowUnknownOption()
+    .action(() => {
+        console.error(chalk.red('`nango clone` has been removed.'));
+        console.error(chalk.gray('Pull a catalog function with: nango pull <integration> <function> --catalog'));
+        process.exitCode = 1;
     });
 program
     .command('pull')
