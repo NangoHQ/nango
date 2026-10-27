@@ -44,7 +44,7 @@ const TOOL = {
 } as functionConfigService.CurrentFunctionConfig;
 
 beforeEach(() => {
-    vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ kind: 'none' }));
+    vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
     invokeFunction.mockReset().mockResolvedValue(Ok({ data: { ok: true } }));
 });
 
@@ -371,7 +371,7 @@ describe('executeSessionTool', () => {
     });
 
     it('runs a tool by invoking it as the session', async () => {
-        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ kind: 'enabled', fn: TOOL }));
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(TOOL));
 
         const result = await execute('read_doc', { input: { id: '1' } });
 
@@ -390,7 +390,7 @@ describe('executeSessionTool', () => {
     });
 
     it('refuses a disabled tool rather than running the action it shadows', async () => {
-        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ kind: 'disabled' }));
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ ...TOOL, config: { ...TOOL.config, enabled: false } }));
 
         const result = await execute('read_doc');
 
@@ -423,7 +423,7 @@ describe('executeSessionTool', () => {
         { code: 'function_failed', cause: new NangoError('function_failure'), expected: 'tool_failed' },
         { code: 'server_error', expected: undefined }
     ])('maps a tool $code to $expected', async ({ code, cause, expected }) => {
-        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ kind: 'enabled', fn: TOOL }));
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(TOOL));
         invokeFunction.mockResolvedValue(Err(functionInvokeError(code, { cause })));
 
         const result = await execute('read_doc');
@@ -435,7 +435,7 @@ describe('executeSessionTool', () => {
     });
 
     it('tells the agent which part of its input a tool rejected', async () => {
-        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ kind: 'enabled', fn: TOOL }));
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(TOOL));
         invokeFunction.mockResolvedValue(Err(functionInvokeError('validation_error', { errors: [{ path: '/id', message: 'must be string' }] })));
 
         const result = await execute('read_doc');

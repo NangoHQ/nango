@@ -147,17 +147,17 @@ export async function executeSessionTool({
             return Err(tool.error);
         }
 
-        if (tool.value.kind === 'disabled') {
+        if (tool.value && !tool.value.config.enabled) {
             track({ errorCode: 'tool_not_in_session' });
             return Err(toolUnavailableError({ integrationId, toolName }));
         }
 
-        if (tool.value.kind === 'enabled') {
+        if (tool.value) {
             const result = await invokeFunction({
                 account,
                 environment,
                 connectionId: connection.connectionId,
-                functionUuid: tool.value.fn.config.uuid,
+                functionUuid: tool.value.config.uuid,
                 input,
                 request: { method: 'POST', path: '/mcp', headers: {}, query: {} },
                 invocationType: 'wait',

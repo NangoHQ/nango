@@ -11,8 +11,6 @@ import type { Result } from '@nangohq/utils';
 
 export type ResolvedTool = { kind: 'function'; fn: CurrentFunctionConfig } | ResolveRunnableToolResult;
 
-export type FoundTool = { kind: 'enabled'; fn: CurrentFunctionConfig } | { kind: 'disabled' } | { kind: 'none' };
-
 /**
  * Finds the tool a name resolves to.
  */
@@ -24,7 +22,7 @@ export async function findTool({
     environmentId: number;
     integrationKey: string;
     name: string;
-}): Promise<Result<FoundTool>> {
+}): Promise<Result<CurrentFunctionConfig | null>> {
     const functions = await search(db.knex, {
         environmentId,
         filter: { integrationKey, name, trigger: { kind: 'http' } }
@@ -33,11 +31,7 @@ export async function findTool({
         return Err(functions.error);
     }
 
-    const fn = functions.value[0];
-    if (!fn) {
-        return Ok({ kind: 'none' });
-    }
-    return Ok(fn.config.enabled ? { kind: 'enabled', fn } : { kind: 'disabled' });
+    return Ok(functions.value[0] ?? null);
 }
 
 /**
@@ -57,18 +51,13 @@ export async function resolveTool({
     integration: Pick<IntegrationConfig, 'id' | 'provider' | 'unique_key'>;
     name: string;
 }): Promise<Result<ResolvedTool>> {
-    const found = await findTool({ environmentId, integrationKey: integration.unique_key, name });
-    if (found.isErr()) {
-        return Err(found.error);
+    const fn = await findTool({ environmentId, integrationKey: integration.unique_key, name });
+    if (fn.isErr()) {
+        return Err(fn.error);
     }
 
-    switch (found.value.kind) {
-        case 'enabled':
-            return Ok({ kind: 'function', fn: found.value.fn });
-        case 'disabled':
-            return Ok({ kind: 'missing' });
-        case 'none':
-            break;
+    if (fn.value) {
+        return Ok(fn.value.config.enabled ? { kind: 'function', fn: fn.value } : { kind: 'missing' });
     }
 
     try {
