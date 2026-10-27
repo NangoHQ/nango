@@ -65,7 +65,8 @@ export function buildInstructions({
 
     const playground = [
         `The user's time zone is ${timeZone}. It is currently ${local} there.`,
-        `Whenever you mention the Integrations tab, link it as [Integrations tab](/${encodeURIComponent(environmentName)}/integrations).`
+        `Whenever you mention the Integrations tab, link it as [Integrations tab](/${encodeURIComponent(environmentName)}/integrations).`,
+        'Whenever you tell the user to upgrade their plan, link it as [upgrade your plan](/team/billing#plans).'
     ];
     if (unavailable.length > 0) {
         playground.push(

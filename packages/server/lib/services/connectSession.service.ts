@@ -178,6 +178,16 @@ export type CreateConnectSessionErrorCode =
     | 'session_creation_failed'
     | 'token_creation_failed';
 
+const RETRYABLE_CREATE_CONNECT_SESSION_ERRORS: Record<CreateConnectSessionErrorCode, boolean> = {
+    connection_not_found: false,
+    resource_capped: false,
+    integration_not_found: false,
+    invalid_connection_config: false,
+    docs_connect_override_forbidden: false,
+    session_creation_failed: true,
+    token_creation_failed: true
+};
+
 export type ConnectSessionIntegrationSource = 'allowedIntegrations' | 'integrationsConfigDefaults' | 'overrides';
 
 export interface MissingConnectSessionIntegration {
@@ -188,6 +198,7 @@ export interface MissingConnectSessionIntegration {
 
 export class CreateConnectSessionError extends Error {
     public readonly code: CreateConnectSessionErrorCode;
+    public readonly retryable: boolean;
     public readonly missingIntegrations?: MissingConnectSessionIntegration[] | undefined;
     public readonly issues?: z.core.$ZodIssue[] | undefined;
 
@@ -207,6 +218,7 @@ export class CreateConnectSessionError extends Error {
         super(message, { cause });
         this.name = 'CreateConnectSessionError';
         this.code = code;
+        this.retryable = RETRYABLE_CREATE_CONNECT_SESSION_ERRORS[code];
         this.missingIntegrations = missingIntegrations;
         this.issues = issues;
     }
