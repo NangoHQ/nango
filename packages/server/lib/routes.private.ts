@@ -194,6 +194,7 @@ import {
     auditWebhookSigningKeyRotated
 } from './middleware/audit/index.js';
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
+import { catalogCodeRateLimit } from './middleware/catalogCodeRateLimit.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { isAllowedWebCorsOrigin } from './utils/cors.js';
@@ -361,7 +362,7 @@ web.route('/integrations/:providerConfigKey/templates').get(webAuth, can('enviro
 web.route('/providers').get(webAuth, getProvidersList);
 web.route('/providers/:providerConfigKey').get(webAuth, getProviderItem);
 web.route('/providers/:providerConfigKey/templates').get(webAuth, getProviderTemplates);
-web.route('/providers/:providerConfigKey/templates/:name/code').get(webAuth, getProviderTemplateCode);
+web.route('/providers/:providerConfigKey/templates/:name/code').get(webAuth, catalogCodeRateLimit, getProviderTemplateCode);
 
 // Connections
 web.route('/connections').get(webAuth, can('environment:connections:list'), getConnections);
