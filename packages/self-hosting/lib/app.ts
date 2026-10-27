@@ -35,6 +35,10 @@ try {
     api = server.listen(port, () => {
         logger.info(`🚀 self-hosting (${mode}) ready at http://localhost:${port}`);
     });
+    api.once('error', (err) => {
+        logger.error('Failed to listen', err);
+        process.exit(1);
+    });
 } catch (err) {
     logger.error('Failed to start', err);
     process.exit(1);
