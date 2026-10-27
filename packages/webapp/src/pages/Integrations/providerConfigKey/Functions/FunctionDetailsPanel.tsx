@@ -95,7 +95,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
 
     const source = listed ? fn.source : 'template';
     const pullCommand = buildPullCommand({
-        integration: integration.unique_key,
+        integration: listed ? integration.unique_key : integration.provider,
         name: fn.name,
         type: fn.type,
         source: listed ? { env } : { catalog: true }
