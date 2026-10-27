@@ -12,8 +12,6 @@ import { InviteTeamMembers } from './components/InviteTeamMembers';
 import { TeamMembers } from './components/TeamMembers';
 import { TeamSettings } from './components/TeamSettings';
 
-import type { ApiError } from '@nangohq/types';
-
 export const TeamSettingsPage: React.FC = () => {
     const env = useStore((state) => state.env);
 
@@ -33,8 +31,8 @@ export const TeamSettingsPage: React.FC = () => {
         );
     }
 
-    if (error) {
-        return <ErrorPageComponent title="Team Settings" error={error?.json as ApiError<string>} />;
+    if (error && !data) {
+        return <ErrorPageComponent title="Team Settings" error={error} />;
     }
 
     const isNangoAdmin = data?.data.isAdminTeam;
