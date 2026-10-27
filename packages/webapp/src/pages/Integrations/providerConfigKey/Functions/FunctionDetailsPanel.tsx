@@ -98,7 +98,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
         integration: integration.unique_key,
         name: fn.name,
         type: fn.type,
-        source: { env, catalog: !listed }
+        source: listed ? { env } : { catalog: true }
     });
     const canDelete = listed && fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn);
     const canUsePlayground = listed && fn.enabled && isSyncOrAction(fn);

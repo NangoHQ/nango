@@ -1,20 +1,20 @@
 import type { FunctionType, ListedNangoActionFunction, ListedNangoFunction, ListedNangoSyncFunction } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
-type PullSource = { env: string; catalog?: boolean };
+type PullSource = { catalog: true } | { env: string };
 
 export function isSyncOrAction(fn: ListedNangoFunction): fn is ListedNangoSyncFunction | ListedNangoActionFunction {
     return fn.type === 'sync' || fn.type === 'action';
 }
 
 /**
- * Builds the `nango pull` CLI command for a function. Use `{ env, catalog: true }` to pull an
+ * Builds the `nango pull` CLI command for a function. Use `{ catalog: true }` to pull an
  * un-deployed catalog template (keyed by provider) or `{ env }` to pull a deployed function
  * from an environment.
  */
 export function buildPullCommand({ integration, name, type, source }: { integration: string; name: string; type: FunctionType; source: PullSource }): string {
     const typeFlag = type === 'action' ? '-a' : type === 'on-event' ? '--on-event' : '-s';
-    const sourceFlag = source.catalog ? `--catalog --env ${source.env}` : `--env ${source.env}`;
+    const sourceFlag = 'catalog' in source ? '--catalog' : `--env ${source.env}`;
     return `nango pull ${integration} ${name} ${sourceFlag} ${typeFlag}`;
 }
 
