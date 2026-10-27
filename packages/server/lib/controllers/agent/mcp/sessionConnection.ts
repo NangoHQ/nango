@@ -5,6 +5,7 @@ import * as agentSessionService from '../../../services/agentSession.service.js'
 import * as agentSessionConnectionsService from '../../../services/agentSessionConnections.service.js';
 import * as agentSessionMcpDiscoveryService from '../../../services/agentSessionMcpDiscovery.service.js';
 import * as agentSessionToolsetService from '../../../services/agentSessionToolset.service.js';
+import { withAddedToolSlugs } from './sessionServer.js';
 
 import type { AgentSession, AgentSessionResolvedConnection, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 
@@ -86,10 +87,12 @@ export async function withMcpToolsDiscovered({
     plan: DBPlan | null;
     session: AgentSession;
 }): Promise<AgentSession> {
-    const connections = Object.entries(session.compiledToolset).flatMap(([integrationId, integration]) =>
-        agentSessionToolsetService.pendingMcpServerOf(integration) &&
-        Object.hasOwn(session.resolvedConnections, integrationId) &&
-        session.resolvedConnections[integrationId]
+    const pending = Object.keys(session.compiledToolset).filter((integrationId) => {
+        const integration = session.compiledToolset[integrationId];
+        return integration && agentSessionToolsetService.pendingMcpServerOf(integration);
+    });
+    const connections = pending.flatMap((integrationId) =>
+        Object.hasOwn(session.resolvedConnections, integrationId) && session.resolvedConnections[integrationId]
             ? [session.resolvedConnections[integrationId]]
             : []
     );
@@ -105,17 +108,18 @@ export async function withMcpToolsDiscovered({
         })
     );
 
-    await Promise.all(
-        Object.entries(compiled).map(async ([integrationId, integration]) => {
-            // The tools are usable for this request either way, so a failure only means listing the server again next time.
-            const filled = await agentSessionService.fillPendingMcpServer(db.knex, { id: session.id, integrationId, integration });
-            if (filled.isErr()) {
-                report(filled.error);
-            }
-        })
-    );
+    const stored = await agentSessionService.fillPendingMcpServers(db.knex, {
+        id: session.id,
+        pending,
+        integrations: withAddedToolSlugs({ session, added: compiled })
+    });
+    if (stored.isErr()) {
+        // Tools that were not stored have no settled names, so they wait for the next listing.
+        report(stored.error);
+        return session;
+    }
 
-    return { ...session, compiledToolset: { ...session.compiledToolset, ...compiled } };
+    return { ...session, compiledToolset: stored.value };
 }
 
 async function fill({ session, integrationId, connection }: { session: AgentSession; integrationId: string; connection: AgentSessionResolvedConnection }) {
