@@ -53,9 +53,31 @@ export type PostPublicEnvironment = ApiEndpoint<{
         slack_notifications?: boolean | undefined;
         otlp_endpoint?: string | undefined;
         otlp_headers?: { name: string; value: string }[] | undefined;
+        webhooks?:
+            | {
+                  primary_url?: string | undefined;
+                  secondary_url?: string | undefined;
+                  on_sync_completion_always?: boolean | undefined;
+                  on_auth_creation?: boolean | undefined;
+                  on_auth_refresh_error?: boolean | undefined;
+                  on_sync_error?: boolean | undefined;
+                  on_async_action_completion?: boolean | undefined;
+                  on_connection_deletion?: boolean | undefined;
+              }
+            | undefined;
     };
     Success: {
-        data: Pick<DBEnvironment, 'id' | 'uuid' | 'name'>;
+        data: {
+            id: number;
+            uuid: string;
+            name: string;
+            is_production: boolean;
+            callback_url: string;
+            slack_notifications: boolean;
+            otlp_endpoint: string | null;
+            otlp_headers: { name: string; value: string }[];
+            webhooks: ApiWebhooks & { signing_key: string };
+        };
     };
     Error: ApiError<'conflict' | 'resource_capped' | 'invalid_is_prod_flag'>;
 }>;

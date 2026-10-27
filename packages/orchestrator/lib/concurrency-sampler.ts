@@ -1,4 +1,5 @@
-import { cancellableDaemon, metrics, stringifyError } from '@nangohq/utils';
+import { hostedTelemetry } from '@nangohq/hosted-telemetry';
+import { cancellableDaemon, isCloud, metrics, stringifyError } from '@nangohq/utils';
 
 import { GROUP_PREFIX_SEPARATOR } from './scheduler-config.js';
 import { logger } from './utils.js';
@@ -60,15 +61,22 @@ export class ConcurrencySampler {
             logger.error(`ConcurrencySampler: ${stringifyError(res.error)}`);
             return;
         }
-        const perEnvironment = new Map<number, number>();
-        for (const [groupKey, count] of res.value) {
-            const environmentId = environmentIdFromGroupKey(groupKey);
-            if (environmentId !== null) {
-                perEnvironment.set(environmentId, (perEnvironment.get(environmentId) ?? 0) + count);
+
+        if (isCloud) {
+            const perEnvironment = new Map<number, number>();
+            for (const [groupKey, count] of res.value) {
+                const environmentId = environmentIdFromGroupKey(groupKey);
+                if (environmentId !== null) {
+                    perEnvironment.set(environmentId, (perEnvironment.get(environmentId) ?? 0) + count);
+                }
             }
-        }
-        for (const [environmentId, concurrency] of perEnvironment) {
-            metrics.distribution(metrics.Types.ORCH_CONCURRENCY_ACTIVE, concurrency, { environmentId });
+            for (const [environmentId, concurrency] of perEnvironment) {
+                metrics.distribution(metrics.Types.ORCH_CONCURRENCY_ACTIVE, concurrency, { environmentId });
+            }
+        } else {
+            // Self-hosted/BYOC concurrency is metered deployment-wide and metrics go to the hosted telemetry store.
+            const concurrency = res.value.values().reduce((acc, c) => acc + c, 0);
+            hostedTelemetry.histogram('nango.hosted_metric.active_concurrency', concurrency);
         }
     }
 }

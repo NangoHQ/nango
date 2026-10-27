@@ -1104,7 +1104,7 @@ describe('Persist API', () => {
 const initDb = async () => {
     const now = new Date();
     const account = await seeders.createAccount();
-    const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'testEnv' })).unwrap();
+    const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'testEnv' })).unwrap().environment;
     const secret = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
 
     const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
