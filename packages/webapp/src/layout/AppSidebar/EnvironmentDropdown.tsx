@@ -15,7 +15,7 @@ import { usePermissions } from '@/hooks/usePermissions.js';
 import { useCurrentPlan } from '@/hooks/usePlan';
 import { isLegacyPlan } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
-import { isNonEnvPath } from '@/utils/routes';
+import { envSwitchPath } from '@/utils/routes';
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
 import { NavigationItem, navigationItemVariants } from './NavigationItem.js';
 
@@ -42,27 +42,14 @@ export const EnvironmentDropdown: React.FC = () => {
             return;
         }
 
-        setEnv(selected);
-
-        const pathSegments = window.location.pathname.split('/').filter(Boolean);
-
         // Non-environment-specific pages — just update env in store, don't change URL
-        if (isNonEnvPath(window.location.pathname)) {
+        const newPath = envSwitchPath(window.location.pathname, selected);
+        if (!newPath) {
+            setEnv(selected);
             return;
         }
 
-        pathSegments[0] = selected;
-
-        let newPath = `/${pathSegments.join('/')}`;
-
-        // If on 'integration' or 'connections' subpages beyond the second level, redirect to their parent page
-        if (pathSegments[1] === 'integrations' && pathSegments.length > 2) {
-            newPath = `/${selected}/integrations`;
-        } else if (pathSegments[1] === 'connections' && pathSegments.length > 2) {
-            newPath = `/${selected}/connections`;
-        }
-
-        navigate(newPath);
+        void navigate(newPath);
     };
 
     if (!meta) {

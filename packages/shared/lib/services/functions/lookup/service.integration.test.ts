@@ -5,9 +5,10 @@ import db, { multipleMigrations } from '@nangohq/database';
 import { createAccount } from '../../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../../../seeders/environment.seeder.js';
+import * as functionConfigService from '../models/functions.js';
 import { getFunction, listActions, listFunctions } from './service.js';
 
-import type { DBEnvironment, DBSyncConfig, IntegrationConfig } from '@nangohq/types';
+import type { DBEnvironment, DBFunctionConfigVersion, DBSyncConfig, IntegrationConfig } from '@nangohq/types';
 
 const { mockListCatalogTools, mockGetCatalogTool, mockHasCatalogTools } = vi.hoisted(() => {
     return { mockListCatalogTools: vi.fn(), mockGetCatalogTool: vi.fn(), mockHasCatalogTools: vi.fn() };
@@ -111,6 +112,84 @@ async function listPage({
     };
 }
 
+describe('listFunctions with HTTP-triggered tools', () => {
+    beforeAll(async () => {
+        await multipleMigrations();
+    });
+
+    it('combines storage models before counting and paging, and scopes tools to their integration and environment', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const { environment, integration } = await seedIntegration();
+        await insertSyncConfig({ environmentId: environment.id, integration, name: 'legacy', type: 'action' });
+        const version: Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> = {
+            description: 'Fetch users',
+            tags: { instructions: 'Read users', required_scopes: ['read'], category: 'crm' },
+            file_location: 'functions/fetch-users',
+            version: 'test',
+            source: 'repo',
+            trigger: { kind: 'http' },
+            requires: { connection: true, outbound: false, invoke: false },
+            capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+            limits: { concurrency: { perConnection: 'max' } },
+            input_schema_ref: '#/definitions/Input',
+            output_schema_ref: null,
+            model_schema_refs: [],
+            metadata_schema_ref: null,
+            checkpoint_schema_ref: null,
+            json_schema: { definitions: { Input: { type: 'string' } } }
+        };
+        const configs = (
+            await functionConfigService.upsert(db.knex, [
+                { environmentId: environment.id, integrationId: 'github', name: 'fetch-users', version },
+                { environmentId: environment.id, integrationId: 'github', name: 'disabled', version },
+                { environmentId: environment.id, integrationId: 'github', name: 'deleted', version },
+                {
+                    environmentId: environment.id,
+                    integrationId: 'github',
+                    name: 'schedule',
+                    version: { ...version, trigger: { kind: 'schedule', frequency: 'every day' } }
+                }
+            ])
+        ).unwrap();
+        const [tool, disabled, deleted] = configs;
+        if (!tool || !disabled || !deleted) {
+            throw new Error('Expected seeded tool functions');
+        }
+        await db.knex('function_configs').where({ id: disabled.config.id }).update({ enabled: false });
+        await db.knex('function_configs').where({ id: deleted.config.id }).update({ deleted_at: new Date() });
+        await createConfigSeed(environment, 'other', 'github');
+        const other = await seedIntegration();
+        (
+            await functionConfigService.upsert(db.knex, [
+                { environmentId: environment.id, integrationId: 'other', name: 'wrong-integration', version },
+                { environmentId: other.environment.id, integrationId: 'github', name: 'wrong-environment', version }
+            ])
+        ).unwrap();
+
+        const page = await listPage({ environment, offset: 1, limit: 1 });
+        expect(page.total).toBe(3);
+        expect(page.rows).toEqual([expect.objectContaining({ name: 'disabled', enabled: false })]);
+
+        const filtered = (
+            await listFunctions({ environmentId: environment.id, providerConfigKey: 'github', type: 'tool', search: 'fetch-', limit: 20, offset: 0 })
+        ).unwrap();
+        expect(filtered.total).toBe(1);
+        expect(filtered.rows).toEqual([
+            expect.objectContaining({
+                type: 'tool',
+                id: null,
+                uuid: tool.config.uuid,
+                name: 'fetch-users',
+                integration_id: 'github',
+                provider: 'github',
+                input_json_schema: { $ref: '#/definitions/Input', definitions: { Input: { type: 'string' } } },
+                output_json_schema: null,
+                meta: { instructions: 'Read users', required_scopes: ['read'], tags: { category: 'crm' } }
+            })
+        ]);
+    });
+});
+
 describe('listFunctions with catalog actions', () => {
     beforeAll(async () => {
         await multipleMigrations();
@@ -201,6 +280,69 @@ describe('listFunctions with catalog actions', () => {
 
         expect(page.total).toBe(1);
         expect(page.rows).toEqual([{ name: 'create-issue', source: 'repo', enabled: true, id: expect.any(Number) }]);
+    });
+
+    it('does not list deployed or catalog actions that have a native tool of the same name, even a disabled one', async () => {
+        const { environment, integration } = await seedIntegration();
+        mockListCatalogTools.mockReturnValue([catalogTool('create-issue'), catalogTool('list-issues')]);
+        await insertSyncConfig({ environmentId: environment.id, integration, name: 'close-issue', type: 'action' });
+        await insertSyncConfig({ environmentId: environment.id, integration, name: 'list-issues', type: 'action' });
+        await insertSyncConfig({ environmentId: environment.id, integration, name: 'sync-issues', type: 'sync' });
+        const tools = (
+            await functionConfigService.upsert(
+                db.knex,
+                ['create-issue', 'close-issue', 'sync-issues'].map((name) => ({
+                    environmentId: environment.id,
+                    integrationId: 'github',
+                    name,
+                    version: {
+                        description: name,
+                        tags: {},
+                        file_location: `functions/${name}`,
+                        version: 'test',
+                        source: 'repo' as const,
+                        trigger: { kind: 'http' as const },
+                        requires: { connection: true, outbound: false, invoke: false },
+                        capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+                        limits: { concurrency: { perConnection: 'max' as const } },
+                        input_schema_ref: null,
+                        output_schema_ref: null,
+                        model_schema_refs: [],
+                        metadata_schema_ref: null,
+                        checkpoint_schema_ref: null,
+                        json_schema: {}
+                    }
+                }))
+            )
+        ).unwrap();
+        await db.knex('function_configs').where({ id: tools[1]!.config.id }).update({ enabled: false });
+
+        const untyped = (
+            await listFunctions({ environmentId: environment.id, providerConfigKey: 'github', type: undefined, search: undefined, limit: 20, offset: 0 })
+        ).unwrap();
+        expect(untyped.rows.map((row) => ({ name: row.name, type: row.type }))).toEqual([
+            { name: 'list-issues', type: 'action' },
+            { name: 'sync-issues', type: 'sync' },
+            { name: 'close-issue', type: 'tool' },
+            { name: 'create-issue', type: 'tool' },
+            { name: 'sync-issues', type: 'tool' }
+        ]);
+
+        const actions = (
+            await listFunctions({ environmentId: environment.id, providerConfigKey: 'github', type: 'action', search: undefined, limit: 20, offset: 0 })
+        ).unwrap();
+        expect(actions.total).toBe(1);
+        expect(actions.rows).toEqual([expect.objectContaining({ name: 'list-issues', source: 'repo' })]);
+
+        const listed = (await listActions({ environmentId: environment.id, providerConfigKey: 'github' })).unwrap();
+        expect(listed.actions.map((action) => action.name)).toEqual(['list-issues']);
+
+        const closeIssue = (await getFunction({ environmentId: environment.id, providerConfigKey: 'github', name: 'close-issue', type: undefined })).unwrap();
+        expect(closeIssue).toMatchObject({ name: 'close-issue', type: 'tool', enabled: false });
+        const closeIssueAction = (
+            await getFunction({ environmentId: environment.id, providerConfigKey: 'github', name: 'close-issue', type: 'action' })
+        ).unwrap();
+        expect(closeIssueAction).toBeUndefined();
     });
 
     it('does not occupy a catalog name with a deployed action from another environment', async () => {

@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { envSchema, functionTypeSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
+import { envSchema, functionListTypeSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
 import { asyncWrapperWithEnvironment } from '../../../../../utils/asyncWrapper.js';
 import { handleGetIntegrationFunction } from '../../../../shared/integrations/functions/getFunction.js';
 
@@ -11,7 +11,7 @@ import type { GetIntegrationFunction } from '@nangohq/types';
 const querystringValidation = z
     .object({
         env: envSchema,
-        type: functionTypeSchema.optional()
+        type: functionListTypeSchema.optional()
     })
     .strict();
 

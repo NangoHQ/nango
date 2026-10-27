@@ -169,8 +169,9 @@ jobs:
                   cd nango-integrations
 
                   # Install the cli from the github package registry
-                  npm i -ED nango@npm:@nangohq/cli@0.0.1-$GIT_HASH
-                  npm i
+                  # An advisory on a CLI dependency makes audit walk every 0.0.1-<hash> version in the registry (30+ min)
+                  npm i -ED --no-audit nango@npm:@nangohq/cli@0.0.1-$GIT_HASH
+                  npm i --no-audit
 
                   # Compile the project
                   npx nango compile --debug

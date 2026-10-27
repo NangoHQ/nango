@@ -30,6 +30,8 @@ const CONNECTIONS: AgentSessionResolvedConnections = {
     notion: { integrationId: 'notion', provider: 'notion', connectionId: 'notion-acme', internalConnectionId: 10, configId: 20 }
 };
 
+const SLACK_CREATED_IN_SESSION = { integrationId: 'slack', provider: 'slack', connectionId: 'slack-new', internalConnectionId: 12, configId: 22 };
+
 const CONNECT_SESSION = { token: 'nango_connect_session_abc', connectLink: 'https://connect.nango.dev/abc', expiresAt: new Date('2026-09-22T10:00:00.000Z') };
 
 function context(createConnection: AgentSessionCreateConnectionConfig = { enabled: true, tags: {} }): AgentSessionMcpContext {
@@ -139,20 +141,62 @@ describe('createConnectionTool', () => {
     });
 
     it('refuses an integration the agent already connected during the session', async () => {
-        vi.spyOn(agentSessionConnectionsService, 'findConnectionCreatedForSession').mockResolvedValue({
-            integrationId: 'slack',
-            provider: 'slack',
-            connectionId: 'slack-new',
-            internalConnectionId: 12,
-            configId: 22
-        });
-        vi.spyOn(agentSessionService, 'fillResolvedConnection').mockResolvedValue(
-            Err(new agentSessionService.AgentSessionError({ code: 'not_found', message: 'ignored' }))
-        );
+        mockSlackCreatedInSession();
 
         const result = await callCreateConnection({ integration: 'slack' });
 
         expect(codeOf(result)).toBe('already_connected');
+    });
+
+    it('points an already connected integration at reconnect', async () => {
+        const result = await callCreateConnection({ integration: 'notion' });
+
+        expect(errorOf(result).message).toContain('call this again with reconnect set to true');
+    });
+
+    describe('reconnect', () => {
+        it('reauthorises the connection the session resolved', async () => {
+            const createConnectSession = vi.spyOn(connectSessionService, 'createConnectSession').mockResolvedValue(Ok(CONNECT_SESSION));
+
+            const result = await callCreateConnection({ integration: 'notion', reconnect: true });
+
+            expect(result.unwrap()).toMatchObject({ integration: 'notion', connect_url: 'https://connect.nango.dev/abc' });
+            const params = createConnectSession.mock.calls[0]?.[0];
+            expect(params?.reconnect).toStrictEqual({ connectionId: 'notion-acme', integrationId: 'notion' });
+            // The connection keeps its own tags instead of getting the session's.
+            expect(params?.tags).toBeUndefined();
+        });
+
+        it('reauthorises a connection the agent created', async () => {
+            mockSlackCreatedInSession();
+            const createConnectSession = vi.spyOn(connectSessionService, 'createConnectSession').mockResolvedValue(Ok(CONNECT_SESSION));
+
+            await callCreateConnection({ integration: 'slack', reconnect: true });
+
+            expect(createConnectSession).toHaveBeenCalledWith(expect.objectContaining({ reconnect: { connectionId: 'slack-new', integrationId: 'slack' } }));
+        });
+
+        it('creates a new connection when the integration has none yet', async () => {
+            const createConnectSession = vi.spyOn(connectSessionService, 'createConnectSession').mockResolvedValue(Ok(CONNECT_SESSION));
+            vi.spyOn(agentSessionConnectionsService, 'findConnectionCreatedForSession').mockResolvedValue(null);
+
+            await callCreateConnection({ integration: 'slack', reconnect: true });
+
+            const params = createConnectSession.mock.calls[0]?.[0];
+            expect(params?.reconnect).toBeUndefined();
+            expect(params?.tags).toStrictEqual({ 'nango/agent_session': 'session-1' });
+        });
+
+        it('tells the agent a new session is needed when the connection was deleted', async () => {
+            vi.spyOn(connectSessionService, 'createConnectSession').mockResolvedValue(
+                Err(new connectSessionService.CreateConnectSessionError({ code: 'connection_not_found', message: 'gone' }))
+            );
+
+            const result = await callCreateConnection({ integration: 'notion', reconnect: true });
+
+            expect(codeOf(result)).toBe('connection_deleted');
+            expect(errorOf(result).message).toContain('a new session is needed');
+        });
     });
 
     it('tells the agent to retry when the connect link could not be created', async () => {
@@ -173,3 +217,10 @@ describe('createConnectionTool', () => {
         expect(codeOf(result)).toBe('invalid_input');
     });
 });
+
+function mockSlackCreatedInSession() {
+    vi.spyOn(agentSessionConnectionsService, 'findConnectionCreatedForSession').mockResolvedValue(SLACK_CREATED_IN_SESSION);
+    vi.spyOn(agentSessionService, 'fillResolvedConnection').mockResolvedValue(
+        Err(new agentSessionService.AgentSessionError({ code: 'not_found', message: 'ignored' }))
+    );
+}

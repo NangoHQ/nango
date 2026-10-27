@@ -1,0 +1,44 @@
+---
+title: 'How to register your own Oracle Aconex OAuth app'
+sidebarTitle: 'Oracle Aconex setup'
+description: 'Create an OAuth client in the Oracle Construction and Engineering Lobby and connect it to Nango'
+---
+
+This guide shows you how to create an OAuth client for Oracle Aconex to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Aconex account.
+
+Aconex uses the Oracle Construction and Engineering Lobby as its OAuth server.
+
+<Steps>
+  <Step id="open-oauth-clients" title="Open OAuth Clients in the Lobby">
+    Log in to the [Oracle Construction and Engineering Lobby](https://constructionandengineering.oraclecloud.com) and select **OAuth Clients** from the main menu.
+
+    <Note>
+    Only Lobby Admins can create OAuth clients.
+    </Note>
+  </Step>
+  <Step id="create-oauth-client" title="Create an OAuth client">
+    Click **Add** and fill in:
+    - **Name** — a unique, meaningful name, such as your organization or integration name.
+    - **Description** — what the integration does.
+    - **Resource Application** — **Aconex** (the default).
+    - **Type** — **Web Server Application**.
+    - **Redirect URL** — `https://api.nango.dev/oauth/callback`
+    - **Organizations** — the organizations to provision the client to.
+
+    Check the box to accept the terms of use, then click **Add**.
+  </Step>
+  <Step id="copy-credentials" title="Copy your credentials">
+    Find your new OAuth client in the list and click the eye icon to reveal the **Client Secret**. Copy the **Client ID** and **Client Secret**, then enter them in your Oracle Aconex integration in Nango.
+  </Step>
+  <Step id="configure-sso-policies" title="Allow the integration in your identity domain (SSO or 2SV only)">
+    Skip this step unless you've configured single sign-on (SSO) or two-step verification (2SV) in your own Identity Domain.
+
+    - **SSO** — go to **Security** > **IdP Policies**, select your policy, click **Apps** > **Add app**, then search for and select your OAuth client.
+    - **2SV** — go to **Security** > **MFA** > **Sign-on policies**, select your organization's policy, click **Add app**, then search for and select your OAuth client.
+  </Step>
+  <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Create an OAuth Client](https://help.aconex.com/apis/create-an-oauth-client/) and [Implement OAuth](https://help.aconex.com/apis/implement-smart-construction-platform-oauth/) in Aconex Support Central.

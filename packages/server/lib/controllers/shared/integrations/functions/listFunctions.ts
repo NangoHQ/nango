@@ -1,8 +1,8 @@
-import { legacyFunctionService } from '@nangohq/shared';
+import { functionLookupService } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
 import type { RequestLocalsWithEnvironment } from '../../../../utils/express.js';
-import type { DBEnvironment, FunctionType, GetIntegrationFunctions } from '@nangohq/types';
+import type { DBEnvironment, FunctionListType, GetIntegrationFunctions } from '@nangohq/types';
 import type { Response } from 'express';
 
 export async function handleListIntegrationFunctions({
@@ -17,12 +17,12 @@ export async function handleListIntegrationFunctions({
     res: Response<GetIntegrationFunctions['Reply'], RequestLocalsWithEnvironment>;
     environment: DBEnvironment;
     providerConfigKey: string;
-    type: FunctionType | undefined;
+    type: FunctionListType | undefined;
     search: string | undefined;
     page: number;
     limit: number;
 }): Promise<void> {
-    const fnResult = await legacyFunctionService.listFunctions({
+    const fnResult = await functionLookupService.listFunctions({
         environmentId: environment.id,
         providerConfigKey,
         type,

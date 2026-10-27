@@ -5,7 +5,7 @@ import { toListedNangoFunction } from './mappers.js';
 import * as functionsModel from './models/functions.js';
 
 import type { FunctionRow } from './models/functions.js';
-import type { FunctionType, ListedNangoActionFunction, ListedNangoFunction } from '@nangohq/types';
+import type { FunctionListType, ListedNangoActionFunction, ListedNangoFunction } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export type ListFunctionsErrorCode = 'integration_not_found' | 'list_failed';
@@ -21,8 +21,8 @@ export class ListFunctionsError extends Error {
 }
 
 /**
- * Lists functions for a single integration: deployed syncs/actions/on-events plus
- * catalog actions.
+ * Lists functions for a single integration: deployed syncs/actions/on-events/tools plus
+ * catalog actions, with shared filtering and pagination.
  */
 export async function listFunctions({
     environmentId,
@@ -34,7 +34,7 @@ export async function listFunctions({
 }: {
     environmentId: number;
     providerConfigKey: string;
-    type: FunctionType | undefined;
+    type: FunctionListType | undefined;
     search: string | undefined;
     limit: number;
     offset: number;
@@ -116,7 +116,7 @@ export async function getFunction({
     environmentId: number;
     providerConfigKey: string;
     name: string;
-    type: FunctionType | undefined;
+    type: FunctionListType | undefined;
 }): Promise<Result<ListedNangoFunction | undefined>> {
     try {
         const row = await functionsModel.findActiveByName({ environmentId, providerConfigKey, name, type });

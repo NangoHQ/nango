@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
-import { seeders } from '@nangohq/shared';
+import { functionConfigService, seeders } from '@nangohq/shared';
 import { listCatalogTools } from '@nangohq/shared/lib/services/catalog/actions.js';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
@@ -137,5 +137,57 @@ describe(`GET ${route}`, () => {
         isSuccess(res.json);
         expect(res.json.pagination.total).toBe(1);
         expect(res.json.data[0]?.name).toBe('fetch-issues');
+    });
+
+    it('lists HTTP-triggered tools with schemas and metadata', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const [tool] = (
+            await functionConfigService.upsert(db.knex, [
+                {
+                    environmentId: env.id,
+                    integrationId: 'github',
+                    name: 'fetch-users',
+                    version: {
+                        description: 'Fetch users',
+                        tags: { instructions: 'Read users', required_scopes: ['read'], category: 'crm' },
+                        file_location: 'functions/fetch-users',
+                        version: 'test',
+                        source: 'repo',
+                        trigger: { kind: 'http' },
+                        requires: { connection: true, outbound: false, invoke: false },
+                        capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+                        limits: { concurrency: { perConnection: 'max' } },
+                        input_schema_ref: '#/definitions/Input',
+                        output_schema_ref: null,
+                        model_schema_refs: [],
+                        metadata_schema_ref: null,
+                        checkpoint_schema_ref: null,
+                        json_schema: { definitions: { Input: { type: 'string' } } }
+                    }
+                }
+            ])
+        ).unwrap();
+
+        if (!tool) {
+            throw new Error('Expected seeded tool function');
+        }
+        const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, params: { uniqueKey: 'github' }, query: { type: 'tool', search: 'fetch' } });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        expect(res.json.pagination).toEqual({ total: 1, page: 0, limit: 20 });
+        expect(res.json.data).toEqual([
+            expect.objectContaining({
+                type: 'tool',
+                uuid: tool.config.uuid,
+                name: 'fetch-users',
+                integration_id: 'github',
+                provider: 'github',
+                input_json_schema: { $ref: '#/definitions/Input', definitions: { Input: { type: 'string' } } },
+                output_json_schema: null,
+                meta: { instructions: 'Read users', required_scopes: ['read'], tags: { category: 'crm' } }
+            })
+        ]);
     });
 });

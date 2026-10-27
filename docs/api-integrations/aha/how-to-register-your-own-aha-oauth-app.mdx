@@ -1,0 +1,38 @@
+---
+title: 'How to register your own Aha! OAuth app'
+sidebarTitle: 'Aha! setup'
+description: 'Register an OAuth app with Aha! and obtain credentials to connect it to Nango'
+---
+
+This guide shows you how to register your own app with Aha! to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Aha! account.
+
+<Steps>
+  <Step id="open-oauth-applications" title="Open your OAuth applications">
+    Sign in to Aha!, click your profile, and go to **Settings** ⚙️ -> **Personal** -> **Developer**. Then open the **OAuth applications** tab.
+
+    <Note>
+    Account administrators can turn off new OAuth app registrations. If you don't see the **Register OAuth application** button, ask your Aha! administrator.
+    </Note>
+  </Step>
+  <Step id="register-application" title="Register an OAuth application">
+    Click **Register OAuth application** and fill in:
+    - **Name** — a name your users will recognize.
+    - **Redirect URI(s)** — `https://api.nango.dev/oauth/callback`
+
+    Click **Create**.
+
+    <Tip>
+    An Aha! OAuth app can be used by any Aha! user, not only users in your own account.
+    </Tip>
+  </Step>
+  <Step id="copy-credentials" title="Copy your credentials">
+    Open your application and copy the **Client ID** and **Client Secret**. Enter them in your Aha! integration in Nango.
+
+    Aha! has no OAuth scopes, so you don't need to configure any.
+  </Step>
+  <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Aha!'s OAuth2 documentation](https://www.aha.io/api/oauth2).

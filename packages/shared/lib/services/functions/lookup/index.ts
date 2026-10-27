@@ -1,4 +1,4 @@
-// Legacy unification over `_nango_sync_configs` and `on_event_scripts`.
+// Function lookup across deployed functions and the tools catalog.
 export { getFunction, ListFunctionsError, listActions, listFunctions } from './service.js';
 export type { ListFunctionsErrorCode } from './service.js';
 export { findActionInputSchemas, findActiveFunctionAvailability, findIntegrationFunctions } from './models/functions.js';
