@@ -31,7 +31,6 @@ describe('installBotbuilderZodCompat', () => {
         const zod = require(zodPath) as {
             object: (shape: { a: unknown }) => { parse: (input: unknown) => unknown };
             string: () => unknown;
-            ZodError: { prototype: { errors?: unknown } };
         };
 
         let thrown: { errors?: { code?: string }[]; issues?: { code?: string }[] } | undefined;
@@ -41,6 +40,7 @@ describe('installBotbuilderZodCompat', () => {
             thrown = err as { errors?: { code?: string }[]; issues?: { code?: string }[] };
         }
 
-        expect(thrown?.errors ?? thrown?.issues).toEqual(expect.arrayContaining([expect.objectContaining({ code: 'invalid_type' })]));
+        expect(thrown?.errors).toBe(thrown?.issues);
+        expect(thrown?.errors).toEqual(expect.arrayContaining([expect.objectContaining({ code: 'invalid_type' })]));
     });
 });
