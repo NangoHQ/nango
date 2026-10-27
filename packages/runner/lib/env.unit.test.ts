@@ -1,6 +1,10 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 describe('runner env', () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
     it('requires RUNNER_NODE_ID when the variable is absent', async () => {
         vi.stubEnv('RUNNER_NODE_ID', undefined);
         vi.resetModules();
