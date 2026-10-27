@@ -20,7 +20,7 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
         "@aws-sdk/client-s3": "3.993.0",
-        "@azure/identity": "4.13.2",
+        "@azure/identity": "4.14.0",
         "@azure/storage-blob": "12.33.0",
         "@babel/parser": "7.28.0",
         "@google-cloud/storage": "8.1.0",
@@ -64,7 +64,7 @@
         "qs": "6.16.0",
         "semver": "7.5.4",
         "simple-oauth2": "5.1.0",
-        "undici": "6.29.0",
+        "undici": "6.29.1",
         "uuid": "14.0.0",
         "xml-crypto": "6.1.2",
         "zod": "4.6.7"
