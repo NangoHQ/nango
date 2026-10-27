@@ -1,8 +1,11 @@
 import { randomUUID } from 'node:crypto';
+import { setTimeout } from 'node:timers/promises';
 
 import { createNoopMeter } from '@opentelemetry/api';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+
+import { getLogger } from '@nangohq/utils';
 
 import { PostgresMetricExporter, PRODUCER_ID_ATTRIBUTE } from './exporter.js';
 import { HOSTED_TELEMETRY_SCHEMA } from './postgres/schema.js';
@@ -11,14 +14,21 @@ import type { HostedMetricName } from './catalog.js';
 import type { Attributes, Counter, Gauge, Histogram } from '@opentelemetry/api';
 import type { Knex } from 'knex';
 
+const logger = getLogger('hosted-telemetry');
+
 const EXPORT_INTERVAL_MS = 60_000;
+const DEFAULT_SHUTDOWN_TIMEOUT_MS = 5_000;
+const TIMED_OUT = Symbol('timed out');
 
 export interface HostedTelemetry {
     increment(name: HostedMetricName, value?: number, attributes?: Attributes): void;
     gauge(name: HostedMetricName, value: number, attributes?: Attributes): void;
     histogram(name: HostedMetricName, value: number, attributes?: Attributes): void;
-    /** Exports what the current window holds before the process goes, so a rollout does not lose the last minute. */
-    shutdown(): Promise<void>;
+    /**
+     * Exports what the current window holds before the process goes, so a rollout does not lose the last minute.
+     * It stops waiting after `timeoutMs` (5s by default), and whatever was not written by then may be lost.
+     */
+    shutdown(opts?: { timeoutMs?: number }): Promise<void>;
 }
 
 /** The process that wrote a row. Random so nothing about the customer's infrastructure leaves it. */
@@ -57,8 +67,15 @@ export function createHostedTelemetry(store?: { knex: Knex; schema?: string; exp
         increment: (name, value = 1, attributes) => instrument(counters, name, () => meter.createCounter(name)).add(value, attributes),
         gauge: (name, value, attributes) => instrument(gauges, name, () => meter.createGauge(name)).record(value, attributes),
         histogram: (name, value, attributes) => instrument(histograms, name, () => meter.createHistogram(name)).record(value, attributes),
-        shutdown: async () => {
-            await provider?.shutdown();
+        shutdown: async ({ timeoutMs = DEFAULT_SHUTDOWN_TIMEOUT_MS } = {}) => {
+            if (!provider) {
+                return;
+            }
+
+            const winner = await Promise.race([provider.shutdown(), setTimeout(timeoutMs, TIMED_OUT, { ref: false })]);
+            if (winner === TIMED_OUT) {
+                logger.warning(`Shutdown stopped waiting after ${timeoutMs}ms, the last window may not have been written`);
+            }
         }
     };
 }
@@ -74,5 +91,5 @@ export const hostedTelemetry: HostedTelemetry = {
     increment: (name, value, attributes) => current.increment(name, value, attributes),
     gauge: (name, value, attributes) => current.gauge(name, value, attributes),
     histogram: (name, value, attributes) => current.histogram(name, value, attributes),
-    shutdown: () => current.shutdown()
+    shutdown: (opts) => current.shutdown(opts)
 };
