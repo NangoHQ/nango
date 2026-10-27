@@ -8,7 +8,7 @@ import type { JSONSchema7 } from 'json-schema';
 vi.mock('@/features/Playground/input.utils', () => import('../../../../features/Playground/input.utils'));
 vi.mock('@/utils/scripts', () => import('../../../../utils/scripts'));
 
-const context = { env: 'dev', integration: 'github' };
+const context = { env: 'dev', integration: 'github', provider: 'github' };
 const action: ListedNangoActionFunction = {
     name: 'create-issue',
     type: 'action',

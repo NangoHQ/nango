@@ -38,7 +38,10 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
     const [activeTab, setActiveTab] = useState<'input' | 'output' | 'code'>('input');
-    const fn = useMemo(() => toFunctionDetails(rawFunction, { env, integration: integration.unique_key }), [rawFunction, env, integration.unique_key]);
+    const fn = useMemo(
+        () => toFunctionDetails(rawFunction, { env, integration: integration.unique_key, provider: integration.provider }),
+        [rawFunction, env, integration.unique_key, integration.provider]
+    );
     const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, integration.unique_key, fn.name, fn.delete?.type);
     const { inputSchema, outputSchemas, delete: deletion } = fn;
     const codeSource = fn.code;
