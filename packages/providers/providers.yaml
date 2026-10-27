@@ -30372,7 +30372,6 @@ zoho-calendar:
                 - com.au
                 - com.cn
                 - jp
-                - uk
             optional: true
 
 zoho-desk:
@@ -30397,7 +30396,6 @@ zoho-desk:
                 - com.au
                 - com.cn
                 - jp
-                - uk
             optional: true
 
 zoho-inventory:
@@ -30512,7 +30510,6 @@ zoho-people:
                 - com.au
                 - com.cn
                 - jp
-                - uk
             optional: true
 
 zoho-recruit:
