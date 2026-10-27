@@ -3,8 +3,10 @@ import { report } from '@nangohq/utils';
 
 import * as agentSessionService from '../../../services/agentSession.service.js';
 import * as agentSessionConnectionsService from '../../../services/agentSessionConnections.service.js';
+import * as agentSessionMcpDiscoveryService from '../../../services/agentSessionMcpDiscovery.service.js';
+import * as agentSessionToolsetService from '../../../services/agentSessionToolset.service.js';
 
-import type { AgentSession, AgentSessionResolvedConnection } from '@nangohq/types';
+import type { AgentSession, AgentSessionResolvedConnection, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 
 /**
  * The connection an integration's tools run on. Resolved at creation for everything the tenant was
@@ -63,6 +65,55 @@ export async function withConnectionsCreatedInSession(session: AgentSession): Pr
         ...session,
         resolvedConnections: { ...session.resolvedConnections, ...Object.fromEntries(found.map((connection) => [connection.integrationId, connection])) }
     };
+}
+
+export function hasPendingMcpServers(session: AgentSession): boolean {
+    return Object.values(session.compiledToolset).some((integration) => integration.pendingMcpServer);
+}
+
+/**
+ * MCP servers are listed when the session is created, so a server the agent connected afterwards is
+ * listed here instead, the first time the session is used once it is connected.
+ */
+export async function withMcpToolsDiscovered({
+    account,
+    environment,
+    plan,
+    session
+}: {
+    account: DBTeam;
+    environment: DBEnvironment;
+    plan: DBPlan | null;
+    session: AgentSession;
+}): Promise<AgentSession> {
+    const connections = Object.entries(session.compiledToolset).flatMap(([integrationId, integration]) =>
+        integration.pendingMcpServer && Object.hasOwn(session.resolvedConnections, integrationId) && session.resolvedConnections[integrationId]
+            ? [session.resolvedConnections[integrationId]]
+            : []
+    );
+    if (connections.length === 0) {
+        return session;
+    }
+
+    const discovered = await agentSessionMcpDiscoveryService.discoverMcpTools({ account, environment, plan, connections });
+    const compiled = Object.fromEntries(
+        [...discovered].flatMap(([integrationId, discovery]) => {
+            const integration = session.compiledToolset[integrationId];
+            return integration ? [[integrationId, agentSessionToolsetService.withDiscoveredMcpTools({ integration, discovery })] as const] : [];
+        })
+    );
+
+    await Promise.all(
+        Object.entries(compiled).map(async ([integrationId, integration]) => {
+            // The tools are usable for this request either way, so a failure only means listing the server again next time.
+            const filled = await agentSessionService.fillPendingMcpServer(db.knex, { id: session.id, integrationId, integration });
+            if (filled.isErr()) {
+                report(filled.error);
+            }
+        })
+    );
+
+    return { ...session, compiledToolset: { ...session.compiledToolset, ...compiled } };
 }
 
 async function fill({ session, integrationId, connection }: { session: AgentSession; integrationId: string; connection: AgentSessionResolvedConnection }) {

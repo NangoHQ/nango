@@ -11,7 +11,7 @@ export type AgentSessionToolsetPolicy = '*' | Readonly<Record<string, AgentSessi
 
 export type AgentSessionPinnedTools = Readonly<Record<string, readonly string[]>>;
 
-/** A tool the integration's MCP server listed when the session was created, as opposed to a deployed action. */
+/** A tool the integration's MCP server listed, as opposed to a deployed action. */
 export interface AgentSessionMcpToolDefinition {
     readonly inputSchema: Record<string, unknown>;
     readonly annotations?: Record<string, unknown>;
@@ -26,11 +26,20 @@ export interface AgentSessionCompiledTool {
 /** `unavailable` means the MCP server could not be listed, so the session carries none of its tools. */
 export type AgentSessionMcpServerStatus = 'available' | 'unavailable';
 
+/**
+ * The policy an MCP server's tools go through once the integration is connected in the session. It is
+ * dropped once the server has been listed.
+ */
+export interface AgentSessionPendingMcpServer extends AgentSessionIntegrationPolicy {
+    readonly pinned: readonly string[];
+}
+
 export interface AgentSessionCompiledIntegration {
     readonly provider: string;
     readonly pinned: AgentSessionCompiledTool[];
     readonly searchable: AgentSessionCompiledTool[];
     readonly mcpServer?: AgentSessionMcpServerStatus;
+    readonly pendingMcpServer?: AgentSessionPendingMcpServer;
 }
 
 export type AgentSessionCompiledToolset = Record<string, AgentSessionCompiledIntegration>;

@@ -10,6 +10,7 @@ import * as agentSessionToolsetService from './agentSessionToolset.service.js';
 import type { Knex } from '@nangohq/database';
 import type {
     AgentSession,
+    AgentSessionCompiledIntegration,
     AgentSessionCompiledToolset,
     AgentSessionCreateConnectionConfig,
     AgentSessionCreationErrorCode,
@@ -390,6 +391,36 @@ export async function fillResolvedConnection(
             new AgentSessionError({
                 code: 'creation_failed',
                 message: 'Failed to attach the connection to the agent session',
+                payload: { sessionId: id, integrationId },
+                cause: err
+            })
+        );
+    }
+}
+
+/**
+ * Replaces an integration's compiled tools once its MCP server was listed mid-session. Only the first
+ * write lands, so a concurrent listing of the same server does not overwrite it.
+ */
+export async function fillPendingMcpServer(
+    trx: Knex,
+    { id, integrationId, integration }: { id: string; integrationId: string; integration: AgentSessionCompiledIntegration }
+): Promise<Result<void, AgentSessionError>> {
+    try {
+        await trx<DBAgentSession>(AGENT_SESSIONS_TABLE)
+            .where({ id })
+            .whereRaw(`compiled_toolset -> ? -> 'pendingMcpServer' IS NOT NULL`, [integrationId])
+            .update({
+                compiled_toolset: trx.raw('compiled_toolset || ?::jsonb', [JSON.stringify({ [integrationId]: integration })]),
+                updated_at: new Date()
+            });
+
+        return Ok(undefined);
+    } catch (err) {
+        return Err(
+            new AgentSessionError({
+                code: 'creation_failed',
+                message: "Failed to attach the MCP server's tools to the agent session",
                 payload: { sessionId: id, integrationId },
                 cause: err
             })
