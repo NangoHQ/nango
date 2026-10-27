@@ -16,4 +16,4 @@ export { validateFunctionInput } from './models/validate.js';
 export { getFunctionMaxConcurrency, invokeFunction } from './invoke.js';
 export type { FunctionInvokeError } from './invoke.js';
 export * as toolService from './tools.js';
-export type { FoundToolFunction, ResolvedTool } from './tools.js';
+export type { FoundTool, ResolvedTool } from './tools.js';

@@ -11,13 +11,12 @@ import type { Result } from '@nangohq/utils';
 
 export type ResolvedTool = { kind: 'function'; fn: CurrentFunctionConfig } | ResolveRunnableToolResult;
 
-export type FoundToolFunction = { kind: 'enabled'; fn: CurrentFunctionConfig } | { kind: 'disabled' } | { kind: 'none' };
+export type FoundTool = { kind: 'enabled'; fn: CurrentFunctionConfig } | { kind: 'disabled' } | { kind: 'none' };
 
 /**
- * Finds the tool function a name resolves to. A disabled one is still found, because it shadows
- * same-named actions and catalog tools.
+ * Finds the tool a name resolves to.
  */
-export async function findToolFunction({
+export async function findTool({
     environmentId,
     integrationKey,
     name
@@ -25,7 +24,7 @@ export async function findToolFunction({
     environmentId: number;
     integrationKey: string;
     name: string;
-}): Promise<Result<FoundToolFunction>> {
+}): Promise<Result<FoundTool>> {
     const functions = await search(db.knex, {
         environmentId,
         filter: { integrationKey, name, trigger: { kind: 'http' } }
@@ -58,7 +57,7 @@ export async function resolveTool({
     integration: Pick<IntegrationConfig, 'id' | 'provider' | 'unique_key'>;
     name: string;
 }): Promise<Result<ResolvedTool>> {
-    const found = await findToolFunction({ environmentId, integrationKey: integration.unique_key, name });
+    const found = await findTool({ environmentId, integrationKey: integration.unique_key, name });
     if (found.isErr()) {
         return Err(found.error);
     }

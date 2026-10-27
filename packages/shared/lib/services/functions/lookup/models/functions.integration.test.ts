@@ -74,7 +74,7 @@ async function insertSyncConfig({
     });
 }
 
-async function insertToolFunction({
+async function insertTool({
     environment,
     integrationId,
     name,
@@ -188,7 +188,7 @@ describe(findIntegrationFunctions, () => {
         );
     });
 
-    it('returns tool functions, shadowing the actions and catalog tools they share a name with', async () => {
+    it('returns tools, shadowing the actions and catalog tools they share a name with', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
         const notion = await createConfigSeed(environment, 'notion', 'notion');
@@ -198,11 +198,11 @@ describe(findIntegrationFunctions, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'read_doc', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'archive_doc', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'sync_pages', type: 'sync' });
-        await insertToolFunction({ environment, integrationId: 'notion', name: 'read_doc' });
-        await insertToolFunction({ environment, integrationId: 'notion', name: 'archive_doc', enabled: false });
-        await insertToolFunction({ environment, integrationId: 'notion', name: 'sync_pages' });
-        await insertToolFunction({ environment, integrationId: 'github', name: 'create-issue' });
-        await insertToolFunction({ environment, integrationId: 'gmail', name: 'send_email' });
+        await insertTool({ environment, integrationId: 'notion', name: 'read_doc' });
+        await insertTool({ environment, integrationId: 'notion', name: 'archive_doc', enabled: false });
+        await insertTool({ environment, integrationId: 'notion', name: 'sync_pages' });
+        await insertTool({ environment, integrationId: 'github', name: 'create-issue' });
+        await insertTool({ environment, integrationId: 'gmail', name: 'send_email' });
 
         const functions = await findIntegrationFunctions({ environmentId: environment.id });
 
@@ -327,7 +327,7 @@ describe(findActionInputSchemas, () => {
         expect(rows).toStrictEqual([{ integration_id: 'gmail', name: 'send_email', input: 'SendEmailInput', models_json_schema: objectInput }]);
     });
 
-    it('returns a tool function schema ahead of an action of the same name, and nothing for a disabled one', async () => {
+    it('returns a tool schema ahead of an action of the same name, and nothing for a disabled one', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
         const gmail = await createConfigSeed(environment, 'gmail', 'google');
@@ -342,8 +342,8 @@ describe(findActionInputSchemas, () => {
                 modelsJsonSchema: objectInput
             });
         }
-        await insertToolFunction({ environment, integrationId: 'gmail', name: 'send_email' });
-        await insertToolFunction({ environment, integrationId: 'gmail', name: 'draft_email', enabled: false });
+        await insertTool({ environment, integrationId: 'gmail', name: 'send_email' });
+        await insertTool({ environment, integrationId: 'gmail', name: 'draft_email', enabled: false });
 
         const rows = await findActionInputSchemas({
             environmentId: environment.id,

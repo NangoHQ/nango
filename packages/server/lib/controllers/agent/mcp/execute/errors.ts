@@ -79,7 +79,7 @@ export function functionInvokeErrorToMcp({ error, integrationId, toolName }: { e
         case 'function_failed':
             return toolFailedError({ integrationId, toolName, detail: error.cause instanceof NangoError ? safeFailureDetail(error.cause) : error.message });
         case 'server_error':
-            logger.error('Failed to invoke an agent session tool function', { err: error });
+            logger.error('Failed to invoke an agent session tool', { err: error });
             return new InternalMcpError();
         default: {
             const exhaustiveCheck: never = code;

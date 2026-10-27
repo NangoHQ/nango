@@ -193,7 +193,7 @@ describe('compileToolset', () => {
         expect(compiled.code).toBe('unsupported_function_type');
     });
 
-    it('exposes enabled tool functions alongside actions', () => {
+    it('exposes enabled tools alongside actions', () => {
         const compiled = compileToolsetFromFunctions({
             toolset: { notion: { allow: ['read_doc', 'summarize_doc'], deny: [] } },
             pinnedTools: { notion: ['summarize_doc'] },
@@ -205,7 +205,7 @@ describe('compileToolset', () => {
         expect(names(integration(compiled, 'notion').searchable)).toEqual(['read_doc']);
     });
 
-    it('rejects a disabled tool function as unknown', () => {
+    it('rejects a disabled tool as unknown', () => {
         const compiled = expectError(
             compileToolsetFromFunctions({
                 toolset: { notion: { allow: ['summarize_doc'], deny: [] } },
