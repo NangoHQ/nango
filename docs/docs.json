@@ -1346,6 +1346,7 @@
               "integrations/all/epic-games",
               "api-integrations/epost-klara",
               "api-integrations/ergo",
+              "api-integrations/erpnext",
               "api-integrations/etsy",
               "integrations/all/evaluagent",
               "integrations/all/eventbrite",

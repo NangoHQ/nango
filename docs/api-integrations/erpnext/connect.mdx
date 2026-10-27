@@ -1,0 +1,53 @@
+---
+title: 'ERPNext - How do I link my account?'
+sidebarTitle: 'ERPNext'
+---
+
+## Overview
+
+To authenticate with ERPNext, you need:
+
+1. **Site Domain** - The domain of your ERPNext site.
+2. **API Key** and **API Secret** - A key pair generated for the ERPNext user that Nango will act as.
+
+This guide shows you where to find them.
+
+### Prerequisites
+
+- An ERPNext site served over HTTPS, on Frappe Cloud or self-hosted.
+- The **System Manager** role, which ERPNext requires to generate API keys.
+
+### Instructions
+
+#### Step 1: Finding your ERPNext domain
+
+1. Log in to your ERPNext site.
+2. Check the URL in your browser's address bar. On Frappe Cloud it looks like `https://mycompany.frappe.cloud`; on a self-hosted site it's the domain you open ERPNext on.
+3. Your **Site Domain** is that hostname, without the `https://` prefix (e.g. `mycompany.frappe.cloud`).
+
+#### Step 2: Generating your API key and secret
+
+1. Go to the **User** list and open the user Nango should act as.
+2. Open the **Settings** tab and expand the **API Access** section.
+3. Click **Generate Keys**.
+4. Copy the **API Secret** from the popup and store it somewhere safe. The **API Key** stays visible in the **API Access** section.
+
+<Warning>Clicking **Generate Keys** again keeps the API key but replaces the API secret. Any connection using the old secret stops working.</Warning>
+
+#### Step 3: Checking the user's permissions
+
+API requests run with the permissions of the user from step 2. Make sure that user has roles with access to every DocType you plan to read or write, such as **Customer** or **Sales Invoice**. A `403` error on `/api/resource/<DocType>` usually means the user lacks permission on that DocType, not that the key is invalid.
+
+<Tip>For production, consider a dedicated API user with only the roles your integration needs, so a leaked key has limited reach.</Tip>
+
+#### Step 4: Enter credentials in the Connect UI
+
+Once you have your **Site Domain**, **API Key**, and **API Secret**:
+
+1. Open the form where you need to authenticate with ERPNext.
+2. Enter each value in its respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/erpnext/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to ERPNext.
