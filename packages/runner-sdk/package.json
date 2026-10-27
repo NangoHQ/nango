@@ -27,7 +27,7 @@
         "vitest": "4.1.11"
     },
     "peerDependencies": {
-        "zod": "4.3.6"
+        "zod": "4.6.7"
     },
     "files": [
         "dist/",
