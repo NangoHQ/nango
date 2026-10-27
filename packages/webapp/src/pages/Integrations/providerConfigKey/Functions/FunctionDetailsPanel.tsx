@@ -95,10 +95,10 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
 
     const source = listed ? fn.source : 'template';
     const pullCommand = buildPullCommand({
-        integration: listed ? integration.unique_key : integration.provider,
+        integration: integration.unique_key,
         name: fn.name,
         type: fn.type,
-        source: listed ? { env } : { catalog: true }
+        source: listed ? { env } : { catalog: true, provider: integration.provider }
     });
     const canDelete = listed && fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn);
     const canUsePlayground = listed && fn.enabled && isSyncOrAction(fn);
