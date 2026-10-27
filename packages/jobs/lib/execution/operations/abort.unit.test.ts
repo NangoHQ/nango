@@ -17,7 +17,7 @@ const { mockPutTaskAbort, mockSetTaskSuccess, mockOrchestratorFailed } = vi.hois
     mockOrchestratorFailed: vi.fn()
 }));
 
-vi.mock('@nangohq/nango-runner', () => ({
+vi.mock('@nangohq/nango-runner/persist', () => ({
     PersistClient: vi.fn(function PersistClient() {
         return {
             putTaskAbort: mockPutTaskAbort
