@@ -4971,6 +4971,44 @@ canva-scim:
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
 
+cch-axcess:
+    display_name: CCH Axcess
+    categories:
+        - accounting
+    auth_mode: OAUTH2
+    authorization_url: https://login.cchaxcess.com/ps/auth/v1.0/core/connect/authorize
+    token_url: https://login.cchaxcess.com/ps/auth/v1.0/core/connect/token
+    token_request_auth_method: basic
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.cchaxcess.com
+        headers:
+            integratorkey: ${connectionConfig.integratorKey}
+    docs: https://nango.dev/docs/api-integrations/cch-axcess
+    setup_guide_url: https://nango.dev/docs/api-integrations/cch-axcess/how-to-register-your-own-cch-axcess-oauth-app
+    integration_config:
+        integratorKey:
+            type: string
+            title: Integrator Key
+            description: Your CCH Axcess API subscription key.
+            secret: true
+            doc_section: '#get-integrator-key'
+            order: 1
+    connection_config:
+        integratorKey:
+            type: string
+            title: ''
+            description: ''
+            secret: true
+            automated: true
+
 cdw:
     display_name: CDW
     categories:
