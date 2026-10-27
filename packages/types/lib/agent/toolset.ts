@@ -21,6 +21,11 @@ export interface AgentSessionCompiledTool {
     readonly name: string;
     readonly description: string;
     readonly mcp?: AgentSessionMcpToolDefinition;
+    /**
+     * The name the session serves the tool under, stored only for a tool added after the session was
+     * created. The rest are named in a fixed order on every request, which a late tool would shift.
+     */
+    readonly slug?: string;
 }
 
 /** `unavailable` means the MCP server could not be listed, so the session carries none of its tools. */

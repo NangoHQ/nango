@@ -10,7 +10,6 @@ import * as agentSessionToolsetService from './agentSessionToolset.service.js';
 import type { Knex } from '@nangohq/database';
 import type {
     AgentSession,
-    AgentSessionCompiledIntegration,
     AgentSessionCompiledToolset,
     AgentSessionCreateConnectionConfig,
     AgentSessionCreationErrorCode,
@@ -399,29 +398,42 @@ export async function fillResolvedConnection(
 }
 
 /**
- * Replaces an integration's compiled tools once its MCP server was listed mid-session. Only the first
- * write lands, so a concurrent listing of the same server does not overwrite it.
+ * Stores the compiled tools of MCP servers listed mid-session and returns the toolset the session
+ * serves from now on.
+ *
+ * The write only lands while every server that was pending when the caller read the session still is.
+ * Otherwise another request listed one first, and the caller gets what that request stored, since its
+ * own tools were named without seeing those.
  */
-export async function fillPendingMcpServer(
+export async function fillPendingMcpServers(
     trx: Knex,
-    { id, integrationId, integration }: { id: string; integrationId: string; integration: AgentSessionCompiledIntegration }
-): Promise<Result<void, AgentSessionError>> {
+    { id, pending, integrations }: { id: string; pending: string[]; integrations: AgentSessionCompiledToolset }
+): Promise<Result<AgentSessionCompiledToolset, AgentSessionError>> {
     try {
-        await trx<DBAgentSession>(AGENT_SESSIONS_TABLE)
-            .where({ id })
-            .whereRaw(`compiled_toolset -> ? -> 'mcpServer' ->> 'status' = 'pending'`, [integrationId])
-            .update({
-                compiled_toolset: trx.raw('compiled_toolset || ?::jsonb', [JSON.stringify({ [integrationId]: integration })]),
-                updated_at: new Date()
-            });
+        const query = trx<DBAgentSession>(AGENT_SESSIONS_TABLE).where({ id });
+        for (const integrationId of pending) {
+            void query.whereRaw(`compiled_toolset -> ? -> 'mcpServer' ->> 'status' = 'pending'`, [integrationId]);
+        }
 
-        return Ok(undefined);
+        const [session] = await query
+            .update({ compiled_toolset: trx.raw('compiled_toolset || ?::jsonb', [JSON.stringify(integrations)]), updated_at: new Date() })
+            .returning('*');
+        if (session) {
+            return Ok(session.compiled_toolset);
+        }
+
+        const current = await getAgentSessionById(trx, id);
+        if (current.isErr()) {
+            return Err(current.error);
+        }
+
+        return Ok(current.value.compiledToolset);
     } catch (err) {
         return Err(
             new AgentSessionError({
                 code: 'creation_failed',
-                message: "Failed to attach the MCP server's tools to the agent session",
-                payload: { sessionId: id, integrationId },
+                message: "Failed to attach the MCP servers' tools to the agent session",
+                payload: { sessionId: id, integrationIds: Object.keys(integrations) },
                 cause: err
             })
         );
