@@ -55,9 +55,6 @@ You need:
     - **Private Key** — the full contents of `private.pem`, including the `BEGIN` and `END` lines.
     - **Signing Algorithm** — `RS256` for an RSA key, `ES256` for an EC key.
 
-    <Accordion title="For agents">
-      Create the integration with the [create integration](/reference/backend/http-api/integration/create) API (`POST /integrations`) with `provider: "buildkite-token-exchange"` and `"integration_config": { "clientId": "...", "keyId": "...", "privateKey": "<PEM>", "algorithm": "RS256" }`. Each connection then needs `organizationSlug` and `userEmail` in its connection config.
-    </Accordion>
   </Step>
   <Step id="next" title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
