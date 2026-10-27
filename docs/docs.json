@@ -98,6 +98,10 @@
       "destination": "/api-integrations/snowflake"
     },
     {
+      "source": "/integrations/all/grain-api-key",
+      "destination": "/api-integrations/grain-api-key"
+    },
+    {
       "source": "/integrations/all/webflow",
       "destination": "/api-integrations/webflow"
     },
@@ -1444,7 +1448,7 @@
               "integrations/all/gorgias-basic",
               "integrations/all/grafana",
               "integrations/all/grain",
-              "integrations/all/grain-api-key",
+              "api-integrations/grain-api-key",
               "integrations/all/grammarly",
               "integrations/all/grammarly-scim",
               "api-integrations/granola",

@@ -414,7 +414,7 @@ URL patterns:
 | `gorgias-basic` | Gorgias (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/gorgias-basic.md) | [connect](https://nango.dev/docs/integrations/all/gorgias-basic/connect.md) |  | e-commerce |
 | `grafana` | Grafana | API_KEY | [docs](https://nango.dev/docs/integrations/all/grafana.md) | [connect](https://nango.dev/docs/integrations/all/grafana/connect.md) |  | dev-tools |
 | `grain` | Grain (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/grain.md) |  |  | video, communication, productivity |
-| `grain-api-key` | Grain (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/grain-api-key.md) |  |  | video, communication, productivity |
+| `grain-api-key` | Grain (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/grain-api-key.md) | [connect](https://nango.dev/docs/api-integrations/grain-api-key/connect.md) |  | video, communication, productivity |
 | `grammarly` | Grammarly | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/grammarly.md) |  |  | productivity |
 | `grammarly-scim` | Grammarly SCIM | API_KEY | [docs](https://nango.dev/docs/integrations/all/grammarly-scim.md) | [connect](https://nango.dev/docs/integrations/all/grammarly-scim/connect.md) |  | productivity |
 | `granola` | Granola | API_KEY | [docs](https://nango.dev/docs/api-integrations/granola.md) | [connect](https://nango.dev/docs/api-integrations/granola/connect.md) |  | productivity, knowledge-base |

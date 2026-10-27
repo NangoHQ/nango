@@ -1,0 +1,42 @@
+---
+title: 'Grain (API Key) - How do I link my account?'
+sidebarTitle: 'Grain (API Key)'
+description: 'Generate a Grain personal access token and connect it to Nango'
+---
+
+## Overview
+
+To authenticate with Grain, you need:
+1. **Personal Access Token** - A token that gives access to all meetings your Grain user can access.
+
+This guide walks you through generating a personal access token and connecting it to Nango.
+
+### Prerequisites
+
+- A Grain account.
+
+### Instructions
+
+#### Step 1: Generate a personal access token
+
+1. Sign in to [Grain](https://grain.com).
+2. Go to **Settings** > **Integrations** > **Personal API**, or open the [Personal API page](https://grain.com/app/settings/account/integrations/personal_api) directly.
+3. Under **Personal tokens**, click **Generate personal API token**.
+
+<img src="/api-integrations/grain-api-key/generate_api_key.png" />
+
+4. Copy the token and store it securely. It starts with `grain_pat_`.
+
+The token has the same access as your Grain user and doesn't expire until you revoke it. For more details, see Grain's [authentication docs](https://developers.grain.com/authentication.html).
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **Personal Access Token**:
+
+1. Open the form where you need to authenticate with Grain.
+2. Paste your token into the **Personal Access Token** field.
+3. Click **Connect**.
+
+<img src="/api-integrations/grain-api-key/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Grain.
