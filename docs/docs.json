@@ -1348,6 +1348,7 @@
               "integrations/all/exact-online",
               "integrations/all/exist",
               "integrations/all/expensify",
+              "api-integrations/extensiv",
               "api-integrations/facebook",
               "api-integrations/facebook-system-user",
               "integrations/all/factorial",
