@@ -71,7 +71,8 @@ describe('Public environment management', () => {
 
         it('should list secret-free environments with the read scope', async () => {
             const { account } = await seedAccount();
-            const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'readable-environment' })).unwrap();
+            const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'readable-environment' })).unwrap()
+                .environment;
             const accountKey = await createAccountKey(account.id, ['account:environments:list']);
 
             const res = await api.fetch('/environments', {
@@ -128,7 +129,7 @@ describe('Public environment management', () => {
             const firstKey = await createAccountKey(first.account.id, ['account:*']);
             const secondEnvironment = (
                 await environmentService.createEnvironment(db.knex, { accountId: second.account.id, name: 'other-account-environment' })
-            ).unwrap();
+            ).unwrap().environment;
 
             const res = await api.fetch('/environments', {
                 method: 'GET',
@@ -273,7 +274,7 @@ describe('Public environment management', () => {
 
         it('should keep create and delete scopes independent', async () => {
             const { account } = await seedAccount();
-            const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'scope-boundary' })).unwrap();
+            const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'scope-boundary' })).unwrap().environment;
             const createKey = await createAccountKey(account.id, ['account:environments:create']);
             const deleteKey = await createAccountKey(account.id, ['account:environments:delete']);
 
@@ -324,7 +325,7 @@ describe('Public environment management', () => {
                     accountId: account.id,
                     name: PROD_ENVIRONMENT_NAME
                 })
-            ).unwrap();
+            ).unwrap().environment;
             const deleteKey = await createAccountKey(account.id, ['account:environments:delete']);
 
             const res = await api.fetch('/environments/:environmentUuid', {
