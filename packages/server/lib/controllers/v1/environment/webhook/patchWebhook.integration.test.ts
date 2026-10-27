@@ -1,7 +1,8 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
-import { seeders } from '@nangohq/shared';
+import { externalWebhookService, seeders } from '@nangohq/shared';
+import { Err } from '@nangohq/utils';
 
 import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected, shouldRequireSessionEnv } from '../../../../utils/tests.js';
 
@@ -15,6 +16,10 @@ describe(`PATCH ${route}`, () => {
 
     afterAll(() => {
         api.server.close();
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     it('should be protected', async () => {
@@ -86,6 +91,24 @@ describe(`PATCH ${route}`, () => {
         expect(res.res.status).toBe(400);
         isError(res.json);
         expect(res.json.error.code).toBe('invalid_body');
+    });
+
+    it('should return 500 when the webhook update returns an error', async () => {
+        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        const before = await externalWebhookService.get(env.id);
+        vi.spyOn(externalWebhookService, 'upsert').mockResolvedValueOnce(Err(new Error('Webhook update failed')));
+
+        const res = await api.fetch(route, {
+            method: 'PATCH',
+            query: { env: env.name },
+            session,
+            body: { primary_url: 'https://example.com/webhook' }
+        });
+
+        expect(res.res.status).toBe(500);
+        expect(res.json).toEqual({ error: { code: 'server_error', message: 'Failed to update webhook configuration' } });
+        await expect(externalWebhookService.get(env.id)).resolves.toEqual(before);
     });
 
     it('should accept allowed webhook URLs', async () => {

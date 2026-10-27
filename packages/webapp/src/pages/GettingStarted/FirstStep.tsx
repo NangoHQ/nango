@@ -14,6 +14,7 @@ import { GetUsageQueryKey } from '../../hooks/usePlan';
 import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import { queryClient, useStore } from '../../store';
+import { track } from '../../utils/analytics';
 import { globalEnv } from '../../utils/env';
 
 import type { ConnectUI, OnConnectEvent } from '@nangohq/frontend';
@@ -41,6 +42,8 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
         if (!environmentAndAccount || !user) {
             return;
         }
+
+        track('onboarding:connect_button_click');
 
         const nango = new Nango({
             host: globalEnv.apiUrl,
@@ -81,6 +84,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
     const onEvent: OnConnectEvent = useCallback(
         (event) => {
             if (event.type === 'connect') {
+                track('onboarding:connection_create');
                 queryClient.invalidateQueries({ queryKey: GetUsageQueryKey });
                 onConnected(event.payload.connectionId);
             }

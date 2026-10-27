@@ -127,7 +127,7 @@ export function trackStarterIntegrationSetup(
             environment: ctx.environment,
             user: ctx.user,
             plan: ctx.plan,
-            eventProperties: { provider: setup.provider, is_playground: true }
+            eventProperties: { provider: setup.provider, is_playground: true, source: 'playground', is_shared_credentials: true, has_missing_fields: false }
         });
     }
 }
