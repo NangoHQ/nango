@@ -206,13 +206,9 @@ exports[`buildJsonSchemaDefinitionsFromZodModels > should match snapshot 1`] = `
           ],
         },
         "note": {
-          "anyOf": [
-            {
-              "type": "string",
-            },
-            {
-              "type": "null",
-            },
+          "type": [
+            "string",
+            "null",
           ],
         },
       },
