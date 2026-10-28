@@ -251,6 +251,7 @@ describe(findIntegrationFunctions, () => {
         expect(functions.every((row) => row.integration_id === 'notion')).toBe(true);
         expect(functions.map((row) => row.name)).toContain('upsert_doc');
         expect(functions.some((row) => row.integration_id === 'github')).toBe(false);
+        expect(await findIntegrationFunctions({ environmentId: environment.id, providerConfigKeys: [] })).toEqual([]);
     });
 
     it('does not leak another environment', async () => {
@@ -330,33 +331,33 @@ describe(findInputSchemas, () => {
     it('returns a tool schema ahead of an action of the same name, and nothing for a disabled one', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
-        const gmail = await createConfigSeed(environment, 'gmail', 'google');
+        const github = await createConfigSeed(environment, 'github', 'github');
 
-        for (const name of ['send_email', 'draft_email']) {
+        for (const name of ['create-issue', 'list-issues']) {
             await insertSyncConfig({
                 environmentId: environment.id,
-                integration: gmail,
+                integration: github,
                 name,
                 type: 'action',
                 input: 'SendEmailInput',
                 modelsJsonSchema: objectInput
             });
         }
-        await insertTool({ environment, integrationId: 'gmail', name: 'send_email' });
-        await insertTool({ environment, integrationId: 'gmail', name: 'draft_email', enabled: false });
+        await insertTool({ environment, integrationId: 'github', name: 'create-issue' });
+        await insertTool({ environment, integrationId: 'github', name: 'list-issues', enabled: false });
 
         const rows = await findInputSchemas({
             environmentId: environment.id,
             actions: [
-                { integrationId: 'gmail', name: 'send_email' },
-                { integrationId: 'gmail', name: 'draft_email' }
+                { integrationId: 'github', name: 'create-issue' },
+                { integrationId: 'github', name: 'list-issues' }
             ]
         });
 
-        expect(rows).toStrictEqual([{ integration_id: 'gmail', name: 'send_email', input: 'ToolInput', models_json_schema: toolInput }]);
+        expect(rows).toStrictEqual([{ integration_id: 'github', name: 'create-issue', input: 'ToolInput', models_json_schema: toolInput }]);
     });
 
-    it('reads several integrations in one query and returns nothing when asked for nothing', async () => {
+    it('reads several integrations in one batch and returns nothing when asked for nothing', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
         const gmail = await createConfigSeed(environment, 'gmail', 'google');
