@@ -7,7 +7,7 @@ import { CodeBlock } from '@/components/ui/CodeBlock';
 import { useConnection } from '@/hooks/useConnections';
 import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { usePlaygroundStore } from '@/store/playground';
-import { JSON_DISPLAY_LIMIT } from './types';
+import { JSON_DISPLAY_LIMIT } from '@/utils/json';
 
 import type { InputField } from './types';
 

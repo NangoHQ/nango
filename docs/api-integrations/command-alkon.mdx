@@ -1,0 +1,85 @@
+---
+title: 'Command Alkon'
+sidebarTitle: 'Command Alkon'
+description: 'Integrate your application with the Command Alkon CONNEX API'
+---
+
+## 🚀 Quickstart
+
+Connect to Command Alkon CONNEX with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Command Alkon_.
+    </Step>
+    <Step id="authorize-command-alkon" title="Authorize Command Alkon">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your API hostname, entity ref, API key, client ID, client secret, and API scope ref. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-command-alkon-api" title="Call the Command Alkon API">
+    Let's make your first request to the Command Alkon API to list payment methods. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, connection ID, and entity ref:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v4/services/setup/<ENTITY-REF>/payment-methods" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v4/services/setup/<ENTITY-REF>/payment-methods',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Paths are relative to `https://<API-HOSTNAME>`, such as `https://api.us.commandalkon.io`, and start with the API version, such as `/v4/services`. Nango adds your `x-api-key` header and an access token to every request, and gets a new access token before the current one expires.
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+<Note>The entity ref your users enter is saved in the connection config as `entityRef`. To build request paths, read it from `connection_config.entityRef` with the [get connection](/reference/backend/http-api/connections/get) API, or with `nango.getConnection()` in the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials).</Note>
+
+## 📚 Command Alkon integration guides
+
+- [How do I link my account?](/api-integrations/command-alkon/connect)  
+Get your API credentials from Command Alkon and enter them in the Connect UI.
+
+Official docs: [Command Alkon developer portal](https://developer.commandalkon.io/)
+
+## API gotchas
+
+- Every path includes the site's entity ref, such as `/v4/services/billing/<ENTITY-REF>/invoices`. Credentials are issued per site.
+
+## 🧩 Pre-built syncs & actions for Command Alkon
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/command-alkon/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

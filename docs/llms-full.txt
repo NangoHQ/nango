@@ -92,138 +92,182 @@ Explore the main product integration use cases:
 ## Quickstart
 
 Source: https://nango.dev/docs/getting-started/quickstart.md
-Description: Authorize an API and run your first Nango function
+Description: Give your AI agent access to Gmail, Slack, Notion, and 1,000+ other APIs
 
-## AI-assisted quickstart
+This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own agent. Your agent gets one MCP server with tools for every API you enable, and asks your users to connect their accounts when it needs them.
 
-Copy this prompt into Claude, Cursor, or another coding agent to get guided through signup, API key setup, connection authorization, and your first function call.
-
-<div className="agent-quickstart-actions">
-  <button
-    type="button"
-    className="agent-quickstart-action"
-    data-copy-url="https://raw.githubusercontent.com/NangoHQ/skills/main/skills/quickstart/SKILL.md"
-    data-copy-success="Prompt copied"
-  >
-    <span className="agent-quickstart-action-title">Copy quickstart prompt</span>
-    <span className="agent-quickstart-action-description">Paste the quickstart prompt into your coding agent to walk through this guide.</span>
-  </button>
-  <button
-    type="button"
-    className="agent-quickstart-action"
-    data-copy-text="npx skills add NangoHQ/skills -s quickstart"
-    data-copy-success="Install command copied"
-  >
-    <span className="agent-quickstart-action-title">Install quickstart skill</span>
-    <span className="agent-quickstart-action-description">Copy the command to install <code>quickstart</code> from <code>NangoHQ/skills</code>.</span>
-  </button>
-</div>
-
-For skills, the docs MCP server, and other agent setup options, see [Coding agent setup](/getting-started/coding-agent-setup).
-
-## Manual quickstart
-
-The steps below show the flow end to end. This quickstart uses the GitHub API as an example, but you can choose any of the [1,000+ APIs](/integrations/overview).
+<Tip>
+  To try agent sessions without code first, use the **Playground** tab in the [Nango dashboard](https://app.nango.dev/dev/playground/agent).
+</Tip>
 
 <Steps>
-  <Step id="create-integration" title="Create an integration">
-    [Sign up](https://app.nango.dev/signup) for free. This quickstart uses GitHub (User OAuth), which is pre-created with integration ID `github-getting-started`.
+  <Step id="get-api-key" title="Get an API key">
+    [Sign up](https://app.nango.dev/signup) for Nango and copy the [default Environment API key](https://app.nango.dev/dev/environment-settings#api-keys) for your agent. Your backend uses it to call the Nango API.
 
-    If you want to test another API, go to the Integrations tab > Set up new integration > pick an API.
+    <Accordion title="For agents">
+      If the user gave you an Environment API key, for example in the prompt, use it.
 
+      Otherwise, ask the user to sign up at `https://app.nango.dev/signup` and copy the default key from `https://app.nango.dev/dev/environment-settings#api-keys`. It has full permissions.
+
+      Store it as `NANGO_API_KEY` in the backend's local env file, and make sure that file is ignored by Git. Never send the key to a browser or client.
+
+      All requests below go to `https://api.nango.dev` with `Authorization: Bearer <NANGO-API-KEY>`.
+    </Accordion>
   </Step>
 
-  <Step id="authorize-api" title="Authorize the API">
-    Go to the Connections tab > Add Test Connection > pick your integration, and complete the auth flow. For the GitHub example, pick `github-getting-started`.
+  <Step id="enable-integrations" title="Enable the APIs your agent needs">
+    Pick the APIs your agent can use, for example Gmail, Google Calendar, Slack, or Notion. Nango-managed OAuth apps let you test right away, without registering an app with each provider.
 
-    Copy the connection ID and your [Nango API key](/reference/backend/http-api/api-keys) from the Environment settings tab > API Keys. For the GitHub example, the integration ID is `github-getting-started`. You will use these values in the next steps.
+    <Accordion title="For agents">
+      Ask the user which APIs their agent needs. Suggest `google-mail` (Gmail), `google-calendar`, `slack`, and `notion` if they are unsure.
 
-  </Step>
+      Look up each provider. `search` matches slugs only, so Gmail is found with `google`, not `gmail`:
 
-  <Step id="enable-function" title="Use an integration function">
-    Open the `github-getting-started` integration and select `get-repository` from the Functions tab.
-
-    Nango runs the function with the connected account's credentials without exposing them to your app or agent.
-
-    <Tip>
-      You can also [build a custom function](/guides/functions/functions-guide#build-locally-with-the-cli) in your codebase, or use the [Functions API](/guides/functions/functions-guide#build-with-the-functions-api) to let an agent turn text-defined behavior into deployed function code.
-    </Tip>
-
-  </Step>
-
-  <Step id="call-function" title="Call the function">
-    Trigger the function from your backend:
-
-    <Tabs>
-      <Tab title="Node">
-      Install the SDK with `npm i @nangohq/node`, then run:
-
-      ```typescript
-      import { Nango } from '@nangohq/node';
-
-      const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
-
-      const result = await nango.triggerAction(
-          'github-getting-started',
-          '<CONNECTION-ID>',
-          'get-repository',
-          {
-              owner: 'NangoHQ',
-              repo: 'nango'
-          }
-      );
-
-      console.log(result);
+      ```bash
+      curl 'https://api.nango.dev/providers?search=google' \
+        --header 'Authorization: Bearer <NANGO-API-KEY>'
       ```
-      </Tab>
 
-      <Tab title="cURL">
+      Each result has a `name` (the provider slug) and an `auth_mode`, which decides how to create the integration below.
+
+      List the integrations that already exist, and reuse them:
+
+      ```bash
+      curl https://api.nango.dev/integrations \
+        --header 'Authorization: Bearer <NANGO-API-KEY>'
+      ```
+
+      Create each missing integration, with the provider slug as the integration ID.
+
+      **`auth_mode` is `OAUTH2`, `OAUTH1`, or `APP`:** use a Nango-managed OAuth app, so the user doesn't need to register one with the provider:
+
       ```bash
       curl --request POST \
-        --url https://api.nango.dev/action/trigger \
+        --url https://api.nango.dev/integrations/quickstart \
         --header 'Authorization: Bearer <NANGO-API-KEY>' \
-        --header 'Connection-Id: <CONNECTION-ID>' \
-        --header 'Provider-Config-Key: github-getting-started' \
         --header 'Content-Type: application/json' \
         --data '{
-          "action_name": "get-repository",
-          "input": {
-            "owner": "NangoHQ",
-            "repo": "nango"
+          "provider": "google-mail",
+          "unique_key": "google-mail"
+        }'
+      ```
+
+      If it fails because there is no Nango-managed app for this provider, tell the user. They need to [register their own OAuth app](/guides/auth/auth-guide).
+
+      **Any other `auth_mode`**, such as `API_KEY` or `BASIC`: create it with [`POST /integrations`](/reference/backend/http-api/integration/create). No developer app is needed, and users enter their own credentials when they connect:
+
+      ```bash
+      curl --request POST \
+        --url https://api.nango.dev/integrations \
+        --header 'Authorization: Bearer <NANGO-API-KEY>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "provider": "firecrawl",
+          "unique_key": "firecrawl"
+        }'
+      ```
+
+      Check the integration has tools. Nango catalog actions are available out of the box, with nothing to deploy:
+
+      ```bash
+      curl 'https://api.nango.dev/integrations/google-mail/functions?type=action' \
+        --header 'Authorization: Bearer <NANGO-API-KEY>'
+      ```
+    </Accordion>
+  </Step>
+
+  <Step id="create-agent-session" title="Create an agent session in your backend">
+    Before each agent run, your backend creates a session for the user the agent acts for. It covers every API you enabled.
+
+    <Accordion title="For agents">
+      Before each agent run, create an agent session server-side:
+
+      ```bash
+      curl --request POST \
+        --url https://api.nango.dev/sessions \
+        --header 'Authorization: Bearer <NANGO-API-KEY>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "tenant": {
+            "connections": {
+              "any": [{ "tags": { "end_user_id": "<YOUR-USER-ID>" } }]
+            }
+          },
+          "toolset": "*",
+          "meta_tools": {
+            "nango_create_connection": {
+              "enabled": true,
+              "tags": { "end_user_id": "<YOUR-USER-ID>" }
+            }
           }
         }'
       ```
-      </Tab>
-    </Tabs>
 
-    You should receive GitHub repository details such as the repository ID, full name, visibility, default branch, and owner.
+      Set `<YOUR-USER-ID>` to the stable ID of the user the agent acts for, the same value in both places. Without user accounts, use a fixed ID like `local-dev-user`.
 
+      The session covers every integration. When the user hasn't connected one yet, the agent gets a connect link to hand them. See [creating a session](/guides/agent-sessions#creating-a-session) for all options.
+
+      The response's `data` contains an `mcp_url` and a `session_token`.
+    </Accordion>
   </Step>
 
-  <Step id="inspect-run" title="Inspect the run">
-    Open the Logs tab to inspect the function execution, provider request, response, and any errors.
+  <Step id="connect-agent" title="Connect the session to your agent">
+    Pass the session's MCP server to your agent. It works with any agent framework that supports remote MCP servers.
 
-    🎉 You connected an API and ran your first integration function.
+    <Accordion title="For agents">
+      Pass the `mcp_url` to the agent as a remote MCP server, with the `session_token` as bearer auth. For example, with the Vercel AI SDK:
 
+      ```typescript
+      import { createMCPClient } from "@ai-sdk/mcp";
+
+      // `session` is the `data` object returned by POST /sessions
+      const mcpClient = await createMCPClient({
+        transport: {
+          type: "http",
+          url: session.mcp_url,
+          headers: { Authorization: `Bearer ${session.session_token}` }
+        }
+      });
+
+      const tools = await mcpClient.tools();
+      // Pass `tools` to generateText() or streamText() with the agent's other tools
+      ```
+
+      Use the MCP client of the framework the project already uses: see [OpenAI, Anthropic, LangChain, and Mastra](/guides/agent-sessions#pass-mcp) examples. Keep the agent's existing tools.
+
+      Make sure links in the agent's replies render as clickable links, so the user can open connect links from the chat.
+    </Accordion>
   </Step>
 
-  <Step id="choose-next-steps" title="Next steps">
-    <CardGroup cols={2}>
-      <Card title="Embed auth in your app" icon="lock" href="/guides/auth/auth-guide">
-        Let users connect external APIs from your product.
-      </Card>
-      <Card title="Build custom functions" icon="wand-magic-sparkles" href="/guides/functions/functions-guide">
-        Generate, test, customize, and deploy integration code.
-      </Card>
-      <Card title="Sync external data" icon="arrows-rotate" href="/getting-started/use-cases/syncs">
-        Keep external API data fresh for your product or RAG pipeline.
-      </Card>
-      <Card title="Expose tools to agents" icon="robot" href="/guides/agent-sessions">
-        Use action functions through tool calling and MCP.
-      </Card>
-    </CardGroup>
+  <Step id="test-agent" title="Test it">
+    Ask your agent something like "Summarize the last 5 emails in my inbox". The first time, it replies with a link to connect your account. Authorize, ask again, and the agent runs the right tool.
+
+    See what was created in the **Integrations**, **Connections**, and **Logs** tabs of the [Nango dashboard](https://app.nango.dev/dev/integrations).
+
+    <Accordion title="For agents">
+      Ask the user to run the app and ask the agent something that needs an enabled API, for example:
+
+      > Summarize the last 5 emails in my inbox.
+
+      The first time, the agent replies with a connect link. The user opens it, authorizes, and asks again. The agent then finds and runs the right tool.
+
+      Then point the user to the **Integrations**, **Connections**, and **Logs** tabs in the [Nango dashboard](https://app.nango.dev/dev/integrations). **Logs** shows every tool call, provider request, and response.
+
+      Finally, suggest the user connect the [Management MCP server with OAuth](/getting-started/coding-agent-setup#oauth-recommended). It's the most efficient way for their coding agent to manage integrations, connections, and logs, and to search the Nango docs moving forward.
+    </Accordion>
   </Step>
 </Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Configure agent sessions" icon="robot" href="/guides/agent-sessions">
+    Restrict tools, pin connections, and scope access per user or organization.
+  </Card>
+  <Card title="Build custom tools" icon="wand-magic-sparkles" href="/guides/functions/functions-guide">
+    Write action functions for tools the catalog doesn't have.
+  </Card>
+</CardGroup>
 
 <Tip>**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).</Tip>
 
@@ -8155,6 +8199,10 @@ Set one object store. On AWS, set `AWS_INTEGRATIONS_BUCKET_NAME`. On Google Clou
 This is the *minimum* set to get a production instance running. The sections below cover what each optional subsystem (logs, encryption, audit trail, Redis, hardening) additionally needs.
 </Tip>
 
+### Pre-built integrations catalog
+
+Nango's pre-built integration catalog metadata is bundled with the image, but its compiled files are not. To make its templates work on your instance, upload the compiled files to the same object store you configured above. See [Pre-built integrations for self-managed Nango instances](/guides/platform/self-hosting/install-integration-catalog) for the full instructions.
+
 ### Encryption key
 
 You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. It encrypts credentials in the control-plane database as well as data in the records cache. Without this key, credentials are stored unencrypted.
@@ -10202,6 +10250,7 @@ curl --request POST \
 ### Account-level APIs
 
 - [List environments](/reference/backend/http-api/environments/list)
+- [Get an environment](/reference/backend/http-api/environments/get)
 - [Create an environment](/reference/backend/http-api/environments/create)
 - [Delete an environment](/reference/backend/http-api/environments/delete)
 - [List environment API keys](/reference/backend/http-api/environments/list-api-keys)
@@ -10260,19 +10309,101 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/list.md
 ```
 </ResponseExample>
 
+## Get an environment
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/get.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:read` scope.
+</Info>
+
+Retrieves environment's configuration.
+
+Set `with_secrets=true` to also return `webhooks.signing_key` and `otlp_headers`. This requires the additional `account:environments:read_secret` scope.
+
+<ResponseExample>
+```json Without secrets
+{
+  "data": {
+    "id": 123,
+    "uuid": "123e4567-e89b-12d3-a456-426614174001",
+    "name": "staging",
+    "is_production": false,
+    "callback_url": "https://api.nango.dev/oauth/callback",
+    "slack_notifications": false,
+    "otlp_endpoint": null,
+    "webhooks": {
+      "primary_url": "https://example.com/webhooks/nango",
+      "secondary_url": null,
+      "on_sync_completion_always": true,
+      "on_auth_creation": true,
+      "on_auth_refresh_error": true,
+      "on_sync_error": true,
+      "on_async_action_completion": true,
+      "on_connection_deletion": true
+    }
+  }
+}
+```
+
+```json With secrets
+{
+  "data": {
+    "id": 123,
+    "uuid": "123e4567-e89b-12d3-a456-426614174001",
+    "name": "staging",
+    "is_production": false,
+    "callback_url": "https://api.nango.dev/oauth/callback",
+    "slack_notifications": false,
+    "otlp_endpoint": null,
+    "otlp_headers": [],
+    "webhooks": {
+      "primary_url": "https://example.com/webhooks/nango",
+      "secondary_url": null,
+      "on_sync_completion_always": true,
+      "on_auth_creation": true,
+      "on_auth_refresh_error": true,
+      "on_sync_error": true,
+      "on_async_action_completion": true,
+      "on_connection_deletion": true,
+      "signing_key": "5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f"
+    }
+  }
+}
+```
+</ResponseExample>
+
 ## Create an environment
 
 Source: https://nango.dev/docs/reference/backend/http-api/environments/create.md
 
 <Info>
-  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:create` scope. Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
 </Info>
 
 Creates a new environment. Additional environments are limited by your [pricing plan](https://www.nango.dev/pricing).
 
-You can create a production environment by setting `is_production: true`.
+Set `is_production: true` to create a production environment. This also requires `account:environments:set_production`. The reserved name `prod` is always production and cannot be combined with `is_production: false`.
 
-The response includes an environment `uuid`. Use it to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
+Pass `webhooks` to configure URLs and subscriptions. Nango generates a webhook signing key for the new environment. See [Receive webhooks from Nango](/guides/platform/webhooks-from-nango) for delivery behavior, event types, and signature verification.
+
+The response returns the complete environment settings, including the plaintext webhook signing key and environment `uuid`. Use the `uuid` to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url https://api.nango.dev/environments \
+  --header 'Authorization: Bearer <NANGO-ACCOUNT-API-KEY>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "name": "staging",
+    "webhooks": {
+      "primary_url": "https://app.example.com/webhooks/nango",
+      "on_sync_completion_always": false
+    }
+  }'
+```
+</RequestExample>
 
 <ResponseExample>
 ```json Example Response
@@ -10280,7 +10411,23 @@ The response includes an environment `uuid`. Use it to [create an Environment AP
   "data": {
     "id": 123,
     "uuid": "123e4567-e89b-12d3-a456-426614174000",
-    "name": "staging"
+    "name": "staging",
+    "is_production": false,
+    "callback_url": "https://api.nango.dev/oauth/callback",
+    "slack_notifications": false,
+    "otlp_endpoint": null,
+    "otlp_headers": [],
+    "webhooks": {
+      "primary_url": "https://app.example.com/webhooks/nango",
+      "secondary_url": null,
+      "on_sync_completion_always": false,
+      "on_auth_creation": true,
+      "on_auth_refresh_error": true,
+      "on_sync_error": true,
+      "on_async_action_completion": true,
+      "on_connection_deletion": true,
+      "signing_key": "5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f"
+    }
   }
 }
 ```
@@ -13939,11 +14086,18 @@ Use the Sync tools to set sync state or trigger syncs for an integration in the 
 
 ### Functions
 
-Use the Functions tools to inspect available functions and deploy templates in the authenticated Nango environment. `functions_list` includes deployed functions and Nango catalog actions. Catalog actions are available out of the box; use `deploy_template` when you want to enable a sync template or explicitly deploy a template.
+Use the Functions tools to inspect available functions and deploy templates in the authenticated Nango environment. `functions_list` includes deployed sync, action, and event functions, as well as Nango catalog actions. Catalog actions are available out of the box; use `deploy_template` when you want to enable a sync template or explicitly deploy a template.
+
+Tools are functions that can be called on demand: HTTP-triggered functions, deployed action functions, and Nango catalog actions. Use `tools_call` to call an enabled tool for a connection.
+
+<Warning>
+    A `tools_call` MCP request may time out within 90 seconds without canceling execution. After a timeout, the tool cannot return the result or an execution ID. Retrying starts another execution and may duplicate side effects. When the tool supports it, use input parameters that limit the amount of data processed to keep execution within the MCP timeout.
+</Warning>
 
 | Tool                    | Description                                                                   | Additional permission        |
 | ----------------------- | ----------------------------------------------------------------------------- | ---------------------------- |
 | `functions_list`        | List and filter available functions by integration, including Nango catalog actions. | `environment:functions:list` |
+| `tools_call`            | Call an enabled tool of an integration synchronously for a connection.        | `environment:functions:invocations`, `environment:actions:execute` |
 | `deploy_template`       | Deploy a function template.                                                   | `environment:deploy`         |
 | `get_deployment_status` | Retrieve a deployment's current status and result.                            | `environment:deploy`         |
 
@@ -15280,7 +15434,7 @@ Nango is the leading provider of **API access for AI agents & apps**. It is desi
 
 <CardGroup cols={1}>
 <Card title="All APIs & integrations" icon="list" href="https://www.nango.dev/api-integrations">
-1,000+ APIs & thousands of integrations.
+1,000+ APIs & 10,000+ pre-built tools.
 </Card>
 <Card title="Request or contribute a new API" icon="circle-question" href="/integrations/contribute-or-request-api">
 We deliver them in &lt;48h.
@@ -16047,6 +16201,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `builder-io-public` | Builder.io (Public) | API_KEY | [docs](https://nango.dev/docs/api-integrations/builder-io-public.md) | [connect](https://nango.dev/docs/api-integrations/builder-io-public/connect.md) |  | dev-tools, design, cms |
 | `buildium` | Buildium | API_KEY | [docs](https://nango.dev/docs/integrations/all/buildium.md) | [connect](https://nango.dev/docs/integrations/all/buildium/connect.md) |  | accounting, crm, payment |
 | `buildkite` | Buildkite | API_KEY | [docs](https://nango.dev/docs/api-integrations/buildkite.md) | [connect](https://nango.dev/docs/api-integrations/buildkite/connect.md) |  | dev-tools |
+| `buildkite-token-exchange` | Buildkite (Token Exchange) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/buildkite-token-exchange.md) | [connect](https://nango.dev/docs/api-integrations/buildkite-token-exchange/connect.md) | [setup](https://nango.dev/docs/api-integrations/buildkite-token-exchange/how-to-register-your-own-buildkite-token-exchange-app.md) | dev-tools |
 | `builtwith` | BuiltWith | API_KEY | [docs](https://nango.dev/docs/integrations/all/builtwith.md) | [connect](https://nango.dev/docs/integrations/all/builtwith/connect.md) |  | dev-tools, analytics, crm, marketing, e-commerce |
 | `bullhorn` | Bullhorn | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/bullhorn.md) | [connect](https://nango.dev/docs/integrations/all/bullhorn/connect.md) |  | hr, ats |
 | `cal-com-oauth` | Cal.com (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/cal-com-oauth.md) |  | [setup](https://nango.dev/docs/api-integrations/cal-com-oauth/how-to-register-your-own-cal-com-oauth-app.md) | productivity |
@@ -16060,6 +16215,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `canva-mcp` | Canva (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/canva-mcp.md) |  |  | design, mcp |
 | `canva-scim` | Canva (SCIM API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/canva-scim.md) | [connect](https://nango.dev/docs/integrations/all/canva-scim/connect.md) |  | design, dev-tools |
 | `canvas-lms` | Canvas LMS | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/canvas-lms.md) | [connect](https://nango.dev/docs/api-integrations/canvas-lms/connect.md) | [setup](https://nango.dev/docs/api-integrations/canvas-lms/how-to-register-your-own-canvas-lms-oauth-app.md) | productivity |
+| `cch-axcess` | CCH Axcess | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/cch-axcess.md) |  | [setup](https://nango.dev/docs/api-integrations/cch-axcess/how-to-register-your-own-cch-axcess-oauth-app.md) | accounting |
 | `cdw` | CDW | API_KEY | [docs](https://nango.dev/docs/api-integrations/cdw.md) | [connect](https://nango.dev/docs/api-integrations/cdw/connect.md) |  | erp, e-commerce |
 | `cerby` | Cerby | API_KEY | [docs](https://nango.dev/docs/api-integrations/cerby.md) | [connect](https://nango.dev/docs/api-integrations/cerby/connect.md) |  | iam |
 | `certn` | Certn | API_KEY | [docs](https://nango.dev/docs/integrations/all/certn.md) | [connect](https://nango.dev/docs/integrations/all/certn/connect.md) |  | legal |
@@ -16105,6 +16261,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `coda` | Coda | API_KEY | [docs](https://nango.dev/docs/integrations/all/coda.md) | [connect](https://nango.dev/docs/integrations/all/coda/connect.md) |  | knowledge-base, productivity |
 | `codeclimate` | Code Climate | API_KEY | [docs](https://nango.dev/docs/integrations/all/codeclimate.md) | [connect](https://nango.dev/docs/integrations/all/codeclimate/connect.md) |  | dev-tools, productivity |
 | `codegen` | Codegen | API_KEY | [docs](https://nango.dev/docs/integrations/all/codegen.md) | [connect](https://nango.dev/docs/integrations/all/codegen/connect.md) |  | dev-tools |
+| `command-alkon` | Command Alkon | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/command-alkon.md) | [connect](https://nango.dev/docs/api-integrations/command-alkon/connect.md) |  | erp |
 | `commercetools` | Commercetools | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/commercetools.md) | [connect](https://nango.dev/docs/integrations/all/commercetools/connect.md) |  | e-commerce |
 | `companycam` | CompanyCam | API_KEY | [docs](https://nango.dev/docs/integrations/all/companycam.md) |  |  | productivity |
 | `conductorone` | ConductorOne | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/conductorone.md) | [connect](https://nango.dev/docs/api-integrations/conductorone/connect.md) |  | productivity |
@@ -16206,6 +16363,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `exact-online` | Exact Online | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/exact-online.md) |  |  | accounting, erp |
 | `exist` | Exist | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/exist.md) |  |  | other |
 | `expensify` | Expensify | BASIC | [docs](https://nango.dev/docs/integrations/all/expensify.md) | [connect](https://nango.dev/docs/integrations/all/expensify/connect.md) |  | productivity |
+| `extensiv` | Extensiv | BASIC | [docs](https://nango.dev/docs/api-integrations/extensiv.md) | [connect](https://nango.dev/docs/api-integrations/extensiv/connect.md) |  | e-commerce |
 | `facebook` | Facebook | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/facebook.md) |  | [setup](https://nango.dev/docs/api-integrations/facebook/how-to-register-your-own-facebook-api-oauth-app.md) | marketing, social |
 | `facebook-system-user` | Facebook (System User Token) | API_KEY | [docs](https://nango.dev/docs/api-integrations/facebook-system-user.md) | [connect](https://nango.dev/docs/api-integrations/facebook-system-user/connect.md) |  | marketing, social |
 | `factorial` | Factorial (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/factorial.md) |  |  | hr |

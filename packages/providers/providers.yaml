@@ -2421,7 +2421,7 @@ atlassian-service-account-oauth2:
             type: string
             title: Subdomain
             optional: true
-            description: The subdomain of your Attlassian account
+            description: The subdomain of your Atlassian account
             pattern: '^[a-zA-Z0-9.-]+$'
             example: subdomain
             suffix: .atlassian.net
@@ -4541,6 +4541,98 @@ buildkite:
             example: bkua_MTA.4f6c********************************0f2a
             doc_section: '#step-1-create-an-api-access-token'
 
+buildkite-token-exchange:
+    display_name: Buildkite (Token Exchange)
+    categories:
+        - dev-tools
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://buildkite.com/oauth/token
+    token_params:
+        grant_type: urn:ietf:params:oauth:grant-type:token-exchange
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+        subject_token: ${connectionConfig.userEmail}
+        subject_token_type: urn:buildkite:params:oauth:token-type:user-email
+        audience: ${connectionConfig.organizationSlug}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    assertion:
+        type: jwt
+        singleUse: true
+        key: ${credentials.privateKey}
+        lifetimeInSeconds: 300
+        header:
+            alg: ${credentials.algorithm}
+            kid: ${credentials.keyId}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://buildkite.com/oauth/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://api.buildkite.com
+    docs: https://nango.dev/docs/api-integrations/buildkite-token-exchange
+    setup_guide_url: https://nango.dev/docs/api-integrations/buildkite-token-exchange/how-to-register-your-own-buildkite-token-exchange-app
+    docs_connect: https://nango.dev/docs/api-integrations/buildkite-token-exchange/connect
+    integration_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Buildkite Token Exchange App's Client ID.
+            doc_section: '#copy-client-id'
+            order: 1
+        keyId:
+            type: string
+            title: Key ID
+            description: The kid of the key in your app's JWKS.
+            doc_section: '#generate-signing-key'
+            order: 2
+        privateKey:
+            type: string
+            title: Private Key
+            description: The PEM private key matching your JWKS public key.
+            secret: true
+            doc_section: '#generate-signing-key'
+            order: 3
+        algorithm:
+            type: string
+            title: Signing Algorithm
+            description: The algorithm of your private key.
+            enum:
+                - RS256
+                - ES256
+            order: 4
+    credentials:
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    connection_config:
+        organizationSlug:
+            type: string
+            title: Organization Slug
+            description: Your Buildkite organization's slug (from its URL) or UUID.
+            example: acme-inc
+            pattern: '^[a-z0-9-]+$'
+            prefix: https://buildkite.com/
+            doc_section: '#step-1-find-your-organization-slug'
+            order: 1
+        userEmail:
+            type: string
+            title: User Email
+            description: The verified email of the Buildkite user the token acts as.
+            example: jane@acme.com
+            format: email
+            doc_section: '#step-2-choose-the-user'
+            order: 2
+
 buildium:
     display_name: Buildium
     categories:
@@ -4970,6 +5062,44 @@ canva-scim:
             title: API Key
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
+
+cch-axcess:
+    display_name: CCH Axcess
+    categories:
+        - accounting
+    auth_mode: OAUTH2
+    authorization_url: https://login.cchaxcess.com/ps/auth/v1.0/core/connect/authorize
+    token_url: https://login.cchaxcess.com/ps/auth/v1.0/core/connect/token
+    token_request_auth_method: basic
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.cchaxcess.com
+        headers:
+            integratorkey: ${connectionConfig.integratorKey}
+    docs: https://nango.dev/docs/api-integrations/cch-axcess
+    setup_guide_url: https://nango.dev/docs/api-integrations/cch-axcess/how-to-register-your-own-cch-axcess-oauth-app
+    integration_config:
+        integratorKey:
+            type: string
+            title: Integrator Key
+            description: Your CCH Axcess API subscription key.
+            secret: true
+            doc_section: '#get-integrator-key'
+            order: 1
+    connection_config:
+        integratorKey:
+            type: string
+            title: ''
+            description: ''
+            secret: true
+            automated: true
 
 cdw:
     display_name: CDW
@@ -6178,6 +6308,89 @@ codegen:
             pattern: '^sk-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             example: 'sk-897bd628-de64-4018-8e3b-c6f717ca3e1d'
             doc_section: '#step-1-finding-your-api-key'
+
+command-alkon:
+    display_name: Command Alkon
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.hostname}/v4/services/authnz/${connectionConfig.entityRef}/api/login
+    token_headers:
+        content-type: application/json
+        x-api-key: ${credentials.apiKey}
+    token_params:
+        clientId: ${credentials.clientId}
+        clientSecret: ${credentials.clientSecret}
+        apiScopeRef: ${credentials.apiScopeRef}
+    additional_steps:
+        - token_url: https://${connectionConfig.hostname}/v4/services/authnz/${connectionConfig.entityRef}/api/tokens/refresh-access-token
+          token_request_method: GET
+          token_headers:
+              x-api-key: ${credentials.apiKey}
+              authorization: Bearer ${step1.refresh_token}
+    token_response:
+        token: access_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            x-api-key: ${credentials.apiKey}
+    docs: https://nango.dev/docs/api-integrations/command-alkon
+    docs_connect: https://nango.dev/docs/api-integrations/command-alkon/connect
+    connection_config:
+        hostname:
+            type: string
+            title: API Hostname
+            description: The API hostname of your CONNEX environment.
+            default_value: api.us.commandalkon.io
+            enum:
+                - api.us.commandalkon.io
+                - api.eu.commandalkon.io
+                - api.cc2-eu.commandalkon.io
+                - api.cc2-apacn.commandalkon.io
+                - api.cc2-apacs.commandalkon.io
+                - api.cc2-latam.commandalkon.io
+            prefix: https://
+            doc_section: '#step-1-find-your-api-hostname'
+            order: 1
+        entityRef:
+            type: string
+            title: Entity Ref
+            description: The entityRef (GUID) of your CONNEX site.
+            example: 3f25****-****-****-****-********3301
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            doc_section: '#step-2-get-your-api-credentials'
+            order: 2
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The x-api-key Command Alkon issued for your site.
+            example: 3f9a1c2e****************************7b4d
+            pattern: '^[a-f0-9]{40}$'
+            secret: true
+            doc_section: '#step-2-get-your-api-credentials'
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Command Alkon API client ID.
+            example: 3f9a1c2e****************************7b4d#5c8e************************a91f
+            pattern: '^[a-f0-9]{40}#[a-f0-9]{32}$'
+            doc_section: '#step-2-get-your-api-credentials'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Command Alkon API client secret.
+            example: 5d2e8b1a********************************************************c47e****
+            pattern: '^[a-f0-9]{64}\S*$'
+            secret: true
+            doc_section: '#step-2-get-your-api-credentials'
+        apiScopeRef:
+            type: string
+            title: API Scope Ref
+            description: The apiScopeRef assigned to your API credentials.
+            example: 6b1c****-****-****-****-********d5e2
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            doc_section: '#step-2-get-your-api-credentials'
 
 commercetools:
     display_name: Commercetools
@@ -9048,6 +9261,35 @@ expensify:
     credentials_verification_script: expensifyCredentialsVerification
     docs: https://nango.dev/docs/integrations/all/expensify
     docs_connect: https://nango.dev/docs/integrations/all/expensify/connect
+
+extensiv:
+    display_name: Extensiv
+    categories:
+        - e-commerce
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.cartrover.com
+        retry:
+            remaining: 'x-cartrover-api-minute-hits-remaining'
+    credentials_verification_script: extensivCredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/extensiv
+    docs_connect: https://nango.dev/docs/api-integrations/extensiv/connect
+    credentials:
+        username:
+            type: string
+            title: API User
+            description: The API User of your Extensiv Integration Manager API keys.
+            example: 10859Ab3*****
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-create-your-api-keys'
+        password:
+            type: string
+            title: API Key
+            description: The API Key of your Extensiv Integration Manager API keys.
+            secret: true
+            example: Xk9T***********
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-create-your-api-keys'
 
 factorial:
     display_name: Factorial (OAuth)
@@ -13683,7 +13925,7 @@ jira:
             type: string
             title: Subdomain
             optional: true
-            description: The subdomain of your Attlassian account
+            description: The subdomain of your Atlassian account
             pattern: '^[a-zA-Z0-9.-]+$'
             example: subdomain
             suffix: .atlassian.net
@@ -30329,6 +30571,7 @@ zoho:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
         accounts-server:
             type: string
@@ -30355,6 +30598,7 @@ zoho-books:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-crm:
@@ -30377,6 +30621,7 @@ zoho-crm:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-calendar:
@@ -30445,6 +30690,7 @@ zoho-inventory:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-invoice:
@@ -30466,6 +30712,7 @@ zoho-invoice:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-mail:
@@ -30490,6 +30737,7 @@ zoho-mail:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-bigin:
@@ -30511,6 +30759,7 @@ zoho-bigin:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-people:
@@ -30557,6 +30806,7 @@ zoho-recruit:
                 - com.au
                 - com.cn
                 - jp
+                - uk
 
 zoom:
     display_name: Zoom

@@ -2,7 +2,7 @@ import tracer from 'dd-trace';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { configService, connectionService, errorManager, functionConfigService, invokeFunction, resolveRunnableTool } from '@nangohq/shared';
+import { configService, connectionService, errorManager, invokeFunction, toolService } from '@nangohq/shared';
 import { getHeaders, metrics, redactHeaders, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
@@ -11,7 +11,6 @@ import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { sendFunctionInvocationResult } from '../../../functions/invocation.js';
 
-import type { ResolveRunnableToolResult } from '@nangohq/shared';
 import type { PostToolCall } from '@nangohq/types';
 
 const paramsSchema = z.object({ connectionId: connectionIdSchema, name: scriptNameSchema }).strict();
@@ -77,29 +76,16 @@ export const postToolCall = asyncWrapperWithEnvironment<PostToolCall>(async (req
         return;
     }
 
-    // HTTP functions take priority, including disabled ones that shadow same-named actions.
-    const functions = await functionConfigService.search(db.knex, {
-        environmentId: environment.id,
-        filter: { integrationKey: integration.unique_key, name, trigger: { kind: 'http' } }
-    });
-    if (functions.isErr()) {
-        report(functions.error);
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch tool' } });
-        return;
-    }
-
-    const fn = functions.value[0];
-    let tool: { kind: 'function'; fn: functionConfigService.CurrentFunctionConfig } | ResolveRunnableToolResult;
-    try {
-        tool = fn ? { kind: 'function', fn } : await resolveRunnableTool({ accountUuid: account.uuid, environmentId: environment.id, integration, name });
-    } catch (err) {
-        report(new Error('failed_to_resolve_tool', { cause: err }));
+    const resolved = await toolService.resolveTool({ accountUuid: account.uuid, environmentId: environment.id, integration, name });
+    if (resolved.isErr()) {
+        report(resolved.error);
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch tool' } });
         return;
     }
 
     const { input } = body.data;
-    if (tool.kind === 'missing' || (tool.kind === 'deployed' && !tool.config.enabled) || (tool.kind === 'function' && !tool.fn.config.enabled)) {
+    const tool = resolved.value;
+    if (tool.kind === 'missing') {
         res.status(404).send({ error: { code: 'function_not_found', message: `Tool '${name}' was not found` } });
         return;
     }
