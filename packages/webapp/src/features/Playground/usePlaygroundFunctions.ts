@@ -1,13 +1,13 @@
 import { useEffect, useMemo } from 'react';
 
 import { useGetIntegrationFunctions } from '@/hooks/useIntegrationFunctions';
-import { isSyncOrAction } from '@/utils/scripts';
+import { isRunnableFunction } from '@/utils/scripts';
 
-import type { ListedNangoActionFunction, ListedNangoSyncFunction } from '@nangohq/types';
+import type { RunnableFunction } from '@/utils/scripts';
 
 const PAGE_SIZE = 100;
 
-export type PlaygroundFunctionRow = ListedNangoSyncFunction | ListedNangoActionFunction;
+export type PlaygroundFunctionRow = RunnableFunction;
 
 export function usePlaygroundFunctions({ env, providerConfigKey }: { env: string; providerConfigKey: string }) {
     const query = useGetIntegrationFunctions({
@@ -30,7 +30,7 @@ export function usePlaygroundFunctions({ env, providerConfigKey }: { env: string
         if (!canUseRows) {
             return [];
         }
-        return (query.data?.pages.flatMap((page) => page.data) ?? []).filter(isSyncOrAction);
+        return (query.data?.pages.flatMap((page) => page.data) ?? []).filter(isRunnableFunction);
     }, [canUseRows, query.data]);
 
     const ready = canUseRows && !isPending && !isFetching && !hasNextPage && !isError && !isFetchNextPageError;

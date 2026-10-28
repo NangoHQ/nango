@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
-import { buildPullCommand, isSyncOrAction } from '@/utils/scripts';
+import { buildPullCommand, isRunnableFunction, isSyncOrAction } from '@/utils/scripts';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 import { FunctionSourceLabel } from './FunctionSourceLabel';
@@ -102,7 +102,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
         source: listed ? { env } : { catalog: true }
     });
     const canDelete = listed && fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn);
-    const canUsePlayground = listed && fn.enabled && isSyncOrAction(fn);
+    const canUsePlayground = listed && fn.enabled && isRunnableFunction(fn);
     const copyPullCommand = async () => {
         await navigator.clipboard.writeText(pullCommand);
         toast({ title: 'Pull command copied', variant: 'success' });
@@ -130,7 +130,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                                 className={menuItemClassName}
                                 disabled={!canUsePlayground}
                                 onSelect={() => {
-                                    if (!isListedFunction(fn) || !isSyncOrAction(fn)) return;
+                                    if (!isListedFunction(fn) || !isRunnableFunction(fn)) return;
                                     openPlaygroundWithContext({
                                         source: 'function',
                                         integration: integration.unique_key,

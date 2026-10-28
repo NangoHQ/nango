@@ -1,19 +1,28 @@
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
+import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { errorManager, SyncCommand, syncManager } from '@nangohq/shared';
-import { getHeaders, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
+import { errorManager, functionConfigService, invokeFunction, SyncCommand, syncManager } from '@nangohq/shared';
+import { getHeaders, metrics, redactHeaders, report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { runAction } from '../../action/runAction.js';
+import { sendFunctionInvocationResult } from '../../functions/invocation.js';
 import { normalizeSyncParams } from '../../sync/helpers.js';
 
-import type { PostInternalTriggerFunction } from '@nangohq/types';
+import type { PostInternalInvokeFunction } from '@nangohq/types';
 
 const bodySchema = z.discriminatedUnion('type', [
+    z.strictObject({
+        type: z.literal('tool'),
+        function_name: syncNameSchema,
+        provider_config_key: providerConfigKeySchema,
+        connection_id: connectionIdSchema,
+        input: z.unknown().optional()
+    }),
     z.strictObject({
         type: z.literal('action'),
         function_name: syncNameSchema,
@@ -31,7 +40,7 @@ const bodySchema = z.discriminatedUnion('type', [
 
 const orchestrator = getOrchestrator();
 
-export const postTriggerFunction = asyncWrapperWithEnvironment<PostInternalTriggerFunction>(async (req, res) => {
+export const postInvokeFunction = asyncWrapperWithEnvironment<PostInternalInvokeFunction>(async (req, res) => {
     const valBody = bodySchema.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
@@ -40,6 +49,35 @@ export const postTriggerFunction = asyncWrapperWithEnvironment<PostInternalTrigg
 
     const { account, environment } = res.locals;
     const { type, function_name, provider_config_key, connection_id } = valBody.data;
+
+    if (type === 'tool') {
+        const functions = await functionConfigService.search(db.knex, {
+            environmentId: environment.id,
+            filter: { integrationKey: provider_config_key, name: function_name, trigger: { kind: 'http' } }
+        });
+        if (functions.isErr()) {
+            report(functions.error);
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch tool' } });
+            return;
+        }
+        const fn = functions.value[0];
+        if (!fn) {
+            res.status(404).send({ error: { code: 'function_not_found', message: `Tool '${function_name}' was not found` } });
+            return;
+        }
+        const result = await invokeFunction({
+            account,
+            environment,
+            connectionId: connection_id,
+            functionUuid: fn.config.uuid,
+            input: valBody.data.input,
+            request: { method: 'POST', path: req.path, headers: redactHeaders({ headers: getHeaders(req.headers) }), query: {} },
+            invocationType: 'wait',
+            orchestrator
+        });
+        sendFunctionInvocationResult({ res, result });
+        return;
+    }
 
     if (type === 'action') {
         const { input } = valBody.data;
