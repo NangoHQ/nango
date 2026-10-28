@@ -29,7 +29,7 @@ export type PostPublicTriggerAction = ApiEndpoint<{
     Path: '/action/trigger';
     Body: {
         action_name: string;
-        input: unknown;
+        input?: unknown;
     };
     Headers: {
         'provider-config-key': string;
