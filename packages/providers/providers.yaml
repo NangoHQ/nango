@@ -30463,6 +30463,7 @@ zoho:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
         accounts-server:
             type: string
@@ -30489,6 +30490,7 @@ zoho-books:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-crm:
@@ -30511,6 +30513,7 @@ zoho-crm:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-calendar:
@@ -30579,6 +30582,7 @@ zoho-inventory:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-invoice:
@@ -30600,6 +30604,7 @@ zoho-invoice:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-mail:
@@ -30624,6 +30629,7 @@ zoho-mail:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-bigin:
@@ -30645,6 +30651,7 @@ zoho-bigin:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-people:
@@ -30691,6 +30698,7 @@ zoho-recruit:
                 - com.au
                 - com.cn
                 - jp
+                - uk
 
 zoom:
     display_name: Zoom
