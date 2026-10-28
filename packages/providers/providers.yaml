@@ -12602,18 +12602,26 @@ hydradb:
         base_url: https://api.hydradb.com
         headers:
             authorization: Bearer ${apiKey}
-            api-version: '2'
+            api-version: ${connectionConfig.apiVersion} || '2'
         verification:
             method: GET
             endpoints:
                 - /databases
     docs: https://nango.dev/docs/api-integrations/hydradb
     docs_connect: https://nango.dev/docs/api-integrations/hydradb/connect
+    connection_config:
+        apiVersion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your HydraDB account.
+            pattern: '^sk_(live|test)_[A-Za-z0-9]+\.[A-Za-z0-9]+$'
+            example: sk_live_RwnXtfVW23BO.****************************
 
 
 imanage:

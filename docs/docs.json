@@ -1487,6 +1487,7 @@
               "api-integrations/hubstaff",
               "api-integrations/humaans-io",
               "api-integrations/huntress",
+              "api-integrations/hydradb",
               "integrations/all/icypeas",
               "api-integrations/ids-fulfillment",
               "api-integrations/immybot",
