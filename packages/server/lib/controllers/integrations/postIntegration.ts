@@ -19,15 +19,11 @@ import type { Response } from 'express';
 
 const logger = getLogger('Server.PostIntegration');
 
-// `NANGO_MANAGED` selects a Nango-managed developer app instead of caller-supplied credentials. Create-only: an
-// existing integration can't be switched to Nango-managed credentials, so PATCH keeps `integrationCredentialsSchema`.
-const createCredentialsSchema = z.discriminatedUnion(
-    'type',
-    [...integrationCredentialsSchema.options, z.object({ type: z.literal('NANGO_MANAGED') }).strict()],
-    {
-        error: () => ({ message: 'invalid credentials object' })
-    }
-);
+const nangoManagedCredentialsSchema = z.object({ type: z.literal('NANGO_MANAGED') }).strict();
+
+const createCredentialsSchema = z.discriminatedUnion('type', [...integrationCredentialsSchema.options, nangoManagedCredentialsSchema], {
+    error: () => ({ message: 'invalid credentials object' })
+});
 
 const validationBody = z
     .object({
@@ -65,7 +61,7 @@ export const postPublicIntegration = asyncWrapperWithEnvironment<PostPublicInteg
     }
 
     const { environment, account } = res.locals;
-    const body: PostPublicIntegration['Body'] = valBody.data;
+    const body = valBody.data;
     const credentials = body.credentials;
     const nangoManaged = credentials?.type === 'NANGO_MANAGED';
     const result = await integrationService.create({

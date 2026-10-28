@@ -75,15 +75,22 @@ export type PostPublicIntegration = ApiEndpoint<{
         provider: string;
         unique_key: string;
         display_name?: string | undefined;
-        // `NANGO_MANAGED` uses a Nango-managed developer app instead of caller-supplied credentials.
-        credentials?: ApiPublicIntegrationCredentials | { type: 'NANGO_MANAGED' } | undefined;
         forward_webhooks?: boolean | undefined;
-        // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
-        // Validated server-side against the provider schema and persisted to the `custom` column.
-        integration_config?: Record<string, string> | undefined;
-        // Free-form custom values, for providers without an `integration_config` schema.
-        custom?: Record<string, string> | undefined;
-    };
+    } & (
+        | {
+              credentials?: ApiPublicIntegrationCredentials | undefined;
+              // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
+              // Validated server-side against the provider schema and persisted to the `custom` column.
+              integration_config?: Record<string, string> | undefined;
+              // Free-form custom values, for providers without an `integration_config` schema.
+              custom?: Record<string, string> | undefined;
+          }
+        | {
+              credentials: { type: 'NANGO_MANAGED' };
+              integration_config?: never;
+              custom?: never;
+          }
+    );
     Success: {
         data: ApiPublicIntegration;
     };
