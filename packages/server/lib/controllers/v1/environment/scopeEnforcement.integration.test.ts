@@ -294,9 +294,9 @@ describe('Scope enforcement on public API routes', () => {
     // happens after the connection lookup and action/model resolution.
 
     describe('POST /v1/* (action via legacy passthrough)', () => {
-        it('should allow with tools:call scope', async () => {
+        it.each(['environment:tools:call', 'environment:actions:execute'] as const)('should allow with %s scope', async (scope) => {
             vi.spyOn(getFlags(), 'isV1PassthroughEnabled').mockResolvedValue(true);
-            const { secret, env } = await createKeyWithScopesAndEnv(['environment:tools:call']);
+            const { secret, env } = await createKeyWithScopesAndEnv([scope]);
             const config = await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github', connectionId: 'v1-action-allow' });
             await seeders.createSyncSeeds({
