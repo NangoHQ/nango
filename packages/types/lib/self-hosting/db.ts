@@ -20,7 +20,6 @@ export interface DBSelfHostingInstallation extends Timestamps {
     stage: SelfHostingInstallationStage;
     telemetry: boolean;
     alerts: SelfHostingInstallationAlerts;
-    disabled_at: Date | null;
     deleted_at: Date | null;
     last_seen_at: Date | null;
 }
