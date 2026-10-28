@@ -116,6 +116,17 @@ describe(`POST ${route}`, () => {
         }
     );
 
+    it.each([['environment:actions:execute'], ['environment:actions:*']])('accepts a key holding the old scope name %s', async (scope) => {
+        const seed = await seedTool();
+        await db
+            .knex('customer_keys')
+            .where({ id: seed.apiKey.id })
+            .update({ scopes: [scope] });
+        const response = await api.fetch(route, { method: 'POST', token: seed.apiKey.secret, params: seed.params, body: { input } });
+        expect(response.res.status).toBe(200);
+        expect(Orchestrator.prototype.invokeFunction).toHaveBeenCalledOnce();
+    });
+
     it('invokes a function and returns its output directly', async () => {
         const seed = await seedTool();
         const response = await api.fetch(route, { method: 'POST', token: seed.apiKey.secret, params: seed.params, body: { input } });
