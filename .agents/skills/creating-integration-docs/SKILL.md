@@ -118,7 +118,7 @@ Connect to [Integration Name] with Nango and see data flow in 2 minutes.
     <Step title="Implement Nango in your app">
         Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
 
-        To obtain your own production credentials, follow the setup guide linked below.
+        To obtain your own credentials, follow the setup guide linked below.
     </Step>
 </Steps>
 
@@ -141,6 +141,8 @@ import PreBuiltUseCases from "/snippets/generated/[slug]/PreBuiltUseCases.mdx"
 
 ---
 ```
+
+**Nango-managed OAuth apps:** Nango-managed OAuth apps are production-ready. Never describe them as "test" apps, "for testing only", or something to replace before going live, and don't call your own credentials "production credentials". Link to [Nango-managed OAuth apps](/guides/auth/auth-guide#nango-managed-oauth-apps) for the tradeoffs instead of restating them.
 
 ### Setup Guide
 
