@@ -45,7 +45,7 @@ const TOOL = {
 
 beforeEach(() => {
     vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
-    invokeFunction.mockReset().mockResolvedValue(Ok({ data: { ok: true } }));
+    invokeFunction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
 });
 
 function functionInvokeError(code: FunctionInvocationErrorCode, { cause, errors = [] }: { cause?: unknown; errors?: unknown[] } = {}): FunctionInvokeError {
@@ -424,7 +424,7 @@ describe('executeSessionTool', () => {
         { code: 'server_error', expected: undefined }
     ])('maps a tool $code to $expected', async ({ code, cause, expected }) => {
         vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(TOOL));
-        invokeFunction.mockResolvedValue(Err(functionInvokeError(code, { cause })));
+        invokeFunction.mockResolvedValue({ logCtx: undefined, result: Err(functionInvokeError(code, { cause })) });
 
         const result = await execute('read_doc');
 
@@ -436,7 +436,10 @@ describe('executeSessionTool', () => {
 
     it('tells the agent which part of its input a tool rejected', async () => {
         vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(TOOL));
-        invokeFunction.mockResolvedValue(Err(functionInvokeError('validation_error', { errors: [{ path: '/id', message: 'must be string' }] })));
+        invokeFunction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(functionInvokeError('validation_error', { errors: [{ path: '/id', message: 'must be string' }] }))
+        });
 
         const result = await execute('read_doc');
 

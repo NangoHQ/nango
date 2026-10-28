@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { invokeFunction, toolService } from '@nangohq/shared';
+import { invokeFunction, NangoError, toolService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { executeAction } from '../../../../services/action.service.js';
@@ -153,7 +153,7 @@ export async function executeSessionTool({
         }
 
         if (tool.value) {
-            const result = await invokeFunction({
+            const { logCtx, result } = await invokeFunction({
                 account,
                 environment,
                 connectionId: connection.connectionId,
@@ -167,11 +167,15 @@ export async function executeSessionTool({
 
             if (result.isErr()) {
                 span.setTag('nango.error', result.error);
-                track({ errorCode: result.error.code });
+                track({
+                    logOperationId: logCtx?.id,
+                    errorCode: result.error.code,
+                    underlyingErrorCode: result.error.cause instanceof NangoError ? result.error.cause.type : undefined
+                });
                 return Err(functionInvokeErrorToMcp({ error: result.error, integrationId, toolName }));
             }
 
-            track({});
+            track({ logOperationId: logCtx?.id });
             return Ok('data' in result.value ? result.value.data : null);
         }
 
