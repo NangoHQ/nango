@@ -98,6 +98,10 @@
       "destination": "/api-integrations/snowflake"
     },
     {
+      "source": "/integrations/all/grain-api-key",
+      "destination": "/api-integrations/grain-api-key"
+    },
+    {
       "source": "/integrations/all/webflow",
       "destination": "/api-integrations/webflow"
     },
@@ -902,6 +906,7 @@
                         "group": "Environments",
                         "pages": [
                           "reference/backend/http-api/environments/list",
+                          "reference/backend/http-api/environments/get",
                           "reference/backend/http-api/environments/create",
                           "reference/backend/http-api/environments/delete",
                           "reference/backend/http-api/environments/list-api-keys",
@@ -1188,6 +1193,7 @@
               "api-integrations/builder-io-private",
               "api-integrations/builder-io-public",
               "api-integrations/buildkite",
+              "api-integrations/buildkite-token-exchange",
               "integrations/all/buildium",
               "integrations/all/builtwith",
               "integrations/all/bullhorn",
@@ -1202,6 +1208,7 @@
               "api-integrations/canva-mcp",
               "integrations/all/canva-scim",
               "api-integrations/canvas-lms",
+              "api-integrations/cch-axcess",
               "api-integrations/cdw",
               "api-integrations/cerby",
               "integrations/all/certn",
@@ -1348,6 +1355,7 @@
               "integrations/all/exact-online",
               "integrations/all/exist",
               "integrations/all/expensify",
+              "api-integrations/extensiv",
               "api-integrations/facebook",
               "api-integrations/facebook-system-user",
               "integrations/all/factorial",
@@ -1444,7 +1452,7 @@
               "integrations/all/gorgias-basic",
               "integrations/all/grafana",
               "integrations/all/grain",
-              "integrations/all/grain-api-key",
+              "api-integrations/grain-api-key",
               "integrations/all/grammarly",
               "integrations/all/grammarly-scim",
               "api-integrations/granola",

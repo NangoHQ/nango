@@ -96,13 +96,12 @@ export const createConnectionTool = defineAgentSessionMcpTool({
 
             if (created.isErr()) {
                 span.setTag('nango.error', created.error);
-                track('connect_link_failed');
-                return Err(
-                    new PublicMcpError(
-                        `The connect link for '${integrationId}' could not be created. Trying once more is reasonable, and tell the user if it keeps failing.`,
-                        { code: 'connect_link_failed', integrationId }
-                    )
-                );
+                const { code, message, retryable } = created.error;
+                track(code);
+                const advice = retryable
+                    ? 'Trying once more is reasonable, and tell the user if it keeps failing.'
+                    : 'Trying again will not help, so tell the user.';
+                return Err(new PublicMcpError(`The connect link for '${integrationId}' could not be created: ${message} ${advice}`, { code, integrationId }));
             }
 
             track();

@@ -1,14 +1,16 @@
 import * as z from 'zod';
 
-import { PROD_ENVIRONMENT_NAME } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import db from '@nangohq/database';
+import { environmentService, getGlobalOAuthCallbackUrl, getPlan, PROD_ENVIRONMENT_NAME } from '@nangohq/shared';
+import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { principalCan } from '../../authz/principal.js';
-import { envSchema } from '../../helpers/validation.js';
+import { envSchema, webhookUrlSchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { handlePostEnvironment } from '../shared/environments/postEnvironment.js';
+import { sendPostEnvironmentError } from '../shared/environments/postEnvironmentErrors.js';
 
-import type { PostPublicEnvironment } from '@nangohq/types';
+import type { CreateEnvironmentSettings } from '@nangohq/shared';
+import type { DBPlan, PostPublicEnvironment } from '@nangohq/types';
 
 const validationBody = z
     .object({
@@ -22,6 +24,19 @@ const validationBody = z
         otlp_headers: z
             .array(z.object({ name: z.string().min(1).max(256), value: z.string().min(1).max(4000) }))
             .max(100)
+            .optional(),
+        webhooks: z
+            .object({
+                primary_url: webhookUrlSchema,
+                secondary_url: webhookUrlSchema,
+                on_sync_completion_always: z.boolean().optional(),
+                on_auth_creation: z.boolean().optional(),
+                on_auth_refresh_error: z.boolean().optional(),
+                on_sync_error: z.boolean().optional(),
+                on_async_action_completion: z.boolean().optional(),
+                on_connection_deletion: z.boolean().optional()
+            })
+            .strict()
             .optional()
     })
     .strict();
@@ -54,7 +69,62 @@ export const postPublicEnvironment = asyncWrapper<PostPublicEnvironment>(async (
         return;
     }
 
-    let otlpSettings: { endpoint: string; headers: Record<string, string> } | undefined;
+    let plan: DBPlan | undefined;
+    if (flagHasPlan) {
+        const planRes = await getPlan(db.knex, { accountId: account.id });
+        if (planRes.isErr()) {
+            res.status(500).send({ error: { code: 'server_error', message: 'Unable to get plan' } });
+            return;
+        }
+        plan = planRes.value;
+    }
+
+    const settings = makeCreateEnvironmentSettings(account.id, body, plan);
+
+    if (settings.otlpSettings && flagHasPlan && !plan?.has_otel) {
+        res.status(403).send({
+            error: {
+                code: 'forbidden',
+                message: 'OpenTelemetry export is not available for your account. Check if your Nango plan includes access to this feature.'
+            }
+        });
+        return;
+    }
+
+    const created = await environmentService.createEnvironment(db.knex, settings);
+    if (created.isErr()) {
+        sendPostEnvironmentError(res, created.error);
+        return;
+    }
+
+    const { environment, webhooks: webhookSettings, webhookSigningKey } = created.value;
+    res.status(200).send({
+        data: {
+            id: environment.id,
+            uuid: environment.uuid,
+            name: environment.name,
+            is_production: environment.is_production,
+            callback_url: environment.callback_url || getGlobalOAuthCallbackUrl(),
+            slack_notifications: environment.slack_notifications,
+            otlp_endpoint: environment.otlp_settings?.endpoint ?? null,
+            otlp_headers: Object.entries(environment.otlp_settings?.headers ?? {}).map(([name, value]) => ({ name, value })),
+            webhooks: {
+                primary_url: webhookSettings.primary_url,
+                secondary_url: webhookSettings.secondary_url,
+                on_sync_completion_always: webhookSettings.on_sync_completion_always,
+                on_auth_creation: webhookSettings.on_auth_creation,
+                on_auth_refresh_error: webhookSettings.on_auth_refresh_error,
+                on_sync_error: webhookSettings.on_sync_error,
+                on_async_action_completion: webhookSettings.on_async_action_completion,
+                on_connection_deletion: webhookSettings.on_connection_deletion,
+                signing_key: webhookSigningKey
+            }
+        }
+    });
+});
+
+function makeCreateEnvironmentSettings(accountId: number, body: PostPublicEnvironment['Body'], plan?: DBPlan): CreateEnvironmentSettings {
+    let otlpSettings: CreateEnvironmentSettings['otlpSettings'];
     if (body.otlp_endpoint !== undefined || body.otlp_headers !== undefined) {
         const headers: Record<string, string> = {};
         for (const header of body.otlp_headers ?? []) {
@@ -63,15 +133,17 @@ export const postPublicEnvironment = asyncWrapper<PostPublicEnvironment>(async (
         otlpSettings = { endpoint: body.otlp_endpoint ?? '', headers };
     }
 
-    await handlePostEnvironment({
-        res,
-        accountId: account.id,
+    const webhooks = Object.fromEntries(Object.entries(body.webhooks ?? {}).filter(([, value]) => value !== undefined));
+    return {
+        accountId,
         name: body.name,
+        ...(plan && { plan }),
         ...(body.is_production !== undefined && { isProduction: body.is_production }),
         ...(body.callback_url !== undefined && { callbackUrl: body.callback_url }),
         ...(body.hmac_key !== undefined && { hmacKey: body.hmac_key }),
         ...(body.hmac_enabled !== undefined && { hmacEnabled: body.hmac_enabled }),
         ...(body.slack_notifications !== undefined && { slackNotifications: body.slack_notifications }),
-        ...(otlpSettings !== undefined && { otlpSettings })
-    });
-});
+        ...(otlpSettings !== undefined && { otlpSettings }),
+        webhooks
+    };
+}
