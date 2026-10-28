@@ -138,6 +138,8 @@ describe(`GET ${route}`, () => {
             }
 
             const other = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'other-integration', 'github');
+            await seeders.createConfigSeed(other.env, 'github', 'github');
             for (const [token, key] of [
                 [apiKey.secret, 'other-integration'],
                 [other.apiKey.secret, 'github']
@@ -149,6 +151,9 @@ describe(`GET ${route}`, () => {
                     params: { providerConfigKey: key, functionName: 'native' }
                 });
                 expect(response.res.status).toBe(404);
+                isError(response.json);
+                expect(response.json.error.code).toBe('not_found');
+                expect(response.json.error.message).toBe(`Function 'native' not found for integration '${key}'`);
             }
             expect(read).toHaveBeenCalledTimes(fileLocation === '_LOCAL_FILE_' ? 1 : 0);
             expect(remoteRead).toHaveBeenCalledTimes(fileLocation === '_LOCAL_FILE_' ? 0 : 1);

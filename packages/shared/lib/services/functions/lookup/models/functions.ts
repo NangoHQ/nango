@@ -141,14 +141,12 @@ export async function findActiveFunctionAvailability({
     providerConfigKey: string;
 }): Promise<{ deployed: FunctionAvailabilityRow[]; toolNames: string[] }> {
     const [rows, tools, toolsCatalog] = await Promise.all([
-        activeSyncConfigBase({ environmentId, providerConfigKey }).select<FunctionAvailabilityRow[]>(
-            'sc.id',
-            'sc.sync_name AS name',
-            'sc.type',
-            'sc.enabled',
-            'sc.created_at AS last_deployed',
-            'sc.source'
-        ),
+        activeSyncConfigBase({ environmentId, providerConfigKey })
+            .select<FunctionAvailabilityRow[]>('sc.id', 'sc.sync_name AS name', 'sc.type', 'sc.enabled', 'sc.created_at AS last_deployed', 'sc.source')
+            .orderBy([
+                { column: 'sc.created_at', order: 'asc' },
+                { column: 'sc.id', order: 'asc' }
+            ]),
         activeToolBase({ environmentId, providerConfigKey }).select<{ name: string }[]>('fc.name'),
         accountUuidForEnvironment(environmentId).then(catalogToolsEnabled)
     ]);
