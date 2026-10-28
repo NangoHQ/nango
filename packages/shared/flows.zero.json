@@ -177665,7 +177665,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["BrandTemplate"],
-                "version": "1.0.2",
+                "version": "1.0.3",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -177810,7 +177810,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Design"],
-                "version": "1.0.2",
+                "version": "1.0.3",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
