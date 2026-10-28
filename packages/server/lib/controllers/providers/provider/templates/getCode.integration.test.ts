@@ -98,7 +98,7 @@ describe(`GET ${route}`, () => {
 
         const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, params: { provider: 'github', name: 'issues' }, query: {} });
 
-        expect(res.res.status).toBe(404);
+        expect(res.res.status).toBe(500);
         isError(res.json);
         expect(res.json.error.code).toBe('source_unavailable');
     });

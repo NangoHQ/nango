@@ -31,7 +31,7 @@ function makeRes(accountId: number) {
 }
 
 function withLimit(limit: number) {
-    const limiter = new RateLimiterMemory({ keyPrefix: `test-catalog-code-${Math.random()}`, points: limit, duration: 86400, blockDuration: 0 });
+    const limiter = new RateLimiterMemory({ keyPrefix: `test-catalog-code`, points: limit, duration: 86400, blockDuration: 0 });
     return createCatalogCodeRateLimit({ limit, getLimiter: () => Promise.resolve(limiter) });
 }
 
