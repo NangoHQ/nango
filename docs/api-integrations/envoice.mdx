@@ -66,6 +66,9 @@ Connect to Envoice with Nango and see data flow in 2 minutes.
 - [How to register your own Envoice OAuth app](/api-integrations/envoice/how-to-register-your-own-envoice-api-oauth-app)  
 Request an OAuth app from Envoice and obtain credentials to connect it to Nango.
 
+- [How do I link my account?](/api-integrations/envoice/connect)  
+Choose the Envoice environment that matches your credentials to connect your account.
+
 Official docs: [Envoice API documentation](https://envoice.stoplight.io/docs/envoice-api)
 
 ## 🚨 API gotchas
@@ -73,7 +76,7 @@ Official docs: [Envoice API documentation](https://envoice.stoplight.io/docs/env
 - Every request must name the Envoice company in the `Envoice-Tenant-Id` header. Envoice returns the company's `tenantId` with the authorization code, Nango stores it on the connection, and the proxy adds the header for you.
 - Envoice only issues a refresh token when you request the `offline_access` scope. Nango requests it by default if you configure no scopes; if you set your own scopes, include `offline_access`.
 - Envoice has no self-service developer portal. You request an OAuth app, with its redirect URIs, by email.
-- Envoice has a live environment (`api.envoice.eu`) and a [sandbox](https://envoice.stoplight.io/docs/envoice-api/ZG9jOjMwODczMjQ0-sandbox) (`demo-api.envoice.eu`). Each connection picks one with the `environment` connection config; it defaults to live. The sandbox uses separate development credentials, so a sandbox connection needs an integration configured with sandbox keys.
+- Envoice has a live environment (`api.envoice.eu`) and a [sandbox](https://envoice.stoplight.io/docs/envoice-api/ZG9jOjMwODczMjQ0-sandbox) (`demo-api.envoice.eu`). Each connection picks one with the `environment` connection config. See [How do I link my account?](/api-integrations/envoice/connect).
 - Envoice asks clients to retry `429` and `5xx` responses with truncated exponential backoff.
 
 ## 🧩 Pre-built syncs & actions for Envoice
