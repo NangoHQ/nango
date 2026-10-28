@@ -272,6 +272,7 @@ describe(`POST ${endpoint}`, () => {
             const res = await api.fetch(endpoint, {
                 method: 'POST',
                 token: apiKey.secret,
+                // @ts-expect-error on purpose
                 body: {
                     provider: 'github',
                     unique_key: 'github-managed',
@@ -304,6 +305,22 @@ describe(`POST ${endpoint}`, () => {
             isError(res.json);
             expect(res.json).toStrictEqual<typeof res.json>({
                 error: { code: 'invalid_body', message: 'NANGO_MANAGED credentials are only available for providers that require a developer app' }
+            });
+        });
+
+        it('rejects providers that use integration_config', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            await seeders.createSharedCredentialsSeed('cch-axcess');
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { provider: 'cch-axcess', unique_key: 'cch-axcess-managed', credentials: { type: 'NANGO_MANAGED' } }
+            });
+
+            isError(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                error: { code: 'invalid_body', message: "Nango-managed credentials aren't available for providers that use integration_config" }
             });
         });
 
