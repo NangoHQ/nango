@@ -2118,6 +2118,7 @@
               "api-integrations/zoom-cc",
               "integrations/all/zoominfo",
               "api-integrations/zorus",
+              "api-integrations/zscaler",
               "integrations/all/zuora"
             ]
           }

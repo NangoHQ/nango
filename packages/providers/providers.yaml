@@ -30839,6 +30839,77 @@ zorus:
             example: 1_a1b2c3d4-e5f6-7890-abcd-1234567890ab
             pattern: '^[0-9]+_[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
 
+zscaler:
+    display_name: Zscaler (OneAPI)
+    categories:
+        - iam
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.vanityDomain}.${connectionConfig.authDomain}/oauth2/v1/token
+    token_params:
+        grant_type: client_credentials
+        audience: https://api.zscaler.com
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/zscaler
+    docs_connect: https://nango.dev/docs/api-integrations/zscaler/connect
+    connection_config:
+        vanityDomain:
+            type: string
+            title: Vanity Domain
+            description: The subdomain of your Zscaler Authentication Service (ZIdentity) login URL.
+            example: acme
+            pattern: '^[a-z0-9-]+$'
+            doc_section: '#step-1-find-your-vanity-domain-and-cloud'
+            order: 1
+        authDomain:
+            type: string
+            title: Authentication Domain
+            description: The Authentication Service (ZIdentity) domain of your Zscaler cloud.
+            default_value: zslogin.net
+            enum:
+                - zslogin.net
+                - zsloginbeta.net
+                - zidentitygov.net
+                - zidentitygov.us
+            doc_section: '#step-1-find-your-vanity-domain-and-cloud'
+            order: 2
+        apiHost:
+            type: string
+            title: API Host
+            description: The OneAPI host of your Zscaler cloud.
+            default_value: api.zsapi.net
+            enum:
+                - api.zsapi.net
+                - api.beta.zsapi.net
+                - api.zscalergov.net
+                - api.zscalergov.us
+            prefix: https://
+            doc_section: '#step-1-find-your-vanity-domain-and-cloud'
+            order: 3
+        customerId:
+            type: string
+            title: ZPA Customer ID
+            description: Your ZPA tenant's customer ID, used in ZPA API paths.
+            example: '2161962573312819**'
+            pattern: '^\d+$'
+            doc_section: '#step-3-find-your-zpa-customer-id'
+            order: 4
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID of your Zscaler API client.
+            doc_section: '#step-2-create-an-api-client'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret of your Zscaler API client.
+            secret: true
+            doc_section: '#step-2-create-an-api-client'
+
 zuora:
     display_name: Zuora
     categories:
