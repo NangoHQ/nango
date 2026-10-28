@@ -47,7 +47,6 @@ import type {
     PostConnectSessions,
     PostPublicConnectSessionsReconnect,
     PostPublicIntegration,
-    PostPublicQuickstartIntegration,
     PostPublicTrigger,
     PostSyncVariant,
     PostToolCall
@@ -226,12 +225,6 @@ export class Nango {
 
     public async createIntegration(body: PostPublicIntegration['Body']): Promise<PostPublicIntegration['Success']> {
         const url = `${this.serverUrl}/integrations`;
-        const response = await this.http.post(url, body, { headers: this.enrichHeaders({}) });
-        return response.data;
-    }
-
-    public async createQuickstartIntegration(body: PostPublicQuickstartIntegration['Body']): Promise<PostPublicQuickstartIntegration['Success']> {
-        const url = `${this.serverUrl}/integrations/quickstart`;
         const response = await this.http.post(url, body, { headers: this.enrichHeaders({}) });
         return response.data;
     }
