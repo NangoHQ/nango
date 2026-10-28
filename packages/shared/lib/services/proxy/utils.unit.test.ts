@@ -295,6 +295,32 @@ describe('buildProxyHeaders', () => {
             expect(result['authorization']).toBe('ApiKey my-api-key');
         });
 
+        it('level 2: empty provider proxy.headers authorization omits the BASIC auto-header', () => {
+            const config = getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url: '',
+                        headers: {
+                            authorization: '',
+                            username: '${credentials.username}',
+                            password: '${credentials.password}'
+                        }
+                    }
+                }
+            });
+            const result = buildProxyHeaders({
+                config,
+                url: 'https://api.example.com',
+                connection: getTestConnection({
+                    credentials: { type: 'BASIC', username: 'informa-user', password: 'informa-pass' }
+                })
+            });
+            expect(result).not.toHaveProperty('authorization');
+            expect(result['username']).toBe('informa-user');
+            expect(result['password']).toBe('informa-pass');
+        });
+
         it('level 3: script config.headers authorization overrides provider proxy.headers', () => {
             const config = getDefaultProxy({
                 provider: {

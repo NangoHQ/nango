@@ -898,6 +898,15 @@ export function buildProxyHeaders({
         headers = { ...headers, ...config.headers };
     }
 
+    // Empty proxy.headers values (e.g. authorization: '') suppress auto-generated headers
+    // such as BASIC Authorization instead of sending an empty header to the provider.
+    // Must run before AWS SigV4 signing so SignedHeaders matches the transmitted request.
+    for (const [key, value] of Object.entries(headers)) {
+        if (value === '') {
+            Reflect.deleteProperty(headers, key);
+        }
+    }
+
     if (connection.credentials.type === 'AWS_SIGV4') {
         // Sign last so caller-supplied headers (e.g. x-amz-target for DynamoDB / CloudWatch Logs)
         // are part of the canonical request. The signer overlays its own authorization/host/
