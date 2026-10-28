@@ -150,21 +150,15 @@ export function isAccountScope(scope: string): boolean {
 }
 
 /**
- * Renamed scopes. Keys holding the old name still get the new one until stored keys are rewritten.
- */
-const RENAMED_SCOPES: readonly (readonly [from: IssuableScope, to: IssuableScope])[] = [['environment:actions:execute', 'environment:tools:call']];
-
-/**
  * The concrete issuable scopes matching `granted`
  */
 export function expandIssuable(granted: readonly ScopeSelector[]): IssuableScope[] {
     const expanded = ISSUABLE_SCOPES.filter((scope) =>
         granted.some((selector) => selector === scope || (selector.endsWith(':*') && scope.startsWith(selector.slice(0, -1))))
     );
-    for (const [from, to] of RENAMED_SCOPES) {
-        if (expanded.includes(from) && !expanded.includes(to)) {
-            expanded.push(to);
-        }
+    // Keys stored with the old name of `environment:tools:call`, until they are rewritten
+    if (expanded.includes('environment:actions:execute') && !expanded.includes('environment:tools:call')) {
+        expanded.push('environment:tools:call');
     }
     return expanded;
 }
