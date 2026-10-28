@@ -21,7 +21,7 @@ Connect to Command Alkon CONNEX with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/setup/<ENTITY-REF>/payment-methods" \
+            curl "https://api.nango.dev/proxy/v4/services/setup/<ENTITY-REF>/payment-methods" \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to Command Alkon CONNEX with Nango and see data flow in 2 minutes.
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/setup/<ENTITY-REF>/payment-methods',
+            endpoint: '/v4/services/setup/<ENTITY-REF>/payment-methods',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
@@ -49,7 +49,7 @@ Connect to Command Alkon CONNEX with Nango and see data flow in 2 minutes.
         </Tab>
     </Tabs>
 
-    Paths are relative to `https://<API-HOSTNAME>/v4/services`, such as `https://api.us.commandalkon.io/v4/services`. Nango adds your `x-api-key` header and an access token to every request, and gets a new access token before the current one expires.
+    Paths are relative to `https://<API-HOSTNAME>`, such as `https://api.us.commandalkon.io`, and start with the API version, such as `/v4/services`. Nango adds your `x-api-key` header and an access token to every request, and gets a new access token before the current one expires.
 
     Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
 
@@ -72,7 +72,7 @@ Official docs: [Command Alkon developer portal](https://developer.commandalkon.i
 
 ## API gotchas
 
-- Every path includes the site's entity ref, such as `/billing/<ENTITY-REF>/invoices`. Credentials are issued per site.
+- Every path includes the site's entity ref, such as `/v4/services/billing/<ENTITY-REF>/invoices`. Credentials are issued per site.
 
 ## 🧩 Pre-built syncs & actions for Command Alkon
 

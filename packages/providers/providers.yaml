@@ -6331,7 +6331,7 @@ command-alkon:
     token_response:
         token: access_token
     proxy:
-        base_url: https://${connectionConfig.hostname}/v4/services
+        base_url: https://${connectionConfig.hostname}
         headers:
             x-api-key: ${credentials.apiKey}
     docs: https://nango.dev/docs/api-integrations/command-alkon
