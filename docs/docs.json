@@ -1614,6 +1614,7 @@
               "api-integrations/meta-marketing-api",
               "api-integrations/meta-mcp",
               "api-integrations/metabase",
+              "api-integrations/metaview-mcp",
               "api-integrations/microsoft",
               "integrations/all/microsoft-admin",
               "integrations/all/microsoft-ads",
