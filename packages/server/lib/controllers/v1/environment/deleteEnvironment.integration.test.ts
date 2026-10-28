@@ -56,7 +56,7 @@ describe(`DELETE ${endpoint}`, () => {
     it('should successfully delete a non-prod environment', async () => {
         const { account, user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
-        const testEnv = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-delete' })).unwrap();
+        const testEnv = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-delete' })).unwrap().environment;
 
         const res = await api.fetch(endpoint, {
             method: 'DELETE',
@@ -76,7 +76,7 @@ describe(`DELETE ${endpoint}`, () => {
         // Seed account, environment, and user
         const { account, user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
-        const testEnv = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-delete-related' })).unwrap();
+        const testEnv = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-delete-related' })).unwrap().environment;
 
         // Create a provider config for this environment
         const providerName = 'github';

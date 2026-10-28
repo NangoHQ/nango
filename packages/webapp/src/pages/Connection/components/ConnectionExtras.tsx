@@ -9,11 +9,10 @@ import { usePostConnectionMetadata } from '@/hooks/useConnections';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
+import { JSON_DISPLAY_LIMIT } from '@/utils/json';
 import { parseJsonObject, validateJsonString } from '../utils';
 
 import type { ConnectionConfig, Metadata } from '@nangohq/types';
-
-const JSON_DISPLAY_LIMIT = 250_000;
 
 const EditableJsonSection = ({
     title,

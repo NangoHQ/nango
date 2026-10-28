@@ -4541,6 +4541,98 @@ buildkite:
             example: bkua_MTA.4f6c********************************0f2a
             doc_section: '#step-1-create-an-api-access-token'
 
+buildkite-token-exchange:
+    display_name: Buildkite (Token Exchange)
+    categories:
+        - dev-tools
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://buildkite.com/oauth/token
+    token_params:
+        grant_type: urn:ietf:params:oauth:grant-type:token-exchange
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+        subject_token: ${connectionConfig.userEmail}
+        subject_token_type: urn:buildkite:params:oauth:token-type:user-email
+        audience: ${connectionConfig.organizationSlug}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    assertion:
+        type: jwt
+        singleUse: true
+        key: ${credentials.privateKey}
+        lifetimeInSeconds: 300
+        header:
+            alg: ${credentials.algorithm}
+            kid: ${credentials.keyId}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://buildkite.com/oauth/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://api.buildkite.com
+    docs: https://nango.dev/docs/api-integrations/buildkite-token-exchange
+    setup_guide_url: https://nango.dev/docs/api-integrations/buildkite-token-exchange/how-to-register-your-own-buildkite-token-exchange-app
+    docs_connect: https://nango.dev/docs/api-integrations/buildkite-token-exchange/connect
+    integration_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Buildkite Token Exchange App's Client ID.
+            doc_section: '#copy-client-id'
+            order: 1
+        keyId:
+            type: string
+            title: Key ID
+            description: The kid of the key in your app's JWKS.
+            doc_section: '#generate-signing-key'
+            order: 2
+        privateKey:
+            type: string
+            title: Private Key
+            description: The PEM private key matching your JWKS public key.
+            secret: true
+            doc_section: '#generate-signing-key'
+            order: 3
+        algorithm:
+            type: string
+            title: Signing Algorithm
+            description: The algorithm of your private key.
+            enum:
+                - RS256
+                - ES256
+            order: 4
+    credentials:
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    connection_config:
+        organizationSlug:
+            type: string
+            title: Organization Slug
+            description: Your Buildkite organization's slug (from its URL) or UUID.
+            example: acme-inc
+            pattern: '^[a-z0-9-]+$'
+            prefix: https://buildkite.com/
+            doc_section: '#step-1-find-your-organization-slug'
+            order: 1
+        userEmail:
+            type: string
+            title: User Email
+            description: The verified email of the Buildkite user the token acts as.
+            example: jane@acme.com
+            format: email
+            doc_section: '#step-2-choose-the-user'
+            order: 2
+
 buildium:
     display_name: Buildium
     categories:
@@ -4970,6 +5062,44 @@ canva-scim:
             title: API Key
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
+
+cch-axcess:
+    display_name: CCH Axcess
+    categories:
+        - accounting
+    auth_mode: OAUTH2
+    authorization_url: https://login.cchaxcess.com/ps/auth/v1.0/core/connect/authorize
+    token_url: https://login.cchaxcess.com/ps/auth/v1.0/core/connect/token
+    token_request_auth_method: basic
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.cchaxcess.com
+        headers:
+            integratorkey: ${connectionConfig.integratorKey}
+    docs: https://nango.dev/docs/api-integrations/cch-axcess
+    setup_guide_url: https://nango.dev/docs/api-integrations/cch-axcess/how-to-register-your-own-cch-axcess-oauth-app
+    integration_config:
+        integratorKey:
+            type: string
+            title: Integrator Key
+            description: Your CCH Axcess API subscription key.
+            secret: true
+            doc_section: '#get-integrator-key'
+            order: 1
+    connection_config:
+        integratorKey:
+            type: string
+            title: ''
+            description: ''
+            secret: true
+            automated: true
 
 cdw:
     display_name: CDW
@@ -9049,6 +9179,35 @@ expensify:
     docs: https://nango.dev/docs/integrations/all/expensify
     docs_connect: https://nango.dev/docs/integrations/all/expensify/connect
 
+extensiv:
+    display_name: Extensiv
+    categories:
+        - e-commerce
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.cartrover.com
+        retry:
+            remaining: 'x-cartrover-api-minute-hits-remaining'
+    credentials_verification_script: extensivCredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/extensiv
+    docs_connect: https://nango.dev/docs/api-integrations/extensiv/connect
+    credentials:
+        username:
+            type: string
+            title: API User
+            description: The API User of your Extensiv Integration Manager API keys.
+            example: 10859Ab3*****
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-create-your-api-keys'
+        password:
+            type: string
+            title: API Key
+            description: The API Key of your Extensiv Integration Manager API keys.
+            secret: true
+            example: Xk9T***********
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-create-your-api-keys'
+
 factorial:
     display_name: Factorial (OAuth)
     categories:
@@ -11665,16 +11824,22 @@ grain-api-key:
             method: GET
             headers:
                 content-type: application/json
+                public-api-version: '2026-10-01'
             endpoints:
-                - /_/public-api/me
+                - /_/public-api/v2/token-info
         headers:
             authorization: Bearer ${apiKey}
-    docs: https://nango.dev/docs/integrations/all/grain-api-key
+            public-api-version: '2026-10-01'
+    docs: https://nango.dev/docs/api-integrations/grain-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/grain-api-key/connect
     credentials:
         apiKey:
             type: string
-            title: API Key
-            description: The personal access token to your Grain account
+            title: Personal Access Token
+            description: The personal access token for your Grain account.
+            example: grain_pat_cLLG****_************************************giM7
+            pattern: '^grain_pat_[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generate-a-personal-access-token'
 
 greenfield-meditech:
     display_name: MEDITECH Greenfield

@@ -6,8 +6,8 @@ import { Alert, AlertActions, AlertDescription } from '@nangohq/design-system';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { usePlaygroundStore } from '@/store/playground';
+import { JSON_DISPLAY_LIMIT } from '@/utils/json';
 import { getLogsUrl } from '@/utils/logs';
-import { JSON_DISPLAY_LIMIT } from './types';
 
 // TODO: set to true once the records list page is ready
 const showRecordsButton = false;
@@ -40,6 +40,7 @@ export const PlaygroundResultStatus: React.FC<Props> = ({ env, isSync }) => {
     const playgroundIntegration = usePlaygroundStore((s) => s.integration);
     const playgroundConnection = usePlaygroundStore((s) => s.connection);
     const playgroundFunction = usePlaygroundStore((s) => s.function);
+    const playgroundFunctionType = usePlaygroundStore((s) => s.functionType);
 
     if (!result) return null;
 
@@ -85,7 +86,8 @@ export const PlaygroundResultStatus: React.FC<Props> = ({ env, isSync }) => {
                             ...(result.operationId ? { operationId: result.operationId } : {}),
                             integrations: playgroundIntegration,
                             connections: playgroundConnection,
-                            syncs: isSync ? playgroundFunction : undefined,
+                            types: playgroundFunctionType === 'tool' ? 'function:invoke' : undefined,
+                            syncs: isSync || playgroundFunctionType === 'tool' ? playgroundFunction : undefined,
                             live: true
                         })}
                         target="_blank"

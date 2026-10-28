@@ -33,7 +33,7 @@
         "express": "5.1.0",
         "soap": "1.9.3",
         "superjson": "2.2.1",
-        "undici": "6.29.0",
+        "undici": "6.29.1",
         "unzipper": "0.12.3",
         "zod": "4.6.7"
     },
