@@ -17,6 +17,7 @@ import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useGetIntegrationFunction, useGetIntegrationFunctions, useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
 import { useMeta } from '@/hooks/useMeta';
 import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
 import { isSyncOrAction } from '@/utils/scripts';
 import { cn } from '@/utils/utils';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
@@ -307,10 +308,14 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     });
 
     const onRowClick = useCallback(
-        (name: string) => {
-            void setSelectedFunctionName(selectedFunctionName === name ? null : name);
+        (name: string, isDeployed: boolean) => {
+            const isOpening = selectedFunctionName !== name;
+            if (isOpening) {
+                track('functions:function_view', { provider: integration.provider, function_type: typeFilter, is_deployed: isDeployed });
+            }
+            void setSelectedFunctionName(isOpening ? name : null);
         },
-        [selectedFunctionName, setSelectedFunctionName]
+        [selectedFunctionName, setSelectedFunctionName, integration.provider, typeFilter]
     );
 
     const functions: ListedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
@@ -434,7 +439,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     integration={integration}
                     showStatus={showStatus}
                     selected={row.template.name === selectedFunctionName}
-                    onSelect={() => onRowClick(row.template.name)}
+                    onSelect={() => onRowClick(row.template.name, false)}
                 />
             );
         }
@@ -446,7 +451,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                 integration={integration}
                 selected={row.fn.name === selectedFunctionName}
                 showStatus={showStatus}
-                onSelect={() => onRowClick(row.fn.name)}
+                onSelect={() => onRowClick(row.fn.name, row.fn.id !== null)}
             />
         );
     });

@@ -8155,6 +8155,10 @@ Set one object store. On AWS, set `AWS_INTEGRATIONS_BUCKET_NAME`. On Google Clou
 This is the *minimum* set to get a production instance running. The sections below cover what each optional subsystem (logs, encryption, audit trail, Redis, hardening) additionally needs.
 </Tip>
 
+### Pre-built integrations catalog
+
+Nango's pre-built integration catalog metadata is bundled with the image, but its compiled files are not. To make its templates work on your instance, upload the compiled files to the same object store you configured above. See [Pre-built integrations for self-managed Nango instances](/guides/platform/self-hosting/install-integration-catalog) for the full instructions.
+
 ### Encryption key
 
 You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. It encrypts credentials in the control-plane database as well as data in the records cache. Without this key, credentials are stored unencrypted.
@@ -10202,6 +10206,7 @@ curl --request POST \
 ### Account-level APIs
 
 - [List environments](/reference/backend/http-api/environments/list)
+- [Get an environment](/reference/backend/http-api/environments/get)
 - [Create an environment](/reference/backend/http-api/environments/create)
 - [Delete an environment](/reference/backend/http-api/environments/delete)
 - [List environment API keys](/reference/backend/http-api/environments/list-api-keys)
@@ -10260,19 +10265,101 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/list.md
 ```
 </ResponseExample>
 
+## Get an environment
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/get.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:read` scope.
+</Info>
+
+Retrieves environment's configuration.
+
+Set `with_secrets=true` to also return `webhooks.signing_key` and `otlp_headers`. This requires the additional `account:environments:read_secret` scope.
+
+<ResponseExample>
+```json Without secrets
+{
+  "data": {
+    "id": 123,
+    "uuid": "123e4567-e89b-12d3-a456-426614174001",
+    "name": "staging",
+    "is_production": false,
+    "callback_url": "https://api.nango.dev/oauth/callback",
+    "slack_notifications": false,
+    "otlp_endpoint": null,
+    "webhooks": {
+      "primary_url": "https://example.com/webhooks/nango",
+      "secondary_url": null,
+      "on_sync_completion_always": true,
+      "on_auth_creation": true,
+      "on_auth_refresh_error": true,
+      "on_sync_error": true,
+      "on_async_action_completion": true,
+      "on_connection_deletion": true
+    }
+  }
+}
+```
+
+```json With secrets
+{
+  "data": {
+    "id": 123,
+    "uuid": "123e4567-e89b-12d3-a456-426614174001",
+    "name": "staging",
+    "is_production": false,
+    "callback_url": "https://api.nango.dev/oauth/callback",
+    "slack_notifications": false,
+    "otlp_endpoint": null,
+    "otlp_headers": [],
+    "webhooks": {
+      "primary_url": "https://example.com/webhooks/nango",
+      "secondary_url": null,
+      "on_sync_completion_always": true,
+      "on_auth_creation": true,
+      "on_auth_refresh_error": true,
+      "on_sync_error": true,
+      "on_async_action_completion": true,
+      "on_connection_deletion": true,
+      "signing_key": "5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f"
+    }
+  }
+}
+```
+</ResponseExample>
+
 ## Create an environment
 
 Source: https://nango.dev/docs/reference/backend/http-api/environments/create.md
 
 <Info>
-  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:create` scope. Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
 </Info>
 
 Creates a new environment. Additional environments are limited by your [pricing plan](https://www.nango.dev/pricing).
 
-You can create a production environment by setting `is_production: true`.
+Set `is_production: true` to create a production environment. This also requires `account:environments:set_production`. The reserved name `prod` is always production and cannot be combined with `is_production: false`.
 
-The response includes an environment `uuid`. Use it to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
+Pass `webhooks` to configure URLs and subscriptions. Nango generates a webhook signing key for the new environment. See [Receive webhooks from Nango](/guides/platform/webhooks-from-nango) for delivery behavior, event types, and signature verification.
+
+The response returns the complete environment settings, including the plaintext webhook signing key and environment `uuid`. Use the `uuid` to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url https://api.nango.dev/environments \
+  --header 'Authorization: Bearer <NANGO-ACCOUNT-API-KEY>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "name": "staging",
+    "webhooks": {
+      "primary_url": "https://app.example.com/webhooks/nango",
+      "on_sync_completion_always": false
+    }
+  }'
+```
+</RequestExample>
 
 <ResponseExample>
 ```json Example Response
@@ -10280,7 +10367,23 @@ The response includes an environment `uuid`. Use it to [create an Environment AP
   "data": {
     "id": 123,
     "uuid": "123e4567-e89b-12d3-a456-426614174000",
-    "name": "staging"
+    "name": "staging",
+    "is_production": false,
+    "callback_url": "https://api.nango.dev/oauth/callback",
+    "slack_notifications": false,
+    "otlp_endpoint": null,
+    "otlp_headers": [],
+    "webhooks": {
+      "primary_url": "https://app.example.com/webhooks/nango",
+      "secondary_url": null,
+      "on_sync_completion_always": false,
+      "on_auth_creation": true,
+      "on_auth_refresh_error": true,
+      "on_sync_error": true,
+      "on_async_action_completion": true,
+      "on_connection_deletion": true,
+      "signing_key": "5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f"
+    }
   }
 }
 ```
@@ -16047,6 +16150,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `builder-io-public` | Builder.io (Public) | API_KEY | [docs](https://nango.dev/docs/api-integrations/builder-io-public.md) | [connect](https://nango.dev/docs/api-integrations/builder-io-public/connect.md) |  | dev-tools, design, cms |
 | `buildium` | Buildium | API_KEY | [docs](https://nango.dev/docs/integrations/all/buildium.md) | [connect](https://nango.dev/docs/integrations/all/buildium/connect.md) |  | accounting, crm, payment |
 | `buildkite` | Buildkite | API_KEY | [docs](https://nango.dev/docs/api-integrations/buildkite.md) | [connect](https://nango.dev/docs/api-integrations/buildkite/connect.md) |  | dev-tools |
+| `buildkite-token-exchange` | Buildkite (Token Exchange) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/buildkite-token-exchange.md) | [connect](https://nango.dev/docs/api-integrations/buildkite-token-exchange/connect.md) | [setup](https://nango.dev/docs/api-integrations/buildkite-token-exchange/how-to-register-your-own-buildkite-token-exchange-app.md) | dev-tools |
 | `builtwith` | BuiltWith | API_KEY | [docs](https://nango.dev/docs/integrations/all/builtwith.md) | [connect](https://nango.dev/docs/integrations/all/builtwith/connect.md) |  | dev-tools, analytics, crm, marketing, e-commerce |
 | `bullhorn` | Bullhorn | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/bullhorn.md) | [connect](https://nango.dev/docs/integrations/all/bullhorn/connect.md) |  | hr, ats |
 | `cal-com-oauth` | Cal.com (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/cal-com-oauth.md) |  | [setup](https://nango.dev/docs/api-integrations/cal-com-oauth/how-to-register-your-own-cal-com-oauth-app.md) | productivity |
@@ -16060,6 +16164,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `canva-mcp` | Canva (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/canva-mcp.md) |  |  | design, mcp |
 | `canva-scim` | Canva (SCIM API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/canva-scim.md) | [connect](https://nango.dev/docs/integrations/all/canva-scim/connect.md) |  | design, dev-tools |
 | `canvas-lms` | Canvas LMS | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/canvas-lms.md) | [connect](https://nango.dev/docs/api-integrations/canvas-lms/connect.md) | [setup](https://nango.dev/docs/api-integrations/canvas-lms/how-to-register-your-own-canvas-lms-oauth-app.md) | productivity |
+| `cch-axcess` | CCH Axcess | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/cch-axcess.md) |  | [setup](https://nango.dev/docs/api-integrations/cch-axcess/how-to-register-your-own-cch-axcess-oauth-app.md) | accounting |
 | `cdw` | CDW | API_KEY | [docs](https://nango.dev/docs/api-integrations/cdw.md) | [connect](https://nango.dev/docs/api-integrations/cdw/connect.md) |  | erp, e-commerce |
 | `cerby` | Cerby | API_KEY | [docs](https://nango.dev/docs/api-integrations/cerby.md) | [connect](https://nango.dev/docs/api-integrations/cerby/connect.md) |  | iam |
 | `certn` | Certn | API_KEY | [docs](https://nango.dev/docs/integrations/all/certn.md) | [connect](https://nango.dev/docs/integrations/all/certn/connect.md) |  | legal |
@@ -16207,6 +16312,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `exact-online` | Exact Online | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/exact-online.md) |  |  | accounting, erp |
 | `exist` | Exist | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/exist.md) |  |  | other |
 | `expensify` | Expensify | BASIC | [docs](https://nango.dev/docs/integrations/all/expensify.md) | [connect](https://nango.dev/docs/integrations/all/expensify/connect.md) |  | productivity |
+| `extensiv` | Extensiv | BASIC | [docs](https://nango.dev/docs/api-integrations/extensiv.md) | [connect](https://nango.dev/docs/api-integrations/extensiv/connect.md) |  | e-commerce |
 | `facebook` | Facebook | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/facebook.md) |  | [setup](https://nango.dev/docs/api-integrations/facebook/how-to-register-your-own-facebook-api-oauth-app.md) | marketing, social |
 | `facebook-system-user` | Facebook (System User Token) | API_KEY | [docs](https://nango.dev/docs/api-integrations/facebook-system-user.md) | [connect](https://nango.dev/docs/api-integrations/facebook-system-user/connect.md) |  | marketing, social |
 | `factorial` | Factorial (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/factorial.md) |  |  | hr |
@@ -16303,7 +16409,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `gorgias-basic` | Gorgias (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/gorgias-basic.md) | [connect](https://nango.dev/docs/integrations/all/gorgias-basic/connect.md) |  | e-commerce |
 | `grafana` | Grafana | API_KEY | [docs](https://nango.dev/docs/integrations/all/grafana.md) | [connect](https://nango.dev/docs/integrations/all/grafana/connect.md) |  | dev-tools |
 | `grain` | Grain (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/grain.md) |  |  | video, communication, productivity |
-| `grain-api-key` | Grain (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/grain-api-key.md) |  |  | video, communication, productivity |
+| `grain-api-key` | Grain (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/grain-api-key.md) | [connect](https://nango.dev/docs/api-integrations/grain-api-key/connect.md) |  | video, communication, productivity |
 | `grammarly` | Grammarly | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/grammarly.md) |  |  | productivity |
 | `grammarly-scim` | Grammarly SCIM | API_KEY | [docs](https://nango.dev/docs/integrations/all/grammarly-scim.md) | [connect](https://nango.dev/docs/integrations/all/grammarly-scim/connect.md) |  | productivity |
 | `granola` | Granola | API_KEY | [docs](https://nango.dev/docs/api-integrations/granola.md) | [connect](https://nango.dev/docs/api-integrations/granola/connect.md) |  | productivity, knowledge-base |

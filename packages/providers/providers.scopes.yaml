@@ -2053,6 +2053,14 @@ canva:
 # (Canvas LMS uses dynamic endpoint-based OAuth2 scopes in the format: url:<HTTP Verb>|<Canvas API Endpoint Path>)
 canvas-lms: []
 
+# source: https://support.cch.com/oss/ml/kb/solution/000106244
+cch-axcess:
+    - CCHAxcess_data_writeaccess
+    - CCHAxcess_Profile
+    - IDInfo
+    - offline_access
+    - openid
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 certn-partner: []
 
