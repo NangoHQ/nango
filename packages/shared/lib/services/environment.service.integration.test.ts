@@ -12,7 +12,7 @@ import customerKeyService from './customerKey.service.js';
 import environmentService from './environment.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
-import type { DBCustomerKey } from '@nangohq/types';
+import type { DBCustomerKey, DBEnvironment } from '@nangohq/types';
 
 describe('Environment service', () => {
     beforeAll(async () => {
@@ -158,6 +158,9 @@ describe('Environment service', () => {
             const deleted = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid(), webhookSigningKey })).unwrap();
             await environmentService.softDelete({ environmentId: deleted.environment.id, orchestrator: {} as Orchestrator });
 
+            const deletedEnvironment = await db.knex<DBEnvironment>('_nango_environments').where({ id: deleted.environment.id }).first();
+            expect(deletedEnvironment).toMatchObject({ deleted: true, deleted_at: expect.toBeIsoDate() });
+
             const created = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid(), webhookSigningKey })).unwrap();
 
             expect((await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, created.environment.id)).unwrap()).toBe(webhookSigningKey);
@@ -171,6 +174,7 @@ describe('Environment service', () => {
             const untouched = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid(), webhookSigningKey })).unwrap();
 
             const newKey = (await customerKeyService.rotateWebhookSigningKey(db.knex, rotated.environment.id)).unwrap();
+            expect(newKey).not.toBe(webhookSigningKey);
 
             expect((await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, rotated.environment.id)).unwrap()).toBe(newKey);
             expect((await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, untouched.environment.id)).unwrap()).toBe(webhookSigningKey);
