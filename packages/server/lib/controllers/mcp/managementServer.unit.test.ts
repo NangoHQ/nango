@@ -538,7 +538,7 @@ describe('createManagementMcpServer', () => {
             try {
                 const result = await authorized.client.listTools();
                 const scopedTools = withoutUnscopedTools(result.tools);
-                expect(scopedTools).toHaveLength(1);
+                expect(scopedTools.map((tool) => tool.name)).toStrictEqual(['actions_trigger', 'tools_call']);
                 expect(scopedTools[0]).toMatchObject({
                     name: 'actions_trigger',
                     description: expect.stringContaining('time out within 90 seconds'),
@@ -776,26 +776,23 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it.each(['environment:tools:call', 'environment:actions:execute'])(
-        'exposes tools_call only with environment:functions:invocations and %s',
-        async (scope) => {
-            const { client, server } = await createTestClient(['environment:functions:invocations', scope]);
-
-            try {
-                const result = await client.listTools();
-                const scopedTools = withoutUnscopedTools(result.tools);
-
-                expect(scopedTools.map((tool) => tool.name)).toStrictEqual(['actions_trigger', 'tools_call']);
-            } finally {
-                await client.close();
-                await server.close();
-            }
-        }
-    );
-
-    it.each(['environment:functions:invocations', 'environment:tools:call'])('authorizes tool calls before invoking the tool with only %s', async (scope) => {
-        const handlerSpy = vi.spyOn(callToolsTool, 'handler');
+    it.each(['environment:tools:call', 'environment:actions:execute'])('exposes tools_call with %s', async (scope) => {
         const { client, server } = await createTestClient([scope]);
+
+        try {
+            const result = await client.listTools();
+            const scopedTools = withoutUnscopedTools(result.tools);
+
+            expect(scopedTools.map((tool) => tool.name)).toStrictEqual(['actions_trigger', 'tools_call']);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('authorizes tool calls before invoking the tool', async () => {
+        const handlerSpy = vi.spyOn(callToolsTool, 'handler');
+        const { client, server } = await createTestClient(['environment:functions:invocations']);
 
         try {
             await expectDisabledTool(client, 'tools_call', { integration_id: 'github', connection_id: 'connection-id', name: 'fetchIssue' });

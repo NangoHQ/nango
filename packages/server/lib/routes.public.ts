@@ -465,9 +465,7 @@ publicAPI.route('/functions/deployments/bundle').post(envAuth, auditFunctionDepl
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid/invocations')
     .post(envAuth, can('environment:functions:invocations'), postFunctionInvocation);
-publicAPI
-    .route('/connections/:connectionId/tools/:name/calls')
-    .post(envAuth, can('environment:functions:invocations'), can('environment:tools:call'), postToolCall);
+publicAPI.route('/connections/:connectionId/tools/:name/calls').post(envAuth, can('environment:tools:call'), postToolCall);
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid')
     .patch(envAuth, auditFunctionVariantUpdated, can('environment:functions:update'), patchConnectionFunction);
