@@ -70,7 +70,7 @@ import { getFunction } from './controllers/functions/getFunction.js';
 import { getFunctions } from './controllers/functions/getFunctions.js';
 import { patchFunction } from './controllers/functions/patchFunction.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
-import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
+import { postPublicIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
 import { deletePublicIntegrationFunction } from './controllers/integrations/uniqueKey/functions/deleteFunction.js';
 import { getFunctionCode } from './controllers/integrations/uniqueKey/functions/getCode.js';
@@ -122,7 +122,6 @@ import {
     auditPublicIntegrationCreated,
     auditPublicIntegrationDeleted,
     auditPublicIntegrationUpdated,
-    auditPublicQuickstartIntegrationCreated,
     auditPublicSyncFrequencyChanged,
     auditPublicWebhookSigningKeyRotated,
     auditSyncPaused,
@@ -308,9 +307,6 @@ publicAPI
     .route('/integrations')
     .get(connectSessionOrEnvAuth, can('environment:integrations:list', 'environment:integrations:list_credentials'), getPublicListIntegrations);
 publicAPI.route('/integrations').post(envAuth, auditPublicIntegrationCreated, can('environment:integrations:create'), postPublicIntegration);
-publicAPI
-    .route('/integrations/quickstart')
-    .post(envAuth, auditPublicQuickstartIntegrationCreated, can('environment:integrations:create'), postPublicQuickstartIntegration);
 publicAPI.route('/integrations/:uniqueKey').patch(envAuth, auditPublicIntegrationUpdated, can('environment:integrations:update'), patchPublicIntegration);
 publicAPI
     .route('/integrations/:uniqueKey')

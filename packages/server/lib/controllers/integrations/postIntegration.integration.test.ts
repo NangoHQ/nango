@@ -253,6 +253,140 @@ describe(`POST ${endpoint}`, () => {
         expect(credentials.webhook_secret).toBeNull();
     });
 
+    describe('NANGO_MANAGED', () => {
+        it('rejects other fields in NANGO_MANAGED credentials', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                // @ts-expect-error on purpose
+                body: { provider: 'github', unique_key: 'github-managed', credentials: { type: 'NANGO_MANAGED', client_id: 'client-id' } }
+            });
+
+            isError(res.json);
+            expect(res.json.error.code).toBe('invalid_body');
+        });
+
+        it('rejects integration_config and custom alongside NANGO_MANAGED credentials', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: {
+                    provider: 'github',
+                    unique_key: 'github-managed',
+                    credentials: { type: 'NANGO_MANAGED' },
+                    integration_config: { foo: 'bar' },
+                    custom: { foo: 'bar' }
+                }
+            });
+
+            isError(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                error: {
+                    code: 'invalid_body',
+                    errors: [
+                        { code: 'custom', message: 'integration_config is not supported with NANGO_MANAGED credentials', path: ['integration_config'] },
+                        { code: 'custom', message: 'custom is not supported with NANGO_MANAGED credentials', path: ['custom'] }
+                    ]
+                }
+            });
+        });
+
+        it('rejects providers that do not require a developer app', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { provider: 'algolia', unique_key: 'algolia-managed', credentials: { type: 'NANGO_MANAGED' } }
+            });
+
+            isError(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                error: { code: 'invalid_body', message: 'NANGO_MANAGED credentials are only available for providers that require a developer app' }
+            });
+        });
+
+        it('rejects providers without a Nango-managed developer app', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { provider: 'docusign-sandbox', unique_key: 'docusign-managed', credentials: { type: 'NANGO_MANAGED' } }
+            });
+
+            isError(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                error: { code: 'invalid_body', message: 'No Nango-provided developer app is configured for this provider' }
+            });
+        });
+
+        it('rejects duplicate unique keys', async () => {
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github-managed', 'github');
+            await seeders.createSharedCredentialsSeed('github');
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { provider: 'github', unique_key: 'github-managed', credentials: { type: 'NANGO_MANAGED' } }
+            });
+
+            isError(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                error: { code: 'invalid_body', errors: [{ code: 'invalid_string', message: 'Unique key already exists', path: ['uniqueKey'] }] }
+            });
+        });
+
+        it('creates an integration with a Nango-managed developer app', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            await seeders.createSharedCredentialsSeed('github');
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: {
+                    provider: 'github',
+                    unique_key: 'github-managed',
+                    display_name: 'GitHub Managed',
+                    forward_webhooks: false,
+                    credentials: { type: 'NANGO_MANAGED' }
+                }
+            });
+
+            isSuccess(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                data: {
+                    created_at: expect.toBeIsoDate(),
+                    display_name: 'GitHub Managed',
+                    logo: 'http://localhost:3003/images/template-logos/github.svg',
+                    provider: 'github',
+                    unique_key: 'github-managed',
+                    updated_at: expect.toBeIsoDate(),
+                    forward_webhooks: false,
+                    // Nango supplies the developer app, so nothing is outstanding
+                    missing_fields: []
+                }
+            });
+
+            const resGet = await api.fetch(getEndpoint, {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { uniqueKey: 'github-managed' },
+                query: { include: ['credentials'] }
+            });
+
+            isSuccess(resGet.json);
+            expect(resGet.json.data.credentials).toStrictEqual({
+                type: 'OAUTH2',
+                client_id: '',
+                client_secret: '',
+                scopes: 'test',
+                webhook_secret: null
+            });
+        });
+    });
+
     describe('MCP_OAUTH2', () => {
         it('creates a static-registration integration and returns the stored credentials', async () => {
             const { apiKey } = await seeders.seedAccountEnvAndUser();

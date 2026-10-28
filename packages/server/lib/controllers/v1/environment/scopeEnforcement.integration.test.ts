@@ -87,20 +87,6 @@ describe('Scope enforcement on public API routes', () => {
         });
     });
 
-    describe('POST /integrations/quickstart', () => {
-        it('should allow with integrations:create scope', async () => {
-            const token = await createKeyWithScopes(['environment:integrations:create']);
-            const res = await api.fetch('/integrations/quickstart', { method: 'POST', token, body: {} } as any);
-            expect(res.res.status).not.toBe(403);
-        });
-
-        it('should deny without integrations:create scope', async () => {
-            const token = await createKeyWithScopes([WRONG_SCOPE]);
-            const res = await api.fetch('/integrations/quickstart', { method: 'POST', token, body: {} } as any);
-            expect(res.res.status).toBe(403);
-        });
-    });
-
     describe('GET /integrations/:uniqueKey', () => {
         it('should allow with integrations:read scope', async () => {
             const token = await createKeyWithScopes(['environment:integrations:read']);
