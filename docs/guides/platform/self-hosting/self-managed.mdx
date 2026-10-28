@@ -353,7 +353,7 @@ See [Auth](/guides/auth/auth-guide) for the end-user connection flow.
 
 Nango records anonymous usage metrics, such as how many functions run at the same time, into the `hosted_telemetry` schema of your database, to be reported to Nango. They carry no instance data: each row is a timestamp, a metric name, a value, and a random ID for the process that wrote it. It is on by default.
 
-Every service writes its metrics to the main database, so set `NANGO_DATABASE_URL` or `NANGO_DB_HOST` on every service. A service with neither logs a warning on startup and records nothing.
+Every service writes its metrics to the main database, so set `NANGO_DATABASE_URL` or `NANGO_DB_HOST` on every service.
 
 To keep the metrics in a separate database, set `NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL` to that database's URL on every service, so they all write to the same place:
 
@@ -362,7 +362,7 @@ NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL=postgresql://user:password@host:por
 NANGO_HOSTED_TELEMETRY_POSTGRES_SSL=true
 ```
 
-To turn it off, set `FLAG_HOSTED_TELEMETRY_ENABLED=false` on every service.
+Contact us if this telemetry is an issue for your organization.
 
 ### Persistent storage
 
