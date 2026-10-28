@@ -158,7 +158,7 @@ export async function executeSessionTool({
                 environment,
                 connectionId: connection.connectionId,
                 functionUuid: tool.value.config.uuid,
-                input,
+                input: tool.value.currentVersion.input_schema_ref || !isEmptyObject(input) ? input : undefined,
                 request: { method: 'POST', path: '/mcp', headers: {}, query: {} },
                 invocationType: 'wait',
                 orchestrator: getOrchestrator(),
@@ -268,4 +268,8 @@ async function executeRemoteTool({
         track({ logOperationId, ...(result.value.isError ? { errorCode: 'tool_failed' } : {}) });
         return Ok(new RemoteToolResult(result.value));
     });
+}
+
+function isEmptyObject(input: unknown): boolean {
+    return typeof input === 'object' && input !== null && !Array.isArray(input) && Object.keys(input).length === 0;
 }

@@ -40,7 +40,8 @@ vi.mock('../../../../utils/utils.js', () => ({ getOrchestrator: () => ({}) }));
 const { executeSessionTool, executeTool } = await import('./execute.js');
 
 const TOOL = {
-    config: { uuid: '11111111-1111-4111-8111-111111111111', name: 'read_doc', enabled: true }
+    config: { uuid: '11111111-1111-4111-8111-111111111111', name: 'read_doc', enabled: true },
+    currentVersion: { input_schema_ref: '#/definitions/ReadDocInput' }
 } as functionConfigService.CurrentFunctionConfig;
 
 beforeEach(() => {
@@ -386,6 +387,15 @@ describe('executeSessionTool', () => {
                 actor: { kind: 'session', id: 'session-1' }
             })
         );
+        expect(executeAction).not.toHaveBeenCalled();
+    });
+
+    it('omits empty MCP arguments for a tool without an input schema', async () => {
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ ...TOOL, currentVersion: { ...TOOL.currentVersion, input_schema_ref: null } }));
+
+        await execute('read_doc', { input: {} });
+
+        expect(invokeFunction).toHaveBeenCalledWith(expect.objectContaining({ input: undefined }));
         expect(executeAction).not.toHaveBeenCalled();
     });
 
