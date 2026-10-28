@@ -2421,7 +2421,7 @@ atlassian-service-account-oauth2:
             type: string
             title: Subdomain
             optional: true
-            description: The subdomain of your Attlassian account
+            description: The subdomain of your Atlassian account
             pattern: '^[a-zA-Z0-9.-]+$'
             example: subdomain
             suffix: .atlassian.net
@@ -13842,7 +13842,7 @@ jira:
             type: string
             title: Subdomain
             optional: true
-            description: The subdomain of your Attlassian account
+            description: The subdomain of your Atlassian account
             pattern: '^[a-zA-Z0-9.-]+$'
             example: subdomain
             suffix: .atlassian.net
