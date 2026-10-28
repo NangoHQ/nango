@@ -94,7 +94,6 @@ describe('self-hosting registry', () => {
             stage: 'production',
             telemetry: true,
             alerts: 'off',
-            disabled_at: null,
             deleted_at: null,
             last_seen_at: null
         });

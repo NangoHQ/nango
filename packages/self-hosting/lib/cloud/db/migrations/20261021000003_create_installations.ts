@@ -15,7 +15,6 @@ export async function up(knex: Knex, schema: string): Promise<void> {
             alerts       TEXT NOT NULL DEFAULT 'off' CHECK (alerts IN ('off', 'slack', 'oncall')),
             created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
             updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
-            disabled_at  TIMESTAMPTZ,
             deleted_at   TIMESTAMPTZ,
             last_seen_at TIMESTAMPTZ
         )`,
