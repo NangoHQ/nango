@@ -1254,6 +1254,7 @@
               "integrations/all/coda",
               "integrations/all/codeclimate",
               "integrations/all/codegen",
+              "api-integrations/command-alkon",
               "integrations/all/commercetools",
               "integrations/all/companycam",
               "api-integrations/conductorone",
