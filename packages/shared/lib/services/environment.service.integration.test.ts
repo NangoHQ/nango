@@ -11,6 +11,7 @@ import { getEncryptionManager } from '../utils/encryption.manager.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService from './environment.service.js';
 
+import type { Orchestrator } from '../clients/orchestrator.js';
 import type { DBCustomerKey } from '@nangohq/types';
 
 describe('Environment service', () => {
@@ -137,6 +138,44 @@ describe('Environment service', () => {
             expect(getEncryptionManager().decryptAPISecret(storedKey).secret).toBe(webhookSigningKey);
         }
     );
+
+    describe('supplied signing key reuse', () => {
+        it('should allow the same signing key on several environments of an account', async () => {
+            const account = await createAccount();
+            const webhookSigningKey = uuid();
+
+            const first = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid(), webhookSigningKey })).unwrap();
+            const second = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid(), webhookSigningKey })).unwrap();
+
+            expect((await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, first.environment.id)).unwrap()).toBe(webhookSigningKey);
+            expect((await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, second.environment.id)).unwrap()).toBe(webhookSigningKey);
+        });
+
+        it('should allow reusing the signing key of a soft deleted environment', async () => {
+            const account = await createAccount();
+            const webhookSigningKey = uuid();
+
+            const deleted = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid(), webhookSigningKey })).unwrap();
+            await environmentService.softDelete({ environmentId: deleted.environment.id, orchestrator: {} as Orchestrator });
+
+            const created = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid(), webhookSigningKey })).unwrap();
+
+            expect((await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, created.environment.id)).unwrap()).toBe(webhookSigningKey);
+        });
+
+        it('should only rotate the key of the targeted environment', async () => {
+            const account = await createAccount();
+            const webhookSigningKey = uuid();
+
+            const rotated = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid(), webhookSigningKey })).unwrap();
+            const untouched = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid(), webhookSigningKey })).unwrap();
+
+            const newKey = (await customerKeyService.rotateWebhookSigningKey(db.knex, rotated.environment.id)).unwrap();
+
+            expect((await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, rotated.environment.id)).unwrap()).toBe(newKey);
+            expect((await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, untouched.environment.id)).unwrap()).toBe(webhookSigningKey);
+        });
+    });
 
     it('should persist custom webhook URLs and disabled subscriptions', async () => {
         const account = await createAccount();

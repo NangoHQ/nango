@@ -34,7 +34,8 @@ const validationBody = z
                 on_auth_refresh_error: z.boolean().optional(),
                 on_sync_error: z.boolean().optional(),
                 on_async_action_completion: z.boolean().optional(),
-                on_connection_deletion: z.boolean().optional()
+                on_connection_deletion: z.boolean().optional(),
+                signing_key: z.uuid().optional()
             })
             .strict()
             .optional()
@@ -133,7 +134,9 @@ function makeCreateEnvironmentSettings(accountId: number, body: PostPublicEnviro
         otlpSettings = { endpoint: body.otlp_endpoint ?? '', headers };
     }
 
-    const webhooks = Object.fromEntries(Object.entries(body.webhooks ?? {}).filter(([, value]) => value !== undefined));
+    const { signing_key: webhookSigningKey, ...webhookSettings } = body.webhooks ?? {};
+    const webhooks = Object.fromEntries(Object.entries(webhookSettings).filter(([, value]) => value !== undefined));
+
     return {
         accountId,
         name: body.name,
@@ -144,6 +147,7 @@ function makeCreateEnvironmentSettings(accountId: number, body: PostPublicEnviro
         ...(body.hmac_enabled !== undefined && { hmacEnabled: body.hmac_enabled }),
         ...(body.slack_notifications !== undefined && { slackNotifications: body.slack_notifications }),
         ...(otlpSettings !== undefined && { otlpSettings }),
+        ...(webhookSigningKey !== undefined && { webhookSigningKey }),
         webhooks
     };
 }

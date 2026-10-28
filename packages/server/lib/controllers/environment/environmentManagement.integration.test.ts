@@ -300,11 +300,33 @@ describe('Public environment management', () => {
             });
         });
 
+        it('should create environments with a supplied signing key, even when another environment uses the same signing key', async () => {
+            const { account } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:create']);
+            const signingKey = uuidV7();
+
+            for (const name of ['signing-key-first', 'signing-key-second']) {
+                const res = await api.fetch('/environments', {
+                    method: 'POST',
+                    token: accountKey.secret,
+                    body: { name, webhooks: { signing_key: signingKey } }
+                });
+
+                expect(res.res.status).toBe(200);
+                isSuccess(res.json);
+                expect(res.json.data.webhooks.signing_key).toBe(signingKey);
+                const storedKey = (await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, res.json.data.id)).unwrap();
+                expect(storedKey).toBe(signingKey);
+            }
+        });
+
         it.each([
             null,
             { secondary_url: 'invalid-url' },
             { primary_url: 'https://nango.dev/webhooks' },
-            { signing_key: uuidV7() },
+            { signing_key: '' },
+            { signing_key: 'not-a-uuid' },
+            { signing_key: 123 },
             { on_sync_error: 'true' },
             { unexpected: true }
         ])('should reject invalid webhook configuration %j before creation', async (webhooks) => {
