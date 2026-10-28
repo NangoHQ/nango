@@ -5,6 +5,7 @@ import { AuthorizationCode } from 'simple-oauth2';
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
+import { getProvider } from '@nangohq/providers';
 
 import { assertSafeOAuthUrl, getOAuthSafeHttpAgents } from '../services/proxy/outbound-policy.js';
 import { getFreshOAuth2Credentials, getSimpleOAuth2ClientConfig } from './oauth2.client.js';
@@ -273,5 +274,100 @@ describe('OAuth2 token generation and refresh', () => {
         const httpLog = (buffer.transport as BufferTransport).buffer.find((msg) => msg.type === 'http');
         expect(httpLog?.response?.code).toBe(504);
         expect(httpLog?.meta?.['body']).toBe('Client request timeout');
+    });
+});
+
+describe('Zoho regional OAuth routing', () => {
+    const regions = [
+        ['com', 'accounts.zoho.com'],
+        ['eu', 'accounts.zoho.eu'],
+        ['in', 'accounts.zoho.in'],
+        ['com.au', 'accounts.zoho.com.au'],
+        ['com.cn', 'accounts.zoho.com.cn'],
+        ['jp', 'accounts.zoho.jp'],
+        ['ca', 'accounts.zohocloud.ca'],
+        ['sa', 'accounts.zoho.sa'],
+        ['uk', 'accounts.zoho.uk']
+    ];
+    const zoho = () => getProvider('zoho-crm')!;
+
+    it.each(regions)('uses the actual accounts server for %s on code exchange, refresh and reconnect', (extension, host) => {
+        const server = `https://${host}`;
+        const callback = { extension: extension!, 'accounts-server': server, api_domain: `https://www.zohoapis.${extension}` };
+        const cfg = getSimpleOAuth2ClientConfig(makeConfig(), zoho(), callback);
+        expect(cfg.auth).toMatchObject({ tokenHost: server, tokenPath: '/oauth/v2/token', authorizeHost: server, authorizePath: '/oauth/v2/auth' });
+        expect(callback.extension).toBe(extension);
+    });
+
+    it.each(regions)('recovers legacy %s connections without callback metadata or a reconnect', (extension, host) => {
+        for (const stored of [{ extension: extension! }, { api_domain: `https://www.zohoapis.${extension}` }]) {
+            const cfg = getSimpleOAuth2ClientConfig(makeConfig(), zoho(), stored);
+            expect(cfg.auth.tokenHost).toBe(`https://${host}`);
+            expect(cfg.auth.authorizeHost).toBe(`https://${host}`);
+            expect(stored).not.toHaveProperty('accounts-server');
+        }
+    });
+
+    it('lets the callback server override a stale user-supplied suffix', () => {
+        expect(
+            getSimpleOAuth2ClientConfig(makeConfig(), zoho(), { extension: 'com', 'accounts-server': 'https://accounts.zohocloud.ca/' }).auth.tokenHost
+        ).toBe('https://accounts.zohocloud.ca');
+    });
+
+    it('discovers the region from Zoho during first authorization without regional user input', () => {
+        const cfg = getSimpleOAuth2ClientConfig(makeConfig(), zoho(), {});
+        expect(cfg.auth.authorizeHost).toBe('https://accounts.zoho.com');
+        expect(cfg.auth.tokenHost).toBe('https://placeholder.invalid');
+    });
+
+    it.each([
+        { 'accounts-server': 'https://accounts.zoho.ca' },
+        { 'accounts-server': 'https://accounts.zoho.com.evil.example' },
+        { 'accounts-server': 'http://accounts.zoho.com' },
+        { 'accounts-server': 'https://user:password@accounts.zoho.com' },
+        { 'accounts-server': 'https://accounts.zoho.com/token?leak=1' },
+        { api_domain: 'https://www.zohoapis.ca.evil.example' },
+        { extension: 'unknown' }
+    ])('rejects invalid regional metadata without falling back to another account region', (config) => {
+        expect(() => getSimpleOAuth2ClientConfig(makeConfig(), zoho(), config)).toThrow();
+    });
+
+    it('renews an existing Canadian connection twice without replacing its refresh token', async () => {
+        const refresh = vi
+            .fn()
+            .mockResolvedValueOnce({ token: { access_token: 'renewed-one', expires_in: 3600 } })
+            .mockResolvedValueOnce({ token: { access_token: 'renewed-two', expires_in: 3600 } });
+        const createToken = vi.spyOn(AuthorizationCode.prototype, 'createToken').mockReturnValue({ refresh } as unknown as AccessToken);
+        const connection = {
+            id: 1,
+            environment_id: 1,
+            connection_config: { extension: 'ca', api_domain: 'https://www.zohoapis.ca' },
+            credentials: { type: 'OAUTH2', access_token: 'expired', refresh_token: 'saved-refresh', expires_at: new Date(0) }
+        } as unknown as DBConnectionDecrypted;
+        const originalConfig = structuredClone(connection.connection_config);
+        try {
+            for (const expected of ['renewed-one', 'renewed-two']) {
+                const result = await getFreshOAuth2Credentials({
+                    connection,
+                    config: makeConfig(),
+                    provider: zoho() as ProviderOAuth2,
+                    logCtx: logContextGetter.getBuffer({ accountId: 1 })
+                });
+                expect(result.success).toBe(true);
+                expect(result.response).toMatchObject({ access_token: expected, refresh_token: 'saved-refresh' });
+                expect(assertSafeOAuthUrl).toHaveBeenLastCalledWith('https://accounts.zohocloud.ca/oauth/v2/token');
+                connection.credentials = { ...result.response!, expires_at: new Date(0) };
+            }
+            expect(refresh).toHaveBeenCalledTimes(2);
+            expect(createToken.mock.calls.map(([token]) => token['refresh_token'])).toEqual(['saved-refresh', 'saved-refresh']);
+            expect(connection.connection_config).toEqual(originalConfig);
+        } finally {
+            createToken.mockRestore();
+        }
+    });
+
+    it('does not apply Zoho routing to unrelated OAuth providers', () => {
+        const cfg = getSimpleOAuth2ClientConfig(makeConfig(), makeProvider({ token_url: 'https://example.com/token' }), { extension: 'unknown' });
+        expect(cfg.auth.tokenHost).toBe('https://example.com');
     });
 });

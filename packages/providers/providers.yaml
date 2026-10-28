@@ -30433,8 +30433,8 @@ zoho:
     categories:
         - accounting
     auth_mode: OAUTH2
-    authorization_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/auth || https://accounts.zoho.com/oauth/v2/auth
-    token_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token || ${connectionConfig.accounts-server}/oauth/v2/token
+    authorization_url: ${connectionConfig.accounts-server}/oauth/v2/auth || https://accounts.zoho.com/oauth/v2/auth
+    token_url: ${connectionConfig.accounts-server}/oauth/v2/token || https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token
     authorization_params:
         prompt: consent
         access_type: offline
