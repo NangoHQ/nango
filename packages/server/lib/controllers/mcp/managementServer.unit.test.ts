@@ -532,7 +532,7 @@ describe('createManagementMcpServer', () => {
     });
 
     it('exposes and authorizes non-idempotent action triggering', async () => {
-        const authorized = await createTestClient(['environment:actions:execute']);
+        const authorized = await createTestClient(['environment:tools:call']);
         try {
             const result = await authorized.client.listTools();
             const scopedTools = withoutUnscopedTools(result.tools);
@@ -576,7 +576,7 @@ describe('createManagementMcpServer', () => {
     it('returns action responses as JSON text and structured content', async () => {
         const response = { data: 'created' };
         const handlerSpy = vi.spyOn(triggerActionTool, 'handler').mockResolvedValueOnce(Ok(response));
-        const { client, server } = await createTestClient(['environment:actions:execute']);
+        const { client, server } = await createTestClient(['environment:tools:call']);
 
         try {
             const result = await client.callTool({
@@ -773,8 +773,8 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it('exposes tools_call only with environment:functions:invocations and environment:actions:execute', async () => {
-        const { client, server } = await createTestClient(['environment:functions:invocations', 'environment:actions:execute']);
+    it('exposes tools_call only with environment:functions:invocations and environment:tools:call', async () => {
+        const { client, server } = await createTestClient(['environment:functions:invocations', 'environment:tools:call']);
 
         try {
             const result = await client.listTools();
@@ -787,22 +787,19 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it.each(['environment:functions:invocations', 'environment:actions:execute'])(
-        'authorizes tool calls before invoking the tool with only %s',
-        async (scope) => {
-            const handlerSpy = vi.spyOn(callToolsTool, 'handler');
-            const { client, server } = await createTestClient([scope]);
+    it.each(['environment:functions:invocations', 'environment:tools:call'])('authorizes tool calls before invoking the tool with only %s', async (scope) => {
+        const handlerSpy = vi.spyOn(callToolsTool, 'handler');
+        const { client, server } = await createTestClient([scope]);
 
-            try {
-                await expectDisabledTool(client, 'tools_call', { integration_id: 'github', connection_id: 'connection-id', name: 'fetchIssue' });
-                expect(handlerSpy).not.toHaveBeenCalled();
-            } finally {
-                handlerSpy.mockRestore();
-                await client.close();
-                await server.close();
-            }
+        try {
+            await expectDisabledTool(client, 'tools_call', { integration_id: 'github', connection_id: 'connection-id', name: 'fetchIssue' });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
         }
-    );
+    });
 
     it('returns function lists as JSON text and structured content', async () => {
         const response = {

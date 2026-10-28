@@ -41,7 +41,7 @@ async function seedTool(toolName = name) {
     await db
         .knex('customer_keys')
         .where({ id: seed.apiKey.id })
-        .update({ scopes: ['environment:functions:invocations', 'environment:actions:execute'] });
+        .update({ scopes: ['environment:functions:invocations', 'environment:tools:call'] });
     const integration = await seeders.createConfigSeed(seed.env, 'github', 'github');
     const connection = await seeders.createConnectionSeed({ env: seed.env, provider: integration.unique_key, connectionId: randomUUID() });
     const [fn] = (
@@ -100,7 +100,7 @@ describe(`POST ${route}`, () => {
         api.server.close();
     });
 
-    it.each([['environment:functions:invocations'], ['environment:actions:execute'], ['environment:functions:read']])(
+    it.each([['environment:functions:invocations'], ['environment:tools:call'], ['environment:functions:read']])(
         'requires authentication and both scopes when the key only has %s',
         async (scope) => {
             const seed = await seedTool();

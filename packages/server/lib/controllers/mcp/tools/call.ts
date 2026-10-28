@@ -51,7 +51,7 @@ export const callToolsTool: ManagementMcpTool<CallToolOutput> = defineManagement
         'Calls an enabled tool of an integration synchronously for a connection and returns its result in the data field. The MCP request may time out within 90 seconds without canceling execution. After a timeout, the tool cannot return the result or an execution ID; retrying starts another execution and may duplicate side effects.',
     inputSchema: callToolArgumentsSchema,
     outputSchema: callToolOutputSchema,
-    requiredScopes: { every: ['environment:functions:invocations', 'environment:actions:execute'] },
+    requiredScopes: { every: ['environment:functions:invocations', 'environment:tools:call'] },
     audit: { kind: 'no-audit', reason: 'non-auditable' },
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
     async handler({ args, account, environment }) {

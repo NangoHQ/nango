@@ -46,7 +46,9 @@ export const PUBLIC_ENVIRONMENT_SCOPES = [
     'environment:records:write',
     // Logs
     'environment:logs:read',
-    // Actions
+    // Tools
+    'environment:tools:call',
+    // Deprecated, grants `environment:tools:call`
     'environment:actions:execute',
     // Proxy
     'environment:proxy',
@@ -148,12 +150,23 @@ export function isAccountScope(scope: string): boolean {
 }
 
 /**
+ * Renamed scopes. Keys holding the old name still get the new one until stored keys are rewritten.
+ */
+const RENAMED_SCOPES: readonly (readonly [from: IssuableScope, to: IssuableScope])[] = [['environment:actions:execute', 'environment:tools:call']];
+
+/**
  * The concrete issuable scopes matching `granted`
  */
 export function expandIssuable(granted: readonly ScopeSelector[]): IssuableScope[] {
-    return ISSUABLE_SCOPES.filter((scope) =>
+    const expanded = ISSUABLE_SCOPES.filter((scope) =>
         granted.some((selector) => selector === scope || (selector.endsWith(':*') && scope.startsWith(selector.slice(0, -1))))
     );
+    for (const [from, to] of RENAMED_SCOPES) {
+        if (expanded.includes(from) && !expanded.includes(to)) {
+            expanded.push(to);
+        }
+    }
+    return expanded;
 }
 
 /**

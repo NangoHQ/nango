@@ -228,7 +228,7 @@ const context = {
     account: { id: 1, uuid: accountUuid },
     environment: { id: 42 },
     plan: null,
-    grantedScopes: ['environment:functions:invocations', 'environment:actions:execute']
+    grantedScopes: ['environment:functions:invocations', 'environment:tools:call']
 } as ManagementMcpContext;
 
 const actionFixture = { sync_name: 'fetchIssue', enabled: true } as DBSyncConfig;

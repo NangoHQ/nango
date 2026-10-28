@@ -10074,7 +10074,7 @@ For backend services that consume data, trigger actions, and proxy requests:
 |-------|
 | `environment:connections:read` |
 | `environment:records:read` |
-| `environment:actions:execute` |
+| `environment:tools:call` |
 | `environment:syncs:execute` |
 | `environment:proxy` |
 
@@ -10197,11 +10197,15 @@ The **Default - Full access** key that comes with each environment already has a
     The `environment:logs:read` scope is currently only used by the [Logs tools in the Management MCP server](/reference/backend/management-mcp#logs).
 </Note>
 
-#### Actions
+#### Tools
 
 | Scope | Description |
 |-------|-------------|
-| `environment:actions:execute` | Trigger actions and read action results |
+| `environment:tools:call` | Call tools, trigger actions and read action results |
+
+<Note>
+    `environment:tools:call` was previously named `environment:actions:execute`. Keys holding the old name keep working.
+</Note>
 
 #### Proxy
 
@@ -11362,7 +11366,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/sync/delete-variant.md
 Source: https://nango.dev/docs/reference/backend/http-api/action/trigger.md
 
 <Info>
-  Requires an API key with the `environment:actions:execute` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+  Requires an API key with the `environment:tools:call` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
 ## Proxy - GET requests
@@ -14073,7 +14077,7 @@ Use the Actions tool to trigger an action function synchronously for a connectio
 
 | Tool              | Description                                                | Additional permission          |
 | ----------------- | ---------------------------------------------------------- | ------------------------------ |
-| `actions_trigger` | Trigger an action function synchronously for a connection. | `environment:actions:execute`  |
+| `actions_trigger` | Trigger an action function synchronously for a connection. | `environment:tools:call`  |
 
 ### Syncs
 
@@ -14097,7 +14101,7 @@ Tools are functions that can be called on demand: HTTP-triggered functions, depl
 | Tool                    | Description                                                                   | Additional permission        |
 | ----------------------- | ----------------------------------------------------------------------------- | ---------------------------- |
 | `functions_list`        | List and filter available functions by integration, including Nango catalog actions. | `environment:functions:list` |
-| `tools_call`            | Call an enabled tool of an integration synchronously for a connection.        | `environment:functions:invocations`, `environment:actions:execute` |
+| `tools_call`            | Call an enabled tool of an integration synchronously for a connection.        | `environment:functions:invocations`, `environment:tools:call` |
 | `deploy_template`       | Deploy a function template.                                                   | `environment:deploy`         |
 | `get_deployment_status` | Retrieve a deployment's current status and result.                            | `environment:deploy`         |
 

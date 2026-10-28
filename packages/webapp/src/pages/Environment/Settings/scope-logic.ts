@@ -66,12 +66,22 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
         ]
     },
     { group: 'Logs', items: [{ value: 'environment:logs:read', label: 'read' }] },
-    { group: 'Actions', items: [{ value: 'environment:actions:execute', label: 'execute' }] },
+    { group: 'Tools', items: [{ value: 'environment:tools:call', label: 'call' }] },
     { group: 'Proxy', items: [{ value: 'environment:proxy', label: 'proxy' }] },
     { group: 'Variables', items: [{ value: 'environment:variables:read', label: 'read' }] },
     { group: 'Webhooks', items: [{ value: 'environment:webhook_signing_key:rotate', label: 'rotate signing key' }] },
     { group: 'MCP', items: [{ value: 'environment:mcp', label: 'mcp' }] }
 ];
+
+const RENAMED_SCOPES: Record<string, string> = {
+    'environment:actions:execute': 'environment:tools:call',
+    'environment:actions:*': 'environment:tools:call'
+};
+
+/** Shows a key's scopes under their current names, so saving it rewrites any old ones. */
+export function renameLegacyScopes(scopes: string[]): string[] {
+    return Array.from(new Set(scopes.map((scope) => RENAMED_SCOPES[scope] ?? scope)));
+}
 
 export function allGroupScopes(group: ScopeGroup): string[] {
     return group.items.flatMap((item) => (item.credentials ? [item.value, item.credentials] : [item.value]));
