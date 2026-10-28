@@ -44,6 +44,7 @@ const managementToolNames = [
     'functions_list',
     'deploy_template',
     'get_deployment_status',
+    'tools_call',
     'logs_list_operations',
     'logs_get_operation'
 ];
@@ -577,6 +578,7 @@ function fakeAccount(): DBTeam {
         name: 'Test Account',
         uuid: 'test-account',
         found_us: null,
+        has_baa: false,
         created_at: now,
         updated_at: now
     };

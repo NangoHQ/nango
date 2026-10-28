@@ -34,8 +34,6 @@ import type {
     GetPublicProvider,
     GetPublicProviders,
     GetPublicProviderTemplates,
-    GetTool,
-    GetTools,
     NangoRecord,
     OAuth1Token,
     OpenAIFunction,
@@ -322,36 +320,6 @@ export class Nango {
         addQueryParams(url, queries as DeletePublicIntegrationFunction['Querystring']);
 
         const response = await this.http.delete(url.href, { headers: this.enrichHeaders(headers) });
-        return response.data;
-    }
-
-    /**
-     * Retrieves a tool of an integration
-     * @param uniqueKey - The unique key of the integration
-     * @param name - The name of the tool
-     * @returns A promise that resolves with the tool
-     */
-    public async getTool({ uniqueKey, name }: GetTool['Params']): Promise<GetTool['Success']> {
-        const headers = { 'Content-Type': 'application/json' };
-
-        const url = new URL(`${this.serverUrl}/integrations/${uniqueKey}/tools/${name}`);
-
-        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
-        return response.data;
-    }
-
-    /**
-     * Lists a page of available tools of an integration.
-     * @param uniqueKey - The unique key of the integration
-     * @param queries - Optional pagination parameters: `cursor`, `limit` (defaults to 250, maximum 250)
-     * @returns A promise that resolves with the tools and next cursor
-     */
-    public async listTools({ uniqueKey }: GetTools['Params'], queries?: GetTools['Querystring']): Promise<GetTools['Success']> {
-        const headers = { 'Content-Type': 'application/json' };
-        const url = new URL(`${this.serverUrl}/integrations/${uniqueKey}/tools`);
-        addQueryParams(url, queries);
-
-        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
         return response.data;
     }
 

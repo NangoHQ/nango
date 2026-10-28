@@ -20,7 +20,6 @@ import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
 import { apiPatchUser } from '@/hooks/useUser';
-import { usePlaygroundTabs } from '@/pages/Playground/usePlaygroundTabs';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { EnvironmentDropdown } from './EnvironmentDropdown';
@@ -46,8 +45,7 @@ export const AppSidebar: React.FC = () => {
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
     const { can } = usePermissions();
-    const { tabs: playgroundTabs } = usePlaygroundTabs();
-    const showPlayground = playgroundTabs.length > 0;
+    const showPlayground = Boolean(meta?.agentPlayground) && can('environment:agent_sessions:write');
 
     const items = useMemo<SidebarItem[]>(() => {
         const gettingStarted = {
@@ -99,7 +97,7 @@ export const AppSidebar: React.FC = () => {
                                     >
                                         <Link to={item.url}>
                                             <item.icon />
-                                            <span data-ph-unmask>{item.title}</span>
+                                            <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
                                     {item.onClose && (

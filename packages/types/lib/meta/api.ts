@@ -31,6 +31,7 @@ export type GetMeta = ApiEndpoint<{
             toolsCatalog: boolean;
             accountGroup: AccountGroupProperties;
             agentPlayground: boolean;
+            hasBaa: boolean;
         };
     };
 }>;

@@ -1,0 +1,85 @@
+---
+title: 'CCH Axcess'
+sidebarTitle: 'CCH Axcess'
+description: 'Integrate your application with the CCH Axcess API'
+---
+
+## 🚀 Quickstart
+
+Connect to CCH Axcess with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _CCH Axcess_. Nango doesn't provide a test OAuth app for CCH Axcess. Register your own by following the setup guide linked below, then add the client ID, client secret, scopes, and [integrator key](/api-integrations/cch-axcess/how-to-register-your-own-cch-axcess-oauth-app#get-integrator-key) in the integration settings in Nango.
+    </Step>
+    <Step id="authorize-cch-axcess" title="Authorize CCH Axcess">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your CCH Axcess account number, log in, and approve access. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-cch-axcess-api" title="Call the CCH Axcess API">
+    Let's make your first request to the CCH Axcess API to search clients. This requires the `CCHAxcess_data_writeaccess` scope. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/api/ClientService/v1.0/Client?action=Search" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"Filters": [], "PageIndex": 1, "PageSize": 10}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/api/ClientService/v1.0/Client',
+            params: { action: 'Search' },
+            data: { Filters: [], PageIndex: 1, PageSize: 10 },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Nango adds the access token and your `IntegratorKey` header to every request, and refreshes the access token for you. Token lifetimes are set when you register your app in CCH Axcess.
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 CCH Axcess integration guides
+
+- [How to register your own CCH Axcess OAuth app](/api-integrations/cch-axcess/how-to-register-your-own-cch-axcess-oauth-app)  
+Register an Open Integration Platform app in CCH Axcess, get your integrator key, and connect them to Nango.
+
+Official docs: [CCH Axcess Developer Portal](https://developers.cchaxcess.com/)
+
+## 🧩 Pre-built syncs & actions for CCH Axcess
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/cch-axcess/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

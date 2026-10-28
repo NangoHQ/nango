@@ -9,8 +9,7 @@ import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { mapDeprecatedConnectionConfigWebhookUrl } from './mapDeprecatedConnectionConfigWebhookUrl.js';
 
 import type { RequestLocalsWithEnvironment } from '../../utils/express.js';
-import type { Config } from '@nangohq/shared';
-import type { DBPlan, PostConnectSessions } from '@nangohq/types';
+import type { ConnectSessionInput, ConnectSessionIntegrationConfigDefaults, DBPlan, PostConnectSessions } from '@nangohq/types';
 import type { Response } from 'express';
 
 const logger = getLogger('Server.Connect.PostSessions');
@@ -102,33 +101,6 @@ export const postConnectSessions = asyncWrapperWithEnvironment<PostConnectSessio
     return;
 });
 
-/**
- * Validate that all the integration keys exist
- */
-export function checkIntegrationsExist(
-    integrationRecords: Record<string, unknown> | undefined,
-    integrations: Config[],
-    path: string[]
-): z.core.$ZodIssue[] | false {
-    if (!integrationRecords) {
-        return false;
-    }
-
-    const errors: z.core.$ZodIssue[] = [];
-    for (const uniqueKey of Object.keys(integrationRecords)) {
-        if (!integrations.find((v) => v.unique_key === uniqueKey)) {
-            errors.push({
-                path: [...path, uniqueKey],
-                code: 'custom',
-                message: 'Integration does not exist',
-                input: integrationRecords
-            });
-        }
-    }
-
-    return errors.length > 0 ? errors : false;
-}
-
 export async function generateSession(
     res: Response<any, RequestLocalsWithEnvironment>,
     body: PostConnectSessions['Body'],
@@ -144,18 +116,6 @@ export async function generateSession(
 
     const { account, environment } = res.locals;
     const endUser = body.end_user ? EndUserMapper.apiToEndUser(body.end_user, body.organization) : null;
-    const integrationsConfigDefaults = body.integrations_config_defaults
-        ? Object.fromEntries(
-              Object.entries(body.integrations_config_defaults).map(([key, value]) => [
-                  key,
-                  {
-                      user_scopes: value.user_scopes,
-                      authorization_params: value.authorization_params,
-                      connectionConfig: value.connection_config
-                  }
-              ])
-          )
-        : undefined;
 
     const result = await connectSessionService.createConnectSession({
         account,
@@ -165,7 +125,7 @@ export async function generateSession(
         endUser,
         tags: body.tags,
         allowedIntegrations: body.allowed_integrations,
-        integrationsConfigDefaults,
+        integrationsConfigDefaults: toIntegrationsConfigDefaults(body.integrations_config_defaults),
         overrides: body.overrides,
         webhookUrlOverride: body.webhook_url_override
     });
@@ -185,8 +145,25 @@ export async function generateSession(
     });
 }
 
-function createConnectSessionErrorToHttp(error: connectSessionService.CreateConnectSessionError): Reply {
+export function toIntegrationsConfigDefaults(
+    defaults: ConnectSessionInput['integrations_config_defaults']
+): Record<string, ConnectSessionIntegrationConfigDefaults> | undefined {
+    if (!defaults) {
+        return undefined;
+    }
+
+    return Object.fromEntries(
+        Object.entries(defaults).map(([key, value]) => [
+            key,
+            { user_scopes: value.user_scopes, authorization_params: value.authorization_params, connectionConfig: value.connection_config }
+        ])
+    );
+}
+
+export function createConnectSessionErrorToHttp(error: connectSessionService.CreateConnectSessionError): Reply {
     switch (error.code) {
+        case 'connection_not_found':
+            return { status: 400, response: { error: { code: 'invalid_body', message: error.message } } };
         case 'resource_capped':
             return { status: 400, response: { error: { code: 'resource_capped', message: error.message } } };
         case 'integration_not_found': {

@@ -137,7 +137,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                             <TooltipContent side="top">Copy all</TooltipContent>
                         </Tooltip>
                     )}
-                    {isSharedCredentials ? <Badge>Nango provided</Badge> : null}
+                    {isSharedCredentials ? <Badge>Nango-managed</Badge> : null}
                 </div>
             </div>
         );

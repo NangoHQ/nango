@@ -87,6 +87,23 @@ describe(`POST ${route}`, () => {
         expect(await userService.getUserByEmail(email)).toBeNull();
     });
 
+    it('should not create an account for a disposable email', async () => {
+        const email = `${nanoid()}@mailinator.com`;
+
+        workosMocks.authenticateWithCode.mockResolvedValue({
+            user: { email, firstName: 'Managed', lastName: 'User' },
+            organizationId: undefined
+        });
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, {
+            redirect: 'manual'
+        });
+
+        expect(callbackRes.status).toBe(302);
+        expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/signin?error=disposable_email');
+        expect(await userService.getUserByEmail(email)).toBeNull();
+    });
+
     it('should let an existing managed user resume OAuth consent', async () => {
         const { user } = await seeders.seedAccountEnvAndUser();
         const returnTo = '/oauth/consent/interaction-id/review';
@@ -330,5 +347,51 @@ describe(`POST ${route}`, () => {
 
         expect(callbackRes.status).toBe(302);
         expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/');
+    });
+    it('reads current ad context at Google completion and does not resend it on returning login', async () => {
+        const { envs } = await import('../../../../env.js');
+        const { productTracking } = await import('@nangohq/shared');
+        const previous = envs.SIGNUP_AD_CONTEXT_ENABLED;
+        const previousCookieName = envs.SIGNUP_AD_CONTEXT_COOKIE_NAME;
+        envs.SIGNUP_AD_CONTEXT_ENABLED = true;
+        envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_test';
+        const track = vi.spyOn(productTracking, 'track');
+        const email = `${nanoid()}@example.com`;
+        const now = Date.now();
+        const context = {
+            version: 1,
+            marketing: true,
+            gpc: false,
+            method: 'implied',
+            gdpr: false,
+            lgpd: false,
+            ccpa: true,
+            observedAt: now,
+            opprefAt: now - 60_000,
+            oppref: 'synthetic_google_flow'
+        };
+        const headers = { Cookie: `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}` };
+        workosMocks.authenticateWithCode.mockResolvedValue({ user: { email, firstName: 'Ad', lastName: 'Fixture' }, organizationId: undefined });
+        try {
+            const first = await fetch(`${api.url}/api/v1/login/callback?code=synthetic_code`, { redirect: 'manual', headers });
+            expect(first.status).toBe(302);
+            expect(track.mock.calls.filter(([e]) => e.name === 'auth:account_create')).toHaveLength(1);
+            expect(track).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    name: 'auth:account_create',
+                    eventProperties: expect.objectContaining({
+                        advertising_oppref: 'synthetic_google_flow',
+                        advertising_consent_method: 'implied'
+                    })
+                })
+            );
+            const second = await fetch(`${api.url}/api/v1/login/callback?code=synthetic_code`, { redirect: 'manual', headers });
+            expect(second.status).toBe(302);
+            expect(track.mock.calls.filter(([e]) => e.name === 'auth:account_create')).toHaveLength(1);
+        } finally {
+            envs.SIGNUP_AD_CONTEXT_ENABLED = previous;
+            envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previousCookieName;
+            track.mockRestore();
+        }
     });
 });

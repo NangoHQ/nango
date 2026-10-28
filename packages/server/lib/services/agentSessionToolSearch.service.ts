@@ -1,7 +1,7 @@
 import Fuse from 'fuse.js';
 
 import { logContextGetter } from '@nangohq/logs';
-import { legacyFunctionService } from '@nangohq/shared';
+import { functionLookupService } from '@nangohq/shared';
 import { filterJsonSchemaForModels, report } from '@nangohq/utils';
 
 import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuidance.js';
@@ -296,7 +296,7 @@ export async function findActionInputs({
     environmentId: number;
     actions: { integrationId: string; name: string }[];
 }): Promise<Map<string, Map<string, AgentSessionToolInput>>> {
-    const rows = await legacyFunctionService.findActionInputSchemas({ environmentId, actions });
+    const rows = await functionLookupService.findActionInputSchemas({ environmentId, actions });
 
     const inputs = new Map<string, Map<string, AgentSessionToolInput>>();
     for (const row of rows) {

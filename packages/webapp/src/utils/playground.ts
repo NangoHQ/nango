@@ -1,58 +1,46 @@
-import { useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-
 import { trackPlaygroundOpened } from '@/features/Playground/analytics';
-import { usePlaygroundTabs } from '@/pages/Playground/usePlaygroundTabs';
-import { useStore } from '@/store';
-import { usePlaygroundStore } from '@/store/playground';
+import { usePermissions } from '@/hooks/usePermissions';
+import { defaultPlaygroundState, usePlaygroundStore } from '@/store/playground';
 
 import type { PlaygroundOpenSource } from '@/features/Playground/analytics';
-import type { PlaygroundFunctionType, PlaygroundState } from '@/store/playground';
+import type { PlaygroundFunctionType } from '@/store/playground';
 
 export interface PlaygroundContextOverride {
-    source: Exclude<PlaygroundOpenSource, 'playground'>;
-    integration?: string | null;
+    source: PlaygroundOpenSource;
+    integration: string;
     connection?: string | null;
     functionName?: string | null;
     functionType?: PlaygroundFunctionType;
-    inputValues?: Record<string, string>;
 }
 
-export interface PlaygroundLocationState {
-    back?: { to: string; label: string };
+export function useCanRunFunctions(): boolean {
+    return usePermissions().can('environment:syncs:execute');
 }
 
-export function useCanOpenPlaygroundFunctions(): boolean {
-    return usePlaygroundTabs().tabs.includes('functions');
-}
-
-export function useOpenPlaygroundWithContext() {
-    const env = useStore((s) => s.env);
-    const navigate = useNavigate();
-    const location = useLocation();
-
-    return useCallback(
-        (override: PlaygroundContextOverride) => {
-            const next: PlaygroundState = {
-                integration: override.integration ?? null,
-                connection: override.connection ?? null,
-                function: override.functionName ?? null,
-                functionType: override.functionType ?? null,
-                inputValues: override.inputValues ?? {},
-                result: null,
-                pendingOperationId: null,
-                running: false,
-                inputErrors: {},
-                connectionSearch: ''
-            };
-
-            usePlaygroundStore.getState().abortActiveRun?.();
-            usePlaygroundStore.getState().setState(next);
-            trackPlaygroundOpened(override.source);
-
-            const state: PlaygroundLocationState = { back: { to: location.pathname + location.search + location.hash, label: override.source } };
-            void navigate(`/${env}/playground/functions`, { state });
-        },
-        [env, navigate, location.pathname, location.search, location.hash]
+function isRunInFlightFor(override: PlaygroundContextOverride): boolean {
+    const current = usePlaygroundStore.getState();
+    return (
+        (current.running || current.pendingOperationId != null) &&
+        current.integration === override.integration &&
+        (!override.connection || override.connection === current.connection) &&
+        (!override.functionName || (override.functionName === current.function && override.functionType === current.functionType))
     );
+}
+
+export function openPlaygroundWithContext(override: PlaygroundContextOverride) {
+    trackPlaygroundOpened(override.source);
+    const current = usePlaygroundStore.getState();
+    if (isRunInFlightFor(override)) {
+        current.setOpen(true);
+        return;
+    }
+    current.abortActiveRun?.();
+    current.setState({
+        ...defaultPlaygroundState,
+        isOpen: true,
+        integration: override.integration,
+        connection: override.connection ?? null,
+        function: override.functionName ?? null,
+        functionType: override.functionType ?? null
+    });
 }

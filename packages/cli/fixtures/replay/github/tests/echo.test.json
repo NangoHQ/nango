@@ -1,0 +1,33 @@
+{
+    "input": { "id": "123" },
+    "output": {
+        "title": "Recorded issue",
+        "responseStatus": 200,
+        "responseRequestId": "recorded-response",
+        "method": "PATCH",
+        "path": "/webhooks/issues",
+        "event": "issue.updated",
+        "source": "fixture",
+        "connectionId": "conn-1",
+        "subscriptions": ["issues.opened"]
+    },
+    "trigger": {
+        "kind": "http",
+        "input": { "id": "123" },
+        "connection": { "connectionId": "conn-1", "integrationId": "github" },
+        "subscriptions": ["issues.opened"],
+        "request": {
+            "method": "PATCH",
+            "path": "/webhooks/issues",
+            "headers": { "x-event": "issue.updated" },
+            "query": { "source": "fixture" },
+            "body": { "id": "123" }
+        }
+    },
+    "nango": {},
+    "api": {
+        "get": {
+            "/issues/123": { "response": { "title": "Recorded issue" }, "request": {}, "status": 200, "headers": { "x-request-id": "recorded-response" } }
+        }
+    }
+}

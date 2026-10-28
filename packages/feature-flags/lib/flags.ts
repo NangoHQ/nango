@@ -10,6 +10,11 @@ import type { FeatureFlagsClient } from './client.js';
  *
  * Separate words in flag keys with dashes, never underscores: the env provider can't
  * tell the two apart.
+ *
+ * The default applies only when the provider has no value for the flag (self-hosted
+ * without a provider, or a missing toggle). New features default to `false`; deprecations
+ * default to `true` so the old behavior keeps working until the code is removed, while
+ * Unleash restricts it on cloud.
  */
 export function buildFlags(client: FeatureFlagsClient) {
     return {
@@ -93,19 +98,18 @@ export function buildFlags(client: FeatureFlagsClient) {
         },
         /**
          * Whether the deprecated `search` query param on GET /connections is still honored for this
-         * account. Default `false`: only accounts explicitly allowlisted in Unleash (the known existing
-         * users of this param) should have it enabled.
+         * account. Deprecation: default `true`; on cloud, Unleash restricts it to an allowlist.
          */
         isConnectionsSearchParamEnabled(accountUuid: string) {
-            return client.isEnabled('connections-search-param', { targetingKey: accountUuid, accountUuid }, false);
+            return client.isEnabled('connections-search-param', { targetingKey: accountUuid, accountUuid }, true);
         },
         /**
          * Whether the deprecated `/v1/*` passthrough (legacy custom endpoint routing for syncs and
-         * actions) is still reachable for this account. Default `false`: only accounts explicitly
-         * allowlisted in Unleash (the known existing users of this passthrough) should have it enabled.
+         * actions) is still reachable for this account. Deprecation: default `true`; on cloud,
+         * Unleash restricts it to an allowlist.
          */
         isV1PassthroughEnabled(accountUuid: string) {
-            return client.isEnabled('v1-passthrough', { targetingKey: accountUuid, accountUuid }, false);
+            return client.isEnabled('v1-passthrough', { targetingKey: accountUuid, accountUuid }, true);
         },
         /**
          * Whether the legacy Connection MCP server is available for this account.

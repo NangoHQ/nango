@@ -50,6 +50,7 @@ import { deletePublicEnvironmentApiKey } from './controllers/environment/deleteA
 import { deletePublicEnvironment } from './controllers/environment/deleteEnvironment.js';
 import { getPublicEnvironmentApiKey } from './controllers/environment/getApiKey.js';
 import { getPublicEnvironmentApiKeys } from './controllers/environment/getApiKeys.js';
+import { getPublicEnvironment } from './controllers/environment/getEnvironment.js';
 import { getPublicEnvironments } from './controllers/environment/getEnvironments.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { patchPublicEnvironmentApiKey } from './controllers/environment/patchApiKey.js';
@@ -77,8 +78,6 @@ import { getPublicIntegrationFunction } from './controllers/integrations/uniqueK
 import { getPublicIntegrationFunctions } from './controllers/integrations/uniqueKey/functions/getFunctions.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
-import { getTool } from './controllers/integrations/uniqueKey/tools/getTool.js';
-import { getTools } from './controllers/integrations/uniqueKey/tools/getTools.js';
 import { getConnectionToolsMcp, postConnectionToolsMcp, requireConnectionMcp } from './controllers/mcp/connectionTools.js';
 import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
@@ -280,6 +279,7 @@ publicAPI.route('/providers/:provider/templates').get(envAuth, withEnvironmentTa
 
 publicAPI.use('/environments', jsonContentTypeMiddleware);
 publicAPI.route('/environments').get(apiAuth, can('account:environments:list'), getPublicEnvironments);
+publicAPI.route('/environments/:environmentUuid').get(apiAuth, can('account:environments:read'), getPublicEnvironment);
 publicAPI.route('/environments').post(apiAuth, auditPublicEnvironmentCreated, can('account:environments:create'), postPublicEnvironment);
 publicAPI.route('/environments/:environmentUuid').delete(apiAuth, auditPublicEnvironmentDeleted, can('account:environments:delete'), deletePublicEnvironment);
 publicAPI
@@ -323,8 +323,6 @@ publicAPI
     .route('/integrations/:uniqueKey/functions/:name')
     .get(envAuth, can('environment:functions:read'), getPublicIntegrationFunction)
     .delete(envAuth, auditPublicFunctionDeleted, can('environment:functions:delete'), deletePublicIntegrationFunction);
-publicAPI.route('/integrations/:uniqueKey/tools/:name').get(envAuth, can('environment:functions:read'), getTool);
-publicAPI.route('/integrations/:uniqueKey/tools').get(envAuth, can('environment:functions:list'), getTools);
 
 // @deprecated connections
 publicAPI.use('/connection', jsonContentTypeMiddleware);

@@ -1,0 +1,44 @@
+---
+title: 'How to register your own Freshservice OAuth app'
+sidebarTitle: 'Freshservice (OAuth) setup'
+description: 'Create OAuth credentials in the Freshworks developer portal and connect them to Nango'
+---
+
+This guide shows you how to create OAuth credentials for Freshservice to obtain your client ID & secret. These are required to let your users grant your app access to their Freshservice account.
+
+Freshservice uses Freshworks' organization-level OAuth, so you create the credentials in the Freshworks developer portal.
+
+<Steps>
+  <Step id="sign-in-to-developer-portal" title="Sign in to the Freshworks developer portal">
+    Go to the [Freshworks developer login page](https://developers.freshworks.com/), enter your organization URL (for example, `acme.myfreshworks.com`), and click **Proceed**.
+  </Step>
+  <Step id="open-oauth-credentials" title="Open OAuth Credentials">
+    1. Click the settings icon in the left navigation bar.
+    2. Click **Connectivity and Tools**, then click **OAuth Credentials**.
+    3. Click **Create OAuth Credentials**.
+  </Step>
+  <Step id="create-oauth-credentials" title="Create OAuth credentials">
+    Fill in:
+    - **Name** — your app's name, up to 3 words. Users see it when they authorize your app.
+    - **Description** — a short description of what your app does. Users also see this when they authorize.
+    - **Redirect URL** — `https://api.nango.dev/oauth/callback`
+    - **Scopes** — select the product you want to connect to (**Freshservice**), then select the specific scopes you want to request, such as `freshservice.tickets.view`.
+
+    Click **Create Credentials**.
+
+    <Note>
+    You can add scopes later, but you can't remove scopes once they're selected.
+    </Note>
+  </Step>
+  <Step id="copy-credentials" title="Copy your credentials">
+    Copy the **Client ID** and **Client Secret** from the credentials page and enter them in your Freshservice (OAuth) integration in Nango.
+  </Step>
+  <Step id="set-scopes" title="Set the scopes in Nango">
+    In your Nango integration settings, add the scopes your integration needs. They must be scopes you selected when creating the OAuth credentials. Each Freshservice API endpoint lists its required scope in the [Freshservice API documentation](https://api.freshservice.com/).
+  </Step>
+  <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Freshworks' OAuth documentation](https://developers.freshworks.com/docs/app-sdk/v3.0/service_user/advanced-interfaces/request-method/oauth-access-freshworks-resources/).

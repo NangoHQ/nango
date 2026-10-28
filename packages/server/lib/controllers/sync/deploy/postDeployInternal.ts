@@ -58,7 +58,7 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
             });
             return;
         }
-        environment = created.value;
+        environment = created.value.environment;
 
         // since we're making a new environment, we want to make sure the config creds and
         // connections are copied from the dev environment

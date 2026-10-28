@@ -58,18 +58,24 @@ export interface ConnectionSearchCapability {
     searchConnections(filter: unknown): Promise<GetPublicConnection['Success'][]>;
 }
 
+export interface HttpResponse<T = unknown> {
+    data: T;
+    status: number;
+    headers: Record<string, unknown>;
+}
+
 /**
  * Present when `requires.outbound` is not `false`:
  * - outbound http via proxy
  * - or direct fetch via `uncontrolledFetch`.
  */
 export interface ProxyCapability {
-    proxy<T = unknown>(config: ProxyConfiguration): Promise<T>;
-    get<T = unknown>(config: Omit<ProxyConfiguration, 'method'>): Promise<T>;
-    post<T = unknown>(config: Omit<ProxyConfiguration, 'method'>): Promise<T>;
-    put<T = unknown>(config: Omit<ProxyConfiguration, 'method'>): Promise<T>;
-    patch<T = unknown>(config: Omit<ProxyConfiguration, 'method'>): Promise<T>;
-    delete<T = unknown>(config: Omit<ProxyConfiguration, 'method'>): Promise<T>;
+    proxy<T = unknown>(config: ProxyConfiguration): Promise<HttpResponse<T>>;
+    get<T = unknown>(config: Omit<ProxyConfiguration, 'method'>): Promise<HttpResponse<T>>;
+    post<T = unknown>(config: Omit<ProxyConfiguration, 'method'>): Promise<HttpResponse<T>>;
+    put<T = unknown>(config: Omit<ProxyConfiguration, 'method'>): Promise<HttpResponse<T>>;
+    patch<T = unknown>(config: Omit<ProxyConfiguration, 'method'>): Promise<HttpResponse<T>>;
+    delete<T = unknown>(config: Omit<ProxyConfiguration, 'method'>): Promise<HttpResponse<T>>;
     paginate<T = unknown>(config: ProxyConfiguration): AsyncGenerator<T[]>;
     uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response>;
 }

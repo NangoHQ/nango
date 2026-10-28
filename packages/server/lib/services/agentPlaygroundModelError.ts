@@ -2,7 +2,14 @@ import { APICallError, RetryError } from 'ai';
 
 import type { AgentPlaygroundModelUnavailableError } from '@nangohq/types';
 
-export type ModelErrorCategory = 'outage' | 'rate_limit' | 'quota' | 'auth';
+export type ModelErrorCategory = 'outage' | 'rate_limit' | 'quota' | 'auth' | 'missing_key';
+
+export class ModelKeyMissingError extends Error {
+    constructor() {
+        super('OPENAI_API_KEY is not set');
+        this.name = 'ModelKeyMissingError';
+    }
+}
 
 interface ProviderFailure {
     statusCode: number | undefined;
@@ -50,6 +57,9 @@ function providerFailure(error: unknown): ProviderFailure | undefined {
 }
 
 export function modelErrorCategory(error: unknown): ModelErrorCategory | null {
+    if (error instanceof ModelKeyMissingError) {
+        return 'missing_key';
+    }
     const failure = providerFailure(error);
     if (!failure) {
         return null;

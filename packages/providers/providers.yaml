@@ -733,6 +733,36 @@ agentcard:
             pattern: '^acs_[A-Za-z0-9_-]{48}$'
             doc_section: '#step-2-copy-your-client-id-and-client-secret'
 
+aha:
+    display_name: Aha!
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.aha.io/oauth/authorize
+    token_url: https://${connectionConfig.subdomain}.aha.io/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.aha.io
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/aha
+    docs_connect: https://nango.dev/docs/api-integrations/aha/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/aha/how-to-register-your-own-aha-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: Aha! Subdomain
+            description: The subdomain of your Aha! account
+            pattern: '^[a-z0-9-]+$'
+            example: yourcompany
+            prefix: https://
+            suffix: .aha.io
+            doc_section: '#step-1-find-your-subdomain'
+
 ahrefs:
     display_name: Ahrefs
     categories:
@@ -1956,6 +1986,32 @@ appstle-subscriptions:
             example: lBfFAdbxUxyv6jYRgOmrEVNkijCKD10T
             pattern: ^[a-zA-Z0-9]+$
 
+arcsite:
+    display_name: ArcSite
+    categories:
+        - design
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.arcsite.com/
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/projects?per_page=1
+    docs: https://nango.dev/docs/api-integrations/arcsite
+    docs_connect: https://nango.dev/docs/api-integrations/arcsite/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your ArcSite API token
+            secret: true
+            example: 8CeN****************_A
+            pattern: '^[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-create-an-api-token'
+
 asana:
     display_name: Asana
     categories:
@@ -2365,7 +2421,7 @@ atlassian-service-account-oauth2:
             type: string
             title: Subdomain
             optional: true
-            description: The subdomain of your Attlassian account
+            description: The subdomain of your Atlassian account
             pattern: '^[a-zA-Z0-9.-]+$'
             example: subdomain
             suffix: .atlassian.net
@@ -2433,6 +2489,39 @@ attentive-api-key:
             title: API Key
             description: Your Attentive custom app API key.
             doc_section: '#step-1-create-a-custom-app'
+
+attentive-mcp:
+    display_name: Attentive (MCP)
+    categories:
+        - marketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp-auth.attentivemobile.com/oauth2/authorize
+    token_url: https://mcp-auth.attentivemobile.com/oauth2/token
+    registration_url: https://mcp-auth.attentivemobile.com/register
+    default_scopes:
+        - mcp
+        - offline_access
+    authorization_params:
+        response_type: code
+        resource: https://attentive-ui-mcp.attentivemobile.com/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp?readOnly=false
+    proxy:
+        base_url: https://attentive-ui-mcp.attentivemobile.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/attentive-mcp
 
 attio:
     display_name: Attio
@@ -4003,6 +4092,46 @@ boldsign:
         base_url: https://api.boldsign.com
     docs: https://nango.dev/docs/integrations/all/boldsign
 
+bluebeam:
+    display_name: Bluebeam
+    categories:
+        - productivity
+        - storage
+    auth_mode: OAUTH2
+    disable_pkce: true
+    authorization_url: https://${connectionConfig.apiHost}/oauth2/authorize
+    token_url: https://${connectionConfig.apiHost}/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+        headers:
+            client_id: ${clientId}
+    docs: https://nango.dev/docs/api-integrations/bluebeam
+    docs_connect: https://nango.dev/docs/api-integrations/bluebeam/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/bluebeam/how-to-register-your-own-bluebeam-oauth-app
+    connection_config:
+        apiHost:
+            type: string
+            title: API Host
+            description: The Bluebeam API host for your account's region.
+            format: hostname
+            enum:
+                - api.bluebeam.com
+                - api.bluebeamstudio.co.uk
+                - api.bluebeamstudio.com.au
+                - api.bluebeamstudio.de
+                - api.bluebeamstudio.se
+            doc_section: '#step-1-find-your-api-host'
+            order: 1
+
 bol-com:
     display_name: bol.com
     categories:
@@ -4387,6 +4516,122 @@ builder-io-public:
             pattern: '^[a-zA-Z0-9]+$'
             example: bb209fb71eh2412dbe0114bdae18fd15
             doc_section: '#step-2-finding-your-api-key'
+
+buildkite:
+    display_name: Buildkite
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.buildkite.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/access-token
+    docs: https://nango.dev/docs/api-integrations/buildkite
+    docs_connect: https://nango.dev/docs/api-integrations/buildkite/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Access Token
+            description: Your Buildkite API access token
+            pattern: '^(bkua_[A-Za-z0-9._-]+|[a-f0-9]{40})$'
+            example: bkua_MTA.4f6c********************************0f2a
+            doc_section: '#step-1-create-an-api-access-token'
+
+buildkite-token-exchange:
+    display_name: Buildkite (Token Exchange)
+    categories:
+        - dev-tools
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://buildkite.com/oauth/token
+    token_params:
+        grant_type: urn:ietf:params:oauth:grant-type:token-exchange
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+        subject_token: ${connectionConfig.userEmail}
+        subject_token_type: urn:buildkite:params:oauth:token-type:user-email
+        audience: ${connectionConfig.organizationSlug}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    assertion:
+        type: jwt
+        singleUse: true
+        key: ${credentials.privateKey}
+        lifetimeInSeconds: 300
+        header:
+            alg: ${credentials.algorithm}
+            kid: ${credentials.keyId}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://buildkite.com/oauth/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://api.buildkite.com
+    docs: https://nango.dev/docs/api-integrations/buildkite-token-exchange
+    setup_guide_url: https://nango.dev/docs/api-integrations/buildkite-token-exchange/how-to-register-your-own-buildkite-token-exchange-app
+    docs_connect: https://nango.dev/docs/api-integrations/buildkite-token-exchange/connect
+    integration_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Buildkite Token Exchange App's Client ID.
+            doc_section: '#copy-client-id'
+            order: 1
+        keyId:
+            type: string
+            title: Key ID
+            description: The kid of the key in your app's JWKS.
+            doc_section: '#generate-signing-key'
+            order: 2
+        privateKey:
+            type: string
+            title: Private Key
+            description: The PEM private key matching your JWKS public key.
+            secret: true
+            doc_section: '#generate-signing-key'
+            order: 3
+        algorithm:
+            type: string
+            title: Signing Algorithm
+            description: The algorithm of your private key.
+            enum:
+                - RS256
+                - ES256
+            order: 4
+    credentials:
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    connection_config:
+        organizationSlug:
+            type: string
+            title: Organization Slug
+            description: Your Buildkite organization's slug (from its URL) or UUID.
+            example: acme-inc
+            pattern: '^[a-z0-9-]+$'
+            prefix: https://buildkite.com/
+            doc_section: '#step-1-find-your-organization-slug'
+            order: 1
+        userEmail:
+            type: string
+            title: User Email
+            description: The verified email of the Buildkite user the token acts as.
+            example: jane@acme.com
+            format: email
+            doc_section: '#step-2-choose-the-user'
+            order: 2
 
 buildium:
     display_name: Buildium
@@ -4817,6 +5062,44 @@ canva-scim:
             title: API Key
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
+
+cch-axcess:
+    display_name: CCH Axcess
+    categories:
+        - accounting
+    auth_mode: OAUTH2
+    authorization_url: https://login.cchaxcess.com/ps/auth/v1.0/core/connect/authorize
+    token_url: https://login.cchaxcess.com/ps/auth/v1.0/core/connect/token
+    token_request_auth_method: basic
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.cchaxcess.com
+        headers:
+            integratorkey: ${connectionConfig.integratorKey}
+    docs: https://nango.dev/docs/api-integrations/cch-axcess
+    setup_guide_url: https://nango.dev/docs/api-integrations/cch-axcess/how-to-register-your-own-cch-axcess-oauth-app
+    integration_config:
+        integratorKey:
+            type: string
+            title: Integrator Key
+            description: Your CCH Axcess API subscription key.
+            secret: true
+            doc_section: '#get-integrator-key'
+            order: 1
+    connection_config:
+        integratorKey:
+            type: string
+            title: ''
+            description: ''
+            secret: true
+            automated: true
 
 cdw:
     display_name: CDW
@@ -5422,6 +5705,35 @@ circle-so:
             type: string
             title: API Key
             description: The API key for your Circle.so account
+
+circleback:
+    display_name: Circleback
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://circleback.ai/api
+        headers:
+            authorization: Bearer ${apiKey}
+        paginate:
+            type: link
+            link_rel_in_response_header: next
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /people?limit=1
+    docs: https://nango.dev/docs/api-integrations/circleback
+    docs_connect: https://nango.dev/docs/api-integrations/circleback/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Circleback account.
+            pattern: '^cb_[A-Za-z0-9_-]+$'
+            example: cb_*******************************************
+            doc_section: '#step-1-obtaining-your-api-key'
 
 circleback-mcp:
     display_name: Circleback (MCP)
@@ -8867,6 +9179,35 @@ expensify:
     docs: https://nango.dev/docs/integrations/all/expensify
     docs_connect: https://nango.dev/docs/integrations/all/expensify/connect
 
+extensiv:
+    display_name: Extensiv
+    categories:
+        - e-commerce
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.cartrover.com
+        retry:
+            remaining: 'x-cartrover-api-minute-hits-remaining'
+    credentials_verification_script: extensivCredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/extensiv
+    docs_connect: https://nango.dev/docs/api-integrations/extensiv/connect
+    credentials:
+        username:
+            type: string
+            title: API User
+            description: The API User of your Extensiv Integration Manager API keys.
+            example: 10859Ab3*****
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-create-your-api-keys'
+        password:
+            type: string
+            title: API Key
+            description: The API Key of your Extensiv Integration Manager API keys.
+            secret: true
+            example: Xk9T***********
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-create-your-api-keys'
+
 factorial:
     display_name: Factorial (OAuth)
     categories:
@@ -9940,6 +10281,43 @@ freshservice-mcp:
             example: Xk9T************************************************_p4W
             pattern: '^[A-Za-z0-9_]+$'
             doc_section: '#step-1-finding-your-freshservice-api-key'
+
+freshservice-oauth:
+    alias: freshworks
+    display_name: Freshservice (OAuth)
+    categories:
+        - support
+    authorization_url: https://${connectionConfig.orgSubdomain}.myfreshworks.com/org/oauth/v2/authorize
+    token_url: https://${connectionConfig.orgSubdomain}.myfreshworks.com/org/oauth/v2/token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshservice.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/freshservice-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/freshservice-oauth/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/freshservice-oauth/how-to-register-your-own-freshservice-oauth-app
+    connection_config:
+        orgSubdomain:
+            type: string
+            title: Freshworks organization subdomain
+            description: The subdomain of your Freshworks organization URL.
+            pattern: '^[a-z0-9-]+$'
+            example: acme
+            prefix: https://
+            suffix: .myfreshworks.com
+            doc_section: '#step-1-find-your-freshworks-organization-subdomain'
+            order: 1
+        subdomain:
+            type: string
+            title: Freshservice subdomain
+            description: The subdomain of your Freshservice account.
+            pattern: '^[a-z0-9_-]+$'
+            example: acme
+            prefix: https://
+            suffix: .freshservice.com
+            doc_section: '#step-2-find-your-freshservice-subdomain'
+            order: 2
 
 freshteam:
     display_name: Freshteam
@@ -11446,16 +11824,22 @@ grain-api-key:
             method: GET
             headers:
                 content-type: application/json
+                public-api-version: '2026-10-01'
             endpoints:
-                - /_/public-api/me
+                - /_/public-api/v2/token-info
         headers:
             authorization: Bearer ${apiKey}
-    docs: https://nango.dev/docs/integrations/all/grain-api-key
+            public-api-version: '2026-10-01'
+    docs: https://nango.dev/docs/api-integrations/grain-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/grain-api-key/connect
     credentials:
         apiKey:
             type: string
-            title: API Key
-            description: The personal access token to your Grain account
+            title: Personal Access Token
+            description: The personal access token for your Grain account.
+            example: grain_pat_cLLG****_************************************giM7
+            pattern: '^grain_pat_[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generate-a-personal-access-token'
 
 greenfield-meditech:
     display_name: MEDITECH Greenfield
@@ -12029,6 +12413,39 @@ halo-psa:
             description: Your Halo PSA API application Client Secret
             secret: true
             doc_section: '#step-3-create-an-api-application'
+
+haus:
+    display_name: Haus
+    categories:
+        - analytics
+        - e-commerce
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://harbor.haus.io
+        query:
+            org_id: ${connectionConfig.orgId}
+    docs: https://nango.dev/docs/api-integrations/haus
+    docs_connect: https://nango.dev/docs/api-integrations/haus/connect
+    connection_config:
+        orgId:
+            type: string
+            title: Organization ID
+            description: The ID of your Haus organization.
+            doc_section: '#step-1-find-your-organization-id'
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: Token ID
+            description: Your Haus API token ID.
+            doc_section: '#step-2-create-an-api-token'
+        password:
+            type: string
+            title: Token Secret
+            description: Your Haus API token secret.
+            secret: true
+            doc_section: '#step-2-create-an-api-token'
 
 harvest:
     display_name: Harvest
@@ -13425,7 +13842,7 @@ jira:
             type: string
             title: Subdomain
             optional: true
-            description: The subdomain of your Attlassian account
+            description: The subdomain of your Atlassian account
             pattern: '^[a-zA-Z0-9.-]+$'
             example: subdomain
             suffix: .atlassian.net
@@ -14892,6 +15309,21 @@ lovable-mcp:
             accept: application/json,text/event-stream
         base_url: https://mcp.lovable.dev/
     docs: https://nango.dev/docs/api-integrations/lovable-mcp
+
+loyaltylion:
+    display_name: LoyaltyLion
+    categories:
+        - e-commerce
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://app.loyaltylion.com/oauth/authorize
+    token_url: https://app.loyaltylion.com/oauth/access-token
+    disable_pkce: true
+    scope_separator: ','
+    proxy:
+        base_url: https://api.loyaltylion.com
+    docs: https://nango.dev/docs/api-integrations/loyaltylion
+    setup_guide_url: https://nango.dev/docs/api-integrations/loyaltylion/how-to-register-your-own-loyaltylion-oauth-app
 
 lucid-scim:
     display_name: Lucid (SCIM)
@@ -17063,6 +17495,47 @@ namely-pat:
             description: The Personal Access Token for your Namely account
             doc_section: '#step-2-generating-your-personal-access-token'
 
+navan:
+    display_name: Navan
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/ta-auth/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/navan
+    docs_connect: https://nango.dev/docs/api-integrations/navan/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Environment
+            description: The Navan environment your API credentials were issued for.
+            format: hostname
+            enum:
+                - api.navan.com
+                - app-fra.navan.com
+                - staging-prime.navan.com
+            doc_section: '#step-2-select-your-environment'
+            order: 1
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Navan API client ID.
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            example: 3c1e9a42-****-****-****-********7f05
+            doc_section: '#step-1-create-api-credentials'
+        client_secret:
+            type: string
+            title: Secret Key
+            description: Your Navan API secret key.
+            pattern: '^[0-9a-fA-F]{32}$'
+            example: 9d2b************************41c6
+            secret: true
+            doc_section: '#step-1-create-api-credentials'
+
 neon:
     display_name: Neon
     categories:
@@ -18508,6 +18981,26 @@ optum-real:
             secret: true
             doc_section: '#step-2-get-your-credentials'
 
+oracle-aconex:
+    display_name: Oracle Aconex
+    categories:
+        - productivity
+        - storage
+    auth_mode: OAUTH2
+    authorization_url: https://constructionandengineering.oraclecloud.com/auth/authorize
+    token_url: https://constructionandengineering.oraclecloud.com/auth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.aconex.com
+    docs: https://nango.dev/docs/api-integrations/oracle-aconex
+    setup_guide_url: https://nango.dev/docs/api-integrations/oracle-aconex/how-to-register-your-own-oracle-aconex-oauth-app
+
 oracle-hcm:
     display_name: Oracle Fusion Cloud (HCM)
     categories:
@@ -19665,6 +20158,31 @@ pinterest:
         base_url: https://api.pinterest.com
     docs: https://nango.dev/docs/integrations/all/pinterest
 
+publora:
+    display_name: Publora
+    categories:
+        - marketing
+        - social
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.publora.com
+        headers:
+            x-publora-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/platform-connections
+    docs: https://nango.dev/docs/api-integrations/publora
+    docs_connect: https://nango.dev/docs/api-integrations/publora/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Publora API key.
+            pattern: '^sk_[a-z0-9]{8}(_[a-z0-9]{8})?\.[a-f0-9]{52}$'
+            example: sk_mrmbzomn_1a2b3c4d.964793af****************************************0ab
+            doc_section: '#step-1-creating-your-api-key'
+
 rocketlane:
     display_name: Rocketlane
     categories:
@@ -20115,6 +20633,32 @@ pleo-api-key:
             example: pls_********************************_620d75
             pattern: '^pl[sp]_[a-f0-9]+_[a-f0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
+
+pocket:
+    display_name: Pocket
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public.heypocketai.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/public/recordings?page=1&limit=1
+    docs: https://nango.dev/docs/api-integrations/pocket
+    docs_connect: https://nango.dev/docs/api-integrations/pocket/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Pocket account.
+            pattern: '^pk_[A-Za-z0-9_-]+$'
+            example: pk_*******************************************
+            doc_section: '#step-1-obtaining-your-api-key'
 
 podium:
     display_name: Podium
@@ -29919,6 +30463,7 @@ zoho:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
         accounts-server:
             type: string
@@ -29945,6 +30490,7 @@ zoho-books:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-crm:
@@ -29967,6 +30513,7 @@ zoho-crm:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-calendar:
@@ -30035,6 +30582,7 @@ zoho-inventory:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-invoice:
@@ -30056,6 +30604,7 @@ zoho-invoice:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-mail:
@@ -30080,6 +30629,7 @@ zoho-mail:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-bigin:
@@ -30101,6 +30651,7 @@ zoho-bigin:
                 - com.au
                 - com.cn
                 - jp
+                - uk
             optional: true
 
 zoho-people:
@@ -30147,6 +30698,7 @@ zoho-recruit:
                 - com.au
                 - com.cn
                 - jp
+                - uk
 
 zoom:
     display_name: Zoom

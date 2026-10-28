@@ -1,4 +1,4 @@
-import { configService, legacyFunctionService } from '@nangohq/shared';
+import { configService, functionLookupService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { toNangoFunction } from '../../../../../formatters/function.js';
@@ -33,7 +33,7 @@ export const getIntegrationTemplates = asyncWrapperWithEnvironment<GetIntegratio
     const all = flowService.getAllAvailableFlowsAsStandardConfig();
     const entry = all.find((value) => value.providerConfigKey === integration.provider);
 
-    const availabilityRows = await legacyFunctionService.findActiveFunctionAvailability({ environmentId: environment.id, providerConfigKey });
+    const availabilityRows = await functionLookupService.findActiveFunctionAvailability({ environmentId: environment.id, providerConfigKey });
     const availabilityByKey = new Map<string, FunctionAvailability>(
         availabilityRows.map((row) => [
             `${row.type}:${row.name}`,

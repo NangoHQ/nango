@@ -1,0 +1,37 @@
+---
+title: 'Freshservice (OAuth) - How do I link my account?'
+sidebarTitle: 'Freshservice (OAuth)'
+---
+
+## Overview
+
+To authenticate with Freshservice, you need:
+
+1. **Freshworks organization subdomain** — the subdomain of your Freshworks organization URL, used to log in.
+2. **Freshservice subdomain** — the subdomain of your Freshservice account, used for API calls.
+
+This guide will show you how to find them.
+
+### Prerequisites
+
+- A Freshservice account that belongs to a Freshworks organization.
+
+### Step 1: Find your Freshworks organization subdomain
+
+1. Sign in to your Freshworks account at [myfreshworks.com](https://www.myfreshworks.com/).
+2. Look at the URL in your browser's address bar. It follows the pattern `acme.myfreshworks.com`. Your organization subdomain is the part before `.myfreshworks.com`, such as `acme`.
+
+### Step 2: Find your Freshservice subdomain
+
+1. Sign in to Freshservice.
+2. Look at the URL in your browser's address bar. It follows the pattern `acme.freshservice.com`. Your Freshservice subdomain is the part before `.freshservice.com`, such as `acme`.
+
+### Step 3: Enter your details in the Connect UI
+
+1. Open the form where you need to authenticate with Freshservice.
+2. Enter your **Freshworks organization subdomain** and **Freshservice subdomain**.
+3. Click **Connect**, then log in to your Freshworks account and approve access.
+
+<img src="/api-integrations/freshservice-oauth/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Freshservice.

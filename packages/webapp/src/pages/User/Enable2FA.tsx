@@ -105,13 +105,16 @@ export const Enable2FA: React.FC = () => {
 
                                 {otpauthUri ? (
                                     <>
-                                        <div className="rounded-ds-xs border-ds-hairline border-border-default bg-white p-3">
+                                        <div className="ph-no-capture rounded-ds-xs border-ds-hairline border-border-default bg-white p-3">
                                             <QRCodeSVG value={otpauthUri} size={160} bgColor="#ffffff" fgColor="#000000" />
                                         </div>
                                         <div className="flex flex-col items-center gap-2">
                                             <span className="text-body-small-regular text-text-secondary">Can&apos;t scan? Enter this key manually:</span>
                                             {secret && (
-                                                <div className="flex items-center gap-1 rounded-ds-xs bg-surface-input px-2 py-1 font-mono text-ds-sm text-text-default">
+                                                <div
+                                                    className="flex items-center gap-1 rounded-ds-xs bg-surface-input px-2 py-1 font-mono text-ds-sm text-text-default"
+                                                    data-ph-mask
+                                                >
                                                     <span>{secret}</span>
                                                     <CopyButton text={secret.replace(/\s/g, '')} />
                                                 </div>

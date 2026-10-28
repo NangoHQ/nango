@@ -5,7 +5,9 @@ import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 import { envs } from '../../../../env.js';
 import { identifyAccountMembership } from '../../../../services/accountAnalytics.service.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
+import { isDisposableEmail } from '../../../../utils/disposableEmail.js';
 import { signupAcquisitionSchema } from '../../../../utils/signupAcquisition.js';
+import { signupAdvertisingFromRequest } from '../../../../utils/signupAdvertising.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
 import { isOAuthConsentReturnTo, safeReturnTo } from '../returnTo.js';
 
@@ -199,7 +201,11 @@ export async function finalizeManagedAuthentication({
         } else if (organizationId) {
             const organization = await workos.organizations.getOrganization(organizationId);
 
-            const resAccount = await accountService.getOrCreateAccount(organization.name, state?.acquisition);
+            const resAccount = await accountService.getOrCreateAccount(
+                organization.name,
+                state?.acquisition,
+                signupAdvertisingFromRequest(req, authorizedUser.email)
+            );
             if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;
@@ -213,7 +219,25 @@ export async function finalizeManagedAuthentication({
                 return;
             }
 
-            const resAccount = await accountService.createAccount({ name, email: authorizedUser.email, acquisition: state?.acquisition });
+            if (isDisposableEmail(authorizedUser.email)) {
+                clearManagedAuthEmailVerification(req);
+                req.audit = { ...req.audit, managedSignup: false };
+
+                const signinUrl = new URL('/signin', basePublicUrl);
+                signinUrl.searchParams.set('error', 'disposable_email');
+                if (state?.returnTo) {
+                    signinUrl.searchParams.set('next', state.returnTo);
+                }
+                respondWithSuccess(res, signinUrl.href, responseMode);
+                return;
+            }
+
+            const resAccount = await accountService.createAccount({
+                name,
+                email: authorizedUser.email,
+                acquisition: state?.acquisition,
+                advertising: signupAdvertisingFromRequest(req, authorizedUser.email)
+            });
             if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;

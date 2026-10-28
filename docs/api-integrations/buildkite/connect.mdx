@@ -1,0 +1,63 @@
+---
+title: 'Buildkite - How do I link my account?'
+sidebarTitle: 'Buildkite'
+---
+
+## Overview
+
+To authenticate with Buildkite, you need:
+
+1. **API Access Token** — a token that lets Nango call the Buildkite REST API on your behalf.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A Buildkite account that is a member of the organization you want to connect.
+
+### Step 1: Create an API access token
+
+1. Log in to [Buildkite](https://buildkite.com).
+2. Click your profile icon in the top-right corner, select **Personal Settings**, then select **API Access Tokens**.
+3. Click **New API Access Token** and enter a description.
+
+<img
+    src="/api-integrations/buildkite/api_access_token.png"
+    alt="Buildkite API Access Tokens page opened from Personal settings, with the New API Access Token button"
+/>
+
+4. Under **Organization Access**, select the organization you want to connect.
+5. Select the **REST API scopes** your integration needs, such as `read_organizations`, `read_pipelines`, and `read_builds`.
+6. Under **GraphQL API Access**, choose whether the token can call the Buildkite GraphQL API:
+    - **Disabled** — the token can't call the GraphQL API.
+    - **Read-only** — allows GraphQL queries but rejects mutations.
+    - **Full access** — allows GraphQL queries and mutations.
+
+    GraphQL access isn't limited by the REST API scopes above. It uses your user account's permissions in the selected organizations.
+
+7. Optionally, restrict where the token can be used from by entering IP ranges in CIDR notation under **Allowed IP Addresses**. If you do, add [Nango's public IP addresses](/guides/platform/security#ip-allowlist) so Nango can reach the Buildkite API.
+8. Under **Token Expiry**, select **Never** so the token doesn't expire. Tokens expire after seven days by default, and an expired token breaks the connection.
+
+<img
+    src="/api-integrations/buildkite/api_key_form.png"
+    alt="Buildkite New API Access Token form with Description, Organization Access, Token Expiry, and REST API Scopes"
+/>
+
+9. Click **Create New API Access Token** and copy the token. It starts with `bkua_`.
+
+<img src="/api-integrations/buildkite/generated_api_key.png" alt="Buildkite confirmation page showing the newly created API access token" />
+
+<Note>
+    Buildkite only shows the token once. Save it somewhere secure before leaving the page. If you set an expiry, you'll need to create a new token and reconnect
+    when it expires.
+</Note>
+
+### Step 2: Enter your token in the Connect UI
+
+1. Open the form where you need to authenticate with Buildkite.
+2. Enter your **API Access Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/buildkite/form.png" alt="Nango Connect UI form with the Buildkite API Access Token field" style={{ maxWidth: '450px' }} />
+
+You are now connected to Buildkite.
