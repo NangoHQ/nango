@@ -63,7 +63,7 @@ The most sensitive thing Nango stores is your end users' connection credentials 
 
 ## Observability & support
 
-Everything is visible to you, and only you — the dashboard, the audit trail, your logs, your metrics. Nango has no visibility into your instance unless you choose to share something with us.
+Everything is visible to you, and only you — the dashboard, the audit trail, your logs, your metrics. Nango has no visibility into your instance beyond [hosted telemetry](#hosted-telemetry), unless you choose to share something with us.
 
 Support follows your contract's SLA. Reach out through your support channel with what you're seeing (logs, dashboard state, error messages) — we can't look at your instance ourselves.
 
@@ -658,7 +658,7 @@ Both apply to the API and to runners, and are passed to Kubernetes and Lambda ru
 
 ### Telemetry
 
-Self-hosted instances do not automatically send telemetry back to Nango. Operational metrics and logs stay within your own infrastructure and are only exported if you configure the OpenTelemetry Export add-on.
+Apart from [hosted telemetry](#hosted-telemetry), self-hosted instances do not send telemetry back to Nango. Operational metrics and logs stay within your own infrastructure and are only exported if you configure the OpenTelemetry Export add-on.
 
 ### Logs
 
@@ -703,6 +703,6 @@ If `NANGO_LOGS_ENABLED` is `false`, logs are sent to stdout and can be viewed in
     Not out of the box — the default configuration scales far without it, and we can guide you on setting up autoscaling when you need it.
   </Accordion>
   <Accordion title="Does Nango have any visibility into our instance?">
-    None. Self-hosted instances send nothing back to Nango automatically. If you need our help debugging something, you share what's relevant with us directly.
+    Only [hosted telemetry](#hosted-telemetry), which is anonymous usage metrics. Nothing else is sent back to Nango. If you need our help debugging something, you share what's relevant with us directly.
   </Accordion>
 </AccordionGroup>
