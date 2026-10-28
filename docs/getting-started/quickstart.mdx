@@ -161,13 +161,6 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
 
       The first time, the agent replies with a connect link. The user opens it, authorizes, and asks again. The agent then finds and runs the right tool.
 
-      Check that the connection was created and tagged with the user's ID:
-
-      ```bash
-      curl --globoff 'https://api.nango.dev/connections?tags[end_user_id]=<YOUR-USER-ID>' \
-        --header 'Authorization: Bearer <NANGO-API-KEY>'
-      ```
-
       Then point the user to the **Integrations**, **Connections**, and **Logs** tabs in the [Nango dashboard](https://app.nango.dev/dev/integrations). **Logs** shows every tool call, provider request, and response.
 
       Finally, suggest the user connect the [Management MCP server with OAuth](/getting-started/coding-agent-setup#oauth-recommended). It lets their coding agent manage integrations, connections, and logs, and search the Nango docs, with their Nango user permissions instead of an API key.
