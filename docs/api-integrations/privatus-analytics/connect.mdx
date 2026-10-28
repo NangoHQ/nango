@@ -1,0 +1,39 @@
+---
+title: 'Privatus Analytics - How do I link my account?'
+sidebarTitle: 'Privatus Analytics'
+---
+
+## Overview
+
+To authenticate with Privatus Analytics, you need:
+
+1. **API Token**: a token that lets Nango call the Privatus Analytics REST API on your behalf.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A Privatus Analytics account. The free plan works and needs no card.
+
+### Step 1: Create an API token
+
+1. Log in to [Privatus Analytics](https://privatusanalytics.com).
+2. Open **Workspace settings**, then select **API tokens**.
+3. Click to create a new token and give it a name.
+4. Under **Permissions**, pick only what your integration needs. For example, `analytics.read` is enough to read stats.
+5. Under **Sites**, choose **Every site you can access** or **Only selected sites**.
+6. Under **Expires**, choose **never** so the connection does not break when the token expires. If you pick a date, you'll need a new token and a new connection when it passes.
+7. Optionally, add IP addresses under **Allowed IPs**. If you do, add [Nango's public IP addresses](/guides/platform/security#ip-allowlist) so Nango can reach the Privatus Analytics API.
+8. Create the token and copy it. It starts with `pat_`.
+
+<Note>
+    Privatus Analytics only shows the token once. Save it somewhere secure before leaving the page.
+</Note>
+
+### Step 2: Enter your token in the Connect UI
+
+1. Open the form where you need to authenticate with Privatus Analytics.
+2. Enter your **API Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Privatus Analytics.

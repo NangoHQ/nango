@@ -1780,6 +1780,7 @@
               "integrations/all/private-api-basic",
               "integrations/all/private-api-bearer",
               "integrations/all/private-api-generic",
+              "api-integrations/privatus-analytics",
               "integrations/all/prive",
               "api-integrations/procore",
               "integrations/all/productboard",

@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1075
+Provider count: 1076
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -744,6 +744,7 @@ URL patterns:
 | `private-api-basic` | Private API (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/private-api-basic.md) | [connect](https://nango.dev/docs/integrations/all/private-api-basic/connect.md) |  | other |
 | `private-api-bearer` | Private API (Bearer Auth) | API_KEY | [docs](https://nango.dev/docs/integrations/all/private-api-bearer.md) | [connect](https://nango.dev/docs/integrations/all/private-api-bearer/connect.md) |  | other |
 | `private-api-generic` | Private API (Generic) | API_KEY | [docs](https://nango.dev/docs/integrations/all/private-api-generic.md) | [connect](https://nango.dev/docs/integrations/all/private-api-generic/connect.md) |  | other |
+| `privatus-analytics` | Privatus Analytics | API_KEY | [docs](https://nango.dev/docs/api-integrations/privatus-analytics.md) | [connect](https://nango.dev/docs/api-integrations/privatus-analytics/connect.md) |  | analytics |
 | `prive` | Prive | API_KEY | [docs](https://nango.dev/docs/integrations/all/prive.md) | [connect](https://nango.dev/docs/integrations/all/prive/connect.md) |  | e-commerce |
 | `procore` | Procore | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/procore.md) | [connect](https://nango.dev/docs/api-integrations/procore/connect.md) | [setup](https://nango.dev/docs/api-integrations/procore/how-to-register-your-own-procore-oauth-app.md) | erp |
 | `productboard` | Productboard | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/productboard.md) |  |  | productivity |
