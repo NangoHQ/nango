@@ -607,7 +607,7 @@ describe('Public environment API key management', () => {
                 method: 'PATCH',
                 token: accountKey.secret,
                 params: { environmentUuid: env.uuid, keyUuid: key.uuid },
-                body: { scopes: ['environment:actions:execute'] }
+                body: { scopes: ['environment:actions:execute'] as ApiKeyScope[] }
             });
 
             expect(res.res.status).toBe(200);

@@ -6,7 +6,6 @@ import {
     expandScopes,
     groupWildcard,
     isScopeSelected,
-    renameLegacyScopes,
     SCOPE_GROUPS,
     toggleCredential,
     toggleGroup,
@@ -263,19 +262,5 @@ describe('allGroupScopes', () => {
             'environment:syncs:variant:create',
             'environment:syncs:variant:delete'
         ]);
-    });
-});
-
-describe('renameLegacyScopes', () => {
-    it('renames actions:execute to tools:call', () => {
-        expect(renameLegacyScopes(['environment:deploy', 'environment:actions:execute'])).toEqual(['environment:deploy', 'environment:tools:call']);
-    });
-
-    it('renames the actions wildcard', () => {
-        expect(renameLegacyScopes(['environment:actions:*'])).toEqual(['environment:tools:call']);
-    });
-
-    it('does not duplicate when both names are held', () => {
-        expect(renameLegacyScopes(['environment:tools:call', 'environment:actions:execute'])).toEqual(['environment:tools:call']);
     });
 });

@@ -1,12 +1,11 @@
 import * as z from 'zod';
 
-import { isEnvironmentScopeSelector } from '@nangohq/authz';
 import db from '@nangohq/database';
 import { CustomerKeyError, customerKeyService, environmentService } from '@nangohq/shared';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { renameDeprecatedScopes } from '../shared/environments/apiKeyScopes.js';
+import { apiKeyScopeSchema, renameDeprecatedScopes } from '../shared/environments/apiKeyScopes.js';
 
 import type { ApiKeyScope, PatchPublicApiKey } from '@nangohq/types';
 
@@ -15,10 +14,7 @@ const validationParams = z.object({ environmentUuid: z.uuid(), keyUuid: z.uuid()
 const validationBody = z
     .object({
         display_name: z.string().min(1).max(255).optional(),
-        scopes: z
-            .array(z.custom<ApiKeyScope>(isEnvironmentScopeSelector, { error: (issue) => `Unknown scope: ${String(issue.input)}` }))
-            .nonempty('At least one scope is required when scopes are provided')
-            .optional()
+        scopes: z.array(apiKeyScopeSchema).nonempty('At least one scope is required when scopes are provided').optional()
     })
     .strict()
     .refine((data) => data.display_name !== undefined || data.scopes !== undefined, { message: 'At least one of display_name or scopes is required' });

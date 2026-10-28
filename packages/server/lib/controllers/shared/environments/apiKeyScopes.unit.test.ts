@@ -2,7 +2,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { metrics } from '@nangohq/utils';
 
-import { renameDeprecatedScopes } from './apiKeyScopes.js';
+import { apiKeyScopeSchema, renameDeprecatedScopes } from './apiKeyScopes.js';
+
+describe('apiKeyScopeSchema', () => {
+    it.each(['environment:tools:call', 'environment:actions:execute', 'environment:actions:*', 'environment:*'])('accepts %s', (scope) => {
+        expect(apiKeyScopeSchema.safeParse(scope).success).toBe(true);
+    });
+
+    it.each(['environment:actions:nope', 'environment:settings:read', 'account:*'])('rejects %s', (scope) => {
+        expect(apiKeyScopeSchema.safeParse(scope).success).toBe(false);
+    });
+});
 
 describe('renameDeprecatedScopes', () => {
     afterEach(() => {

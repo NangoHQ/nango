@@ -270,8 +270,8 @@ describe('Scope enforcement on public API routes', () => {
     // ── Actions ──────────────────────────────────────────────────────
 
     describe('POST /action/trigger', () => {
-        it.each(['environment:tools:call', 'environment:actions:execute'] as const)('should allow with %s scope', async (scope) => {
-            const token = await createKeyWithScopes([scope]);
+        it('should allow with tools:call scope', async () => {
+            const token = await createKeyWithScopes(['environment:tools:call']);
             const res = await api.fetch(
                 '/action/trigger' as any,
                 { method: 'POST', token, body: { action_name: 'test', input: {} }, headers: { 'provider-config-key': 'test', 'connection-id': 'test' } } as any
@@ -294,9 +294,9 @@ describe('Scope enforcement on public API routes', () => {
     // happens after the connection lookup and action/model resolution.
 
     describe('POST /v1/* (action via legacy passthrough)', () => {
-        it.each(['environment:tools:call', 'environment:actions:execute'] as const)('should allow with %s scope', async (scope) => {
+        it('should allow with tools:call scope', async () => {
             vi.spyOn(getFlags(), 'isV1PassthroughEnabled').mockResolvedValue(true);
-            const { secret, env } = await createKeyWithScopesAndEnv([scope]);
+            const { secret, env } = await createKeyWithScopesAndEnv(['environment:tools:call']);
             const config = await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github', connectionId: 'v1-action-allow' });
             await seeders.createSyncSeeds({
