@@ -6309,6 +6309,89 @@ codegen:
             example: 'sk-897bd628-de64-4018-8e3b-c6f717ca3e1d'
             doc_section: '#step-1-finding-your-api-key'
 
+command-alkon:
+    display_name: Command Alkon
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.hostname}/v4/services/authnz/${connectionConfig.entityRef}/api/login
+    token_headers:
+        content-type: application/json
+        x-api-key: ${credentials.apiKey}
+    token_params:
+        clientId: ${credentials.clientId}
+        clientSecret: ${credentials.clientSecret}
+        apiScopeRef: ${credentials.apiScopeRef}
+    additional_steps:
+        - token_url: https://${connectionConfig.hostname}/v4/services/authnz/${connectionConfig.entityRef}/api/tokens/refresh-access-token
+          token_request_method: GET
+          token_headers:
+              x-api-key: ${credentials.apiKey}
+              authorization: Bearer ${step1.refresh_token}
+    token_response:
+        token: access_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            x-api-key: ${credentials.apiKey}
+    docs: https://nango.dev/docs/api-integrations/command-alkon
+    docs_connect: https://nango.dev/docs/api-integrations/command-alkon/connect
+    connection_config:
+        hostname:
+            type: string
+            title: API Hostname
+            description: The API hostname of your CONNEX environment.
+            default_value: api.us.commandalkon.io
+            enum:
+                - api.us.commandalkon.io
+                - api.eu.commandalkon.io
+                - api.cc2-eu.commandalkon.io
+                - api.cc2-apacn.commandalkon.io
+                - api.cc2-apacs.commandalkon.io
+                - api.cc2-latam.commandalkon.io
+            prefix: https://
+            doc_section: '#step-1-find-your-api-hostname'
+            order: 1
+        entityRef:
+            type: string
+            title: Entity Ref
+            description: The entityRef (GUID) of your CONNEX site.
+            example: 3f25****-****-****-****-********3301
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            doc_section: '#step-2-get-your-api-credentials'
+            order: 2
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The x-api-key Command Alkon issued for your site.
+            example: 3f9a1c2e****************************7b4d
+            pattern: '^[a-f0-9]{40}$'
+            secret: true
+            doc_section: '#step-2-get-your-api-credentials'
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Command Alkon API client ID.
+            example: 3f9a1c2e****************************7b4d#5c8e************************a91f
+            pattern: '^[a-f0-9]{40}#[a-f0-9]{32}$'
+            doc_section: '#step-2-get-your-api-credentials'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Command Alkon API client secret.
+            example: 5d2e8b1a********************************************************c47e****
+            pattern: '^[a-f0-9]{64}\S*$'
+            secret: true
+            doc_section: '#step-2-get-your-api-credentials'
+        apiScopeRef:
+            type: string
+            title: API Scope Ref
+            description: The apiScopeRef assigned to your API credentials.
+            example: 6b1c****-****-****-****-********d5e2
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            doc_section: '#step-2-get-your-api-credentials'
+
 commercetools:
     display_name: Commercetools
     categories:
@@ -17131,6 +17214,31 @@ modjo-ai:
                 - /v1/users?page=1&perPage=1
     docs: https://nango.dev/docs/api-integrations/modjo-ai
     docs_connect: https://nango.dev/docs/api-integrations/modjo-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Modjo AI API key.
+            doc_section: '#step-1-generate-your-api-key'
+
+modjo-ai-v2:
+    display_name: Modjo AI (v2)
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.modjo.ai
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            endpoints:
+                - /v2/users?page=1&size=1
+    docs: https://nango.dev/docs/api-integrations/modjo-ai-v2
+    docs_connect: https://nango.dev/docs/api-integrations/modjo-ai-v2/connect
     credentials:
         apiKey:
             type: string
