@@ -49,7 +49,11 @@ const close = once(() => {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     api.close(async () => {
         await db.knex.destroy();
+
         logger.close();
+
+        console.info('Closed');
+
         await metrics.flush();
         process.exit();
     });
