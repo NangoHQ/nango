@@ -20998,6 +20998,31 @@ private-api-generic:
             type: string
             title: API Key
             description: Your API Key
+
+privatus-analytics:
+    display_name: Privatus Analytics
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://privatusanalytics.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /workspaces.json
+    docs: https://nango.dev/docs/api-integrations/privatus-analytics
+    docs_connect: https://nango.dev/docs/api-integrations/privatus-analytics/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Privatus Analytics API token
+            pattern: '^pat_[A-Za-z0-9_-]{43}$'
+            example: pat_q3Xv8kLm2NpR7sTw9YzA1bC4dE6fG0hJ5kM8nP2rS4u
+            doc_section: '#step-1-create-an-api-token'
+
 precisefp:
     display_name: PreciseFP
     categories:
