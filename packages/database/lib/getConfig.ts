@@ -29,3 +29,10 @@ export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
         searchPath: [defaultSchema, 'public', ...additionalSchemas]
     };
 }
+
+export function getDbConfigIfSet({ timeoutMs }: { timeoutMs: number }): Knex.Config | undefined {
+    if (!process.env['NANGO_DATABASE_URL'] && !process.env['NANGO_DB_HOST']) {
+        return undefined;
+    }
+    return getDbConfig({ timeoutMs });
+}

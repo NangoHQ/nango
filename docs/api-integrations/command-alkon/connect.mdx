@@ -1,0 +1,36 @@
+---
+title: 'Command Alkon - How do I link my account?'
+sidebarTitle: 'Command Alkon'
+---
+
+## Overview
+
+To connect with Command Alkon CONNEX, you need these credentials:
+
+1. **API Hostname** — the API host for your CONNEX environment, such as `api.us.commandalkon.io`.
+2. **Entity Ref** — the GUID of your CONNEX site.
+3. **API Key** — sent as the `x-api-key` header on every request.
+4. **Client ID**, **Client Secret**, and **API Scope Ref** — used to get access tokens.
+
+Credentials are issued per site. If you have several sites, create one connection for each.
+
+### Step 1: Find your API hostname
+
+Your API hostname depends on where your CONNEX environment is hosted. Find it from the address you use to log in to CONNEX. If you log in at `connex.us.commandalkon.io`, your API hostname is `api.us.commandalkon.io`.
+
+### Step 2: Get your API credentials
+
+Command Alkon issues API credentials when you sign up for API access. They aren't available in the CONNEX app.
+
+1. Contact your Command Alkon representative or [Command Alkon support](https://developer.commandalkon.io/) to request API access for your site.
+2. Command Alkon sends you the API key, entity ref, client ID, client secret, and API scope ref. Store them securely.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Command Alkon.
+2. Select your **API Hostname** and enter your **Entity Ref**, **API Key**, **Client ID**, **Client Secret**, and **API Scope Ref**.
+3. Click **Connect**.
+
+<img src="/api-integrations/command-alkon/form.png" alt="Nango Connect UI form for entering Command Alkon API credentials" style={{maxWidth: "450px" }}/>
+
+You are now connected to Command Alkon.

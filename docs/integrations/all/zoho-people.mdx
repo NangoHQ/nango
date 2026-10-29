@@ -13,6 +13,10 @@ import SetupGuide from "/snippets/zoho-shared/zoho-shared-setup-guide.mdx"
     <Steps>
       <Step title="Create an integration">
         In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Zoho_.
+
+        <Note>
+          Nango has a [Nango-managed OAuth app](/guides/auth/auth-guide#nango-managed-oauth-apps) you can use in development and production. Select it when you create the integration.
+        </Note>
       </Step>
       <Step title="Authorize Zoho People">
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Zoho People. Later, you'll let your users do the same directly from your app.
@@ -98,7 +102,7 @@ import SetupGuide from "/snippets/zoho-shared/zoho-shared-setup-guide.mdx"
   - Zoho uses datacenter-specific URLs for authentication. Make sure to use the correct datacenter domain extension (`com`, `eu`, `in`, `com.cn`, `com.au`) based on where your user's account is registered.
   - For production applications, consider implementing [multi-datacenter support](https://www.zoho.com/accounts/protocol/oauth/multi-dc.html) to handle users from different regions.
   - For specific scopes, refer to the API documentation pages to find the exact scopes needed per API and per method. 
-  - Zoho People requires a partnership to deploy to production.
+  - If you register your own OAuth app, Zoho People requires a partnership to deploy it to production. This doesn't apply to the Nango-managed OAuth app.
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/zoho-people.mdx)</Note>
   </Tab>

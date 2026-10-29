@@ -2,7 +2,7 @@ import { setTimeout } from 'node:timers/promises';
 
 import knex from 'knex';
 
-import { getDbConfig } from '@nangohq/database';
+import { getDbConfig, getDbConfigIfSet } from '@nangohq/database';
 import { flags, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -19,16 +19,25 @@ const TIMED_OUT = Symbol('timed out');
 let instance: Knex | undefined;
 
 /**
- * Self-hosted and BYOC turn hosted telemetry on with a flag. It gets a pool of its own, to the main database
- * unless a URL moves it, so a flush never waits on request traffic and never holds a connection it needs.
+ * On by default outside cloud. It gets a pool of its own, to the main database unless a URL moves it, so a flush never
+ * waits on request traffic and never holds a connection it needs. With neither configured, recording does nothing.
  */
 export function hostedTelemetryDb(): Knex | undefined {
     if (!flags.hasHostedTelemetry) {
         return undefined;
     }
+    if (instance) {
+        return instance;
+    }
+
     const url = envs.NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL;
-    const base = getDbConfig({ timeoutMs: 60_000 });
-    instance ??= knex({
+    const base = url ? getDbConfig({ timeoutMs: 60_000 }) : getDbConfigIfSet({ timeoutMs: 60_000 });
+    if (!base) {
+        logger.warning('Hosted telemetry is enabled but no database is configured, recording nothing');
+        return undefined;
+    }
+
+    instance = knex({
         ...base,
         ...(url && {
             connection: {

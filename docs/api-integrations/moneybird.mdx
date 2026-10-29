@@ -10,9 +10,13 @@ Connect to Moneybird with Nango and see data flow in 2 minutes.
 
 <Steps>
     <Step id="create-integration" title="Create the integration">
-    In Nango, go to **Integrations**, select **Configure New Integration**, then select **Moneybird**. Enter the Client ID and Client Secret from your Moneybird OAuth application.
+    In Nango, go to **Integrations**, select **Configure New Integration**, then select **Moneybird**. To use your own Moneybird OAuth application instead of the Nango-managed one, enter its Client ID and Client Secret.
 
     If you do not specify scopes, Moneybird grants `sales_invoices` by default.
+
+    <Note>
+      Nango has a [Nango-managed OAuth app](/guides/auth/auth-guide#nango-managed-oauth-apps) you can use in development and production. Select it when you create the integration.
+    </Note>
     </Step>
     <Step id="authorize-moneybird" title="Authorize Moneybird">
     Go to **Connections**, select **Add Test Connection**, then authorize access in Moneybird. Moneybird redirects back to Nango and Nango stores the access and refresh tokens for the connection.
@@ -56,7 +60,7 @@ Connect to Moneybird with Nango and see data flow in 2 minutes.
     <Step id="implement-nango" title="Implement Nango in your app">
     Follow the [Auth implementation guide](/guides/auth/auth-guide) to add the authorization flow to your application.
 
-    To obtain your own production credentials, follow the setup guide linked below.
+    To obtain your own credentials, follow the setup guide linked below.
     </Step>
 </Steps>
 

@@ -1,0 +1,77 @@
+---
+title: 'Zscaler (OneAPI) - How do I link my account?'
+sidebarTitle: 'Zscaler (OneAPI)'
+---
+
+## Overview
+
+To connect with Zscaler OneAPI, you need:
+
+1. **Vanity Domain**, **Authentication Domain**, and **API Host** — where your tenant logs in and which Zscaler cloud it runs on.
+2. **Client ID** and **Client Secret** — from an API client you create in ZIdentity.
+3. **ZPA Customer ID** — your Zscaler Private Access (ZPA) tenant ID, used in ZPA API paths.
+
+### Prerequisites
+
+- A Zscaler tenant on ZIdentity, with a OneAPI subscription.
+- An Authentication Service (ZIdentity) admin with full permission on the **API Clients** and **API Resources** modules.
+
+### Step 1: Find your vanity domain and cloud
+
+Look at the address you use to log in to ZIdentity, such as `acme.zslogin.net`:
+
+- Your **vanity domain** is the part before the first dot, such as `acme`.
+- The rest of the address, such as `zslogin.net`, tells you which Zscaler cloud your tenant runs on. Pick the matching **Authentication Domain** and **API Host** from the table:
+
+| Zscaler cloud | Login address | Authentication Domain | API Host |
+| - | - | - | - |
+| Production (commercial) | `<vanity>.zslogin.net` | `zslogin.net` | `api.zsapi.net` |
+| Beta | `<vanity>.zsloginbeta.net` | `zsloginbeta.net` | `api.beta.zsapi.net` |
+| Government (FedRAMP, `.net`) | `<vanity>.zidentitygov.net` | `zidentitygov.net` | `api.zscalergov.net` |
+| Government (FedRAMP, `.us`) | `<vanity>.zidentitygov.us` | `zidentitygov.us` | `api.zscalergov.us` |
+
+Most tenants are on production, which is the default. Always pick the Authentication Domain and API Host from the same row.
+
+<Note>Zscaler doesn't offer a self-hosted OneAPI. Every tenant runs on one of the Zscaler clouds above.</Note>
+
+### Step 2: Create an API client
+
+<Note>Before you create the API client, add an API role in each Zscaler service you want to access, such as Internet & SaaS (ZIA) and Private Access (ZPA). These roles sync to the Authentication Service and appear as scopes on the API client. Without them, you can't assign resources to the client.</Note>
+
+1. In the Zscaler Admin Console, go to **Administration** > **API** > **API Clients**.
+2. Click **Add API Client** and select **New Client**.
+3. On the **Client** tab, fill in:
+   - **Name** and **Description**
+   - **Status** — enable it so the client can get access tokens.
+   - **Access Token Validity** — in minutes, between 1 minute and 24 hours.
+   - **Grant Types** — select **Client Credentials**.
+
+<img src="/api-integrations/zscaler/add_api_client.png" alt="Zscaler Add API Client page with the Client tab open" style={{maxWidth: "500px" }}/>
+
+4. Under **Client Authentication**, select **Secret** and click **Add**. Copy the secret now, as it isn't shown again. A secret is valid for 30 to 365 days.
+
+<img src="/api-integrations/zscaler/secret.png" alt="Zscaler Client Authentication section with a client secret added" style={{maxWidth: "500px" }}/>
+
+5. On the **Resources** tab, select the API resource (scope) for each Zscaler service the client can access, such as a read-only ZIA role and a read-only ZPA role.
+
+<img src="/api-integrations/zscaler/resources.png" alt="Zscaler Resources tab listing the scopes for each Zscaler service" style={{maxWidth: "500px" }}/>
+
+6. Click **Save**.
+7. Copy the **Client ID** from the **API Clients** page. You can also find it in the client's **Edit API Client** drawer.
+
+<img src="/api-integrations/zscaler/edit_client.png" alt="Zscaler Edit API Client page showing the Client ID field" style={{maxWidth: "500px" }}/>
+
+### Step 3: Find your ZPA customer ID
+
+In the ZPA admin console, go to **Configuration & Control** > **Public API** > **API Keys**. Your customer ID is shown on that page.
+
+### Step 4: Enter your details in the Connect UI
+
+1. Open the form where you need to authenticate with Zscaler.
+2. Enter your **Vanity Domain**, select your **Authentication Domain** and **API Host**, and enter your **ZPA Customer ID**, **Client ID**, and **Client Secret**.
+3. Click **Connect**.
+
+<img src="/api-integrations/zscaler/form.png" style={{maxWidth: "450px" }} />
+
+
+You are now connected to Zscaler.
