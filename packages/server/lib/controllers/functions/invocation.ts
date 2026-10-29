@@ -2,10 +2,10 @@ import { report } from '@nangohq/utils';
 
 import { sendFunctionFailure } from './errors.js';
 
-import type { invokeFunction } from '@nangohq/shared';
+import type { FunctionInvocation } from '@nangohq/shared';
 import type { Response } from 'express';
 
-export function sendFunctionInvocationResult({ res, result }: { res: Response; result: Awaited<ReturnType<typeof invokeFunction>> }): void {
+export function sendFunctionInvocationResult({ res, result }: { res: Response; result: FunctionInvocation['result'] }): void {
     if (result.isOk()) {
         if ('statusUrl' in result.value) {
             res.setHeader('X-Nango-Invocation-Id', result.value.id);
@@ -38,7 +38,7 @@ export function sendFunctionInvocationResult({ res, result }: { res: Response; r
             res.status(500).send({ error: { code: result.error.code, message: result.error.message } });
             return;
         default:
-            return ((_exhaustiveCheck: never) => {
+            return void ((_exhaustiveCheck: never) => {
                 res.status(500).send({ error: { code: 'server_error', message: 'Unknown invocation failure' } });
             })(result.error.code);
     }
