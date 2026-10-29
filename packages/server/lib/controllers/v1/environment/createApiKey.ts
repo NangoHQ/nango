@@ -5,6 +5,7 @@ import { productTracking } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
+import { renameDeprecatedScopes } from '../../shared/environments/apiKeyScopes.js';
 import { handleCreateApiKey } from '../../shared/environments/postApiKey.js';
 
 import type { ApiKeyScope, CreateApiKey } from '@nangohq/types';
@@ -35,7 +36,13 @@ export const createApiKey = asyncWrapperWithEnvironment<CreateApiKey>(async (req
     const { environment, account } = res.locals;
     const { display_name: displayName, scopes } = valBody.data;
 
-    const created = await handleCreateApiKey({ res, accountId: account.id, environmentId: environment.id, displayName, scopes });
+    const created = await handleCreateApiKey({
+        res,
+        accountId: account.id,
+        environmentId: environment.id,
+        displayName,
+        scopes: scopes && renameDeprecatedScopes(scopes, account.id)
+    });
     if (created) {
         productTracking.track({ name: 'environments:environment_update', eventProperties: { section: 'api_keys' } });
     }

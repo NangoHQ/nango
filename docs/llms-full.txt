@@ -7194,6 +7194,8 @@ Validate webhooks from Nango by looking at the `X-Nango-Hmac-Sha256` header.
 
 It's an HMAC-SHA256 hash of the webhook payload, using the webhook signing key found in **Environment Settings > Webhooks > Signing key** in the Nango UI.
 
+Nango generates the key for each environment. To choose your own, pass a UUID as `webhooks.signing_key` when you [create the environment](/reference/backend/http-api/environments/create) with the API.
+
 <Warning>
 Nango webhook requests include an `X-Nango-Hmac-Sha256` header for secure verification. A legacy `X-Nango-Signature` header (using plain SHA-256) is also sent for backwards compatibility but should not be used. If you're currently using `X-Nango-Signature`, migrate to `X-Nango-Hmac-Sha256` for improved security.
 </Warning>
@@ -10175,7 +10177,7 @@ For backend services that consume data, trigger actions, and proxy requests:
 |-------|
 | `environment:connections:read` |
 | `environment:records:read` |
-| `environment:actions:execute` |
+| `environment:tools:call` |
 | `environment:syncs:execute` |
 | `environment:proxy` |
 
@@ -10298,11 +10300,11 @@ The **Default - Full access** key that comes with each environment already has a
     The `environment:logs:read` scope is currently only used by the [Logs tools in the Management MCP server](/reference/backend/management-mcp#logs).
 </Note>
 
-#### Actions
+#### Tools
 
 | Scope | Description |
 |-------|-------------|
-| `environment:actions:execute` | Trigger actions and read action results |
+| `environment:tools:call` | Call tools, trigger actions and read action results |
 
 #### Proxy
 
@@ -10486,7 +10488,11 @@ Creates a new environment. Additional environments are limited by your [pricing 
 
 Set `is_production: true` to create a production environment. This also requires `account:environments:set_production`. The reserved name `prod` is always production and cannot be combined with `is_production: false`.
 
-Pass `webhooks` to configure URLs and subscriptions. Nango generates a webhook signing key for the new environment. See [Receive webhooks from Nango](/guides/platform/webhooks-from-nango) for delivery behavior, event types, and signature verification.
+Pass `webhooks` to configure URLs and subscriptions. Set `webhooks.signing_key` to choose the environment's webhook signing key. See [Receive webhooks from Nango](/guides/platform/webhooks-from-nango) for delivery behavior, event types, and signature verification.
+
+`webhooks.signing_key` must be a UUID v4. You should generate it using a cryptographically secure random generator, such as `crypto.randomUUID()`. The security of a supplied key depends on how you generate and protect it; Nango validates its format but cannot verify its randomness.
+
+If omitted, Nango generates a secure random signing key.
 
 The response returns the complete environment settings, including the plaintext webhook signing key and environment `uuid`. Use the `uuid` to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
 
@@ -11463,7 +11469,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/sync/delete-variant.md
 Source: https://nango.dev/docs/reference/backend/http-api/action/trigger.md
 
 <Info>
-  Requires an API key with the `environment:actions:execute` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+  Requires an API key with the `environment:tools:call` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
 ## Proxy - GET requests
@@ -14174,7 +14180,7 @@ Use the Actions tool to trigger an action function synchronously for a connectio
 
 | Tool              | Description                                                | Additional permission          |
 | ----------------- | ---------------------------------------------------------- | ------------------------------ |
-| `actions_trigger` | Trigger an action function synchronously for a connection. | `environment:actions:execute`  |
+| `actions_trigger` | Trigger an action function synchronously for a connection. | `environment:tools:call`  |
 
 ### Syncs
 
@@ -14198,7 +14204,7 @@ Tools are functions that can be called on demand: HTTP-triggered functions, depl
 | Tool                    | Description                                                                   | Additional permission        |
 | ----------------------- | ----------------------------------------------------------------------------- | ---------------------------- |
 | `functions_list`        | List and filter available functions by integration, including Nango catalog actions. | `environment:functions:list` |
-| `tools_call`            | Call an enabled tool of an integration synchronously for a connection.        | `environment:functions:invocations`, `environment:actions:execute` |
+| `tools_call`            | Call an enabled tool of an integration synchronously for a connection.        | `environment:tools:call`     |
 | `deploy_template`       | Deploy a function template.                                                   | `environment:deploy`         |
 | `get_deployment_status` | Retrieve a deployment's current status and result.                            | `environment:deploy`         |
 
@@ -16387,6 +16393,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `crisp-plugin-install` | Crisp (Plugin Install) | INSTALL_PLUGIN | [docs](https://nango.dev/docs/api-integrations/crisp-plugin-install.md) |  | [setup](https://nango.dev/docs/api-integrations/crisp-plugin-install/how-to-register-your-own-crisp-plugin.md) | communication, support |
 | `crowdstrike` | CrowdStrike | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/crowdstrike.md) | [connect](https://nango.dev/docs/integrations/all/crowdstrike/connect.md) |  | dev-tools |
 | `crunchbase` | Crunchbase | API_KEY | [docs](https://nango.dev/docs/api-integrations/crunchbase.md) | [connect](https://nango.dev/docs/api-integrations/crunchbase/connect.md) |  | crm |
+| `crustdata` | Crustdata | API_KEY | [docs](https://nango.dev/docs/api-integrations/crustdata.md) | [connect](https://nango.dev/docs/api-integrations/crustdata/connect.md) |  | crm, marketing |
+| `crustdata-mcp` | Crustdata (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/crustdata-mcp.md) |  |  | crm, mcp |
 | `cursor` | Cursor | API_KEY | [docs](https://nango.dev/docs/integrations/all/cursor.md) | [connect](https://nango.dev/docs/integrations/all/cursor/connect.md) |  | dev-tools |
 | `cursor-admin` | Cursor Admin | BASIC | [docs](https://nango.dev/docs/integrations/all/cursor-admin.md) | [connect](https://nango.dev/docs/integrations/all/cursor-admin/connect.md) |  | dev-tools |
 | `customer-io` | Customer.io | BASIC | [docs](https://nango.dev/docs/api-integrations/customer-io.md) | [connect](https://nango.dev/docs/api-integrations/customer-io/connect.md) |  | marketing, analytics |

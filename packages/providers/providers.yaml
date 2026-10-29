@@ -7921,6 +7921,71 @@ crunchbase:
             pattern: '^[a-zA-Z0-9]{32}$'
             example: 0f9c************************5336
 
+crustdata:
+    display_name: Crustdata
+    categories:
+        - crm
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.crustdata.com
+        headers:
+            authorization: Bearer ${apiKey}
+            x-api-version: ${connectionConfig.version} || 2025-11-01
+        retry:
+            after:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            endpoints:
+                - /account/credits
+    docs: https://nango.dev/docs/api-integrations/crustdata
+    docs_connect: https://nango.dev/docs/api-integrations/crustdata/connect
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Crustdata API key.
+            example: cd_dc06****************************1957
+            pattern: '^cd_[a-f0-9]+$'
+            doc_section: '#step-1-find-your-api-key'
+
+crustdata-mcp:
+    display_name: Crustdata (MCP)
+    categories:
+        - crm
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://install.crustdata.com/authorize
+    token_url: https://install.crustdata.com/token
+    registration_url: https://install.crustdata.com/register
+    authorization_params:
+        response_type: code
+        resource: https://install.crustdata.com/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://install.crustdata.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/crustdata-mcp
+
 dixa:
     display_name: Dixa
     categories:

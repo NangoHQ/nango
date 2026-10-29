@@ -465,9 +465,7 @@ publicAPI.route('/functions/deployments/bundle').post(envAuth, auditFunctionDepl
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid/invocations')
     .post(envAuth, can('environment:functions:invocations'), postFunctionInvocation);
-publicAPI
-    .route('/connections/:connectionId/tools/:name/calls')
-    .post(envAuth, can('environment:functions:invocations'), can('environment:actions:execute'), postToolCall);
+publicAPI.route('/connections/:connectionId/tools/:name/calls').post(envAuth, can('environment:tools:call'), postToolCall);
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid')
     .patch(envAuth, auditFunctionVariantUpdated, can('environment:functions:update'), patchConnectionFunction);
@@ -488,8 +486,8 @@ publicAPI
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);
-publicAPI.route('/action/trigger').post(envAuth, can('environment:actions:execute'), postPublicTriggerAction); //TODO: to deprecate
-publicAPI.route('/action/:id').get(envAuth, can('environment:actions:execute'), getAsyncActionResult);
+publicAPI.route('/action/trigger').post(envAuth, can('environment:tools:call'), postPublicTriggerAction); //TODO: to deprecate
+publicAPI.route('/action/:id').get(envAuth, can('environment:tools:call'), getAsyncActionResult);
 
 // Connect sessions
 publicAPI.use('/connect', jsonContentTypeMiddleware);
