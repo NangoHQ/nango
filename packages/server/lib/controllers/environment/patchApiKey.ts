@@ -6,6 +6,7 @@ import { CustomerKeyError, customerKeyService, environmentService } from '@nango
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { renameDeprecatedScopes } from '../shared/environments/apiKeyScopes.js';
 
 import type { ApiKeyScope, PatchPublicApiKey } from '@nangohq/types';
 
@@ -42,13 +43,14 @@ export const patchPublicEnvironmentApiKey = asyncWrapper<PatchPublicApiKey>(asyn
     }
 
     const { environmentUuid, keyUuid } = valParams.data;
-    const { display_name: displayName, scopes } = valBody.data;
+    const { display_name: displayName, scopes: requestedScopes } = valBody.data;
 
     const account = res.locals.account;
     if (!account) {
         res.status(500).send({ error: { code: 'server_error', message: 'Account context is required' } });
         return;
     }
+    const scopes = requestedScopes && renameDeprecatedScopes(requestedScopes, account.id);
 
     const environment = await environmentService.getByUuidWithoutSecrets(environmentUuid, account.id);
     if (!environment) {

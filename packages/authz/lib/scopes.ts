@@ -46,7 +46,9 @@ export const PUBLIC_ENVIRONMENT_SCOPES = [
     'environment:records:write',
     // Logs
     'environment:logs:read',
-    // Actions
+    // Tools
+    'environment:tools:call',
+    // Deprecated, grants `environment:tools:call`
     'environment:actions:execute',
     // Proxy
     'environment:proxy',
@@ -151,9 +153,14 @@ export function isAccountScope(scope: string): boolean {
  * The concrete issuable scopes matching `granted`
  */
 export function expandIssuable(granted: readonly ScopeSelector[]): IssuableScope[] {
-    return ISSUABLE_SCOPES.filter((scope) =>
+    const expanded = ISSUABLE_SCOPES.filter((scope) =>
         granted.some((selector) => selector === scope || (selector.endsWith(':*') && scope.startsWith(selector.slice(0, -1))))
     );
+    // Keys stored with the old name of `environment:tools:call`, until they are rewritten
+    if (expanded.includes('environment:actions:execute') && !expanded.includes('environment:tools:call')) {
+        expanded.push('environment:tools:call');
+    }
+    return expanded;
 }
 
 /**

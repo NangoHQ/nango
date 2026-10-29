@@ -1,6 +1,6 @@
 import { fromJsonSchema, inputRequired, inputResponse, McpServer } from '@modelcontextprotocol/server';
 
-import { authorizeIn, PUBLIC_ENVIRONMENT_SCOPES } from '@nangohq/authz';
+import { authorizeIn, expandIssuable, isEnvironmentScopeSelector, PUBLIC_ENVIRONMENT_SCOPES } from '@nangohq/authz';
 import { environmentService } from '@nangohq/shared';
 import { getLogger, hasApiKeyScope, metrics } from '@nangohq/utils';
 
@@ -134,7 +134,12 @@ export async function createManagementMcpServer(
     if (authentication.type === 'oauth') {
         return await createOAuthManagementMcpServer(authentication.context, requestBody, protocolEra);
     }
-    return createApiKeyManagementMcpServer(authentication.context, requestBody, protocolEra);
+    const { grantedScopes } = authentication.context;
+    return createApiKeyManagementMcpServer(
+        { ...authentication.context, grantedScopes: grantedScopes && expandIssuable(grantedScopes.filter(isEnvironmentScopeSelector)) },
+        requestBody,
+        protocolEra
+    );
 }
 
 function createApiKeyManagementMcpServer(context: ManagementMcpContext, requestBody: unknown, protocolEra: ProtocolEra): McpServer {
