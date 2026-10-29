@@ -1,0 +1,3 @@
+*
+!packages/utils/lib/license/key.ts
+!scripts/write-license-key.mjs

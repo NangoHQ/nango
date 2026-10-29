@@ -7,6 +7,11 @@ on:
                 description: 'Commit hash to release'
                 required: true
                 type: string
+            dry_run:
+                description: 'Run everything but skip the image push, the git tag, the manifest commit and the release publish'
+                required: false
+                type: boolean
+                default: false
 
 permissions:
     contents: write
@@ -260,7 +265,7 @@ jobs:
                   echo "EOF" >> $GITHUB_OUTPUT
 
             - name: Wait for approval on failure
-              if: (steps.cluster-state.outputs.status == 'failure' || failure()) && !env.ACT
+              if: (steps.cluster-state.outputs.status == 'failure' || failure()) && !env.ACT && !inputs.dry_run
               uses: trstringer/manual-approval@v1
               with:
                   secret: ${{ github.TOKEN }}
@@ -380,19 +385,34 @@ jobs:
               if: ${{ env.ACT }}
               run: |
                   echo "Running in act - would perform Docker operations:"
-                  echo "Would pull: nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }}"
+                  echo "Would build from: nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }}"
                   if [ "${{ needs.test-deployment.outputs.status }}" = "failure" ]; then
                     echo "Would tag as: nangohq/nango:managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   else
                     echo "Would tag as: nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   fi
 
-            - name: Retag and push final image
-              id: retag-image
+            - name: Checkout release commit
               if: ${{ !env.ACT }}
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+              with:
+                  repository: ${{ github.repository }}
+                  ref: ${{ needs.manage-versions.outputs.commit_hash }}
+                  fetch-depth: 0
+                  path: nango-src
+                  token: ${{ steps.create_github_app_token.outputs.token }}
+                  persist-credentials: false
+
+            - name: Build and push managed image
+              id: build-image
+              if: ${{ !env.ACT }}
+              env:
+                  NANGO_LICENSE_PUBLIC_KEY: ${{ vars.NANGO_LICENSE_PUBLIC_KEY }}
               run: |
-                  echo "Pulling image..."
-                  docker pull nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }}
+                  if [ -z "$NANGO_LICENSE_PUBLIC_KEY" ]; then
+                      echo "NANGO_LICENSE_PUBLIC_KEY is not set"
+                      exit 1
+                  fi
 
                   if [ "${{ needs.test-deployment.outputs.status }}" = "failure" ]; then
                       echo "Test deployment failed, using bumped major version"
@@ -402,18 +422,31 @@ jobs:
                       IMAGE_TAG="managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   fi
 
-                  docker tag nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:${IMAGE_TAG}
-                  docker push nangohq/nango:${IMAGE_TAG}
+                  docker build \
+                      --platform linux/amd64 \
+                      --build-arg BASE_IMAGE_HASH="${{ needs.manage-versions.outputs.commit_hash }}" \
+                      --build-arg NANGO_LICENSE_PUBLIC_KEY \
+                      --file nango-src/Dockerfile.managed \
+                      --tag nangohq/nango:${IMAGE_TAG} \
+                      nango-src
+
+                  # Fails the release before the push if the image has no license key
+                  docker run --rm --platform linux/amd64 --entrypoint node nangohq/nango:${IMAGE_TAG} \
+                      -e "import('/app/nango/packages/utils/dist/license/key.js').then((m) => process.exit(m.licensePublicKey ? 0 : 1))"
+
+                  if [ "${{ inputs.dry_run }}" != "true" ]; then
+                      docker push nangohq/nango:${IMAGE_TAG}
+                  fi
 
                   echo "tag_name=${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
             - name: Tag commit with managed release
-              if: ${{ !env.ACT }}
+              if: ${{ !env.ACT && !inputs.dry_run }}
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
                   # Use the tag name from the Docker image step
-                  TAG_NAME="${{ steps.retag-image.outputs.tag_name }}"
+                  TAG_NAME="${{ steps.build-image.outputs.tag_name }}"
                   SHA="${{ needs.manage-versions.outputs.commit_hash }}"
 
                   # Ensure the commit exists locally (fetch just that object)
@@ -426,7 +459,7 @@ jobs:
                   git push origin "$TAG_NAME"
 
             - name: Update version manifest in master
-              if: ${{ !env.ACT }}
+              if: ${{ !env.ACT && !inputs.dry_run }}
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
@@ -452,19 +485,8 @@ jobs:
                     echo "app_version=${{ needs.manage-versions.outputs.app_version }}" >> $GITHUB_OUTPUT
                   fi
 
-            - name: Checkout release commit for changelog
-              if: ${{ !env.ACT }}
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-              with:
-                  repository: ${{ github.repository }}
-                  ref: ${{ needs.manage-versions.outputs.commit_hash }}
-                  fetch-depth: 0
-                  path: nango-src
-                  token: ${{ steps.create_github_app_token.outputs.token }}
-                  persist-credentials: false
-
             - name: Checkout managed-image-releases
-              if: ${{ !env.ACT }}
+              if: ${{ !env.ACT && !inputs.dry_run }}
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   repository: NangoHQ/managed-image-releases
@@ -472,11 +494,11 @@ jobs:
                   path: managed-image-releases
 
             - name: Publish managed image release
-              if: ${{ !env.ACT }}
+              if: ${{ !env.ACT && !inputs.dry_run }}
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
                   GH_HOST: github.com
-                  TAG_NAME: ${{ steps.retag-image.outputs.tag_name }}
+                  TAG_NAME: ${{ steps.build-image.outputs.tag_name }}
                   IMAGE_VERSION: ${{ steps.release-versions.outputs.image_version }}
                   APP_VERSION: ${{ steps.release-versions.outputs.app_version }}
                   COMMIT_HASH: ${{ needs.manage-versions.outputs.commit_hash }}
