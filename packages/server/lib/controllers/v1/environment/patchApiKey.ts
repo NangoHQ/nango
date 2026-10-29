@@ -6,6 +6,7 @@ import { CustomerKeyError, customerKeyService, productTracking } from '@nangohq/
 import { report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
+import { renameDeprecatedScopes } from '../../shared/environments/apiKeyScopes.js';
 
 import type { ApiKeyScope, PatchApiKey } from '@nangohq/types';
 
@@ -55,7 +56,7 @@ export const patchApiKey = asyncWrapperWithEnvironment<PatchApiKey>(async (req, 
     }
 
     if (parsed.data.scopes) {
-        const result = await customerKeyService.updateApiKeyScopes(db.knex, keyId, parsed.data.scopes, environment.id);
+        const result = await customerKeyService.updateApiKeyScopes(db.knex, keyId, renameDeprecatedScopes(parsed.data.scopes, account.id), environment.id);
         if (result.isErr()) {
             if (result.error instanceof CustomerKeyError && result.error.code === 'no_such_api_secret') {
                 res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });

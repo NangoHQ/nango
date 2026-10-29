@@ -5,6 +5,7 @@ import { environmentService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { renameDeprecatedScopes } from '../shared/environments/apiKeyScopes.js';
 import { handleCreateApiKey } from '../shared/environments/postApiKey.js';
 
 import type { ApiKeyScope, PostPublicApiKey } from '@nangohq/types';
@@ -55,5 +56,11 @@ export const postPublicEnvironmentApiKey = asyncWrapper<PostPublicApiKey>(async 
         return;
     }
 
-    await handleCreateApiKey({ res, accountId: account.id, environmentId: environment.id, displayName, scopes });
+    await handleCreateApiKey({
+        res,
+        accountId: account.id,
+        environmentId: environment.id,
+        displayName,
+        scopes: scopes && renameDeprecatedScopes(scopes, account.id)
+    });
 });
