@@ -16393,6 +16393,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `crisp-plugin-install` | Crisp (Plugin Install) | INSTALL_PLUGIN | [docs](https://nango.dev/docs/api-integrations/crisp-plugin-install.md) |  | [setup](https://nango.dev/docs/api-integrations/crisp-plugin-install/how-to-register-your-own-crisp-plugin.md) | communication, support |
 | `crowdstrike` | CrowdStrike | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/crowdstrike.md) | [connect](https://nango.dev/docs/integrations/all/crowdstrike/connect.md) |  | dev-tools |
 | `crunchbase` | Crunchbase | API_KEY | [docs](https://nango.dev/docs/api-integrations/crunchbase.md) | [connect](https://nango.dev/docs/api-integrations/crunchbase/connect.md) |  | crm |
+| `crustdata` | Crustdata | API_KEY | [docs](https://nango.dev/docs/api-integrations/crustdata.md) | [connect](https://nango.dev/docs/api-integrations/crustdata/connect.md) |  | crm, marketing |
+| `crustdata-mcp` | Crustdata (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/crustdata-mcp.md) |  |  | crm, mcp |
 | `cursor` | Cursor | API_KEY | [docs](https://nango.dev/docs/integrations/all/cursor.md) | [connect](https://nango.dev/docs/integrations/all/cursor/connect.md) |  | dev-tools |
 | `cursor-admin` | Cursor Admin | BASIC | [docs](https://nango.dev/docs/integrations/all/cursor-admin.md) | [connect](https://nango.dev/docs/integrations/all/cursor-admin/connect.md) |  | dev-tools |
 | `customer-io` | Customer.io | BASIC | [docs](https://nango.dev/docs/api-integrations/customer-io.md) | [connect](https://nango.dev/docs/api-integrations/customer-io/connect.md) |  | marketing, analytics |
