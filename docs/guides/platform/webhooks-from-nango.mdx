@@ -4,7 +4,7 @@ sidebarTitle: 'Webhooks from Nango'
 description: 'Reference for the webhooks Nango sends to your app — setup, types, payloads, signature verification, and retries.'
 ---
 
-Nango POSTs webhooks to your app to notify it of important events: a new connection was created, a sync run finished, an async action completed, or an external webhook was forwarded. This page covers how to receive and verify webhooks from Nango, plus the payloads for auth, sync, and async action webhooks.
+Nango POSTs webhooks to your app to notify it of important events: a new connection was created, a sync run finished, a deprecated async action completed, or an external webhook was forwarded. This page covers how to receive and verify webhooks from Nango, plus the payloads for auth, sync, and deprecated async action webhooks.
 
 <Info>
 To process webhooks coming **from external APIs** (not from Nango), see [Process external webhooks](/getting-started/use-cases/webhooks-from-external-apis). To forward external API webhooks through Nango to your app, see [Webhook forwarding](/guides/platform/webhook-forwarding).
@@ -423,6 +423,10 @@ Payload received following a failed sync execution:
     }
 }
 ```
+
+### Async action webhooks (deprecated)
+
+Existing users of deprecated async actions can enable **Async action completed** in **Environment Settings**. The webhook identifies the execution to poll; see the [legacy completion webhook contract](/guides/functions/action-functions#completion-webhook).
 
 ### External webhook forwarding
 

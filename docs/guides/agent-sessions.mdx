@@ -14,7 +14,7 @@ Each session has three parts:
 
 Your backend creates the session and exposes it to the agent as an MCP server. The agent never sees raw credentials, and cannot change the scope of its own session.
 
-The available toolset can include Nango catalog actions, action functions you manage yourself, and the tools of [MCP servers](#mcp-server-tools) your tenant has connected. Catalog actions are available out of the box and update automatically.
+The available toolset can include Nango catalog tools, tools you manage yourself, and the tools of [MCP servers](#mcp-server-tools) your tenant has connected. Catalog tools are available out of the box and update automatically.
 
 Example sessions:
 - A sales agent with a user's personal Gmail & Google Calendar, and a read-only org-wide Salesforce connection
@@ -379,7 +379,7 @@ The toolset is a subset of the Integrations that are enabled in your Nango envir
 ```
 
 You can use the following selectors:
-- `"*"` on an integration means every action function on it, and every tool of its MCP server
+- `"*"` on an integration means every tool on it, and every tool of its MCP server
 - `allow` makes the integration an allowlist, where `"*"` means every tool
 - `deny` always subtracts from whatever `allow` gave
 - To deny an integration entirely, leave it out of the toolset
@@ -390,7 +390,7 @@ You can use the following selectors:
 `allow` and `deny` limit which tools the agent can call, not which API endpoints it can reach. With [`nango_proxy`](#nango_proxy) on, the agent can call any endpoint of a connected integration in the toolset, including ones your deny list was meant to keep out. For an MCP server, that includes sending `tools/call` to the server directly, for any of its tools.
 </Warning>
 
-Only action functions and [MCP server tools](#mcp-server-tools) can be tools. Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
+Sessions can expose HTTP-triggered tools, catalog tools, existing deprecated actions, and [MCP server tools](#mcp-server-tools). Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
 
 ### Pinned tools
 
@@ -411,7 +411,7 @@ A pinned tool must be in the toolset, otherwise creation fails with `tool_not_in
 
 Integrations for MCP servers, such as [Notion (MCP)](/api-integrations/notion-mcp) or [Linear (MCP)](/api-integrations/linear-mcp), bring the server's own tools into the session. There is nothing to deploy and nothing to turn on. Include the integration in the toolset like any other and give the tenant a connection to it.
 
-When the session is created, Nango lists the tools of each connected MCP server in the toolset and adds them alongside its actions. From then on they work like any other tool:
+When the session is created, Nango lists the tools of each connected MCP server in the toolset and adds them alongside its Nango tools. From then on they work like any other tool:
 
 - `nango_tool_search` finds them, with the input schema the server gave
 - Pinned, they are listed with that input schema and the server's annotations
@@ -427,7 +427,7 @@ When the session is created, Nango lists the tools of each connected MCP server 
 }
 ```
 
-`allow`, `deny` and `pinned_tools` name a tool exactly as the server lists it. In the session, the tool gets a name like an action's, such as `notion-mcp__notion-search`. Agents call it by the name the tool list or `nango_tool_search` gives.
+`allow`, `deny` and `pinned_tools` name a tool exactly as the server lists it. In the session, the tool gets a name like a Nango tool's, such as `notion-mcp__notion-search`. Agents call it by the name the tool list or `nango_tool_search` gives.
 
 The list is taken once, at creation. Tools the server adds or removes afterwards don't change the session, so create a new one to pick them up.
 
@@ -481,7 +481,7 @@ Takes a plain-language `query` describing what the agent wants to do.
 { "query": "find emails by subject" }
 ```
 
-The result carries `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status.
+The result carries `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status. The `action` field is the API's tool-name field; it is used for tools as well as deprecated actions.
 
 Only a best match includes `input`, its argument schema — a weak match is a lead, not something to call yet.
 
@@ -493,7 +493,7 @@ Runs one of the session's tools by name, on the connection the session resolved 
 { "tool": "notion__read_doc", "input": { "doc_id": "abc" } }
 ```
 
-Execution is synchronous and goes through the same path as [triggering an action function](/reference/backend/http-api/action/trigger), so it is capped by the synchronous execution limit and appears in Nango logs like any other function run.
+Execution is synchronous and appears in Nango logs. See [Limits](/guides/platform/limits#function-execution-limits) for execution limits.
 
 ### nango_proxy
 

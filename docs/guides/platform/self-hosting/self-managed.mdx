@@ -313,9 +313,9 @@ OPENAI_API_KEY=<your-openai-api-key>
 NANGO_AGENT_PLAYGROUND_MODEL=<openai-model-id>
 ```
 
-Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the jobs service as well, because jobs runs the catalog actions the agent calls.
+Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the jobs service as well, because jobs runs the catalog tools the agent calls.
 
-The `tools-catalog` flag lets the agent run Nango's pre-built actions without deploying them first. The agent runs on OpenAI, so `OPENAI_API_KEY` is required, and messages from the chat are sent to OpenAI with that key. Without the key, the dashboard shows the playground as unavailable.
+The `tools-catalog` flag lets the agent run Nango's pre-built tools without deploying them first. The agent runs on OpenAI, so `OPENAI_API_KEY` is required, and messages from the chat are sent to OpenAI with that key. Without the key, the dashboard shows the playground as unavailable.
 
 ### Connect UI
 
@@ -438,7 +438,7 @@ The runner boundary has the same set of variables prefixed with `NANGO_CUSTOMER_
 
 The [proxy](/guides/platform/proxy-requests) can send authenticated requests to external APIs. Some proxy calls accept a **base URL override** (HTTP header `Base-Url-Override`, SDK `baseUrlOverride`, or an integration `custom.baseUrl`) to target a host that differs from the provider's default API base URL.
 
-Because the proxy makes outbound HTTP requests from your Nango server (and from the runner for sync and action scripts), a caller with permission to use the proxy could use an override to reach hosts that were not meant to be exposed—such as cloud metadata services or `localhost` on the host making the request. This is a classic **SSRF** risk.
+Because the proxy makes outbound HTTP requests from your Nango server (and from the runner for sync functions and tools), a caller with permission to use the proxy could use an override to reach hosts that were not meant to be exposed—such as cloud metadata services or `localhost` on the host making the request. This is a classic **SSRF** risk.
 
 By default, Nango keeps base URL override **enabled** and blocks override targets and redirect hops whose hostnames match a built-in denylist (cloud metadata and loopback addresses). Configure these environment variables and restart the **server** and **runners** after changes:
 

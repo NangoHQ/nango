@@ -77,10 +77,10 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
         }'
       ```
 
-      Check the integration has tools. Nango catalog actions are available out of the box, with nothing to deploy:
+      Check the integration has tools. Nango catalog tools are available out of the box, with nothing to deploy:
 
       ```bash
-      curl 'https://api.nango.dev/integrations/google-mail/functions?type=action' \
+      curl 'https://api.nango.dev/integrations/google-mail/functions?type=tool' \
         --header 'Authorization: Bearer <NANGO-API-KEY>'
       ```
     </Accordion>
@@ -175,7 +175,7 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
     Restrict tools, pin connections, and scope access per user or organization.
   </Card>
   <Card title="Build custom tools" icon="wand-magic-sparkles" href="/guides/functions/functions-guide">
-    Write action functions for tools the catalog doesn't have.
+    Write your own tools when the catalog doesn't have what you need.
   </Card>
   <Card title="Sync data" icon="arrows-rotate" href="/guides/functions/syncs/sync-functions">
     Keep external API data fresh in your app with sync functions.

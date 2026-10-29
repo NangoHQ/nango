@@ -76,9 +76,9 @@ Official docs: [GitLab Group Access Tokens](https://docs.gitlab.com/user/group/s
 - The token grants access to the group and its subgroups and projects, not the wider GitLab instance. Create one connection per group when you need access to multiple unrelated groups.
 - GitLab webhook payloads do not contain a Nango connection ID. Append `?nangoConnectionId=<connectionId>` to the Nango webhook URL when registering a project or group webhook. Configure a [signing token](https://docs.gitlab.com/user/project/integrations/webhooks/#signing-tokens) on the GitLab webhook and store the same value as `webhookSecret` in the Nango connection metadata.
 
-## 🧩 Pre-built syncs & actions for GitLab (Group Access Token)
+## 🧩 Pre-built syncs & tools for GitLab (Group Access Token)
 
-Explore Nango-provided actions in your dashboard. [Extend and customize them](/guides/functions/functions-guide) to fit your needs.
+Explore Nango-provided tools in your dashboard. [Extend and customize them](/guides/functions/functions-guide) to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/gitlab-group-token/PreBuiltUseCases.mdx"
 

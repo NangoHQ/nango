@@ -91,17 +91,11 @@ Use the Connections tools to inspect connections in the authenticated Nango envi
 | `connections_list` | List and filter connections. | `environment:connections:list` or `environment:connections:list_credentials` |
 | `connections_get`  | Get a connection.            | `environment:connections:read` or `environment:connections:read_credentials` |
 
-### Actions
-
-Use the Actions tool to trigger an action function synchronously for a connection. Provide the integration ID, connection ID, and action name. The JSON input is optional. The tool returns the action's JSON result in the `data` field.
+### Actions (deprecated)
 
 <Warning>
-    Expect the MCP request to time out within 90 seconds. This does not cancel the action function, which may continue running for up to 15 minutes. After a timeout, the tool cannot return the result or an action ID, and retrying starts another execution. When the action supports it, use input parameters that limit the amount of data processed to keep execution within the MCP timeout.
+  Use [`tools_call`](#functions) for new callers. The deprecated `actions_trigger` tool remains available for existing users with the `environment:actions:execute` scope. It accepts `integration_id`, `connection_id`, `action_name`, and optional `input`, returning `{ data: ... }`. See [migration guidance](/guides/platform/migrations/migrate-from-actions).
 </Warning>
-
-| Tool              | Description                                                | Additional permission          |
-| ----------------- | ---------------------------------------------------------- | ------------------------------ |
-| `actions_trigger` | Trigger an action function synchronously for a connection. | `environment:actions:execute`  |
 
 ### Syncs
 
@@ -114,9 +108,9 @@ Use the Sync tools to set sync state or trigger syncs for an integration in the 
 
 ### Functions
 
-Use the Functions tools to inspect available functions and deploy templates in the authenticated Nango environment. `functions_list` includes deployed sync, action, and event functions, as well as Nango catalog actions. Catalog actions are available out of the box; use `deploy_template` when you want to enable a sync template or explicitly deploy a template.
+Use the Functions tools to inspect available functions and deploy templates in the authenticated Nango environment. `functions_list` includes tools, sync functions, event functions, and deprecated actions, as well as Nango catalog tools. Catalog tools are available out of the box; use `deploy_template` when you want to enable a sync template or explicitly deploy a template.
 
-Tools are functions that can be called on demand: HTTP-triggered functions, deployed action functions, and Nango catalog actions. Use `tools_call` to call an enabled tool for a connection.
+Use tools for on-demand provider operations. Use `tools_call` to call an enabled tool for a connection.
 
 <Warning>
     A `tools_call` MCP request may time out within 90 seconds without canceling execution. After a timeout, the tool cannot return the result or an execution ID. Retrying starts another execution and may duplicate side effects. When the tool supports it, use input parameters that limit the amount of data processed to keep execution within the MCP timeout.
@@ -124,7 +118,7 @@ Tools are functions that can be called on demand: HTTP-triggered functions, depl
 
 | Tool                    | Description                                                                   | Additional permission        |
 | ----------------------- | ----------------------------------------------------------------------------- | ---------------------------- |
-| `functions_list`        | List and filter available functions by integration, including Nango catalog actions. | `environment:functions:list` |
+| `functions_list`        | List and filter available functions by integration, including Nango catalog tools. | `environment:functions:list` |
 | `tools_call`            | Call an enabled tool of an integration synchronously for a connection.        | `environment:functions:invocations`, `environment:actions:execute` |
 | `deploy_template`       | Deploy a function template.                                                   | `environment:deploy`         |
 | `get_deployment_status` | Retrieve a deployment's current status and result.                            | `environment:deploy`         |

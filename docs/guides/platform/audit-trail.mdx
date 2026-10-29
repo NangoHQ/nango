@@ -106,5 +106,6 @@ For example, the following activities are not covered:
 | Setting or updating connection metadata via the API | `POST` / `PATCH /connection/metadata` |
 | Triggering a sync via the API | `POST /sync/trigger` |
 | Proxy requests | Every call through `/proxy` |
-| Action executions | `POST /action/trigger` |
+| Tool calls | `POST /connections/:connectionId/tools/:name/calls` |
+| Legacy action executions (deprecated) | `POST /action/trigger` |
 | Reading configuration | Listing or fetching connections, integrations, or functions |

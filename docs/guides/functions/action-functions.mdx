@@ -1,203 +1,91 @@
 ---
-title: 'Action functions'
-sidebarTitle: 'Action functions'
-description: 'Build Action functions that your app, backend jobs, or agents can call on demand.'
+title: 'Actions (deprecated)'
+sidebarTitle: 'Actions (deprecated)'
+description: 'Compatibility reference for existing action functions and asynchronous action callers.'
 ---
 
-Action functions run when your app, backend job, or agent explicitly calls them. In SDK and API names, this function type is often called an **action** because it receives an input and returns an output.
+<Warning>
+  Actions are deprecated. For new development, use [Tools](/guides/functions/tools). Existing actions remain callable. See [Migrate from actions to tools](/guides/platform/migrations/migrate-from-actions) before changing an existing integration.
+</Warning>
 
-Use action functions for reads, writes, multi-step provider workflows, unified API operations, and AI tools.
+<a id="create-the-function"></a>
+<a id="test-and-deploy"></a>
+## Existing action definitions
 
-<Note>
-  Nango provides a catalog of pre-built actions that you can call out of the box. This guide describes writing and deploying your own action function. To customize actions from the catalog, see [Extend a template](/guides/functions/functions-guide#extend-a-template).
-</Note>
+Legacy actions use `createAction` from `nango`. Keep the original input and output schemas and read input from the second `exec` argument:
 
-## Create the function
-
-Add a file under the integration's `actions/` folder:
-
-```typescript github/actions/create-issue.ts
+```typescript
 import { createAction } from 'nango';
 import * as z from 'zod';
 
 export default createAction({
-    description: 'Creates a GitHub issue',
-    version: '1.0.0',
-    input: z.object({
-        owner: z.string(),
-        repo: z.string(),
-        title: z.string(),
-        body: z.string().optional()
-    }),
-    output: z.object({
-        id: z.number(),
-        url: z.string().url()
-    }),
+    description: 'Reads a GitHub issue',
+    input: z.object({ owner: z.string(), repo: z.string(), issueNumber: z.number() }),
+    output: z.object({ title: z.string() }),
     exec: async (nango, input) => {
-        const response = await nango.post({
-            endpoint: `/repos/${input.owner}/${input.repo}/issues`,
-            data: {
-                title: input.title,
-                body: input.body
-            }
+        const response = await nango.get({
+            endpoint: `/repos/${input.owner}/${input.repo}/issues/${input.issueNumber}`
         });
-
-        return {
-            id: response.data.id,
-            url: response.data.html_url
-        };
+        return { title: response.data.title };
     }
 });
 ```
 
-Import it from `index.ts`:
+Keep importing the file from your project's `index.ts`. Existing projects can dry run actions with `nango dryrun <name> <connection-id> --input '<JSON>'` and deploy one with `nango deploy --action <name> <environment>`.
 
-```typescript index.ts
-import './github/actions/create-issue';
-```
+<a id="trigger-synchronously"></a>
+## Synchronous calls
 
-<Warning>
-  The output of an action function cannot exceed 2 MB. Return only the fields your app needs. For larger payloads, use the [requests proxy](/guides/platform/proxy-requests) to fetch data directly from your app.
-</Warning>
+Prefer [calling the action through the tool-call API](/guides/functions/tools#call-a-tool). Existing callers can continue to use `nango.triggerAction(integrationId, connectionId, actionName, input)` or [`POST /action/trigger`](/reference/backend/http-api/action/trigger).
 
-<Accordion title="For agents">
-  Before generating an action function, collect the integration ID, connection ID for testing, provider endpoint, required input fields, expected output shape, and whether the operation is safe to retry.
+Legacy HTTP calls send `Connection-Id`, `Provider-Config-Key`, and `Content-Type: application/json` headers, with `{ "action_name": "<ACTION-NAME>", "input": {} }` as the body. Authenticate with a Nango Environment API key from **Environment Settings > API Keys**, sent as `Authorization: Bearer <NANGO-API-KEY>`. Scoped keys need `environment:actions:execute`.
 
-  Prefer explicit Zod schemas and short provider response mapping. If the action performs writes, make the logic idempotent before using async execution or retries.
-</Accordion>
+<a id="trigger-asynchronously"></a>
+## Asynchronous calls
 
-## Test and deploy
-
-Dry run the function with realistic input:
-
-```bash
-nango dryrun create-issue '<CONNECTION-ID>' -e dev --input '{"owner":"NangoHQ","repo":"interactive-demo","title":"Bug report","body":"Created from a Nango action"}'
-```
-
-Deploy your functions:
-
-```bash
-nango deploy
-```
-
-To deploy only this action function:
-
-```bash
-nango deploy --action create-issue dev
-```
-
-For broader test coverage, see the [testing guide](/guides/functions/testing). To deploy from CI, see [CI/CD](/guides/functions/ci-cd).
-
-## Trigger synchronously
-
-Synchronous execution is the default. The API or SDK call returns the function output.
-
-<Tabs>
-  <Tab title="TypeScript">
-  ```typescript
-  import { Nango } from '@nangohq/node';
-
-  const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
-
-  const result = await nango.triggerAction(
-      'github',
-      '<CONNECTION-ID>',
-      'create-issue',
-      {
-          owner: 'NangoHQ',
-          repo: 'interactive-demo',
-          title: 'Bug report',
-          body: 'Created from a Nango action'
-      }
-  );
-  ```
-  </Tab>
-  <Tab title="cURL">
-  ```bash
-  curl --request POST \
-    --url https://api.nango.dev/action/trigger \
-    --header 'Authorization: Bearer <ENV-SECRET-KEY>' \
-    --header 'Connection-Id: <CONNECTION-ID>' \
-    --header 'Provider-Config-Key: github' \
-    --header 'Content-Type: application/json' \
-    --data '{
-      "action_name": "create-issue",
-      "input": {
-        "owner": "NangoHQ",
-        "repo": "interactive-demo",
-        "title": "Bug report",
-        "body": "Created from a Nango action"
-      }
-    }'
-  ```
-  </Tab>
-</Tabs>
-
-## Trigger asynchronously
-
-Use async execution for bulk writes, bursty work, or provider endpoints with tight rate limits. Nango queues the execution, applies retries, and lets you poll or receive a webhook when it completes.
-
-<Note>
-  Execution timing for asynchronous actions is not guaranteed. Async actions are currently processed sequentially per environment, so completion time depends on how many actions are queued and how long each one runs. Design callers to handle delays by polling the result endpoint or listening for the completion webhook.
-</Note>
-
-<Tabs>
-  <Tab title="TypeScript">
-  ```typescript
-  const { id, statusUrl } = await nango.triggerActionAsync(
-      'github',
-      '<CONNECTION-ID>',
-      'create-issue',
-      {
-          owner: 'NangoHQ',
-          repo: 'interactive-demo',
-          title: 'Bug report',
-          body: 'Created from an async Nango action'
-      }
-  );
-  ```
-  </Tab>
-  <Tab title="cURL">
-  ```bash
-  curl --request POST \
-    --url https://api.nango.dev/action/trigger \
-    --header 'Authorization: Bearer <ENV-SECRET-KEY>' \
-    --header 'Connection-Id: <CONNECTION-ID>' \
-    --header 'Provider-Config-Key: github' \
-    --header 'X-Async: true' \
-    --header 'X-Max-Retries: 3' \
-    --header 'Content-Type: application/json' \
-    --data '{
-      "action_name": "create-issue",
-      "input": {
-        "owner": "NangoHQ",
-        "repo": "interactive-demo",
-        "title": "Bug report",
-        "body": "Created from an async Nango action"
-      }
-    }'
-  ```
-  </Tab>
-</Tabs>
-
-Poll the result:
+Existing async workflows can continue using the legacy API:
 
 ```typescript
+const { id, statusUrl } = await nango.triggerActionAsync(
+    '<INTEGRATION-ID>',
+    '<CONNECTION-ID>',
+    '<ACTION-NAME>',
+    { title: 'Example' }
+);
 const result = await nango.getAsyncActionResult({ id });
 ```
 
-The async trigger response includes a `statusUrl` and `id`. Poll `GET /action/<ACTION-ID>` for the result: `404` means the execution is still running, `200` returns the function output, and `500` returns the execution error.
+For HTTP, send the same request to `POST /action/trigger` with `X-Async: true`. Optionally set `X-Max-Retries` from `0` to `5`; the default is `0`. Use retries only when the operation is safe to repeat.
 
-To receive completion events instead of polling, configure [webhooks from Nango to your app](/guides/platform/webhooks-from-nango) and enable the `Async action completed` webhook.
+The response contains an `id` and `statusUrl`. Poll `GET /action/<ACTION-ID>`: `404` means the execution is still running, `200` returns the output, and `500` returns the execution error. Use the same authentication and scope as the trigger request.
 
-<Warning>
-  Use retries only for idempotent function logic. Retried writes can otherwise create duplicate side effects in the external API.
-</Warning>
+Async actions are processed sequentially per environment; completion time depends on queue length and execution time. To receive completion events instead of polling, enable **Async action completed** in your [webhook configuration](/guides/functions/action-functions#completion-webhook).
 
-## Related guides
+## Calling an action from a function
 
-- [Agents tool calling](/guides/agent-sessions)
-- [Data validation](/guides/functions/data-validation)
-- [Rate limits](/guides/functions/rate-limits)
-- [Trigger action API](/reference/backend/http-api/action/trigger)
-- [Functions SDK reference](/reference/functions/functions-sdk)
+Existing sync or action functions can call `await nango.triggerAction('<ACTION-NAME>', input)`. This helper is deprecated and is not available on the tool SDK.
+
+## Action errors
+
+Existing actions can throw `new nango.ActionError({ message: 'Example' })` to return an `action_script_failure` with the supplied payload. This is a legacy action error contract.
+
+## Completion webhook
+
+Enable **Async action completed** in the **Environment Settings** webhook configuration. Nango sends the completion payload to your configured webhook URL. Keep your existing handler and its payload contract while migrating synchronous callers to tools. See [webhook verification and retries](/guides/platform/webhooks-from-nango).
+
+The completion webhook identifies the execution to poll:
+
+```json
+{
+    "from": "nango",
+    "type": "async_action",
+    "connectionId": "<CONNECTION-ID>",
+    "providerConfigKey": "<INTEGRATION-ID>",
+    "payload": {
+        "id": "<ACTION-ID>",
+        "statusUrl": "/action/<ACTION-ID>"
+    }
+}
+```
+
+Fetch the result from `payload.statusUrl` with your Environment API key. Verify the webhook signature before processing it.

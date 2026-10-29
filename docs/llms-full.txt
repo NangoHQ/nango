@@ -29,11 +29,11 @@ With Nango, you can describe the integration you need, generate working code in 
   </Step>
 
   <Step id="generate-functions" title="You generate functions">
-    Build the integration logic as Nango Functions: TypeScript functions that call provider APIs, transform data, sync records, process webhooks, or perform actions. Generate them with AI, then edit them like normal application code.
+    Build the integration logic as Nango Functions: TypeScript functions that call provider APIs, transform data, sync records, process webhooks, or run on-demand operations. Generate them with AI, then edit them like normal application code.
   </Step>
 
   <Step id="use-functions" title="Your app or agents use them">
-    Call functions from your backend, trigger them on schedules or webhooks, or expose selected action functions as tools for AI agents through schemas and MCP.
+    Call functions from your backend, trigger them on schedules or webhooks, or expose selected tools for AI agents through schemas and MCP.
   </Step>
 </Steps>
 
@@ -45,7 +45,7 @@ Explore the main product integration use cases:
 
 <CardGroup cols={3}>
   <Card title="Tool calling for AI agents" icon="robot" href="/getting-started/use-cases/tool-calling">
-    Give agents scoped, observable access to external APIs through Nango action functions.
+    Give agents scoped, observable access to external APIs through Nango tools.
   </Card>
   <Card title="Sync external API data" icon="arrows-rotate" href="/getting-started/use-cases/syncs">
     Keep external API data fresh for your product, RAG pipeline, or change-detection workflow.
@@ -71,10 +71,10 @@ Explore the main product integration use cases:
     OAuth flows, API keys, token refresh, scopes, provider quirks, and per-user access to external APIs.
   </Card>
   <Card title="Integration runtime" icon="server" href="/guides/functions/functions-guide">
-    Actions, syncs, webhooks, schedules, retries, rate-limit backoff, checkpoints, and resumable execution.
+    Tools, syncs, webhooks, schedules, retries, rate-limit backoff, checkpoints, and resumable execution.
   </Card>
   <Card title="Agent-ready access" icon="robot" href="/guides/agent-sessions">
-    Tool schemas, MCP support, and scoped action functions your agents can call without handling provider credentials.
+    Tool schemas, MCP support, and scoped tools your agents can call without handling provider credentials.
   </Card>
   <Card title="Production controls" icon="chart-line" href="/guides/platform/observability">
     Logs, metrics, alerts, isolated environments, CI/CD workflows, tenant isolation, open-source deployment, and compliance controls.
@@ -167,10 +167,10 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
         }'
       ```
 
-      Check the integration has tools. Nango catalog actions are available out of the box, with nothing to deploy:
+      Check the integration has tools. Nango catalog tools are available out of the box, with nothing to deploy:
 
       ```bash
-      curl 'https://api.nango.dev/integrations/google-mail/functions?type=action' \
+      curl 'https://api.nango.dev/integrations/google-mail/functions?type=tool' \
         --header 'Authorization: Bearer <NANGO-API-KEY>'
       ```
     </Accordion>
@@ -265,7 +265,7 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
     Restrict tools, pin connections, and scope access per user or organization.
   </Card>
   <Card title="Build custom tools" icon="wand-magic-sparkles" href="/guides/functions/functions-guide">
-    Write action functions for tools the catalog doesn't have.
+    Write your own tools when the catalog doesn't have what you need.
   </Card>
   <Card title="Sync data" icon="arrows-rotate" href="/guides/functions/syncs/sync-functions">
     Keep external API data fresh in your app with sync functions.
@@ -519,11 +519,11 @@ These resources help agents discover Nango docs, provider slugs, API shapes, and
 ## Tool calling for AI agents
 
 Source: https://nango.dev/docs/getting-started/use-cases/tool-calling.md
-Description: Give agents scoped, observable access to external APIs through Nango action functions.
+Description: Give agents scoped, observable access to external APIs through Nango tools.
 
 AI agents become useful when they can act in the systems your users already use: HubSpot, Gmail, Slack, Linear, Notion, Salesforce, and the rest. The hard part is not just calling an API. It is OAuth, token refresh, per-user permissions, rate limits, logging, and keeping credentials out of the model loop.
 
-Nango handles that plumbing. Users authorize integrations through Nango, you expose selected action functions as tools, and agents call those action functions through the [agent sessions API](/guides/agent-sessions).
+Nango handles that plumbing. Users authorize integrations through Nango, you choose which tools to expose, and agents call them through the [agent sessions API](/guides/agent-sessions).
 
 ## When this fits
 
@@ -532,7 +532,7 @@ Use Nango for AI tool calling when:
 - Your agent needs to fetch or change data in external APIs.
 - Tool calls must run with each user's own credentials.
 - You want logs, retries, rate-limit handling, and a deployable runtime.
-- You need a catalog of actions for agentic tool calling now, with room for custom action functions later.
+- You need a catalog of tools for agentic tool calling now, with room for custom tools later.
 - You want one MCP server URL for Nango-hosted tools.
 
 For RAG-style workflows where data should be replicated before the agent needs it, use [Sync external API data](/getting-started/use-cases/syncs).
@@ -540,21 +540,21 @@ For RAG-style workflows where data should be replicated before the agent needs i
 ## How Nango fits in
 
 1. Your user authorizes an integration with Nango.
-2. You use catalog action functions directly or deploy custom action functions for allowed operations.
-3. Your agent lists or receives those action functions as tools.
-4. The agent asks Nango to execute an action function for the right connection.
+2. You use catalog tools directly or deploy custom tools for allowed operations.
+3. Your agent discovers the available tools.
+4. The agent asks Nango to execute a tool for the right connection.
 5. Nango runs the external API call with the user's credentials and logs the execution.
 
 This keeps provider credentials in Nango and gives you a common tool surface across frameworks.
 
 ## Technical setup
 
-Nango supports both direct action function execution and MCP-based tool discovery through [agent sessions](/guides/agent-sessions).
+Nango supports both direct tool execution and MCP-based tool discovery through [agent sessions](/guides/agent-sessions).
 
 ## What to read next
 
-- [Tool calling & MCP](/guides/agent-sessions) - connect Nango action functions to agents, LLM SDKs, and MCP clients.
-- [Action functions](/guides/functions/action-functions) - build the action functions agents can call.
+- [Tool calling & MCP](/guides/agent-sessions) - connect Nango tools to agents, LLM SDKs, and MCP clients.
+- [Tools](/guides/functions/tools) - build the tools agents can call.
 - [List functions](/reference/backend/http-api/functions/list) - list available functions programmatically.
 - [Functions guide](/guides/functions/functions-guide) - create, test, deploy, and trigger functions.
 - [Auth guide](/guides/auth/auth-guide) - let users authorize external APIs.
@@ -601,7 +601,7 @@ The same foundation works for classic data sync, indexing, RAG ingestion, and tr
 - [Sync partitioning](/guides/functions/syncs/sync-partitioning) - fan out one connection into multiple sync variants.
 
 <Note>
-  You can also pair sync functions with Action functions for two-way sync: sync reads from the external API, then call a function on demand to write changes back.
+  You can also pair sync functions with Tools for two-way sync: sync reads from the external API, then call a function on demand to write changes back.
 </Note>
 
 ## Run external API operations
@@ -611,16 +611,15 @@ Description: Use Nango functions to read, write, and automate external APIs on d
 
 Some integration work needs to happen immediately: create a CRM contact, send a Slack message, fetch the latest account settings, or run a multi-step workflow after a user clicks a button.
 
-Nango handles these on-demand operations with Action functions. You write the API logic once, Nango runs it with the right connection credentials, and your app calls the function from any backend or agent framework.
+Nango handles these on-demand operations with Tools. You write the API logic once, Nango runs it with the right connection credentials, and your app calls the function from any backend or agent framework.
 
 ## When this fits
 
-Use Action functions when you need to:
+Use Tools when you need to:
 
 - Run reads or writes against an external API on demand.
 - Hide multi-step provider workflows behind one stable interface.
 - Normalize the same operation across several APIs.
-- Execute bulk or rate-limited work in the background.
 - Expose selected operations as tools for AI agents.
 
 For continuously replicated data, use [Sync external API data](/getting-started/use-cases/syncs) instead.
@@ -628,23 +627,23 @@ For continuously replicated data, use [Sync external API data](/getting-started/
 ## How Nango fits in
 
 1. Your user authorizes an integration with Nango.
-2. You call a catalog action directly or deploy your own action.
+2. You call a catalog tool directly or deploy your own tool.
 3. Your app calls the function with an input payload.
 4. Nango executes the provider API calls with the user's credentials.
-5. Your app receives the result, or polls/listens for completion if the function runs asynchronously.
+5. Your app receives the tool's result.
 
 These functions are the technical foundation behind on-demand API operations, unified APIs, and AI tool calls.
 
 ## What to read next
 
 - [Functions guide](/guides/functions/functions-guide) - create, test, deploy, and trigger functions end to end.
-- [Action functions](/guides/functions/action-functions) - synchronous calls, async execution, retries, and workflows.
+- [Tools](/guides/functions/tools) - build and call on-demand operations.
 - [Tool calling for AI agents](/getting-started/use-cases/tool-calling) - use functions as AI tools.
 - [Build a unified API](/getting-started/use-cases/unified-apis) - use functions behind a normalized product API.
 - [Functions SDK reference](/reference/functions/functions-sdk) - runtime methods available inside function code.
 
 <Note>
-  You can use actions from the [template catalog](https://www.nango.dev/templates) without writing code. See the [Functions guide](/guides/functions/functions-guide#catalog-action-stability) to choose between a catalog action and your own.
+  You can use tools from the [template catalog](https://www.nango.dev/templates) without writing code. See the [Functions guide](/guides/functions/functions-guide#catalog-tool-stability) to choose between a catalog tool and your own.
 </Note>
 
 ## Process external webhooks
@@ -723,7 +722,7 @@ Design the unified model around your product's needs, not around an abstract low
 1. You define the model your product wants to use.
 2. Each provider gets functions that translate between the provider API and that model.
 3. Sync functions read external data into your model.
-4. Action functions write changes back through provider-specific logic.
+4. Tools write changes back through provider-specific logic.
 5. Your app calls the stable Nango function interface instead of branching across providers.
 
 Use [data validation](/guides/functions/data-validation) to keep provider mappings honest and catch drift close to the external API.
@@ -731,7 +730,7 @@ Use [data validation](/guides/functions/data-validation) to keep provider mappin
 ## What to read next
 
 - [Unified APIs with functions](/guides/functions/unified-apis) - technical implementation guide for building unified models and functions.
-- [Action functions](/guides/functions/action-functions) - implement unified write operations and on-demand reads.
+- [Tools](/guides/functions/tools) - implement unified write operations and on-demand reads.
 - [Sync functions](/guides/functions/syncs/sync-functions) - read provider data into your unified model.
 - [Data validation](/guides/functions/data-validation) - validate models and generate schemas.
 - [Storage](/guides/functions/storage#customer-configuration-pattern) - handle custom fields and per-customer mapping.
@@ -764,11 +763,11 @@ Avoid adding configuration before you need it. Start with a default path, then a
 3. Nango functions read metadata while running for that connection.
 4. The same function code adapts requests and transformations for each customer.
 
-Metadata is available to Action functions, sync functions, and event functions.
+Sync functions and event functions can read connection metadata. For tools, pass the customer's configuration in the tool input.
 
 ## Common patterns
 
-- Fetch available custom fields with an action function, then store the customer's mapping.
+- Fetch available custom fields with a tool, then have your backend store the customer's mapping.
 - Store provider account IDs or workspace IDs discovered after authorization.
 - Use metadata to filter which records a sync function should fetch.
 - Start a sync function schedule only after required customer configuration exists.
@@ -777,7 +776,7 @@ Metadata is available to Action functions, sync functions, and event functions.
 
 - [Storage](/guides/functions/storage) - set, update, and read connection metadata from your app and functions.
 - [Sync functions](/guides/functions/syncs/sync-functions) - use metadata to filter synced data.
-- [Action functions](/guides/functions/action-functions) - fetch provider configuration options on demand.
+- [Tools](/guides/functions/tools) - fetch provider configuration options on demand.
 - [Event functions](/guides/functions/event-functions) - initialize metadata when a connection is created.
 - [Connection metadata API](/reference/backend/http-api/connections/set-metadata) - API reference.
 
@@ -953,7 +952,7 @@ The sample app uses Slack, Google Drive, OneDrive for Business, and OneDrive Per
     - Go to: [http://localhost:3011](http://localhost:3011)
   </Step>
   <Step id="deploy-custom-functions" title="Bonus: Deploy custom functions">
-    The above sample app uses actions from the Nango catalog, but you can also use custom ones.
+    The above sample app uses tools from the Nango catalog, but you can also use custom ones.
 
     - Set up the Nango CLI:
     ```sh
@@ -1526,7 +1525,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     🎉 **You are connected!** Next:
     - View connections and credentials in the **Connections** tab.
     - Retrieve credentials via the [API](/reference/backend/http-api/connections/get) or [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials).
-    - Build with [sync functions](/guides/functions/syncs/sync-functions), [Action functions](/guides/functions/action-functions), [webhook functions](/guides/functions/webhook-functions), or any other Nango function type.
+    - Build with [sync functions](/guides/functions/syncs/sync-functions), [Tools](/guides/functions/tools), [webhook functions](/guides/functions/webhook-functions), or any other Nango function type.
   </Step>
 </Steps>
 
@@ -2540,7 +2539,7 @@ Each session has three parts:
 
 Your backend creates the session and exposes it to the agent as an MCP server. The agent never sees raw credentials, and cannot change the scope of its own session.
 
-The available toolset can include Nango catalog actions, action functions you manage yourself, and the tools of [MCP servers](#mcp-server-tools) your tenant has connected. Catalog actions are available out of the box and update automatically.
+The available toolset can include Nango catalog tools, tools you manage yourself, and the tools of [MCP servers](#mcp-server-tools) your tenant has connected. Catalog tools are available out of the box and update automatically.
 
 Example sessions:
 - A sales agent with a user's personal Gmail & Google Calendar, and a read-only org-wide Salesforce connection
@@ -2905,7 +2904,7 @@ The toolset is a subset of the Integrations that are enabled in your Nango envir
 ```
 
 You can use the following selectors:
-- `"*"` on an integration means every action function on it, and every tool of its MCP server
+- `"*"` on an integration means every tool on it, and every tool of its MCP server
 - `allow` makes the integration an allowlist, where `"*"` means every tool
 - `deny` always subtracts from whatever `allow` gave
 - To deny an integration entirely, leave it out of the toolset
@@ -2916,7 +2915,7 @@ You can use the following selectors:
 `allow` and `deny` limit which tools the agent can call, not which API endpoints it can reach. With [`nango_proxy`](#nango_proxy) on, the agent can call any endpoint of a connected integration in the toolset, including ones your deny list was meant to keep out. For an MCP server, that includes sending `tools/call` to the server directly, for any of its tools.
 </Warning>
 
-Only action functions and [MCP server tools](#mcp-server-tools) can be tools. Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
+Sessions can expose HTTP-triggered tools, catalog tools, existing deprecated actions, and [MCP server tools](#mcp-server-tools). Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
 
 ### Pinned tools
 
@@ -2937,7 +2936,7 @@ A pinned tool must be in the toolset, otherwise creation fails with `tool_not_in
 
 Integrations for MCP servers, such as [Notion (MCP)](/api-integrations/notion-mcp) or [Linear (MCP)](/api-integrations/linear-mcp), bring the server's own tools into the session. There is nothing to deploy and nothing to turn on. Include the integration in the toolset like any other and give the tenant a connection to it.
 
-When the session is created, Nango lists the tools of each connected MCP server in the toolset and adds them alongside its actions. From then on they work like any other tool:
+When the session is created, Nango lists the tools of each connected MCP server in the toolset and adds them alongside its Nango tools. From then on they work like any other tool:
 
 - `nango_tool_search` finds them, with the input schema the server gave
 - Pinned, they are listed with that input schema and the server's annotations
@@ -2953,7 +2952,7 @@ When the session is created, Nango lists the tools of each connected MCP server 
 }
 ```
 
-`allow`, `deny` and `pinned_tools` name a tool exactly as the server lists it. In the session, the tool gets a name like an action's, such as `notion-mcp__notion-search`. Agents call it by the name the tool list or `nango_tool_search` gives.
+`allow`, `deny` and `pinned_tools` name a tool exactly as the server lists it. In the session, the tool gets a name like a Nango tool's, such as `notion-mcp__notion-search`. Agents call it by the name the tool list or `nango_tool_search` gives.
 
 The list is taken once, at creation. Tools the server adds or removes afterwards don't change the session, so create a new one to pick them up.
 
@@ -3007,7 +3006,7 @@ Takes a plain-language `query` describing what the agent wants to do.
 { "query": "find emails by subject" }
 ```
 
-The result carries `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status.
+The result carries `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status. The `action` field is the API's tool-name field; it is used for tools as well as deprecated actions.
 
 Only a best match includes `input`, its argument schema — a weak match is a lead, not something to call yet.
 
@@ -3019,7 +3018,7 @@ Runs one of the session's tools by name, on the connection the session resolved 
 { "tool": "notion__read_doc", "input": { "doc_id": "abc" } }
 ```
 
-Execution is synchronous and goes through the same path as [triggering an action function](/reference/backend/http-api/action/trigger), so it is capped by the synchronous execution limit and appears in Nango logs like any other function run.
+Execution is synchronous and appears in Nango logs. See [Limits](/guides/platform/limits#function-execution-limits) for execution limits.
 
 ### nango_proxy
 
@@ -3083,13 +3082,13 @@ Description: Understand Nango Functions and choose the right way to start using 
 
 When you build integrations directly, every provider forces you to solve the same hard problems: OAuth credentials, token refresh, per-customer permissions, retries, rate limits, data freshness, observability, and safe execution. Nango handles that infrastructure, and functions let you write the provider-specific logic that is unique to your product.
 
-You can use Nango-maintained catalog actions directly, enable sync templates, or write and deploy your own functions. Your app can call functions from any language, framework, backend job, or agent workflow. Each execution runs for a specific integration and connection, so the function has scoped access to the right customer's credentials without exposing those credentials to your app or agent.
+You can use Nango-maintained catalog tools directly, enable sync templates, or write and deploy your own functions. Your app can call functions from any language, framework, backend job, or agent workflow. Each execution runs for a specific integration and connection, so the function has scoped access to the right customer's credentials without exposing those credentials to your app or agent.
 
 ## How functions fit
 
 1. Your user authorizes an external API through [Nango Auth](/guides/auth/auth-guide).
 2. Your app stores the resulting `connectionId`.
-3. You use a catalog action, enable a sync template, or deploy a custom function for the integration.
+3. You use a catalog tool, enable a sync template, or deploy a custom function for the integration.
 4. Nango runs the function on demand, on a schedule, from an external webhook, or after a connection lifecycle event.
 5. Your app receives the function result, sync records, or webhooks from Nango.
 
@@ -3102,7 +3101,7 @@ Functions are the right layer when you need custom API logic, data syncing, webh
 - **Multiple trigger types** — call functions on demand, run them on a schedule, route external webhooks into them, or react to connection lifecycle events.
 - **Agent-ready tools** — expose selected functions to agents through the API or Nango's MCP server while keeping provider credentials out of the model loop.
 - **Built-in integration infrastructure** — retries, rate-limit handling, logs, OpenTelemetry export, records storage, checkpoints, and per-connection metadata.
-- **Flexible development workflows** — use catalog actions directly, enable sync templates, build through the Functions API, or keep function code in a local CLI project.
+- **Flexible development workflows** — use catalog tools directly, enable sync templates, build through the Functions API, or keep function code in a local CLI project.
 
 <a id="guide"></a>
 ## Guide
@@ -3113,7 +3112,7 @@ There are three ways to use or develop Nango functions. Start with the path that
 
 | Path | Best for | How it works |
 | --- | --- | --- |
-| [Option 1: Use the template catalog](#use-function-templates) | Getting started quickly when Nango already has the provider operation in the catalog. | Use catalog actions, or enable a sync template. |
+| [Option 1: Use the template catalog](#use-function-templates) | Getting started quickly when Nango already has the provider operation in the catalog. | Use catalog tools, or enable a sync template. |
 | [Option 2: Build locally with the CLI](#build-locally-with-the-cli) | Serious production use cases where you want reviewable diffs, tests, CI/CD, and source control. | Write TypeScript functions in your repo, dry run them against real connections, and deploy with the Nango CLI. |
 | [Option 3: Build with the Functions API](#build-with-the-functions-api) | Prototypes, provider operations not covered by templates, and just-in-time integrations where an agent creates behavior dynamically. | Send generated TypeScript source to Nango, compile it, dry run it, and deploy it without a local functions project. |
 
@@ -3122,16 +3121,17 @@ There are three ways to use or develop Nango functions. Start with the path that
 <a id="template-catalog"></a>
 ### Option 1: Use the template catalog
 
-The template catalog contains pre-built Nango functions for common provider operations. Catalog actions are available out of the box and update automatically. Sync templates must be enabled before they run.
+The template catalog contains pre-built Nango functions for common provider operations. Catalog tools are available out of the box and update automatically. Sync templates must be enabled before they run.
 
 <a id="catalog-action-stability"></a>
+<a id="catalog-tool-stability"></a>
 <Note>
-  **Catalog actions and stability.** Catalog actions are maintained by Nango and update automatically. Their input schema, output shape, and behavior may change as the catalog evolves. They are best suited to agentic workflows, such as MCP tool calling. If deterministic application code needs a stable contract, [pull the action into your functions project and deploy it](#extend-a-template). The deployed function becomes your owned implementation and no longer follows catalog updates.
+  **Catalog tools and stability.** Catalog tools are maintained by Nango and update automatically. Their input schema, output shape, and behavior may change as the catalog evolves. They are best suited to agentic workflows, such as MCP tool calling. If deterministic application code needs a stable contract, [pull the tool into your functions project and deploy it](#extend-a-template). The deployed function becomes your owned implementation and no longer follows catalog updates.
 </Note>
 
 You can find templates in the [template catalog](https://www.nango.dev/templates), in the integration page of the Nango dashboard, and in the [Nango integration templates repository](https://github.com/NangoHQ/integration-templates).
 
-You can use catalog actions with [Agent sessions](/guides/agent-sessions) or call them directly from your backend. For deterministic application code, [pull and deploy it](#extend-a-template) to avoid unexpected changes.
+You can use catalog tools with [Agent sessions](/guides/agent-sessions) or call them directly from your backend. For deterministic application code, [pull and deploy it](#extend-a-template) to avoid unexpected changes.
 
 When a sync template matches your use case, enable it on the integration. If a sync template is close but not exact, [pull it into a local functions project and customize it](#extend-a-template).
 
@@ -3145,7 +3145,7 @@ nango pull github list-repos --catalog
 nango pull github list-repos --env dev
 ```
 
-`nango pull` writes a single function and its dependencies. After pulling, review the source and schemas, import the function from `index.ts` if needed, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
+`nango pull` writes a single function and its dependencies. Some catalog templates still use deprecated `createAction` definitions. [Convert them to tools](/guides/platform/migrations/migrate-from-actions#migrate-the-implementation) when customizing them. After pulling, review the source and schemas, import the function from `index.ts` if needed, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
 
 <Tip>
   Pull a pre-built function when you need custom fields, a smaller output shape, customer-specific filtering, different retry behavior, or a provider workflow that is close to the catalog but not identical.
@@ -3208,7 +3208,7 @@ Local development is the default path for production integrations. Use it when y
     </Note>
 
     <Accordion title="Team setup">
-      Use a shared environment (usually `dev`) for day-to-day collaboration. Create personal test connections with [per-connection webhook URL overrides](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection) pointing at your local webhook endpoint, and deploy functions granularly (`nango deploy --sync` / `--action` / `--integration`) so teammates don't overwrite each other. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
+      Use a shared environment (usually `dev`) for day-to-day collaboration. Create personal test connections with [per-connection webhook URL overrides](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection) pointing at your local webhook endpoint, and deploy functions granularly (`nango deploy --sync` / `--integration`) so teammates don't overwrite each other. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
       Use CI to do full deploys across stable environments (like `staging` or `prod`). See the [CI/CD guide](/guides/functions/ci-cd).
     </Accordion>
 
@@ -3226,7 +3226,7 @@ Local development is the default path for production integrations. Use it when y
   <Step id="understand-folder-layout" title="Understand the folder layout">
     A Nango integrations folder is a small TypeScript project. The root contains shared project files, and each integration gets its own folder named after the integration ID.
 
-    Inside each integration folder, keep function files grouped by type. Sync functions live in `syncs/`, action functions in `actions/`, and event functions in `on-events/`. This keeps the trigger model visible from the file path and matches how the CLI discovers function code.
+    Inside each integration folder, keep function files grouped by type. Sync functions live in `syncs/`, tools in `tools/`, and event functions in `on-events/`. This keeps the trigger model visible from the file path and matches how the CLI discovers function code.
 
     The root `index.ts` is the deployment entry point. It should import every function file you want Nango to compile and deploy, for example `import './github/syncs/github-issues';`. Files that are not imported from `index.ts` are not part of the deployed function set.
 
@@ -3242,7 +3242,7 @@ Local development is the default path for production integrations. Use it when y
     └── <integration-id>/              # one folder per integration, e.g. github
         ├── syncs/
         │   └── github-issues.ts
-        ├── actions/
+        ├── tools/
         │   └── github-create-issue.ts
         └── on-events/
             └── post-connection-creation.ts
@@ -3267,7 +3267,7 @@ Local development is the default path for production integrations. Use it when y
     | If you need to... | Use | Common trigger | Guide |
     | --- | --- | --- | --- |
     | Keep external API data fresh, replicate records, or reconcile changes | Sync function | Schedule, manual sync trigger, or external webhook reconciliation | [Sync functions](/guides/functions/syncs/sync-functions) |
-    | Run an operation when your app, backend job, or agent asks for it | Action function | HTTP API, SDK, async action queue, or MCP/tool call | [Action functions](/guides/functions/action-functions) |
+    | Run an operation when your app, backend job, or agent asks for it | Tool | HTTP API, SDK, or MCP tool call | [Tools](/guides/functions/tools) |
     | Process an external provider webhook inside Nango | Webhook function | External API webhook | [Webhook functions](/guides/functions/webhook-functions) |
     | React to Nango connection lifecycle events | Event function | Connection creation, validation, or deletion | [Event functions](/guides/functions/event-functions) |
 
@@ -3292,14 +3292,12 @@ Local development is the default path for production integrations. Use it when y
     ```bash
     nango deploy --sync <function-name> dev
     # or
-    nango deploy --action <function-name> dev
-    # or
     nango deploy --integration <integration-id> dev
     ```
 
     A bare `nango deploy` reconciles every function in the environment and can overwrite teammates' work on a shared collaborative environment. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
 
-    For function-type-specific commands, see the [Sync function guide](/guides/functions/syncs/sync-functions#test-and-deploy), [Action function guide](/guides/functions/action-functions#test-and-deploy), and [Testing](/guides/functions/testing).
+    For function-type-specific commands, see the [Sync function guide](/guides/functions/syncs/sync-functions#test-and-deploy), [Tool guide](/guides/functions/tools#test-and-deploy), and [Testing](/guides/functions/testing).
   </Step>
 </Steps>
 
@@ -3323,12 +3321,16 @@ This is useful for prototypes, onboarding flows, provider operations not covered
   </button>
 </div>
 
+<Note>
+  The source-code Functions API currently supports sync functions and deprecated actions. Build and deploy new tools with the [CLI workflow](#build-locally-with-the-cli).
+</Note>
+
 At a high level, the flow is:
 
 1. Give the agent the integration ID, a connection ID for validation, the intended behavior, input and output shape, and any provider API context.
 2. The agent generates a self-contained TypeScript function using the right function type.
 3. Compile the source with `POST /functions/compile`. Send the TypeScript source as `code` and use compiler errors to improve it.
-4. Start a dry run with `POST /functions/dryruns`. Send the integration ID, function type, source `code`, connection ID, and any action input, sync metadata, or checkpoint payload needed for the run.
+4. Start a dry run with `POST /functions/dryruns`. Send the integration ID, function type, source `code`, connection ID, and any function input, sync metadata, or checkpoint payload needed for the run.
 5. Poll `GET /functions/dryruns/{id}` until the dry run reaches `success` or `failed`, then inspect the result, logs, records, or error.
 6. Deploy it with `POST /functions/deployments`. Send `type: "function"`, the integration ID, function name, function type, and final source `code`. After deployment, your app can call or trigger the function like any other Nango function.
 
@@ -3346,13 +3348,13 @@ nango pull github list-repos --env dev
 nango pull github list-repos --catalog
 ```
 
-`--env` works for any function served by an environment, including a catalog action or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments-create).
+`--env` works for any function served by an environment, including a catalog tool or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments-create).
 
-The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD. A repo-managed function with the same name becomes the integration's owned implementation instead of following the catalog.
+The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD.
 
 ## Related guides
 
-- [Function tool calling](/guides/agent-sessions) — expose action functions to agents, LLM SDKs, and MCP clients.
+- [Function tool calling](/guides/agent-sessions) — expose tools to agents, LLM SDKs, and MCP clients.
 - [Unified APIs](/guides/functions/unified-apis) — build provider-specific functions behind one stable model.
 - [Logging](/guides/functions/logging) — control custom function logs locally and in cloud environments.
 - [Storage](/guides/functions/storage) — store per-connection metadata and read it inside functions.
@@ -3568,15 +3570,15 @@ The consumer loop is: receive a sync webhook from Nango, look up the last cursor
 
 ## Two-way syncs
 
-You can implement two-way syncs by combining sync functions with [action functions](/guides/functions/action-functions):
+You can implement two-way syncs by combining sync functions with [tools](/guides/functions/tools):
 
 - Use a sync function to replicate external data into your app and keep your local state fresh.
-- Use action functions for writes back to the external API, such as creating, updating, or deleting records.
-- After a write action succeeds, update your local state optimistically or trigger the relevant sync so the records cache catches up with the external source of truth.
+- Use tools for writes back to the external API, such as creating, updating, or deleting records.
+- After a write tool succeeds, update your local state optimistically or trigger the relevant sync so the records cache catches up with the external source of truth.
 
-This keeps the read path and write path explicit. The sync owns ongoing data freshness, checkpoints, record storage, and change delivery. Actions own user-initiated writes and provider-specific validation or side effects.
+This keeps the read path and write path explicit. The sync owns ongoing data freshness, checkpoints, record storage, and change delivery. Tools own user-initiated writes and provider-specific validation or side effects.
 
-For unified models, use the same schema for synced records and write action input where possible. This keeps your app from branching on each provider while still letting each provider implementation handle API-specific fields and edge cases.
+For unified models, use the same schema for synced records and write tool input where possible. This keeps your app from branching on each provider while still letting each provider implementation handle API-specific fields and edge cases.
 
 ## Deep dives
 
@@ -4571,208 +4573,108 @@ Keep variants non-overlapping in data scope (unless intentional), store variant-
 - [Records cache](/guides/functions/syncs/records-cache) - fetch data for each variant.
 - [Create sync variant API](/reference/backend/http-api/sync/create-variant) - manage variants programmatically.
 
-## Action functions
+## Tools
 
-Source: https://nango.dev/docs/guides/functions/action-functions.md
-Description: Build Action functions that your app, backend jobs, or agents can call on demand.
+Source: https://nango.dev/docs/guides/functions/tools.md
+Description: Build, test, deploy, and call tools from your backend or AI agent.
 
-Action functions run when your app, backend job, or agent explicitly calls them. In SDK and API names, this function type is often called an **action** because it receives an input and returns an output.
+A tool is a function with an HTTP trigger. Use tools for on-demand reads, writes, and provider workflows. Call them from your backend with the [tool-call API](/reference/backend/http-api/tools/call), the [Node SDK](/reference/backend/backend-sdk/node#call-a-tool), or an [agent session](/guides/agent-sessions).
 
-Use action functions for reads, writes, multi-step provider workflows, unified API operations, and AI tools.
+Nango catalog tools are available without deploying code. Build your own when you need custom logic or a stable contract you control.
 
-<Note>
-  Nango provides a catalog of pre-built actions that you can call out of the box. This guide describes writing and deploying your own action function. To customize actions from the catalog, see [Extend a template](/guides/functions/functions-guide#extend-a-template).
-</Note>
+## Create a tool
 
-## Create the function
+In your [functions project](/guides/functions/functions-guide#build-locally-with-the-cli), add a tool and import it from `index.ts`:
 
-Add a file under the integration's `actions/` folder:
-
-```typescript github/actions/create-issue.ts
-import { createAction } from 'nango';
+```typescript github/tools/create-issue.ts
+import { createTool } from 'nango';
 import * as z from 'zod';
 
-export default createAction({
+export default createTool({
     description: 'Creates a GitHub issue',
-    version: '1.0.0',
     input: z.object({
         owner: z.string(),
         repo: z.string(),
         title: z.string(),
         body: z.string().optional()
     }),
-    output: z.object({
-        id: z.number(),
-        url: z.string().url()
-    }),
-    exec: async (nango, input) => {
+    output: z.object({ id: z.number(), url: z.string().url() }),
+    meta: {
+        instructions: 'Use when the user asks to create an issue. Confirm the repository and title first.',
+        requiredScopes: ['repo']
+    },
+    exec: async (nango, trigger) => {
+        const { owner, repo, title, body } = trigger.input;
         const response = await nango.post({
-            endpoint: `/repos/${input.owner}/${input.repo}/issues`,
-            data: {
-                title: input.title,
-                body: input.body
-            }
+            endpoint: `/repos/${owner}/${repo}/issues`,
+            data: { title, body }
         });
-
-        return {
-            id: response.data.id,
-            url: response.data.html_url
-        };
+        return { id: response.data.id, url: response.data.html_url };
     }
 });
 ```
 
-Import it from `index.ts`:
-
 ```typescript index.ts
-import './github/actions/create-issue';
+import './github/tools/create-issue';
 ```
 
-<Warning>
-  The output of an action function cannot exceed 2 MB. Return only the fields your app needs. For larger payloads, use the [requests proxy](/guides/platform/proxy-requests) to fetch data directly from your app.
-</Warning>
-
-<Accordion title="For agents">
-  Before generating an action function, collect the integration ID, connection ID for testing, provider endpoint, required input fields, expected output shape, and whether the operation is safe to retry.
-
-  Prefer explicit Zod schemas and short provider response mapping. If the action performs writes, make the logic idempotent before using async execution or retries.
-</Accordion>
+The tool name defaults to its file name. Read input from `trigger.input`. Nango validates the input against the schema before execution. `meta.requiredScopes` documents provider permissions; Nango does not enforce them. See [`createTool`](/reference/functions/functions-sdk#createtool) for all options.
 
 ## Test and deploy
 
-Dry run the function with realistic input:
+Create a test connection in the **Connections** tab, then dry run the tool with realistic input:
 
 ```bash
-nango dryrun create-issue '<CONNECTION-ID>' -e dev --input '{"owner":"NangoHQ","repo":"interactive-demo","title":"Bug report","body":"Created from a Nango action"}'
+nango dryrun create-issue '<CONNECTION-ID>' -e dev --input '{"owner":"NangoHQ","repo":"interactive-demo","title":"Bug report"}' --validate
+nango deploy --integration github dev
 ```
 
-Deploy your functions:
+To simulate an HTTP request, use `--trigger-http` instead of `--input`:
 
 ```bash
-nango deploy
+nango dryrun create-issue '<CONNECTION-ID>' -e dev --trigger-http '{"method":"POST","path":"/","headers":{},"query":{},"body":{"owner":"NangoHQ","repo":"interactive-demo","title":"Bug report"}}' --validate
 ```
 
-To deploy only this action function:
+A dry run calls real provider APIs and can create or change data. See [Testing](/guides/functions/testing) and [CI/CD](/guides/functions/ci-cd).
 
-```bash
-nango deploy --action create-issue dev
-```
+## Call a tool
 
-For broader test coverage, see the [testing guide](/guides/functions/testing). To deploy from CI, see [CI/CD](/guides/functions/ci-cd).
-
-## Trigger synchronously
-
-Synchronous execution is the default. The API or SDK call returns the function output.
+Use a Nango Environment API key from **Environment Settings > API Keys**. Scoped keys need both `environment:functions:invocations` and `environment:actions:execute`.
 
 <Tabs>
-  <Tab title="TypeScript">
-  ```typescript
-  import { Nango } from '@nangohq/node';
-
-  const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
-
-  const result = await nango.triggerAction(
-      'github',
-      '<CONNECTION-ID>',
-      'create-issue',
-      {
-          owner: 'NangoHQ',
-          repo: 'interactive-demo',
-          title: 'Bug report',
-          body: 'Created from a Nango action'
-      }
-  );
-  ```
-  </Tab>
   <Tab title="cURL">
-  ```bash
-  curl --request POST \
-    --url https://api.nango.dev/action/trigger \
-    --header 'Authorization: Bearer <ENV-SECRET-KEY>' \
-    --header 'Connection-Id: <CONNECTION-ID>' \
-    --header 'Provider-Config-Key: github' \
-    --header 'Content-Type: application/json' \
-    --data '{
-      "action_name": "create-issue",
-      "input": {
-        "owner": "NangoHQ",
-        "repo": "interactive-demo",
-        "title": "Bug report",
-        "body": "Created from a Nango action"
-      }
-    }'
-  ```
+    ```bash
+    curl --request POST \
+      --url 'https://api.nango.dev/connections/<CONNECTION-ID>/tools/create-issue/calls' \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
+      --header 'Provider-Config-Key: github' \
+      --header 'Content-Type: application/json' \
+      --data '{"input":{"owner":"NangoHQ","repo":"interactive-demo","title":"Bug report"}}'
+    ```
+  </Tab>
+  <Tab title="TypeScript">
+    ```typescript
+    import { Nango } from '@nangohq/node';
+
+    const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
+    const result = await nango.callTool(
+        { connectionId: '<CONNECTION-ID>', name: 'create-issue' },
+        { input: { owner: 'NangoHQ', repo: 'interactive-demo', title: 'Bug report' } },
+        { 'provider-config-key': 'github' }
+    );
+    ```
   </Tab>
 </Tabs>
 
-## Trigger asynchronously
+Calls are synchronous and return the tool's output directly. Omit `input` for tools that take no input, sending `{}` as the request body. The integration header is optional when the connection ID is unique in the environment; supply it when multiple integrations share that ID.
 
-Use async execution for bulk writes, bursty work, or provider endpoints with tight rate limits. Nango queues the execution, applies retries, and lets you poll or receive a webhook when it completes.
+## Expose tools to an agent
 
-<Note>
-  Execution timing for asynchronous actions is not guaranteed. Async actions are currently processed sequentially per environment, so completion time depends on how many actions are queued and how long each one runs. Design callers to handle delays by polling the result endpoint or listening for the completion webhook.
-</Note>
+Use [agent sessions](/guides/agent-sessions) to scope tools and connections to a tenant. Tools participate in `toolset`, `allow`, `deny`, and `pinned_tools` policies and can be discovered through `nango_tool_search`.
 
-<Tabs>
-  <Tab title="TypeScript">
-  ```typescript
-  const { id, statusUrl } = await nango.triggerActionAsync(
-      'github',
-      '<CONNECTION-ID>',
-      'create-issue',
-      {
-          owner: 'NangoHQ',
-          repo: 'interactive-demo',
-          title: 'Bug report',
-          body: 'Created from an async Nango action'
-      }
-  );
-  ```
-  </Tab>
-  <Tab title="cURL">
-  ```bash
-  curl --request POST \
-    --url https://api.nango.dev/action/trigger \
-    --header 'Authorization: Bearer <ENV-SECRET-KEY>' \
-    --header 'Connection-Id: <CONNECTION-ID>' \
-    --header 'Provider-Config-Key: github' \
-    --header 'X-Async: true' \
-    --header 'X-Max-Retries: 3' \
-    --header 'Content-Type: application/json' \
-    --data '{
-      "action_name": "create-issue",
-      "input": {
-        "owner": "NangoHQ",
-        "repo": "interactive-demo",
-        "title": "Bug report",
-        "body": "Created from an async Nango action"
-      }
-    }'
-  ```
-  </Tab>
-</Tabs>
+For coding agents managing Nango, the [Management MCP server](/reference/backend/management-mcp#functions) exposes `tools_call`.
 
-Poll the result:
-
-```typescript
-const result = await nango.getAsyncActionResult({ id });
-```
-
-The async trigger response includes a `statusUrl` and `id`. Poll `GET /action/<ACTION-ID>` for the result: `404` means the execution is still running, `200` returns the function output, and `500` returns the execution error.
-
-To receive completion events instead of polling, configure [webhooks from Nango to your app](/guides/platform/webhooks-from-nango) and enable the `Async action completed` webhook.
-
-<Warning>
-  Use retries only for idempotent function logic. Retried writes can otherwise create duplicate side effects in the external API.
-</Warning>
-
-## Related guides
-
-- [Agents tool calling](/guides/agent-sessions)
-- [Data validation](/guides/functions/data-validation)
-- [Rate limits](/guides/functions/rate-limits)
-- [Trigger action API](/reference/backend/http-api/action/trigger)
-- [Functions SDK reference](/reference/functions/functions-sdk)
+For existing deprecated action implementations, see [Migrate from actions to tools](/guides/platform/migrations/migrate-from-actions).
 
 ## Webhook functions
 
@@ -5103,7 +5005,7 @@ For the product-level workflow, see [Customize per customer](/getting-started/us
 
 ## Connection metadata
 
-Connection metadata is the default blob storage for Nango Functions. It is a JSON object stored on a Nango connection and available to action functions, sync functions, webhook functions, and event functions.
+Connection metadata is the default blob storage for Nango Functions. It is a JSON object stored on a Nango connection and available to sync functions, webhook functions, and event functions. Tools do not expose `getMetadata`, `setMetadata`, or `updateMetadata`; pass customer configuration as tool input instead.
 
 Use metadata for:
 
@@ -5241,7 +5143,7 @@ A common customer configuration pattern is to ask the customer how their externa
 }
 ```
 
-Use an action function to fetch available custom fields from the provider, save the customer's choices as metadata, then read the mapping inside the sync function that fetches records.
+Use a tool to fetch available custom fields from the provider. Save the customer's choices as metadata from your backend, then read the mapping inside the sync function that fetches records.
 
 If a sync function should start only after the required configuration exists, start it after saving metadata:
 
@@ -5267,7 +5169,7 @@ Use the records cache for synced external data, not for function configuration. 
 Source: https://nango.dev/docs/guides/functions/logging.md
 Description: Use function logs for local debugging, cloud observability, and production troubleshooting.
 
-Nango records function executions in the Logs tab. You can also add custom logs from action, sync, webhook, and event functions with `nango.log()`.
+Nango records function executions in the Logs tab. You can also add custom logs from tools and sync, webhook, and event functions with `nango.log()`.
 
 Use custom logs for information that helps you understand function behavior: selected filters, page counts, checkpoint values, provider identifiers, branch decisions, and recoverable errors.
 
@@ -5373,7 +5275,7 @@ await nango.get({ endpoint: '/some-endpoint', retries: 10 });
 This configuration enables automatic retries on receiving a `429` status code, with the retries spaced out using exponential backoff. This method is efficient because:
 
 - It uses exponential backoff to wait out the rate-limit period
-- Nango [sync functions](/guides/functions/syncs/sync-functions) can run for up to 24 hours, allowing retries to occur within this window (note that action functions and webhook functions have shorter lifespans; see [Resource limits](/guides/platform/limits))
+- Nango [sync functions](/guides/functions/syncs/sync-functions) can run for up to 24 hours, allowing retries to occur within this window (note that tools and webhook functions have shorter lifespans; see [Resource limits](/guides/platform/limits))
 - It works for APIs without requiring any API-specific configurations
 
 Find details about HTTP request retries in the [reference](/reference/functions/functions-sdk#http-request-retries).
@@ -5395,7 +5297,7 @@ If rate-limit headers are not already configured for an API you are using, you c
 ## Related guides
 
 - [Sync efficiency](/guides/functions/syncs/sync-efficiency) - avoid unnecessary provider requests.
-- [Action functions](/guides/functions/action-functions) - design retries for idempotent actions.
+- [Tools](/guides/functions/tools) - design retries for idempotent tools.
 - [Resource limits](/guides/platform/limits) - understand runtime constraints.
 - [Functions SDK reference](/reference/functions/functions-sdk#http-request-retries) - configure request retries.
 
@@ -5436,7 +5338,7 @@ export default createSync({
 
 ### TypeScript types (compile-time)
 
-Use `z.infer` to derive TypeScript types from your Zod schemas and export them from your sync/action files:
+Use `z.infer` to derive TypeScript types from your Zod schemas and export them from your function files:
 
 ```ts
 // In: github/syncs/fetchIssues.ts (Nango function)
@@ -5453,7 +5355,7 @@ const issues = await nango.listRecords<GithubIssue>({ ... });
 
 ### JSON Schema (runtime, language-agnostic)
 
-When you run `nango compile` or `nango deploy`, Nango generates a `nango.json` file in the `.nango` folder. Each sync/action entry includes a `json_schema` property with the JSON Schema for its models:
+When you run `nango compile` or `nango deploy`, Nango generates a `nango.json` file in the `.nango` folder. Each sync entry includes a `json_schema` property with the JSON Schema for its models:
 
 ```json
 // .nango/nango.json (simplified)
@@ -5484,9 +5386,9 @@ When you run `nango compile` or `nango deploy`, Nango generates a `nango.json` f
 ]
 ```
 
-You can extract the `json_schema` object for a given sync or action and use it with any JSON Schema validator in your language of choice (e.g., `ajv` in TypeScript, `jsonschema` in Python, `jsonschema` in Rust, `santhosh-tekuri/jsonschema` in Go).
+You can extract a sync's `json_schema` object and use it with any JSON Schema validator in your language of choice (e.g., `ajv` in TypeScript, `jsonschema` in Python, `jsonschema` in Rust, `santhosh-tekuri/jsonschema` in Go).
 
-Alternatively, Zod v4 supports JSON Schema conversion natively with [`z.toJSONSchema()`](https://zod.dev/json-schema?id=ztojsonschema):
+For tools, convert the input and output Zod schemas directly. Zod v4 supports JSON Schema conversion natively with [`z.toJSONSchema()`](https://zod.dev/json-schema?id=ztojsonschema):
 
 ```ts
 import { z } from 'zod';
@@ -5497,7 +5399,7 @@ const jsonSchema = z.toJSONSchema(issueSchema);
 
 ## Related guides
 
-- [Action functions](/guides/functions/action-functions) - validate action inputs and outputs.
+- [Tools](/guides/functions/tools) - validate tool inputs and outputs.
 - [Sync functions](/guides/functions/syncs/sync-functions) - validate synced record models.
 - [Unified APIs](/guides/functions/unified-apis) - normalize provider data behind stable schemas.
 - [Testing](/guides/functions/testing) - cover validation behavior in tests.
@@ -5513,7 +5415,7 @@ Nango provides a comprehensive testing framework that combines dry runs with moc
 
 Nango's testing framework is built on three core concepts:
 
-1. **Dry runs**: Test your integrations against live API connections without affecting production data
+1. **Dry runs**: Test your integrations against a real provider using a test connection
 2. **Mocks**: Save API responses during dry runs to create reproducible test fixtures
 3. **Snapshot testing**: Automatically compare integration outputs against saved snapshots using Vitest
 
@@ -5521,7 +5423,7 @@ This approach ensures your integrations work correctly while providing fast, rel
 
 ## Dry run testing
 
-Dry runs allow you to execute your sync functions and action functions against real API connections without saving data to your database. This is essential for:
+Dry runs allow you to execute your sync functions and tools against real API connections without saving sync records to your database. Provider API calls still run and can create or change external data. This is essential for:
 
 - Testing integration logic before deployment
 - Debugging issues with live data
@@ -5530,10 +5432,10 @@ Dry runs allow you to execute your sync functions and action functions against r
 
 ### Basic dry run
 
-Execute a sync or action against an existing connection:
+Execute a sync or tool against an existing connection:
 
 ```bash
-nango dryrun <sync-or-action-name> <connection-id>
+nango dryrun <function-name> <connection-id>
 ```
 
 **Example:**
@@ -5549,7 +5451,7 @@ Common options for testing:
 # Specify environment (dev or prod)
 nango dryrun fetch-tickets abc-123 -e prod
 
-# For action functions: pass input data
+# For tools: pass input data
 nango dryrun create-ticket abc-123 --input '{"title": "Test ticket"}'
 
 # For sync functions: specify an initial checkpoint
@@ -5575,8 +5477,8 @@ nango dryrun fetch-tickets abc-123 --validate
 ```
 
 When validation is enabled:
-- **Action inputs** are validated before execution
-- **Action outputs** are validated after execution
+- **Tool inputs** are validated before execution
+- **Tool outputs** are validated after execution
 - **Sync records** are validated before they would be saved
 - **Validation failures** halt execution and display detailed error messages
 
@@ -5714,7 +5616,7 @@ Generate tests for your integrations:
 nango generate:tests
 ```
 
-You can also generate tests for specific integrations, sync functions, or action functions:
+You can also generate tests for specific integrations, sync functions, or tools:
 
 ```bash
 # Generate tests for a specific integration
@@ -5723,8 +5625,8 @@ nango generate:tests -i github
 # Generate tests for a specific sync function
 nango generate:tests -s fetch-tickets
 
-# Generate tests for a specific action function
-nango generate:tests -a create-ticket
+# For tools, generate tests for their integration
+nango generate:tests -i github
 
 # Combine flags for more specific targeting
 nango generate:tests -i github -s fetch-tickets
@@ -5789,38 +5691,40 @@ describe('github fetch-tickets tests', () => {
 });
 ```
 
-**Action test example:**
+**Tool test example:**
+
+Record a fixture first:
+
+```bash
+nango dryrun create-ticket '<CONNECTION-ID>' -e dev --input '{"title":"Test ticket"}' --validate --save-responses
+nango generate:tests -i github
+```
+
+The generated tool test replays its recorded trigger and API responses:
+
 ```typescript
-import { vi, expect, it, describe, beforeAll } from 'vitest';
-import createAction from '../actions/create-ticket.js';
+import { it } from 'vitest';
+import { replayFunction } from 'nango/test';
 
-describe('github create-ticket tests', () => {
-  let nangoMock;
+import definition from '../tools/create-ticket.js';
 
-  beforeAll(async () => {
-    nangoMock = new global.vitest.NangoActionMock({
-      dirname: __dirname,
-      name: "create-ticket",
-      Model: "Ticket"
+it('github create-ticket replays the saved fixture', async () => {
+    await replayFunction({
+        dirname: __dirname,
+        name: 'create-ticket',
+        definition
     });
-  });
-
-  it('should output the action output that is expected', async () => {
-    const input = await nangoMock.getInput();
-    const response = await createAction.exec(nangoMock, input);
-    const output = await nangoMock.getOutput();
-
-    expect(response).toEqual(output);
-  });
 });
 ```
 
+Use `nango generate:tests` or its `-i` integration filter for tools. The `-a` flag only targets deprecated actions, not tools. Tool fixtures include a `trigger` field containing the HTTP request and input; retain it when editing fixtures. `replayFunction` compares the returned output with the saved output and accepts a `mocks` object for SDK methods that fixtures do not record.
+
 ### How mocks work in tests
 
-The `NangoSyncMock` and `NangoActionMock` classes automatically load your saved mocks from the `.test.json` file:
+Sync tests use `NangoSyncMock`; tool tests use `replayFunction`. Both load saved responses from the `.test.json` file:
 
 1. **API requests** are intercepted and return saved mock responses from the `api` section.
-2. **Input data** is loaded from the `input` property for action functions.
+2. **Tool input and request context** are restored from the recorded `trigger`.
 3. **Expected outputs** are loaded from the `output` property.
 4. **Tests compare** actual outputs against expected outputs.
 
@@ -5916,10 +5820,9 @@ export default defineConfig({
 The `vitest.setup.ts` file makes Nango mocks available globally:
 
 ```typescript
-import { NangoActionMock, NangoSyncMock } from "nango/test";
+import { NangoSyncMock } from "nango/test";
 
 globalThis.vitest = {
-  NangoActionMock,
   NangoSyncMock,
 };
 ```
@@ -6097,7 +6000,7 @@ describe.each([
 
 - [Data Validation](/guides/functions/data-validation) - Learn more about schema validation
 - [Vitest Documentation](https://vitest.dev/) - Official Vitest docs
-- [Action functions](/guides/functions/action-functions) - Building and testing on-demand functions
+- [Tools](/guides/functions/tools) - Building and testing on-demand functions
 - [Sync functions](/guides/functions/syncs/sync-functions) - Building and testing sync functions
 
 ## CI/CD for Nango Functions
@@ -6105,7 +6008,7 @@ describe.each([
 Source: https://nango.dev/docs/guides/functions/ci-cd.md
 Description: How to integrate Nango Function deployments into your CI/CD pipeline.
 
-CI/CD for Nango is about keeping your [Functions](/guides/functions/functions-guide) — sync functions, action functions, webhook functions, and event functions — in sync with your application across environments.
+CI/CD for Nango is about keeping your [Functions](/guides/functions/functions-guide) — sync functions, tools, webhook functions, and event functions — in sync with your application across environments.
 
 The core principle: **deploy to Nango as part of the same pipeline step as your application**. Deploying them separately risks your app and your Functions going out of sync, which can cause subtle bugs that are hard to trace.
 
@@ -6255,7 +6158,7 @@ jobs:
 <Warning>
   **Destructive Changes**
 
-  A destructive change removes an integration, sync function, or action function. To prevent accidental deletions, `nango deploy` will prompt for confirmation when it detects one.
+  A destructive change removes an integration, sync function, or tool. To prevent accidental deletions, `nango deploy` will prompt for confirmation when it detects one.
 
   In CI, use `--auto-confirm` or `--allow-destructive` to bypass the prompt. We recommend only doing this on a manual trigger, as shown above.
 </Warning>
@@ -6333,7 +6236,7 @@ If your app already has a `Contact`, `Invoice`, or `Candidate` model, use that a
 
 Expect optional fields. Providers rarely expose the same data with the same semantics, and some customers may rely on custom fields or custom statuses. Model those gaps intentionally with nullable fields, fallbacks, metadata, or provider-specific extensions.
 
-Use the same model for reads and writes when possible. If a sync writes `UnifiedContact` records into your app, the corresponding create or update action should accept the same shape unless the write operation truly needs a different contract.
+Use the same model for reads and writes when possible. If a sync writes `UnifiedContact` records into your app, the corresponding create or update tool should accept the same shape unless the write operation truly needs a different contract.
 
 Validate close to the external API. Use [data validation](/guides/functions/data-validation) in your functions so mapping drift, malformed provider responses, and invalid write inputs fail at the integration boundary.
 
@@ -6368,21 +6271,22 @@ export const JiraUser = UnifiedUser.extend({
 });
 ```
 
-## Implement unified actions
+## Implement unified tools
 
-Each provider gets an action with the same input and output contract:
+Each provider gets a tool with the same input and output contract:
 
 <Tabs>
   <Tab title="Jira">
-  ```ts jira/actions/create-user.ts
-  import { createAction } from 'nango';
+  ```ts jira/tools/create-user.ts
+  import { createTool } from 'nango';
   import { CreateUnifiedUser, UnifiedUser } from '../../models';
 
-  export default createAction({
+  export default createTool({
       description: 'Creates a user in Jira',
       input: CreateUnifiedUser,
       output: UnifiedUser,
-      exec: async (nango, input) => {
+      exec: async (nango, trigger) => {
+          const input = trigger.input;
           const response = await nango.post({
               endpoint: '/rest/api/3/user',
               data: {
@@ -6402,15 +6306,16 @@ Each provider gets an action with the same input and output contract:
   ```
   </Tab>
   <Tab title="Zendesk">
-  ```ts zendesk/actions/create-user.ts
-  import { createAction } from 'nango';
+  ```ts zendesk/tools/create-user.ts
+  import { createTool } from 'nango';
   import { CreateUnifiedUser, UnifiedUser } from '../../models';
 
-  export default createAction({
+  export default createTool({
       description: 'Creates a user in Zendesk',
       input: CreateUnifiedUser,
       output: UnifiedUser,
-      exec: async (nango, input) => {
+      exec: async (nango, trigger) => {
+          const input = trigger.input;
           const response = await nango.post({
               endpoint: '/api/v2/users.json',
               data: {
@@ -6434,13 +6339,14 @@ Each provider gets an action with the same input and output contract:
   </Tab>
 </Tabs>
 
-Your app can choose the integration ID at runtime and call the same action name for each provider:
+Your app can choose the integration ID at runtime and call the same tool name for each provider:
 
 ```ts
-await nango.triggerAction(integrationId, connectionId, 'create-user', {
-    name: 'Ada Lovelace',
-    email: 'ada@example.com'
-});
+await nango.callTool(
+    { connectionId, name: 'create-user' },
+    { input: { name: 'Ada Lovelace', email: 'ada@example.com' } },
+    { 'provider-config-key': integrationId }
+);
 ```
 
 ## Implement unified syncs
@@ -6488,11 +6394,11 @@ Use one of these patterns when the common model is not enough:
 - Extend the common model with provider-specific fields for integrations that need them.
 - Store raw provider data under a `raw` field for debugging or advanced workflows.
 - Use connection metadata for customer-specific mappings, such as custom fields, custom statuses, or selected pipelines.
-- Create provider-specific actions for operations that do not map cleanly to the unified interface.
+- Create provider-specific tools for operations that do not map cleanly to the unified interface.
 
 ## Related guides
 
-- [Action functions](/guides/functions/action-functions)
+- [Tools](/guides/functions/tools)
 - [Sync functions](/guides/functions/syncs/sync-functions)
 - [Data validation](/guides/functions/data-validation)
 - [Storage](/guides/functions/storage)
@@ -6550,7 +6456,7 @@ Use this for:
 
 The following operations are exported as traces:
 - Sync executions
-- Action executions
+- Tool executions
 - Third-party API webhook executions
 - Proxied requests
 
@@ -6643,7 +6549,6 @@ A full `nango deploy` reconciles every function in the environment. On a shared 
 
 ```bash
 nango deploy --sync <name> <env>
-nango deploy --action <name> <env>
 nango deploy --integration <id> <env>   # all functions for one integration, including event functions
 ```
 
@@ -6707,8 +6612,11 @@ Different function types have varying execution and enqueuing time limits:
 | Function Type | Max Execution Time |
 | - | - |
 | [Sync functions](/guides/functions/syncs/sync-functions) | 24 hours |
-| [Action functions](/guides/functions/action-functions) | 15 minutes |
+| [Tools](/guides/functions/tools) | 2 minutes for synchronous HTTP-triggered function invocations |
+| [Actions (deprecated)](/guides/functions/action-functions) | 15 minutes |
 | [Webhook functions](/guides/functions/webhook-functions) | 1 hour |
+
+Management MCP requests may time out within 90 seconds without canceling execution. A timeout does not guarantee that the operation stopped; retrying can duplicate side effects.
 
 ### Minimum sync frequency
 
@@ -6720,9 +6628,10 @@ For real-time updates, use [real-time syncs](/guides/functions/syncs/realtime-sy
 
 Each sync can have a maximum of **100 variants** per connection. For heavier workloads, reach out to increase this limit. See the [sync partitioning guide](/guides/functions/syncs/sync-partitioning) for more details.
 
-### Action function output limits
+<a id="action-function-output-limits"></a>
+### Tool output limits
 
-Action functions have a maximum output payload size of **2MB**. For large payloads, use the [Proxy](/guides/platform/proxy-requests) instead.
+Tools and deprecated action functions have a maximum output payload size of **2 MB**. For large payloads, use the [Proxy](/guides/platform/proxy-requests) instead.
 
 ## Log retention
 
@@ -6756,7 +6665,7 @@ Webhooks sent from Nango to your application have the following limits:
 - **Timeout**: 20 seconds
 - **Retries**: 2 attempts
 
-These limits apply to all webhook types: auth, sync function completion, async action function completion, and webhook forwards.
+These limits apply to all webhook types: auth, sync function completion, deprecated async action function completion, and webhook forwards.
 
 ## Related guides
 
@@ -7049,7 +6958,8 @@ For example, the following activities are not covered:
 | Setting or updating connection metadata via the API | `POST` / `PATCH /connection/metadata` |
 | Triggering a sync via the API | `POST /sync/trigger` |
 | Proxy requests | Every call through `/proxy` |
-| Action executions | `POST /action/trigger` |
+| Tool calls | `POST /connections/:connectionId/tools/:name/calls` |
+| Legacy action executions (deprecated) | `POST /action/trigger` |
 | Reading configuration | Listing or fetching connections, integrations, or functions |
 
 ## Proxy requests
@@ -7120,7 +7030,7 @@ You can use the proxy with the [Node SDK](/reference/backend/backend-sdk/node#pr
 Source: https://nango.dev/docs/guides/platform/webhooks-from-nango.md
 Description: Reference for the webhooks Nango sends to your app — setup, types, payloads, signature verification, and retries.
 
-Nango POSTs webhooks to your app to notify it of important events: a new connection was created, a sync run finished, an async action completed, or an external webhook was forwarded. This page covers how to receive and verify webhooks from Nango, plus the payloads for auth, sync, and async action webhooks.
+Nango POSTs webhooks to your app to notify it of important events: a new connection was created, a sync run finished, a deprecated async action completed, or an external webhook was forwarded. This page covers how to receive and verify webhooks from Nango, plus the payloads for auth, sync, and deprecated async action webhooks.
 
 <Info>
 To process webhooks coming **from external APIs** (not from Nango), see [Process external webhooks](/getting-started/use-cases/webhooks-from-external-apis). To forward external API webhooks through Nango to your app, see [Webhook forwarding](/guides/platform/webhook-forwarding).
@@ -7540,6 +7450,10 @@ Payload received following a failed sync execution:
 }
 ```
 
+### Async action webhooks (deprecated)
+
+Existing users of deprecated async actions can enable **Async action completed** in **Environment Settings**. The webhook identifies the execution to poll; see the [legacy completion webhook contract](/guides/functions/action-functions#completion-webhook).
+
 ### External webhook forwarding
 
 Forwarded external webhooks use the same webhook URLs, signing, retries, and logs as other Nango webhooks. See [Webhook forwarding](/guides/platform/webhook-forwarding) for setup, routing behavior, and payload shapes.
@@ -7645,7 +7559,7 @@ Use [webhook functions](/guides/functions/webhook-functions) when Nango should u
   <Step id="configure-app-webhook-url" title="Configure your app webhook URL">
     In Nango, open **Environment Settings > Webhook URLs** and add your app's endpoint.
 
-    Nango sends forwarded webhooks to the same URLs used for auth, sync, and async action webhooks.
+    Nango sends forwarded webhooks to the same URLs used for auth, sync, and deprecated async action webhooks.
   </Step>
 
   <Step id="register-provider-webhook-url" title="Register the provider webhook URL">
@@ -7880,10 +7794,10 @@ All paid features available on Nango Cloud are also included in both BYOC and Se
 
 ## Scaling
 
-The default configuration supports 1M+ sync/action executions per day (assuming ~2s execution time per action/sync).
+The default configuration supports 1M+ sync/tool executions per day (assuming ~2s execution time per tool/sync).
 
 Bottlenecks mostly depend on:
-- **Action/sync execution time**: solved by scaling the Runner service vertically, then horizontally.
+- **Tool/sync execution time**: solved by scaling the Runner service vertically, then horizontally.
 - **Cached records & size (for sync functions only)**: solved by scaling Postgres vertically.
 
 ## Data storage
@@ -7902,7 +7816,7 @@ Yes, Nango is flexible with data store setups. However, we recommend a separate 
 ## Internet access requirements
 
 - **Server:** Required for proxy requests, credential management, and incoming/outgoing webhooks.
-- **Runner:** Required for reading/writing data from external APIs during sync and action executions.
+- **Runner:** Required for reading/writing data from external APIs during sync and tool executions.
 
 ## Exporting metrics & logs
 
@@ -8430,9 +8344,9 @@ OPENAI_API_KEY=<your-openai-api-key>
 NANGO_AGENT_PLAYGROUND_MODEL=<openai-model-id>
 ```
 
-Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the jobs service as well, because jobs runs the catalog actions the agent calls.
+Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the jobs service as well, because jobs runs the catalog tools the agent calls.
 
-The `tools-catalog` flag lets the agent run Nango's pre-built actions without deploying them first. The agent runs on OpenAI, so `OPENAI_API_KEY` is required, and messages from the chat are sent to OpenAI with that key. Without the key, the dashboard shows the playground as unavailable.
+The `tools-catalog` flag lets the agent run Nango's pre-built tools without deploying them first. The agent runs on OpenAI, so `OPENAI_API_KEY` is required, and messages from the chat are sent to OpenAI with that key. Without the key, the dashboard shows the playground as unavailable.
 
 ### Connect UI
 
@@ -8555,7 +8469,7 @@ The runner boundary has the same set of variables prefixed with `NANGO_CUSTOMER_
 
 The [proxy](/guides/platform/proxy-requests) can send authenticated requests to external APIs. Some proxy calls accept a **base URL override** (HTTP header `Base-Url-Override`, SDK `baseUrlOverride`, or an integration `custom.baseUrl`) to target a host that differs from the provider's default API base URL.
 
-Because the proxy makes outbound HTTP requests from your Nango server (and from the runner for sync and action scripts), a caller with permission to use the proxy could use an override to reach hosts that were not meant to be exposed—such as cloud metadata services or `localhost` on the host making the request. This is a classic **SSRF** risk.
+Because the proxy makes outbound HTTP requests from your Nango server (and from the runner for sync functions and tools), a caller with permission to use the proxy could use an override to reach hosts that were not meant to be exposed—such as cloud metadata services or `localhost` on the host making the request. This is a classic **SSRF** risk.
 
 By default, Nango keeps base URL override **enabled** and blocks override targets and redirect hops whose hostnames match a built-in denylist (cloud metadata and loopback addresses). Configure these environment variables and restart the **server** and **runners** after changes:
 
@@ -9290,14 +9204,14 @@ Description: Replace the Connection MCP with a scoped agent session
 
 The Connection MCP is deprecated. Agent sessions are its replacement for giving an agent access to Nango integrations.
 
-The main change is that your backend creates a scoped, expiring session for the agent. The session defines which connections and action functions the agent can use.
+The main change is that your backend creates a scoped, expiring session for the agent. The session defines which connections and tools the agent can use.
 
 ## Main differences
 
 - Connection MCP uses an Environment API key and connection headers. Agent sessions use a session token.
 - Connection MCP selects one connection for a request. Agent sessions define their connection scope when created and can include multiple integrations.
-- Agent sessions use an explicit toolset to control which action functions are available.
-- Action functions are searchable by default instead of appearing directly in `tools/list`.
+- Agent sessions use an explicit toolset to control which tools are available.
+- Tools are searchable by default instead of appearing directly in `tools/list`.
 - Session tool names include the integration ID, such as `notion__read_doc` instead of `read_doc`.
 - Agent sessions expire and cannot be extended.
 
@@ -9305,7 +9219,7 @@ The main change is that your backend creates a scoped, expiring session for the 
 
 Create the session from your backend with an Environment API key that has the `environment:agent_sessions:write` scope.
 
-Pin the connection previously used by your Connection MCP integration and allow the action functions your agent needs:
+Pin the connection previously used by your Connection MCP integration and allow the tools your agent needs:
 
 ```bash
 curl --request POST \
@@ -9326,7 +9240,7 @@ curl --request POST \
     "toolset": {
       "<INTEGRATION-ID>": {
         "allow": {
-          "tools": ["<ACTION-NAME>"]
+          "tools": ["<TOOL-NAME>"]
         }
       }
     },
@@ -9356,7 +9270,7 @@ You can select connections by tags instead of hardcoding a connection ID:
 
 Selectors must resolve to exactly one connection per integration. A session can include connections from multiple integrations. See [Tenant](/guides/agent-sessions#tenant) for more selector options.
 
-To allow every action for an integration, replace the integration policy with `"*"`:
+To allow every tool for an integration, replace the integration policy with `"*"`:
 
 ```json
 {
@@ -9366,7 +9280,7 @@ To allow every action for an integration, replace the integration policy with `"
 }
 ```
 
-The actions remain searchable by default; add them to `pinned_tools` if they must appear directly in `tools/list`.
+The tools remain searchable by default; add them to `pinned_tools` if they must appear directly in `tools/list`.
 
 ## Connect your agent to the session MCP
 
@@ -9386,12 +9300,12 @@ Keep the Environment API key in your backend. Do not pass it to the agent.
 
 ## Discover and call tools
 
-Connection MCP listed available actions directly. To preserve that behavior, add the actions your agent relies on to `pinned_tools` when creating the session. Otherwise, leave them searchable, which is useful when the toolset is large.
+Connection MCP listed actions, which are now deprecated, directly. To preserve that behavior, add the tools your agent relies on to `pinned_tools` when creating the session. Otherwise, leave them searchable, which is useful when the toolset is large.
 
-Searchable action functions can be used through:
+Searchable tools can be used through:
 
-- `nango_tool_search` to find a relevant action function
-- `nango_execute` to run the selected action function
+- `nango_tool_search` to find a relevant tool
+- `nango_execute` to run the selected tool
 
 Update any system prompts or client configuration that refer to tools by name. For example, `read_doc` becomes `notion__read_doc` when it is exposed directly by a session. See [Toolsets & tools](/guides/agent-sessions#toolsets-&-tools) for details.
 
@@ -9401,10 +9315,57 @@ Agent sessions expire according to `expires_in`. Create a new session when the c
 
 See the [agent sessions guide](/guides/agent-sessions) for connection selectors, toolsets, meta tools, session lifecycle, and MCP client examples.
 
+## Migrate from actions to tools
+
+Source: https://nango.dev/docs/guides/platform/migrations/migrate-from-actions.md
+Description: Move on-demand integrations to tools while preserving existing action callers.
+
+Actions are deprecated. Use [Tools](/guides/functions/tools) for new on-demand functions. Existing users can keep using the [deprecated action APIs](/guides/functions/action-functions).
+
+## Migrate callers first
+
+The [tool-call API](/reference/backend/http-api/tools/call) and [Node SDK `callTool`](/reference/backend/backend-sdk/node#call-a-tool) can call existing deployed actions and catalog tools. You can migrate synchronous callers before changing the implementation.
+
+Replace:
+
+```typescript
+const result = await nango.triggerAction(integrationId, connectionId, 'create-issue', input);
+```
+
+With:
+
+```typescript
+const result = await nango.callTool(
+    { connectionId, name: 'create-issue' },
+    { input },
+    { 'provider-config-key': integrationId }
+);
+```
+
+For HTTP, replace `POST /action/trigger` with `POST /connections/<CONNECTION-ID>/tools/create-issue/calls`. Move the action name into the URL and send `{ "input": ... }` as the body. Both APIs return the operation's output directly.
+
+Use a Nango Environment API key from **Environment Settings > API Keys** as `Authorization: Bearer <NANGO-API-KEY>`. Scoped tool callers need **both** `environment:functions:invocations` and `environment:actions:execute`.
+
+For Management MCP clients, replace `actions_trigger` with `tools_call` and replace the `action_name` argument with `name`. Keep `integration_id`, `connection_id`, and optional `input`.
+
+## Migrate the implementation
+
+1. Replace `createAction` with `createTool`, imported from `nango`.
+2. Keep the input and output schemas and the externally visible name.
+3. Change `exec: async (nango, input)` to `exec: async (nango, trigger)` and read the input from `trigger.input`.
+4. Remove action-only configuration such as `version`, `endpoint`, and `metadata`. Move descriptive provider scopes from `scopes` to `meta.requiredScopes`; they remain indicative, not enforced. Use `meta.instructions` for agent guidance.
+5. Import the tool from `index.ts`, dry run it with realistic input and `--validate`, then deploy. See [Tools](/guides/functions/tools#create-a-tool) for a complete example.
+
+If the action uses SDK methods beyond outbound provider requests and logging, check the [Functions SDK](/reference/functions/functions-sdk) before migrating; tool capabilities differ from legacy actions.
+
 ## Migrating to Zero YAML
 
 Source: https://nango.dev/docs/guides/platform/migrations/migrate-to-zero-yaml.md
 Description: Guide on how to migrate to Zero YAML in Nango.
+
+<Note>
+  This migration reference preserves legacy action examples for existing projects. Actions are deprecated. For new code, use [Tools](/guides/functions/tools); after completing this migration, follow [Actions to tools](/guides/platform/migrations/migrate-from-actions).
+</Note>
 
 <div className="agent-quickstart-actions">
   <button
@@ -9477,7 +9438,7 @@ Like a regular TypeScript codebase
 Three core functions that replace YAML configuration. You'll benefit from IntelliSense and type safety, directly in your IDE. No need to jump between files to find the right configuration.
 
 - **`createSync()`**: Defines data synchronization jobs
-- **`createAction()`**: Defines one-off jobs
+- **`createAction()` (deprecated)**: Defines legacy on-demand jobs; use `createTool()` for new code
 - **`createOnEvent()`**: Defines event-based jobs
 
 ----
@@ -9610,7 +9571,8 @@ const sync = createSync({
 export default sync;
 ```
 
-### Action Example
+<a id="action-example"></a>
+### Action example (deprecated)
 
 **Before** (separate files):
 ```typescript
@@ -10161,7 +10123,7 @@ For backends that create connect sessions for the auth flow:
 
 #### CI/CD deploy
 
-For CI/CD pipelines deploying syncs and actions to production:
+For CI/CD pipelines deploying syncs and tools to production:
 
 | Scope |
 |-------|
@@ -10169,12 +10131,13 @@ For CI/CD pipelines deploying syncs and actions to production:
 
 #### Backend service
 
-For backend services that consume data, trigger actions, and proxy requests:
+For backend services that consume data, call tools, and proxy requests:
 
 | Scope |
 |-------|
 | `environment:connections:read` |
 | `environment:records:read` |
+| `environment:functions:invocations` |
 | `environment:actions:execute` |
 | `environment:syncs:execute` |
 | `environment:proxy` |
@@ -10216,7 +10179,7 @@ The **Default - Full access** key that comes with each environment already has a
 |-------|-------------|
 | `environment:integrations:list` | List integrations (no credentials) |
 | `environment:integrations:list_credentials` | List integrations with client credentials |
-| `environment:integrations:list_functions` | List deployed function configuration (syncs and actions) |
+| `environment:integrations:list_functions` | List deployed function configuration (syncs and tools) |
 | `environment:integrations:read` | Read a single integration (no credentials) |
 | `environment:integrations:read_credentials` | Read a single integration with client credentials |
 | `environment:integrations:create` | Create integrations |
@@ -10265,7 +10228,7 @@ The **Default - Full access** key that comes with each environment already has a
 
 | Scope | Description |
 |-------|-------------|
-| `environment:deploy` | Deploy syncs and actions via CLI or API |
+| `environment:deploy` | Deploy syncs and tools via CLI or API |
 
 #### Functions
 
@@ -10298,11 +10261,19 @@ The **Default - Full access** key that comes with each environment already has a
     The `environment:logs:read` scope is currently only used by the [Logs tools in the Management MCP server](/reference/backend/management-mcp#logs).
 </Note>
 
-#### Actions
+#### Tools
+
+Calling a tool requires both `environment:functions:invocations` and `environment:actions:execute`, including calls that resolve to HTTP-triggered functions. See [Call a tool](/reference/backend/http-api/tools/call).
 
 | Scope | Description |
 |-------|-------------|
-| `environment:actions:execute` | Trigger actions and read action results |
+| `environment:functions:invocations` | Invoke functions for a connection |
+
+#### Actions (deprecated)
+
+| Scope | Description |
+|-------|-------------|
+| `environment:actions:execute` | Call deprecated actions and read their results; also required by the tool-call API |
 
 #### Proxy
 
@@ -11069,7 +11040,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/functions/list.md
 
 Returns the functions available to an integration.
 
-Catalog action entries have `source: "tools-catalog"`, `enabled: true`, `id: null`, and `last_deployed: null`.
+Catalog tool entries have `source: "tools-catalog"`, `enabled: true`, `id: null`, and `last_deployed: null`.
 
 ## Get a function
 
@@ -11151,136 +11122,24 @@ Source: https://nango.dev/docs/reference/backend/http-api/functions/deployments-
 
 Returns the status and result of an asynchronous function deployment.
 
-## Get integration functions config
+## Get legacy integration functions config
 
 Source: https://nango.dev/docs/reference/backend/http-api/scripts/config.md
 
 <Info>
-  Requires an API key with the `environment:integrations:list_functions` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+  Requires an Environment API key with the `environment:integrations:list_functions` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-The `/scripts/config` endpoint returns the configuration for all integration functions. There are two variants of this endpoint:
+<Warning>
+  This is a legacy configuration endpoint for deployed syncs and deprecated actions. For new integrations, use [List functions](/reference/backend/http-api/functions/list) to discover tools, including catalog tools, and [agent sessions](/guides/agent-sessions) to expose them to agents.
+</Warning>
 
-<Note>
-  This endpoint reads deployed function configuration. It does not include Nango catalog actions that are available out of the box. To list both deployed functions and catalog actions, use [List functions](/reference/backend/http-api/functions/list).
-</Note>
+Existing callers can continue to use:
 
-1. `/scripts/config?format=nango` - Returns the standard configuration format
-2. `/scripts/config?format=openai` - Returns the configuration in OpenAI's function calling format
+- `GET /scripts/config?format=nango` for the legacy configuration format.
+- `GET /scripts/config?format=openai` for deployed function schemas in OpenAI function-calling format.
 
-## OpenAI Function Format
-
-The `/scripts/config?format=openai` endpoint transforms the script configurations into OpenAI's function calling format. This format is particularly useful when working with OpenAI's API to enable function calling capabilities.
-
-### Parameter Descriptions
-
-The endpoint automatically parses parameter descriptions from the script's description field. If a script's description contains a markdown list of parameters, these descriptions will be used for the corresponding parameters in the OpenAI function format.
-
-For example, in your script file, you can define a script like this:
-
-```typescript google-calendar/actions/move-event.ts
-export default createAction({
-  description: `Move an event to a different time or calendar with the following parameters:
-            - eventId: The ID of the event to move
-            - start: New start time in ISO format (e.g., "2024-03-28T14:00:00")
-            - end: New end time in ISO format (e.g., "2024-03-28T15:00:00")
-            - calendar: Optional new calendar ID to move the event to`,
-  version: '1.0.0',
-  endpoints: [{ method: 'GET', path: '/example/github/issues', group: 'Issues' }],
-  frequency: 'every hour',
-  autoStart: false,
-  scopes: ['https://www.googleapis.com/auth/calendar'],
-  input: z.object({
-    eventId: z.string(),
-    start: z.string(),
-    end: z.string(),
-    calendar: z.string().optional()
-  })
-});
-```
-
-The endpoint will generate a function definition like this:
-
-```json
-{
-    "data": [
-        {
-            "name": "move-event",
-            "description": "Move an event to a different time or calendar with the following parameters:\n- eventId: The ID of the event to move\n- start: New start time in ISO format (e.g., \"2024-03-28T14:00:00\")\n- end: New end time in ISO format (e.g., \"2024-03-28T15:00:00\")\n- calendar: Optional new calendar ID to move the event to",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "eventId": {
-                        "type": "string",
-                        "description": "The ID of the event to move"
-                    },
-                    "start": {
-                        "type": "string",
-                        "description": "New start time in ISO format (e.g., \"2024-03-28T14:00:00\")"
-                    },
-                    "end": {
-                        "type": "string",
-                        "description": "New end time in ISO format (e.g., \"2024-03-28T15:00:00\")"
-                    },
-                    "calendar": {
-                        "type": "string",
-                        "description": "Optional new calendar ID to move the event to"
-                    }
-                },
-                "required": ["eventId", "start", "end"]
-            }
-        }
-    ]
-}
-```
-
-### Array Fields
-
-The endpoint properly handles array fields in the configuration. For example, if a field is defined as:
-
-```typescript google-calendar/actions/create-event.ts
-export default createAction({
-  description: `Create a new calendar event with the following parameters:
-          - summary: The title of the event
-          - attendees: List of email addresses of event attendees`,
-  version: '1.0.0',
-  endpoints: [{ method: 'POST', path: '/example/google-calendar/events', group: 'Events' }],
-  input: z.object({
-    summary: z.string(),
-    attendees: z.array(z.string()).optional()
-  })
-});
-```
-
-It will be transformed into:
-
-```json
-{
-    "data": [
-        {
-            "name": "create-event",
-            "description": "Create a new calendar event with the following parameters:\n- summary: The title of the event\n- attendees: List of email addresses of event attendees",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "summary": {
-                        "type": "string",
-                        "description": "The title of the event"
-                    },
-                    "attendees": {
-                        "type": "array",
-                        "description": "List of email addresses of event attendees",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "required": ["summary"]
-            }
-        }
-    ]
-}
-```
+The OpenAI format derives parameter descriptions from Markdown parameter lists in the function description and preserves array schemas. This endpoint does not include undeployed catalog tools or HTTP-triggered tools. Call available tools through the [tool-call API](/reference/backend/http-api/tools/call).
 
 ## Get records
 
@@ -11458,9 +11317,23 @@ Source: https://nango.dev/docs/reference/backend/http-api/sync/delete-variant.md
   Requires an API key with the `environment:syncs:variant:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-## Trigger an action
+## Call a tool
+
+Source: https://nango.dev/docs/reference/backend/http-api/tools/call.md
+
+Calls an enabled tool synchronously and returns its output directly. See [Tools](/guides/functions/tools) for an end-to-end example.
+
+<Info>
+  Requires a Nango Environment API key with both `environment:functions:invocations` and `environment:actions:execute`. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+## Trigger an action (deprecated)
 
 Source: https://nango.dev/docs/reference/backend/http-api/action/trigger.md
+
+<Warning>
+  Deprecated. Use [Call a tool](/reference/backend/http-api/tools/call) for new synchronous callers. Existing async callers can continue using this endpoint; see [Actions (deprecated)](/guides/functions/action-functions).
+</Warning>
 
 <Info>
   Requires an API key with the `environment:actions:execute` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -12541,6 +12414,10 @@ This method polls for a connection every 2 seconds for up to 60 seconds (30 atte
 
 ## Integration functions
 
+<Note>
+  The `action` type and `actions` arrays in existing API responses describe deprecated action definitions. Use tools for new on-demand functions. Catalog tools may still return a legacy action-format definition; preserve these literal API values when reading responses.
+</Note>
+
 ### List functions
 
 Returns the functions available to an integration, with pagination.
@@ -12552,7 +12429,7 @@ await nango.listFunctions({ uniqueKey: 'github' });
 Filter by function type, name, or page:
 
 ```ts
-await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'issue', page: 0, limit: 20 });
+await nango.listFunctions({ uniqueKey: 'github' }, { type: 'tool', search: 'issue', page: 0, limit: 20 });
 ```
 
 **Parameters**
@@ -12562,7 +12439,7 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
         The integration ID.
     </ResponseField>
     <ResponseField name="type" type="string">
-        Filter by function type: `sync`, `action`, or `on-event`.
+        Filter by function type: `sync`, `tool`, or `on-event`.
     </ResponseField>
     <ResponseField name="search" type="string">
         Case-insensitive filter on the function name.
@@ -12575,7 +12452,7 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
     </ResponseField>
 </Expandable>
 
-Catalog actions have `id: null`, `last_deployed: null`, `enabled: true`, and `source: "tools-catalog"`. A deployed action with the same name takes precedence.
+Catalog tools have `id: null`, `last_deployed: null`, `enabled: true`, and `source: "tools-catalog"`.
 
 **Example Response**
 
@@ -12630,13 +12507,13 @@ Catalog actions have `id: null`, `last_deployed: null`, `enabled: true`, and `so
 
 ### Get a function
 
-Retrieves a function available to an integration. This can be a deployed function or a Nango catalog action.
+Retrieves a function available to an integration. This can be a deployed function or a Nango catalog tool.
 
 ```ts
 await nango.getFunction({ uniqueKey: 'github', name: 'create-issue' });
 ```
 
-Pass `type` to disambiguate when a sync and an action share the same name:
+Use `type` to filter by function type:
 
 ```ts
 await nango.getFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' });
@@ -12652,7 +12529,7 @@ await nango.getFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' 
         The function name.
     </ResponseField>
     <ResponseField name="type" type="string">
-        The function type: `sync`, `action`, `on-event`, or `tool`. When omitted and several functions share the name, the first one is returned in this order: `tool`, `action`, `on-event`, `sync`.
+        The function type: `sync`, `tool`, or `on-event`. When omitted and several functions share the name, tools are returned first, then on-event and sync functions.
     </ResponseField>
 </Expandable>
 
@@ -12678,10 +12555,10 @@ await nango.getFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' 
 
 ### Get function code
 
-Retrieves the source code of a function. For a Nango catalog action, the response contains the current catalog source even though the action has not been deployed.
+Retrieves the source code of a function. The example below fetches a deployed tool. For a Nango catalog tool, the response contains the current catalog source even though the function has not been deployed.
 
 ```ts
-await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { type: 'action' });
+await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { type: 'tool' });
 ```
 
 **Parameters**
@@ -12694,7 +12571,7 @@ await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { typ
         The function name.
     </ResponseField>
     <ResponseField name="type" type="string">
-        The function type: `sync`, `action`, `on-event`, or `tool`. When omitted and several functions share the name, the first one is returned in this order: `tool`, `action`, `on-event`, `sync`.
+        The function type: `sync`, `tool`, or `on-event`. When omitted and several functions share the name, tools are returned first, then on-event and sync functions.
     </ResponseField>
 </Expandable>
 
@@ -12703,8 +12580,8 @@ await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { typ
 <Expandable>
 ```json
 {
-    "type": "action",
-    "code": "export default createAction({ /* ... */ });"
+    "type": "tool",
+    "code": "export default createTool({ /* ... */ });"
 }
 ```
 </Expandable>
@@ -12714,7 +12591,7 @@ await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { typ
 Deletes a deployed function of an integration. The `type` is required.
 
 ```ts
-await nango.deleteFunction({ uniqueKey: 'github', name: 'create-issue' }, { type: 'action' });
+await nango.deleteFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' });
 ```
 
 **Parameters**
@@ -12727,7 +12604,7 @@ await nango.deleteFunction({ uniqueKey: 'github', name: 'create-issue' }, { type
         The function name.
     </ResponseField>
     <ResponseField name="type" type="string" required>
-        The function type: `sync` or `action`.
+        The function type: `sync` or deprecated `action`.
     </ResponseField>
 </Expandable>
 
@@ -12745,7 +12622,7 @@ await nango.deleteFunction({ uniqueKey: 'github', name: 'create-issue' }, { type
 
 ### Get integration functions config
 
-Return the configuration for all integration functions
+Returns legacy deployed sync configuration and deprecated action definitions. For tools and catalog discovery, use [List functions](#list-functions).
 
 ```ts
 const scriptsConfig = await nango.getScriptsConfig();
@@ -13743,11 +13620,40 @@ No parameters.
 ```
 </Expandable>
 
-## Actions
+## Tools
 
-### Trigger an action
+### Call a tool
 
-Triggers an action for a connection.
+Calls an enabled tool synchronously for a connection and returns its output directly.
+
+```typescript
+const result = await nango.callTool(
+    { connectionId: '<CONNECTION-ID>', name: 'create-issue' },
+    { input: { owner: 'NangoHQ', repo: 'interactive-demo', title: 'Bug report' } },
+    { 'provider-config-key': 'github' }
+);
+```
+
+| Argument | Description |
+| --- | --- |
+| `{ connectionId, name }` | Connection ID and tool name. |
+| `{ input? }` | Tool input. Send `{}` for a tool that takes no input. |
+| `headers?` | Optional `{ 'provider-config-key': integrationId }`; required when multiple integrations share the connection ID. |
+
+Use a Nango Environment API key with both `environment:functions:invocations` and `environment:actions:execute`.
+
+See [Tools](/guides/functions/tools) and the [HTTP reference](/reference/backend/http-api/tools/call).
+
+## Actions (deprecated)
+
+<Warning>
+  Use [`callTool`](#call-a-tool) for new code. These deprecated methods remain documented for existing users. See [Actions (deprecated)](/guides/functions/action-functions) and [migration guidance](/guides/platform/migrations/migrate-from-actions).
+</Warning>
+
+<a id="trigger-an-action"></a>
+### Trigger an action (deprecated)
+
+Triggers a deprecated action for a connection.
 
 ```js
 await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>', { 'custom_key1': 'custom_value1' });
@@ -13781,12 +13687,13 @@ await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>'
 </Expandable>
 
 <Warning>
-The output of an action cannot exceed 10MB.
+Deprecated actions have a maximum output payload size of 2 MB.
 </Warning>
 
-### Trigger an action asynchronously
+<a id="trigger-an-action-asynchronously"></a>
+### Trigger an action asynchronously (deprecated)
 
-Triggers an action asynchronously for a connection. This allows you to start an action and retrieve the results later.
+Triggers a deprecated action asynchronously for a connection and retrieves its result later.
 
 ```js
 const { id, statusUrl } = await nango.triggerActionAsync('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>', { 'custom_key1': 'custom_value1' });
@@ -13820,9 +13727,10 @@ const { id, statusUrl } = await nango.triggerActionAsync('<INTEGRATION-ID>', '<C
 ```
 </Expandable>
 
-### Get async action result
+<a id="get-async-action-result"></a>
+### Get async action result (deprecated)
 
-Retrieves the result of an asynchronous action.
+Retrieves the result of a deprecated asynchronous action.
 
 ```js
 // Using the id
@@ -13984,7 +13892,7 @@ await nango.getProvider({ provider: <NAME> })
 
 ### Get provider templates
 
-Returns the function templates available for a provider.
+Returns the function templates available for a provider. Catalog tools may currently use the deprecated action definition format (`type: "action"`). For new custom implementations, use [`createTool`](/reference/functions/functions-sdk#createtool).
 
 ```js
 await nango.getProviderTemplates({ provider: <NAME> })
@@ -14164,17 +14072,11 @@ Use the Connections tools to inspect connections in the authenticated Nango envi
 | `connections_list` | List and filter connections. | `environment:connections:list` or `environment:connections:list_credentials` |
 | `connections_get`  | Get a connection.            | `environment:connections:read` or `environment:connections:read_credentials` |
 
-### Actions
-
-Use the Actions tool to trigger an action function synchronously for a connection. Provide the integration ID, connection ID, and action name. The JSON input is optional. The tool returns the action's JSON result in the `data` field.
+### Actions (deprecated)
 
 <Warning>
-    Expect the MCP request to time out within 90 seconds. This does not cancel the action function, which may continue running for up to 15 minutes. After a timeout, the tool cannot return the result or an action ID, and retrying starts another execution. When the action supports it, use input parameters that limit the amount of data processed to keep execution within the MCP timeout.
+  Use [`tools_call`](#functions) for new callers. The deprecated `actions_trigger` tool remains available for existing users with the `environment:actions:execute` scope. It accepts `integration_id`, `connection_id`, `action_name`, and optional `input`, returning `{ data: ... }`. See [migration guidance](/guides/platform/migrations/migrate-from-actions).
 </Warning>
-
-| Tool              | Description                                                | Additional permission          |
-| ----------------- | ---------------------------------------------------------- | ------------------------------ |
-| `actions_trigger` | Trigger an action function synchronously for a connection. | `environment:actions:execute`  |
 
 ### Syncs
 
@@ -14187,9 +14089,9 @@ Use the Sync tools to set sync state or trigger syncs for an integration in the 
 
 ### Functions
 
-Use the Functions tools to inspect available functions and deploy templates in the authenticated Nango environment. `functions_list` includes deployed sync, action, and event functions, as well as Nango catalog actions. Catalog actions are available out of the box; use `deploy_template` when you want to enable a sync template or explicitly deploy a template.
+Use the Functions tools to inspect available functions and deploy templates in the authenticated Nango environment. `functions_list` includes tools, sync functions, event functions, and deprecated actions, as well as Nango catalog tools. Catalog tools are available out of the box; use `deploy_template` when you want to enable a sync template or explicitly deploy a template.
 
-Tools are functions that can be called on demand: HTTP-triggered functions, deployed action functions, and Nango catalog actions. Use `tools_call` to call an enabled tool for a connection.
+Use tools for on-demand provider operations. Use `tools_call` to call an enabled tool for a connection.
 
 <Warning>
     A `tools_call` MCP request may time out within 90 seconds without canceling execution. After a timeout, the tool cannot return the result or an execution ID. Retrying starts another execution and may duplicate side effects. When the tool supports it, use input parameters that limit the amount of data processed to keep execution within the MCP timeout.
@@ -14197,7 +14099,7 @@ Tools are functions that can be called on demand: HTTP-triggered functions, depl
 
 | Tool                    | Description                                                                   | Additional permission        |
 | ----------------------- | ----------------------------------------------------------------------------- | ---------------------------- |
-| `functions_list`        | List and filter available functions by integration, including Nango catalog actions. | `environment:functions:list` |
+| `functions_list`        | List and filter available functions by integration, including Nango catalog tools. | `environment:functions:list` |
 | `tools_call`            | Call an enabled tool of an integration synchronously for a connection.        | `environment:functions:invocations`, `environment:actions:execute` |
 | `deploy_template`       | Deploy a function template.                                                   | `environment:deploy`         |
 | `get_deployment_status` | Retrieve a deployment's current status and result.                            | `environment:deploy`         |
@@ -14292,9 +14194,22 @@ Get details about a specific command by running:
 nango [command] --help
 ```
 
+## Tools
+
+Create tools with [`createTool`](/reference/functions/functions-sdk#createtool) and import them from `index.ts`. The `nango create --action` scaffold is deprecated; it does not create a tool.
+
+```bash
+nango dryrun <tool-name> <connection-id> -e dev --input '{"id":"example"}' --validate
+nango deploy --integration <integration-id> dev
+```
+
+Use `--trigger-http '<JSON>'` or `--trigger-http @request.json` to simulate an HTTP request instead of `--input`. The request includes `method`, `path`, `headers`, `query`, and `body`. These flags cannot be combined. See [Tools](/guides/functions/tools#test-and-deploy).
+
 ## Interactive Mode
 
 The Nango CLI includes an interactive mode that prompts you for missing arguments. For example, if you run `nango create` without specifying the function type, integration, or name, the CLI will prompt you for them.
+
+The `action` option in the legacy prompt below is deprecated; use the tools workflow above for new on-demand functions.
 
 This mode is enabled by default when you're in an interactive terminal session.
 
@@ -14468,18 +14383,18 @@ Description: Full reference of the SDK available in Nango Functions.
     });
     ```
   </Tab>
-  <Tab title="Action function">
+  <Tab title="Tool">
     ```ts
-    import { createAction } from 'nango';
+    import { createTool } from 'nango';
     import { GithubCreateIssueInput, GithubCreateIssueResult } from '../../models.js';
 
-    export default createAction({
+    export default createTool({
       description: `Create an issue in GitHub`,
-      version: '1.0.0',
       input: GithubCreateIssueInput,
       output: GithubCreateIssueResult,
 
-      exec: async (nango, input) => {
+      exec: async (nango, trigger) => {
+        const input = trigger.input;
         // Create a GitHub issue.
         const res = await nango.post({
             endpoint: '/repos/NangoHQ/interactive-demo/issues',
@@ -14553,7 +14468,7 @@ Read more about [integration functions](/guides/functions/functions-guide) to un
 </ResponseField>
 
 <ResponseField name="metadata" type="object" default="z.void()">
-  The connection's metadata of the action.
+  The connection metadata schema for this sync.
 
   ```ts
   metadata: z.object({
@@ -14567,7 +14482,7 @@ Read more about [integration functions](/guides/functions/functions-guide) to un
 </ResponseField>
 
 <ResponseField name="scopes" type="string[]">
-  The integration's scopes required by the action.
+  The provider scopes required by the sync.
   This field is for documentation purposes only and currently not enforced by Nango.
 
   ```ts
@@ -14604,63 +14519,33 @@ Read more about [integration functions](/guides/functions/functions-guide) to un
   [DEPRECATED] Use the [`GET /records`](/reference/backend/http-api/sync/records-list) API endpoint to fetch records.
 </ResponseField>
 
-### `createAction`
+### `createTool`
 
-<ResponseField name="description" type="string" required>
-  The description of the sync.
-</ResponseField>
+Import `createTool` from `nango`. It creates a function with an HTTP trigger and connection-scoped outbound API access. See [Tools](/guides/functions/tools) for a complete example.
 
-<ResponseField name="exec" type="function" required>
-  The function that will be called when the action is triggered.
-</ResponseField>
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `name` | `string` | No | Public tool name; defaults to the file name. |
+| `description` | `string` | Yes | What the tool does. |
+| `input` | Zod schema | Yes | Input contract. Use `z.void()` for no input. |
+| `output` | Zod schema | Yes | Returned JSON value's contract. |
+| `exec` | `(nango, trigger) => output` | Yes | Implementation; read arguments from `trigger.input`. Can return a promise. |
+| `meta.instructions` | `string` | No | Guidance on when and how an agent should use the tool. |
+| `meta.requiredScopes` | `string[]` | No | Indicative provider scopes; Nango does not enforce them. |
+| `meta.tags` | `FunctionTags` | No | Additional tool tags. `instructions` and `required_scopes` are reserved keys. |
 
-<ResponseField name="input" type="object" required>
-  The input required by the action when triggering it.
+Tag values can be strings or arrays of strings.
 
-  ```ts
-  input: z.object({
-      title: z.string(),
-  });
-  ```
-</ResponseField>
+The `nango` argument provides connection access, outbound requests (`get`, `post`, `put`, `patch`, `delete`, `proxy`, `paginate`, `uncontrolledFetch`), logging, and environment variables. Tools do not expose sync record, checkpoint, or metadata capabilities.
 
-<ResponseField name="output" type="object" required>
-  The output of the action.
+The HTTP trigger also includes `trigger.request` (method, path, headers, query, body) and connection context. `trigger.input` contains the validated input. The tool-call API supplies an HTTP trigger with method `POST`.
 
-  ```ts
-  output: z.object({
-      issueId: z.string(),
-  });
-  ```
-</ResponseField>
+<a id="createaction"></a>
+### `createAction` (deprecated)
 
-<ResponseField name="version" type="string">
-  The version of the sync.
-  Use it to track changes to the sync inside Nango's UI.
-</ResponseField>
-
-<ResponseField name="metadata" type="object" default="z.void()">
-  The connection's metadata of the action.
-
-  ```ts
-  metadata: z.object({
-      userId: z.string(),
-  });
-  ```
-</ResponseField>
-
-<ResponseField name="scopes" type="string[]">
-  The integration's scopes required by the action.
-  This field is for documentation purposes only and currently not enforced by Nango.
-
-  ```ts
-  scopes: ['read:user', 'write:user'],
-  ```
-</ResponseField>
-
-<ResponseField name="endpoint" type="object" optional deprecated>
-  [DEPRECATED] Use the [`POST /action/trigger`](/reference/backend/http-api/action/trigger) API endpoint to trigger actions.
-</ResponseField>
+<Warning>
+  Deprecated. Use [`createTool`](#createtool) for new code. Existing action definitions and callers are documented in [Actions (deprecated)](/guides/functions/action-functions). See [migration guidance](/guides/platform/migrations/migrate-from-actions).
+</Warning>
 
 ### `createOnEvent`
 
@@ -14673,7 +14558,7 @@ Read more about [integration functions](/guides/functions/functions-guide) to un
 </ResponseField>
 
 <ResponseField name="exec" type="function" required>
-  The function that will be called when the action is triggered.
+  The function called when the connection lifecycle event occurs.
 </ResponseField>
 
 <ResponseField name="version" type="string">
@@ -14901,34 +14786,12 @@ No parameters.
   ```
 </Expandable>
 
-## Trigger action
+<a id="trigger-action"></a>
+## Trigger action (deprecated)
 
-You can call action functions from other integration functions with:
-
-```js
-await nango.triggerAction('<ACTION-NAME>', { 'custom_key1': 'custom_value1' });
-```
-
-**Parameters**
-
-<Expandable>
-  <ResponseField name="actionName" type="string" required>
-    The name of the action to trigger.
-  </ResponseField>
-  <ResponseField name="input" type="unkown" required>
-    The necessary input for your action's `exec` function.
-  </ResponseField>
-</Expandable>
-
-**Response**
-
-<Expandable>
-  ```json
-  {
-      "your-properties": "The data returned by the action"
-  }
-  ```
-</Expandable>
+<Warning>
+  `nango.triggerAction` is deprecated and is not available in tools. Existing callers can find its contract in [Actions (deprecated)](/guides/functions/action-functions#calling-an-action-from-a-function).
+</Warning>
 
 ## Paginate through API responses
 
@@ -15458,33 +15321,14 @@ export default createSync({
 });
 ```
 
-## Action-specific helper methods
+<a id="action-specific-helper-methods"></a>
+## Helpers for deprecated actions
 
 ### `ActionError`
 
-You can use `ActionError` in an action function to return a descriptive error to your app when needed:
-
-```ts
-
-export default createAction({
-  exec: async (nango) => {
-    // Something went wrong...
-
-    throw new ActionError({ any_key: 'any_value' });
-  },
-});
-```
-
-In this case, the response to the trigger action call will be:
-
-```json
-{
-  "error_type": "action_script_failure",
-  "payload": {
-    "any_key": "any_value"
-  }
-}
-```
+<Warning>
+  This helper is for deprecated actions. See [legacy action errors](/guides/functions/action-functions#action-errors). It is not a tool error contract.
+</Warning>
 
 ## Relative imports in functions
 
