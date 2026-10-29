@@ -12,21 +12,28 @@ import {
     isNodeBoundAuth,
     isTaskBoundAuth
 } from '@nangohq/internal-auth';
+import { PersistClient } from '@nangohq/internal-clients/persist';
+import { getPersistAPIUrl } from '@nangohq/shared';
 
 import { abort } from './abort.js';
-import { jobsClient } from './clients/jobs.js';
-import { PersistClient } from './clients/persist.js';
-import { abortCheckIntervalMs, envs, heartbeatIntervalMs } from './env.js';
+import { envs } from './env.js';
 import { exec } from './exec.js';
 import { logger } from './logger.js';
 import { HttpLocks } from './sdk/locks.js';
-import { abortControllers, distributedCoordination, usage } from './state.js';
+import { abortControllers, distributedCoordination } from './state.js';
 
+import type { RunnerMonitor } from './monitor.js';
 import type { InternalAuthEnvs, InternalServiceAuth } from '@nangohq/internal-auth';
+import type { JobsClient } from '@nangohq/internal-clients/jobs';
 import type { NangoProps } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
-type RunnerContext = {
+type RunnerDependencies = {
+    jobsClient: JobsClient;
+    usage: RunnerMonitor;
+};
+
+type RunnerContext = RunnerDependencies & {
     auth: InternalServiceAuth | undefined;
     required: boolean;
 };
@@ -93,6 +100,7 @@ function startProcedure() {
     return taskBoundProcedure
         .input((input) => input as StartParams)
         .mutation(async (arg): Promise<boolean> => {
+            const { jobsClient, usage } = arg.ctx;
             const startTime = Date.now();
             const { taskId, nangoProps, code, codeParams, internalAuthToken } = arg.input;
             logger.info('Received task', {
@@ -105,7 +113,7 @@ function startProcedure() {
                 input: codeParams
             });
 
-            const persistClient = distributedCoordination ? new PersistClient({ secretKey: nangoProps.secretKey }) : undefined;
+            const persistClient = distributedCoordination ? new PersistClient({ secretKey: nangoProps.secretKey, baseUrl: getPersistAPIUrl() }) : undefined;
 
             // The update to sync tracking is atomic, so we can safely try to track and if it fails, we know there is a conflicting sync
             await usage.track(nangoProps, taskId, persistClient ? { persistClient } : undefined);
@@ -118,7 +126,7 @@ function startProcedure() {
                 abortControllers.set(taskId, abortController);
                 const heartbeatTimeoutMs = arg.input.nangoProps.heartbeatTimeoutSecs
                     ? arg.input.nangoProps.heartbeatTimeoutSecs * 1000
-                    : heartbeatIntervalMs * 3;
+                    : envs.RUNNER_HEARTBEAT_INTERVAL_MS * 3;
 
                 const abortPoll = distributedCoordination
                     ? setInterval(async () => {
@@ -132,7 +140,7 @@ function startProcedure() {
                           } catch (err) {
                               logger.error('Error checking abort flag', { taskId, error: err });
                           }
-                      }, abortCheckIntervalMs)
+                      }, envs.RUNNER_ABORT_CHECK_INTERVAL_MS)
                     : null;
 
                 const heartbeat = setInterval(async () => {
@@ -154,7 +162,7 @@ function startProcedure() {
                     } catch (err) {
                         logger.error('Failed to update conflict tracking with new ttl', { error: err, taskId });
                     }
-                }, heartbeatIntervalMs);
+                }, envs.RUNNER_HEARTBEAT_INTERVAL_MS);
 
                 try {
                     const execRes = await exec({
@@ -196,16 +204,16 @@ function startProcedure() {
 function abortProcedure() {
     return taskBoundProcedure
         .input((input) => input as { taskId: string })
-        .mutation(({ input }) => {
+        .mutation(({ input, ctx }) => {
             logger.info('Received cancel', { input });
-            return abort(input.taskId);
+            return abort(input.taskId, ctx.usage);
         });
 }
 
 function notifyWhenIdleProcedure() {
-    return nodeBoundProcedure.mutation(() => {
+    return nodeBoundProcedure.mutation(({ ctx }) => {
         logger.info('Received notifyWhenIdle');
-        usage.resetIdleMaxDurationMs();
+        ctx.usage.resetIdleMaxDurationMs();
         return true;
     });
 }
@@ -214,7 +222,7 @@ function isHealthPath(req: Request): boolean {
     return req.path === '/health' || req.path === '/health/';
 }
 
-export function getServer(authEnvs: InternalAuthEnvs = envs): express.Express {
+export function getServer(dependencies: RunnerDependencies, authEnvs: InternalAuthEnvs = envs): express.Express {
     const app = express();
     app.use(timeout('24h'));
     // Verify-only: never pass a minting secret. Leftover SIGNING_KEY / TOKEN on the process
@@ -235,6 +243,7 @@ export function getServer(authEnvs: InternalAuthEnvs = envs): express.Express {
         trpcExpress.createExpressMiddleware({
             router: appRouter,
             createContext: ({ res }): RunnerContext => ({
+                ...dependencies,
                 auth: getInternalServiceAuth(res),
                 required: authEnvs.NANGO_INTERNAL_AUTH_REQUIRED
             })
@@ -243,8 +252,6 @@ export function getServer(authEnvs: InternalAuthEnvs = envs): express.Express {
     app.use(haltOnTimedout);
     return app;
 }
-
-export const server = getServer();
 
 function haltOnTimedout(req: Request, _res: Response, next: NextFunction) {
     if (!req.timedout) next();

@@ -1,6 +1,7 @@
+import { PersistClient } from '@nangohq/internal-clients/persist';
 import { Nango } from '@nangohq/node';
 import { executeUncontrolledFetch, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import { enforceProxyOutboundUrlPolicy, getProxyConfiguration, ProxyError, ProxyRequest, resolvePolicyForRunner } from '@nangohq/shared';
+import { enforceProxyOutboundUrlPolicy, getPersistAPIUrl, getProxyConfiguration, ProxyError, ProxyRequest, resolvePolicyForRunner } from '@nangohq/shared';
 import {
     getCheckpointKey,
     getInternalHttpsAgent,
@@ -15,7 +16,6 @@ import {
     truncateJson
 } from '@nangohq/utils';
 
-import { PersistClient } from '../clients/persist.js';
 import { envs } from '../env.js';
 import { logger } from '../logger.js';
 import { Checkpointing } from './checkpointing.js';
@@ -106,7 +106,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
         if (!this.syncConfig) throw new Error('Parameter syncConfig is required');
 
-        this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
+        this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey, baseUrl: getPersistAPIUrl() });
         this.telemetryRecorder = runnerProps?.telemetryRecorder;
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
         this.checkpointKey = getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name });
@@ -488,7 +488,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         if (!this.syncJobId) throw new Error('Parameter syncJobId is required');
         if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
 
-        this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
+        this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey, baseUrl: getPersistAPIUrl() });
         this.telemetryRecorder = runnerProps?.telemetryRecorder;
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
         this.checkpointKey = getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name, variant: this.variant });

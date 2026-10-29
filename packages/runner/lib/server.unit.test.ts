@@ -13,15 +13,19 @@ import {
     nodeSubject,
     taskSubject
 } from '@nangohq/internal-auth';
+import { JobsClient } from '@nangohq/internal-clients/jobs';
 
 import { getRunnerClient } from './client.js';
 import { envs } from './env.js';
+import { RunnerMonitor } from './monitor.js';
 import { getServer } from './server.js';
 
 import type { InternalAuthEnvs } from '@nangohq/internal-auth';
 
 const jobsSigningKey = 'sign';
 const runnerPublicKey = exportRunnerPublicKey(jobsSigningKey)!;
+const jobsClient = new JobsClient({ baseUrl: 'http://jobs.example.com' });
+const usage = new RunnerMonitor({ runnerId: envs.RUNNER_NODE_ID, jobsClient });
 
 const authEnvs: InternalAuthEnvs = {
     NANGO_INTERNAL_AUTH_REQUIRED: false,
@@ -41,7 +45,7 @@ afterEach(() => {
 });
 
 async function listen() {
-    const app = getServer(authEnvs);
+    const app = getServer({ jobsClient, usage }, authEnvs);
     return await new Promise<{ url: string; close: () => Promise<void> }>((resolve) => {
         const httpServer = app.listen(0, '127.0.0.1', () => {
             const address = httpServer.address();

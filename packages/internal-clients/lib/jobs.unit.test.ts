@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { jobsClient } from './jobs.js';
+import { JobsClient } from './jobs.js';
+
+const jobsClient = new JobsClient({ baseUrl: 'http://jobs.example.com' });
 
 const task = {
     taskId: 'task-1',
