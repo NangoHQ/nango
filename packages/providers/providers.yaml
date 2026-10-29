@@ -26313,10 +26313,6 @@ symplr-ctm:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.hostname}/${connectionConfig.siteName}/clearConnect || https://ctms.contingenttalentmanagement.com/${connectionConfig.siteName}/clearConnect
-        verification:
-            method: GET
-            endpoints:
-                - /2_0/index.cfm?action=getRegions&resultType=json
     docs: https://nango.dev/docs/api-integrations/symplr-ctm
     docs_connect: https://nango.dev/docs/api-integrations/symplr-ctm/connect
     connection_config:
