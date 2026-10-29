@@ -179,7 +179,7 @@ paths:
     /integrations/quickstart:
         post:
             summary: Create a quickstart integration
-            description: Create an integration using a Nango-provided developer app for providers that require a developer app.
+            description: Create an integration that uses a Nango-managed OAuth app (Nango-provided developer app) for providers that require a developer app. Nango-managed OAuth apps are production-ready. Returns a 400 error if no Nango-managed app is configured for the provider.
             requestBody:
                 required: true
                 content:
