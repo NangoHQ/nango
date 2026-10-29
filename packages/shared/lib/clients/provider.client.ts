@@ -306,7 +306,7 @@ class ProviderClient {
             case 'one-drive':
             case 'sharepoint-online':
                 return this.refreshSharepointToken(
-                    provider.token_url as string,
+                    interpolatedTokenUrl.href,
                     credentials.refresh_token!,
                     config.oauth_client_id,
                     config.oauth_client_secret,
