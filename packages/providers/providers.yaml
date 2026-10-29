@@ -26312,7 +26312,7 @@ symplr-ctm:
         - ats
     auth_mode: BASIC
     proxy:
-        base_url: https://ctms.contingenttalentmanagement.com/${connectionConfig.siteName}/clearConnect
+        base_url: https://${connectionConfig.hostname}/${connectionConfig.siteName}/clearConnect || https://ctms.contingenttalentmanagement.com/${connectionConfig.siteName}/clearConnect
         verification:
             method: GET
             endpoints:
@@ -26320,11 +26320,22 @@ symplr-ctm:
     docs: https://nango.dev/docs/api-integrations/symplr-ctm
     docs_connect: https://nango.dev/docs/api-integrations/symplr-ctm/connect
     connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: Your CTM hostname.
+            enum:
+                - ctms.contingenttalentmanagement.com
+                - ctmscs.contingenttalentmanagement.com
+            prefix: https://
+            format: hostname
+            order: 1
+            doc_section: '#step-1-locate-your-clearconnect-credentials'
         siteName:
             type: string
             title: Site Name
             description: Your CTM customer site name.
-            order: 1
+            order: 2
             example: myCTM
     credentials:
         username:
