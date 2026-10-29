@@ -1,10 +1,8 @@
 import { z } from 'zod';
 
 import { getUserAgent } from '@nangohq/node';
-import { getPersistAPIUrl } from '@nangohq/shared';
-import { Err, Ok, stringifyError } from '@nangohq/utils';
+import { Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
-import { logger } from '../logger.js';
 import { httpFetch, httpStreamNDJson } from './http.js';
 
 import type {
@@ -28,6 +26,8 @@ import type {
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
+const logger = getLogger('InternalClients.Persist');
+
 const deleteOutdatedRecordsTerminalLineSchema = z.discriminatedUnion('status', [
     z.object({ status: z.literal('done'), deletedKeys: z.array(z.string()) }),
     z.object({ status: z.literal('error'), error: z.looseObject({ message: z.string() }) })
@@ -43,9 +43,9 @@ export class PersistClient {
     private secretKey: string;
     private userAgent: string;
 
-    constructor({ secretKey }: { secretKey: string }) {
+    constructor({ secretKey, baseUrl }: { secretKey: string; baseUrl: string }) {
         this.secretKey = secretKey;
-        this.baseUrl = getPersistAPIUrl();
+        this.baseUrl = baseUrl;
         this.userAgent = getUserAgent('sdk');
     }
 

@@ -1,12 +1,12 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import { jobsClient } from './clients/jobs.js';
 import { envs } from './env.js';
 import { logger } from './logger.js';
 
+import type { JobsClient } from '@nangohq/internal-clients/jobs';
 import type { Result } from '@nangohq/utils';
 
-export async function register(): Promise<Result<void>> {
+export async function register(jobsClient: JobsClient): Promise<Result<void>> {
     if (envs.RUNNER_NODE_ID && envs.RUNNER_URL) {
         const res = await jobsClient.postRegister({ nodeId: envs.RUNNER_NODE_ID, url: envs.RUNNER_URL });
         if (res.isErr()) {

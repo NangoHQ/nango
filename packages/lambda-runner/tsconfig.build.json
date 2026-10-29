@@ -1,6 +1,7 @@
 {
     "files": [],
     "references": [
+        { "path": "packages/internal-clients" },
         {
             "path": "packages/cli"
         },

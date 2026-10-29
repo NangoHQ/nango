@@ -1,0 +1,9 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "lib",
+        "outDir": "dist"
+    },
+    "references": [{ "path": "../internal-auth" }, { "path": "../node-client" }, { "path": "../types" }, { "path": "../utils" }],
+    "include": ["lib/**/*"]
+}

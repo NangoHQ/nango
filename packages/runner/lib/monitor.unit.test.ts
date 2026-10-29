@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { JobsClient } from '@nangohq/internal-clients/jobs';
 import { Err, Ok } from '@nangohq/utils';
 
 import { RunnerMonitor } from './monitor.js';
 
-import type { PersistClient } from './clients/persist.js';
+import type { PersistClient } from '@nangohq/internal-clients/persist';
 import type { DBSyncConfig, NangoProps, ScriptType } from '@nangohq/types';
 
 vi.hoisted(() => {
@@ -61,7 +62,7 @@ describe('RunnerMonitor conflict tracking', () => {
     beforeEach(() => {
         vi.spyOn(global, 'setInterval').mockImplementation(() => null as unknown as NodeJS.Timeout);
         vi.spyOn(global, 'setTimeout').mockImplementation(() => null as unknown as NodeJS.Timeout);
-        monitor = new RunnerMonitor({ runnerId: 1 });
+        monitor = new RunnerMonitor({ runnerId: 1, jobsClient: new JobsClient({ baseUrl: 'http://jobs.example.com' }) });
     });
 
     afterEach(() => {

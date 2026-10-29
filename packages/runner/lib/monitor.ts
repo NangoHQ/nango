@@ -1,13 +1,15 @@
 import fs from 'fs';
 import os from 'os';
 
+import { PersistClient } from '@nangohq/internal-clients/persist';
+import { getPersistAPIUrl } from '@nangohq/shared';
 import { metrics } from '@nangohq/utils';
 
-import { PersistClient } from './clients/persist.js';
 import { envs, syncConflictTtlMs } from './env.js';
 import { idle } from './idle.js';
 import { logger } from './logger.js';
 
+import type { JobsClient } from '@nangohq/internal-clients/jobs';
 import type { NangoProps } from '@nangohq/types';
 
 const regexRunnerUrl = /^http:\/\/(production|staging)-runner-account-(\d+|default)-\d+/;
@@ -24,6 +26,7 @@ interface LocalConflictEntry {
 
 export class RunnerMonitor {
     private runnerId: number;
+    private jobsClient: JobsClient;
     private tracked = new Map<string, TrackedTask>();
     private localConflicts = new Map<string, LocalConflictEntry>();
     private idleMaxDurationMs = envs.IDLE_MAX_DURATION_MS;
@@ -33,8 +36,9 @@ export class RunnerMonitor {
     private memoryInterval: NodeJS.Timeout | null = null;
     private runnerAccountId: string | null = null;
 
-    constructor({ runnerId }: { runnerId: number }) {
+    constructor({ runnerId, jobsClient }: { runnerId: number; jobsClient: JobsClient }) {
         this.runnerId = runnerId;
+        this.jobsClient = jobsClient;
         this.memoryInterval = this.checkMemoryUsage();
         this.idleInterval = this.checkIdle();
         process.on('SIGTERM', this.onExit.bind(this));
@@ -54,10 +58,6 @@ export class RunnerMonitor {
         return `function:${environmentId}:${scriptType}:${syncId}`;
     }
 
-    private conflictTtlMs(): number {
-        return syncConflictTtlMs;
-    }
-
     private isLocalConflictExpired(entry: LocalConflictEntry): boolean {
         return entry.ttlMs > 0 && Date.now() - entry.timestamp > entry.ttlMs;
     }
@@ -67,7 +67,7 @@ export class RunnerMonitor {
         const existing = this.localConflicts.get(key);
         const isExpired = existing !== undefined && this.isLocalConflictExpired(existing);
         if (isExpired || refresh || existing === undefined) {
-            this.localConflicts.set(key, { timestamp: Date.now(), ttlMs: this.conflictTtlMs() });
+            this.localConflicts.set(key, { timestamp: Date.now(), ttlMs: syncConflictTtlMs });
             return;
         }
         throw new Error('Conflicting sync detected');
@@ -79,7 +79,7 @@ export class RunnerMonitor {
     }
 
     private getMemoryPersistClient(entry: TrackedTask): PersistClient {
-        return entry.persistClient ?? new PersistClient({ secretKey: entry.nangoProps.secretKey });
+        return entry.persistClient ?? new PersistClient({ secretKey: entry.nangoProps.secretKey, baseUrl: getPersistAPIUrl() });
     }
 
     async trackForConflicts(taskId: string, opts = { refresh: false }): Promise<void> {
@@ -98,7 +98,7 @@ export class RunnerMonitor {
                 scriptType: nangoProps.scriptType,
                 syncId: nangoProps.syncId,
                 refresh: opts.refresh,
-                ttlMs: this.conflictTtlMs()
+                ttlMs: syncConflictTtlMs
             });
             if (res.isErr()) {
                 logger.error('Failed to track sync for conflicts', { error: res.error });
@@ -204,7 +204,7 @@ export class RunnerMonitor {
                 const idleTimeMs = Date.now() - this.lastIdleTrackingDate;
                 if (idleTimeMs > this.idleMaxDurationMs) {
                     logger.info(`Runner '${this.runnerId}' idle for more than ${this.idleMaxDurationMs}ms`);
-                    const res = await idle();
+                    const res = await idle(this.jobsClient);
                     if (res.isErr()) {
                         logger.error(`Failed to idle runner`, res.error);
                         nextTimeout = timeoutMs; // Reset to default on error

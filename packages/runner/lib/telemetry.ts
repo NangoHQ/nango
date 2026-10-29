@@ -1,9 +1,9 @@
 import { Batcher, Ok } from '@nangohq/utils';
 
-import { telemetryBatchSize, telemetryFlushIntervalMs } from './env.js';
+import { envs } from './env.js';
 import { logger } from './logger.js';
 
-import type { PersistClient } from './clients/persist.js';
+import type { PersistClient } from '@nangohq/internal-clients/persist';
 import type { RunnerTelemetry } from '@nangohq/types';
 import type { Grouping, Result } from '@nangohq/utils';
 
@@ -40,8 +40,8 @@ const telemetryGrouping: Grouping<RunnerTelemetry> = {
 
 function createTelemetryBatcher({ environmentId, persistClient }: { environmentId: number; persistClient: PersistClient }): Batcher<RunnerTelemetry> {
     return new Batcher<RunnerTelemetry>({
-        maxBatchSize: telemetryBatchSize,
-        flushIntervalMs: telemetryFlushIntervalMs,
+        maxBatchSize: envs.RUNNER_TELEMETRY_BATCH_SIZE,
+        flushIntervalMs: envs.RUNNER_TELEMETRY_FLUSH_INTERVAL_MS,
         grouping: telemetryGrouping,
         process: async (events) => {
             const res = await persistClient.postRunnerTelemetry(environmentId, events);

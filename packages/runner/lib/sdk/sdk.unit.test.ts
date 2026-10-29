@@ -2,12 +2,12 @@
 import { AxiosError } from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { PersistClient } from '@nangohq/internal-clients/persist';
 import { Nango } from '@nangohq/node';
 import { ExecutionAbortedSDKError, ExecutionInterruptedSDKError, ExecutionTimeoutSDKError } from '@nangohq/runner-sdk';
 import { ProxyRequest } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
-import { PersistClient } from '../clients/persist.js';
 import { MapLocks } from './locks.js';
 import { createFunctionFacade, NangoActionRunner, NangoSyncRunner } from './sdk.js';
 
@@ -49,7 +49,7 @@ describe('cache', () => {
     let nango: Nango;
 
     beforeEach(async () => {
-        const persistClient = new PersistClient({ secretKey: '***' });
+        const persistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         nangoAction = new NangoActionRunner(
             {
@@ -121,7 +121,7 @@ describe('proxy base URL override denylist', () => {
     });
 
     it('blocks denylisted base URL overrides using startup policy', async () => {
-        const persistClient = new PersistClient({ secretKey: '***' });
+        const persistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
         vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => Promise.resolve({} as AxiosResponse));
@@ -139,7 +139,7 @@ describe('proxy base URL override denylist', () => {
     });
 
     it('does not allow bypassing denylist via runtime env mutation', async () => {
-        const persistClient = new PersistClient({ secretKey: '***' });
+        const persistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
         vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => Promise.resolve({} as AxiosResponse));
@@ -160,7 +160,7 @@ describe('proxy base URL override denylist', () => {
     });
 
     it('blocks AWS SigV4 per-connection base_url via resolved proxy URL validation', async () => {
-        const persistClient = new PersistClient({ secretKey: '***' });
+        const persistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         Nango.prototype.getConnection = vi.fn().mockReturnValue({
             credentials: {
@@ -221,7 +221,7 @@ describe('Pagination', () => {
     let nangoAction: NangoActionRunner;
 
     beforeEach(async () => {
-        const persistClient = new PersistClient({ secretKey: '***' });
+        const persistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         const config: NangoProps = {
             ...nangoProps,
@@ -485,7 +485,7 @@ describe('Pagination', () => {
 
 describe('Log', () => {
     const persistClient = (() => {
-        const client = new PersistClient({ secretKey: '***' });
+        const client = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         client.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         return client;
     })();
@@ -589,7 +589,7 @@ describe('getRecordsById', () => {
     });
 
     it('should return empty map if no ids', async () => {
-        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        const mockPersistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         mockPersistClient.getRecords = vi.fn();
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
@@ -604,7 +604,7 @@ describe('getRecordsById', () => {
             records.set(i, { id: i.toString() });
         }
 
-        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        const mockPersistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: Array.from(records.values()), nextCursor: undefined }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
@@ -620,7 +620,7 @@ describe('getRecordsById', () => {
             records.set(i, { id: i.toString() });
         }
 
-        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        const mockPersistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         const recordsArray = Array.from(records.values());
         mockPersistClient.getRecords = vi
             .fn()
@@ -654,7 +654,7 @@ describe('listRecords', () => {
             { id: '1', name: 'a' },
             { id: '2', name: 'b' }
         ];
-        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        const mockPersistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records, nextCursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
@@ -676,7 +676,7 @@ describe('listRecords', () => {
     });
 
     it('should pass cursor to getRecords when options.cursor is set', async () => {
-        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        const mockPersistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: [], nextCursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
@@ -697,7 +697,7 @@ describe('listRecords', () => {
     it('should follow next_cursor and yield records across pages', async () => {
         const page1 = [{ id: '1' }];
         const page2 = [{ id: '2' }, { id: '3' }];
-        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        const mockPersistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         mockPersistClient.getRecords = vi
             .fn()
             .mockResolvedValueOnce(Ok({ records: page1, nextCursor: 'c2' }))
@@ -782,7 +782,7 @@ describe('proxy 401 invalid credentials', () => {
     let getConnectionMock: Mock<Nango['getConnection']>;
 
     beforeEach(async () => {
-        persistClient = new PersistClient({ secretKey: '***' });
+        persistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
 
         const nodeClient = (await import('@nangohq/node')).Nango;
@@ -882,14 +882,14 @@ describe('createFunctionFacade', () => {
     });
 
     function buildActionFacade() {
-        const persistClient = new PersistClient({ secretKey: '***' });
+        const persistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
         const runner = new NangoActionRunner({ ...nangoProps, scriptType: 'action' }, { persistClient, locks });
         return { facade: createFunctionFacade(runner), persistClient };
     }
 
     function buildSyncFacade() {
-        const persistClient = new PersistClient({ secretKey: '***' });
+        const persistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
         persistClient.postRecords = vi.fn().mockResolvedValue({ result: Ok({ nextMerging: { strategy: 'override' } }), bytesSent: 0 });
         const runner = new NangoSyncRunner({ ...nangoProps }, { persistClient, locks });
@@ -961,7 +961,7 @@ describe('createFunctionFacade', () => {
 
         it('cannot disable abort enforcement by overwriting abortSignal through the facade', async () => {
             const ac = new AbortController();
-            const persistClient = new PersistClient({ secretKey: '***' });
+            const persistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
             persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
             const runner = new NangoActionRunner({ ...nangoProps, scriptType: 'action', abortSignal: ac.signal }, { persistClient, locks });
             const facade = createFunctionFacade(runner);
@@ -1113,7 +1113,7 @@ describe('execution lifecycle', () => {
     });
 
     const buildSync = () => {
-        const persistClient = new PersistClient({ secretKey: '***' });
+        const persistClient = new PersistClient({ secretKey: '***', baseUrl: 'http://persist.example.com' });
         persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         // killAfterMs is in the past, so the kill threshold is already exceeded
         return new NangoSyncRunner({ ...nangoProps, lifecycle: { interruptAfterMs: -2, killAfterMs: -1 } }, { persistClient, locks });
