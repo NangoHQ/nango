@@ -466,7 +466,7 @@ describe('POST /mcp management server', () => {
     it.each(['environment:tools:call', 'environment:actions:execute'] as const)(
         'triggers an action for the authenticated environment with %s',
         async (scope) => {
-            const { secret, env, account } = await createKeyWithScopes([scope]);
+            const { secret, env, account } = await createKeyWithScopes([scope as ApiKeyScope]);
             const response = { issue_id: 'issue-123', created: true };
             const executeActionSpy = vi.spyOn(actionService, 'executeAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: response }) });
 

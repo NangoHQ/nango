@@ -46,8 +46,6 @@ export const API_KEY_SCOPES = [
     'environment:logs:read',
     // Tools
     'environment:tools:call',
-    // Deprecated, grants `environment:tools:call`
-    'environment:actions:execute',
     // Proxy
     'environment:proxy',
     // Variables

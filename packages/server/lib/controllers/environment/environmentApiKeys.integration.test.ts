@@ -607,6 +607,7 @@ describe('Public environment API key management', () => {
                 method: 'PATCH',
                 token: accountKey.secret,
                 params: { environmentUuid: env.uuid, keyUuid: key.uuid },
+                // @ts-expect-error the old name is no longer a scope type
                 body: { scopes: ['environment:actions:execute'] }
             });
 

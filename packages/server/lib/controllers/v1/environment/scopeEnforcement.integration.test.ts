@@ -271,7 +271,7 @@ describe('Scope enforcement on public API routes', () => {
 
     describe('POST /action/trigger', () => {
         it.each(['environment:tools:call', 'environment:actions:execute'] as const)('should allow with %s scope', async (scope) => {
-            const token = await createKeyWithScopes([scope]);
+            const token = await createKeyWithScopes([scope as ApiKeyScope]);
             const res = await api.fetch(
                 '/action/trigger' as any,
                 { method: 'POST', token, body: { action_name: 'test', input: {} }, headers: { 'provider-config-key': 'test', 'connection-id': 'test' } } as any
@@ -296,7 +296,7 @@ describe('Scope enforcement on public API routes', () => {
     describe('POST /v1/* (action via legacy passthrough)', () => {
         it.each(['environment:tools:call', 'environment:actions:execute'] as const)('should allow with %s scope', async (scope) => {
             vi.spyOn(getFlags(), 'isV1PassthroughEnabled').mockResolvedValue(true);
-            const { secret, env } = await createKeyWithScopesAndEnv([scope]);
+            const { secret, env } = await createKeyWithScopesAndEnv([scope as ApiKeyScope]);
             const config = await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github', connectionId: 'v1-action-allow' });
             await seeders.createSyncSeeds({

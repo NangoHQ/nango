@@ -104,8 +104,8 @@ describe('what a key may hold', () => {
 });
 
 describe('renamed scopes', () => {
-    it.each([['environment:actions:execute'], ['environment:actions:*']] as const)('%s also grants environment:tools:call', (selector) => {
-        expect(expandIssuable([selector])).toContain('environment:tools:call');
+    it.each(['environment:actions:execute', 'environment:actions:*'])('%s also grants environment:tools:call', (selector) => {
+        expect(expandIssuable([selector as ScopeSelector])).toContain('environment:tools:call');
     });
 
     it('environment:tools:call does not grant the old name', () => {
