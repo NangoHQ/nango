@@ -825,6 +825,41 @@ describe('Account service', () => {
         });
     });
 
+    describe('getTaskTokenAccountContext', () => {
+        const secretFields = ['secret_key', 'pending_secret_key', 'hmac_key', 'otlp_settings'] as const;
+
+        it('T14: returns and caches an environment without secret columns', async () => {
+            const previous = envs.AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED;
+            (envs as { AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED: boolean }).AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED = true;
+            try {
+                const { env } = await seedAccountEnvAndUser();
+                const first = (await accountService.getTaskTokenAccountContext(env.id)).unwrap();
+                expect(first?.account.id).toBe(env.account_id);
+                expect(first?.environment.id).toBe(env.id);
+                expect(first?.environment.name).toBe(env.name);
+                for (const field of secretFields) {
+                    expect(first?.environment).not.toHaveProperty(field);
+                }
+
+                await db.knex('_nango_environments').where({ id: env.id }).update({ name: 'renamed-after-cache' });
+                const second = (await accountService.getTaskTokenAccountContext(env.id)).unwrap();
+                expect(second?.environment.name).toBe(env.name);
+                for (const field of secretFields) {
+                    expect(second?.environment).not.toHaveProperty(field);
+                }
+            } finally {
+                (envs as { AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED: boolean }).AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED = previous;
+            }
+        });
+
+        it('T14: returns null for a deleted environment and an unknown id', async () => {
+            const { env } = await seedAccountEnvAndUser();
+            await db.knex('_nango_environments').where({ id: env.id }).update({ deleted: true, deleted_at: new Date() });
+            expect((await accountService.getTaskTokenAccountContext(env.id)).unwrap()).toBeNull();
+            expect((await accountService.getTaskTokenAccountContext(2147483647)).unwrap()).toBeNull();
+        });
+    });
+
     it('should return environment:* scopes for env var key (env_var path)', async () => {
         const account = await createTestAccount();
         const envName = uuid();

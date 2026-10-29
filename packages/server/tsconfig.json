@@ -30,6 +30,9 @@
             "path": "../hosted-telemetry"
         },
         {
+            "path": "../internal-auth"
+        },
+        {
             "path": "../keystore"
         },
         {

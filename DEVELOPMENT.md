@@ -37,7 +37,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Run integrations
 
-Create a directory for your integrations and install the CLI:
+Create a directory for your integrations and install the CLI: 
 
 ```sh
 mkdir nango-integrations
