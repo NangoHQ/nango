@@ -4,14 +4,29 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
-<Update label="Reconnect connections from agent sessions" description="October 26, 2026">
+<Update label="Environment configuration from the API" description="October 27, 2026">
+  Set up a new environment entirely from the API, webhooks included, and read its configuration back.
+
+  - [Create environment API](/reference/backend/http-api/environments/create) accepts a `webhooks` object with the destination URLs and event subscriptions. The response now returns the complete environment settings, including the webhook signing key.
+  - [Get environment API](/reference/backend/http-api/environments/get) returns an environment's settings. Pass `with_secrets=true` to also get the webhook signing key and OpenTelemetry headers, which requires the extra `account:environments:read_secret` scope.
+
+  Both take an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the matching `account:environments:*` scope.
+</Update>
+---
+
+<Update label="Smaller improvements" description="October 27, 2026">
+  - **Clearer errors when agents hit the connection limit:** Agent sessions now get a clear error when creating a connection fails because the account is at its plan's connection limit.
+  - **Syncs that checkpoint keep going:** A sync stopped at the execution time limit now reschedules immediately if it saved a checkpoint during the run, instead of failing and waiting for the next scheduled run.
+  - **Pre-built integrations on self-managed instances:** Self-managed instances can now install Nango's integration catalog in their own object storage. See [Self-managed Nango instances](/guides/platform/self-hosting/install-integration-catalog).
+</Update>
+---
+
+<Update label="Agents can recover broken connections" description="October 26, 2026">
   Agents can now get a broken connection fixed without leaving the session.
 
-  When a connection's credentials expire and can no longer be refreshed, or it is missing a scope, the user gets a reconnect link and authorizes the same connection again. The session keeps working on it, and the connection keeps its ID and tags. It is available whenever `nango_create_connection` is enabled.
+  When a connection's credentials expire, fail to refresh, or lack a scope, the user gets a reconnect link and authorizes the same connection again. Your agent continues working in the same session without interruptions.
 
   See [reconnecting a connection](/guides/agent-sessions#reconnecting-a-connection).
-
-  [Reconnect sessions](/reference/backend/http-api/connect/sessions/reconnect) also no longer clear a connection's tags when the request passes neither `tags` nor `end_user`.
 
   ![An agent asking the user to reconnect Linear after its credentials were rejected](/images/changelog/agent-session-reconnect.png)
 </Update>
@@ -1869,7 +1884,10 @@ description: "Important developer & product updates, including deprecations & br
 
   - Available for top APIs (more being added over time).
   - Select this option when creating a new integration.
-  - For **testing only**—production apps should still use your own credentials to keep Nango fully white-labeled.
+
+  <Note>
+    Update: Nango-managed OAuth apps are production-ready, and you can use them with real users. Register your own OAuth app only if you need white-labeled auth, custom scopes, or the other benefits listed in [Nango-managed OAuth apps](/guides/auth/auth-guide#nango-managed-oauth-apps).
+  </Note>
 </Update>
 ---
 
