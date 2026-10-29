@@ -9,7 +9,8 @@ import type {
     PatchIntegration,
     PatchPublicIntegration,
     PostIntegration,
-    PostPublicIntegration
+    PostPublicIntegration,
+    PostPublicQuickstartIntegration
 } from '@nangohq/types';
 
 export const auditIntegrationCreated = auditable<PostIntegration>({
@@ -20,6 +21,12 @@ export const auditIntegrationCreated = auditable<PostIntegration>({
 });
 
 export const auditPublicIntegrationCreated = auditable<PostPublicIntegration>({
+    policy: Audit.auditable({ resource: 'integration', action: 'created', scope: 'environment' }),
+    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key, response.data.display_name ?? undefined),
+    metadata: (req) => omitUndefined({ provider: nonEmptyString(req.body.provider) })
+});
+
+export const auditPublicQuickstartIntegrationCreated = auditable<PostPublicQuickstartIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'created', scope: 'environment' }),
     targetFromResponse: (response) => makeTarget('integration', response.data.unique_key, response.data.display_name ?? undefined),
     metadata: (req) => omitUndefined({ provider: nonEmptyString(req.body.provider) })

@@ -96,6 +96,22 @@ export type PostPublicIntegration = ApiEndpoint<{
     };
 }>;
 
+// TODO: remove this deprecated alias of POST /integrations with NANGO_MANAGED credentials (NAN-7880)
+export type PostPublicQuickstartIntegration = ApiEndpoint<{
+    Audit: AuditPolicy<'integration', 'created', 'environment'>;
+    Method: 'POST';
+    Path: '/integrations/quickstart';
+    Body: {
+        provider: string;
+        unique_key: string;
+        display_name?: string | undefined;
+        forward_webhooks?: boolean | undefined;
+    };
+    Success: {
+        data: ApiPublicIntegration;
+    };
+}>;
+
 export type GetPublicIntegration = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';

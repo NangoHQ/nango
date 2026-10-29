@@ -68,7 +68,8 @@ export {
     auditIntegrationUpdated,
     auditPublicIntegrationCreated,
     auditPublicIntegrationDeleted,
-    auditPublicIntegrationUpdated
+    auditPublicIntegrationUpdated,
+    auditPublicQuickstartIntegrationCreated
 } from './integration.middleware.js';
 export {
     auditMemberInviteAccepted,
