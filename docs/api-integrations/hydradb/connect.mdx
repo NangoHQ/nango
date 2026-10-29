@@ -5,25 +5,31 @@ sidebarTitle: HydraDB
 
 ## Overview
 
-To authenticate with HydraDB, you will need an **API key** that grants Nango
-permission to call the HydraDB API on your behalf. This guide explains how to
-obtain it.
+To authenticate with HydraDB, you need:
+1. **API Key** — A key that grants Nango permission to interact with the HydraDB API on your behalf.
+
+This guide will walk you through obtaining your API key from HydraDB.
 
 ### Prerequisites
 
 - A HydraDB account ([hydradb.com](https://hydradb.com)).
 
-### Instructions
+### Step 1: Obtain your API key
 
-#### Step 1: Find your API key
+1. Sign in to the [HydraDB dashboard](https://dashboard.hydradb.com).
+2. Open the **API keys** section.
+3. Create a new key, or copy an existing one.
 
-1. Sign in to the HydraDB dashboard.
-2. Open the API keys section.
-3. Create a key, or copy an existing one.
+<img src="/api-integrations/hydradb/api_key.png"/>
 
-#### Step 2: Enter it in Nango
+### Step 2: Enter credentials in the Connect UI
 
-When adding a HydraDB connection in Nango, paste the API key into the **API Key**
-field.
+Once you have your API key:
+1. Open the form where you need to authenticate with HydraDB.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/hydradb/form.png" style={{maxWidth: "450px" }}/>
+
 
 You are now connected to HydraDB.
