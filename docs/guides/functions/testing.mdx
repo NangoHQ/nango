@@ -10,7 +10,7 @@ Nango provides a comprehensive testing framework that combines dry runs with moc
 
 Nango's testing framework is built on three core concepts:
 
-1. **Dry runs**: Test your integrations against live API connections without affecting production data
+1. **Dry runs**: Test your integrations against a real provider using a test connection
 2. **Mocks**: Save API responses during dry runs to create reproducible test fixtures
 3. **Snapshot testing**: Automatically compare integration outputs against saved snapshots using Vitest
 
@@ -18,7 +18,7 @@ This approach ensures your integrations work correctly while providing fast, rel
 
 ## Dry run testing
 
-Dry runs allow you to execute your sync functions and action functions against real API connections without saving data to your database. This is essential for:
+Dry runs allow you to execute your sync functions and tools against real API connections without saving sync records to your database. Provider API calls still run and can create or change external data. This is essential for:
 
 - Testing integration logic before deployment
 - Debugging issues with live data
@@ -27,10 +27,10 @@ Dry runs allow you to execute your sync functions and action functions against r
 
 ### Basic dry run
 
-Execute a sync or action against an existing connection:
+Execute a sync or tool against an existing connection:
 
 ```bash
-nango dryrun <sync-or-action-name> <connection-id>
+nango dryrun <function-name> <connection-id>
 ```
 
 **Example:**
@@ -46,7 +46,7 @@ Common options for testing:
 # Specify environment (dev or prod)
 nango dryrun fetch-tickets abc-123 -e prod
 
-# For action functions: pass input data
+# For tools: pass input data
 nango dryrun create-ticket abc-123 --input '{"title": "Test ticket"}'
 
 # For sync functions: specify an initial checkpoint
@@ -72,8 +72,8 @@ nango dryrun fetch-tickets abc-123 --validate
 ```
 
 When validation is enabled:
-- **Action inputs** are validated before execution
-- **Action outputs** are validated after execution
+- **Tool inputs** are validated before execution
+- **Tool outputs** are validated after execution
 - **Sync records** are validated before they would be saved
 - **Validation failures** halt execution and display detailed error messages
 
@@ -211,7 +211,7 @@ Generate tests for your integrations:
 nango generate:tests
 ```
 
-You can also generate tests for specific integrations, sync functions, or action functions:
+You can also generate tests for specific integrations, sync functions, or tools:
 
 ```bash
 # Generate tests for a specific integration
@@ -220,8 +220,8 @@ nango generate:tests -i github
 # Generate tests for a specific sync function
 nango generate:tests -s fetch-tickets
 
-# Generate tests for a specific action function
-nango generate:tests -a create-ticket
+# For tools, generate tests for their integration
+nango generate:tests -i github
 
 # Combine flags for more specific targeting
 nango generate:tests -i github -s fetch-tickets
@@ -286,38 +286,40 @@ describe('github fetch-tickets tests', () => {
 });
 ```
 
-**Action test example:**
+**Tool test example:**
+
+Record a fixture first:
+
+```bash
+nango dryrun create-ticket '<CONNECTION-ID>' -e dev --input '{"title":"Test ticket"}' --validate --save-responses
+nango generate:tests -i github
+```
+
+The generated tool test replays its recorded trigger and API responses:
+
 ```typescript
-import { vi, expect, it, describe, beforeAll } from 'vitest';
-import createAction from '../actions/create-ticket.js';
+import { it } from 'vitest';
+import { replayFunction } from 'nango/test';
 
-describe('github create-ticket tests', () => {
-  let nangoMock;
+import definition from '../tools/create-ticket.js';
 
-  beforeAll(async () => {
-    nangoMock = new global.vitest.NangoActionMock({
-      dirname: __dirname,
-      name: "create-ticket",
-      Model: "Ticket"
+it('github create-ticket replays the saved fixture', async () => {
+    await replayFunction({
+        dirname: __dirname,
+        name: 'create-ticket',
+        definition
     });
-  });
-
-  it('should output the action output that is expected', async () => {
-    const input = await nangoMock.getInput();
-    const response = await createAction.exec(nangoMock, input);
-    const output = await nangoMock.getOutput();
-
-    expect(response).toEqual(output);
-  });
 });
 ```
 
+Use `nango generate:tests` or its `-i` integration filter for tools. The `-a` flag only targets deprecated actions, not tools. Tool fixtures include a `trigger` field containing the HTTP request and input; retain it when editing fixtures. `replayFunction` compares the returned output with the saved output and accepts a `mocks` object for SDK methods that fixtures do not record.
+
 ### How mocks work in tests
 
-The `NangoSyncMock` and `NangoActionMock` classes automatically load your saved mocks from the `.test.json` file:
+Sync tests use `NangoSyncMock`; tool tests use `replayFunction`. Both load saved responses from the `.test.json` file:
 
 1. **API requests** are intercepted and return saved mock responses from the `api` section.
-2. **Input data** is loaded from the `input` property for action functions.
+2. **Tool input and request context** are restored from the recorded `trigger`.
 3. **Expected outputs** are loaded from the `output` property.
 4. **Tests compare** actual outputs against expected outputs.
 
@@ -413,10 +415,9 @@ export default defineConfig({
 The `vitest.setup.ts` file makes Nango mocks available globally:
 
 ```typescript
-import { NangoActionMock, NangoSyncMock } from "nango/test";
+import { NangoSyncMock } from "nango/test";
 
 globalThis.vitest = {
-  NangoActionMock,
   NangoSyncMock,
 };
 ```
@@ -594,5 +595,5 @@ describe.each([
 
 - [Data Validation](/guides/functions/data-validation) - Learn more about schema validation
 - [Vitest Documentation](https://vitest.dev/) - Official Vitest docs
-- [Action functions](/guides/functions/action-functions) - Building and testing on-demand functions
+- [Tools](/guides/functions/tools) - Building and testing on-demand functions
 - [Sync functions](/guides/functions/syncs/sync-functions) - Building and testing sync functions

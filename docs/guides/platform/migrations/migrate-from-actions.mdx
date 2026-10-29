@@ -1,0 +1,43 @@
+---
+title: 'Migrate from actions to tools'
+sidebarTitle: 'Actions to tools'
+description: 'Move on-demand integrations to tools while preserving existing action callers.'
+---
+
+Actions are deprecated. Use [Tools](/guides/functions/tools) for new on-demand functions. Existing users can keep using the [deprecated action APIs](/guides/functions/action-functions).
+
+## Migrate callers first
+
+The [tool-call API](/reference/backend/http-api/tools/call) and [Node SDK `callTool`](/reference/backend/backend-sdk/node#call-a-tool) can call existing deployed actions and catalog tools. You can migrate synchronous callers before changing the implementation.
+
+Replace:
+
+```typescript
+const result = await nango.triggerAction(integrationId, connectionId, 'create-issue', input);
+```
+
+With:
+
+```typescript
+const result = await nango.callTool(
+    { connectionId, name: 'create-issue' },
+    { input },
+    { 'provider-config-key': integrationId }
+);
+```
+
+For HTTP, replace `POST /action/trigger` with `POST /connections/<CONNECTION-ID>/tools/create-issue/calls`. Move the action name into the URL and send `{ "input": ... }` as the body. Both APIs return the operation's output directly.
+
+Use a Nango Environment API key from **Environment Settings > API Keys** as `Authorization: Bearer <NANGO-API-KEY>`. Scoped tool callers need **both** `environment:functions:invocations` and `environment:actions:execute`.
+
+For Management MCP clients, replace `actions_trigger` with `tools_call` and replace the `action_name` argument with `name`. Keep `integration_id`, `connection_id`, and optional `input`.
+
+## Migrate the implementation
+
+1. Replace `createAction` with `createTool`, imported from `nango`.
+2. Keep the input and output schemas and the externally visible name.
+3. Change `exec: async (nango, input)` to `exec: async (nango, trigger)` and read the input from `trigger.input`.
+4. Remove action-only configuration such as `version`, `endpoint`, and `metadata`. Move descriptive provider scopes from `scopes` to `meta.requiredScopes`; they remain indicative, not enforced. Use `meta.instructions` for agent guidance.
+5. Import the tool from `index.ts`, dry run it with realistic input and `--validate`, then deploy. See [Tools](/guides/functions/tools#create-a-tool) for a complete example.
+
+If the action uses SDK methods beyond outbound provider requests and logging, check the [Functions SDK](/reference/functions/functions-sdk) before migrating; tool capabilities differ from legacy actions.
