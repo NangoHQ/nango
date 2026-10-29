@@ -1,4 +1,4 @@
-import { v7 as uuidV7 } from 'uuid';
+import { MAX as MAX_UUID, NIL as NIL_UUID, v4 as uuidV4 } from 'uuid';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
@@ -300,16 +300,16 @@ describe('Public environment management', () => {
             });
         });
 
-        it('should create environments with a supplied signing key, even when another environment uses the same signing key', async () => {
+        it('should normalize supplied signing keys to lowercase and allow reuse across environments', async () => {
             const { account } = await seedAccount();
             const accountKey = await createAccountKey(account.id, ['account:environments:create']);
-            const signingKey = uuidV7();
+            const signingKey = uuidV4();
 
             for (const name of ['signing-key-first', 'signing-key-second']) {
                 const res = await api.fetch('/environments', {
                     method: 'POST',
                     token: accountKey.secret,
-                    body: { name, webhooks: { signing_key: signingKey } }
+                    body: { name, webhooks: { signing_key: name === 'signing-key-first' ? signingKey : signingKey.toUpperCase() } }
                 });
 
                 expect(res.res.status).toBe(200);
@@ -326,6 +326,13 @@ describe('Public environment management', () => {
             { primary_url: 'https://nango.dev/webhooks' },
             { signing_key: '' },
             { signing_key: 'not-a-uuid' },
+            { signing_key: NIL_UUID },
+            { signing_key: MAX_UUID },
+            { signing_key: '01932d5e-7b5c-7e27-9d62-1bd0f0a21c8f' }, // UUID v7
+            { signing_key: '6ba7b810-9dad-11d1-80b4-00c04fd430c8' }, // UUID v1
+            { signing_key: '6fa459ea-ee8a-3ca4-894e-db77e160355e' }, // UUID v3
+            { signing_key: '886313e1-3b8a-5372-9b90-0c9aee199e5d' }, // UUID v5
+            { signing_key: null },
             { signing_key: 123 },
             { on_sync_error: 'true' },
             { unexpected: true }

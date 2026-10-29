@@ -35,7 +35,10 @@ const validationBody = z
                 on_sync_error: z.boolean().optional(),
                 on_async_action_completion: z.boolean().optional(),
                 on_connection_deletion: z.boolean().optional(),
-                signing_key: z.uuid().optional()
+                signing_key: z
+                    .uuid({ version: 'v4' })
+                    .transform((value) => value.toLowerCase())
+                    .optional()
             })
             .strict()
             .optional()
