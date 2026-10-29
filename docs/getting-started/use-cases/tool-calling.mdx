@@ -1,12 +1,12 @@
 ---
 title: 'Tool calling for AI agents'
 sidebarTitle: 'Tool calling for AI agents'
-description: 'Give agents scoped, observable access to external APIs through Nango action functions.'
+description: 'Give agents scoped, observable access to external APIs through Nango tools.'
 ---
 
 AI agents become useful when they can act in the systems your users already use: HubSpot, Gmail, Slack, Linear, Notion, Salesforce, and the rest. The hard part is not just calling an API. It is OAuth, token refresh, per-user permissions, rate limits, logging, and keeping credentials out of the model loop.
 
-Nango handles that plumbing. Users authorize integrations through Nango, you expose selected action functions as tools, and agents call those action functions through the [agent sessions API](/guides/agent-sessions).
+Nango handles that plumbing. Users authorize integrations through Nango, you choose which tools to expose, and agents call them through the [agent sessions API](/guides/agent-sessions).
 
 ## When this fits
 
@@ -15,7 +15,7 @@ Use Nango for AI tool calling when:
 - Your agent needs to fetch or change data in external APIs.
 - Tool calls must run with each user's own credentials.
 - You want logs, retries, rate-limit handling, and a deployable runtime.
-- You need a catalog of actions for agentic tool calling now, with room for custom action functions later.
+- You need a catalog of tools for agentic tool calling now, with room for custom tools later.
 - You want one MCP server URL for Nango-hosted tools.
 
 For RAG-style workflows where data should be replicated before the agent needs it, use [Sync external API data](/getting-started/use-cases/syncs).
@@ -23,21 +23,21 @@ For RAG-style workflows where data should be replicated before the agent needs i
 ## How Nango fits in
 
 1. Your user authorizes an integration with Nango.
-2. You use catalog action functions directly or deploy custom action functions for allowed operations.
-3. Your agent lists or receives those action functions as tools.
-4. The agent asks Nango to execute an action function for the right connection.
+2. You use catalog tools directly or deploy custom tools for allowed operations.
+3. Your agent discovers the available tools.
+4. The agent asks Nango to execute a tool for the right connection.
 5. Nango runs the external API call with the user's credentials and logs the execution.
 
 This keeps provider credentials in Nango and gives you a common tool surface across frameworks.
 
 ## Technical setup
 
-Nango supports both direct action function execution and MCP-based tool discovery through [agent sessions](/guides/agent-sessions).
+Nango supports both direct tool execution and MCP-based tool discovery through [agent sessions](/guides/agent-sessions).
 
 ## What to read next
 
-- [Tool calling & MCP](/guides/agent-sessions) - connect Nango action functions to agents, LLM SDKs, and MCP clients.
-- [Action functions](/guides/functions/action-functions) - build the action functions agents can call.
+- [Tool calling & MCP](/guides/agent-sessions) - connect Nango tools to agents, LLM SDKs, and MCP clients.
+- [Tools](/guides/functions/tools) - build the tools agents can call.
 - [List functions](/reference/backend/http-api/functions/list) - list available functions programmatically.
 - [Functions guide](/guides/functions/functions-guide) - create, test, deploy, and trigger functions.
 - [Auth guide](/guides/auth/auth-guide) - let users authorize external APIs.

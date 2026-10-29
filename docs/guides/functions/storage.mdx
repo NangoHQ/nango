@@ -10,7 +10,7 @@ For the product-level workflow, see [Customize per customer](/getting-started/us
 
 ## Connection metadata
 
-Connection metadata is the default blob storage for Nango Functions. It is a JSON object stored on a Nango connection and available to action functions, sync functions, webhook functions, and event functions.
+Connection metadata is the default blob storage for Nango Functions. It is a JSON object stored on a Nango connection and available to sync functions, webhook functions, and event functions. Tools do not expose `getMetadata`, `setMetadata`, or `updateMetadata`; pass customer configuration as tool input instead.
 
 Use metadata for:
 
@@ -148,7 +148,7 @@ A common customer configuration pattern is to ask the customer how their externa
 }
 ```
 
-Use an action function to fetch available custom fields from the provider, save the customer's choices as metadata, then read the mapping inside the sync function that fetches records.
+Use a tool to fetch available custom fields from the provider. Save the customer's choices as metadata from your backend, then read the mapping inside the sync function that fetches records.
 
 If a sync function should start only after the required configuration exists, start it after saving metadata:
 

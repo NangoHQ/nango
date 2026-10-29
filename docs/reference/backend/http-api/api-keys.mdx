@@ -91,7 +91,7 @@ For backends that create connect sessions for the auth flow:
 
 #### CI/CD deploy
 
-For CI/CD pipelines deploying syncs and actions to production:
+For CI/CD pipelines deploying syncs and tools to production:
 
 | Scope |
 |-------|
@@ -99,12 +99,13 @@ For CI/CD pipelines deploying syncs and actions to production:
 
 #### Backend service
 
-For backend services that consume data, trigger actions, and proxy requests:
+For backend services that consume data, call tools, and proxy requests:
 
 | Scope |
 |-------|
 | `environment:connections:read` |
 | `environment:records:read` |
+| `environment:functions:invocations` |
 | `environment:actions:execute` |
 | `environment:syncs:execute` |
 | `environment:proxy` |
@@ -146,7 +147,7 @@ The **Default - Full access** key that comes with each environment already has a
 |-------|-------------|
 | `environment:integrations:list` | List integrations (no credentials) |
 | `environment:integrations:list_credentials` | List integrations with client credentials |
-| `environment:integrations:list_functions` | List deployed function configuration (syncs and actions) |
+| `environment:integrations:list_functions` | List deployed function configuration (syncs and tools) |
 | `environment:integrations:read` | Read a single integration (no credentials) |
 | `environment:integrations:read_credentials` | Read a single integration with client credentials |
 | `environment:integrations:create` | Create integrations |
@@ -195,7 +196,7 @@ The **Default - Full access** key that comes with each environment already has a
 
 | Scope | Description |
 |-------|-------------|
-| `environment:deploy` | Deploy syncs and actions via CLI or API |
+| `environment:deploy` | Deploy syncs and tools via CLI or API |
 
 #### Functions
 
@@ -228,11 +229,19 @@ The **Default - Full access** key that comes with each environment already has a
     The `environment:logs:read` scope is currently only used by the [Logs tools in the Management MCP server](/reference/backend/management-mcp#logs).
 </Note>
 
-#### Actions
+#### Tools
+
+Calling a tool requires both `environment:functions:invocations` and `environment:actions:execute`, including calls that resolve to HTTP-triggered functions. See [Call a tool](/reference/backend/http-api/tools/call).
 
 | Scope | Description |
 |-------|-------------|
-| `environment:actions:execute` | Trigger actions and read action results |
+| `environment:functions:invocations` | Invoke functions for a connection |
+
+#### Actions (deprecated)
+
+| Scope | Description |
+|-------|-------------|
+| `environment:actions:execute` | Call deprecated actions and read their results; also required by the tool-call API |
 
 #### Proxy
 

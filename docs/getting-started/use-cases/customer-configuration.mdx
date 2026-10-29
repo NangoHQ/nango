@@ -26,11 +26,11 @@ Avoid adding configuration before you need it. Start with a default path, then a
 3. Nango functions read metadata while running for that connection.
 4. The same function code adapts requests and transformations for each customer.
 
-Metadata is available to Action functions, sync functions, and event functions.
+Sync functions and event functions can read connection metadata. For tools, pass the customer's configuration in the tool input.
 
 ## Common patterns
 
-- Fetch available custom fields with an action function, then store the customer's mapping.
+- Fetch available custom fields with a tool, then have your backend store the customer's mapping.
 - Store provider account IDs or workspace IDs discovered after authorization.
 - Use metadata to filter which records a sync function should fetch.
 - Start a sync function schedule only after required customer configuration exists.
@@ -39,6 +39,6 @@ Metadata is available to Action functions, sync functions, and event functions.
 
 - [Storage](/guides/functions/storage) - set, update, and read connection metadata from your app and functions.
 - [Sync functions](/guides/functions/syncs/sync-functions) - use metadata to filter synced data.
-- [Action functions](/guides/functions/action-functions) - fetch provider configuration options on demand.
+- [Tools](/guides/functions/tools) - fetch provider configuration options on demand.
 - [Event functions](/guides/functions/event-functions) - initialize metadata when a connection is created.
 - [Connection metadata API](/reference/backend/http-api/connections/set-metadata) - API reference.

@@ -29,7 +29,7 @@ If your app already has a `Contact`, `Invoice`, or `Candidate` model, use that a
 
 Expect optional fields. Providers rarely expose the same data with the same semantics, and some customers may rely on custom fields or custom statuses. Model those gaps intentionally with nullable fields, fallbacks, metadata, or provider-specific extensions.
 
-Use the same model for reads and writes when possible. If a sync writes `UnifiedContact` records into your app, the corresponding create or update action should accept the same shape unless the write operation truly needs a different contract.
+Use the same model for reads and writes when possible. If a sync writes `UnifiedContact` records into your app, the corresponding create or update tool should accept the same shape unless the write operation truly needs a different contract.
 
 Validate close to the external API. Use [data validation](/guides/functions/data-validation) in your functions so mapping drift, malformed provider responses, and invalid write inputs fail at the integration boundary.
 
@@ -64,21 +64,22 @@ export const JiraUser = UnifiedUser.extend({
 });
 ```
 
-## Implement unified actions
+## Implement unified tools
 
-Each provider gets an action with the same input and output contract:
+Each provider gets a tool with the same input and output contract:
 
 <Tabs>
   <Tab title="Jira">
-  ```ts jira/actions/create-user.ts
-  import { createAction } from 'nango';
+  ```ts jira/tools/create-user.ts
+  import { createTool } from 'nango';
   import { CreateUnifiedUser, UnifiedUser } from '../../models';
 
-  export default createAction({
+  export default createTool({
       description: 'Creates a user in Jira',
       input: CreateUnifiedUser,
       output: UnifiedUser,
-      exec: async (nango, input) => {
+      exec: async (nango, trigger) => {
+          const input = trigger.input;
           const response = await nango.post({
               endpoint: '/rest/api/3/user',
               data: {
@@ -98,15 +99,16 @@ Each provider gets an action with the same input and output contract:
   ```
   </Tab>
   <Tab title="Zendesk">
-  ```ts zendesk/actions/create-user.ts
-  import { createAction } from 'nango';
+  ```ts zendesk/tools/create-user.ts
+  import { createTool } from 'nango';
   import { CreateUnifiedUser, UnifiedUser } from '../../models';
 
-  export default createAction({
+  export default createTool({
       description: 'Creates a user in Zendesk',
       input: CreateUnifiedUser,
       output: UnifiedUser,
-      exec: async (nango, input) => {
+      exec: async (nango, trigger) => {
+          const input = trigger.input;
           const response = await nango.post({
               endpoint: '/api/v2/users.json',
               data: {
@@ -130,13 +132,14 @@ Each provider gets an action with the same input and output contract:
   </Tab>
 </Tabs>
 
-Your app can choose the integration ID at runtime and call the same action name for each provider:
+Your app can choose the integration ID at runtime and call the same tool name for each provider:
 
 ```ts
-await nango.triggerAction(integrationId, connectionId, 'create-user', {
-    name: 'Ada Lovelace',
-    email: 'ada@example.com'
-});
+await nango.callTool(
+    { connectionId, name: 'create-user' },
+    { input: { name: 'Ada Lovelace', email: 'ada@example.com' } },
+    { 'provider-config-key': integrationId }
+);
 ```
 
 ## Implement unified syncs
@@ -184,11 +187,11 @@ Use one of these patterns when the common model is not enough:
 - Extend the common model with provider-specific fields for integrations that need them.
 - Store raw provider data under a `raw` field for debugging or advanced workflows.
 - Use connection metadata for customer-specific mappings, such as custom fields, custom statuses, or selected pipelines.
-- Create provider-specific actions for operations that do not map cleanly to the unified interface.
+- Create provider-specific tools for operations that do not map cleanly to the unified interface.
 
 ## Related guides
 
-- [Action functions](/guides/functions/action-functions)
+- [Tools](/guides/functions/tools)
 - [Sync functions](/guides/functions/syncs/sync-functions)
 - [Data validation](/guides/functions/data-validation)
 - [Storage](/guides/functions/storage)

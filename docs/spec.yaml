@@ -346,7 +346,7 @@ paths:
     /integrations/{uniqueKey}/functions:
         get:
             summary: List functions
-            description: Returns the functions available to an integration, including Nango catalog actions when available. Requires an API key with the `environment:functions:list` scope.
+            description: Returns the functions available to an integration, including Nango catalog tools when available. Requires an API key with the `environment:functions:list` scope.
             parameters:
                 - name: uniqueKey
                   in: path
@@ -359,7 +359,7 @@ paths:
                   required: false
                   schema:
                       type: string
-                      enum: [sync, action, on-event, tool]
+                      enum: [sync, on-event, tool]
                   description: Filter by function type.
                 - name: search
                   in: query
@@ -424,7 +424,7 @@ paths:
     /integrations/{uniqueKey}/functions/{name}:
         get:
             summary: Get a function
-            description: Returns a single function available to an integration, including HTTP-triggered tools and Nango catalog actions. When multiple types share a name, use the type filter to select one; otherwise the first match in the listing's stable order is returned. Requires an API key with the `environment:functions:read` scope.
+            description: Returns a single function available to an integration, including HTTP-triggered tools and Nango catalog tools. Use the type filter to select a function type. Requires an API key with the `environment:functions:read` scope.
             parameters:
                 - name: uniqueKey
                   in: path
@@ -443,8 +443,8 @@ paths:
                   required: false
                   schema:
                       type: string
-                      enum: [sync, action, on-event, tool]
-                  description: The function type. When omitted and several functions share the name, the first one is returned in this order (tool, action, on-event, sync).
+                      enum: [sync, on-event, tool]
+                  description: Filter by function type. When omitted and several functions share the name, tools are returned first, then on-event and sync functions.
             responses:
                 '200':
                     description: Successfully returned the function
@@ -487,7 +487,7 @@ paths:
                   schema:
                       type: string
                       enum: [sync, action]
-                  description: Required to disambiguate a sync and an action that share a name. On-event functions are not yet supported.
+                  description: The function type to delete, either a sync or deprecated action. On-event functions are not yet supported.
             responses:
                 '200':
                     description: Successfully enqueued the function deletion
@@ -549,8 +549,8 @@ paths:
                   required: false
                   schema:
                       type: string
-                      enum: [sync, action, on-event, tool]
-                  description: The function type. When omitted and several functions share the name, the first one is returned in this order (tool, action, on-event, sync).
+                      enum: [sync, on-event, tool]
+                  description: Filter by function type. When omitted and several functions share the name, tools are returned first, then on-event and sync functions.
             responses:
                 '200':
                     description: Successfully returned the function source code
@@ -565,7 +565,7 @@ paths:
                                     type:
                                         type: string
                                         enum: [sync, action, on-event, tool]
-                                        description: The function type.
+                                        description: The function type. `action` is deprecated.
                                     code:
                                         type: string
                                         description: The TypeScript source code of the function.
@@ -1589,6 +1589,7 @@ paths:
                                                             - name
                                     actions:
                                         type: array
+                                        description: Deprecated action definitions. Use tools for new on-demand functions.
                                         items:
                                             type: object
                                             properties:
@@ -2511,7 +2512,8 @@ paths:
 
     /action/{actionId}:
         get:
-            summary: Get action result
+            deprecated: true
+            summary: Get action result (deprecated)
             description: Retrieves the result of an asynchronous action. See [Asynchronous action documentation](/guides/functions/action-functions#trigger-asynchronously) for more details.
             parameters:
                 - name: actionId
@@ -2616,10 +2618,68 @@ paths:
                                 properties:
                                     message:
                                         type: string
+    /connections/{connectionId}/tools/{name}/calls:
+        post:
+            operationId: callTool
+            summary: Call a tool
+            description: |
+                Calls an enabled tool synchronously and returns its JSON output directly.
+                Requires both `environment:functions:invocations` and `environment:actions:execute` scopes.
+            parameters:
+                - name: connectionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The connection ID to execute the tool for.
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The tool name on the integration.
+                - name: Provider-Config-Key
+                  in: header
+                  required: false
+                  schema:
+                      type: string
+                  description: Integration ID. Required when multiple integrations share the connection ID.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            additionalProperties: false
+                            properties:
+                                input:
+                                    description: Input matching the tool's schema. Omit for tools that take no input.
+                        example:
+                            input:
+                                owner: NangoHQ
+                                repo: interactive-demo
+                                title: Bug report
+            responses:
+                '200':
+                    description: The tool's JSON output, returned directly without a data wrapper.
+                    content:
+                        application/json:
+                            schema: {}
+                '400':
+                    description: Invalid request, invalid tool input, invalid invocation, or ambiguous connection ID. Supply Provider-Config-Key to disambiguate.
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Missing permissions or function disabled during invocation.
+                '404':
+                    description: Connection or enabled tool not found.
+                '500':
+                    description: Tool execution failed or a server error occurred.
     /action/trigger:
         post:
-            summary: Trigger an action
-            description: Triggers an action for a connection
+            deprecated: true
+            summary: Trigger an action (deprecated)
+            description: Legacy action execution. Use POST /connections/{connectionId}/tools/{name}/calls for new synchronous callers. Existing async callers can continue using this endpoint.
             parameters:
                 - name: Connection-Id
                   in: header
@@ -2672,7 +2732,7 @@ paths:
                             schema:
                                 oneOf:
                                     - type: object
-                                      description: The result of the action when triggered synchronously. (cannot exceed 10MB)
+                                      description: The result of the legacy action when triggered synchronously (cannot exceed 2 MB).
                                       properties:
                                           your-properties:
                                               type: object
@@ -2910,7 +2970,7 @@ paths:
                                         on_async_action_completion:
                                             type: boolean
                                             default: true
-                                            description: Send webhooks when asynchronous action functions complete.
+                                            description: Send webhooks when deprecated asynchronous action functions complete.
                                         on_connection_deletion:
                                             type: boolean
                                             default: true
@@ -4046,10 +4106,11 @@ components:
         RunnableFunctionType:
             type: string
             enum: [action, sync]
+            description: Legacy source-code API function type. The `action` value is deprecated; use the CLI to build new tools.
 
         FunctionAvailability:
             type: object
-            description: 'Availability metadata attached to a listed function. Catalog actions have `id: null`, `last_deployed: null`, `enabled: true`, and `source: tools-catalog`. Deployed functions have an id and a `last_deployed` timestamp.'
+            description: 'Availability metadata attached to a listed function. Catalog tools have `id: null`, `last_deployed: null`, `enabled: true`, and `source: tools-catalog`. Deployed functions have an id and a `last_deployed` timestamp.'
             required:
                 - id
                 - enabled
@@ -4058,18 +4119,18 @@ components:
             properties:
                 id:
                     type: [number, 'null']
-                    description: Deployed function id. `null` for a Nango catalog action and for a tool, which is identified by its `uuid`.
+                    description: Deployed function id. `null` for a Nango catalog tool and for a tool, which is identified by its `uuid`.
                 enabled:
                     type: boolean
-                    description: Whether the function is enabled. Always `true` for actions, including a deployed action whose stored configuration is disabled. Syncs, on-event functions, and tools report the stored value.
+                    description: Whether the function is enabled. Always `true` for deprecated action definitions, including a deployed action whose stored configuration is disabled. Syncs, on-event functions, and tools report the stored value.
                 last_deployed:
                     type: [string, 'null']
                     format: date-time
-                    description: ISO-8601 timestamp. `null` for a Nango catalog action.
+                    description: ISO-8601 timestamp. `null` for a Nango catalog tool.
                 source:
                     type: string
                     enum: [catalog, standalone, repo, tools-catalog]
-                    description: '`tools-catalog` is a Nango catalog action that has not been deployed. `catalog`, `standalone`, and `repo` are deployed functions.'
+                    description: '`tools-catalog` is a Nango catalog tool that has not been deployed. `catalog`, `standalone`, and `repo` are deployed functions.'
 
         NangoSyncFunction:
             type: object
@@ -4111,6 +4172,8 @@ components:
 
         NangoActionFunction:
             type: object
+            deprecated: true
+            description: Deprecated action definition format, also used by some catalog tools. Use createTool for new custom implementations.
             required:
                 - name
                 - type
@@ -4213,13 +4276,13 @@ components:
                                           type: string
 
         ProviderTemplateFunction:
-            description: A sync or action template function from the provider catalog (no deployment metadata).
+            description: A sync template or catalog tool definition (no deployment metadata). Catalog tool templates currently use deprecated action definitions.
             oneOf:
                 - $ref: '#/components/schemas/NangoSyncFunction'
                 - $ref: '#/components/schemas/NangoActionFunction'
 
         ListedNangoFunction:
-            description: A listed function (sync, action, on-event, or tool) merged with its availability metadata.
+            description: A listed function (sync, deprecated action, on-event, or tool) merged with its availability metadata.
             oneOf:
                 - allOf:
                       - $ref: '#/components/schemas/NangoSyncFunction'
@@ -4404,7 +4467,7 @@ components:
                     description: The integration ID (unique_key) that you created in Nango.
                 function_name:
                     type: string
-                    description: The sync or action function name.
+                    description: The sync or deprecated action function name.
                 function_type:
                     $ref: '#/components/schemas/RunnableFunctionType'
                 code:
@@ -4481,7 +4544,7 @@ components:
                     description: The integration ID (unique_key) that you created in Nango.
                 function_name:
                     type: string
-                    description: The sync or action function name.
+                    description: The sync or deprecated action function name.
                 function_type:
                     $ref: '#/components/schemas/RunnableFunctionType'
                 created_at:

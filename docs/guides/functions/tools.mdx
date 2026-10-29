@@ -1,0 +1,103 @@
+---
+title: 'Tools'
+sidebarTitle: 'Tools'
+description: 'Build, test, deploy, and call tools from your backend or AI agent.'
+---
+
+A tool is a function with an HTTP trigger. Use tools for on-demand reads, writes, and provider workflows. Call them from your backend with the [tool-call API](/reference/backend/http-api/tools/call), the [Node SDK](/reference/backend/backend-sdk/node#call-a-tool), or an [agent session](/guides/agent-sessions).
+
+Nango catalog tools are available without deploying code. Build your own when you need custom logic or a stable contract you control.
+
+## Create a tool
+
+In your [functions project](/guides/functions/functions-guide#build-locally-with-the-cli), add a tool and import it from `index.ts`:
+
+```typescript github/tools/create-issue.ts
+import { createTool } from 'nango';
+import * as z from 'zod';
+
+export default createTool({
+    description: 'Creates a GitHub issue',
+    input: z.object({
+        owner: z.string(),
+        repo: z.string(),
+        title: z.string(),
+        body: z.string().optional()
+    }),
+    output: z.object({ id: z.number(), url: z.string().url() }),
+    meta: {
+        instructions: 'Use when the user asks to create an issue. Confirm the repository and title first.',
+        requiredScopes: ['repo']
+    },
+    exec: async (nango, trigger) => {
+        const { owner, repo, title, body } = trigger.input;
+        const response = await nango.post({
+            endpoint: `/repos/${owner}/${repo}/issues`,
+            data: { title, body }
+        });
+        return { id: response.data.id, url: response.data.html_url };
+    }
+});
+```
+
+```typescript index.ts
+import './github/tools/create-issue';
+```
+
+The tool name defaults to its file name. Read input from `trigger.input`. Nango validates the input against the schema before execution. `meta.requiredScopes` documents provider permissions; Nango does not enforce them. See [`createTool`](/reference/functions/functions-sdk#createtool) for all options.
+
+## Test and deploy
+
+Create a test connection in the **Connections** tab, then dry run the tool with realistic input:
+
+```bash
+nango dryrun create-issue '<CONNECTION-ID>' -e dev --input '{"owner":"NangoHQ","repo":"interactive-demo","title":"Bug report"}' --validate
+nango deploy --integration github dev
+```
+
+To simulate an HTTP request, use `--trigger-http` instead of `--input`:
+
+```bash
+nango dryrun create-issue '<CONNECTION-ID>' -e dev --trigger-http '{"method":"POST","path":"/","headers":{},"query":{},"body":{"owner":"NangoHQ","repo":"interactive-demo","title":"Bug report"}}' --validate
+```
+
+A dry run calls real provider APIs and can create or change data. See [Testing](/guides/functions/testing) and [CI/CD](/guides/functions/ci-cd).
+
+## Call a tool
+
+Use a Nango Environment API key from **Environment Settings > API Keys**. Scoped keys need both `environment:functions:invocations` and `environment:actions:execute`.
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl --request POST \
+      --url 'https://api.nango.dev/connections/<CONNECTION-ID>/tools/create-issue/calls' \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
+      --header 'Provider-Config-Key: github' \
+      --header 'Content-Type: application/json' \
+      --data '{"input":{"owner":"NangoHQ","repo":"interactive-demo","title":"Bug report"}}'
+    ```
+  </Tab>
+  <Tab title="TypeScript">
+    ```typescript
+    import { Nango } from '@nangohq/node';
+
+    const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
+    const result = await nango.callTool(
+        { connectionId: '<CONNECTION-ID>', name: 'create-issue' },
+        { input: { owner: 'NangoHQ', repo: 'interactive-demo', title: 'Bug report' } },
+        { 'provider-config-key': 'github' }
+    );
+    ```
+  </Tab>
+</Tabs>
+
+Calls are synchronous and return the tool's output directly. Omit `input` for tools that take no input, sending `{}` as the request body. The integration header is optional when the connection ID is unique in the environment; supply it when multiple integrations share that ID.
+
+## Expose tools to an agent
+
+Use [agent sessions](/guides/agent-sessions) to scope tools and connections to a tenant. Tools participate in `toolset`, `allow`, `deny`, and `pinned_tools` policies and can be discovered through `nango_tool_search`.
+
+For coding agents managing Nango, the [Management MCP server](/reference/backend/management-mcp#functions) exposes `tools_call`.
+
+For existing deprecated action implementations, see [Migrate from actions to tools](/guides/platform/migrations/migrate-from-actions).

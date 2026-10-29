@@ -1,7 +1,11 @@
 ---
-title: 'Trigger an action'
+title: 'Trigger an action (deprecated)'
 openapi: 'POST /action/trigger'
 ---
+
+<Warning>
+  Deprecated. Use [Call a tool](/reference/backend/http-api/tools/call) for new synchronous callers. Existing async callers can continue using this endpoint; see [Actions (deprecated)](/guides/functions/action-functions).
+</Warning>
 
 <Info>
   Requires an API key with the `environment:actions:execute` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).

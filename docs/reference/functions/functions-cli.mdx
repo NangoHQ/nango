@@ -56,9 +56,22 @@ Get details about a specific command by running:
 nango [command] --help
 ```
 
+## Tools
+
+Create tools with [`createTool`](/reference/functions/functions-sdk#createtool) and import them from `index.ts`. The `nango create --action` scaffold is deprecated; it does not create a tool.
+
+```bash
+nango dryrun <tool-name> <connection-id> -e dev --input '{"id":"example"}' --validate
+nango deploy --integration <integration-id> dev
+```
+
+Use `--trigger-http '<JSON>'` or `--trigger-http @request.json` to simulate an HTTP request instead of `--input`. The request includes `method`, `path`, `headers`, `query`, and `body`. These flags cannot be combined. See [Tools](/guides/functions/tools#test-and-deploy).
+
 ## Interactive Mode
 
 The Nango CLI includes an interactive mode that prompts you for missing arguments. For example, if you run `nango create` without specifying the function type, integration, or name, the CLI will prompt you for them.
+
+The `action` option in the legacy prompt below is deprecated; use the tools workflow above for new on-demand functions.
 
 This mode is enabled by default when you're in an interactive terminal session.
 

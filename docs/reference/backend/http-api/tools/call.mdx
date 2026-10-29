@@ -1,0 +1,10 @@
+---
+title: 'Call a tool'
+openapi: 'POST /connections/{connectionId}/tools/{name}/calls'
+---
+
+Calls an enabled tool synchronously and returns its output directly. See [Tools](/guides/functions/tools) for an end-to-end example.
+
+<Info>
+  Requires a Nango Environment API key with both `environment:functions:invocations` and `environment:actions:execute`. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>

@@ -835,7 +835,7 @@
                       "guides/functions/syncs/sync-partitioning"
                     ]
                   },
-                  "guides/functions/action-functions",
+                  "guides/functions/tools",
                   "guides/functions/webhook-functions",
                   "guides/functions/event-functions",
                   "guides/functions/storage",
@@ -875,6 +875,7 @@
                       "guides/platform/migrations/migrate-from-end-user",
                       "guides/platform/migrations/migrate-from-public-key",
                       "guides/platform/migrations/migrate-from-connection-mcp",
+                      "guides/platform/migrations/migrate-from-actions",
                       "guides/platform/migrations/migrate-to-zero-yaml"
                     ]
                   },
@@ -979,7 +980,13 @@
                         ]
                       },
                       {
-                        "group": "Actions",
+                        "group": "Tools",
+                        "pages": [
+                          "reference/backend/http-api/tools/call"
+                        ]
+                      },
+                      {
+                        "group": "Actions (deprecated)",
                         "pages": [
                           "reference/backend/http-api/action/trigger"
                         ]

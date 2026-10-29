@@ -4,6 +4,10 @@ sidebarTitle: 'Migrating to Zero YAML'
 description: 'Guide on how to migrate to Zero YAML in Nango.'
 ---
 
+<Note>
+  This migration reference preserves legacy action examples for existing projects. Actions are deprecated. For new code, use [Tools](/guides/functions/tools); after completing this migration, follow [Actions to tools](/guides/platform/migrations/migrate-from-actions).
+</Note>
+
 <div className="agent-quickstart-actions">
   <button
     type="button"
@@ -75,7 +79,7 @@ Like a regular TypeScript codebase
 Three core functions that replace YAML configuration. You'll benefit from IntelliSense and type safety, directly in your IDE. No need to jump between files to find the right configuration.
 
 - **`createSync()`**: Defines data synchronization jobs
-- **`createAction()`**: Defines one-off jobs
+- **`createAction()` (deprecated)**: Defines legacy on-demand jobs; use `createTool()` for new code
 - **`createOnEvent()`**: Defines event-based jobs
 
 
@@ -210,7 +214,8 @@ const sync = createSync({
 export default sync;
 ```
 
-### Action Example
+<a id="action-example"></a>
+### Action example (deprecated)
 
 **Before** (separate files):
 ```typescript

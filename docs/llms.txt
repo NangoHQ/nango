@@ -14,7 +14,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Introduction](https://nango.dev/docs/getting-started/intro-to-nango.md): Build product integrations with AI, using code you control and infrastructure built for scale.
 - [Quickstart](https://nango.dev/docs/getting-started/quickstart.md): Give your AI agent access to Gmail, Slack, Notion, and 1,000+ other APIs
 - [Coding agent setup](https://nango.dev/docs/getting-started/coding-agent-setup.md): Connect your coding agent to Nango
-- [Use cases: Tool calling for AI agents](https://nango.dev/docs/getting-started/use-cases/tool-calling.md): Give agents scoped, observable access to external APIs through Nango action functions.
+- [Use cases: Tool calling for AI agents](https://nango.dev/docs/getting-started/use-cases/tool-calling.md): Give agents scoped, observable access to external APIs through Nango tools.
 - [Use cases: Sync external API data](https://nango.dev/docs/getting-started/use-cases/syncs.md): Keep external API data fresh for your product, RAG pipeline, or change-detection workflow.
 - [Use cases: Run external API operations](https://nango.dev/docs/getting-started/use-cases/actions.md): Use Nango functions to read, write, and automate external APIs on demand.
 - [Use cases: Process external webhooks](https://nango.dev/docs/getting-started/use-cases/webhooks-from-external-apis.md): Receive provider webhooks through Nango, then forward or process them with functions.
@@ -40,7 +40,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Functions: Sync functions: Deletion detection](https://nango.dev/docs/guides/functions/syncs/deletion-detection.md): Surface deletes from the external API — even when the API itself doesn't expose them cleanly.
 - [Functions: Sync functions: Real-time syncs with webhooks](https://nango.dev/docs/guides/functions/syncs/realtime-syncs.md): Combine webhooks from external APIs with periodic polling for a reliable, real-time stream of changes.
 - [Functions: Sync functions: Sync partitioning](https://nango.dev/docs/guides/functions/syncs/sync-partitioning.md): Spawn multiple independent sync processes inside a single connection — one per mailbox, drive folder, Slack channel, repo, or any other partition.
-- [Functions: Action functions](https://nango.dev/docs/guides/functions/action-functions.md): Build Action functions that your app, backend jobs, or agents can call on demand.
+- [Functions: Tools](https://nango.dev/docs/guides/functions/tools.md): Build, test, deploy, and call tools from your backend or AI agent.
 - [Functions: Webhook functions](https://nango.dev/docs/guides/functions/webhook-functions.md): Process external API webhooks inside Nango functions.
 - [Functions: Event functions](https://nango.dev/docs/guides/functions/event-functions.md): Run function logic automatically when Nango connection lifecycle events happen.
 - [Functions: Storage](https://nango.dev/docs/guides/functions/storage.md): Use connection metadata as the default storage for function parameters and per-customer configuration.
@@ -66,6 +66,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Platform: Migrations: Migrate from end user](https://nango.dev/docs/guides/platform/migrations/migrate-from-end-user.md): Guide to migrate away from using end users in connections and connect sessions
 - [Platform: Migrations: Migrate from public key](https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key.md): Guide to migrate from using the public key (and HMAC) to a Connect session.
 - [Platform: Migrations: Migrate from Connection MCP to agent sessions](https://nango.dev/docs/guides/platform/migrations/migrate-from-connection-mcp.md): Replace the Connection MCP with a scoped agent session
+- [Platform: Migrations: Migrate from actions to tools](https://nango.dev/docs/guides/platform/migrations/migrate-from-actions.md): Move on-demand integrations to tools while preserving existing action callers.
 - [Platform: Migrations: Migrating to Zero YAML](https://nango.dev/docs/guides/platform/migrations/migrate-to-zero-yaml.md): Guide on how to migrate to Zero YAML in Nango.
 - [Platform: Contributing to Nango](https://nango.dev/docs/contributing.md): Learn which external contributions Nango reviews
 
@@ -110,7 +111,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: Functions: Get dry run results](https://nango.dev/docs/reference/backend/http-api/functions/dryruns-get.md)
 - [Backend: HTTP API: Functions: Create a function deployment](https://nango.dev/docs/reference/backend/http-api/functions/deployments-create.md)
 - [Backend: HTTP API: Functions: Get a function deployment](https://nango.dev/docs/reference/backend/http-api/functions/deployments-get.md)
-- [Backend: HTTP API: Functions: Get integration functions config](https://nango.dev/docs/reference/backend/http-api/scripts/config.md)
+- [Backend: HTTP API: Functions: Get legacy integration functions config](https://nango.dev/docs/reference/backend/http-api/scripts/config.md)
 - [Backend: HTTP API: Syncs: Get records](https://nango.dev/docs/reference/backend/http-api/sync/records-list.md)
 - [Backend: HTTP API: Syncs: Prune records](https://nango.dev/docs/reference/backend/http-api/sync/prune-records.md)
 - [Backend: HTTP API: Syncs: Trigger sync(s)](https://nango.dev/docs/reference/backend/http-api/sync/trigger.md)
@@ -121,7 +122,9 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: Syncs: Get environment variables](https://nango.dev/docs/reference/backend/http-api/sync/environment-variables.md)
 - [Backend: HTTP API: Syncs: Create sync variant](https://nango.dev/docs/reference/backend/http-api/sync/create-variant.md)
 - [Backend: HTTP API: Syncs: Delete sync variant](https://nango.dev/docs/reference/backend/http-api/sync/delete-variant.md)
-- [Backend: HTTP API: Actions: Trigger an action](https://nango.dev/docs/reference/backend/http-api/action/trigger.md)
+- [Backend: HTTP API: Tools: Call a tool](https://nango.dev/docs/reference/backend/http-api/tools/call.md)
+- [Backend: HTTP API: Actions (deprecated): Actions (deprecated)](https://nango.dev/docs/guides/functions/action-functions.md): Compatibility reference for existing action functions and asynchronous action callers.
+- [Backend: HTTP API: Actions (deprecated): Trigger an action (deprecated)](https://nango.dev/docs/reference/backend/http-api/action/trigger.md)
 - [Backend: HTTP API: Proxy: Proxy - GET requests](https://nango.dev/docs/reference/backend/http-api/proxy/get.md)
 - [Backend: HTTP API: Proxy: Proxy - POST requests](https://nango.dev/docs/reference/backend/http-api/proxy/post.md)
 - [Backend: HTTP API: Proxy: Proxy - PUT requests](https://nango.dev/docs/reference/backend/http-api/proxy/put.md)
