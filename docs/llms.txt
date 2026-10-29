@@ -123,7 +123,6 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: Syncs: Create sync variant](https://nango.dev/docs/reference/backend/http-api/sync/create-variant.md)
 - [Backend: HTTP API: Syncs: Delete sync variant](https://nango.dev/docs/reference/backend/http-api/sync/delete-variant.md)
 - [Backend: HTTP API: Tools: Call a tool](https://nango.dev/docs/reference/backend/http-api/tools/call.md)
-- [Backend: HTTP API: Actions (deprecated): Actions (deprecated)](https://nango.dev/docs/guides/functions/action-functions.md): Compatibility reference for existing action functions and asynchronous action callers.
 - [Backend: HTTP API: Actions (deprecated): Trigger an action (deprecated)](https://nango.dev/docs/reference/backend/http-api/action/trigger.md)
 - [Backend: HTTP API: Proxy: Proxy - GET requests](https://nango.dev/docs/reference/backend/http-api/proxy/get.md)
 - [Backend: HTTP API: Proxy: Proxy - POST requests](https://nango.dev/docs/reference/backend/http-api/proxy/post.md)
