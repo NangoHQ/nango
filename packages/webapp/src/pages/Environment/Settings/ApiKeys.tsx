@@ -19,6 +19,7 @@ import {
     allGroupScopes,
     groupWildcard,
     isScopeSelected,
+    renameLegacyScopes,
     SCOPE_GROUPS,
     toggleCredential as toggleCredentialFn,
     toggleGroup as toggleGroupFn,
@@ -319,13 +320,13 @@ interface KeyConfigProps {
 }
 
 const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecret, canManageKeys }) => {
-    const [editedScopes, setEditedScopes] = useState<string[]>(apiKey.scopes);
+    const [editedScopes, setEditedScopes] = useState<string[]>(() => renameLegacyScopes(apiKey.scopes));
     const [editedName, setEditedName] = useState<string>(apiKey.display_name);
     const [secretRevealed, setSecretRevealed] = useState(false);
     const { mutateAsync: updateApiKey, isPending } = useUpdateApiKey(env);
     const { toast } = useToast();
 
-    const scopesChanged = JSON.stringify(editedScopes.slice().sort()) !== JSON.stringify(apiKey.scopes.slice().sort());
+    const scopesChanged = JSON.stringify(editedScopes.slice().sort()) !== JSON.stringify(renameLegacyScopes(apiKey.scopes).sort());
     const nameChanged = editedName.trim() !== apiKey.display_name;
     const hasChanges = scopesChanged || nameChanged;
     const hasNoScopes = editedScopes.length === 0;
@@ -552,7 +553,7 @@ export const ApiKeys: React.FC = () => {
                                     <span className="text-body-small-semi text-text-strong">{key.display_name}</span>
                                 </TableCell>
                                 <TableCell>
-                                    <span className="text-body-small-regular text-text-secondary">{countSelectedScopes(key.scopes)}</span>
+                                    <span className="text-body-small-regular text-text-secondary">{countSelectedScopes(renameLegacyScopes(key.scopes))}</span>
                                 </TableCell>
                                 <TableCell>
                                     <span className="text-text-secondary cursor-default" title={formatFullDate(key.created_at)}>

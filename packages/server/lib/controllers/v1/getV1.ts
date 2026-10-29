@@ -55,8 +55,8 @@ export const allPublicV1 = asyncWrapperWithEnvironment<GetPublicV1>(async (req, 
 
     const { action, model } = await getActionOrModelByEndpoint(connection, req.method as HTTP_METHOD, path);
     if (action) {
-        if (!principalCan(res.locals, 'environment:actions:execute')) {
-            res.status(403).json({ error: { code: 'forbidden', message: 'Insufficient scope. Required: environment:actions:execute' } });
+        if (!principalCan(res.locals, 'environment:tools:call')) {
+            res.status(403).json({ error: { code: 'forbidden', message: 'Insufficient scope. Required: environment:tools:call' } });
             return;
         }
         const input = req.body || req.params[1];
