@@ -45,6 +45,13 @@ const validationBody = z
                 ctx.addIssue({ code: 'custom', path: [field], message: `${field} is not supported with NANGO_MANAGED credentials` });
             }
         }
+    })
+    .transform((body): PostPublicIntegration['Body'] => {
+        const { credentials, integration_config, custom, ...rest } = body;
+        if (credentials?.type === 'NANGO_MANAGED') {
+            return { ...rest, credentials };
+        }
+        return { ...rest, credentials, integration_config, custom };
     });
 
 export const postPublicIntegration = asyncWrapperWithEnvironment<PostPublicIntegration>(async (req, res) => {
@@ -61,7 +68,7 @@ export const postPublicIntegration = asyncWrapperWithEnvironment<PostPublicInteg
     }
 
     const { environment, account } = res.locals;
-    const body = valBody.data;
+    const body: PostPublicIntegration['Body'] = valBody.data;
     const credentials = body.credentials;
     const nangoManaged = credentials?.type === 'NANGO_MANAGED';
     const result = await integrationService.create({
