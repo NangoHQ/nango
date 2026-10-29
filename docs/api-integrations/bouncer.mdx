@@ -1,0 +1,85 @@
+---
+title: 'Bouncer'
+sidebarTitle: 'Bouncer'
+description: 'Integrate your application with the Bouncer API'
+---
+
+## 🚀 Quickstart
+
+Connect to Bouncer with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Bouncer_.
+    </Step>
+    <Step id="authorize-bouncer" title="Authorize Bouncer">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Bouncer API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-bouncer-api" title="Call the Bouncer API">
+    Let's make your first request to the Bouncer API to get your available credits. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1.1/credits" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1.1/credits',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Bouncer integration guides
+
+- [How do I link my account?](/api-integrations/bouncer/connect)  
+Generate an API key to connect your Bouncer account.
+
+Official docs: [Bouncer API reference](https://docs.usebouncer.com/api-reference/real-time/verify-email)
+
+## 🧩 Pre-built syncs & actions for Bouncer
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/bouncer/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango sends the key in the `x-api-key` header. Bouncer also accepts Basic auth with an empty username and the API key as the password. See [Quick start](https://docs.usebouncer.com/quick-start).
+- Endpoints carry their version in the path, for example `/v1.1/credits`, so include it in every endpoint you call.
+- Verifying emails uses credits. A `402` means the account doesn't have enough credits; a `429` means you were rate limited. See the [integration guidelines](https://docs.usebouncer.com/integration-guidelines).
+- Rate limits are per endpoint: 1,000 requests per minute for real-time email and domain verification, 100 per minute for batch sync, and 10 per minute for the credits endpoint, so don't poll it.
+- Use the [sandbox emails](https://docs.usebouncer.com/sandbox), such as `deliverable@sandbox.usebouncer.com`, to test your integration free of charge.
+
+---

@@ -1,0 +1,82 @@
+---
+title: 'Beamer'
+sidebarTitle: 'Beamer'
+description: 'Integrate your application with the Beamer API'
+---
+
+## 🚀 Quickstart
+
+Connect to Beamer with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Beamer_.
+    </Step>
+    <Step id="authorize-beamer" title="Authorize Beamer">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Beamer API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-beamer-api" title="Call the Beamer API">
+    Let's make your first request to the Beamer API to get the URL of your feed. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v0/url" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v0/url',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Beamer integration guides
+
+- [How do I link my account?](/api-integrations/beamer/connect)  
+Create an API key to connect your Beamer account.
+
+Official docs: [Beamer API](https://www.getbeamer.com/api)
+
+## 🧩 Pre-built syncs & actions for Beamer
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/beamer/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Each API key has its own permissions (for example **Read posts** or **Create posts**). What a connection can do depends on the permissions enabled on its key.
+- Beamer enforces a monthly request limit based on your plan. A `429` response means the account has reached its monthly requests limit; the limit resets at the start of each billing month.
+- Paid accounts are also limited to 30 requests per second.
+- Removing a key in Beamer takes effect immediately, and calls with that key start returning `401`.

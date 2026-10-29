@@ -1,0 +1,86 @@
+---
+title: 'ScrapingAnt'
+sidebarTitle: 'ScrapingAnt'
+description: 'Integrate your application with the ScrapingAnt API'
+---
+
+## 🚀 Quickstart
+
+Connect to ScrapingAnt with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _ScrapingAnt_.
+    </Step>
+    <Step id="authorize-scrapingant" title="Authorize ScrapingAnt">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your ScrapingAnt API token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-scrapingant-api" title="Call the ScrapingAnt API">
+    Let's make your first request to the ScrapingAnt API to get your plan and API credit usage. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/usage" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/usage',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 ScrapingAnt integration guides
+
+- [How do I link my account?](/api-integrations/scrapingant/connect)  
+Copy your API token to connect your ScrapingAnt account.
+
+Official docs: [ScrapingAnt API docs](https://docs.scrapingant.com)
+
+## 🧩 Pre-built syncs & actions for ScrapingAnt
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/scrapingant/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango sends the token in the `x-api-key` header. ScrapingAnt also accepts an `x-api-key` query parameter; the header wins when both are sent. See [Request and response format](https://docs.scrapingant.com/request-response-format).
+- Pass the page to scrape in the `url` query parameter, for example `/v2/general?url=https%3A%2F%2Fexample.com`.
+- A `403` doesn't always mean a wrong token: it is also returned when the API credit quota is used up or the request comes from an IP outside the account's IP whitelist. Read the `detail` message. See [Errors](https://docs.scrapingant.com/errors).
+- The free plan allows one concurrent request. Extra concurrent requests get a `409`, so queue free-plan requests one at a time.
+- Requests that end in a non-200 API status are not charged. A `200` is charged even if the target page failed: its status is in the `Ant-page-status-code` response header, and the credits spent are in `Ant-credits-cost`.
+- Regenerating the token on the Profile page takes effect right away and stops the old token from working, which breaks existing connections.
+
+---

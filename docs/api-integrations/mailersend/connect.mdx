@@ -1,0 +1,45 @@
+---
+title: 'MailerSend - How do I link my account?'
+sidebarTitle: 'MailerSend'
+---
+
+## Overview
+
+To authenticate with MailerSend, you need:
+
+1. **API Token** — a MailerSend API token.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A MailerSend account with a verified email address.
+
+### Step 1: Create an API token
+
+1. Log in to [MailerSend](https://app.mailersend.com/). In the left sidebar, open **Developer tools** and click **API tokens**.
+
+<img src="/api-integrations/mailersend/developer_tools_api_tokens.png" alt="MailerSend sidebar with Developer tools expanded and API tokens selected"/>
+
+2. Click **Create new token**.
+
+<img src="/api-integrations/mailersend/create_new_token.png" alt="MailerSend API tokens page with the Create new token button"/>
+
+3. Enter a name, choose the domain, and set an **Expiration date**. If you leave it empty, the token expires after 24 hours.
+4. Under **Permissions**, choose **Full access**, or **Custom access** with the permissions your integration needs. Then click **Generate token**.
+
+<img src="/api-integrations/mailersend/new_api_token_form.png" alt="MailerSend new API token form with name, domain, expiration date and permissions"/>
+
+5. Copy the token right away. MailerSend shows it only once.
+
+<img src="/api-integrations/mailersend/copy_api_token.png" alt="MailerSend dialog showing the generated API token to copy"/>
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with MailerSend.
+2. Enter your **API Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/mailersend/form.png" alt="Nango Connect UI form for MailerSend with an API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to MailerSend.

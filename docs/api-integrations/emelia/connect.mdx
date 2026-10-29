@@ -1,0 +1,41 @@
+---
+title: 'Emelia - How do I link my account?'
+sidebarTitle: 'Emelia'
+---
+
+## Overview
+
+To authenticate with Emelia, you need:
+
+1. **API Key** - An Emelia API key.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- An Emelia account. You can [sign up](https://v3.emelia.io/register) for a 7-day free trial, no credit card required.
+
+### Step 1: Create an API key
+
+1. Sign in to Emelia and go to **Settings** -> **API & Webhooks** ([v3.emelia.io/settings/api](https://v3.emelia.io/settings/api)).
+2. In the **API Keys** card, click **Create new key**.
+
+<img src="/api-integrations/emelia/api_webhooks_create_key.png" alt="Emelia API & Webhooks settings page with the Create new key button highlighted"/>
+
+3. The new key appears in the API Keys list. Click the copy icon next to the **Active** badge to copy it.
+
+<img src="/api-integrations/emelia/copy_api_key.png" alt="Emelia API Keys list with the copy icon next to the Active badge highlighted"/>
+
+<Note>
+An Emelia API key has no scopes: it can read and change everything in your account. Store it as a secret.
+</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Emelia.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/emelia/form.png" alt="Nango Connect UI form for entering the Emelia API key" style={{maxWidth: "450px" }}/>
+
+You are now connected to Emelia.

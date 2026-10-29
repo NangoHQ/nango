@@ -1,0 +1,84 @@
+---
+title: 'Campaign Cleaner'
+sidebarTitle: 'Campaign Cleaner'
+description: 'Integrate your application with the Campaign Cleaner API'
+---
+
+## 🚀 Quickstart
+
+Connect to Campaign Cleaner with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Campaign Cleaner_.
+    </Step>
+    <Step id="authorize-campaign-cleaner" title="Authorize Campaign Cleaner">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Campaign Cleaner API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-campaign-cleaner-api" title="Call the Campaign Cleaner API">
+    Let's make your first request to the Campaign Cleaner API to get your available credits. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/get_credits" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/get_credits',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Campaign Cleaner integration guides
+
+- [How do I link my account?](/api-integrations/campaign-cleaner/connect)  
+Copy your Campaign Cleaner API key to connect your account.
+
+Official docs: [Campaign Cleaner API](https://docs.campaigncleaner.com/api-reference/introduction)
+
+## 🧩 Pre-built syncs & actions for Campaign Cleaner
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/campaign-cleaner/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- `send_campaign` costs 1 credit per campaign and `create_inbox_test` costs 1 credit per test. Call `/v1/get_credits` to check your balance.
+- Inbox Placement Monitor endpoints (`monitor_*`) need an active plan that includes Inbox Placement Monitor. They don't use credits.
+- Inbox Placement Monitor endpoints allow 60 calls a minute per account and 120 a minute per client IP. Above that they return HTTP 429 with a `Retry-After` header.
+- Errors come back as a JSON body with an `error` field that describes the reason. A missing or invalid API key also sets the `X-CC-Status: 4001` response header, so check the body and this header, not only the HTTP status.
+
+---

@@ -1,0 +1,84 @@
+---
+title: 'Hunter'
+sidebarTitle: 'Hunter'
+description: 'Integrate your application with the Hunter API'
+---
+
+## 🚀 Quickstart
+
+Connect to Hunter with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Hunter_.
+    </Step>
+    <Step id="authorize-hunter" title="Authorize Hunter">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Hunter API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-hunter-api" title="Call the Hunter API">
+    Let's make your first request to the Hunter API to get your account details and usage. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/account" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/account',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Hunter integration guides
+
+- [How do I link my account?](/api-integrations/hunter/connect)  
+Copy your API key to connect your Hunter account.
+
+Official docs: [Hunter API documentation](https://hunter.io/api-documentation/v2)
+
+## 🧩 Pre-built syncs & actions for Hunter
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/hunter/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango sends the key in the `X-API-KEY` header. Hunter also accepts the `api_key` query parameter, but the header keeps the key out of URLs and logs. See [Authentication](https://hunter.io/api-documentation/v2#authentication).
+- A `403` means you reached the rate limit; a `429` means you reached your plan's usage limit. Rate limits are per endpoint, for example 15 requests per second on Domain Search and 10 per second on Email Verifier. See the [Hunter API documentation](https://hunter.io/api-documentation/v2).
+- The Free plan includes 50 credits a month: a search uses 1 credit, a verification 0.5. On the Free plan, Domain Search returns a `pagination_error` when `limit` plus `offset` is higher than 10.
+- Hunter's test key `test-api-key` only works on Domain Search, Email Finder and Email Verifier and returns dummy data, so you can't use it to create a Nango connection.
+
+---

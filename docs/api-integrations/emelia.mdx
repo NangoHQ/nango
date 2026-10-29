@@ -1,0 +1,85 @@
+---
+title: 'Emelia'
+sidebarTitle: 'Emelia'
+description: 'Integrate your application with the Emelia API'
+---
+
+## 🚀 Quickstart
+
+Connect to Emelia with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Emelia_.
+    </Step>
+    <Step id="authorize-emelia" title="Authorize Emelia">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-emelia-api" title="Call the Emelia API">
+    Let's make your first request to the Emelia API to list your campaigns. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/advanced/campaigns" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/advanced/campaigns',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Emelia integration guides
+
+- [How do I link my account?](/api-integrations/emelia/connect)  
+Create an API key to connect your Emelia account.
+
+Official docs: [Emelia API docs](https://docs.emelia.io/)
+
+## 🧩 Pre-built syncs & actions for Emelia
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/emelia/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- API keys have no scopes: a key can read and change campaigns, lists and contacts, and spend credits on the whole account ([authentication](https://docs.emelia.io/docs/authentication)).
+- There is no test environment: every request acts on the real account ([base URLs](https://docs.emelia.io/docs/base-urls)).
+- Lists and contacts are served under `/lists/...` on the same host, with the same key.
+- [Rate limits](https://docs.emelia.io/docs/rate-limits) apply per account over a fixed 60-second window, shared by all its keys: 30 requests per minute with no active plan, 100 on Start, 300 on Grow and 1,000 on Scale. `/tools/...` and `/lists/...` routes are not counted.
+- Over the limit, the API returns HTTP `500` with `{"error": "Internal server error"}` instead of `429`, and no `Retry-After` header. Wait 60 seconds before retrying.
+
+---

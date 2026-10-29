@@ -1,0 +1,83 @@
+---
+title: 'Brandfetch'
+sidebarTitle: 'Brandfetch'
+description: 'Integrate your application with the Brandfetch API'
+---
+
+## 🚀 Quickstart
+
+Connect to Brandfetch with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Brandfetch_.
+    </Step>
+    <Step id="authorize-brandfetch" title="Authorize Brandfetch">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-brandfetch-api" title="Call the Brandfetch API">
+    Let's make your first request to the Brandfetch API to get the account behind your API key. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/viewer" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/viewer',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Brandfetch integration guides
+
+- [How do I link my account?](/api-integrations/brandfetch/connect)  
+Create an API key in the Brandfetch Developer Dashboard to connect your account.
+
+Official docs: [Brandfetch API docs](https://docs.brandfetch.com/)
+
+## 🧩 Pre-built syncs & actions for Brandfetch
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/brandfetch/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- The API key works with the Brand API, Brand Context API and Transaction API. The Logo API and Brand Search API use a separate client ID, passed as a query parameter, not the API key.
+- [Viewer API](https://docs.brandfetch.com/reference/viewer-api) requests (`/v2/viewer`) are free and never consume API credits.
+- [Batch lookups](https://docs.brandfetch.com/brand-api/overview) need a paid plan or prepaid credits. A free plan gets a `403` with the header `x-bf-error: paid_plan_required`.
+
+---

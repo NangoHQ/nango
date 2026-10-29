@@ -1,0 +1,84 @@
+---
+title: 'AgentQL'
+sidebarTitle: 'AgentQL'
+description: 'Integrate your application with the AgentQL API'
+---
+
+## 🚀 Quickstart
+
+Connect to AgentQL with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _AgentQL_.
+    </Step>
+    <Step id="authorize-agentql" title="Authorize AgentQL">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-agentql-api" title="Call the AgentQL API">
+    Let's make your first request to the AgentQL API to get your API key's usage. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/usage" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/usage',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 AgentQL integration guides
+
+- [How do I link my account?](/api-integrations/agentql/connect)  
+Create an API key in the AgentQL Dev Portal to connect your account.
+
+Official docs: [AgentQL REST API reference](https://docs.agentql.com/rest-api/api-reference)
+
+## 🧩 Pre-built syncs & actions for AgentQL
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/agentql/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- AgentQL reads the key from the `X-API-Key` header, not from a Bearer token. Nango sets this header for you.
+- Rate limits depend on your [plan](https://www.agentql.com/pricing): 10 API calls per minute on the free trial and Starter plans, 50 on Professional.
+- Querying a document uses 1 API call per image and 1 per PDF page, so your usage can exceed the number of requests you send.
+- Creating a remote browser session returns its own `cdp_url` on a `*.tetra.agentql.com` host. Connect to that host directly; it is not the API host Nango proxies to.
+
+---

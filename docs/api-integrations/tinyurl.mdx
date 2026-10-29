@@ -1,0 +1,84 @@
+---
+title: 'TinyURL'
+sidebarTitle: 'TinyURL'
+description: 'Integrate your application with the TinyURL API'
+---
+
+## 🚀 Quickstart
+
+Connect to TinyURL with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _TinyURL_.
+    </Step>
+    <Step id="authorize-tinyurl" title="Authorize TinyURL">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your TinyURL API token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-tinyurl-api" title="Call the TinyURL API">
+    Let's make your first request to the TinyURL API to list your available links. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/urls/available" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/urls/available',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 TinyURL integration guides
+
+- [How do I link my account?](/api-integrations/tinyurl/connect)  
+Create an API token to connect your TinyURL account.
+
+Official docs: [TinyURL API documentation](https://tinyurl.com/app/dev)
+
+## 🧩 Pre-built syncs & actions for TinyURL
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/tinyurl/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango sends the token in the `Authorization: Bearer` header. TinyURL also accepts it as the `api_token` query parameter, but the header keeps the token out of URLs and logs. See the [OpenAPI specification](https://tinyurl.com/openapi/v2.json).
+- Tokens are created with specific permissions. A call the token has no permission for returns `405`. Listing links (`GET /urls/{type}`) works with any valid token. See [API tokens permission access](https://helpdesk.tinyurl.com/faqs/api-tokens-permission-access).
+- `description`, `tags` and `expires_at` only work with paid subscriptions. See [How to use the "Try it out" feature](https://helpdesk.tinyurl.com/faqs/how-to-use-the-try-it-out-feature-on-tinyurl-api).
+- The legacy unauthenticated shortening endpoint is deprecated. Use the token-based API at `https://api.tinyurl.com`. See [Retiring our old API endpoint](https://tinyurl.com/blog/retiring-our-old-api-endpoint/).
+
+---

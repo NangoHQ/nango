@@ -1,0 +1,83 @@
+---
+title: 'Browserbase'
+sidebarTitle: 'Browserbase'
+description: 'Integrate your application with the Browserbase API'
+---
+
+## 🚀 Quickstart
+
+Connect to Browserbase with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Browserbase_.
+    </Step>
+    <Step id="authorize-browserbase" title="Authorize Browserbase">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Browserbase API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-browserbase-api" title="Call the Browserbase API">
+    Let's make your first request to the Browserbase API to list your projects. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/projects" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/projects',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Browserbase integration guides
+
+- [How do I link my account?](/api-integrations/browserbase/connect)  
+Copy your API key to connect your Browserbase account.
+
+Official docs: [Browserbase API reference](https://docs.browserbase.com/reference/api/overview)
+
+## 🧩 Pre-built syncs & actions for Browserbase
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/browserbase/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango sends the key in the `X-BB-API-Key` header, which every REST endpoint requires. See the [API overview](https://docs.browserbase.com/reference/api/overview).
+- Browserbase limits both the number of concurrent browsers and the number of sessions you can create in any 60-second period. Either limit returns a `429`. Concurrency is assigned at the organization level and shared across its projects. See [Concurrency & rate limits](https://docs.browserbase.com/optimizations/concurrency/overview).
+- A `429` response includes `x-ratelimit-remaining`, `x-ratelimit-reset` and `retry-after` headers. Nango uses them to wait before retrying.
+
+---

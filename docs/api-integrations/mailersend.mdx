@@ -1,0 +1,84 @@
+---
+title: 'MailerSend'
+sidebarTitle: 'MailerSend'
+description: 'Integrate your application with the MailerSend API'
+---
+
+## 🚀 Quickstart
+
+Connect to MailerSend with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _MailerSend_.
+    </Step>
+    <Step id="authorize-mailersend" title="Authorize MailerSend">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your MailerSend API token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-mailersend-api" title="Call the MailerSend API">
+    Let's make your first request to the MailerSend API to get your account details. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/account" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/account',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 MailerSend integration guides
+
+- [How do I link my account?](/api-integrations/mailersend/connect)  
+Create an API token to connect your MailerSend account.
+
+Official docs: [MailerSend API docs](https://developers.mailersend.com/)
+
+## 🧩 Pre-built syncs & actions for MailerSend
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/mailersend/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- API tokens expire after 24 hours unless you set an expiration date when you create them ([MailerSend help](https://www.mailersend.com/help/managing-api-tokens)).
+- A token with custom access returns an error on endpoints outside the permissions you gave it. Create a token with the permissions your integration needs ([API docs](https://developers.mailersend.com/general)).
+- If the account has an IP allowlist, MailerSend only accepts API calls from the listed IPs ([MailerSend help](https://www.mailersend.com/help/how-to-whitelist-ips)).
+- General API endpoints are limited to 60 requests per minute, and every request counts against a daily quota that resets at midnight UTC ([API docs](https://developers.mailersend.com/general)).
+
+---

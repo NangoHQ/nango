@@ -1,0 +1,86 @@
+---
+title: 'Abyssale'
+sidebarTitle: 'Abyssale'
+description: 'Integrate your application with the Abyssale API'
+---
+
+## 🚀 Quickstart
+
+Connect to Abyssale with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Abyssale_.
+    </Step>
+    <Step id="authorize-abyssale" title="Authorize Abyssale">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Abyssale API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-abyssale-api" title="Call the Abyssale API">
+    Let's make your first request to the Abyssale API to list the designs in your workspace. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/designs" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/designs',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Abyssale integration guides
+
+- [How do I link my account?](/api-integrations/abyssale/connect)  
+Create a workspace API key to connect your Abyssale account.
+
+Official docs: [Abyssale API reference](https://developers.abyssale.com/api-reference/)
+
+## 🧩 Pre-built syncs & actions for Abyssale
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/abyssale/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- The REST API is included from the Pro plan up. The Start plan does not include it, and a key on a plan without API access gets a `401` with the error id `api_access_denied`.
+- Use a workspace API key, not a user key. A user key can only reach `POST /auth`, `GET /fonts` and plugin endpoints.
+- The API never returns `403`. Every key problem comes back as a `401`, so branch on the `id` in the error body, not on `message`.
+- `GET /ready` is a health check that skips authentication and returns `200` for any key, so don't use it to test a key. Use `POST /auth` instead.
+- Rate limits: 10 requests per second across all endpoints, plus a per-workspace budget for each endpoint tier (polling 600/min, read 120/min, validation 120/min, write 60/min). `Retry-After` is sent only on a `429`.
+- The [Abyssale MCP server](https://developers.abyssale.com/mcp/authentication) uses OAuth, not the REST API key. One credential does not work in place of the other.
+
+---

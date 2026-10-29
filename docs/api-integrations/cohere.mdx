@@ -1,0 +1,85 @@
+---
+title: 'Cohere'
+sidebarTitle: 'Cohere'
+description: 'Integrate your application with the Cohere API'
+---
+
+## 🚀 Quickstart
+
+Connect to Cohere with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Cohere_.
+    </Step>
+    <Step id="authorize-cohere" title="Authorize Cohere">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Cohere API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-cohere-api" title="Call the Cohere API">
+    Let's make your first request to the Cohere API to list the available models. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/models?page_size=1" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/models',
+            params: { page_size: '1' },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Cohere integration guides
+
+- [How do I link my account?](/api-integrations/cohere/connect)  
+Create an API key to connect your Cohere account.
+
+Official docs: [Cohere API reference](https://docs.cohere.com/reference/about)
+
+## 🧩 Pre-built syncs & actions for Cohere
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/cohere/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Trial keys are free but limited to 1,000 API calls a month, and Cohere does not permit them for production or commercial use. See [Rate limits](https://docs.cohere.com/docs/rate-limits) and [Pricing](https://cohere.com/pricing).
+- Production keys work like trial keys for newer Chat model variants such as Command A Reasoning. A production key declared for a sensitive use case can stay trial-limited until Cohere's safety team approves it. See [Rate limits](https://docs.cohere.com/docs/rate-limits) and [Going live](https://docs.cohere.com/docs/going-live).
+- Cohere returns `401` when the key is missing, invalid or expired, `402` when the account reached its billing limit, and `429` when the rate limit is exceeded. See [Errors](https://docs.cohere.com/reference/errors).
+- Model Vault deployments take the same API key but are served from a per-vault endpoint, not `https://api.cohere.com`, so Nango's proxy does not reach them. See [Model Vault API access](https://docs.cohere.com/docs/model-vault/standard/api-access).
+
+---

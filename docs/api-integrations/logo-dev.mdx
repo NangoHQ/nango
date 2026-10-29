@@ -1,0 +1,86 @@
+---
+title: 'Logo.dev'
+sidebarTitle: 'Logo.dev'
+description: 'Integrate your application with the Logo.dev API'
+---
+
+## 🚀 Quickstart
+
+Connect to Logo.dev with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Logo.dev_.
+    </Step>
+    <Step id="authorize-logo-dev" title="Authorize Logo.dev">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Logo.dev secret key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-logo-dev-api" title="Call the Logo.dev API">
+    Let's make your first request to the Logo.dev API to get your plan and API credit balance. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/account" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/account',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Logo.dev integration guides
+
+- [How do I link my account?](/api-integrations/logo-dev/connect)  
+Copy your secret key to connect your Logo.dev account.
+
+Official docs: [Logo.dev API reference](https://www.logo.dev/docs)
+
+## 🧩 Pre-built syncs & actions for Logo.dev
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/logo-dev/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Use the secret key (`sk_`). Each key works on its own host only: the secret key works on `api.logo.dev`, and the publishable key (`pk_`) only works on the image CDN (`img.logo.dev`). See [API keys](https://www.logo.dev/docs/platform/api-keys).
+- Logo.dev has no test or sandbox keys.
+- Authentication errors return a `msg` field instead of an `error` object. See [Errors](https://www.logo.dev/docs/platform/errors).
+- API requests spend API credits, but `GET /v2/account` is not billed. Use `/v2` routes.
+- Rate limits are per account and depend on your plan. If `RateLimit-Remaining` is `0`, wait `RateLimit-Reset` seconds before you retry. See [Rate limits](https://www.logo.dev/docs/platform/rate-limits).
+- The Transaction beta (`https://www.logo.dev/api/transaction`) takes its own beta key, so a Nango connection with a secret key can't call it.
+
+---

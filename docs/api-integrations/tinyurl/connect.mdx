@@ -1,0 +1,41 @@
+---
+title: 'TinyURL - How do I link my account?'
+sidebarTitle: 'TinyURL'
+---
+
+## Overview
+
+To authenticate with TinyURL, you need:
+
+1. **API Token** — an API token from your TinyURL account settings.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A TinyURL account. Free plan users can use the API: [sign up](https://tinyurl.com/app/register).
+
+### Step 1: Create an API token
+
+1. Sign in to [TinyURL](https://tinyurl.com/app/login). If you just signed up, verify your email address first.
+2. Open your profile menu and go to **Settings** > **API**, or open the [API settings page](https://tinyurl.com/app/settings/api).
+
+<img src="/api-integrations/tinyurl/settings_api_nav.png" alt="The API page selected in the TinyURL Settings sidebar" />
+
+3. Under **Your Tokens**, enter a **Token Name**.
+4. Tick only the permissions your integration needs.
+5. Click **Create Token**.
+
+<img src="/api-integrations/tinyurl/create_api_token.png" alt="The TinyURL token form with Token Name, permission checkboxes and the Create Token button" />
+
+6. In the **API Token** pop-up, click **Copy To Clipboard** and store the token somewhere safe.
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with TinyURL.
+2. Enter your **API Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/tinyurl/form.png" alt="The TinyURL connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to TinyURL.
