@@ -267,6 +267,9 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
   <Card title="Build custom tools" icon="wand-magic-sparkles" href="/guides/functions/functions-guide">
     Write action functions for tools the catalog doesn't have.
   </Card>
+  <Card title="Sync data" icon="arrows-rotate" href="/guides/functions/syncs/sync-functions">
+    Keep external API data fresh in your app with sync functions.
+  </Card>
 </CardGroup>
 
 <Tip>**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).</Tip>
@@ -1220,15 +1223,13 @@ Once you have the connection ID, fetch credentials whenever you need them:
     <Tip>Each API has a dedicated [Nango documentation page](/integrations/overview) with setup notes and gotchas.</Tip>
 
     <Accordion title="⚠️ OAuth app setup">
-      OAuth APIs require an OAuth developer app registered with the provider. Register one on the provider's developer portal, use the `Callback URL` shown in your Nango integration settings, then paste the `Client ID` and `Client Secret` back into Nango. Register any required scopes too.
+      OAuth APIs require an OAuth developer app registered with the provider. If the API has a [Nango-managed OAuth app](#nango-managed-oauth-apps), you can use it and skip the rest of this step. Nango-managed OAuth apps can be used in production.
 
-      If this integration will be used in production, complete the optional custom callback URL step below before real users connect. Retrofitting a callback URL later requires updating the provider app and can break new authorization or reconnect flows until the provider and Nango settings match.
+      To use your own OAuth app instead, register one on the provider's developer portal, use the `Callback URL` shown in your Nango integration settings, then paste the `Client ID` and `Client Secret` back into Nango. Register any required scopes too.
+
+      If you use your own OAuth app in production, complete the optional custom callback URL step below before real users connect. Retrofitting a callback URL later requires updating the provider app and can break new authorization or reconnect flows until the provider and Nango settings match.
 
       For OAuth 2.0 providers, Nango shows **suggested scopes** — auto-discovered and refreshed at least monthly. They're suggestions; you can use any scope the provider supports.
-
-      <Note>
-        For popular APIs, Nango provides pre-approved OAuth apps. They work in production, but we recommend registering your own OAuth app before you go live — see [Nango-managed OAuth apps](#nango-managed-oauth-apps) below.
-      </Note>
     </Accordion>
 
     <Accordion title="For agents">
@@ -1240,7 +1241,9 @@ Once you have the connection ID, fetch credentials whenever you need them:
         --header 'Authorization: Bearer <NANGO-API-KEY>'
       ```
 
-      For OAuth providers, walk the user through registering an OAuth developer app on the provider's portal: link them to the provider's OAuth-app creation page, tell them which `Callback URL` to paste (visible in the Nango integration settings after creation), and ask them to send back the `client_id` and `client_secret` so you can pass them in the request body.
+      For OAuth providers, first try to create the integration with a [Nango-managed OAuth app](#nango-managed-oauth-apps): `POST /integrations/quickstart` with `unique_key` and `provider` in the body. If the response is a `400` saying no Nango-provided developer app is configured for this provider, or the user wants their own app, fall back to the steps below.
+
+      To use the user's own OAuth app, you can try registering it for them by following the setup guide on the API's docs page in [APIs & Integrations](/integrations/overview), for example [Gmail](/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app). Check with the user first, and tell them that a Nango-managed OAuth app is faster and easier to set up. Use the `Callback URL` from the Nango integration settings, then pass the app's `client_id` and `client_secret` in the request body.
 
       <Tabs>
         <Tab title="cURL (OAuth2)">
@@ -1533,9 +1536,9 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
 ## Nango-managed OAuth apps
 
-Nango provides pre-approved OAuth apps for popular APIs such as Gmail, Outlook, Salesforce, and HubSpot. Use them to test connections without registering an app with the provider.
+Many OAuth APIs have a Nango-managed OAuth app: a pre-approved OAuth app that Nango registers and maintains with the provider. You can use it to connect users without registering an app yourself.
 
-Nango-managed apps work in production, but we recommend registering your own OAuth app before you go live:
+Nango-managed OAuth apps can be used in production. Whether to use a Nango-managed app or your own is a product choice. Register your own OAuth app if any of these matter to you:
 
 - **Whitelabel auth** — with a Nango-managed app, the consent screen shows Nango, not your product.
 - **Scopes** — Nango-managed apps have fixed scopes. Your own app can request any scope the provider offers.
@@ -1546,6 +1549,89 @@ Nango-managed apps work in production, but we recommend registering your own OAu
 - **Portability** — only with your own app can you export access and refresh tokens and move off Nango without users re-authorizing.
 
 These tradeoffs apply to shared OAuth apps from any auth platform, not just Nango.
+
+### APIs with a Nango-managed OAuth app
+
+These APIs have a Nango-managed OAuth app on Nango Cloud. Every other OAuth API needs your own OAuth app. You can also check from code: `POST /integrations/quickstart` returns a `400` when an API has no Nango-managed OAuth app.
+
+<Accordion title="List of APIs with a Nango-managed OAuth app (76)">
+- [Airtable](/api-integrations/airtable)
+- [Asana](/api-integrations/asana)
+- [Basecamp](/integrations/all/basecamp)
+- [Bitbucket](/integrations/all/bitbucket)
+- [BoldSign](/integrations/all/boldsign)
+- [Box](/api-integrations/box)
+- [Cal.com (OAuth)](/api-integrations/cal-com-oauth)
+- [Calendly](/api-integrations/calendly)
+- [ClickUp](/api-integrations/clickup)
+- [Confluence](/api-integrations/confluence)
+- [Contentful](/integrations/all/contentful)
+- [Discord](/api-integrations/discord)
+- [Dropbox](/api-integrations/dropbox)
+- [Eventbrite](/integrations/all/eventbrite)
+- [Exist](/integrations/all/exist)
+- [Facebook](/api-integrations/facebook)
+- [GitHub (App)](/api-integrations/github-app)
+- [GitHub (User OAuth)](/api-integrations/github)
+- [GitLab](/integrations/all/gitlab)
+- [Gmail](/api-integrations/google-mail)
+- [Google Ads](/api-integrations/google-ads)
+- [Google Analytics](/api-integrations/google-analytics)
+- [Google Calendar](/api-integrations/google-calendar)
+- [Google Docs](/api-integrations/google-docs)
+- [Google Drive](/api-integrations/google-drive)
+- [Google Sheets](/api-integrations/google-sheet)
+- [Gumroad](/integrations/all/gumroad)
+- [HubSpot](/api-integrations/hubspot)
+- [Hubstaff](/api-integrations/hubstaff)
+- [Intercom](/api-integrations/intercom)
+- [Jira (OAuth)](/api-integrations/jira)
+- [Judge.me (OAuth)](/api-integrations/judgeme-oauth)
+- [Linear](/api-integrations/linear)
+- [LinkHut](/integrations/all/linkhut)
+- [Mailchimp](/integrations/all/mailchimp)
+- [Microsoft](/api-integrations/microsoft)
+- [Microsoft Excel](/integrations/all/microsoft-excel)
+- [Microsoft Teams](/api-integrations/microsoft-teams)
+- [Microsoft Word](/api-integrations/microsoft-word)
+- [Miro](/integrations/all/miro)
+- [Monday](/api-integrations/monday)
+- [Moneybird](/api-integrations/moneybird)
+- [Mural](/integrations/all/mural)
+- [Notion](/api-integrations/notion)
+- [OneDrive for Business](/api-integrations/one-drive)
+- [OneDrive Personal](/integrations/all/one-drive-personal)
+- [Outlook](/api-integrations/outlook)
+- [Pinterest](/integrations/all/pinterest)
+- [Pipedrive](/api-integrations/pipedrive)
+- [Quickbooks](/api-integrations/quickbooks)
+- [Quickbooks (Sandbox)](/api-integrations/quickbooks-sandbox)
+- [Salesforce](/api-integrations/salesforce)
+- [SharePoint Online (v2)](/api-integrations/sharepoint-online)
+- [Slack](/api-integrations/slack)
+- [Splitwise](/integrations/all/splitwise)
+- [Stack Exchange](/integrations/all/stackexchange)
+- [Strava (Web)](/integrations/all/strava-web)
+- [TickTick](/integrations/all/ticktick)
+- [Timely](/integrations/all/timely)
+- [Todoist](/integrations/all/todoist)
+- [Typeform](/api-integrations/typeform)
+- [Wakatime](/integrations/all/wakatime)
+- [Wrike](/integrations/all/wrike)
+- [Xero](/api-integrations/xero)
+- [YouTube](/api-integrations/youtube)
+- [Zendesk](/api-integrations/zendesk)
+- [Zoho](/integrations/all/zoho)
+- [Zoho Bigin](/integrations/all/zoho-bigin)
+- [Zoho Books](/integrations/all/zoho-books)
+- [Zoho CRM](/api-integrations/zoho-crm)
+- [Zoho Desk](/integrations/all/zoho-desk)
+- [Zoho Inventory](/integrations/all/zoho-inventory)
+- [Zoho Invoice](/integrations/all/zoho-invoice)
+- [Zoho Mail](/integrations/all/zoho-mail)
+- [Zoho People](/integrations/all/zoho-people)
+- [Zoom](/api-integrations/zoom)
+</Accordion>
 
 To make registering your own app easier, Nango maintains step-by-step setup guides for most OAuth APIs in [APIs & Integrations](/integrations/overview), for example [Gmail](/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app).
 
@@ -7108,6 +7194,8 @@ Validate webhooks from Nango by looking at the `X-Nango-Hmac-Sha256` header.
 
 It's an HMAC-SHA256 hash of the webhook payload, using the webhook signing key found in **Environment Settings > Webhooks > Signing key** in the Nango UI.
 
+Nango generates the key for each environment. To choose your own, pass a UUID as `webhooks.signing_key` when you [create the environment](/reference/backend/http-api/environments/create) with the API.
+
 <Warning>
 Nango webhook requests include an `X-Nango-Hmac-Sha256` header for secure verification. A legacy `X-Nango-Signature` header (using plain SHA-256) is also sent for backwards compatibility but should not be used. If you're currently using `X-Nango-Signature`, migrate to `X-Nango-Hmac-Sha256` for improved security.
 </Warning>
@@ -8057,7 +8145,7 @@ Custom deployments (e.g., ECS instead of Kubernetes) are possible with our guida
 
 ## What leaves your account
 
-**Nothing.** Self-hosted instances don't send any telemetry, logs, or data back to Nango automatically. You're the only one with visibility into your instance, unless you choose to export metrics to your own monitoring tool, or share something with us directly when asking for support.
+**Anonymous usage metrics only.** Self-hosted instances don't send logs, credentials, records, or any other instance data back to Nango. The only thing reported to Nango is [hosted telemetry](#hosted-telemetry): anonymous usage metrics, such as how many functions run at the same time. Beyond that, you're the only one with visibility into your instance, unless you choose to export metrics to your own monitoring tool, or share something with us directly when asking for support.
 
 ## Where your data lives
 
@@ -8094,7 +8182,7 @@ The most sensitive thing Nango stores is your end users' connection credentials 
 
 ## Observability & support
 
-Everything is visible to you, and only you — the dashboard, the audit trail, your logs, your metrics. Nango has no visibility into your instance unless you choose to share something with us.
+Everything is visible to you, and only you — the dashboard, the audit trail, your logs, your metrics. Nango has no visibility into your instance beyond [hosted telemetry](#hosted-telemetry), unless you choose to share something with us.
 
 Support follows your contract's SLA. Reach out through your support channel with what you're seeing (logs, dashboard state, error messages) — we can't look at your instance ourselves.
 
@@ -8379,6 +8467,21 @@ Your reverse proxy must strip the base path prefix before forwarding to Connect 
 Connect UI is a single-page app: the server must respond with `index.html` for any path that isn't a built asset, including the base path without a trailing slash. Nango's static file server handles this out of the box; if you serve the built `dist` from your own static host, enable its SPA fallback.
 
 See [Auth](/guides/auth/auth-guide) for the end-user connection flow.
+
+### Hosted telemetry
+
+Nango records anonymous usage metrics, such as how many functions run at the same time, into the `hosted_telemetry` schema of your database, to be reported to Nango. They carry no instance data: each row is a timestamp, a metric name, a value, and a random ID for the process that wrote it. It is on by default.
+
+Every service writes its metrics to the main database, so set `NANGO_DATABASE_URL` or `NANGO_DB_HOST` on every service.
+
+To keep the metrics in a separate database, set `NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL` to that database's URL on every service, so they all write to the same place:
+
+```sh
+NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL=postgresql://user:password@host:port/dbname
+NANGO_HOSTED_TELEMETRY_POSTGRES_SSL=true
+```
+
+Contact us if this telemetry is an issue for your organization.
 
 ### Persistent storage
 
@@ -8674,7 +8777,7 @@ Both apply to the API and to runners, and are passed to Kubernetes and Lambda ru
 
 ### Telemetry
 
-Self-hosted instances do not automatically send telemetry back to Nango. Operational metrics and logs stay within your own infrastructure and are only exported if you configure the OpenTelemetry Export add-on.
+Apart from [hosted telemetry](#hosted-telemetry), self-hosted instances do not send telemetry back to Nango. Operational metrics and logs stay within your own infrastructure and are only exported if you configure the OpenTelemetry Export add-on.
 
 ### Logs
 
@@ -8719,7 +8822,7 @@ If `NANGO_LOGS_ENABLED` is `false`, logs are sent to stdout and can be viewed in
     Not out of the box — the default configuration scales far without it, and we can guide you on setting up autoscaling when you need it.
   </Accordion>
   <Accordion title="Does Nango have any visibility into our instance?">
-    None. Self-hosted instances send nothing back to Nango automatically. If you need our help debugging something, you share what's relevant with us directly.
+    Only [hosted telemetry](#hosted-telemetry), which is anonymous usage metrics. Nothing else is sent back to Nango. If you need our help debugging something, you share what's relevant with us directly.
   </Accordion>
 </AccordionGroup>
 
@@ -10074,7 +10177,7 @@ For backend services that consume data, trigger actions, and proxy requests:
 |-------|
 | `environment:connections:read` |
 | `environment:records:read` |
-| `environment:actions:execute` |
+| `environment:tools:call` |
 | `environment:syncs:execute` |
 | `environment:proxy` |
 
@@ -10197,11 +10300,11 @@ The **Default - Full access** key that comes with each environment already has a
     The `environment:logs:read` scope is currently only used by the [Logs tools in the Management MCP server](/reference/backend/management-mcp#logs).
 </Note>
 
-#### Actions
+#### Tools
 
 | Scope | Description |
 |-------|-------------|
-| `environment:actions:execute` | Trigger actions and read action results |
+| `environment:tools:call` | Call tools, trigger actions and read action results |
 
 #### Proxy
 
@@ -10385,7 +10488,11 @@ Creates a new environment. Additional environments are limited by your [pricing 
 
 Set `is_production: true` to create a production environment. This also requires `account:environments:set_production`. The reserved name `prod` is always production and cannot be combined with `is_production: false`.
 
-Pass `webhooks` to configure URLs and subscriptions. Nango generates a webhook signing key for the new environment. See [Receive webhooks from Nango](/guides/platform/webhooks-from-nango) for delivery behavior, event types, and signature verification.
+Pass `webhooks` to configure URLs and subscriptions. Set `webhooks.signing_key` to choose the environment's webhook signing key. See [Receive webhooks from Nango](/guides/platform/webhooks-from-nango) for delivery behavior, event types, and signature verification.
+
+`webhooks.signing_key` must be a UUID v4. You should generate it using a cryptographically secure random generator, such as `crypto.randomUUID()`. The security of a supplied key depends on how you generate and protect it; Nango validates its format but cannot verify its randomness.
+
+If omitted, Nango generates a secure random signing key.
 
 The response returns the complete environment settings, including the plaintext webhook signing key and environment `uuid`. Use the `uuid` to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
 
@@ -11362,7 +11469,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/sync/delete-variant.md
 Source: https://nango.dev/docs/reference/backend/http-api/action/trigger.md
 
 <Info>
-  Requires an API key with the `environment:actions:execute` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+  Requires an API key with the `environment:tools:call` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
 ## Proxy - GET requests
@@ -14073,7 +14180,7 @@ Use the Actions tool to trigger an action function synchronously for a connectio
 
 | Tool              | Description                                                | Additional permission          |
 | ----------------- | ---------------------------------------------------------- | ------------------------------ |
-| `actions_trigger` | Trigger an action function synchronously for a connection. | `environment:actions:execute`  |
+| `actions_trigger` | Trigger an action function synchronously for a connection. | `environment:tools:call`  |
 
 ### Syncs
 
@@ -14097,7 +14204,7 @@ Tools are functions that can be called on demand: HTTP-triggered functions, depl
 | Tool                    | Description                                                                   | Additional permission        |
 | ----------------------- | ----------------------------------------------------------------------------- | ---------------------------- |
 | `functions_list`        | List and filter available functions by integration, including Nango catalog actions. | `environment:functions:list` |
-| `tools_call`            | Call an enabled tool of an integration synchronously for a connection.        | `environment:functions:invocations`, `environment:actions:execute` |
+| `tools_call`            | Call an enabled tool of an integration synchronously for a connection.        | `environment:tools:call`     |
 | `deploy_template`       | Deploy a function template.                                                   | `environment:deploy`         |
 | `get_deployment_status` | Retrieve a deployment's current status and result.                            | `environment:deploy`         |
 
@@ -16286,6 +16393,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `crisp-plugin-install` | Crisp (Plugin Install) | INSTALL_PLUGIN | [docs](https://nango.dev/docs/api-integrations/crisp-plugin-install.md) |  | [setup](https://nango.dev/docs/api-integrations/crisp-plugin-install/how-to-register-your-own-crisp-plugin.md) | communication, support |
 | `crowdstrike` | CrowdStrike | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/crowdstrike.md) | [connect](https://nango.dev/docs/integrations/all/crowdstrike/connect.md) |  | dev-tools |
 | `crunchbase` | Crunchbase | API_KEY | [docs](https://nango.dev/docs/api-integrations/crunchbase.md) | [connect](https://nango.dev/docs/api-integrations/crunchbase/connect.md) |  | crm |
+| `crustdata` | Crustdata | API_KEY | [docs](https://nango.dev/docs/api-integrations/crustdata.md) | [connect](https://nango.dev/docs/api-integrations/crustdata/connect.md) |  | crm, marketing |
+| `crustdata-mcp` | Crustdata (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/crustdata-mcp.md) |  |  | crm, mcp |
 | `cursor` | Cursor | API_KEY | [docs](https://nango.dev/docs/integrations/all/cursor.md) | [connect](https://nango.dev/docs/integrations/all/cursor/connect.md) |  | dev-tools |
 | `cursor-admin` | Cursor Admin | BASIC | [docs](https://nango.dev/docs/integrations/all/cursor-admin.md) | [connect](https://nango.dev/docs/integrations/all/cursor-admin/connect.md) |  | dev-tools |
 | `customer-io` | Customer.io | BASIC | [docs](https://nango.dev/docs/api-integrations/customer-io.md) | [connect](https://nango.dev/docs/api-integrations/customer-io/connect.md) |  | marketing, analytics |

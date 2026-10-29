@@ -20,7 +20,7 @@ export const triggerActionTool: ManagementMcpTool<TriggerActionOutput> = defineM
         'Triggers an action synchronously for a connection and returns its result in the data field. The MCP request may time out within 90 seconds without canceling the action, which may continue for up to 15 minutes. After a timeout, the tool cannot return the result or an action ID; retrying executes the action again.',
     inputSchema: triggerActionArgumentsSchema,
     outputSchema: triggerActionOutputSchema,
-    requiredScopes: { every: ['environment:actions:execute'] },
+    requiredScopes: { every: ['environment:tools:call'] },
     audit: { kind: 'no-audit', reason: 'non-auditable' },
     annotations: {
         readOnlyHint: false,
