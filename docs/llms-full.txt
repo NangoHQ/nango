@@ -7194,6 +7194,8 @@ Validate webhooks from Nango by looking at the `X-Nango-Hmac-Sha256` header.
 
 It's an HMAC-SHA256 hash of the webhook payload, using the webhook signing key found in **Environment Settings > Webhooks > Signing key** in the Nango UI.
 
+Nango generates the key for each environment. To choose your own, pass a UUID as `webhooks.signing_key` when you [create the environment](/reference/backend/http-api/environments/create) with the API.
+
 <Warning>
 Nango webhook requests include an `X-Nango-Hmac-Sha256` header for secure verification. A legacy `X-Nango-Signature` header (using plain SHA-256) is also sent for backwards compatibility but should not be used. If you're currently using `X-Nango-Signature`, migrate to `X-Nango-Hmac-Sha256` for improved security.
 </Warning>
@@ -10486,7 +10488,11 @@ Creates a new environment. Additional environments are limited by your [pricing 
 
 Set `is_production: true` to create a production environment. This also requires `account:environments:set_production`. The reserved name `prod` is always production and cannot be combined with `is_production: false`.
 
-Pass `webhooks` to configure URLs and subscriptions. Nango generates a webhook signing key for the new environment. See [Receive webhooks from Nango](/guides/platform/webhooks-from-nango) for delivery behavior, event types, and signature verification.
+Pass `webhooks` to configure URLs and subscriptions. Set `webhooks.signing_key` to choose the environment's webhook signing key. See [Receive webhooks from Nango](/guides/platform/webhooks-from-nango) for delivery behavior, event types, and signature verification.
+
+`webhooks.signing_key` must be a UUID v4. You should generate it using a cryptographically secure random generator, such as `crypto.randomUUID()`. The security of a supplied key depends on how you generate and protect it; Nango validates its format but cannot verify its randomness.
+
+If omitted, Nango generates a secure random signing key.
 
 The response returns the complete environment settings, including the plaintext webhook signing key and environment `uuid`. Use the `uuid` to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
 

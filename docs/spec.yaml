@@ -2946,6 +2946,11 @@ paths:
                                             type: boolean
                                             default: true
                                             description: Send webhooks when connections are deleted.
+                                        signing_key:
+                                            type: string
+                                            format: uuid
+                                            description: Key used to sign webhooks sent from this environment. Must be a UUID. Defaults to a randomly generated UUID.
+                                            example: 5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f
             responses:
                 '200':
                     description: Successfully created an environment
