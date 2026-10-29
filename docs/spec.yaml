@@ -444,7 +444,7 @@ paths:
                   schema:
                       type: string
                       enum: [sync, action, on-event, tool]
-                  description: Disambiguates when multiple functions share the same name.
+                  description: The function type. When omitted and several functions share the name, the first one is returned in this order (tool, action, on-event, sync).
             responses:
                 '200':
                     description: Successfully returned the function
@@ -549,8 +549,8 @@ paths:
                   required: false
                   schema:
                       type: string
-                      enum: [sync, action, on-event]
-                  description: The function type. Required to disambiguate when multiple functions share the same name.
+                      enum: [sync, action, on-event, tool]
+                  description: The function type. When omitted and several functions share the name, the first one is returned in this order (tool, action, on-event, sync).
             responses:
                 '200':
                     description: Successfully returned the function source code
@@ -564,7 +564,7 @@ paths:
                                 properties:
                                     type:
                                         type: string
-                                        enum: [sync, action, on-event]
+                                        enum: [sync, action, on-event, tool]
                                         description: The function type.
                                     code:
                                         type: string
@@ -577,37 +577,6 @@ paths:
                     $ref: '#/components/responses/Forbidden'
                 '404':
                     $ref: '#/components/responses/NotFound'
-                '409':
-                    description: Multiple functions share the same name. Specify a `type` to disambiguate.
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    error:
-                                        type: object
-                                        properties:
-                                            code:
-                                                type: string
-                                                enum: [ambiguous_function]
-                                            message:
-                                                type: string
-                                            payload:
-                                                type: object
-                                                properties:
-                                                    matches:
-                                                        type: array
-                                                        items:
-                                                            type: object
-                                                            required:
-                                                                - type
-                                                                - name
-                                                            properties:
-                                                                type:
-                                                                    type: string
-                                                                    enum: [sync, action, on-event]
-                                                                name:
-                                                                    type: string
 
     /connection:
         get:

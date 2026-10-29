@@ -168,7 +168,7 @@ describe('listFunctions with HTTP-triggered tools', () => {
 
         const page = await listPage({ environment, offset: 1, limit: 1 });
         expect(page.total).toBe(3);
-        expect(page.rows).toEqual([expect.objectContaining({ name: 'disabled', enabled: false })]);
+        expect(page.rows).toEqual([expect.objectContaining({ name: 'fetch-users', source: 'repo' })]);
 
         const filtered = (
             await listFunctions({ environmentId: environment.id, providerConfigKey: 'github', type: 'tool', search: 'fetch-', limit: 20, offset: 0 })
@@ -321,11 +321,11 @@ describe('listFunctions with catalog actions', () => {
             await listFunctions({ environmentId: environment.id, providerConfigKey: 'github', type: undefined, search: undefined, limit: 20, offset: 0 })
         ).unwrap();
         expect(untyped.rows.map((row) => ({ name: row.name, type: row.type }))).toEqual([
-            { name: 'list-issues', type: 'action' },
-            { name: 'sync-issues', type: 'sync' },
             { name: 'close-issue', type: 'tool' },
             { name: 'create-issue', type: 'tool' },
-            { name: 'sync-issues', type: 'tool' }
+            { name: 'sync-issues', type: 'tool' },
+            { name: 'list-issues', type: 'action' },
+            { name: 'sync-issues', type: 'sync' }
         ]);
 
         const actions = (
@@ -334,15 +334,30 @@ describe('listFunctions with catalog actions', () => {
         expect(actions.total).toBe(1);
         expect(actions.rows).toEqual([expect.objectContaining({ name: 'list-issues', source: 'repo' })]);
 
+        const toolsListing = (
+            await listFunctions({ environmentId: environment.id, providerConfigKey: 'github', type: 'tool', search: undefined, limit: 20, offset: 0 })
+        ).unwrap();
+        expect(toolsListing.total).toBe(4);
+        expect(toolsListing.rows.map(({ name, type }) => ({ name, type }))).toEqual([
+            { name: 'close-issue', type: 'tool' },
+            { name: 'create-issue', type: 'tool' },
+            { name: 'sync-issues', type: 'tool' },
+            { name: 'list-issues', type: 'action' }
+        ]);
+
         const listed = (await listActions({ environmentId: environment.id, providerConfigKey: 'github' })).unwrap();
         expect(listed.actions.map((action) => action.name)).toEqual(['list-issues']);
 
         const closeIssue = (await getFunction({ environmentId: environment.id, providerConfigKey: 'github', name: 'close-issue', type: undefined })).unwrap();
         expect(closeIssue).toMatchObject({ name: 'close-issue', type: 'tool', enabled: false });
+        const closeIssueTool = (await getFunction({ environmentId: environment.id, providerConfigKey: 'github', name: 'close-issue', type: 'tool' })).unwrap();
+        expect(closeIssueTool).toMatchObject({ type: 'tool', enabled: false });
         const closeIssueAction = (
             await getFunction({ environmentId: environment.id, providerConfigKey: 'github', name: 'close-issue', type: 'action' })
         ).unwrap();
         expect(closeIssueAction).toBeUndefined();
+        const syncIssues = (await getFunction({ environmentId: environment.id, providerConfigKey: 'github', name: 'sync-issues', type: undefined })).unwrap();
+        expect(syncIssues).toMatchObject({ name: 'sync-issues', type: 'tool' });
     });
 
     it('does not occupy a catalog name with a deployed action from another environment', async () => {
@@ -422,7 +437,7 @@ describe('getFunction with catalog actions', () => {
         mockGetCatalogTool.mockReturnValue(undefined);
     });
 
-    it('returns a catalog action when no deployed row exists', async () => {
+    it.each(['action', 'tool'] as const)('returns a catalog action when no deployed row exists with type=%s', async (type) => {
         const { environment } = await seedIntegration();
         mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
 
@@ -430,7 +445,7 @@ describe('getFunction with catalog actions', () => {
             environmentId: environment.id,
             providerConfigKey: 'github',
             name: 'create-issue',
-            type: 'action'
+            type
         });
 
         expect(result.isOk()).toBe(true);
@@ -447,7 +462,7 @@ describe('getFunction with catalog actions', () => {
         });
     });
 
-    it('returns the deployed row when the same catalog name exists', async () => {
+    it.each(['action', 'tool'] as const)('returns the deployed row when the same catalog name exists with type=%s', async (type) => {
         const { environment, integration } = await seedIntegration();
         mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'create-issue', type: 'action' });
@@ -456,7 +471,7 @@ describe('getFunction with catalog actions', () => {
             environmentId: environment.id,
             providerConfigKey: 'github',
             name: 'create-issue',
-            type: 'action'
+            type
         });
 
         expect(result.isOk()).toBe(true);
@@ -471,7 +486,7 @@ describe('getFunction with catalog actions', () => {
         });
     });
 
-    it('does not return a catalog action when tools-catalog is off', async () => {
+    it.each(['action', 'tool'] as const)('does not return a catalog action when tools-catalog is off with type=%s', async (type) => {
         mockHasCatalogTools.mockResolvedValue(false);
         const { environment } = await seedIntegration();
         mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
@@ -480,7 +495,7 @@ describe('getFunction with catalog actions', () => {
             environmentId: environment.id,
             providerConfigKey: 'github',
             name: 'create-issue',
-            type: 'action'
+            type
         });
 
         expect(result.isOk()).toBe(true);

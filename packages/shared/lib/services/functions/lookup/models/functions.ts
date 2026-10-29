@@ -42,12 +42,9 @@ export interface FunctionAvailabilityRow {
     source: FunctionSource;
 }
 
-const listingOrderBy = [
-    { column: 'type', order: 'asc' as const },
-    { column: 'name', order: 'asc' as const },
-    { column: 'event', order: 'asc' as const },
-    { column: 'id', order: 'asc' as const }
-];
+const listingOrderBy = "type = 'tool' DESC, type, name, event, id";
+
+const resolutionOrderBy = "type = 'tool' DESC, type, event, id";
 
 async function catalogToolsEnabled(accountUuid: string | undefined): Promise<boolean> {
     if (!accountUuid) {
@@ -57,7 +54,7 @@ async function catalogToolsEnabled(accountUuid: string | undefined): Promise<boo
 }
 
 function catalogTools(provider: string | undefined, type: FunctionListType | undefined, enabled: boolean): CatalogTool[] {
-    if (!enabled || !provider || (type !== undefined && type !== 'action')) {
+    if (!enabled || !provider || (type !== undefined && type !== 'action' && type !== 'tool')) {
         return [];
     }
     return listCatalogTools(provider);
@@ -113,7 +110,7 @@ export async function findActiveByEnvironment({
     const catalog = catalogTools(config?.provider, type, toolsCatalogEnabled);
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search, catalog });
     const [pageRows, countRow] = await Promise.all([
-        db.knex.from(listing).select<FunctionRow[]>('*').orderBy(listingOrderBy).limit(limit).offset(offset),
+        db.knex.from(listing).select<FunctionRow[]>('*').orderByRaw(listingOrderBy).limit(limit).offset(offset),
         db.knex.from(listing).count<{ total: string }[]>('* as total').first()
     ]);
 
@@ -127,18 +124,14 @@ export async function findActiveActions({ environmentId, providerConfigKey }: { 
     const toolsCatalogEnabled = await catalogToolsEnabled(config?.accountUuid);
     const catalog = catalogTools(config?.provider, 'action', toolsCatalogEnabled);
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type: 'action', search: undefined, catalog });
-    const rows = await db.knex.from(listing).select<FunctionRow[]>('*').orderBy(listingOrderBy);
+    const rows = await db.knex.from(listing).select<FunctionRow[]>('*').orderByRaw(listingOrderBy);
     hydrateCatalogJsonSchemas(rows, catalog);
     return toolsCatalogEnabled ? markActionsEnabled(rows) : rows;
 }
 
 /**
- * Returns a slim list of active sync/action function availability for an integration,
- * intended for cross-referencing the template catalog with what is already listed.
- *
- * Unpaginated and excludes on-event scripts — the templates catalog contains only
- * syncs and actions, so callers building a `(name, type) -> availability` lookup only
- * need those two types.
+ * Returns unpaginated template availability, including native HTTP tool names so
+ * action templates shadowed by those tools can be omitted.
  */
 export async function findActiveFunctionAvailability({
     environmentId,
@@ -146,19 +139,18 @@ export async function findActiveFunctionAvailability({
 }: {
     environmentId: number;
     providerConfigKey: string;
-}): Promise<FunctionAvailabilityRow[]> {
-    const rows = await activeSyncConfigBase({ environmentId, providerConfigKey }).select<FunctionAvailabilityRow[]>(
-        'sc.id',
-        'sc.sync_name AS name',
-        'sc.type',
-        'sc.enabled',
-        'sc.created_at AS last_deployed',
-        'sc.source'
-    );
-    if (await catalogToolsEnabled(await accountUuidForEnvironment(environmentId))) {
-        return markActionsEnabled(rows);
-    }
-    return rows;
+}): Promise<{ deployed: FunctionAvailabilityRow[]; toolNames: string[] }> {
+    const [rows, tools, toolsCatalog] = await Promise.all([
+        activeSyncConfigBase({ environmentId, providerConfigKey })
+            .select<FunctionAvailabilityRow[]>('sc.id', 'sc.sync_name AS name', 'sc.type', 'sc.enabled', 'sc.created_at AS last_deployed', 'sc.source')
+            .orderBy([
+                { column: 'sc.created_at', order: 'asc' },
+                { column: 'sc.id', order: 'asc' }
+            ]),
+        activeToolBase({ environmentId, providerConfigKey }).select<{ name: string }[]>('fc.name'),
+        accountUuidForEnvironment(environmentId).then(catalogToolsEnabled)
+    ]);
+    return { deployed: toolsCatalog ? markActionsEnabled(rows) : rows, toolNames: tools.map(({ name }) => name) };
 }
 
 export interface IntegrationFunctionRow {
@@ -445,7 +437,7 @@ export async function findActiveByName({
     const catalog = catalogTools(config?.provider, type, toolsCatalogEnabled);
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search: undefined, catalog });
 
-    const row = await db.knex.from(listing).select<FunctionRow[]>('*').where('name', name).orderBy(listingOrderBy).first();
+    const row = await db.knex.from(listing).select<FunctionRow[]>('*').where('name', name).orderByRaw(resolutionOrderBy).first();
     if (!row) {
         return undefined;
     }
@@ -467,8 +459,8 @@ function buildListingSubquery({
     catalog?: CatalogTool[];
 }): Knex.Raw {
     const branches: Knex.QueryBuilder[] = [];
-    if (type === undefined || type === 'sync' || type === 'action') {
-        branches.push(buildSyncConfigBranch({ environmentId, providerConfigKey, type, search }));
+    if (type !== 'on-event') {
+        branches.push(buildSyncConfigBranch({ environmentId, providerConfigKey, type: type === 'tool' ? 'action' : type, search }));
     }
     if (type === undefined || type === 'on-event') {
         branches.push(buildOnEventBranch({ environmentId, providerConfigKey, search }));
