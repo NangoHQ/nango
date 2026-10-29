@@ -119,6 +119,9 @@
             "path": "packages/hosted-telemetry"
         },
         {
+            "path": "packages/license"
+        },
+        {
             "path": "packages/email"
         },
         {

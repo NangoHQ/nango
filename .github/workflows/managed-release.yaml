@@ -432,7 +432,7 @@ jobs:
 
                   # Fails the release before the push if the image has no license key
                   docker run --rm --platform linux/amd64 --entrypoint node nangohq/nango:${IMAGE_TAG} \
-                      -e "import('/app/nango/packages/utils/dist/license/key.js').then((m) => process.exit(m.licensePublicKey ? 0 : 1))"
+                      -e "import('/app/nango/packages/license/dist/key.js').then((m) => process.exit(m.licensePublicKey ? 0 : 1))"
 
                   if [ "${{ inputs.dry_run }}" != "true" ]; then
                       docker push nangohq/nango:${IMAGE_TAG}
