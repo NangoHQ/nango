@@ -143,12 +143,13 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
 
       ```bash
       curl --request POST \
-        --url https://api.nango.dev/integrations/quickstart \
+        --url https://api.nango.dev/integrations \
         --header 'Authorization: Bearer <NANGO-API-KEY>' \
         --header 'Content-Type: application/json' \
         --data '{
           "provider": "google-mail",
-          "unique_key": "google-mail"
+          "unique_key": "google-mail",
+          "credentials": { "type": "NANGO_MANAGED" }
         }'
       ```
 
@@ -1241,7 +1242,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
         --header 'Authorization: Bearer <NANGO-API-KEY>'
       ```
 
-      For OAuth providers, first try to create the integration with a [Nango-managed OAuth app](#nango-managed-oauth-apps): `POST /integrations/quickstart` with `unique_key` and `provider` in the body. If the response is a `400` saying no Nango-provided developer app is configured for this provider, or the user wants their own app, fall back to the steps below.
+      For OAuth providers, first try to create the integration with a [Nango-managed OAuth app](#nango-managed-oauth-apps): [`POST /integrations`](/reference/backend/http-api/integration/create) with `unique_key`, `provider`, and `"credentials": { "type": "NANGO_MANAGED" }` in the body. If the response is a `400` saying no Nango-provided developer app is configured for this provider, or the user wants their own app, fall back to the steps below.
 
       To use the user's own OAuth app, you can try registering it for them by following the setup guide on the API's docs page in [APIs & Integrations](/integrations/overview), for example [Gmail](/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app). Check with the user first, and tell them that a Nango-managed OAuth app is faster and easier to set up. Use the `Callback URL` from the Nango integration settings, then pass the app's `client_id` and `client_secret` in the request body.
 
@@ -1552,7 +1553,7 @@ These tradeoffs apply to shared OAuth apps from any auth platform, not just Nang
 
 ### APIs with a Nango-managed OAuth app
 
-These APIs have a Nango-managed OAuth app on Nango Cloud. Every other OAuth API needs your own OAuth app. You can also check from code: `POST /integrations/quickstart` returns a `400` when an API has no Nango-managed OAuth app.
+These APIs have a Nango-managed OAuth app on Nango Cloud. Every other OAuth API needs your own OAuth app. You can also check from code: `POST /integrations` with `NANGO_MANAGED` credentials returns a `400` when an API has no Nango-managed OAuth app.
 
 <Accordion title="List of APIs with a Nango-managed OAuth app (76)">
 - [Airtable](/api-integrations/airtable)
@@ -10852,6 +10853,20 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/create.md
   Requires an API key with the `environment:integrations:create` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
+## Use a Nango-managed developer app
+
+To skip registering your own app with the provider, set `credentials` to `{ "type": "NANGO_MANAGED" }`. The integration then uses Nango's [managed developer app](/guides/auth/auth-guide#nango-managed-oauth-apps) for the provider.
+
+```json
+{
+  "provider": "github",
+  "unique_key": "github",
+  "credentials": { "type": "NANGO_MANAGED" }
+}
+```
+
+This works for `OAUTH1`, `OAUTH2`, and `APP` providers that Nango has a managed app for. Other providers return a `400`. You can't combine it with `integration_config`, and you can't edit the credentials afterwards.
+
 <ResponseExample>
 ```json Example Response
 {
@@ -11845,6 +11860,8 @@ await nango.createIntegration({ provider: '<PROVIDER-ID>', unique_key: '<UNIQUE_
 
     <ResponseField name="credentials" type="Record<string, string>">
         For `OAUTH1`, `OAUTH2`, `TBA`, `APP`, and `CUSTOM` credentials, you can create an integration without credentials or with partial credentials, then provide missing credentials with an update call or as per-connection overrides.
+
+        Pass `{ type: 'NANGO_MANAGED' }` to use a [Nango-managed developer app](/guides/auth/auth-guide#nango-managed-oauth-apps) instead of your own credentials. Only works for `OAUTH1`, `OAUTH2`, and `APP` providers that Nango has a managed app for. Can't be combined with `integration_config`, and the credentials can't be updated later.
     </ResponseField>
 
     <ResponseField name="integration_config" type="Record<string, string>">

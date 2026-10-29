@@ -308,9 +308,16 @@ publicAPI
     .route('/integrations')
     .get(connectSessionOrEnvAuth, can('environment:integrations:list', 'environment:integrations:list_credentials'), getPublicListIntegrations);
 publicAPI.route('/integrations').post(envAuth, auditPublicIntegrationCreated, can('environment:integrations:create'), postPublicIntegration);
+// TODO: remove this deprecated alias of POST /integrations with NANGO_MANAGED credentials (NAN-7880)
 publicAPI
     .route('/integrations/quickstart')
-    .post(envAuth, auditPublicQuickstartIntegrationCreated, can('environment:integrations:create'), postPublicQuickstartIntegration);
+    .post(
+        envAuth,
+        auditPublicQuickstartIntegrationCreated,
+        can('environment:integrations:create'),
+        trackDeprecatedPublicEndpoint('POST /integrations/quickstart'),
+        postPublicQuickstartIntegration
+    );
 publicAPI.route('/integrations/:uniqueKey').patch(envAuth, auditPublicIntegrationUpdated, can('environment:integrations:update'), patchPublicIntegration);
 publicAPI
     .route('/integrations/:uniqueKey')

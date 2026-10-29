@@ -145,11 +145,14 @@ paths:
                                     type: boolean
                                     description: Whether to forward webhooks received for this integration. Defaults to true.
                                 credentials:
-                                    $ref: '#/components/schemas/IntegrationCredentialsInput'
                                     description: >
                                         Developer app credentials for the integration. Omit them to create the
                                         integration without credentials and provide them later, either with an update
-                                        request or per connection at connection time.
+                                        request or per connection at connection time. Set `type` to `NANGO_MANAGED`
+                                        to use a Nango-managed developer app instead.
+                                    oneOf:
+                                        - $ref: '#/components/schemas/IntegrationCredentialsInput'
+                                        - $ref: '#/components/schemas/IntegrationNangoManagedCredentialsInput'
                                 integration_config:
                                     type: object
                                     additionalProperties:
@@ -179,7 +182,11 @@ paths:
     /integrations/quickstart:
         post:
             summary: Create a quickstart integration
-            description: Create an integration that uses a Nango-managed OAuth app (Nango-provided developer app) for providers that require a developer app. Nango-managed OAuth apps are production-ready. Returns a 400 error if no Nango-managed app is configured for the provider.
+            deprecated: true
+            description: >
+                Deprecated: use `POST /integrations` with `credentials: { "type": "NANGO_MANAGED" }` instead.
+                Creates an integration that uses a Nango-managed OAuth app for providers that require a developer app.
+                Returns a 400 error if no Nango-managed app is configured for the provider.
             requestBody:
                 required: true
                 content:
@@ -213,9 +220,7 @@ paths:
                                     - data
                                 properties:
                                     data:
-                                        type: array
-                                        items:
-                                            $ref: '#/components/schemas/Integration'
+                                        $ref: '#/components/schemas/Integration'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -5738,6 +5743,21 @@ components:
                           additionalProperties:
                               type: string
                           description: The provider's `integration_config` values, keyed by the fields it declares.
+
+        IntegrationNangoManagedCredentialsInput:
+            description: >
+                Uses a Nango-managed developer app instead of your own credentials. Only available when creating an
+                integration for an `OAUTH1`, `OAUTH2`, or `APP` provider that Nango has a managed app for. Can't be
+                combined with `integration_config`, and the credentials can't be edited afterwards.
+            type: object
+            additionalProperties: false
+            required:
+                - type
+            properties:
+                type:
+                    type: string
+                    enum:
+                        - NANGO_MANAGED
 
         IntegrationCredentialsInput:
             description: >

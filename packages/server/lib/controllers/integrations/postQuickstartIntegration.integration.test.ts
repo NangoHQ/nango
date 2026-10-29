@@ -71,7 +71,7 @@ describe(`POST ${endpoint}`, () => {
 
         isError(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
-            error: { code: 'invalid_body', message: 'Quickstart is only available for providers that require a developer app' }
+            error: { code: 'invalid_body', message: 'Nango-managed credentials are only available for providers that require a developer app' }
         });
     });
 
