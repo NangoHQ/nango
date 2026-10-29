@@ -73,6 +73,12 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
     { group: 'MCP', items: [{ value: 'environment:mcp', label: 'mcp' }] }
 ];
 
+/** Shows a key's scopes under their current names, so saving it rewrites any old ones. */
+export function renameLegacyScopes(scopes: string[]): string[] {
+    const renamed = scopes.map((scope) => (scope === 'environment:actions:execute' || scope === 'environment:actions:*' ? 'environment:tools:call' : scope));
+    return Array.from(new Set(renamed));
+}
+
 export function allGroupScopes(group: ScopeGroup): string[] {
     return group.items.flatMap((item) => (item.credentials ? [item.value, item.credentials] : [item.value]));
 }

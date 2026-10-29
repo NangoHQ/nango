@@ -151,9 +151,19 @@ export function isAccountScope(scope: string): boolean {
  * The concrete issuable scopes matching `granted`
  */
 export function expandIssuable(granted: readonly ScopeSelector[]): IssuableScope[] {
-    return ISSUABLE_SCOPES.filter((scope) =>
+    const expanded = ISSUABLE_SCOPES.filter((scope) =>
         granted.some((selector) => selector === scope || (selector.endsWith(':*') && scope.startsWith(selector.slice(0, -1))))
     );
+    // Keys written with the old name by a server still running older code after the migration ran
+    if (granted.some(isRenamedToolsCallScope) && !expanded.includes('environment:tools:call')) {
+        expanded.push('environment:tools:call');
+    }
+    return expanded;
+}
+
+/** Old names of `environment:tools:call`, no longer issued but still honored on stored keys. */
+export function isRenamedToolsCallScope(value: unknown): boolean {
+    return value === 'environment:actions:execute' || value === 'environment:actions:*';
 }
 
 /**

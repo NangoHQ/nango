@@ -531,47 +531,50 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it('exposes and authorizes non-idempotent action triggering', async () => {
-        const authorized = await createTestClient(['environment:tools:call']);
-        try {
-            const result = await authorized.client.listTools();
-            const scopedTools = withoutUnscopedTools(result.tools);
-            expect(scopedTools.map((tool) => tool.name)).toStrictEqual(['actions_trigger', 'tools_call']);
-            expect(scopedTools[0]).toMatchObject({
-                name: 'actions_trigger',
-                description: expect.stringContaining('time out within 90 seconds'),
-                inputSchema: {
-                    type: 'object',
-                    required: ['action_name', 'integration_id', 'connection_id'],
-                    additionalProperties: false
-                },
-                outputSchema: { type: 'object', required: ['data'], additionalProperties: false },
-                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
-            });
-            expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('async');
-            expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('max_retries');
-            expect(scopedTools[0]?.inputSchema.properties?.['input']).toMatchObject({ type: ['object', 'array', 'string', 'number', 'boolean', 'null'] });
-        } finally {
-            await authorized.client.close();
-            await authorized.server.close();
-        }
+    it.each(['environment:tools:call', 'environment:actions:execute', 'environment:actions:*'])(
+        'exposes and authorizes non-idempotent action triggering with %s',
+        async (scope) => {
+            const authorized = await createTestClient([scope]);
+            try {
+                const result = await authorized.client.listTools();
+                const scopedTools = withoutUnscopedTools(result.tools);
+                expect(scopedTools.map((tool) => tool.name)).toStrictEqual(['actions_trigger', 'tools_call']);
+                expect(scopedTools[0]).toMatchObject({
+                    name: 'actions_trigger',
+                    description: expect.stringContaining('time out within 90 seconds'),
+                    inputSchema: {
+                        type: 'object',
+                        required: ['action_name', 'integration_id', 'connection_id'],
+                        additionalProperties: false
+                    },
+                    outputSchema: { type: 'object', required: ['data'], additionalProperties: false },
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
+                });
+                expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('async');
+                expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('max_retries');
+                expect(scopedTools[0]?.inputSchema.properties?.['input']).toMatchObject({ type: ['object', 'array', 'string', 'number', 'boolean', 'null'] });
+            } finally {
+                await authorized.client.close();
+                await authorized.server.close();
+            }
 
-        const handlerSpy = vi.spyOn(triggerActionTool, 'handler');
-        const unauthorized = await createTestClient(['environment:mcp']);
-        try {
-            await expectDisabledTool(unauthorized.client, 'actions_trigger', {
-                action_name: 'create-issue',
-                input: {},
-                integration_id: 'github',
-                connection_id: 'connection-id'
-            });
-            expect(handlerSpy).not.toHaveBeenCalled();
-        } finally {
-            handlerSpy.mockRestore();
-            await unauthorized.client.close();
-            await unauthorized.server.close();
+            const handlerSpy = vi.spyOn(triggerActionTool, 'handler');
+            const unauthorized = await createTestClient(['environment:mcp']);
+            try {
+                await expectDisabledTool(unauthorized.client, 'actions_trigger', {
+                    action_name: 'create-issue',
+                    input: {},
+                    integration_id: 'github',
+                    connection_id: 'connection-id'
+                });
+                expect(handlerSpy).not.toHaveBeenCalled();
+            } finally {
+                handlerSpy.mockRestore();
+                await unauthorized.client.close();
+                await unauthorized.server.close();
+            }
         }
-    });
+    );
 
     it('returns action responses as JSON text and structured content', async () => {
         const response = { data: 'created' };
@@ -773,8 +776,8 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it('exposes tools_call with environment:tools:call', async () => {
-        const { client, server } = await createTestClient(['environment:tools:call']);
+    it.each(['environment:tools:call', 'environment:actions:execute'])('exposes tools_call with %s', async (scope) => {
+        const { client, server } = await createTestClient([scope]);
 
         try {
             const result = await client.listTools();

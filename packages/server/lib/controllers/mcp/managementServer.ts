@@ -1,6 +1,6 @@
 import { fromJsonSchema, inputRequired, inputResponse, McpServer } from '@modelcontextprotocol/server';
 
-import { authorizeIn, expandIssuable, isEnvironmentScopeSelector, PUBLIC_ENVIRONMENT_SCOPES } from '@nangohq/authz';
+import { authorizeIn, expandIssuable, PUBLIC_ENVIRONMENT_SCOPES } from '@nangohq/authz';
 import { environmentService } from '@nangohq/shared';
 import { getLogger, hasApiKeyScope, metrics } from '@nangohq/utils';
 
@@ -39,7 +39,7 @@ import type {
     ManagementMcpTool
 } from './managementTool.js';
 import type { ProtocolEra, ServerContext } from '@modelcontextprotocol/server';
-import type { Principal } from '@nangohq/authz';
+import type { Principal, ScopeSelector } from '@nangohq/authz';
 import type { ApiKeyScope, AuditAttribution, AuditPolicy, DBPlan, DBTeam } from '@nangohq/types';
 
 const logger = getLogger('Server.ManagementMcpServer');
@@ -136,7 +136,10 @@ export async function createManagementMcpServer(
     }
     const { grantedScopes } = authentication.context;
     return createApiKeyManagementMcpServer(
-        { ...authentication.context, grantedScopes: grantedScopes && expandIssuable(grantedScopes.filter(isEnvironmentScopeSelector)) },
+        {
+            ...authentication.context,
+            grantedScopes: grantedScopes && expandIssuable((grantedScopes as ScopeSelector[]).filter((scope) => scope.startsWith('environment:')))
+        },
         requestBody,
         protocolEra
     );
