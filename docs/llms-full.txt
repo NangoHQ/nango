@@ -267,6 +267,9 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
   <Card title="Build custom tools" icon="wand-magic-sparkles" href="/guides/functions/functions-guide">
     Write action functions for tools the catalog doesn't have.
   </Card>
+  <Card title="Sync data" icon="arrows-rotate" href="/guides/functions/syncs/sync-functions">
+    Keep external API data fresh in your app with sync functions.
+  </Card>
 </CardGroup>
 
 <Tip>**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).</Tip>
