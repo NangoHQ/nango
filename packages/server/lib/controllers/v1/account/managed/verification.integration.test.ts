@@ -353,13 +353,15 @@ describe(`POST ${route}`, () => {
         const { productTracking } = await import('@nangohq/shared');
         const previous = envs.SIGNUP_AD_CONTEXT_ENABLED;
         const previousCookieName = envs.SIGNUP_AD_CONTEXT_COOKIE_NAME;
+        const previousVersion = envs.SIGNUP_AD_CONTEXT_VERSION;
+        envs.SIGNUP_AD_CONTEXT_VERSION = 2;
         envs.SIGNUP_AD_CONTEXT_ENABLED = true;
         envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_test';
         const track = vi.spyOn(productTracking, 'track');
         const email = `${nanoid()}@example.com`;
         const now = Date.now();
         const context = {
-            version: 1,
+            version: 2,
             marketing: true,
             gpc: false,
             method: 'implied',
@@ -367,6 +369,7 @@ describe(`POST ${route}`, () => {
             lgpd: false,
             ccpa: true,
             observedAt: now,
+            google: { clickType: 'wbraid', clickId: 'synthetic_google', clickAt: now - 1000 },
             opprefAt: now - 60_000,
             oppref: 'synthetic_google_flow'
         };
@@ -380,6 +383,9 @@ describe(`POST ${route}`, () => {
                 expect.objectContaining({
                     name: 'auth:account_create',
                     eventProperties: expect.objectContaining({
+                        is_signup_creator_internal: false,
+                        advertising_google_click_type: 'wbraid',
+                        advertising_google_click_id: 'synthetic_google',
                         advertising_oppref: 'synthetic_google_flow',
                         advertising_consent_method: 'implied'
                     })
@@ -391,6 +397,7 @@ describe(`POST ${route}`, () => {
         } finally {
             envs.SIGNUP_AD_CONTEXT_ENABLED = previous;
             envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previousCookieName;
+            envs.SIGNUP_AD_CONTEXT_VERSION = previousVersion;
             track.mockRestore();
         }
     });

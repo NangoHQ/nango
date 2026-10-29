@@ -394,7 +394,14 @@ export const analyticsEventCatalogue = defineCatalogue({
             advertising_consent_timestamp: z.string().optional(),
             advertising_oppref_click_timestamp: z.string().optional(),
             advertising_fbc: z.string().optional(),
-            advertising_oppref: z.string().optional()
+            advertising_oppref: z.string().optional(),
+            // Derived from the server signup identity, never browser attribution metadata.
+            is_signup_creator_internal: z.boolean().optional(),
+            advertising_google_click_type: z.enum(['gclid', 'gbraid', 'wbraid']).optional(),
+            advertising_google_click_id: z.string().optional(),
+            advertising_google_click_timestamp: z.string().optional(),
+            advertising_google_ad_user_data: z.literal('granted').optional(),
+            advertising_google_ad_personalization: z.literal('granted').optional()
         })
     },
     'auth:user_create': {

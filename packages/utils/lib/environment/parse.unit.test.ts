@@ -43,6 +43,12 @@ describe('parse', () => {
         expect(() => parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_COOKIE_NAME: name })).toThrowError(/SIGNUP_AD_CONTEXT_COOKIE_NAME/);
     });
 
+    it('defaults the shared payload capability to legacy emission and requires an explicit supported version', () => {
+        expect(parseEnvs(ENVS, {}).SIGNUP_AD_CONTEXT_VERSION).toBe(1);
+        expect(parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_VERSION: '2' }).SIGNUP_AD_CONTEXT_VERSION).toBe(2);
+        expect(() => parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_VERSION: '3' })).toThrowError(/SIGNUP_AD_CONTEXT_VERSION/);
+    });
+
     it('parses the local Nango user id as a non-negative integer', () => {
         expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '0' }).LOCAL_NANGO_USER_ID).toBe(0);
         expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '1e2' }).LOCAL_NANGO_USER_ID).toBe(100);

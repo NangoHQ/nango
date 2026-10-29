@@ -753,6 +753,12 @@ const ENVS_SHAPE = z.object({
                 .regex(/^[A-Za-z0-9_]{1,64}$/)
                 .optional()
         ),
+    // Shared payload capability; readers always accept v1/v2, but v1 emits only released matching fields.
+    SIGNUP_AD_CONTEXT_VERSION: z
+        .enum(['1', '2'])
+        .optional()
+        .default('1')
+        .transform((v) => (v === '2' ? (2 as const) : (1 as const))),
 
     // PostHog
     PUBLIC_POSTHOG_KEY: z.string().optional(),
