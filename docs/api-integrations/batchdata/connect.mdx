@@ -1,0 +1,33 @@
+---
+title: 'BatchData - How do I link my account?'
+sidebarTitle: 'BatchData'
+---
+
+## Overview
+
+To authenticate with BatchData, you need:
+
+1. **API Token** - A token that lets Nango call the BatchData API on behalf of your account.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A BatchData account. You can sign up at [batchdata.io](https://batchdata.io).
+
+### Step 1: Create an API token
+
+1. Log in to your BatchData account.
+2. Create an API token as described in the [BatchData API documentation](https://developer.batchdata.com/), and copy it.
+
+<Note>
+BatchData requests are sent with the header `Authorization: Bearer <token>`. Nango adds this header for you.
+</Note>
+
+### Step 2: Enter your token in the Connect UI
+
+1. Open the form where you need to authenticate with BatchData.
+2. Enter your **API Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to BatchData.
