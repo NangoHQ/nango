@@ -52,5 +52,9 @@ function runIfPresent(scriptName) {
 
 function run(scriptName) {
     console.log(`Running ${scriptName} for ${packageName}`);
-    execFileSync('npm', ['run', '-w', packageName, scriptName], { stdio: 'inherit' });
+    // npm is a .cmd shim on Windows, which execFile cannot launch without a shell.
+    execFileSync('npm', ['run', '-w', packageName, scriptName], {
+        stdio: 'inherit',
+        shell: process.platform === 'win32'
+    });
 }
