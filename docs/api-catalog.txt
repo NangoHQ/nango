@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1084
+Provider count: 1085
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -121,6 +121,7 @@ URL patterns:
 | `basecamp` | Basecamp | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/basecamp.md) | [connect](https://nango.dev/docs/integrations/all/basecamp/connect.md) |  | productivity |
 | `baserow` | Baserow | API_KEY | [docs](https://nango.dev/docs/api-integrations/baserow.md) | [connect](https://nango.dev/docs/api-integrations/baserow/connect.md) |  | productivity, dev-tools |
 | `basin` | Basin | API_KEY | [docs](https://nango.dev/docs/api-integrations/basin.md) | [connect](https://nango.dev/docs/api-integrations/basin/connect.md) |  | dev-tools |
+| `batchdata` | BatchData | API_KEY | [docs](https://nango.dev/docs/api-integrations/batchdata.md) | [connect](https://nango.dev/docs/api-integrations/batchdata/connect.md) |  | other |
 | `battlenet` | Battle.net | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/battlenet.md) |  |  | gaming |
 | `beehiiv` | Beehiiv | API_KEY | [docs](https://nango.dev/docs/integrations/all/beehiiv.md) |  |  | communication, marketing |
 | `beeline-vms` | Beeline VMS | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/beeline-vms.md) | [connect](https://nango.dev/docs/api-integrations/beeline-vms/connect.md) |  | hr |

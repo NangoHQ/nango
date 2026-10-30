@@ -1156,6 +1156,7 @@
               "integrations/all/basecamp",
               "api-integrations/baserow",
               "api-integrations/basin",
+              "api-integrations/batchdata",
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
               "api-integrations/beeline-vms",
