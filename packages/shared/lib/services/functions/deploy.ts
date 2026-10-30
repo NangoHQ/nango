@@ -4,6 +4,7 @@ import { Err, Ok } from '@nangohq/utils';
 import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
 import remoteFileService from '../file/remote.service.js';
+import { functionArtifactPaths } from './artifacts.js';
 import { scheduleInstances } from './lifecycle/schedule.js';
 import * as functionConfigService from './models/functions.js';
 import * as functionInstanceService from './models/instances.js';
@@ -139,19 +140,17 @@ export async function deployBundle({
                 throw versionHash.error;
             }
             const version = versionHash.value;
-            const destinationBase = `${environmentName}/account/${accountId}/environment/${environmentId}/config/${artifact.integrationId}/functions/${artifact.name}/${version}`;
-            const localBase = `${artifact.integrationId}/functions/${artifact.name}`;
+            const paths = functionArtifactPaths({
+                environmentName,
+                accountId,
+                environmentId,
+                integrationId: artifact.integrationId,
+                name: artifact.name,
+                version
+            });
             const [fileLocation, sourceFileLocation] = await Promise.all([
-                remoteFileService.upload({
-                    content: artifact.fileBody.js,
-                    destinationPath: `${destinationBase}.js`,
-                    destinationLocalFileName: `${localBase}.js`
-                }),
-                remoteFileService.upload({
-                    content: artifact.fileBody.ts,
-                    destinationPath: `${destinationBase}.ts`,
-                    destinationLocalFileName: `${localBase}.ts`
-                })
+                remoteFileService.upload({ content: artifact.fileBody.js, ...paths.js }),
+                remoteFileService.upload({ content: artifact.fileBody.ts, ...paths.ts })
             ]);
 
             if (!fileLocation || !sourceFileLocation) {

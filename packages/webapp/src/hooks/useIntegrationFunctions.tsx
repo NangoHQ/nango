@@ -128,7 +128,7 @@ const INTEGRATION_TEMPLATES_RAW_URL = 'https://raw.githubusercontent.com/NangoHQ
 interface UseGetTemplateFunctionCodeArgs {
     provider: string;
     name: string;
-    type: FunctionType;
+    type: FunctionType | undefined;
     enabled?: boolean;
 }
 
@@ -136,13 +136,14 @@ export function useGetTemplateFunctionCode({ provider, name, type, enabled = tru
     return useQuery<string, Error>({
         queryKey: ['template-code', provider, type, name],
         queryFn: async () => {
+            if (!type) throw new Error('Template function type is required');
             const res = await fetch(`${INTEGRATION_TEMPLATES_RAW_URL}/main/${functionRepoPath({ provider, name, type })}`);
             if (!res.ok) {
                 throw new Error(`Failed to load template source (${res.status})`);
             }
             return res.text();
         },
-        enabled: enabled && Boolean(provider && name),
+        enabled: enabled && Boolean(provider && name && type),
         retry: false,
         staleTime: 5 * 60 * 1000
     });

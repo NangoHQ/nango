@@ -41,7 +41,7 @@ async function seedTool(toolName = name) {
     await db
         .knex('customer_keys')
         .where({ id: seed.apiKey.id })
-        .update({ scopes: ['environment:functions:invocations', 'environment:actions:execute'] });
+        .update({ scopes: ['environment:tools:call'] });
     const integration = await seeders.createConfigSeed(seed.env, 'github', 'github');
     const connection = await seeders.createConnectionSeed({ env: seed.env, provider: integration.unique_key, connectionId: randomUUID() });
     const [fn] = (
@@ -100,8 +100,8 @@ describe(`POST ${route}`, () => {
         api.server.close();
     });
 
-    it.each([['environment:functions:invocations'], ['environment:actions:execute'], ['environment:functions:read']])(
-        'requires authentication and both scopes when the key only has %s',
+    it.each([['environment:functions:invocations'], ['environment:functions:read']])(
+        'requires authentication and environment:tools:call when the key only has %s',
         async (scope) => {
             const seed = await seedTool();
             shouldBeProtected(await api.fetch(route, { method: 'POST', params: seed.params, body: { input } }));
@@ -115,6 +115,17 @@ describe(`POST ${route}`, () => {
             expect(Orchestrator.prototype.triggerAction).not.toHaveBeenCalled();
         }
     );
+
+    it.each([['environment:actions:execute'], ['environment:actions:*']])('accepts a key holding the old scope name %s', async (scope) => {
+        const seed = await seedTool();
+        await db
+            .knex('customer_keys')
+            .where({ id: seed.apiKey.id })
+            .update({ scopes: [scope] });
+        const response = await api.fetch(route, { method: 'POST', token: seed.apiKey.secret, params: seed.params, body: { input } });
+        expect(response.res.status).toBe(200);
+        expect(Orchestrator.prototype.invokeFunction).toHaveBeenCalledOnce();
+    });
 
     it('invokes a function and returns its output directly', async () => {
         const seed = await seedTool();

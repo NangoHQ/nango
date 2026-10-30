@@ -4,7 +4,7 @@ import knex from 'knex';
 
 import { projectRoot, retry } from '@nangohq/utils';
 
-import { defaultSchema, getDbConfig } from './getConfig.js';
+import { defaultSchema, getDbConfig, getDbConfigIfSet } from './getConfig.js';
 
 import type { Knex } from 'knex';
 
@@ -68,7 +68,7 @@ export const schema = (): Knex.QueryBuilder => db.knex.queryBuilder();
 
 export const dbNamespace = '_nango_';
 
-export { getDbConfig };
+export { getDbConfig, getDbConfigIfSet };
 
 export type { Knex };
 
