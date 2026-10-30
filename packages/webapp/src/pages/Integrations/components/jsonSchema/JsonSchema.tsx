@@ -40,16 +40,11 @@ const FieldList: React.FC<{ schema: JSONSchema7; depth: number }> = ({ schema, d
 };
 
 const Field: React.FC<{ name: string; schema: JSONSchema7; isRequired: boolean; depth: number }> = ({ name, schema, isRequired, depth }) => {
-    const isArray = isArraySchema(schema);
-    const itemSchema = isArray ? ((schema.items as JSONSchema7 | undefined) ?? {}) : schema;
+    const { itemSchema, arrayDepth } = unwrapArrays(schema);
     const description = schema.description ?? itemSchema.description;
     const defaultValue = formatDefault(schema.default ?? itemSchema.default);
     const enumValues = isPrimitiveSchema(itemSchema) ? itemSchema.enum : undefined;
-    const type = enumValues
-        ? `${String(itemSchema.type)}${isArray ? '[]' : ''}`
-        : itemSchema.type || itemSchema.oneOf || itemSchema.anyOf
-          ? typeToString(itemSchema, isArray)
-          : 'any';
+    const type = formatType(itemSchema, arrayDepth, Boolean(enumValues));
     const nested = depth < MAX_DEPTH ? getNestedSchemas(itemSchema) : [];
 
     return (
@@ -100,6 +95,25 @@ const NestedFields: React.FC<{ schemas: JSONSchema7[]; isVariants: boolean; dept
         </Collapsible.Root>
     );
 };
+
+function unwrapArrays(schema: JSONSchema7): { itemSchema: JSONSchema7; arrayDepth: number } {
+    let itemSchema = schema;
+    let arrayDepth = 0;
+    while (isArraySchema(itemSchema)) {
+        const { items } = itemSchema;
+        itemSchema = items && typeof items === 'object' && !Array.isArray(items) ? items : {};
+        arrayDepth++;
+    }
+    return { itemSchema, arrayDepth };
+}
+
+function formatType(schema: JSONSchema7, arrayDepth: number, isEnum: boolean): string {
+    const baseType = isEnum ? String(schema.type) : schema.type || schema.oneOf || schema.anyOf ? typeToString(schema, false) : 'any';
+    if (arrayDepth === 0) {
+        return baseType;
+    }
+    return `${baseType.includes(' | ') ? `(${baseType})` : baseType}${'[]'.repeat(arrayDepth)}`;
+}
 
 function getNestedSchemas(schema: JSONSchema7): JSONSchema7[] {
     if (isOneOfSchema(schema) || isAnyOfSchema(schema)) {
