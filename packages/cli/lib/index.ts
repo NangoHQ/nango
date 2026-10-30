@@ -648,6 +648,7 @@ program
     .argument('<name>', 'Function name')
     .option('-c, --catalog', 'Pull from the public catalog')
     .option('-e, --env <environment>', 'Pull from a deployed function in this environment')
+    .option('-t, --target <integration>', 'With --catalog, the integration to write the function for, when its name differs from the provider')
     .option('-s, --sync', 'Disambiguate to a sync when multiple functions share the name')
     .option('-a, --action', 'Disambiguate to an action when multiple functions share the name')
     .option('--on-event', 'Disambiguate to an on-event script when multiple functions share the name')
@@ -657,6 +658,7 @@ program
         const opts = this.opts<{
             catalog?: boolean;
             env?: string;
+            target?: string;
             sync?: boolean;
             action?: boolean;
             onEvent?: boolean;
@@ -671,6 +673,14 @@ program
             console.error(chalk.gray('Examples:'));
             console.error(chalk.gray('  nango pull github list-repos --catalog'));
             console.error(chalk.gray('  nango pull github list-repos --env dev'));
+            process.exitCode = 1;
+            return;
+        }
+
+        if (opts.target && !opts.catalog) {
+            console.error(chalk.red('--target can only be used with --catalog.'));
+            console.error(chalk.gray('Example:'));
+            console.error(chalk.gray('  nango pull github list-repos --catalog --target my-github'));
             process.exitCode = 1;
             return;
         }
@@ -696,7 +706,7 @@ program
 
         let success: boolean;
         if (opts.catalog) {
-            success = await pullFromCatalog(baseOptions);
+            success = await pullFromCatalog({ ...baseOptions, target: opts.target });
         } else {
             let environmentName: string;
             try {
