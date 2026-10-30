@@ -15,6 +15,9 @@
             "path": "../feature-flags"
         },
         {
+            "path": "../internal-auth"
+        },
+        {
             "path": "../kms"
         },
         {
