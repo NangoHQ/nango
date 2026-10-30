@@ -1550,6 +1550,8 @@ Nango-managed OAuth apps can be used in production. Whether to use a Nango-manag
 
 These tradeoffs apply to shared OAuth apps from any auth platform, not just Nango.
 
+To make registering your own app easier, Nango maintains step-by-step setup guides for most OAuth APIs in [APIs & Integrations](/integrations/overview), for example [Gmail](/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app).
+
 ### APIs with a Nango-managed OAuth app
 
 We add more OAuth apps every week. If an API you need is missing, please contact us and we will do our best to add it.
@@ -1632,8 +1634,6 @@ We add more OAuth apps every week. If an API you need is missing, please contact
 - [Zoho People](/integrations/all/zoho-people)
 - [Zoom](/api-integrations/zoom)
 </Accordion>
-
-To make registering your own app easier, Nango maintains step-by-step setup guides for most OAuth APIs in [APIs & Integrations](/integrations/overview), for example [Gmail](/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app).
 
 ## Related guides
 
