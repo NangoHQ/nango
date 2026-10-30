@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1084
+Provider count: 1085
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -223,6 +223,7 @@ URL patterns:
 | `command-alkon` | Command Alkon | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/command-alkon.md) | [connect](https://nango.dev/docs/api-integrations/command-alkon/connect.md) |  | erp |
 | `commercetools` | Commercetools | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/commercetools.md) | [connect](https://nango.dev/docs/integrations/all/commercetools/connect.md) |  | e-commerce |
 | `companycam` | CompanyCam | API_KEY | [docs](https://nango.dev/docs/integrations/all/companycam.md) |  |  | productivity |
+| `companyenrich` | CompanyEnrich | API_KEY | [docs](https://nango.dev/docs/api-integrations/companyenrich.md) | [connect](https://nango.dev/docs/api-integrations/companyenrich/connect.md) | [setup](https://nango.dev/docs/api-integrations/companyenrich/connect.md) | crm, marketing |
 | `conductorone` | ConductorOne | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/conductorone.md) | [connect](https://nango.dev/docs/api-integrations/conductorone/connect.md) |  | productivity |
 | `confluence` | Confluence | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/confluence.md) |  | [setup](https://nango.dev/docs/api-integrations/confluence/how-to-register-your-own-confluence-api-oauth-app.md) | knowledge-base, popular |
 | `confluence-basic` | Confluence (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/confluence-basic.md) | [connect](https://nango.dev/docs/integrations/all/confluence-basic/connect.md) |  | knowledge-base |

@@ -6566,6 +6566,30 @@ companycam:
             title: Access Token
             description: The Access Token for your CompanyCam company
 
+companyenrich:
+    display_name: CompanyEnrich
+    categories:
+        - crm
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.companyenrich.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /me
+    docs: https://nango.dev/docs/api-integrations/companyenrich
+    docs_connect: https://nango.dev/docs/api-integrations/companyenrich/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/companyenrich/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your CompanyEnrich API key, without the Bearer prefix.
+            doc_section: '#step-1-get-your-api-key'
+
 constant-contact:
     display_name: Constant Contact
     categories:
