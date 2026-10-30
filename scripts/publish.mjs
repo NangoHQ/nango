@@ -137,13 +137,19 @@ async function npmPublish(packageName) {
     });
 }
 
+const licensePackageDirs = {
+    '@nangohq/frontend': 'packages/frontend',
+    '@nangohq/node': 'packages/node-client'
+};
+
 async function runPublishPreparation(packageName) {
     // .npmrc sets ignore-scripts, and publish passes --ignore-scripts, so the
-    // prepack lifecycle does not run. Copy LICENSE explicitly for the two
+    // prepack lifecycle does not run. Copy LICENSE directly for the two
     // packages that ship it.
-    if (packageName === '@nangohq/frontend' || packageName === '@nangohq/node') {
+    const licenseDir = licensePackageDirs[packageName];
+    if (licenseDir) {
         echo(chalk.grey(`  ${figures.tick} Copying LICENSE into ${packageName}`));
-        await $`npm run -w "${packageName}" prepack`;
+        await fs.copyFile('LICENSE', `${licenseDir}/LICENSE`);
     }
 
     if (packageName === '@nangohq/node') {

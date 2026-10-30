@@ -8,7 +8,7 @@
     "scripts": {
         "build": "tsup lib/index.ts --format cjs",
         "prepublishOnly": "npm run build",
-        "prepack": "cp ../../LICENSE ./LICENSE"
+        "prepack": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\""
     },
     "exports": {
         ".": {
