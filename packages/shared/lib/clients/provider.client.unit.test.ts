@@ -19,9 +19,11 @@ vi.mock('../services/proxy/outbound-policy.js', async (importOriginal) => {
     };
 });
 
-async function withTokenServer(fn: (tokenUrl: string, bodies: string[]) => Promise<void>): Promise<void> {
+async function withTokenServer(fn: (tokenUrl: string, bodies: string[], paths: string[]) => Promise<void>): Promise<void> {
     const bodies: string[] = [];
+    const paths: string[] = [];
     const server = http.createServer((req, res) => {
+        paths.push(req.url ?? '');
         let body = '';
         req.on('data', (chunk) => (body += chunk));
         req.on('end', () => {
@@ -33,7 +35,7 @@ async function withTokenServer(fn: (tokenUrl: string, bodies: string[]) => Promi
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
     const { port } = server.address() as AddressInfo;
     try {
-        await fn(`http://127.0.0.1:${port}/tenant/oauth2/v2.0/token`, bodies);
+        await fn(`http://127.0.0.1:${port}/tenant/oauth2/v2.0/token`, bodies, paths);
     } finally {
         await new Promise<void>((resolve) => server.close(() => resolve()));
     }
@@ -70,6 +72,24 @@ describe('microsoft-admin client_credentials', () => {
             } as unknown as DBConnectionDecrypted;
             await providerClient.refreshToken(provider, config, connection);
             expect(new URLSearchParams(bodies[0]).get('scope')).toBe('https://graph.microsoft.com/.default');
+        });
+    });
+});
+
+describe.each(['sharepoint-online', 'one-drive'])('%s refresh', (providerKey) => {
+    // A token_url templated on connectionConfig must be interpolated before the refresh POST, as it is on token creation.
+    it('POSTs to the token_url interpolated from the connection config', async () => {
+        await withTokenServer(async (tokenUrl, _bodies, paths) => {
+            const provider = {
+                auth_mode: 'OAUTH2',
+                token_url: tokenUrl.replace('/tenant/', '/${connectionConfig.tenantId}/')
+            } as ProviderOAuth2;
+            const connection = {
+                credentials: { type: 'OAUTH2', access_token: 'old', refresh_token: 'refresh', raw: {} },
+                connection_config: { tenantId: 'contoso.onmicrosoft.com' }
+            } as unknown as DBConnectionDecrypted;
+            await providerClient.refreshToken(provider, { ...config, unique_key: providerKey, provider: providerKey }, connection);
+            expect(paths).toEqual(['/contoso.onmicrosoft.com/oauth2/v2.0/token']);
         });
     });
 });
