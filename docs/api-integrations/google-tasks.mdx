@@ -12,6 +12,9 @@ Connect to Google Tasks with Nango and see data flow in 2 minutes.
     <Step title="Create an integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google Tasks_.
 
+    <Note>
+      Nango has a [Nango-managed OAuth app](/guides/auth/auth-guide#nango-managed-oauth-apps) you can use in development and production. Select it when you create the integration.
+    </Note>
     </Step>
     <Step title="Authorize Google Tasks">
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Google. Later, you'll let your users do the same directly from your app.
@@ -71,7 +74,7 @@ Nango-maintained guides for common use cases.
 Register an OAuth app with Google and obtain credentials to connect it to Nango.
 
 - [Google App & Security Review](/api-integrations/google-shared/google-security-review)
-Pass Google's OAuth app verification to go to production
+Pass Google's OAuth app verification to go to production with your own OAuth app (not needed with the Nango-managed app)
 
 Official docs: [Google Tasks API](https://developers.google.com/tasks/api/reference/rest)
 
