@@ -138,6 +138,14 @@ async function npmPublish(packageName) {
 }
 
 async function runPublishPreparation(packageName) {
+    // .npmrc sets ignore-scripts, and publish passes --ignore-scripts, so the
+    // prepack lifecycle does not run. Copy LICENSE explicitly for the two
+    // packages that ship it.
+    if (packageName === '@nangohq/frontend' || packageName === '@nangohq/node') {
+        echo(chalk.grey(`  ${figures.tick} Copying LICENSE into ${packageName}`));
+        await $`npm run -w "${packageName}" prepack`;
+    }
+
     if (packageName === '@nangohq/node') {
         echo(chalk.grey(`  ${figures.tick} Building ${packageName}`));
         await $`npm run -w "${packageName}" build`;
