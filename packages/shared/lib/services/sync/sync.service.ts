@@ -386,6 +386,18 @@ export const softDeleteSync = async (syncId: string, trx: Knex | Knex.Transactio
     }
 };
 
+export const softDeleteSyncs = async (syncIds: string[], trx: Knex | Knex.Transaction = db.knex): Promise<Result<string[]>> => {
+    if (syncIds.length === 0) {
+        return Ok([]);
+    }
+    try {
+        await trx.from<Sync>(TABLE).whereIn('id', syncIds).where({ deleted: false }).update({ deleted: true, deleted_at: new Date() });
+        return Ok(syncIds);
+    } catch (err) {
+        return Err(new Error(`Failed to soft delete syncs with ids ${syncIds.join(', ')}: ${stringifyError(err)}`));
+    }
+};
+
 export const undeleteSync = async ({ connectionId, name, variant }: { connectionId: number; name: string; variant: string }): Promise<Result<Sync>> => {
     try {
         // Return existing non-deleted sync if one exists
