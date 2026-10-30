@@ -36,6 +36,7 @@ import type {
 type LegacyPackage = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'deployMode'>;
 type FunctionsBundle = PostFunctionDeploymentBundle['Body'];
 type Deployment = { kind: 'legacy'; package: LegacyPackage } | { kind: 'functions'; bundle: FunctionsBundle };
+type DeploymentPlan = [Deployment, ...Deployment[]];
 type DeploymentConfirmation = { kind: 'legacy'; value: ScriptDifferences } | { kind: 'functions'; value: PostFunctionDeploymentBundlePreview['Success'] };
 
 export async function deploy({
@@ -52,7 +53,7 @@ export async function deploy({
     const { env, version, debug } = options;
     const spinnerFactory = new Spinner({ interactive });
 
-    let deployment: Deployment;
+    let plan: DeploymentPlan;
     const spinnerPackage = spinnerFactory.start('Packaging');
     try {
         const def = await parseIntegrationDefinitions({ fullPath, debug });
@@ -90,7 +91,7 @@ export async function deploy({
                 console.log(chalk.red(postData.error.message));
                 return Err('no_data');
             }
-            deployment = { kind: 'legacy', package: postData.value };
+            plan = [{ kind: 'legacy', package: postData.value }];
         } else {
             if (options.version) {
                 spinnerPackage.fail();
@@ -104,7 +105,7 @@ export async function deploy({
                 console.log(chalk.red(bundle.error.message));
                 return Err('no_data');
             }
-            deployment = { kind: 'functions', bundle: bundle.value };
+            plan = [{ kind: 'functions', bundle: bundle.value }];
         }
 
         spinnerPackage.succeed();
@@ -124,27 +125,16 @@ export async function deploy({
 
     // Check remote state
     const spinnerState = spinnerFactory.start(`Acquiring remote state ${chalk.gray(`(${new URL(hostport).origin})`)}`);
-    let confirmation: DeploymentConfirmation;
+    const confirmations: DeploymentConfirmation[] = [];
     try {
-        if (deployment.kind === 'legacy') {
-            const confirmationRes = await postLegacyConfirmation({
-                hostport,
-                body: { ...deployment.package, reconcile: false, debug, sdkVersion }
-            });
+        for (const deployment of plan) {
+            const confirmationRes = await previewDeployment({ deployment, hostport, debug, sdkVersion });
             if (confirmationRes.isErr()) {
                 spinnerState.fail();
                 console.log(chalk.red(confirmationRes.error.message));
                 return Err(confirmationRes.error);
             }
-            confirmation = { kind: 'legacy', value: confirmationRes.value };
-        } else {
-            const confirmationRes = await previewFunctionsDeployment({ hostport, body: deployment.bundle });
-            if (confirmationRes.isErr()) {
-                spinnerState.fail();
-                console.log(chalk.red(confirmationRes.error.message));
-                return Err(confirmationRes.error);
-            }
-            confirmation = { kind: 'functions', value: confirmationRes.value };
+            confirmations.push(confirmationRes.value);
         }
         spinnerState.succeed();
     } catch {
@@ -154,53 +144,85 @@ export async function deploy({
 
     const deploySource = resolveDeploySource();
     const autoconfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] === 'true' || options.autoConfirm;
-    const confirmed =
-        confirmation.kind === 'legacy'
-            ? await handleLegacyConfirmation({ autoconfirm, allowDestructive: options.allowDestructive || false, confirmation: confirmation.value })
-            : await handleFunctionsConfirmation({
-                  autoconfirm,
-                  allowDestructive: options.allowDestructive || false,
-                  confirmation: confirmation.value
-              });
-    if (confirmed.isErr()) {
-        return Err('not_confirmed');
+    for (const confirmation of confirmations) {
+        const confirmed = await handleConfirmation({ autoconfirm, allowDestructive: options.allowDestructive || false, confirmation });
+        if (confirmed.isErr()) {
+            return Err('not_confirmed');
+        }
     }
 
     console.log('');
     // Actual deploy
-    const total =
-        deployment.kind === 'legacy'
-            ? deployment.package.flowConfigs.length + (deployment.package.onEventScriptsByProvider?.reduce((v, t) => v + t.scripts.length, 0) || 0)
-            : deployment.bundle.functions.length;
+    const total = plan.reduce(
+        (count, deployment) =>
+            count +
+            (deployment.kind === 'legacy'
+                ? deployment.package.flowConfigs.length + (deployment.package.onEventScriptsByProvider?.reduce((v, t) => v + t.scripts.length, 0) || 0)
+                : deployment.bundle.functions.length),
+        0
+    );
     const spinnerDeploy = spinnerFactory.start(`Deploying ${total} functions`);
     try {
-        if (deployment.kind === 'legacy') {
-            const deployRes = await postLegacyDeploy({
-                hostport,
-                body: { ...deployment.package, reconcile: true, debug, nangoYamlBody, sdkVersion, source: deploySource }
-            });
+        const messages: string[] = [];
+        for (const deployment of plan) {
+            const deployRes = await executeDeployment({ deployment, hostport, debug, nangoYamlBody, sdkVersion, source: deploySource });
             if (deployRes.isErr()) {
                 spinnerDeploy.fail();
                 console.log(chalk.red(deployRes.error.message));
                 return Err('failed_to_deploy');
             }
-            spinnerDeploy.succeed('Deployed');
-            console.log(chalk.green(deployRes.value));
-        } else {
-            const deployRes = await deployFunctions({ hostport, body: deployment.bundle });
-            if (deployRes.isErr()) {
-                spinnerDeploy.fail();
-                console.log(chalk.red(deployRes.error.message));
-                return Err('failed_to_deploy');
-            }
-            spinnerDeploy.succeed('Deployed');
-            console.log(chalk.green(functionsDeploymentMessage(deployRes.value)));
+            messages.push(deployRes.value);
+        }
+        spinnerDeploy.succeed('Deployed');
+        for (const message of messages) {
+            console.log(chalk.green(message));
         }
         return Ok(true);
     } catch {
         spinnerDeploy.fail();
         return Err('failed');
     }
+}
+
+async function previewDeployment({
+    deployment,
+    hostport,
+    debug,
+    sdkVersion
+}: {
+    deployment: Deployment;
+    hostport: string;
+    debug: boolean;
+    sdkVersion: string;
+}): Promise<Result<DeploymentConfirmation>> {
+    if (deployment.kind === 'legacy') {
+        const result = await postLegacyConfirmation({ hostport, body: { ...deployment.package, reconcile: false, debug, sdkVersion } });
+        return result.map((value): DeploymentConfirmation => ({ kind: 'legacy', value }));
+    }
+    const result = await previewFunctionsDeployment({ hostport, body: deployment.bundle });
+    return result.map((value): DeploymentConfirmation => ({ kind: 'functions', value }));
+}
+
+async function executeDeployment({
+    deployment,
+    hostport,
+    debug,
+    nangoYamlBody,
+    sdkVersion,
+    source
+}: {
+    deployment: Deployment;
+    hostport: string;
+    debug: boolean;
+    nangoYamlBody: string;
+    sdkVersion: string;
+    source: 'standalone' | 'repo';
+}): Promise<Result<string>> {
+    if (deployment.kind === 'legacy') {
+        return postLegacyDeploy({ hostport, body: { ...deployment.package, reconcile: true, debug, nangoYamlBody, sdkVersion, source } });
+    }
+    const result = await deployFunctions({ hostport, body: deployment.bundle });
+    return result.map(functionsDeploymentMessage);
 }
 
 function getDeploymentKind({
@@ -682,18 +704,9 @@ function functionsDeploymentMessage(result: PostFunctionDeploymentBundle['Succes
     return `Successfully deployed the functions: \r\n${deployed.map((func) => `- ${func.integrationId} → ${func.name}`).join('\r\n')}`;
 }
 
-/**
- * Handle state, display plan and eventually ask for confirmation if destructive
- */
-async function handleLegacyConfirmation({
-    autoconfirm,
-    allowDestructive,
-    confirmation
-}: {
-    autoconfirm: boolean;
-    allowDestructive: boolean;
-    confirmation: PostDeployConfirmation['Success'];
-}): Promise<Result<boolean>> {
+type ConfirmationPolicy = { requiresConfirmation: false; message?: string } | { requiresConfirmation: true; ciMessage: string; abortMessage: string };
+
+function renderLegacyConfirmation(confirmation: PostDeployConfirmation['Success']): ConfirmationPolicy {
     const {
         newSyncs,
         updatedSyncs,
@@ -815,57 +828,17 @@ async function handleLegacyConfirmation({
     console.log(columns);
     console.log('');
 
-    const shouldConfirmDestructive = deletedSyncsConnectionsCount > 0 || deletedModels.length > 0;
-    if (!shouldConfirmDestructive) {
-        console.log(chalk.grey('No sync deleted with active connections, proceeding without confirmation'));
-
-        return Ok(true);
+    if (deletedSyncsConnectionsCount > 0 || deletedModels.length > 0) {
+        return {
+            requiresConfirmation: true,
+            ciMessage: 'Syncs/Actions were not deployed. Confirm the deploy by passing the --auto-confirm flag and --allow-destructive flag. Exiting',
+            abortMessage: 'Deployed aborted. Exiting'
+        };
     }
-
-    if (autoconfirm && !shouldConfirmDestructive) {
-        console.log(chalk.yellow('autoconfirm flag is on, proceeding without confirmation'));
-
-        return Ok(true);
-    } else if (autoconfirm && shouldConfirmDestructive && allowDestructive) {
-        console.log(chalk.yellow('allowDestructive flag is on, proceeding without confirmation'));
-
-        return Ok(true);
-    }
-
-    // Can't do anything here
-    if (isCI) {
-        console.log(
-            chalk.red(
-                `Syncs/Actions were not deployed. Confirm the deploy by passing the --auto-confirm flag${shouldConfirmDestructive ? ' and --allow-destructive flag' : ''}. Exiting`
-            )
-        );
-        return Err('is_ci');
-    }
-
-    try {
-        const wait = await promptly.confirm(`Are you sure you want to continue y/n?`);
-        if (!wait) {
-            console.log(chalk.yellow('Deployed aborted. Exiting'));
-            return Err('not_confirmed');
-        }
-    } catch {
-        console.log('');
-        console.log(chalk.yellow('Deployed aborted. Exiting'));
-        return Err('not_confirmed');
-    }
-
-    return Ok(true);
+    return { requiresConfirmation: false, message: 'No sync deleted with active connections, proceeding without confirmation' };
 }
 
-async function handleFunctionsConfirmation({
-    autoconfirm,
-    allowDestructive,
-    confirmation
-}: {
-    autoconfirm: boolean;
-    allowDestructive: boolean;
-    confirmation: PostFunctionDeploymentBundlePreview['Success'];
-}): Promise<Result<boolean>> {
+function renderFunctionsConfirmation(confirmation: PostFunctionDeploymentBundlePreview['Success']): ConfirmationPolicy {
     const { created, updated, deleted } = confirmation;
 
     console.log('');
@@ -874,7 +847,7 @@ async function handleFunctionsConfirmation({
     if (created.length + updated.length + deleted.length === 0) {
         console.log('');
         console.log(chalk.gray.italic('  No changes'));
-        return Ok(true);
+        return { requiresConfirmation: false };
     } else if (created.length > 0 || deleted.length > 0) {
         console.log('');
         console.log(shortSummaryMessage({ name: 'Functions', newItems: created, deleteItems: deleted }));
@@ -904,8 +877,30 @@ async function handleFunctionsConfirmation({
     );
     console.log('');
 
-    if (deleted.length === 0) {
-        console.log(chalk.grey('No functions deleted, proceeding without confirmation'));
+    if (deleted.length > 0) {
+        return {
+            requiresConfirmation: true,
+            ciMessage: 'Functions were not deployed. Confirm the deploy by passing the --auto-confirm and --allow-destructive flags. Exiting',
+            abortMessage: 'Deploy aborted. Exiting'
+        };
+    }
+    return { requiresConfirmation: false, message: 'No functions deleted, proceeding without confirmation' };
+}
+
+async function handleConfirmation({
+    autoconfirm,
+    allowDestructive,
+    confirmation
+}: {
+    autoconfirm: boolean;
+    allowDestructive: boolean;
+    confirmation: DeploymentConfirmation;
+}): Promise<Result<boolean>> {
+    const policy = confirmation.kind === 'legacy' ? renderLegacyConfirmation(confirmation.value) : renderFunctionsConfirmation(confirmation.value);
+    if (!policy.requiresConfirmation) {
+        if (policy.message) {
+            console.log(chalk.grey(policy.message));
+        }
         return Ok(true);
     }
 
@@ -915,19 +910,19 @@ async function handleFunctionsConfirmation({
     }
 
     if (isCI) {
-        console.log(chalk.red('Functions were not deployed. Confirm the deploy by passing the --auto-confirm and --allow-destructive flags. Exiting'));
+        console.log(chalk.red(policy.ciMessage));
         return Err('is_ci');
     }
 
     try {
         const wait = await promptly.confirm(`Are you sure you want to continue y/n?`);
         if (!wait) {
-            console.log(chalk.yellow('Deploy aborted. Exiting'));
+            console.log(chalk.yellow(policy.abortMessage));
             return Err('not_confirmed');
         }
     } catch {
         console.log('');
-        console.log(chalk.yellow('Deploy aborted. Exiting'));
+        console.log(chalk.yellow(policy.abortMessage));
         return Err('not_confirmed');
     }
 

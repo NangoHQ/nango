@@ -5,6 +5,7 @@ import path from 'node:path';
 import promptly from 'promptly';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import * as cliUtils from '../utils.js';
 import { Ok } from '../utils/result.js';
 import { tsToJsPath } from './compile.js';
 import { parseIntegrationDefinitions } from './definitions.js';
@@ -124,6 +125,7 @@ describe('deploy', () => {
         const output = logOutput(logSpy);
         expect(output).toContain('Legacy scripts and functions cannot be deployed together');
         expect(output).not.toContain('✓ Deployed');
+        expect(fetchMock).not.toHaveBeenCalled();
     });
 
     it('prints only legacy summary rows for a single action deploy', async () => {
@@ -142,6 +144,7 @@ describe('deploy', () => {
         expect(output).toContain('↳ OnEvents');
         expect(output).not.toContain('↳ Functions');
         expect(output).toContain('✓ Deployed');
+        expect(output).toContain('No sync deleted with active connections, proceeding without confirmation');
     });
 
     it.each([
@@ -366,6 +369,7 @@ describe('deploy', () => {
         await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
 
         expect(logOutput(logSpy)).toContain('Error checking functions state:\nPreview failed');
+        expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
     it('prints Function deploy errors', async () => {
@@ -377,6 +381,105 @@ describe('deploy', () => {
         await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
 
         expect(logOutput(logSpy)).toContain('Error deploying functions');
+        expect(logOutput(logSpy)).not.toContain('✓ Deployed');
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not deploy legacy scripts when the preview fails', async () => {
+        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(legacyOnlyParsed));
+        fetchMock.mockResolvedValueOnce(jsonResponse({ error: { code: 'server_error', message: 'Preview failed' } }));
+
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
+
+        expect(result.isErr()).toBe(true);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(logOutput(logSpy)).toContain('Error checking state:\nPreview failed');
+        expect(logOutput(logSpy)).not.toContain('✓ Deployed');
+    });
+
+    it('reports legacy deployment errors', async () => {
+        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(legacyOnlyParsed));
+        fetchMock
+            .mockResolvedValueOnce(jsonResponse(legacyConfirmation))
+            .mockResolvedValueOnce(jsonResponse({ error: { code: 'server_error', message: 'Apply failed' } }));
+
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
+
+        expect(result.isErr()).toBe(true);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(logOutput(logSpy)).toContain('Error deploying:\nApply failed');
+        expect(logOutput(logSpy)).not.toContain('✓ Deployed');
+    });
+
+    it.each([
+        { name: 'a sync with connections', changes: { deletedSyncs: [{ providerConfigKey: 'github', name: 'removed', connections: 1, auto_start: false }] } },
+        { name: 'a model', changes: { deletedModels: ['RemovedModel'] } }
+    ])('requires destructive confirmation when removing $name', async ({ changes }) => {
+        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(legacyOnlyParsed));
+        fetchMock.mockResolvedValueOnce(jsonResponse({ ...legacyConfirmation, ...changes }));
+
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
+
+        expect(result.isErr()).toBe(true);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(logOutput(logSpy)).not.toContain('✓ Deployed');
+    });
+
+    it('deploys legacy destructive changes when confirmation flags are provided', async () => {
+        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(legacyOnlyParsed));
+        fetchMock.mockResolvedValueOnce(jsonResponse({ ...legacyConfirmation, deletedModels: ['RemovedModel'] })).mockResolvedValueOnce(jsonResponse([]));
+
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions({ allowDestructive: true }) });
+
+        expect(result.isOk()).toBe(true);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(promptly.confirm).not.toHaveBeenCalled();
+        expect(logOutput(logSpy)).toContain('allowDestructive flag is on');
+        expect(logOutput(logSpy)).toContain('✓ Deployed');
+    });
+
+    it('explains the required legacy confirmation flags in CI', async () => {
+        vi.spyOn(cliUtils, 'isCI', 'get').mockReturnValue('true');
+        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(legacyOnlyParsed));
+        fetchMock.mockResolvedValueOnce(jsonResponse({ ...legacyConfirmation, deletedModels: ['RemovedModel'] }));
+
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
+
+        expect(result.isErr()).toBe(true);
+        expect(logOutput(logSpy)).toContain(
+            'Syncs/Actions were not deployed. Confirm the deploy by passing the --auto-confirm flag and --allow-destructive flag. Exiting'
+        );
+        expect(promptly.confirm).not.toHaveBeenCalled();
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('prints the legacy abort message when confirmation is declined', async () => {
+        vi.spyOn(cliUtils, 'isCI', 'get').mockReturnValue(undefined);
+        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(legacyOnlyParsed));
+        fetchMock.mockResolvedValueOnce(jsonResponse({ ...legacyConfirmation, deletedModels: ['RemovedModel'] }));
+
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: true, options: deployOptions({ autoConfirm: false }) });
+
+        expect(result.isErr()).toBe(true);
+        expect(logOutput(logSpy)).toContain('Deployed aborted. Exiting');
+        expect(promptly.confirm).toHaveBeenCalledTimes(1);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('preserves the legacy version override in both preview and deployment', async () => {
+        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(legacyOnlyParsed));
+        fetchMock.mockResolvedValueOnce(jsonResponse(legacyConfirmation)).mockResolvedValueOnce(jsonResponse([]));
+
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions({ version: '42' }) });
+
+        expect(result.isOk()).toBe(true);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        const previewRequest = fetchMock.mock.calls[0]?.[1] as RequestInit;
+        const deployRequest = fetchMock.mock.calls[1]?.[1] as RequestInit;
+        const previewBody = JSON.parse(previewRequest.body as string) as PostDeployConfirmation['Body'];
+        const deployBody = JSON.parse(deployRequest.body as string) as PostDeployConfirmation['Body'];
+        expect(previewBody).toMatchObject({ reconcile: false, flowConfigs: [{ version: '42' }] });
+        expect(deployBody).toMatchObject({ reconcile: true, flowConfigs: previewBody.flowConfigs });
     });
 
     it('prints an aborted deployment when function deletions are not allowed', async () => {
@@ -396,6 +499,7 @@ describe('deploy', () => {
         expect(output).toContain('↳ Functions');
         expect(output).toMatch(/Deploy aborted\. Exiting|Functions were not deployed/);
         expect(output).not.toContain('✓ Deployed');
+        expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
     it('prints a successful deployment when function deletions are allowed', async () => {
