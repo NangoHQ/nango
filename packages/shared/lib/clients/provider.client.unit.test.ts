@@ -83,7 +83,12 @@ describe('zoho token url', () => {
         ['Canada', { 'accounts-server': 'https://accounts.zohocloud.ca', extension: 'ca' }, 'https://accounts.zohocloud.ca/oauth/v2/token'],
         ['extension', { 'accounts-server': 'https://accounts.zoho.eu', extension: 'eu' }, 'https://accounts.zoho.eu/oauth/v2/token'],
         ['extension with a bare accounts-server', { 'accounts-server': 'us', extension: 'com' }, 'https://accounts.zoho.com/oauth/v2/token'],
-        ['accounts-server without extension', { 'accounts-server': 'https://accounts.zoho.sa' }, 'https://accounts.zoho.sa/oauth/v2/token']
+        ['accounts-server without extension', { 'accounts-server': 'https://accounts.zoho.sa' }, 'https://accounts.zoho.sa/oauth/v2/token'],
+        [
+            'an inherited property name as extension',
+            { 'accounts-server': 'https://accounts.zoho.com', extension: 'constructor' },
+            'https://accounts.zoho.constructor/oauth/v2/token'
+        ]
     ])('resolves %s', (_, connectionConfig, expected) => {
         expect(resolveZohoTokenUrl(zohoTokenUrl, connectionConfig).href).toBe(expected);
     });

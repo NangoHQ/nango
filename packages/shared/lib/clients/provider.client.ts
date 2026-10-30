@@ -40,7 +40,7 @@ const zohoAccountsHostOverrides: Record<string, string> = {
 
 export function resolveZohoTokenUrl(tokenUrl: string, connectionConfig: Record<string, string> = {}): URL {
     const extension = connectionConfig['extension'];
-    const host = extension ? zohoAccountsHostOverrides[extension] : undefined;
+    const host = extension && Object.hasOwn(zohoAccountsHostOverrides, extension) ? zohoAccountsHostOverrides[extension] : undefined;
     return host ? new URL(`https://${host}/oauth/v2/token`) : makeUrl(tokenUrl, connectionConfig);
 }
 
