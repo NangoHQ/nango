@@ -3,7 +3,7 @@ import { ChevronRight } from 'lucide-react';
 
 import { Badge } from '@nangohq/design-system';
 
-import { isAnyOfSchema, isArraySchema, isObjectSchema, isOneOfSchema, isPrimitiveSchema, typeToString } from './utils';
+import { isAnyOfSchema, isArraySchema, isObjectSchema, isOneOfSchema, typeToString } from './utils';
 
 import type { JSONSchema7, JSONSchema7Type } from 'json-schema';
 
@@ -43,8 +43,8 @@ const Field: React.FC<{ name: string; schema: JSONSchema7; isRequired: boolean; 
     const { itemSchema, arrayDepth } = unwrapArrays(schema);
     const description = schema.description ?? itemSchema.description;
     const defaultValue = formatDefault(schema.default ?? itemSchema.default);
-    const enumValues = isPrimitiveSchema(itemSchema) ? itemSchema.enum : undefined;
-    const type = formatType(itemSchema, arrayDepth, Boolean(enumValues));
+    const enumValues = itemSchema.enum;
+    const type = formatType(itemSchema, arrayDepth);
     const nested = depth < MAX_DEPTH ? getNestedSchemas(itemSchema) : [];
 
     return (
@@ -107,12 +107,20 @@ function unwrapArrays(schema: JSONSchema7): { itemSchema: JSONSchema7; arrayDept
     return { itemSchema, arrayDepth };
 }
 
-function formatType(schema: JSONSchema7, arrayDepth: number, isEnum: boolean): string {
-    const baseType = isEnum ? String(schema.type) : schema.type || schema.oneOf || schema.anyOf ? typeToString(schema, false) : 'any';
+function formatType(schema: JSONSchema7, arrayDepth: number): string {
+    const baseType = schema.enum ? getEnumType(schema) : schema.type || schema.oneOf || schema.anyOf ? typeToString(schema, false) : 'any';
     if (arrayDepth === 0) {
         return baseType;
     }
     return `${baseType.includes(' | ') ? `(${baseType})` : baseType}${'[]'.repeat(arrayDepth)}`;
+}
+
+function getEnumType(schema: JSONSchema7): string {
+    if (schema.type) {
+        return Array.isArray(schema.type) ? schema.type.join(' | ') : schema.type;
+    }
+    const valueTypes = new Set((schema.enum ?? []).map((value) => (value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value)));
+    return valueTypes.size > 0 ? [...valueTypes].join(' | ') : 'any';
 }
 
 function getNestedSchemas(schema: JSONSchema7): JSONSchema7[] {
