@@ -93,13 +93,25 @@ describe('verifyLicense', () => {
     });
 
     it('rejects a signed payload that is not a license', async () => {
-        const envelope = await signLicense({ ...license, version: 2 } as unknown as License, key);
-        expect(errorCode(await verifyLicense(envelope, key.publicKeyPem))).toBe('invalid_license');
+        const [header] = (await signLicense(license, key)).split('.');
+        const payload = encode({ ...license, version: 2 });
+        const signature = Buffer.from(sign('sha256', Buffer.from(`${header}.${payload}`), { key: key.privateKey, dsaEncoding: 'ieee-p1363' })).toString(
+            'base64url'
+        );
+        expect(errorCode(await verifyLicense(`${header}.${payload}.${signature}`, key.publicKeyPem))).toBe('invalid_license');
     });
 });
 
 describe('signLicense', () => {
     const key = keyPair();
+
+    it('refuses to mint when the signer does not match the public key', async () => {
+        const other = keyPair();
+        await expect(signLicense(license, { publicKeyPem: key.publicKeyPem, sign: other.sign })).rejects.toMatchObject({
+            name: 'LicenseError',
+            code: 'invalid_signature'
+        });
+    });
 
     it('writes the signature as the 64-byte r || s form', async () => {
         const [header, payload, signature = ''] = (await signLicense(license, key)).split('.');
