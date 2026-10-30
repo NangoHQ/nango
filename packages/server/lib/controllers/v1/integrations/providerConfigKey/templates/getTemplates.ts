@@ -1,12 +1,12 @@
 import { configService, functionLookupService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { toNangoFunction } from '../../../../../formatters/function.js';
 import flowService from '../../../../../services/flow.service.js';
 import { asyncWrapperWithEnvironment } from '../../../../../utils/asyncWrapper.js';
 import { validationParams } from '../getIntegration.js';
 
-import type { FunctionAvailability, GetIntegrationTemplates, NangoFunctionTemplate } from '@nangohq/types';
+import type { GetIntegrationTemplates } from '@nangohq/types';
 
 export const getIntegrationTemplates = asyncWrapperWithEnvironment<GetIntegrationTemplates>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -33,24 +33,13 @@ export const getIntegrationTemplates = asyncWrapperWithEnvironment<GetIntegratio
     const all = flowService.getAllAvailableFlowsAsStandardConfig();
     const entry = all.find((value) => value.providerConfigKey === integration.provider);
 
-    const availabilityRows = await functionLookupService.findActiveFunctionAvailability({ environmentId: environment.id, providerConfigKey });
-    const availabilityByKey = new Map<string, FunctionAvailability>(
-        availabilityRows.map((row) => [
-            `${row.type}:${row.name}`,
-            { id: row.id, enabled: row.enabled, last_deployed: row.last_deployed.toISOString(), source: row.source }
-        ])
-    );
+    const templates = entry ? [...entry.actions, ...entry.syncs].flatMap((config) => toNangoFunction(config) ?? []) : [];
+    const result = await functionLookupService.listTemplates({ environmentId: environment.id, providerConfigKey, templates });
+    if (result.isErr()) {
+        report(result.error);
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to list templates' } });
+        return;
+    }
 
-    const data: NangoFunctionTemplate[] = entry
-        ? [...entry.actions, ...entry.syncs].flatMap((e) => {
-              const fn = toNangoFunction(e);
-              if (!fn) {
-                  return [];
-              }
-              const deployed = availabilityByKey.get(`${fn.type}:${fn.name}`);
-              return [deployed ? { ...fn, deployed } : fn];
-          })
-        : [];
-
-    res.status(200).send({ data });
+    res.status(200).send({ data: result.value });
 });

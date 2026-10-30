@@ -288,7 +288,7 @@ export class Nango {
     /**
      * Retrieves the source code of a deployed function
      * @param params - Identifies the function (`uniqueKey`, `name`)
-     * @param queries - Optional `type` to disambiguate when functions share a name
+     * @param queries - Optional `type` to select a function when several share a name
      * @returns A promise that resolves with the function type and code
      */
     public async getFunctionCode(

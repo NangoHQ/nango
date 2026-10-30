@@ -90,7 +90,7 @@ export const postToolCall = asyncWrapperWithEnvironment<PostToolCall>(async (req
         return;
     }
     if (tool.kind === 'function') {
-        const result = await invokeFunction({
+        const { result } = await invokeFunction({
             account,
             environment,
             connectionId,
