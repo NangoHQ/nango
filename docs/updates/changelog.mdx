@@ -66,7 +66,23 @@ description: "Important developer & product updates, including deprecations & br
 </Update>
 ---
 
-<Update label="Environment configuration from the API" description="October 27, 2026">
+<Update label="Nango-managed OAuth apps" description="October 29, 2026">
+  Nango provides pre-approved OAuth apps for 75+ APIs, including CASA-verified apps for Gmail, Google Drive, and Google Calendar. You can now use them in production without waiting for your own app to be approved.
+
+  In the dashboard, pick the **Nango-managed OAuth app** tab when creating an integration. See the [list of APIs with a Nango-managed OAuth app](/guides/auth/auth-guide#apis-with-a-nango-managed-oauth-app) and the [trade-offs](/guides/auth/auth-guide#nango-managed-oauth-apps) compared to your own app.
+
+  ![The Nango-managed OAuth app tab when creating a Google Drive integration](/images/changelog/nango-managed-oauth-app.png)
+</Update>
+---
+
+<Update label="10,000+ tools for agents" description="October 27, 2026">
+  Nango now has 10,000+ pre-built tools across 1,000+ APIs, available in [agent sessions](/guides/agent-sessions). Your agent can use them even when an API has no official MCP server.
+
+  All tools are customizable. Browse them in [APIs & Integrations](/integrations/overview), or [take ownership of a tool](/guides/functions/functions-guide#take-ownership-of-a-function) to change what it does.
+</Update>
+---
+
+<Update label="Environment configuration from API" description="October 27, 2026">
   Set up a new environment entirely from the API, webhooks included, and read its configuration back.
 
   - [Create environment API](/reference/backend/http-api/environments/create) accepts a `webhooks` object with the destination URLs and event subscriptions. The response now returns the complete environment settings, including the webhook signing key.
@@ -76,7 +92,7 @@ description: "Important developer & product updates, including deprecations & br
 </Update>
 ---
 
-<Update label="Smaller improvements" description="October 27, 2026">
+<Update label="Small improvements" description="October 27, 2026">
   - **Clearer errors when agents hit the connection limit:** Agent sessions now get a clear error when creating a connection fails because the account is at its plan's connection limit.
   - **Syncs that checkpoint keep going:** A sync stopped at the execution time limit now reschedules immediately if it saved a checkpoint during the run, instead of failing and waiting for the next scheduled run.
   - **Pre-built integrations on self-managed instances:** Self-managed instances can now install Nango's integration catalog in their own object storage. See [Self-managed Nango instances](/guides/platform/self-hosting/install-integration-catalog).
@@ -113,7 +129,7 @@ description: "Important developer & product updates, including deprecations & br
 </Update>
 ---
 
-<Update label="Scoped environment API keys from the API" description="October 19, 2026">
+<Update label="Scoped environment API keys" description="October 19, 2026">
   The account-level API can now create Environment API keys with specific scopes, and update a key's name or scopes after creation.
 
   - [Create environment API key](/reference/backend/http-api/environments/create-api-key) accepts an optional `scopes` array. Without it, the key keeps full environment access as before.
@@ -144,7 +160,7 @@ description: "Important developer & product updates, including deprecations & br
 </Update>
 ---
 
-<Update label="MCP server tools in agent sessions" description="October 13, 2026">
+<Update label="MCP passthrough in agent sessions" description="October 13, 2026">
   Connected third-party MCP servers now show up in agent sessions next to Nango actions. Their tools are searchable, pinnable, and covered by the same allow and deny lists, and every call goes through Nango with credential refresh and logs.
 
   Include an MCP integration such as [Notion (MCP)](/api-integrations/notion-mcp) or [Linear (MCP)](/api-integrations/linear-mcp) in the session's toolset, and its tools join the session alongside Nango actions.
