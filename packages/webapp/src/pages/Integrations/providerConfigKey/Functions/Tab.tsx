@@ -26,11 +26,11 @@ import { FunctionSourceLabel } from './FunctionSourceLabel';
 
 import type { ApiIntegration, ListedNangoActionFunction, ListedNangoFunction, ListedNangoSyncFunction, NangoFunctionTemplate } from '@nangohq/types';
 
-const TYPE_FILTER_VALUES = ['action', 'sync', 'on-event'] as const;
+const TYPE_FILTER_VALUES = ['tool', 'sync', 'on-event'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
 
 const TYPE_PILLS: { value: TypeFilterValue; label: string; emptyLabel: string }[] = [
-    { value: 'action', label: 'Actions', emptyLabel: 'No actions' },
+    { value: 'tool', label: 'Actions', emptyLabel: 'No actions' },
     { value: 'sync', label: 'Syncs', emptyLabel: 'No syncs' },
     { value: 'on-event', label: 'Triggers', emptyLabel: 'No triggers' }
 ];
@@ -240,7 +240,7 @@ function FunctionListWithDetails({
             >
                 {children}
             </div>
-            {displayedFunction && displayedFunction.type !== 'tool' && (
+            {displayedFunction && (
                 <div
                     className={cn(
                         'w-1/2 shrink-0 border-y border-r border-border-muted bg-surface-panel transition-[translate,opacity] duration-250 ease-out motion-reduce:transition-none',
@@ -284,7 +284,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const debouncedSearch = useDebouncedValue(search);
 
     const [rawType, setType] = useQueryState('type', parseAsString.withDefault(''));
-    const typeFilter: TypeFilterValue = rawType && isTypeFilterValue(rawType) ? rawType : 'action';
+    const typeFilter: TypeFilterValue = rawType && isTypeFilterValue(rawType) ? rawType : 'tool';
     // The open panel is the URL, so a reload or a shared link restores it. Old `/functions/:name` links redirect here.
     const [selectedFunctionName, setSelectedFunctionName] = useQueryState('function', parseAsString);
 
@@ -296,7 +296,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     });
 
     // Unfiltered totals for the pills, including templates that are not deployed yet. Search only narrows the active table.
-    const actionCounts = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'action', limit: 1 });
+    const toolsCount = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'tool', limit: 1 });
     const syncCounts = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'sync', limit: 1 });
     const triggerCounts = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'on-event', limit: 1 });
 
@@ -322,7 +322,9 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const total = data?.pages[0]?.pagination.total ?? 0;
     const listedMatch = selectedFunctionName ? functions.find((fn) => fn.name === selectedFunctionName) : undefined;
     const rawTemplateMatch = selectedFunctionName
-        ? (templatesResponse?.data ?? []).find((template) => template.type === typeFilter && template.name === selectedFunctionName)
+        ? (templatesResponse?.data ?? []).find(
+              (template) => (typeFilter === 'tool' ? template.type === 'action' : template.type === typeFilter) && template.name === selectedFunctionName
+          )
         : undefined;
     const templateMatch = rawTemplateMatch && !rawTemplateMatch.deployed ? rawTemplateMatch : undefined;
     // A linked function can sit past the first page. Fetch it directly so the panel opens without scrolling the list.
@@ -352,17 +354,18 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
         [undeployedSyncTemplates, searchNeedle]
     );
     // Templates append only after every deployed page is loaded.
-    const listedFunctionKeys = new Set(functions.map((fn) => `${fn.type}:${fn.name}`));
+    const listedFunctionNames = new Set(functions.map((fn) => fn.name));
     const visibleActionTemplates =
-        typeFilter === 'action' && !hasNextPage && !isPlaceholderData
-            ? matchingActionTemplates.filter((template) => !listedFunctionKeys.has(`${template.type}:${template.name}`))
+        typeFilter === 'tool' && !hasNextPage && !isPlaceholderData
+            ? matchingActionTemplates.filter((template) => !listedFunctionNames.has(template.name))
             : [];
     const visibleSyncTemplates = typeFilter === 'sync' && !hasNextPage && !isPlaceholderData ? matchingSyncTemplates : [];
     const selectedFunction =
         listedMatch ?? templateMatch ?? (rawTemplateMatch?.deployed ? listedFromTemplate(rawTemplateMatch) : undefined) ?? linkedFunction?.data ?? null;
 
     const tailScope = `${integration.unique_key}:${typeFilter}`;
-    const incomingTailKeys = (typeFilter === 'action' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : []).map(templateSectionKey);
+    const templateRows = typeFilter === 'tool' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : [];
+    const incomingTailKeys = templateRows.map(templateSectionKey);
     const incomingTailKey = incomingTailKeys.join('\n');
     const templateSectionKeys = mergeTemplateSection(templateTail.scope === tailScope ? templateTail.keys : [], incomingTailKeys);
 
@@ -397,26 +400,25 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
 
     const counts: Record<TypeFilterValue, number | undefined> = {
         // Catalog actions are already in the functions total. A failed templates request leaves the response unset, so the pill stays hidden instead of showing a deployed-only number.
-        action: pillCount(
-            actionCounts.data?.pages[0]?.pagination.total,
+        tool: pillCount(
+            toolsCount.data?.pages[0]?.pagination.total,
             templatesResponse !== undefined,
             metaData?.data.toolsCatalog === false ? undeployedActionTemplates.length : 0
         ),
         sync: pillCount(syncCounts.data?.pages[0]?.pagination.total, templatesResponse !== undefined, undeployedSyncTemplates.length),
         'on-event': triggerCounts.data?.pages[0]?.pagination.total
     };
-    const countsSettled = [actionCounts, syncCounts, triggerCounts].every((query) => query.isSuccess || query.isError);
-    const countsReady = counts.action != null && counts.sync != null && counts['on-event'] != null;
-    const totalAcrossTypes = (counts.action ?? 0) + (counts.sync ?? 0) + (counts['on-event'] ?? 0);
+    const countsSettled = [toolsCount, syncCounts, triggerCounts].every((query) => query.isSuccess || query.isError);
+    const countsReady = counts.tool != null && counts.sync != null && counts['on-event'] != null;
+    const totalAcrossTypes = (counts.tool ?? 0) + (counts.sync ?? 0) + (counts['on-event'] ?? 0);
 
     if (error) {
         return <CriticalErrorAlert message="Something went wrong while loading the functions" />;
     }
 
     const hasSearch = Boolean(debouncedSearch.trim());
-    const templateRows = typeFilter === 'action' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : [];
     // Actions omit this column until the catalog flag is known to be off. Syncs and triggers always show it.
-    const showStatus = typeFilter !== 'action' || metaData?.data.toolsCatalog === false;
+    const showStatus = typeFilter !== 'tool' || metaData?.data.toolsCatalog === false;
     const activeListHasRows = functions.length > 0 || templateRows.length > 0;
     const showEmptyNoFilters =
         countsReady &&
@@ -553,7 +555,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                         <EmptyCard>
                             <p className="text-text-secondary text-body-medium-regular">{activePill.emptyLabel}</p>
                         </EmptyCard>
-                    ) : typeFilter === 'action' ? (
+                    ) : typeFilter === 'tool' ? (
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
                             integration={integration}

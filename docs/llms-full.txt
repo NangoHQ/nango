@@ -1538,21 +1538,24 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
 Many OAuth APIs have a Nango-managed OAuth app: a pre-approved OAuth app that Nango registers and maintains with the provider. You can use it to connect users without registering an app yourself.
 
-Nango-managed OAuth apps can be used in production. Whether to use a Nango-managed app or your own is a product choice. Register your own OAuth app if any of these matter to you:
+Nango-managed OAuth apps are production-ready. They let you launch faster and support many APIs at once, because you don't register an app or wait for provider approval for each API.
+
+They come with some tradeoffs:
 
 - **Whitelabel auth** — with a Nango-managed app, the consent screen shows Nango, not your product.
 - **Scopes** — Nango-managed apps have fixed scopes. Your own app can request any scope the provider offers.
 - **Callback URL** — Nango-managed apps use Nango's callback URL. Your own app can use a [custom callback URL](#custom-oauth-callback-url-optional) on your domain.
 - **Marketplace listings** — provider marketplaces require your own app.
-- **API features** — some provider features are only available to first-party apps.
-- **Revocation risk** — most providers don't allow shared credentials. If a provider revokes a Nango-managed app, every connection using it stops working.
+- **Revocation risk** — if a provider revokes a Nango-managed app, every connection using it stops working.
 - **Portability** — only with your own app can you export access and refresh tokens and move off Nango without users re-authorizing.
 
 These tradeoffs apply to shared OAuth apps from any auth platform, not just Nango.
 
+To make registering your own app easier, Nango maintains step-by-step setup guides for most OAuth APIs in [APIs & Integrations](/integrations/overview), for example [Gmail](/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app).
+
 ### APIs with a Nango-managed OAuth app
 
-These APIs have a Nango-managed OAuth app on Nango Cloud. Every other OAuth API needs your own OAuth app. You can also check from code: `POST /integrations/quickstart` returns a `400` when an API has no Nango-managed OAuth app.
+We add more OAuth apps every week. If an API you need is missing, please contact us and we will do our best to add it.
 
 <Accordion title="List of APIs with a Nango-managed OAuth app (76)">
 - [Airtable](/api-integrations/airtable)
@@ -1632,8 +1635,6 @@ These APIs have a Nango-managed OAuth app on Nango Cloud. Every other OAuth API 
 - [Zoho People](/integrations/all/zoho-people)
 - [Zoom](/api-integrations/zoom)
 </Accordion>
-
-To make registering your own app easier, Nango maintains step-by-step setup guides for most OAuth APIs in [APIs & Integrations](/integrations/overview), for example [Gmail](/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app).
 
 ## Related guides
 
@@ -12658,7 +12659,7 @@ await nango.getFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' 
         The function name.
     </ResponseField>
     <ResponseField name="type" type="string">
-        Disambiguates when functions share a name: `sync`, `action`, or `on-event`.
+        The function type: `sync`, `action`, `on-event`, or `tool`. When omitted and several functions share the name, the first one is returned in this order: `tool`, `action`, `on-event`, `sync`.
     </ResponseField>
 </Expandable>
 
@@ -12700,7 +12701,7 @@ await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { typ
         The function name.
     </ResponseField>
     <ResponseField name="type" type="string">
-        Disambiguates when functions share a name: `sync`, `action`, or `on-event`.
+        The function type: `sync`, `action`, `on-event`, or `tool`. When omitted and several functions share the name, the first one is returned in this order: `tool`, `action`, `on-event`, `sync`.
     </ResponseField>
 </Expandable>
 
@@ -16457,6 +16458,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `embat` | Embat | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/embat.md) | [connect](https://nango.dev/docs/api-integrations/embat/connect.md) |  | accounting, banking |
 | `employment-hero` | Employment Hero | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/employment-hero.md) |  |  | hr |
 | `entrata` | Entrata | BASIC | [docs](https://nango.dev/docs/integrations/all/entrata.md) |  |  | other |
+| `envoice` | Envoice | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/envoice.md) | [connect](https://nango.dev/docs/api-integrations/envoice/connect.md) | [setup](https://nango.dev/docs/api-integrations/envoice/how-to-register-your-own-envoice-api-oauth-app.md) | accounting, invoicing |
 | `envoy` | Envoy | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/envoy.md) |  |  | productivity |
 | `epc-gov-uk` | Energy Performance Certificates (Gov.UK) | API_KEY | [docs](https://nango.dev/docs/api-integrations/epc-gov-uk.md) | [connect](https://nango.dev/docs/api-integrations/epc-gov-uk/connect.md) |  | other |
 | `epic` | Epic (FHIR) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/epic.md) | [connect](https://nango.dev/docs/api-integrations/epic/connect.md) | [setup](https://nango.dev/docs/api-integrations/epic/how-to-register-your-own-epic-app.md) | other |

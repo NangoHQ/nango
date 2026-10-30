@@ -5,7 +5,7 @@ import { toListedNangoFunction } from './mappers.js';
 import * as functionsModel from './models/functions.js';
 
 import type { FunctionRow } from './models/functions.js';
-import type { FunctionListType, ListedNangoActionFunction, ListedNangoFunction } from '@nangohq/types';
+import type { FunctionListType, ListedNangoActionFunction, ListedNangoFunction, NangoFunctionTemplate } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export type ListFunctionsErrorCode = 'integration_not_found' | 'list_failed';
@@ -17,6 +17,44 @@ export class ListFunctionsError extends Error {
         super(message, { cause });
         this.name = 'ListFunctionsError';
         this.code = code;
+    }
+}
+
+/** Attaches deployments to templates and omits templates replaced by native HTTP tools. */
+export async function listTemplates({
+    environmentId,
+    providerConfigKey,
+    templates
+}: {
+    environmentId: number;
+    providerConfigKey: string;
+    templates: NangoFunctionTemplate[];
+}): Promise<Result<NangoFunctionTemplate[]>> {
+    try {
+        const availability = await functionsModel.findActiveFunctionAvailability({ environmentId, providerConfigKey });
+        const hiddenByTool = new Set(availability.toolNames);
+        const deployedByKey = new Map(availability.deployed.map((row) => [`${row.type}:${row.name}`, row]));
+        return Ok(
+            templates.flatMap((template) => {
+                if (template.type === 'action' && hiddenByTool.has(template.name)) return [];
+                const deployed = deployedByKey.get(`${template.type}:${template.name}`);
+                return [
+                    deployed
+                        ? {
+                              ...template,
+                              deployed: {
+                                  id: deployed.id,
+                                  enabled: deployed.enabled,
+                                  last_deployed: deployed.last_deployed.toISOString(),
+                                  source: deployed.source
+                              }
+                          }
+                        : template
+                ];
+            })
+        );
+    } catch (err) {
+        return Err(new Error('Failed to list templates', { cause: err }));
     }
 }
 
