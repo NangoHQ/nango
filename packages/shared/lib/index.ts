@@ -69,6 +69,8 @@ export * as connectUISettingsService from './services/connect-ui-settings.servic
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
 export { listCatalogTools, getCatalogTool, isTemplatesZeroPath } from './services/catalog/actions.js';
 export type { CatalogTool } from './services/catalog/actions.js';
+export { findCatalogFunctions } from './services/catalog/functions.js';
+export type { CatalogFunction } from './services/catalog/functions.js';
 export { resolveRunnableTool } from './services/catalog/resolveTool.js';
 export type { ResolveRunnableToolResult } from './services/catalog/resolveTool.js';
 

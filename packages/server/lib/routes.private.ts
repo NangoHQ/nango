@@ -121,6 +121,7 @@ import { getBillingUsageTopDimensionValues } from './controllers/v1/plans/usage/
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
 import { getProviderItem } from './controllers/v1/providers/getProvider.js';
 import { getProvidersList } from './controllers/v1/providers/getProviders.js';
+import { getProviderTemplateCode } from './controllers/v1/providers/providerConfigKey/templates/getCode.js';
 import { getProviderTemplates } from './controllers/v1/providers/providerConfigKey/templates/getTemplates.js';
 import { deleteStripePaymentMethod } from './controllers/v1/stripe/payment_methods/deletePaymentMethod.js';
 import { getStripePaymentMethods } from './controllers/v1/stripe/payment_methods/getPaymentMethods.js';
@@ -193,6 +194,7 @@ import {
     auditWebhookSigningKeyRotated
 } from './middleware/audit/index.js';
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
+import { catalogCodeRateLimit } from './middleware/catalogCodeRateLimit.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { isAllowedWebCorsOrigin } from './utils/cors.js';
@@ -360,6 +362,7 @@ web.route('/integrations/:providerConfigKey/templates').get(webAuth, can('enviro
 web.route('/providers').get(webAuth, getProvidersList);
 web.route('/providers/:providerConfigKey').get(webAuth, getProviderItem);
 web.route('/providers/:providerConfigKey/templates').get(webAuth, getProviderTemplates);
+web.route('/providers/:providerConfigKey/templates/:name/code').get(webAuth, catalogCodeRateLimit, getProviderTemplateCode);
 
 // Connections
 web.route('/connections').get(webAuth, can('environment:connections:list'), getConnections);
