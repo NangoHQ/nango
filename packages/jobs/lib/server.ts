@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, internalServiceAuthMiddleware, requireFleetAuth, requireTaskBoundAuth } from '@nangohq/internal-auth';
+import { INTERNAL_SERVICE_AUDIENCE_JOBS, internalServiceAuthMiddleware, requireBinding, routeParam } from '@nangohq/internal-auth';
 import { serverRequestSizeLimit } from '@nangohq/nango-orchestrator';
 import { createRoute } from '@nangohq/utils';
 
@@ -19,10 +19,10 @@ export const server = express();
 createRoute(server, getHealthHandler);
 server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_JOBS, envs }));
 server.use(express.json({ limit: serverRequestSizeLimit }));
-createRoute(server, postIdleHandler, { middleware: [requireFleetAuth(envs)] });
-createRoute(server, postRegisterHandler, { middleware: [requireFleetAuth(envs)] });
-createRoute(server, putTaskHandler, { middleware: [requireTaskBoundAuth(envs)] });
-createRoute(server, postHeartbeatHandler, { middleware: [requireTaskBoundAuth(envs)] });
+createRoute(server, postIdleHandler, { middleware: [requireBinding(envs, 'nodeId', (req) => routeParam(req, 'nodeId'))] });
+createRoute(server, postRegisterHandler, { middleware: [requireBinding(envs, 'nodeId', (req) => routeParam(req, 'nodeId'))] });
+createRoute(server, putTaskHandler, { middleware: [requireBinding(envs, 'taskId', (req) => routeParam(req, 'taskId'))] });
+createRoute(server, postHeartbeatHandler, { middleware: [requireBinding(envs, 'taskId', (req) => routeParam(req, 'taskId'))] });
 
 server.use((err: any, _req: Request, res: Response<ResDefaultErrors>, _next: NextFunction) => {
     if (err instanceof Error) {
