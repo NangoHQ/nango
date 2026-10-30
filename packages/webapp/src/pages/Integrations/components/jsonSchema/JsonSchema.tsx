@@ -8,6 +8,7 @@ import { isAnyOfSchema, isArraySchema, isObjectSchema, isOneOfSchema, typeToStri
 import type { JSONSchema7, JSONSchema7Type } from 'json-schema';
 
 const MAX_DEPTH = 8;
+const ENUM_BADGE_MAX_LENGTH = 50;
 
 export const JsonSchemaTopLevelObject: React.FC<{ schema: JSONSchema7 }> = ({ schema }) => {
     if (!isObjectSchema(schema)) {
@@ -43,8 +44,9 @@ const Field: React.FC<{ name: string; schema: JSONSchema7; isRequired: boolean; 
     const { itemSchema, arrayDepth } = unwrapArrays(schema);
     const description = schema.description ?? itemSchema.description;
     const defaultValue = formatDefault(schema.default ?? itemSchema.default);
-    const enumValues = itemSchema.enum;
-    const type = formatType(itemSchema, arrayDepth);
+    const enumUnion = itemSchema.enum && itemSchema.enum.length > 0 ? itemSchema.enum.map((value) => JSON.stringify(value)).join(' | ') : null;
+    const showEnumInBadge = enumUnion !== null && enumUnion.length <= ENUM_BADGE_MAX_LENGTH;
+    const type = showEnumInBadge ? withArraySuffix(enumUnion, arrayDepth) : formatType(itemSchema, arrayDepth);
     const nested = depth < MAX_DEPTH ? getNestedSchemas(itemSchema) : [];
 
     return (
@@ -57,7 +59,7 @@ const Field: React.FC<{ name: string; schema: JSONSchema7; isRequired: boolean; 
                 </span>
             </div>
             {description && <p className="type-label-xs text-text-secondary">{description}</p>}
-            {enumValues && enumValues.length > 0 && <ValueLine label="One of">{enumValues.map((value) => JSON.stringify(value)).join(', ')}</ValueLine>}
+            {enumUnion && !showEnumInBadge && <p className="break-words type-code-regular-xxs text-text-default">{enumUnion}</p>}
             {defaultValue && <ValueLine label="Default">{defaultValue}</ValueLine>}
             {nested.length > 0 && <NestedFields schemas={nested} isVariants={isOneOfSchema(itemSchema) || isAnyOfSchema(itemSchema)} depth={depth + 1} />}
         </div>
@@ -109,10 +111,14 @@ function unwrapArrays(schema: JSONSchema7): { itemSchema: JSONSchema7; arrayDept
 
 function formatType(schema: JSONSchema7, arrayDepth: number): string {
     const baseType = schema.enum ? getEnumType(schema) : schema.type || schema.oneOf || schema.anyOf ? typeToString(schema, false) : 'any';
+    return withArraySuffix(baseType, arrayDepth);
+}
+
+function withArraySuffix(type: string, arrayDepth: number): string {
     if (arrayDepth === 0) {
-        return baseType;
+        return type;
     }
-    return `${baseType.includes(' | ') ? `(${baseType})` : baseType}${'[]'.repeat(arrayDepth)}`;
+    return `${type.includes(' | ') ? `(${type})` : type}${'[]'.repeat(arrayDepth)}`;
 }
 
 function getEnumType(schema: JSONSchema7): string {
