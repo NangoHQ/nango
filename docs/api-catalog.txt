@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1322
+Provider count: 1323
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -164,6 +164,7 @@ URL patterns:
 | `baselinker` | BaseLinker | API_KEY | [docs](https://nango.dev/docs/api-integrations/baselinker.md) | [connect](https://nango.dev/docs/api-integrations/baselinker/connect.md) |  | e-commerce |
 | `baserow` | Baserow | API_KEY | [docs](https://nango.dev/docs/api-integrations/baserow.md) | [connect](https://nango.dev/docs/api-integrations/baserow/connect.md) |  | productivity, dev-tools |
 | `basin` | Basin | API_KEY | [docs](https://nango.dev/docs/api-integrations/basin.md) | [connect](https://nango.dev/docs/api-integrations/basin/connect.md) |  | dev-tools |
+| `batchdata` | BatchData | API_KEY | [docs](https://nango.dev/docs/api-integrations/batchdata.md) | [connect](https://nango.dev/docs/api-integrations/batchdata/connect.md) |  | other |
 | `battlenet` | Battle.net | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/battlenet.md) |  |  | gaming |
 | `beamer` | Beamer | API_KEY | [docs](https://nango.dev/docs/api-integrations/beamer.md) | [connect](https://nango.dev/docs/api-integrations/beamer/connect.md) |  | marketing |
 | `beehiiv` | Beehiiv | API_KEY | [docs](https://nango.dev/docs/integrations/all/beehiiv.md) |  |  | communication, marketing |
