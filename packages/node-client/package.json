@@ -7,7 +7,8 @@
     "module": "./dist/index.js",
     "scripts": {
         "build": "tsup lib/index.ts --format cjs",
-        "prepublishOnly": "npm run build"
+        "prepublishOnly": "npm run build",
+        "prepack": "cp ../../LICENSE ./LICENSE"
     },
     "exports": {
         ".": {
@@ -23,7 +24,7 @@
         "url": "git+https://github.com/NangoHQ/nango.git",
         "directory": "packages/node-client"
     },
-    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "license": "Elastic-2.0",
     "dependencies": {
         "@nangohq/types": "0.71.14",
         "axios": "1.20.0"

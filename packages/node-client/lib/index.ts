@@ -1,3 +1,8 @@
+/*!
+ * @license Elastic-2.0
+ * Copyright (c) Nango Inc. All rights reserved.
+ * See https://github.com/NangoHQ/nango/blob/master/LICENSE
+ */
 import crypto from 'node:crypto';
 import https from 'node:https';
 import util from 'node:util';
