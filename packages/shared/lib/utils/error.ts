@@ -447,6 +447,22 @@ export class NangoError extends NangoInternalError {
                 }
                 break;
 
+            case 'zoho_token_request_error':
+                this.status = 400;
+                this.message = `The Zoho API returned an error when trying to request for an access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : stringifyError(this.payload)}`;
+                }
+                break;
+
+            case 'zoho_refresh_token_request_error':
+                this.status = 400;
+                this.message = `The Zoho API returned an error when trying to refresh the access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : stringifyError(this.payload)}`;
+                }
+                break;
+
             case 'microsoft_teams_token_request_error':
                 this.status = 400;
                 this.message = `The Microsoft Teams API returned an error when trying to request an access token. Please try again later.`;
