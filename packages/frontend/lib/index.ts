@@ -1,5 +1,7 @@
-/*
- * Copyright (c) 2025 Nango, all rights reserved.
+/*!
+ * @license Elastic-2.0
+ * Copyright (c) Nango Inc. All rights reserved.
+ * See https://github.com/NangoHQ/nango/blob/master/LICENSE
  */
 import { AuthorizationModal, computeLayout, windowFeaturesToString } from './authModal.js';
 import { ConnectUI } from './connectUI.js';
