@@ -1,0 +1,59 @@
+---
+title: 'Formstack Documents - How do I link my account?'
+sidebarTitle: 'Formstack Documents'
+---
+
+## Overview
+
+To authenticate with Formstack Documents, you need:
+
+1. **API Key** - The key used as the Basic Auth username.
+2. **API Secret** - The secret used as the Basic Auth password.
+
+This guide walks through collecting both credentials from your Formstack Documents account. The developer portal still uses the legacy `Webmerge` branding.
+
+### Prerequisites
+
+- You must have access to a Formstack Documents account.
+
+#### Step 1: Generate your API key and secret
+
+1. Sign in to your Formstack Documents account.
+2. In the top navigation bar, open the menu that displays your name.
+
+<img src="/api-integrations/formstack-documents/account-menu-api-access.png" style={{maxWidth: "450px" }} />
+
+3. Select **API Access**.
+4. On the API Access page, click **New API Key**.
+
+<img src="/api-integrations/formstack-documents/api-access.png" />
+
+5. Enter a descriptive name for the API key, then click **Create Key**.
+
+<img src="/api-integrations/formstack-documents/create-api-key.png" style={{maxWidth: "650px" }} />
+
+6. Copy the generated **API Key** and **API Secret**.
+
+<img src="/api-integrations/formstack-documents/generated-api-credentials.png" style={{maxWidth: "650px" }} />
+
+<Note>
+You can retrieve the API Key and API Secret later by opening the menu with your name and returning to **API Access**.
+</Note>
+
+<Tip>
+Enable **Advanced Settings -> Require API Key for all merge requests (custom integrations only)** so custom integration merge requests consistently require API credentials.
+</Tip>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Key** and **API Secret**:
+
+1. In Nango, open the **Connections** tab, select **Add Test Connection**, choose **Formstack Documents**, and click **Authorize**.
+
+<img src="/api-integrations/formstack-documents/nango-connect-ui.png" style={{maxWidth: "650px" }} />
+
+2. Enter the API Key in the **API Key** field.
+3. Enter the API Secret in the **API Secret** field.
+4. Click **Connect** to complete authentication.
+
+You are now connected to Formstack Documents.
