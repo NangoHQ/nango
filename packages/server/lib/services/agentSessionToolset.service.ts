@@ -36,7 +36,7 @@ export class AgentSessionToolsetCompilationError extends Error {
 
 /**
  * Evaluates a toolset policy against the functions available on each integration
- * (deployed rows plus catalog actions) and produces the pinned and searchable
+ * (deployed actions and tools plus catalog actions) and produces the pinned and searchable
  * tool lists the session serves for the rest of its life.
  *
  * An omitted toolset means every integration the tenant resolved a connection for. An explicit
@@ -258,7 +258,7 @@ function referencedTools({ policies, pinned }: { policies: Map<string, AgentSess
  *
  * A name that is deployed but is not an action is reported ahead of one that does not exist at
  * all, since the wrong function type is the more specific thing to hand back. A disabled action
- * counts as unknown, because a session cannot serve it either way. A name on an MCP server that
+ * or tool counts as unknown, because a session cannot serve it either way. A name on an MCP server that
  * could not be listed cannot be checked, so it is let through and simply reaches nothing.
  */
 function rejectUnusableReferences({
@@ -278,7 +278,7 @@ function rejectUnusableReferences({
         }
 
         const type = integration?.functionTypesByName.get(reference.name);
-        if (type && type !== 'action') {
+        if (type && type !== 'action' && type !== 'tool') {
             unsupported.push({ ...reference, type });
         } else {
             unknown.push(reference);
@@ -320,7 +320,7 @@ function groupFunctionsByIntegration(functions: IntegrationFunctionRow[]): Map<s
 
         integration.functionTypesByName.set(row.name, row.type);
 
-        if (row.type === 'action' && row.enabled) {
+        if ((row.type === 'action' || row.type === 'tool') && row.enabled) {
             integration.actions.push({ name: row.name, description: row.description ?? row.name });
         }
     }
@@ -389,7 +389,7 @@ function unknownToolError(rejected: ToolReference[]): AgentSessionToolsetCompila
 
     return new AgentSessionToolsetCompilationError({
         code: 'unknown_tool',
-        message: `${rejected.length} ${rejected.length === 1 ? 'tool is' : 'tools are'} not an enabled action or an MCP server tool on the integration given. Check the tool names, and that the action is enabled.`,
+        message: `${rejected.length} ${rejected.length === 1 ? 'tool is' : 'tools are'} not an enabled action, tool or MCP server tool on the integration given. Check the tool names, and that the action or tool is enabled.`,
         payload: { ...payload }
     });
 }
@@ -401,7 +401,7 @@ function unsupportedFunctionTypeError(rejected: { integrationId: string; name: s
 
     return new AgentSessionToolsetCompilationError({
         code: 'unsupported_function_type',
-        message: `${rejected.length} ${rejected.length === 1 ? 'name refers' : 'names refer'} to a function that is not an action. Only actions can be exposed as tools.`,
+        message: `${rejected.length} ${rejected.length === 1 ? 'name refers' : 'names refer'} to a function that is not an action or a tool. Only actions and tools can be exposed to a session.`,
         payload: { ...payload }
     });
 }

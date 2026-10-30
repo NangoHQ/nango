@@ -83,8 +83,6 @@ const legacyConnectionTabByHash = {
     '#settings': 'settings'
 } as const;
 
-const LEGACY_FUNCTION_TYPES = new Set(['sync', 'action', 'on-event']);
-
 const RedirectLegacyFunctionPage = () => {
     const { env, providerConfigKey, functionName } = useParams();
     const location = useLocation();
@@ -93,8 +91,9 @@ const RedirectLegacyFunctionPage = () => {
         next.set('function', functionName);
     }
     const type = new URLSearchParams(location.search).get('type');
-    if (type && LEGACY_FUNCTION_TYPES.has(type)) {
-        next.set('type', type);
+    const typeFilter = type === 'action' ? 'tool' : type === 'sync' || type === 'on-event' ? type : undefined;
+    if (typeFilter) {
+        next.set('type', typeFilter);
     }
 
     const search = next.toString();
