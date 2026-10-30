@@ -382,14 +382,16 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
 Many OAuth APIs have a Nango-managed OAuth app: a pre-approved OAuth app that Nango registers and maintains with the provider. You can use it to connect users without registering an app yourself.
 
-Nango-managed OAuth apps can be used in production. Whether to use a Nango-managed app or your own is a product choice. Register your own OAuth app if any of these matter to you:
+Nango-managed OAuth apps are production-ready. They let you launch faster and support many APIs at once, because you don't register an app or wait for provider approval for each API.
+
+They come with some tradeoffs. Consider registering your own OAuth app if you need any of these:
 
 - **Whitelabel auth** — with a Nango-managed app, the consent screen shows Nango, not your product.
 - **Scopes** — Nango-managed apps have fixed scopes. Your own app can request any scope the provider offers.
 - **Callback URL** — Nango-managed apps use Nango's callback URL. Your own app can use a [custom callback URL](#custom-oauth-callback-url-optional) on your domain.
 - **Marketplace listings** — provider marketplaces require your own app.
 - **API features** — some provider features are only available to first-party apps.
-- **Revocation risk** — most providers don't allow shared credentials. If a provider revokes a Nango-managed app, every connection using it stops working.
+- **Revocation risk** — if a provider revokes a Nango-managed app, every connection using it stops working.
 - **Portability** — only with your own app can you export access and refresh tokens and move off Nango without users re-authorizing.
 
 These tradeoffs apply to shared OAuth apps from any auth platform, not just Nango.
