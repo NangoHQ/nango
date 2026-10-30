@@ -28,7 +28,7 @@ jobs:
         steps:
             - name: Get versions
               id: versions
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   ref: ${{ inputs.commit_hash }}
                   fetch-depth: 1
@@ -79,7 +79,7 @@ jobs:
                   version: 'v3.12.3'
 
             - name: Checkout release commit
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   ref: ${{ needs.manage-versions.outputs.commit_hash }}
                   fetch-depth: 1
@@ -381,7 +381,7 @@ jobs:
                       managed-image-releases
 
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   ref: 'master'
                   fetch-depth: 1
