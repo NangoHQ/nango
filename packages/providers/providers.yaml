@@ -2289,6 +2289,92 @@ athenahealth:
             secret: true
             doc_section: '#step-4-connect-your-athenahealth-account'
 
+athenahealth-jwks:
+    display_name: athenahealth (JWKS)
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.hostname}/oauth2/v1/token
+    token_params:
+        grant_type: client_credentials
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+        scope: ${credentials.scope}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    assertion:
+        type: jwt
+        singleUse: true
+        key: ${credentials.privateKey}
+        lifetimeInSeconds: 300
+        header:
+            alg: RS384
+            kid: ${credentials.keyId}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://${connectionConfig.hostname}/oauth2/v1/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        connection_config:
+            practiceId: ${connectionConfig.practiceId}
+    docs: https://nango.dev/docs/api-integrations/athenahealth-jwks
+    setup_guide_url: https://nango.dev/docs/api-integrations/athenahealth-jwks/how-to-register-your-own-athenahealth-jwks-app
+    docs_connect: https://nango.dev/docs/api-integrations/athenahealth-jwks/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The athenahealth API hostname for your environment.
+            enum:
+                - api.platform.athenahealth.com
+                - api.preview.platform.athenahealth.com
+            doc_section: '#step-1-choose-your-environment'
+            order: 1
+        practiceId:
+            type: string
+            title: Practice ID
+            description: The ID of your athenahealth practice.
+            pattern: '^[0-9]+$'
+            example: '195900'
+            doc_section: '#step-2-find-your-practice-id'
+            order: 2
+    integration_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your registered athenahealth app's Client ID.
+            order: 1
+        keyId:
+            type: string
+            title: Key ID
+            description: The kid of the RSA key registered in your app's JWKS.
+            order: 2
+        privateKey:
+            type: string
+            title: Private Key
+            description: The RSA private key (PEM) matching your registered JWKS public key. Signed with RS384.
+            secret: true
+            order: 3
+        scope:
+            type: string
+            title: Scope
+            description: The space-separated scope(s) granted to your app (e.g. system/Patient.r).
+            order: 4
+    credentials:
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 atlassian-admin:
     display_name: Atlassian Cloud Admin
     categories:
