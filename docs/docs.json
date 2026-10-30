@@ -1254,6 +1254,7 @@
               "integrations/all/coda",
               "integrations/all/codeclimate",
               "integrations/all/codegen",
+              "api-integrations/command-alkon",
               "integrations/all/commercetools",
               "integrations/all/companycam",
               "api-integrations/conductorone",
@@ -1278,6 +1279,8 @@
               "api-integrations/crisp-plugin-install",
               "integrations/all/crowdstrike",
               "api-integrations/crunchbase",
+              "api-integrations/crustdata",
+              "api-integrations/crustdata-mcp",
               "integrations/all/cursor",
               "integrations/all/cursor-admin",
               "api-integrations/customer-io",
@@ -1614,6 +1617,7 @@
               "api-integrations/meta-marketing-api",
               "api-integrations/meta-mcp",
               "api-integrations/metabase",
+              "api-integrations/metaview-mcp",
               "api-integrations/microsoft",
               "integrations/all/microsoft-admin",
               "integrations/all/microsoft-ads",
@@ -1650,6 +1654,7 @@
               "integrations/all/missive",
               "integrations/all/mixpanel",
               "api-integrations/modjo-ai",
+              "api-integrations/modjo-ai-v2",
               "api-integrations/modmed",
               "api-integrations/modmed-fhir",
               "api-integrations/mollie",
@@ -2119,6 +2124,7 @@
               "api-integrations/zoom-cc",
               "integrations/all/zoominfo",
               "api-integrations/zorus",
+              "api-integrations/zscaler",
               "integrations/all/zuora"
             ]
           }

@@ -151,5 +151,5 @@ const context = {
     account: { id: 1 },
     environment: { id: 42 },
     plan: null,
-    grantedScopes: ['environment:actions:execute']
+    grantedScopes: ['environment:tools:call']
 } as ManagementMcpContext;

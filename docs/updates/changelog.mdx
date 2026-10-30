@@ -4,14 +4,91 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
-<Update label="Reconnect connections from agent sessions" description="October 26, 2026">
+<Update label="43 new APIs in October" description="November 1, 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="43 new APIs in October">
+      - [Aha!](/api-integrations/aha)
+      - [ArcSite](/api-integrations/arcsite)
+      - [Attentive (API Key)](/api-integrations/attentive-api-key)
+      - [Attentive (MCP)](/api-integrations/attentive-mcp)
+      - [Bluebeam](/api-integrations/bluebeam)
+      - [Breathe HR](/api-integrations/breathehr)
+      - [Buildkite](/api-integrations/buildkite)
+      - [Buildkite (Token Exchange)](/api-integrations/buildkite-token-exchange)
+      - [CCH Axcess](/api-integrations/cch-axcess)
+      - [Chameleon-i](/api-integrations/chameleoni)
+      - [CharlieHR](/api-integrations/charliehr)
+      - [Checkbox](/api-integrations/checkbox)
+      - [Circleback](/api-integrations/circleback)
+      - [Clarify](/api-integrations/clarify)
+      - [Discogs](/api-integrations/discogs)
+      - [Discogs (Personal Access Token)](/api-integrations/discogs-token)
+      - [Discord Bot](/api-integrations/discord-bot)
+      - [Extensiv](/api-integrations/extensiv)
+      - [Fiix](/api-integrations/fiix)
+      - [Firecrawl](/api-integrations/firecrawl)
+      - [FreshDesk (MCP)](/api-integrations/freshdesk-mcp)
+      - [Freshservice (MCP)](/api-integrations/freshservice-mcp)
+      - [Freshservice (OAuth)](/api-integrations/freshservice-oauth)
+      - [Haus](/api-integrations/haus)
+      - [iManage Work](/api-integrations/imanage)
+      - [Litmos](/api-integrations/litmos)
+      - [LoyaltyLion](/api-integrations/loyaltylion)
+      - [Mailtrap](/api-integrations/mailtrap)
+      - [Microsoft Defender (Client Credentials)](/api-integrations/microsoft-defender-cc)
+      - [ModMed (FHIR)](/api-integrations/modmed-fhir)
+      - [Monday (API Key)](/api-integrations/monday-api-key)
+      - [Navan](/api-integrations/navan)
+      - [NetDocuments](/api-integrations/netdocuments)
+      - [Oracle Aconex](/api-integrations/oracle-aconex)
+      - [Pleo (MCP)](/api-integrations/pleo-mcp)
+      - [Pocket](/api-integrations/pocket)
+      - [Publora](/api-integrations/publora)
+      - [Rapid7](/api-integrations/rapid7)
+      - [Sentry (MCP)](/api-integrations/sentry-mcp)
+      - [Slack (Configuration Token)](/api-integrations/slack-app-configuration)
+      - [Tenable](/api-integrations/tenable)
+      - [TIMOCOM](/api-integrations/timocom)
+      - [Wingify (VWO)](/api-integrations/vwo)
+    </Accordion>
+  </AccordionGroup>
+
+  ## New blog posts
+
+  New posts from the Nango team in October:
+
+  - [BYOC vs. self-hosted for AI agent integrations](https://nango.dev/blog/byoc-vs-self-hosted-for-ai-agent-integrations)
+  - [MCP events for customer-facing AI agents](https://nango.dev/blog/mcp-events-for-customer-facing-ai-agents)
+  - [How to expose tools to AI agents without clogging their context](https://nango.dev/blog/how-to-expose-tools-to-agents-without-clogging-context)
+  - [How to connect multiple Slack workspaces to Claude, Codex, and Cursor](https://nango.dev/blog/connect-multiple-slack-workspaces-to-claude-codex-cursor)
+  - [How to fix HubSpot API 400: "There was a problem with the request"](https://nango.dev/blog/fix-hubspot-api-400-there-was-a-problem-with-the-request)
+  - [How to fix Google Drive API 404 "File not found" when the file exists](https://nango.dev/blog/fix-google-drive-api-404-file-not-found)
+</Update>
+---
+
+<Update label="Environment configuration from the API" description="October 27, 2026">
+  Set up a new environment entirely from the API, webhooks included, and read its configuration back.
+
+  - [Create environment API](/reference/backend/http-api/environments/create) accepts a `webhooks` object with the destination URLs and event subscriptions. The response now returns the complete environment settings, including the webhook signing key.
+  - [Get environment API](/reference/backend/http-api/environments/get) returns an environment's settings. Pass `with_secrets=true` to also get the webhook signing key and OpenTelemetry headers, which requires the extra `account:environments:read_secret` scope.
+
+  Both take an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the matching `account:environments:*` scope.
+</Update>
+---
+
+<Update label="Smaller improvements" description="October 27, 2026">
+  - **Clearer errors when agents hit the connection limit:** Agent sessions now get a clear error when creating a connection fails because the account is at its plan's connection limit.
+  - **Syncs that checkpoint keep going:** A sync stopped at the execution time limit now reschedules immediately if it saved a checkpoint during the run, instead of failing and waiting for the next scheduled run.
+  - **Pre-built integrations on self-managed instances:** Self-managed instances can now install Nango's integration catalog in their own object storage. See [Self-managed Nango instances](/guides/platform/self-hosting/install-integration-catalog).
+</Update>
+---
+
+<Update label="Agents can recover broken connections" description="October 26, 2026">
   Agents can now get a broken connection fixed without leaving the session.
 
-  When a connection's credentials expire and can no longer be refreshed, or it is missing a scope, the user gets a reconnect link and authorizes the same connection again. The session keeps working on it, and the connection keeps its ID and tags. It is available whenever `nango_create_connection` is enabled.
+  When a connection's credentials expire, fail to refresh, or lack a scope, the user gets a reconnect link and authorizes the same connection again. Your agent continues working in the same session without interruptions.
 
   See [reconnecting a connection](/guides/agent-sessions#reconnecting-a-connection).
-
-  [Reconnect sessions](/reference/backend/http-api/connect/sessions/reconnect) also no longer clear a connection's tags when the request passes neither `tags` nor `end_user`.
 
   ![An agent asking the user to reconnect Linear after its credentials were rejected](/images/changelog/agent-session-reconnect.png)
 </Update>
@@ -1869,7 +1946,10 @@ description: "Important developer & product updates, including deprecations & br
 
   - Available for top APIs (more being added over time).
   - Select this option when creating a new integration.
-  - For **testing only**—production apps should still use your own credentials to keep Nango fully white-labeled.
+
+  <Note>
+    Update: Nango-managed OAuth apps are production-ready, and you can use them with real users. Register your own OAuth app only if you need white-labeled auth, custom scopes, or the other benefits listed in [Nango-managed OAuth apps](/guides/auth/auth-guide#nango-managed-oauth-apps).
+  </Note>
 </Update>
 ---
 

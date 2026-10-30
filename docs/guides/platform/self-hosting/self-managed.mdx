@@ -26,7 +26,7 @@ Custom deployments (e.g., ECS instead of Kubernetes) are possible with our guida
 
 ## What leaves your account
 
-**Nothing.** Self-hosted instances don't send any telemetry, logs, or data back to Nango automatically. You're the only one with visibility into your instance, unless you choose to export metrics to your own monitoring tool, or share something with us directly when asking for support.
+**Anonymous usage metrics only.** Self-hosted instances don't send logs, credentials, records, or any other instance data back to Nango. The only thing reported to Nango is [hosted telemetry](#hosted-telemetry): anonymous usage metrics, such as how many functions run at the same time. Beyond that, you're the only one with visibility into your instance, unless you choose to export metrics to your own monitoring tool, or share something with us directly when asking for support.
 
 ## Where your data lives
 
@@ -63,7 +63,7 @@ The most sensitive thing Nango stores is your end users' connection credentials 
 
 ## Observability & support
 
-Everything is visible to you, and only you — the dashboard, the audit trail, your logs, your metrics. Nango has no visibility into your instance unless you choose to share something with us.
+Everything is visible to you, and only you — the dashboard, the audit trail, your logs, your metrics. Nango has no visibility into your instance beyond [hosted telemetry](#hosted-telemetry), unless you choose to share something with us.
 
 Support follows your contract's SLA. Reach out through your support channel with what you're seeing (logs, dashboard state, error messages) — we can't look at your instance ourselves.
 
@@ -348,6 +348,21 @@ Your reverse proxy must strip the base path prefix before forwarding to Connect 
 Connect UI is a single-page app: the server must respond with `index.html` for any path that isn't a built asset, including the base path without a trailing slash. Nango's static file server handles this out of the box; if you serve the built `dist` from your own static host, enable its SPA fallback.
 
 See [Auth](/guides/auth/auth-guide) for the end-user connection flow.
+
+### Hosted telemetry
+
+Nango records anonymous usage metrics, such as how many functions run at the same time, into the `hosted_telemetry` schema of your database, to be reported to Nango. They carry no instance data: each row is a timestamp, a metric name, a value, and a random ID for the process that wrote it. It is on by default.
+
+Every service writes its metrics to the main database, so set `NANGO_DATABASE_URL` or `NANGO_DB_HOST` on every service.
+
+To keep the metrics in a separate database, set `NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL` to that database's URL on every service, so they all write to the same place:
+
+```sh
+NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL=postgresql://user:password@host:port/dbname
+NANGO_HOSTED_TELEMETRY_POSTGRES_SSL=true
+```
+
+Contact us if this telemetry is an issue for your organization.
 
 ### Persistent storage
 
@@ -643,7 +658,7 @@ Both apply to the API and to runners, and are passed to Kubernetes and Lambda ru
 
 ### Telemetry
 
-Self-hosted instances do not automatically send telemetry back to Nango. Operational metrics and logs stay within your own infrastructure and are only exported if you configure the OpenTelemetry Export add-on.
+Apart from [hosted telemetry](#hosted-telemetry), self-hosted instances do not send telemetry back to Nango. Operational metrics and logs stay within your own infrastructure and are only exported if you configure the OpenTelemetry Export add-on.
 
 ### Logs
 
@@ -688,6 +703,6 @@ If `NANGO_LOGS_ENABLED` is `false`, logs are sent to stdout and can be viewed in
     Not out of the box — the default configuration scales far without it, and we can guide you on setting up autoscaling when you need it.
   </Accordion>
   <Accordion title="Does Nango have any visibility into our instance?">
-    None. Self-hosted instances send nothing back to Nango automatically. If you need our help debugging something, you share what's relevant with us directly.
+    Only [hosted telemetry](#hosted-telemetry), which is anonymous usage metrics. Nothing else is sent back to Nango. If you need our help debugging something, you share what's relevant with us directly.
   </Accordion>
 </AccordionGroup>

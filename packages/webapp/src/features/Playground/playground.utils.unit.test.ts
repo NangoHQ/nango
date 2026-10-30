@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { buildResultData, computeDurationMs, sleepWithAbort, validateAndParseInputs } from './playground.utils';
+import { buildResultData, computeDurationMs, parsePlaygroundInput, sleepWithAbort, validateAndParseInputs } from './playground.utils';
 
 import type { InputField } from './types';
 
@@ -11,6 +11,16 @@ function field(overrides: Partial<InputField> & { name: string }): InputField {
 }
 
 describe('validateAndParseInputs', () => {
+    it('omits input from the request when the function declares no input', () => {
+        const result = parsePlaygroundInput({ kind: 'none' }, {});
+        expect(result.ok && JSON.stringify({ input: result.parsed })).toBe('{}');
+    });
+
+    it('preserves an empty input object when the function declares an input schema', () => {
+        const result = parsePlaygroundInput({ kind: 'object', fields: [] }, {});
+        expect(result.ok && JSON.stringify({ input: result.parsed })).toBe('{"input":{}}');
+    });
+
     it('parses string fields as-is (preserving raw value)', () => {
         const result = validateAndParseInputs([field({ name: 'foo' })], { foo: 'hello' });
         expect(result).toEqual({ ok: true, parsed: { foo: 'hello' } });
@@ -76,6 +86,17 @@ describe('validateAndParseInputs', () => {
     it('rejects object for array type', () => {
         const result = validateAndParseInputs([field({ name: 'a', type: 'array' })], { a: '{"a":1}' });
         expect(result).toEqual({ ok: false, errors: { a: 'Expected a JSON array' } });
+    });
+
+    it('tries string variants last', () => {
+        const f = field({
+            name: 'v',
+            type: 'string | object | null',
+            variants: [field({ name: 'v', type: 'string' }), field({ name: 'v', type: 'object' }), field({ name: 'v', type: 'null' })]
+        });
+        expect(validateAndParseInputs([f], { v: '{"a":1}' })).toEqual({ ok: true, parsed: { v: { a: 1 } } });
+        expect(validateAndParseInputs([f], { v: 'null' })).toEqual({ ok: true, parsed: { v: null } });
+        expect(validateAndParseInputs([f], { v: 'abc' })).toEqual({ ok: true, parsed: { v: 'abc' } });
     });
 
     describe('constraints', () => {

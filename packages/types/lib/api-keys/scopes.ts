@@ -44,8 +44,8 @@ export const API_KEY_SCOPES = [
     'environment:records:write',
     // Logs
     'environment:logs:read',
-    // Actions
-    'environment:actions:execute',
+    // Tools
+    'environment:tools:call',
     // Proxy
     'environment:proxy',
     // Variables
