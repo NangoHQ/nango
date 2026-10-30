@@ -2,7 +2,9 @@ import http from 'node:http';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import providerClient from './provider.client.js';
+import { axiosInstance } from '@nangohq/utils';
+
+import providerClient, { resolveZohoTokenUrl } from './provider.client.js';
 
 import type { Config as ProviderConfig } from '../models/index.js';
 import type * as OutboundPolicyModule from '../services/proxy/outbound-policy.js';
@@ -71,5 +73,52 @@ describe('microsoft-admin client_credentials', () => {
             await providerClient.refreshToken(provider, config, connection);
             expect(new URLSearchParams(bodies[0]).get('scope')).toBe('https://graph.microsoft.com/.default');
         });
+    });
+});
+
+describe('zoho token url', () => {
+    const zohoTokenUrl = 'https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token || ${connectionConfig.accounts-server}/oauth/v2/token';
+
+    it.each([
+        ['Canada', { 'accounts-server': 'https://accounts.zohocloud.ca', extension: 'ca' }, 'https://accounts.zohocloud.ca/oauth/v2/token'],
+        ['extension', { 'accounts-server': 'https://accounts.zoho.eu', extension: 'eu' }, 'https://accounts.zoho.eu/oauth/v2/token'],
+        ['extension with a bare accounts-server', { 'accounts-server': 'us', extension: 'com' }, 'https://accounts.zoho.com/oauth/v2/token'],
+        ['accounts-server without extension', { 'accounts-server': 'https://accounts.zoho.sa' }, 'https://accounts.zoho.sa/oauth/v2/token'],
+        [
+            'an inherited property name as extension',
+            { 'accounts-server': 'https://accounts.zoho.com', extension: 'constructor' },
+            'https://accounts.zoho.constructor/oauth/v2/token'
+        ]
+    ])('resolves %s', (_, connectionConfig, expected) => {
+        expect(resolveZohoTokenUrl(zohoTokenUrl, connectionConfig).href).toBe(expected);
+    });
+});
+
+describe('zoho refresh', () => {
+    const zohoConfig = { ...config, unique_key: 'zoho-crm', provider: 'zoho-crm' } as unknown as ProviderConfig;
+    const zohoProvider = {
+        auth_mode: 'OAUTH2',
+        token_url: 'https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token || ${connectionConfig.accounts-server}/oauth/v2/token'
+    } as ProviderOAuth2;
+    const connection = {
+        credentials: { type: 'OAUTH2', access_token: 'old', refresh_token: 'refresh', raw: {} },
+        connection_config: { extension: 'ca', 'accounts-server': 'https://accounts.zohocloud.ca', api_domain: 'https://www.zohoapis.ca' }
+    } as unknown as DBConnectionDecrypted;
+
+    it('refreshes a Canadian connection against accounts.zohocloud.ca and keeps the refresh token', async () => {
+        const post = vi
+            .spyOn(axiosInstance, 'post')
+            .mockResolvedValueOnce({ status: 200, data: { access_token: 'new', expires_in: 3600, api_domain: 'https://www.zohoapis.ca' } });
+        const res = await providerClient.refreshToken(zohoProvider, zohoConfig, connection);
+        expect(post.mock.calls[0]![0]).toBe('https://accounts.zohocloud.ca/oauth/v2/token');
+        expect(new URLSearchParams(post.mock.calls[0]![1] as string).get('refresh_token')).toBe('refresh');
+        expect(res).toMatchObject({ access_token: 'new', refresh_token: 'refresh' });
+        post.mockRestore();
+    });
+
+    it('fails when Zoho returns an error with a 200 status', async () => {
+        const post = vi.spyOn(axiosInstance, 'post').mockResolvedValueOnce({ status: 200, data: { error: 'invalid_code' } });
+        await expect(providerClient.refreshToken(zohoProvider, zohoConfig, connection)).rejects.toThrow(/invalid_code/);
+        post.mockRestore();
     });
 });

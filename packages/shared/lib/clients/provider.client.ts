@@ -32,6 +32,32 @@ const threadsLongLivedTokenUrl = 'https://graph.threads.net/access_token';
 
 const logger = getLogger('Provider.Client');
 
+// Zoho's token_url builds accounts.zoho.<extension>, but Canada's accounts server is accounts.zohocloud.ca
+// (accounts.zoho.ca doesn't exist), so refreshes for Canadian connections need an override.
+const zohoAccountsHostOverrides: Record<string, string> = {
+    ca: 'accounts.zohocloud.ca'
+};
+
+export function resolveZohoTokenUrl(tokenUrl: string, connectionConfig: Record<string, string> = {}): URL {
+    const extension = connectionConfig['extension'];
+    const host = extension && Object.hasOwn(zohoAccountsHostOverrides, extension) ? zohoAccountsHostOverrides[extension] : undefined;
+    return host ? new URL(`https://${host}/oauth/v2/token`) : makeUrl(tokenUrl, connectionConfig);
+}
+
+const zohoProviders = new Set([
+    'zoho',
+    'zoho-bigin',
+    'zoho-books',
+    'zoho-calendar',
+    'zoho-crm',
+    'zoho-desk',
+    'zoho-inventory',
+    'zoho-invoice',
+    'zoho-mail',
+    'zoho-people',
+    'zoho-recruit'
+]);
+
 const axios = {
     post: (url: string, data?: unknown, config?: Parameters<typeof axiosInstance.post>[2]) =>
         axiosInstance.post(url, data, { ...config, ...getOAuthAxiosRequestConfig() }),
@@ -40,6 +66,9 @@ const axios = {
 
 class ProviderClient {
     public shouldUseProviderClient(provider: string): boolean {
+        if (zohoProviders.has(provider)) {
+            return true;
+        }
         switch (provider) {
             case 'agiloft':
             case 'braintree':
@@ -114,6 +143,9 @@ class ProviderClient {
             await assertSafeOAuthUrl(tokenUrl);
         } catch (err) {
             throw new NangoError('request_token_external_error', { message: err instanceof Error ? err.message : 'Outbound URL blocked by policy' });
+        }
+        if (zohoProviders.has(config.provider)) {
+            return this.createZohoToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
         }
         switch (config.provider) {
             case 'attio-mcp':
@@ -224,7 +256,10 @@ class ProviderClient {
         }
 
         const credentials = connection.credentials;
-        const interpolatedTokenUrl = makeUrl(provider.token_url as string, connection.connection_config);
+        // Resolved before the DNS-checking policy below, which would reject accounts.zoho.ca.
+        const interpolatedTokenUrl = zohoProviders.has(config.provider)
+            ? resolveZohoTokenUrl(provider.token_url as string, connection.connection_config)
+            : makeUrl(provider.token_url as string, connection.connection_config);
         const interpolatedRefreshUrl = provider.refresh_url ? makeUrl(provider.refresh_url, connection.connection_config) : null;
 
         try {
@@ -251,6 +286,10 @@ class ProviderClient {
             !credentials.access_token
         ) {
             throw new NangoError('missing_access_token');
+        }
+
+        if (zohoProviders.has(config.provider)) {
+            return this.refreshZohoToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
         }
 
         switch (config.provider) {
@@ -577,6 +616,55 @@ class ProviderClient {
             throw new NangoError('revolut_refresh_token_request_error', response.data);
         } catch (err: any) {
             throw new NangoError('revolut_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createZohoToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        clientSecret: string,
+        callBackUrl: string,
+        codeVerifier: string
+    ): Promise<object> {
+        try {
+            const body = qs.stringify({
+                grant_type: 'authorization_code',
+                code,
+                client_id: clientId,
+                client_secret: clientSecret,
+                redirect_uri: callBackUrl,
+                ...(codeVerifier && { code_verifier: codeVerifier })
+            });
+            const response = await axios.post(tokenUrl, body, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+
+            if (response.status === 200 && response.data?.access_token) {
+                return response.data;
+            }
+
+            throw new NangoError('zoho_token_request_error', response.data?.error ?? 'missing access_token');
+        } catch (err) {
+            throw new NangoError('zoho_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshZohoToken(tokenUrl: string, refreshToken: string, clientId: string, clientSecret: string): Promise<object> {
+        try {
+            const body = qs.stringify({
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken,
+                client_id: clientId,
+                client_secret: clientSecret
+            });
+            const response = await axios.post(tokenUrl, body, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+
+            if (response.status === 200 && response.data?.access_token) {
+                return { ...response.data, refresh_token: response.data.refresh_token ?? refreshToken };
+            }
+
+            throw new NangoError('zoho_refresh_token_request_error', response.data?.error ?? 'missing access_token');
+        } catch (err) {
+            throw new NangoError('zoho_refresh_token_request_error', stringifyError(err));
         }
     }
 
