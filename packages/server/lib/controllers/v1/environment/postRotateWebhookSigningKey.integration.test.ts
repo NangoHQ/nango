@@ -8,14 +8,12 @@ import { authenticateUser, isSuccess, runServer, shouldBeProtected } from '../..
 const route = '/api/v1/environment/webhook-signing-key/rotate';
 let api: Awaited<ReturnType<typeof runServer>>;
 
-function signingKeyRow(envId: number) {
-    return db
-        .knex('customer_keys')
-        .select('customer_keys.secret', 'customer_keys.iv', 'customer_keys.tag', 'customer_keys.hashed')
-        .join('customer_keys_relations', 'customer_keys_relations.customer_key_id', 'customer_keys.id')
-        .where('customer_keys.key_type', 'webhook_signing')
-        .where('customer_keys_relations.entity_id', envId)
-        .first();
+async function committedSigningKey(envId: number): Promise<string> {
+    const fresh = await customerKeyService.getUncachedWebhookSigningKeyForEnv(db.knex, envId);
+    if (fresh.isErr()) {
+        throw fresh.error;
+    }
+    return fresh.value;
 }
 
 describe(`POST ${route}`, () => {
@@ -60,8 +58,7 @@ describe(`POST ${route}`, () => {
         }
         expect(after.value).toBe(json.data.webhook_signing_key);
 
-        // getWebhookSigningKeyForEnv is served from the cache the rotation just filled, so check the row too.
-        expect(getEncryptionManager().decryptAPISecret(await signingKeyRow(env.id)).secret).toBe(json.data.webhook_signing_key);
+        expect(await committedSigningKey(env.id)).toBe(json.data.webhook_signing_key);
     });
 
     it('should store the key encrypted and decryptable', async () => {
@@ -76,12 +73,10 @@ describe(`POST ${route}`, () => {
         });
         isSuccess(json);
 
-        const row = await signingKeyRow(env.id);
-
+        const row = await db.knex('webhook_signing_keys').where({ environment_id: env.id }).first();
         expect(row.secret).not.toBe(json.data.webhook_signing_key);
         expect(row.iv).not.toBe('');
         expect(row.tag).not.toBe('');
-        expect(row.hashed).not.toBe('');
         expect(getEncryptionManager().decryptAPISecret(row).secret).toBe(json.data.webhook_signing_key);
     });
 
@@ -105,7 +100,7 @@ describe(`POST ${route}`, () => {
         const otherEnv = await seeders.createEnvironmentSeed(account.id, 'other');
         const session = await authenticateUser(api, user);
 
-        const otherBefore = getEncryptionManager().decryptAPISecret(await signingKeyRow(otherEnv.id)).secret;
+        const otherBefore = await committedSigningKey(otherEnv.id);
 
         const { json } = await api.fetch(route, {
             method: 'POST',
@@ -115,7 +110,7 @@ describe(`POST ${route}`, () => {
         });
         isSuccess(json);
 
-        expect(getEncryptionManager().decryptAPISecret(await signingKeyRow(env.id)).secret).toBe(json.data.webhook_signing_key);
-        expect(getEncryptionManager().decryptAPISecret(await signingKeyRow(otherEnv.id)).secret).toBe(otherBefore);
+        expect(await committedSigningKey(env.id)).toBe(json.data.webhook_signing_key);
+        expect(await committedSigningKey(otherEnv.id)).toBe(otherBefore);
     });
 });
