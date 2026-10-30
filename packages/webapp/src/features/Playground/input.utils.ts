@@ -34,7 +34,7 @@ export function getPlaygroundInputSchema(fn: PlaygroundFunctionRow | undefined):
     return resolveSchemaReference(schema);
 }
 
-function resolveSchemaReference(schema: JSONSchema7, root: JSONSchema7 = schema): JSONSchema7 {
+export function resolveSchemaReference(schema: JSONSchema7, root: JSONSchema7 = schema): JSONSchema7 {
     if (!schema.$ref) return schema;
     // Resolve the root pointer; keep definitions available for nested references.
     let resolved: unknown = schema;

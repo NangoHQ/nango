@@ -90,9 +90,9 @@ describe(findActiveFunctionAvailability, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action', enabled: false });
         await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'sync_issues', type: 'sync', enabled: false });
 
-        const rows = await findActiveFunctionAvailability({ environmentId: environment.id, providerConfigKey: 'github' });
+        const { deployed } = await findActiveFunctionAvailability({ environmentId: environment.id, providerConfigKey: 'github' });
 
-        expect(rows).toEqual(
+        expect(deployed).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({ name: 'create_issue', type: 'action', enabled: true }),
                 expect.objectContaining({ name: 'sync_issues', type: 'sync', enabled: false })
@@ -108,9 +108,9 @@ describe(findActiveFunctionAvailability, () => {
 
         await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action', enabled: false });
 
-        const rows = await findActiveFunctionAvailability({ environmentId: environment.id, providerConfigKey: 'github' });
+        const { deployed } = await findActiveFunctionAvailability({ environmentId: environment.id, providerConfigKey: 'github' });
 
-        expect(rows).toEqual([expect.objectContaining({ name: 'create_issue', type: 'action', enabled: false })]);
+        expect(deployed).toEqual([expect.objectContaining({ name: 'create_issue', type: 'action', enabled: false })]);
     });
 });
 

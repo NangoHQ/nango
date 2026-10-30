@@ -12659,7 +12659,7 @@ await nango.getFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' 
         The function name.
     </ResponseField>
     <ResponseField name="type" type="string">
-        Disambiguates when functions share a name: `sync`, `action`, or `on-event`.
+        The function type: `sync`, `action`, `on-event`, or `tool`. When omitted and several functions share the name, the first one is returned in this order: `tool`, `action`, `on-event`, `sync`.
     </ResponseField>
 </Expandable>
 
@@ -12701,7 +12701,7 @@ await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { typ
         The function name.
     </ResponseField>
     <ResponseField name="type" type="string">
-        Disambiguates when functions share a name: `sync`, `action`, or `on-event`.
+        The function type: `sync`, `action`, `on-event`, or `tool`. When omitted and several functions share the name, the first one is returned in this order: `tool`, `action`, `on-event`, `sync`.
     </ResponseField>
 </Expandable>
 
