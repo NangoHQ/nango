@@ -159,6 +159,14 @@ paths:
                                         `integration_config` schema (e.g. `private-api-generic`, `aws-sigv4`).
                                         Keys and required fields depend on the provider; values are validated against
                                         the provider schema.
+                                custom:
+                                    type: object
+                                    additionalProperties:
+                                        type: string
+                                    description: >
+                                        Free-form key-value settings stored on the integration, for providers without an
+                                        `integration_config` schema. Rejected for providers that declare one; use
+                                        `integration_config` instead.
 
             responses:
                 '200':
@@ -296,6 +304,14 @@ paths:
                                         Provider-specific configuration for providers that declare an
                                         `integration_config` schema (e.g. `private-api-generic`, `aws-sigv4`).
                                         Only the fields you pass are updated.
+                                custom:
+                                    type: object
+                                    additionalProperties:
+                                        type: string
+                                    description: >
+                                        Free-form key-value settings stored on the integration, for providers without an
+                                        `integration_config` schema. Merged with existing values. Rejected for providers
+                                        that declare one; use `integration_config` instead.
             responses:
                 '200':
                     description: Successfully updated an integration
@@ -4615,6 +4631,45 @@ components:
                     type: string
                 format:
                     type: string
+                    enum: [hostname, uri, uuid, email]
+                optional:
+                    type: boolean
+                order:
+                    type: number
+                default_value:
+                    type: string
+                hidden:
+                    type: string
+                prefix:
+                    type: string
+                suffix:
+                    type: string
+                doc_section:
+                    type: string
+                secret:
+                    type: boolean
+                    description: The value is sensitive and is masked once saved.
+                automated:
+                    type: boolean
+                    description: The value is set by Nango, not entered by the user.
+                enum:
+                    type: array
+                    items:
+                        type: string
+                warnings:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    description: Warning shown when the field is set to a given value, keyed by that value.
+                visible_when:
+                    type: object
+                    description: Only show and validate this field when another field holds the given value.
+                    properties:
+                        field:
+                            type: string
+                        equals:
+                            type: string
+                    required: [field, equals]
         BaseProvider:
             properties:
                 name:
@@ -4630,7 +4685,6 @@ components:
                             'OAUTH2_CC',
                             'BASIC',
                             'API_KEY',
-                            'APP_STORE',
                             'CUSTOM',
                             'APP',
                             'NONE',
@@ -4639,7 +4693,10 @@ components:
                             'BILL',
                             'TWO_STEP',
                             'SIGNATURE',
-                            'INSTALL_PLUGIN'
+                            'MCP_OAUTH2',
+                            'MCP_OAUTH2_GENERIC',
+                            'INSTALL_PLUGIN',
+                            'AWS_SIGV4'
                         ]
                 proxy:
                     properties:
@@ -4746,6 +4803,19 @@ components:
                     properties:
                         apiKey:
                             $ref: '#/components/schemas/SimplifiedJSONSchema'
+                integration_config:
+                    type: object
+                    description: >
+                        Fields set on the integration (in `integration_config` on create or update) rather than on each connection,
+                        keyed by field name.
+                    additionalProperties:
+                        $ref: '#/components/schemas/SimplifiedJSONSchema'
+                client_registration:
+                    type: string
+                    enum: [dynamic, static, cimd]
+                    description: >
+                        MCP_OAUTH2 providers only. How the OAuth client is registered: `static` requires `client_id` and
+                        `client_secret` in the integration credentials; `dynamic` and `cimd` are registered by Nango.
 
             required:
                 - auth_mode
@@ -5722,6 +5792,7 @@ components:
                 and CIMD providers reject those fields because Nango manages them. Optional fields must not be null.
             oneOf:
                 - type: object
+                  additionalProperties: false
                   required:
                       - type
                   properties:
@@ -5740,11 +5811,12 @@ components:
                           minLength: 1
                       scopes:
                           type: string
-                          pattern: '^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$'
+                          pattern: '^(?:[0-9a-zA-Z:/_.*-]+(,[0-9a-zA-Z:/_.*-]+)*)?$'
                       webhook_secret:
                           type: string
                           maxLength: 255
                 - type: object
+                  additionalProperties: false
                   required:
                       - type
                   properties:
@@ -5761,8 +5833,9 @@ components:
                           minLength: 1
                       private_key:
                           type: string
-                          pattern: '^-----BEGIN RSA PRIVATE KEY----.*-----END RSA PRIVATE KEY-----$'
+                          pattern: '^-----BEGIN RSA PRIVATE KEY----[\s\S]*-----END RSA PRIVATE KEY-----$'
                 - type: object
+                  additionalProperties: false
                   required:
                       - type
                   properties:
@@ -5786,8 +5859,9 @@ components:
                           minLength: 1
                       private_key:
                           type: string
-                          pattern: '^-----BEGIN RSA PRIVATE KEY----.*-----END RSA PRIVATE KEY-----$'
+                          pattern: '^-----BEGIN RSA PRIVATE KEY----[\s\S]*-----END RSA PRIVATE KEY-----$'
                 - type: object
+                  additionalProperties: false
                   required:
                       - type
                   properties:
@@ -5801,11 +5875,14 @@ components:
                           maxLength: 255
                       client_uri:
                           type: string
+                          description: A URL, or an empty string.
                           maxLength: 255
                       client_logo_uri:
                           type: string
+                          format: uri
                           maxLength: 255
                 - type: object
+                  additionalProperties: false
                   required:
                       - type
                   properties:
