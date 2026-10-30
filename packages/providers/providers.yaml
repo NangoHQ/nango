@@ -12635,14 +12635,14 @@ halo-psa:
             doc_section: '#step-3-create-an-api-application'
 
 haus:
-    display_name: Haus
+    display_name: Haus (Experiment Results API)
     categories:
         - analytics
         - e-commerce
         - marketing
     auth_mode: BASIC
     proxy:
-        base_url: https://harbor.haus.io
+        base_url: https://geolift.apis.haus
         query:
             org_id: ${connectionConfig.orgId}
     docs: https://nango.dev/docs/api-integrations/haus
