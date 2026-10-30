@@ -137,30 +137,8 @@ async function npmPublish(packageName) {
     });
 }
 
-const licensePackageDirs = {
-    '@nangohq/frontend': 'packages/frontend',
-    '@nangohq/node': 'packages/node-client'
-};
-
 async function runPublishPreparation(packageName) {
-    // .npmrc sets ignore-scripts, and publish passes --ignore-scripts, so the
-    // prepack lifecycle does not run. Copy LICENSE directly for the two
-    // packages that ship it.
-    const licenseDir = licensePackageDirs[packageName];
-    if (licenseDir) {
-        echo(chalk.grey(`  ${figures.tick} Copying LICENSE into ${packageName}`));
-        await fs.copyFile('LICENSE', `${licenseDir}/LICENSE`);
-    }
-
-    if (packageName === '@nangohq/node') {
-        echo(chalk.grey(`  ${figures.tick} Building ${packageName}`));
-        await $`npm run -w "${packageName}" build`;
-    }
-
-    if (packageName === 'nango') {
-        echo(chalk.grey(`  ${figures.tick} Copying CLI package files`));
-        await $`npm run -w "${packageName}" copy:files`;
-    }
+    await $`node ./scripts/prepare-publish-package.mjs ${packageName}`;
 }
 
 // --- Version bump functions ---

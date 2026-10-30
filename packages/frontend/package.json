@@ -14,7 +14,7 @@
     },
     "license": "Elastic-2.0",
     "scripts": {
-        "prepack": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\""
+        "copy:license": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\""
     },
     "dependencies": {
         "@nangohq/types": "0.71.14"
