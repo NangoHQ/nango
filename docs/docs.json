@@ -1279,6 +1279,8 @@
               "api-integrations/crisp-plugin-install",
               "integrations/all/crowdstrike",
               "api-integrations/crunchbase",
+              "api-integrations/crustdata",
+              "api-integrations/crustdata-mcp",
               "integrations/all/cursor",
               "integrations/all/cursor-admin",
               "api-integrations/customer-io",
