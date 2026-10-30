@@ -7,6 +7,11 @@ on:
                 description: 'Commit hash to release'
                 required: true
                 type: string
+            dry_run:
+                description: 'Run everything but skip the image push, the git tag, the manifest commit and the release publish'
+                required: false
+                type: boolean
+                default: false
 
 permissions:
     contents: write
@@ -23,7 +28,7 @@ jobs:
         steps:
             - name: Get versions
               id: versions
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   ref: ${{ inputs.commit_hash }}
                   fetch-depth: 1
@@ -73,11 +78,50 @@ jobs:
               with:
                   version: 'v3.12.3'
 
+            - name: Checkout release commit
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+              with:
+                  ref: ${{ needs.manage-versions.outputs.commit_hash }}
+                  fetch-depth: 1
+                  persist-credentials: false
+
+            - name: Build managed image
+              env:
+                  COMMIT_HASH: ${{ needs.manage-versions.outputs.commit_hash }}
+                  NANGO_LICENSE_PUBLIC_KEY: ${{ vars.NANGO_LICENSE_PUBLIC_KEY }}
+              run: |
+                  if [ -z "$NANGO_LICENSE_PUBLIC_KEY" ]; then
+                      echo "NANGO_LICENSE_PUBLIC_KEY is not set"
+                      exit 1
+                  fi
+
+                  docker build \
+                      --platform linux/amd64 \
+                      --build-arg BASE_IMAGE_HASH="$COMMIT_HASH" \
+                      --build-arg NANGO_LICENSE_PUBLIC_KEY \
+                      --file Dockerfile.managed \
+                      --tag "nangohq/nango:managed-candidate-$COMMIT_HASH" \
+                      .
+
+                  # Fails the release if the image has no license key
+                  docker run --rm --platform linux/amd64 --entrypoint node "nangohq/nango:managed-candidate-$COMMIT_HASH" \
+                      -e "import('/app/nango/packages/license/dist/key.js').then((m) => process.exit(m.licensePublicKey ? 0 : 1))"
+
+                  docker save "nangohq/nango:managed-candidate-$COMMIT_HASH" | gzip > managed-image.tar.gz
+
+            - name: Upload managed image
+              uses: actions/upload-artifact@v4
+              with:
+                  name: managed-image
+                  path: managed-image.tar.gz
+                  retention-days: 1
+
             - name: Deploy to sandbox
               run: |
                   echo "commit_hash: ${{ needs.manage-versions.outputs.commit_hash }}"
                   # Create a new kind cluster for testing
                   kind create cluster --name nango-test
+                  kind load docker-image "nangohq/nango:managed-candidate-${{ needs.manage-versions.outputs.commit_hash }}" --name nango-test
 
                   # Create namespace and secrets
                   kubectl create namespace nango
@@ -112,7 +156,7 @@ jobs:
                   echo "commit_hash: ${{ inputs.commit_hash }}"
 
                   # Debug: Show the exact command
-                  HELM_CMD="helm upgrade --install nango nangohq/nango --version 1.1.5 --namespace nango --create-namespace --set shared.namespace=nango --set shared.tag=\"${{ inputs.commit_hash }}\" --set shared.encryptionEnabled=true --set shared.NANGO_SERVER_URL=\"http://localhost:3003\" --set shared.NANGO_CALLBACK_URL=\"http://localhost:3003/oauth/callback\" --set shared.NANGO_LOGS_ENABLED=false --set server.useLoadBalancer=false --set server.RECORDS_DATABASE_SSL=false --set elasticsearch.enabled=false --set postgresql.auth.postgresPassword=nango123 --set postgresql.image.repository=bitnamilegacy/postgresql --set postgresql.image.tag=16.1.0-debian-11-r9 --wait=false"
+                  HELM_CMD="helm upgrade --install nango nangohq/nango --version 1.1.5 --namespace nango --create-namespace --set shared.namespace=nango --set shared.tag=\"managed-candidate-${{ needs.manage-versions.outputs.commit_hash }}\" --set imagePullPolicy=IfNotPresent --set shared.encryptionEnabled=true --set shared.NANGO_SERVER_URL=\"http://localhost:3003\" --set shared.NANGO_CALLBACK_URL=\"http://localhost:3003/oauth/callback\" --set shared.NANGO_LOGS_ENABLED=false --set server.useLoadBalancer=false --set server.RECORDS_DATABASE_SSL=false --set elasticsearch.enabled=false --set postgresql.auth.postgresPassword=nango123 --set postgresql.image.repository=bitnamilegacy/postgresql --set postgresql.image.tag=16.1.0-debian-11-r9 --wait=false"
                   echo "Executing: $HELM_CMD"
 
                   # Execute the command
@@ -260,7 +304,7 @@ jobs:
                   echo "EOF" >> $GITHUB_OUTPUT
 
             - name: Wait for approval on failure
-              if: (steps.cluster-state.outputs.status == 'failure' || failure()) && !env.ACT
+              if: (steps.cluster-state.outputs.status == 'failure' || failure()) && !env.ACT && !inputs.dry_run
               uses: trstringer/manual-approval@v1
               with:
                   secret: ${{ github.TOKEN }}
@@ -337,7 +381,7 @@ jobs:
                       managed-image-releases
 
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   ref: 'master'
                   fetch-depth: 1
@@ -380,19 +424,25 @@ jobs:
               if: ${{ env.ACT }}
               run: |
                   echo "Running in act - would perform Docker operations:"
-                  echo "Would pull: nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }}"
+                  echo "Would load: nangohq/nango:managed-candidate-${{ needs.manage-versions.outputs.commit_hash }}"
                   if [ "${{ needs.test-deployment.outputs.status }}" = "failure" ]; then
                     echo "Would tag as: nangohq/nango:managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   else
                     echo "Would tag as: nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   fi
 
+            - name: Download managed image
+              if: ${{ !env.ACT }}
+              uses: actions/download-artifact@v4
+              with:
+                  name: managed-image
+                  path: .
+
             - name: Retag and push final image
               id: retag-image
               if: ${{ !env.ACT }}
               run: |
-                  echo "Pulling image..."
-                  docker pull nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }}
+                  docker load < managed-image.tar.gz
 
                   if [ "${{ needs.test-deployment.outputs.status }}" = "failure" ]; then
                       echo "Test deployment failed, using bumped major version"
@@ -402,13 +452,15 @@ jobs:
                       IMAGE_TAG="managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   fi
 
-                  docker tag nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:${IMAGE_TAG}
-                  docker push nangohq/nango:${IMAGE_TAG}
+                  docker tag nangohq/nango:managed-candidate-${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:${IMAGE_TAG}
+                  if [ "${{ inputs.dry_run }}" != "true" ]; then
+                      docker push nangohq/nango:${IMAGE_TAG}
+                  fi
 
                   echo "tag_name=${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
             - name: Tag commit with managed release
-              if: ${{ !env.ACT }}
+              if: ${{ !env.ACT && !inputs.dry_run }}
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
@@ -426,7 +478,7 @@ jobs:
                   git push origin "$TAG_NAME"
 
             - name: Update version manifest in master
-              if: ${{ !env.ACT }}
+              if: ${{ !env.ACT && !inputs.dry_run }}
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
@@ -453,7 +505,7 @@ jobs:
                   fi
 
             - name: Checkout release commit for changelog
-              if: ${{ !env.ACT }}
+              if: ${{ !env.ACT && !inputs.dry_run }}
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   repository: ${{ github.repository }}
@@ -464,7 +516,7 @@ jobs:
                   persist-credentials: false
 
             - name: Checkout managed-image-releases
-              if: ${{ !env.ACT }}
+              if: ${{ !env.ACT && !inputs.dry_run }}
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   repository: NangoHQ/managed-image-releases
@@ -472,7 +524,7 @@ jobs:
                   path: managed-image-releases
 
             - name: Publish managed image release
-              if: ${{ !env.ACT }}
+              if: ${{ !env.ACT && !inputs.dry_run }}
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
                   GH_HOST: github.com
