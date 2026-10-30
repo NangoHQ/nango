@@ -13,6 +13,7 @@ import {
     createAgentSessionToken,
     endAgentSession,
     expireAgentSessions,
+    fillPendingMcpServers,
     getAgentSession,
     getAgentSessionByToken,
     insertAgentSession,
@@ -21,7 +22,14 @@ import {
 } from './agentSession.service.js';
 
 import type { LogContextOrigin } from '@nangohq/logs';
-import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, DBEnvironment, DBTeam } from '@nangohq/types';
+import type {
+    AgentSession,
+    AgentSessionCompiledIntegration,
+    AgentSessionCompiledToolset,
+    AgentSessionResolvedConnections,
+    DBEnvironment,
+    DBTeam
+} from '@nangohq/types';
 
 const table = 'agent_sessions';
 
@@ -367,6 +375,71 @@ describe('agentSession service', () => {
         expect(stillActive.endedAt).toBeNull();
 
         expect(await expireAgentSessions(db.knex, { limit: 10 })).toBe(0);
+    });
+    describe('fillPendingMcpServers', () => {
+        const pending = (provider: string): AgentSessionCompiledIntegration => ({
+            provider,
+            pinned: [],
+            searchable: [],
+            mcpServer: { status: 'pending', allow: '*', deny: [], pinnedNames: [] }
+        });
+        const listed = (provider: string, tool: string) => ({
+            provider,
+            pinned: [],
+            searchable: [{ name: tool, description: tool, slug: `${provider}__${tool}` }],
+            mcpServer: 'available' as const
+        });
+
+        async function insertPending() {
+            return (
+                await insertAgentSession(db.knex, {
+                    accountId: account.id,
+                    environmentId: environment.id,
+                    resolvedConnections: {},
+                    compiledToolset: { 'notion-mcp': pending('notion-mcp'), 'linear-mcp': pending('linear-mcp') },
+                    metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: true, tags: {} } },
+                    expiresAt: new Date(Date.now() + 60_000)
+                })
+            ).unwrap();
+        }
+
+        it('stores the listed servers and leaves the others pending', async () => {
+            const session = await insertPending();
+
+            const stored = (
+                await fillPendingMcpServers(db.knex, {
+                    id: session.id,
+                    pending: ['notion-mcp', 'linear-mcp'],
+                    integrations: { 'notion-mcp': listed('notion-mcp', 'search') }
+                })
+            ).unwrap();
+
+            expect(stored).toEqual({ 'notion-mcp': listed('notion-mcp', 'search'), 'linear-mcp': pending('linear-mcp') });
+            const reread = (await getAgentSession(db.knex, { id: session.id, accountId: account.id, environmentId: environment.id })).unwrap();
+            expect(reread.compiledToolset).toEqual(stored);
+        });
+
+        it('returns what another request stored instead of overwriting it', async () => {
+            const session = await insertPending();
+            const first = (
+                await fillPendingMcpServers(db.knex, {
+                    id: session.id,
+                    pending: ['notion-mcp', 'linear-mcp'],
+                    integrations: { 'linear-mcp': listed('linear-mcp', 'list_issues') }
+                })
+            ).unwrap();
+
+            const second = (
+                await fillPendingMcpServers(db.knex, {
+                    id: session.id,
+                    pending: ['notion-mcp', 'linear-mcp'],
+                    integrations: { 'notion-mcp': listed('notion-mcp', 'search') }
+                })
+            ).unwrap();
+
+            expect(second).toEqual(first);
+            expect(second['notion-mcp']).toEqual(pending('notion-mcp'));
+        });
     });
 });
 
