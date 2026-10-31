@@ -1,0 +1,93 @@
+---
+title: 'Heabsy'
+sidebarTitle: 'Heabsy'
+description: 'Integrate your application with the Heabsy API'
+---
+
+## Quickstart
+
+Connect to Heabsy with Nango and see data flow in 2 minutes. The Heabsy API uses API key authentication, so no user redirect is required.
+
+<Steps>
+    <Step title="Create the integration" id="create-integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Heabsy_.
+    </Step>
+    <Step title="Connect Heabsy" id="connect-heabsy">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your Heabsy API key, then save.
+    </Step>
+    <Step title="Call the Heabsy API" id="call-heabsy-api">
+    Let's make your first request to the Heabsy API: list the models the key can call. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/models" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/models',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app" id="implement-nango">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain your own credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## Heabsy integration guides
+
+Nango maintained guides for common use cases.
+
+- [How to get your Heabsy API key](/api-integrations/heabsy/connect)
+Create an API key in the Heabsy console and connect it to Nango
+
+Official docs: [Heabsy API reference](https://api.heabsy.com/docs)
+
+## Pre-built syncs & actions for Heabsy
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/heabsy/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## Common scopes
+
+Heabsy does not use scopes. Access is set per API key, and `GET /models` shows which models a key can call.
+
+## API gotchas
+
+- The proxy base URL is `https://api.heabsy.com/v1`, so OpenAI-style paths go through the proxy as `/chat/completions` and `/models`.
+- The same key works with the Anthropic Messages API at `/messages` on the same base URL.
+- There is no legacy `/completions` endpoint (it returns `404`). Use `/chat/completions`.
+- `GET /models` returns the model IDs the key can call, for example `qwen38`. The [model catalog](https://heabsy.com/models) lists each model with its context window, price and whether processing stays in the EEA.
+- Reasoning models such as `qwen38` return their reasoning in a separate field of the chat completion, so `message.content` holds only the answer.
+- Errors use the OpenAI error format. A wrong or missing key returns `401` with the code `invalid_api_key`, and `429` means the key hit its budget or rate limit.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/heabsy.mdx)</Note>
