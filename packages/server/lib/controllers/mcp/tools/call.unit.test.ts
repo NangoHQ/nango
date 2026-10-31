@@ -33,7 +33,7 @@ describe('callToolsTool', () => {
 
     it('invokes a tool function and returns its result', async () => {
         vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'function', fn: functionFixture }));
-        mocks.invokeFunction.mockResolvedValue(Ok({ data: { title: 'MCP support' } }));
+        mocks.invokeFunction.mockResolvedValue({ logCtx: undefined, result: Ok({ data: { title: 'MCP support' } }) });
         const executeSpy = vi.spyOn(actionService, 'executeAction');
 
         const result = await callToolsTool.handler(validArguments, context);
@@ -58,7 +58,7 @@ describe('callToolsTool', () => {
 
     it('returns an internal error when the function invocation is asynchronous', async () => {
         vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'function', fn: functionFixture }));
-        mocks.invokeFunction.mockResolvedValue(Ok({ id: 'invocation-id', statusUrl: '/status' }));
+        mocks.invokeFunction.mockResolvedValue({ logCtx: undefined, result: Ok({ id: 'invocation-id', statusUrl: '/status' }) });
 
         const result = await callToolsTool.handler(validArguments, context);
 
@@ -80,7 +80,7 @@ describe('callToolsTool', () => {
         { code: 'server_error', expected: InternalMcpError }
     ])('maps function invocation error $code to $expected.name', async ({ code, cause, expected }) => {
         vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'function', fn: functionFixture }));
-        mocks.invokeFunction.mockResolvedValue(Err(functionInvokeError(code, cause)));
+        mocks.invokeFunction.mockResolvedValue({ logCtx: undefined, result: Err(functionInvokeError(code, cause)) });
 
         const result = await callToolsTool.handler(validArguments, context);
 
@@ -92,7 +92,10 @@ describe('callToolsTool', () => {
 
     it('includes validation errors in the public error message', async () => {
         vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'function', fn: functionFixture }));
-        mocks.invokeFunction.mockResolvedValue(Err(functionInvokeError('validation_error', undefined, [{ path: '/id', message: 'must be string' }])));
+        mocks.invokeFunction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(functionInvokeError('validation_error', undefined, [{ path: '/id', message: 'must be string' }]))
+        });
 
         const result = await callToolsTool.handler(validArguments, context);
 

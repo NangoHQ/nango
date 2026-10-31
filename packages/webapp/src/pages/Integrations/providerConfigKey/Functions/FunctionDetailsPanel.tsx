@@ -17,22 +17,14 @@ import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
-import { buildPullCommand, isRunnableFunction, isSyncOrAction } from '@/utils/scripts';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
-import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
+import { toFunctionDetails } from './functionDetails.utils';
 import { FunctionSourceLabel } from './FunctionSourceLabel';
 
-import type { ApiIntegration, ListedNangoFunction, NangoFunctionTemplate } from '@nangohq/types';
-import type { JSONSchema7 } from 'json-schema';
-
-type ListedDetailsFunction = Exclude<ListedNangoFunction, { type: 'tool' }>;
-type DetailsFunction = ListedDetailsFunction | NangoFunctionTemplate;
+import type { DetailsFunction } from './functionDetails.utils';
+import type { ApiIntegration } from '@nangohq/types';
 
 const menuItemClassName = 'text-body-medium-regular';
-
-function isListedFunction(fn: DetailsFunction): fn is ListedDetailsFunction {
-    return 'enabled' in fn;
-}
 
 interface FunctionDetailsPanelProps {
     fn: DetailsFunction;
@@ -40,20 +32,19 @@ interface FunctionDetailsPanelProps {
     onDeleted: () => void;
 }
 
-export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, integration, onDeleted }) => {
+export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: rawFunction, integration, onDeleted }) => {
     const env = useStore((state) => state.env);
     const canOpenPlayground = useCanRunFunctions();
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
     const [activeTab, setActiveTab] = useState<'input' | 'output' | 'code'>('input');
-    const functionType = fn.type === 'sync' ? 'sync' : 'action';
-    const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, integration.unique_key, fn.name, functionType);
-
-    const inputSchema = useMemo(() => getInputSchema(fn), [fn]);
-    const outputSchemas = useMemo(() => getOutputSchemas(fn), [fn]);
-    const listed = isListedFunction(fn);
+    const fn = useMemo(() => toFunctionDetails(rawFunction, { env, integration: integration.unique_key }), [rawFunction, env, integration.unique_key]);
+    const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, integration.unique_key, fn.name, fn.delete?.type);
+    const { inputSchema, outputSchemas, delete: deletion } = fn;
     const { data: integrationDetails } = useGetIntegration(env, integration.unique_key);
     const repoProvider = integrationDetails?.data.symLinkTargetName ?? integration.provider;
+    const codeSource = fn.code;
+    const isDeployedCode = codeSource.kind === 'deployed';
     const {
         data: codeData,
         isPending: deployedCodePending,
@@ -62,8 +53,8 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
         env,
         providerConfigKey: integration.unique_key,
         name: fn.name,
-        type: fn.type,
-        enabled: listed && activeTab === 'code'
+        type: isDeployedCode ? codeSource.type : undefined,
+        enabled: isDeployedCode && activeTab === 'code'
     });
     const {
         data: templateCode,
@@ -72,12 +63,12 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
     } = useGetTemplateFunctionCode({
         provider: repoProvider,
         name: fn.name,
-        type: fn.type,
-        enabled: !listed && activeTab === 'code'
+        type: isDeployedCode ? undefined : codeSource.type,
+        enabled: !isDeployedCode && activeTab === 'code'
     });
-    const codePending = listed ? deployedCodePending : templateCodePending;
-    const codeError = listed ? deployedCodeError : templateCodeError;
-    const code = listed ? codeData?.code : templateCode;
+    const codePending = isDeployedCode ? deployedCodePending : templateCodePending;
+    const codeError = isDeployedCode ? deployedCodeError : templateCodeError;
+    const code = isDeployedCode ? codeData?.code : templateCode;
 
     const onDelete = useCallback(async () => {
         try {
@@ -94,16 +85,9 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
         }
     }, [deleteFunction, fn.name, onDeleted, toast]);
 
-    const source = listed ? fn.source : 'template';
-    const pullCommand = buildPullCommand({
-        integration: integration.unique_key,
-        name: fn.name,
-        type: fn.type,
-        source: listed ? { env } : { catalog: true }
-    });
-    const canDelete = listed && fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn);
-    const canUsePlayground = listed && fn.enabled && isRunnableFunction(fn);
+    const { source, pullCommand } = fn;
     const copyPullCommand = async () => {
+        if (!pullCommand) return;
         await navigator.clipboard.writeText(pullCommand);
         toast({ title: 'Pull command copied', variant: 'success' });
     };
@@ -128,14 +112,14 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                         {canOpenPlayground && (
                             <DropdownMenuItem
                                 className={menuItemClassName}
-                                disabled={!canUsePlayground}
+                                disabled={!fn.runType}
                                 onSelect={() => {
-                                    if (!isListedFunction(fn) || !isRunnableFunction(fn)) return;
+                                    if (!fn.runType) return;
                                     openPlaygroundWithContext({
                                         source: 'function',
                                         integration: integration.unique_key,
                                         functionName: fn.name,
-                                        functionType: fn.type
+                                        functionType: fn.runType
                                     });
                                 }}
                             >
@@ -143,11 +127,11 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                                 Test run
                             </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem className={menuItemClassName} onSelect={() => void copyPullCommand()}>
+                        <DropdownMenuItem className={menuItemClassName} disabled={!pullCommand} onSelect={() => void copyPullCommand()}>
                             <SquareTerminal />
                             Copy pull command
                         </DropdownMenuItem>
-                        {canDelete && (
+                        {deletion && (
                             <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
@@ -156,10 +140,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                                     onSelect={() =>
                                         void confirm({
                                             title: 'Delete function?',
-                                            description:
-                                                fn.type === 'sync'
-                                                    ? `You are about to permanently delete the sync "${fn.name}" and all of its synced records. This operation is not reversible, are you sure you wish to continue?`
-                                                    : `You are about to permanently delete the action "${fn.name}". This operation is not reversible, are you sure you wish to continue?`,
+                                            description: deletion.description,
                                             confirmButtonText: 'Delete function',
                                             confirmVariant: 'danger',
                                             onConfirm: onDelete
@@ -178,9 +159,9 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
             <div className="pb-6">
                 <div className="grid grid-cols-2 gap-3 border-b border-border-default p-3">
                     <Metadata label="Type">
-                        <Badge case="capitalize">{fn.type === 'on-event' ? 'trigger' : fn.type}</Badge>
+                        <Badge case="capitalize">{fn.typeLabel}</Badge>
                     </Metadata>
-                    {fn.type === 'sync' && fn.runs && <Metadata label="Frequency">{fn.runs}</Metadata>}
+                    {fn.frequency && <Metadata label="Frequency">{fn.frequency}</Metadata>}
                     <Metadata label="Source">
                         <FunctionSourceLabel source={source} />
                     </Metadata>
@@ -210,7 +191,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                             )}
                         </div>
                         <div className="rounded-ds-lg bg-surface-panel px-3 py-2.5">
-                            <span className="type-code-medium-xs text-text-secondary">{pullCommand}</span>
+                            <span className="type-code-medium-xs text-text-secondary">{pullCommand ?? 'Pulling tools is not supported yet.'}</span>
                         </div>
                     </div>
                 </div>
@@ -282,19 +263,3 @@ const CompactEmptyState: React.FC<{ children: React.ReactNode }> = ({ children }
         <span className="type-label-sm text-text-secondary">{children}</span>
     </EmptyCard>
 );
-
-function getInputSchema(fn: DetailsFunction): JSONSchema7 | null {
-    if (fn.type === 'on-event' || !fn.input || !fn.json_schema) return null;
-    const schema = fn.json_schema.definitions?.[fn.input] ?? null;
-    if (!schema || isNullSchema(schema as JSONSchema7) || isObjectWithNoProperties(schema as JSONSchema7)) return null;
-    return schema as JSONSchema7;
-}
-
-function getOutputSchemas(fn: DetailsFunction): { name: string; schema: JSONSchema7 }[] {
-    if (fn.type === 'on-event' || !fn.returns || !fn.json_schema) return [];
-    return fn.returns.flatMap((name) => {
-        const schema = fn.json_schema?.definitions?.[name] ?? null;
-        if (!schema || isNullSchema(schema as JSONSchema7) || isObjectWithNoProperties(schema as JSONSchema7)) return [];
-        return [{ name, schema: schema as JSONSchema7 }];
-    });
-}

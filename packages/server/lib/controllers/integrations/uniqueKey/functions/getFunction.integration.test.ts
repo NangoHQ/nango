@@ -128,7 +128,7 @@ describe(`GET ${route}`, () => {
         const untyped = await fetchFunction();
         expect(untyped.res.status).toBe(200);
         isSuccess(untyped.json);
-        expect(untyped.json.data.type).toBe('sync');
+        expect(untyped.json.data.type).toBe('tool');
 
         const sync = await fetchFunction('sync');
         expect(sync.res.status).toBe(200);

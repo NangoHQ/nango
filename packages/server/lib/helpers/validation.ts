@@ -67,7 +67,6 @@ export const scriptNameSchema = z
     .string()
     .regex(/^[a-zA-Z0-9_-]+$/)
     .max(255);
-export const functionTypeSchema = z.enum(['sync', 'action', 'on-event']);
 export const functionListTypeSchema = z.enum(['sync', 'action', 'on-event', 'tool']);
 // On-event functions can't be targeted by name alone yet, so deletion is limited to sync/action.
 export const deletableFunctionTypeSchema = z.enum(['sync', 'action']);
