@@ -12782,6 +12782,30 @@ harvest:
             description: The details of your app
             automated: true
 
+heabsy:
+    display_name: Heabsy
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.heabsy.com/v1
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /models
+    docs: https://nango.dev/docs/api-integrations/heabsy
+    docs_connect: https://nango.dev/docs/api-integrations/heabsy/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Heabsy account.
+            doc_section: '#step-1-create-your-api-key'
+
 health-gorilla:
     display_name: Health Gorilla
     categories:
