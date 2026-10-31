@@ -68,7 +68,6 @@ Official docs: [Sendcloud API authentication](https://sendcloud.dev/docs/getting
 
 ## API gotchas
 
-- Nango authenticates with Sendcloud's OAuth2 client credentials flow: it exchanges the integration's Public Key and Secret Key for an access token at `https://account.sendcloud.com/oauth2/token` and requests a new one automatically when it expires (Sendcloud access tokens are valid for 1 hour).
 - Sendcloud's default [rate limits](https://sendcloud.dev/docs/getting-started/rate-limits) are 1,000 requests per minute for `GET` and 100 requests per minute for `POST`, `PATCH`, `PUT` and `DELETE` (burst allowance of 15 requests per second). Exceeding them returns `HTTP 429`.
 
 ## 🧩 Pre-built syncs & actions for Sendcloud
