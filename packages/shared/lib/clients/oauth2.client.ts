@@ -110,6 +110,16 @@ export async function getFreshOAuth2Credentials({
         };
         simpleOAuth2ClientConfig.http.headers = headers;
     }
+    if (simpleOAuth2ClientConfig.options?.authorizationMethod === 'body' && !config.oauth_client_secret) {
+        // Public clients (e.g. dynamically registered MCP clients) have no secret, and some servers reject a refresh
+        // carrying an empty client_secret. simple-oauth2 always writes both params in body mode, so pointing the
+        // secret at client_id leaves only client_id in the request body.
+        simpleOAuth2ClientConfig.client = {
+            ...simpleOAuth2ClientConfig.client,
+            secret: config.oauth_client_id,
+            secretParamName: 'client_id'
+        };
+    }
     const client = new AuthorizationCode(simpleOAuth2ClientConfig);
     const tokenSource = provider.auth_mode === 'CUSTOM' ? connection.connection_config['userCredentials'] : credentials;
     // handle situation where userCredentials is not present

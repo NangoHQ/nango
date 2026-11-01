@@ -209,6 +209,47 @@ describe('OAuth2 token generation and refresh', () => {
         );
     });
 
+    it.each([
+        { description: 'omits client_secret for a public client', clientSecret: '', expectedSecret: null },
+        { description: 'sends client_secret for a confidential client', clientSecret: 'client-secret', expectedSecret: 'client-secret' }
+    ])('getFreshOAuth2Credentials $description', async ({ clientSecret, expectedSecret }) => {
+        let receivedBody: URLSearchParams | null = null;
+        await withServer(
+            (req, res) => {
+                let body = '';
+                req.on('data', (chunk) => (body += chunk));
+                req.on('end', () => {
+                    receivedBody = new URLSearchParams(body);
+                    res.writeHead(200, { 'content-type': 'application/json' });
+                    res.end(JSON.stringify({ access_token: 'refreshed-access-token', token_type: 'bearer', expires_in: 3600 }));
+                });
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({ token_url: `${baseUrl}/token` });
+                const config = makeConfig({ oauth_client_secret: clientSecret });
+                const connection = {
+                    id: 1,
+                    environment_id: 1,
+                    connection_config: {},
+                    credentials: {
+                        type: 'OAUTH2',
+                        access_token: 'stale-access-token',
+                        refresh_token: 'the-refresh-token',
+                        expires_at: new Date(Date.now() - 60_000)
+                    }
+                } as unknown as DBConnectionDecrypted;
+
+                const buffer = logContextGetter.getBuffer({ accountId: 1 });
+                const result = await getFreshOAuth2Credentials({ connection, config, provider, logCtx: buffer });
+
+                expect(result.success).toBe(true);
+                expect(receivedBody!.getAll('client_id')).toEqual(['client-id']);
+                expect(receivedBody!.get('client_secret')).toBe(expectedSecret);
+                expect(receivedBody!.get('refresh_token')).toBe('the-refresh-token');
+            }
+        );
+    });
+
     it('getFreshOAuth2Credentials fails without issuing the refresh when the token URL is blocked by policy', async () => {
         vi.mocked(assertSafeOAuthUrl).mockRejectedValueOnce(new Error('URL resolves to a blocked address'));
         let serverHit = false;
