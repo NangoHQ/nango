@@ -11,7 +11,9 @@ import { sendVerificationEmail } from '../../../helpers/email.js';
 import { identifyAccountMembership } from '../../../services/accountAnalytics.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
+import { isDisposableEmail } from '../../../utils/disposableEmail.js';
 import { signupAcquisitionSchema } from '../../../utils/signupAcquisition.js';
+import { signupAdvertisingFromRequest } from '../../../utils/signupAdvertising.js';
 
 import type { DBTeam, PostSignup, Role } from '@nangohq/types';
 
@@ -50,6 +52,12 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     }
 
     const { email, password, name, token, foundUs, acquisition }: PostSignup['Body'] = val.data;
+
+    // Before the user lookup, so an unverified disposable signup can't get a fresh verification email.
+    if (!token && envs.AUTH_ALLOW_SIGNUP && isDisposableEmail(email)) {
+        res.status(400).send({ error: { code: 'disposable_email', message: 'Please sign up with a permanent email address.' } });
+        return;
+    }
 
     const existingUser = await userService.getUserByEmail(email);
     if (existingUser) {
@@ -96,7 +104,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         }
 
         // Regular account
-        account = await accountService.createAccount({ name, email, foundUs, acquisition });
+        account = await accountService.createAccount({ name, email, foundUs, acquisition, advertising: signupAdvertisingFromRequest(req, email) });
         if (!account) {
             res.status(500).send({
                 error: { code: 'error_creating_account', message: 'There was a problem creating the account. Please reach out to support.' }

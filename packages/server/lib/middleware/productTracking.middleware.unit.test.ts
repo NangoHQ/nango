@@ -16,15 +16,19 @@ const capture = vi.fn<Capture>();
 const groupIdentify = vi.fn<GroupIdentify>();
 const realClient = productTracking.client;
 
+function fakeRequest({ headers = {}, session }: { headers?: Record<string, string>; session?: { debugMode: boolean } } = {}): Request {
+    return { session, get: (name: string) => headers[name.toLowerCase()] } as unknown as Request;
+}
+
 /** Auth fills the locals after the middleware has run, which is what `resolve` stands in for. */
-function handleRequest(resolve: (locals: Partial<RequestLocals>) => void): void {
+function handleRequest(resolve: (locals: Partial<RequestLocals>) => void, req = fakeRequest()): void {
     const res = { locals: {} } as Response<any, Partial<RequestLocals>>;
     const next: NextFunction = () => {
         resolve(res.locals);
         productTracking.track({ name: 'agents:session_end', eventProperties: { agent_session_id: 'session-1', is_playground: false, session_duration_ms: 1 } });
     };
 
-    productTrackingMiddleware({} as Request, res, next);
+    productTrackingMiddleware(req, res, next);
 }
 
 beforeEach(() => {
@@ -81,6 +85,29 @@ describe('productTrackingMiddleware', () => {
         expect(groups).toStrictEqual({ company: '42' });
     });
 
+    it("links an event to the browser's session replay", () => {
+        const sessionId = '01a158ca-f1ba-7194-bcc8-9ecfef568776';
+        handleRequest(
+            (locals) => {
+                locals.account = { id: 42 } as DBTeam;
+            },
+            fakeRequest({ headers: { 'x-nango-analytics-session-id': sessionId } })
+        );
+
+        expect(capture.mock.calls[0]![0].properties['$session_id']).toBe(sessionId);
+    });
+
+    it('ignores an analytics session header that is not a UUID', () => {
+        handleRequest(
+            (locals) => {
+                locals.account = { id: 42 } as DBTeam;
+            },
+            fakeRequest({ headers: { 'x-nango-analytics-session-id': 'not-a-session' } })
+        );
+
+        expect(capture.mock.calls[0]![0].properties).not.toHaveProperty('$session_id');
+    });
+
     it('sends an event from a secret-key request as the account', () => {
         handleRequest((locals) => {
             locals.authType = 'secretKey';
@@ -92,7 +119,7 @@ describe('productTrackingMiddleware', () => {
 
     it('sends nothing from an impersonated session', () => {
         const res = { locals: {} } as Response<any, Partial<RequestLocals>>;
-        productTrackingMiddleware({ session: { debugMode: true } } as unknown as Request, res, () => {
+        productTrackingMiddleware(fakeRequest({ session: { debugMode: true } }), res, () => {
             res.locals.authType = 'session';
             res.locals.account = { id: 42 } as DBTeam;
             res.locals.user = { id: 3 } as DBUser;

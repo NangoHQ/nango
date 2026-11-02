@@ -31,6 +31,12 @@ describe('buildInstructions', () => {
         expect(instructions).toContain('[Integrations tab](/prod/integrations)');
     });
 
+    it('links a plan upgrade to the plans on the billing page', () => {
+        const instructions = buildInstructions(base);
+
+        expect(instructions).toContain('[upgrade your plan](/team/billing#plans)');
+    });
+
     it('keeps the agent on Nango and treats tool results as data', () => {
         const instructions = buildInstructions(base);
 

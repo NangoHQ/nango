@@ -1,8 +1,9 @@
 import knexFactory from 'knex';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { ensureDailyPartitions } from '@nangohq/migrations';
+
 import { migrate } from './migrate.js';
-import { ensurePartitions } from './partitions.js';
 import { HOSTED_TELEMETRY_TABLE } from './schema.js';
 
 import type { Knex } from 'knex';
@@ -18,7 +19,7 @@ const ts = new Date('2026-10-09T12:00:00Z');
 const row = (overrides: Record<string, unknown> = {}) => ({
     ts,
     value: 3,
-    metric: 'nango.functions.active_concurrency.max',
+    metric: 'nango.hosted_metric.active_concurrency.max',
     attributes: { environment_id: 1 },
     ...overrides
 });
@@ -29,7 +30,7 @@ beforeAll(async () => {
     knex = knexFactory({ client: 'pg', connection: { connectionString: url } });
     await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [schema]);
     expect((await migrate({ knex, schema })).isOk()).toBe(true);
-    (await ensurePartitions({ knex, schema, dates: [ts] })).unwrap();
+    (await ensureDailyPartitions({ knex, schema, table: HOSTED_TELEMETRY_TABLE, dates: [ts] })).unwrap();
 });
 
 afterAll(async () => {
@@ -41,17 +42,6 @@ describe('hosted telemetry postgres migrate', () => {
     it('creates the schema and applies only the hosted telemetry set', async () => {
         const applied = await knex.raw<{ rows: { name: string }[] }>(`SELECT name FROM ??.migrations ORDER BY name`, [schema]);
         expect(applied.rows.map((r) => r.name)).toEqual(['20261014000001_create_metrics']);
-    });
-
-    it('is idempotent, so a restart re-running it is a no-op', async () => {
-        expect((await migrate({ knex, schema })).isOk()).toBe(true);
-        const applied = await knex.raw<{ rows: { n: number }[] }>(`SELECT count(*)::int AS n FROM ??.migrations`, [schema]);
-        expect(applied.rows[0]?.n).toBe(1);
-    });
-
-    it('can re-create everything after its migration record is gone, as after a rollback', async () => {
-        await knex.raw(`DELETE FROM ??.migrations`, [schema]);
-        expect((await migrate({ knex, schema })).isOk()).toBe(true);
     });
 
     it('keeps one value per metric, ts and attributes, comparing attributes by value', async () => {

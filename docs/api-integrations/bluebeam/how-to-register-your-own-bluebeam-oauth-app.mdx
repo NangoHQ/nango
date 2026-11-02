@@ -1,0 +1,39 @@
+---
+title: 'How to register your own Bluebeam OAuth app'
+sidebarTitle: 'Bluebeam setup'
+description: 'Register an OAuth app with Bluebeam and obtain credentials to connect it to Nango'
+---
+
+This guide shows you how to register your own app with Bluebeam to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Bluebeam account.
+
+<Steps>
+  <Step id="sign-in-to-developer-portal" title="Sign in to the Bluebeam Developer Portal">
+    Go to the [Bluebeam Developer Portal](https://developers.bluebeam.com) and sign in with your Bluebeam ID. Select the region associated with your Bluebeam account, then accept the Bluebeam Developer Terms of Use.
+
+    <Note>
+    You need an active Bluebeam Core, Complete, or Max subscription to register applications.
+    </Note>
+  </Step>
+  <Step id="create-application" title="Create an application">
+    Click **Create Application** and fill in:
+    - **Application Name** — a name your users will recognize.
+    - **Region** — the region your users' Bluebeam accounts are in.
+    - **Redirect URI(s)** — `https://api.nango.dev/oauth/callback`
+
+    Click **Create Application**.
+
+    <Warning>
+    An application only works for the region it was created in. To support users in several regions, create one application, and one Nango integration, per region.
+    </Warning>
+  </Step>
+  <Step id="copy-credentials" title="Copy your credentials">
+    Open your application and copy the **Client ID** and **Client Secret**. Enter them in your Bluebeam integration in Nango.
+
+    Nango requests the `offline_access` scope by default, which Nango needs to refresh access tokens.
+  </Step>
+  <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Bluebeam's API documentation](https://developers.bluebeam.com/docs).

@@ -171,7 +171,8 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                         : {})
                 },
                 internalConfig: {
-                    providerName: this.provider!
+                    providerName: this.provider!,
+                    monitoringContext: { accountId: this.accountId, environmentId: this.environmentId, callsite: 'sdk' }
                 }
             }).unwrap(),
             outboundPolicy: runnerOutboundPolicy,
@@ -439,7 +440,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         return this.checkpointing.clearCheckpoint(this.checkpointKey);
     }
 
-    public getCheckpointRange(): CheckpointRange | null {
+    public override getCheckpointRange(): CheckpointRange | null {
         return this.checkpointing.getRange(this.checkpointKey);
     }
 }
@@ -901,7 +902,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return this.checkpointing.clearCheckpoint(this.checkpointKey);
     }
 
-    public getCheckpointRange(): CheckpointRange | null {
+    public override getCheckpointRange(): CheckpointRange | null {
         return this.checkpointing.getRange(this.checkpointKey);
     }
 }

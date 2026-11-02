@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/frontend",
-    "version": "0.71.13",
+    "version": "0.71.14",
     "description": "Nango's frontend library for OAuth handling.",
     "type": "module",
     "main": "dist/index.js",
@@ -12,10 +12,13 @@
         "url": "git+https://github.com/NangoHQ/nango.git",
         "directory": "packages/frontend"
     },
-    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
-    "scripts": {},
+    "license": "Elastic-2.0",
+    "scripts": {
+        "copy:license": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\"",
+        "prepack": "npm run copy:license"
+    },
     "dependencies": {
-        "@nangohq/types": "0.71.13"
+        "@nangohq/types": "0.71.14"
     },
     "files": [
         "dist/**/*.js",

@@ -3,6 +3,12 @@ import type { JSONSchema7 } from 'json-schema';
 
 type PullSource = { catalog: true } | { env: string };
 
+export type RunnableFunction = Exclude<ListedNangoFunction, { type: 'on-event' }>;
+
+export function isRunnableFunction(fn: ListedNangoFunction): fn is RunnableFunction {
+    return fn.type === 'sync' || fn.type === 'action' || fn.type === 'tool';
+}
+
 export function isSyncOrAction(fn: ListedNangoFunction): fn is ListedNangoSyncFunction | ListedNangoActionFunction {
     return fn.type === 'sync' || fn.type === 'action';
 }

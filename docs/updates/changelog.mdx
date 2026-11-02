@@ -4,23 +4,173 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
-<Update label="Playground page and Intercom webhooks" description="October 14, 2026">
-  - **Playground page:** The Function Playground is now a full page under Playground in the sidebar.
+<Update label="52 new APIs in October" description="November 1, 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="52 new APIs in October">
+      - [Aha!](/api-integrations/aha)
+      - [ArcSite](/api-integrations/arcsite)
+      - [athenahealth (JWKS)](/api-integrations/athenahealth-jwks)
+      - [Attentive (API Key)](/api-integrations/attentive-api-key)
+      - [Attentive (MCP)](/api-integrations/attentive-mcp)
+      - [Bluebeam](/api-integrations/bluebeam)
+      - [Breathe HR](/api-integrations/breathehr)
+      - [Buildkite](/api-integrations/buildkite)
+      - [Buildkite (Token Exchange)](/api-integrations/buildkite-token-exchange)
+      - [CCH Axcess](/api-integrations/cch-axcess)
+      - [Chameleon-i](/api-integrations/chameleoni)
+      - [CharlieHR](/api-integrations/charliehr)
+      - [Checkbox](/api-integrations/checkbox)
+      - [Circleback](/api-integrations/circleback)
+      - [Clarify](/api-integrations/clarify)
+      - [Command Alkon](/api-integrations/command-alkon)
+      - [Crustdata](/api-integrations/crustdata)
+      - [Crustdata (MCP)](/api-integrations/crustdata-mcp)
+      - [Discogs](/api-integrations/discogs)
+      - [Discogs (Personal Access Token)](/api-integrations/discogs-token)
+      - [Discord Bot](/api-integrations/discord-bot)
+      - [Envoice](/api-integrations/envoice)
+      - [Extensiv](/api-integrations/extensiv)
+      - [Fiix](/api-integrations/fiix)
+      - [Firecrawl](/api-integrations/firecrawl)
+      - [Formstack Documents](/api-integrations/formstack-documents)
+      - [FreshDesk (MCP)](/api-integrations/freshdesk-mcp)
+      - [Freshservice (MCP)](/api-integrations/freshservice-mcp)
+      - [Freshservice (OAuth)](/api-integrations/freshservice-oauth)
+      - [Haus (Experiment Results API)](/api-integrations/haus)
+      - [iManage Work](/api-integrations/imanage)
+      - [Litmos](/api-integrations/litmos)
+      - [LoyaltyLion](/api-integrations/loyaltylion)
+      - [Mailtrap](/api-integrations/mailtrap)
+      - [Metaview (MCP)](/api-integrations/metaview-mcp)
+      - [Microsoft Defender (Client Credentials)](/api-integrations/microsoft-defender-cc)
+      - [Modjo AI (v2)](/api-integrations/modjo-ai-v2)
+      - [ModMed (FHIR)](/api-integrations/modmed-fhir)
+      - [Monday (API Key)](/api-integrations/monday-api-key)
+      - [Navan](/api-integrations/navan)
+      - [NetDocuments](/api-integrations/netdocuments)
+      - [Oracle Aconex](/api-integrations/oracle-aconex)
+      - [Pleo (MCP)](/api-integrations/pleo-mcp)
+      - [Pocket](/api-integrations/pocket)
+      - [Publora](/api-integrations/publora)
+      - [Rapid7](/api-integrations/rapid7)
+      - [Sentry (MCP)](/api-integrations/sentry-mcp)
+      - [Slack (Configuration Token)](/api-integrations/slack-app-configuration)
+      - [Tenable](/api-integrations/tenable)
+      - [TIMOCOM](/api-integrations/timocom)
+      - [Wingify (VWO)](/api-integrations/vwo)
+      - [Zscaler (OneAPI)](/api-integrations/zscaler)
+    </Accordion>
+  </AccordionGroup>
+
+  ## New blog posts
+
+  New posts from the Nango team in October:
+
+  - [BYOC vs. self-hosted for AI agent integrations](https://nango.dev/blog/byoc-vs-self-hosted-for-ai-agent-integrations)
+  - [MCP events for customer-facing AI agents](https://nango.dev/blog/mcp-events-for-customer-facing-ai-agents)
+  - [How to expose tools to AI agents without clogging their context](https://nango.dev/blog/how-to-expose-tools-to-agents-without-clogging-context)
+  - [How to connect multiple Slack workspaces to Claude, Codex, and Cursor](https://nango.dev/blog/connect-multiple-slack-workspaces-to-claude-codex-cursor)
+  - [How to fix HubSpot API 400: "There was a problem with the request"](https://nango.dev/blog/fix-hubspot-api-400-there-was-a-problem-with-the-request)
+  - [How to fix Google Drive API 404 "File not found" when the file exists](https://nango.dev/blog/fix-google-drive-api-404-file-not-found)
+</Update>
+---
+
+<Update label="Nango-managed OAuth apps" description="October 29, 2026">
+  Nango provides pre-approved OAuth apps for 75+ APIs, including CASA-verified apps for Gmail, Google Drive, and Google Calendar. You can now use them in production without waiting for your own app to be approved.
+
+  In the dashboard, pick the **Nango-managed OAuth app** tab when creating an integration. See the [list of APIs with a Nango-managed OAuth app](/guides/auth/auth-guide#apis-with-a-nango-managed-oauth-app) and the [trade-offs](/guides/auth/auth-guide#nango-managed-oauth-apps) compared to your own app.
+
+  ![The Nango-managed OAuth app tab when creating a Google Drive integration](/images/changelog/nango-managed-oauth-app.png)
+</Update>
+---
+
+<Update label="10,000+ tools for agents" description="October 27, 2026">
+  Nango now has 10,000+ pre-built tools across 1,000+ APIs, available in [agent sessions](/guides/agent-sessions). Your agent can use them even when an API has no official MCP server.
+
+  All tools are customizable. Browse them in [APIs & Integrations](/integrations/overview), or [take ownership of a tool](/guides/functions/functions-guide#take-ownership-of-a-function) to change what it does.
+</Update>
+---
+
+<Update label="Environment configuration from API" description="October 27, 2026">
+  Set up a new environment entirely from the API, webhooks included, and read its configuration back.
+
+  - [Create environment API](/reference/backend/http-api/environments/create) accepts a `webhooks` object with the destination URLs and event subscriptions. The response now returns the complete environment settings, including the webhook signing key.
+  - [Get environment API](/reference/backend/http-api/environments/get) returns an environment's settings. Pass `with_secrets=true` to also get the webhook signing key and OpenTelemetry headers, which requires the extra `account:environments:read_secret` scope.
+
+  Both take an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the matching `account:environments:*` scope.
+</Update>
+---
+
+<Update label="Small improvements" description="October 27, 2026">
+  - **Clearer errors when agents hit the connection limit:** Agent sessions now get a clear error when creating a connection fails because the account is at its plan's connection limit.
+  - **Syncs that checkpoint keep going:** A sync stopped at the execution time limit now reschedules immediately if it saved a checkpoint during the run, instead of failing and waiting for the next scheduled run.
+  - **Pre-built integrations on self-managed instances:** Self-managed instances can now install Nango's integration catalog in their own object storage. See [Self-managed Nango instances](/guides/platform/self-hosting/install-integration-catalog).
+</Update>
+---
+
+<Update label="Agents can recover broken connections" description="October 26, 2026">
+  Agents can now get a broken connection fixed without leaving the session.
+
+  When a connection's credentials expire, fail to refresh, or lack a scope, the user gets a reconnect link and authorizes the same connection again. Your agent continues working in the same session without interruptions.
+
+  See [reconnecting a connection](/guides/agent-sessions#reconnecting-a-connection).
+
+  ![An agent asking the user to reconnect Linear after its credentials were rejected](/images/changelog/agent-session-reconnect.png)
+</Update>
+---
+
+<Update label="Agent Playground" description="October 20, 2026">
+  Try an AI agent on your own integrations before writing any code.
+
+  The new Agent Playground lets you connect your apps and ask a built-in AI agent to perform tasks directly in the Nango dashboard.
+
+  - **Explore use cases:** Start with a suggested prompt or type your own request.
+  - **See how each task runs:** Inspect tool calls to understand how the agent uses your integrations.
+  - **Validate ideas before building:** Try workflows with your connected accounts before adding them to your product.
+
+  Under the hood it is a regular [agent session](/guides/agent-sessions), so what you see is what your own agent would get.
+
+  [Try Agent Playground](https://app.nango.dev/dev/playground/agent).
+
+  Running self-hosted? See [enable the Agent Playground on self-managed instances](/guides/platform/self-hosting/self-managed#agent-playground).
+
+  ![Agent Playground answering a Google Calendar prompt](/images/changelog/agent-playground.png)
+</Update>
+---
+
+<Update label="Scoped environment API keys" description="October 19, 2026">
+  The account-level API can now create Environment API keys with specific scopes, and update a key's name or scopes after creation.
+
+  - [Create environment API key](/reference/backend/http-api/environments/create-api-key) accepts an optional `scopes` array. Without it, the key keeps full environment access as before.
+  - [Update environment API key](/reference/backend/http-api/environments/update-api-key) changes the `display_name` or replaces the `scopes`. The secret stays the same, and requests that need a removed scope start failing with a 403.
+
+  Both require an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the matching `account:environments:api_keys:*` scope.
+</Update>
+---
+
+<Update label="Intercom webhooks and SAP Business One" description="October 14, 2026">
   - **Intercom webhooks:** Nango can receive and forward [webhooks from Intercom](/api-integrations/intercom/webhooks).
   - **SAP Business One:** Connections can opt in to skipping TLS certificate verification to support self-signed certificates. See [SAP Business One](/integrations/all/sap-business-one).
 </Update>
 ---
 
 <Update label="Auto Catalog for AI agents" description="October 13, 2026">
-  Every action in Nango's catalog is now available on your integrations out of the box, so AI agents can use them without any setup.
+  Give your AI agents access to Nango's catalog actions without deploying or updating them yourself.
 
-  - **Always current:** Catalog actions are maintained by Nango and update automatically, so agents always see the latest tools.
-  - **No more enabling actions manually:** All actions are enabled by default. Use [agent sessions](/guides/agent-sessions) to limit the toolset and control discovery for your AI agents.
+  Catalog actions are now available automatically on your integrations and can be used through agent sessions.
+
+  - **Enabled by default:** Discover the actions available for each API and use them without manually enabling or deploying each one.
+  - **Auto tool maintenance:** Catalog actions update automatically as Nango ships fixes and improvements.
+  - **Control what agents can do:** Use [agent sessions](/guides/agent-sessions) to choose which tools each agent can access.
+
+  Available on Nango Cloud and BYOC.
+
+  ![Catalog actions listed on an integration's Functions tab](/images/changelog/auto-catalog-actions.png)
 </Update>
 ---
 
-<Update label="MCP server tools in agent sessions" description="October 13, 2026">
-  Connected MCP servers now show up in agent sessions next to Nango actions. Their tools are searchable, pinnable, and covered by the same allow and deny lists, and every call goes through Nango with credential refresh and logs.
+<Update label="MCP passthrough in agent sessions" description="October 13, 2026">
+  Connected third-party MCP servers now show up in agent sessions next to Nango actions. Their tools are searchable, pinnable, and covered by the same allow and deny lists, and every call goes through Nango with credential refresh and logs.
 
   Include an MCP integration such as [Notion (MCP)](/api-integrations/notion-mcp) or [Linear (MCP)](/api-integrations/linear-mcp) in the session's toolset, and its tools join the session alongside Nango actions.
 
@@ -1821,7 +1971,10 @@ description: "Important developer & product updates, including deprecations & br
 
   - Available for top APIs (more being added over time).
   - Select this option when creating a new integration.
-  - For **testing only**—production apps should still use your own credentials to keep Nango fully white-labeled.
+
+  <Note>
+    Update: Nango-managed OAuth apps are production-ready, and you can use them with real users. Register your own OAuth app only if you need white-labeled auth, custom scopes, or the other benefits listed in [Nango-managed OAuth apps](/guides/auth/auth-guide#nango-managed-oauth-apps).
+  </Note>
 </Update>
 ---
 

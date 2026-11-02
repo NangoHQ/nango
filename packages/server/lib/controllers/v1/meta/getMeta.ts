@@ -33,7 +33,8 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             auditTrail: await canViewAuditTrail(req, plan),
             toolsCatalog: await getFlags().hasCatalogTools(account.uuid),
             accountGroup: accountGroupProperties(account, plan),
-            agentPlayground: await getFlags().isAgentPlaygroundEnabled(account.uuid)
+            agentPlayground: await getFlags().isAgentPlaygroundEnabled(account.uuid),
+            hasBaa: account.has_baa
         }
     });
 });

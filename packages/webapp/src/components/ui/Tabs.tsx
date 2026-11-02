@@ -12,7 +12,7 @@ export const TabsList: React.FC<React.ComponentProps<typeof TabsPrimitive.List>>
  * `TabsList` and look like a tab (e.g. an action button) can reuse it instead of copying the classes.
  */
 export const tabsTriggerClassName =
-    'w-fit px-3 py-2 inline-flex items-center gap-1.5 cursor-pointer text-text-secondary !text-body-medium-medium border-b-2 border-b-transparent transition-colors hover:text-text-strong hover:border-text-muted data-[state=active]:text-text-strong data-[state=active]:border-text-strong focus-default';
+    'w-fit px-3 py-2 inline-flex items-center gap-1.5 cursor-pointer text-text-default text-[13px] leading-[1.5] font-normal border-b-2 border-b-transparent transition-colors hover:text-text-strong hover:border-text-muted data-[state=active]:font-medium data-[state=active]:border-text-strong focus-default';
 
 export const TabsTrigger: React.FC<React.ComponentProps<typeof TabsPrimitive.Trigger>> = (props) => {
     return <TabsPrimitive.Trigger {...props} className={cn(tabsTriggerClassName, props.className)} />;

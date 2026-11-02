@@ -9,7 +9,7 @@ import { getCliTlsProps } from '../tls.js';
 import type { DryRunService } from './dryrun.service.js';
 import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
 import type { ProxyConfiguration, UncontrolledFetchOptions, ZodCheckpoint } from '@nangohq/runner-sdk';
-import type { Checkpoint, GetPublicConnection, Metadata, NangoProps, NangoRecord, UserLogParameters } from '@nangohq/types';
+import type { Checkpoint, FunctionCapabilities, GetPublicConnection, Metadata, NangoProps, NangoRecord, UserLogParameters } from '@nangohq/types';
 import type { AxiosError, AxiosResponse } from 'axios';
 
 const logLevelToLogger = {
@@ -433,6 +433,111 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
         this.log(`This has no effect locally. On a remote Nango instance, it would mark as deleted any records that were not saved since trackDeletesStart.`);
         return Promise.resolve({ deletedKeys: [] });
     }
+}
+
+export function createFunctionCLI({
+    nango,
+    capabilities,
+    requiresConnection,
+    stubbedMetadata
+}: {
+    nango: NangoActionCLI | NangoSyncCLI;
+    capabilities: FunctionCapabilities;
+    requiresConnection: boolean;
+    stubbedMetadata?: Metadata | undefined;
+}): Record<string, unknown> {
+    let metadata = stubbedMetadata;
+    const sdk: Record<string, unknown> = {
+        log: (message: string, options?: unknown) => {
+            if (options === undefined) {
+                nango.log(message);
+            } else {
+                nango.log(message, options);
+            }
+            return Promise.resolve();
+        },
+        setLogger: nango.setLogger.bind(nango),
+        getEnvironmentVariables: nango.getEnvironmentVariables.bind(nango)
+    };
+
+    if (requiresConnection) {
+        Object.assign(sdk, {
+            getConnection: async () => {
+                const connection = await nango.getConnection();
+                return metadata !== undefined ? { ...connection, metadata } : connection;
+            },
+            getToken: () => nango.getToken(),
+            getIntegration: (queries?: Parameters<typeof nango.getIntegration>[0]) => nango.getIntegration(queries),
+            getVariant: () => nango.getVariant()
+        });
+    } else {
+        sdk['searchConnections'] = () => Promise.reject(new Error('nango.searchConnections is not supported in CLI dry runs yet'));
+    }
+
+    if (capabilities.usesOutbound) {
+        Object.assign(sdk, {
+            proxy: nango.proxy.bind(nango),
+            get: nango.get.bind(nango),
+            post: nango.post.bind(nango),
+            put: nango.put.bind(nango),
+            patch: nango.patch.bind(nango),
+            delete: nango.delete.bind(nango),
+            paginate: nango.paginate.bind(nango),
+            uncontrolledFetch: nango.uncontrolledFetch.bind(nango)
+        });
+    }
+
+    if (capabilities.usesRecords) {
+        if (!(nango instanceof NangoSyncCLI)) {
+            throw new Error('Record functions require the sync CLI SDK');
+        }
+        Object.assign(sdk, {
+            batchSave: (records: object[], model: string) => {
+                nango.batchSave(records, model);
+                return Promise.resolve();
+            },
+            batchUpdate: (records: object[], model: string) => {
+                nango.batchUpdate(records, model);
+                return Promise.resolve();
+            },
+            batchDelete: (records: object[], model: string) => {
+                nango.batchDelete(records, model);
+                return Promise.resolve();
+            },
+            setMergingStrategy: nango.setMergingStrategy.bind(nango),
+            trackDeletesStart: nango.trackDeletesStart.bind(nango),
+            trackDeletesEnd: async (model: string) => {
+                await nango.trackDeletesEnd(model);
+            }
+        });
+    }
+
+    if (capabilities.usesCheckpoints) {
+        Object.assign(sdk, {
+            getCheckpoint: async () => (await nango.getCheckpoint()) ?? undefined,
+            saveCheckpoint: (checkpoint: Checkpoint) => nango.saveCheckpoint(checkpoint),
+            clearCheckpoint: () => nango.clearCheckpoint()
+        });
+    }
+
+    if (capabilities.usesMetadata) {
+        Object.assign(sdk, {
+            getMetadata: async () => metadata ?? (await nango.getMetadata()),
+            setMetadata: (value: Metadata) => {
+                metadata = value;
+                return Promise.resolve();
+            },
+            updateMetadata: async (value: Partial<Metadata>) => {
+                metadata = { ...(metadata ?? (await nango.getMetadata())), ...value };
+            }
+        });
+    }
+
+    if (capabilities.usesInvoke) {
+        sdk['invoke'] = () => Promise.reject(new Error('nango.invoke is not supported in CLI dry runs yet'));
+    }
+
+    return sdk;
 }
 
 function getAxiosSettings(props: NangoProps) {

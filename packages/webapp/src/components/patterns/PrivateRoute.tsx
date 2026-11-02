@@ -7,7 +7,6 @@ import { useUser } from '../../hooks/useUser';
 import PageEnvironmentUnauthorized from '../../pages/PageEnvironmentUnauthorized';
 import PageNotFound from '../../pages/PageNotFound';
 import { useStore } from '../../store';
-import { resumeAnalytics, stopAnalytics, useAnalyticsIdentify } from '../../utils/analytics';
 import { isNonEnvPath, signinPathWithNext } from '../../utils/routes';
 
 export const PrivateRoute: React.FC = () => {
@@ -17,7 +16,6 @@ export const PrivateRoute: React.FC = () => {
     const [notFoundEnv, setNotFoundEnv] = useState(false);
     const [unauthorizedEnv, setUnauthorizedEnv] = useState(false);
     const [ready, setReady] = useState(false);
-    const identify = useAnalyticsIdentify();
     const { can } = usePermissions();
     const location = useLocation();
 
@@ -86,18 +84,6 @@ export const PrivateRoute: React.FC = () => {
         // it's ready when datastore and path are finally reconciliated
         setReady(true);
     }, [meta, env, setEnv, can, user, location.pathname]);
-
-    useEffect(() => {
-        if (!user || !meta) {
-            return;
-        }
-        if (meta.debugMode) {
-            stopAnalytics();
-            return;
-        }
-        resumeAnalytics();
-        identify(user, meta.accountGroup);
-    }, [user, meta, identify]);
 
     if (loadingUser) {
         return null;

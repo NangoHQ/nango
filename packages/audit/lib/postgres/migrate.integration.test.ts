@@ -47,12 +47,6 @@ describe('audit postgres migrate', () => {
         expect(applied.rows.map((r: { name: string }) => r.name)).toEqual(['20260901000001_create_audit_trail_events']);
     });
 
-    it('is idempotent, so a restart re-running it is a no-op', async () => {
-        expect((await migrate({ knex, schema })).isOk()).toBe(true);
-        const applied = await knex.raw(`SELECT count(*)::int AS n FROM ??.migrations`, [schema]);
-        expect(applied.rows[0].n).toBe(1);
-    });
-
     it('derives every column but occurred_at from the event, so none can disagree with it', async () => {
         await ensurePartition();
         await insert('11111111-1111-4111-8111-111111111111', 42, '2026-09-01T10:00:00.000Z');

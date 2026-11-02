@@ -41,7 +41,7 @@ describe('compileAll', () => {
         const indexContent = await fs.promises.readFile(indexPath, 'utf8');
         await fs.promises.writeFile(indexPath, indexContent.replace('./github/functions/fetchIssues.js', './github/nested/../functions/fetchIssues.js'));
 
-        const pkg = { name: 'test', type: 'module', dependencies: { nango: `file:${path.resolve(path.join(fixturesPath, '..'))}`, zod: '4.3.6' } };
+        const pkg = { name: 'test', type: 'module', dependencies: { nango: `file:${path.resolve(path.join(fixturesPath, '..'))}`, zod: '4.6.7' } };
 
         const dottedIntegrationFunctionsPath = path.join(dir, 'github.js', 'functions');
         await fs.promises.mkdir(dottedIntegrationFunctionsPath, { recursive: true });

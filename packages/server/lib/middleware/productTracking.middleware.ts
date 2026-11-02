@@ -1,7 +1,11 @@
+import { validate as isUuid } from 'uuid';
+
 import { withProductTrackingContext } from '@nangohq/shared';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { NextFunction, Request, Response } from 'express';
+
+const ANALYTICS_SESSION_HEADER = 'X-Nango-Analytics-Session-Id';
 
 /**
  * Give every posthog event emitted while handling a request the account, environment and user of that
@@ -10,12 +14,15 @@ import type { NextFunction, Request, Response } from 'express';
  * Mounted before auth, so the locals are read when an event is emitted and not here.
  */
 export function productTrackingMiddleware(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
+    const header = req.get(ANALYTICS_SESSION_HEADER);
+    const analyticsSessionId = header && isUuid(header) ? header : undefined;
     withProductTrackingContext(
         () => ({
             team: res.locals['account'],
             environment: res.locals['environment'],
             user: res.locals['user'],
             plan: res.locals['plan'],
+            analyticsSessionId,
             impersonated: req.session?.debugMode === true
         }),
         next

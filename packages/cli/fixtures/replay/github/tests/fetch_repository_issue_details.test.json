@@ -1,0 +1,29 @@
+{
+    "input": { "id": "123" },
+    "output": { "title": "Recorded tool issue", "source": "tool-fixture" },
+    "triggerHttp": {
+        "method": "POST",
+        "path": "/tools/fetch-repository-issue-details",
+        "headers": {},
+        "query": { "source": "tool-fixture" },
+        "body": { "id": "123" }
+    },
+    "trigger": {
+        "kind": "http",
+        "input": { "id": "123" },
+        "connection": { "connectionId": "conn-1", "integrationId": "github" },
+        "request": {
+            "method": "POST",
+            "path": "/tools/fetch-repository-issue-details",
+            "headers": {},
+            "query": { "source": "tool-fixture" },
+            "body": { "id": "123" }
+        }
+    },
+    "nango": {},
+    "api": {
+        "get": {
+            "/issues/123": { "response": { "title": "Recorded tool issue" }, "request": {}, "status": 200 }
+        }
+    }
+}

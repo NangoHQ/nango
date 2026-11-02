@@ -82,6 +82,7 @@ describe(`POST ${endpoint}`, () => {
         // Make sure the session contains the connectionId
         const session = (await getConnectSessionByToken(db.knex, res.json.data.token)).unwrap();
         expect(session.connectSession.connectionId).toBe(connection.id);
+        expect(session.connectSession.endUserId).toBe(endUser.id);
     });
 
     it('should get a session token when reconnecting with tags (no end user on connection)', async () => {
@@ -315,17 +316,22 @@ describe(`POST ${endpoint}`, () => {
             expect(session.connectSession.tags).toStrictEqual({ projectid: '123', orgid: '456' });
         });
 
-        it('should succeed without tags', async () => {
+        it('should keep the connection tags without tags', async () => {
+            const tagged = await seeders.createConnectionSeed({ env: seed.env, provider: 'github', tags: { projectid: '123' } });
+
             const res = await api.fetch(endpoint, {
                 method: 'POST',
                 token: seed.apiKey.secret,
                 body: {
-                    connection_id: connection.connection_id,
+                    connection_id: tagged.connection_id,
                     integration_id: 'github'
                 }
             });
 
             isSuccess(res.json);
+
+            const session = (await getConnectSessionByToken(db.knex, res.json.data.token)).unwrap();
+            expect(session.connectSession.tags).toStrictEqual({ projectid: '123' });
         });
 
         it('should fail with invalid tags', async () => {

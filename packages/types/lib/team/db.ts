@@ -5,4 +5,5 @@ export interface DBTeam extends Timestamps {
     name: string;
     uuid: string;
     found_us: string | null;
+    has_baa: boolean;
 }

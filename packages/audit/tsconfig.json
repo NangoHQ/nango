@@ -9,6 +9,9 @@
             "path": "../clickhouse-migrations"
         },
         {
+            "path": "../migrations"
+        },
+        {
             "path": "../pubsub"
         },
         {

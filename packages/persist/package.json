@@ -31,7 +31,7 @@
         "dd-trace": "5.117.0",
         "express": "5.1.0",
         "qs": "6.16.0",
-        "zod": "4.3.6"
+        "zod": "4.6.7"
     },
     "devDependencies": {
         "@nangohq/kvstore": "file:../kvstore",

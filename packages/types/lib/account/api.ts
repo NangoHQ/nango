@@ -60,7 +60,8 @@ export type PostSignup = ApiEndpoint<{
         | ApiError<'user_already_exists'>
         | ApiError<'error_creating_account'>
         | ApiError<'not_found'>
-        | ApiError<'email_not_verified'>;
+        | ApiError<'email_not_verified'>
+        | ApiError<'disposable_email'>;
     Success: {
         data: {
             uuid: string;

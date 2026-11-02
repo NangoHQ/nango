@@ -88,7 +88,8 @@ export async function executeAction({
         span.setTag('nango.actionName', actionName)
             .setTag('nango.connectionId', connectionId)
             .setTag('nango.environmentId', environment.id)
-            .setTag('nango.providerConfigKey', providerConfigKey);
+            .setTag('nango.providerConfigKey', providerConfigKey)
+            .setTag('nango.actionKind', resolved.kind);
 
         logCtx = await logContextGetter.create(
             { operation: { type: 'action', action: 'run' }, expiresAt: defaultOperationExpiration.action(), actor },

@@ -21,8 +21,6 @@ if (globalEnv.publicPosthogKey) {
         // invite_email carries a requester's address and the first $pageview fires here, before
         // React can strip it from the URL.
         custom_personal_data_properties: ['session_token', 'token', 'next', INVITE_PREFILL_PARAM],
-        // The dashboard renders customer-supplied data that can contain PHI (NAN-6428):
-        // mask all text by default, opt Nango-owned static chrome out with data-ph-unmask.
         mask_all_text: true,
         mask_all_element_attributes: true,
         // Auth routes carry tokens in the URL path (NAN-6506), which no masking option covers.
@@ -45,12 +43,13 @@ if (globalEnv.publicPosthogKey) {
 
             return event;
         },
+        // Starting at load would record a BAA account before /meta says it may not be recorded.
+        disable_session_recording: true,
         session_recording: {
             maskAllInputs: true,
-            // rrweb matches maskTextSelector against ancestors too, so a :not() opt-out can
-            // never apply (body always matches). Mask everything, unmask via maskTextFn.
-            maskTextSelector: '*',
-            maskTextFn: (text, element) => (element?.closest('[data-ph-unmask]') ? text : text.replace(/\S/g, '*')),
+            // Replaces the project's `*` selector, so leaving it out masks all text again.
+            // Payloads and secrets render in pre/code blocks; mark other customer data with data-ph-mask.
+            maskTextSelector: 'pre, code, [data-ph-mask]',
             // Third-party iframe srcs embed the page url, tokens included (Stripe's `referrer=`).
             // Setting this replaces the project's "Privacy and masking" selector, so keep `img` from it.
             blockSelector: 'img, iframe',
