@@ -24713,6 +24713,33 @@ skio:
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-generating-your-api-key'
 
+sharefile:
+    display_name: ShareFile
+    categories:
+        - storage
+    auth_mode: OAUTH2
+    authorization_url: https://secure.sharefile.com/oauth/authorize
+    token_url: https://${connectionConfig.subdomain}.sf-api.com/oauth/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.sf-api.com/sf/v3
+    docs: https://nango.dev/docs/integrations/all/sharefile
+    connection_config:
+        subdomain:
+            type: string
+            title: ShareFile Subdomain
+            description: The subdomain of your ShareFile account
+            pattern: '^[a-z0-9_-]+$'
+            example: mycompany
+            suffix: .sharefile.com
+            prefix: https://
+
 sharepoint-online:
     display_name: SharePoint Online (v2)
     categories:
