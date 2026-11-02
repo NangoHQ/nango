@@ -1786,7 +1786,7 @@ description: "Important developer & product updates, including deprecations & br
 
   **Am I impacted?**
 
-  - If you use actions with heavy outputs. Typical large-output actions include [`fetch-attachment`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/actions/fetch-attachment.ts), [`fetch-call-transcripts`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/fetch-call-transcripts.ts), and in general anything fetching an object from an external system. We've added dedicated proxy code to help with the migration: [`fetch-document`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/proxy/fetch-document.ts), [`fetch-spreadsheet`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-sheet/proxy/fetch-spreadsheet.ts), [`fetch-file`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/proxy/fetch-file.ts), [`fetch-database`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/proxy/fetch-database.ts).
+  - If you use actions with heavy outputs. Typical large-output actions include `fetch-attachment`, `fetch-call-transcripts`, and in general anything fetching an object from an external system. We've added dedicated proxy code to help with the migration: `fetch-document`, `fetch-spreadsheet`, `fetch-file`, `fetch-database`.
   - If you're using a now-deprecated template function that fetches objects from an external system.
 
   **What to do:**
@@ -2527,7 +2527,7 @@ description: "Important developer & product updates, including deprecations & br
   <Frame>
     ![Integration docs illustration](/images/changelog/integration-docs.png)
   </Frame>
-  Each template function now includes a ReadMe file with detailed information about the function, how to use it, the API reference, and its changelog. For example, see the [Hubspot Create Company template function](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-company.md). These ReadMe files are automatically generated and kept up-to-date.
+  Each template function now includes a ReadMe file with detailed information about the function, how to use it, the API reference, and its changelog. These ReadMe files are automatically generated and kept up-to-date.
 </Update>
 ---
 
