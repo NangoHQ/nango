@@ -78,6 +78,7 @@ The audit trail currently does not cover data plane operations, such as reading 
 |-------|---------|
 | `user` | Someone signed in to the Nango dashboard |
 | `api_key` | A call authenticated with an API key. The entry includes the API key's name. |
+| `task_token` | A function run authenticated with a task capability token. The id is `task:` followed by the task id. The entry is not attributed to the environment's API key. |
 | `connect_session` | The end user who completed a Connect flow, identified by the end-user ID you supplied when creating the session, and their email if you supplied one |
 | `anonymous` | Nango knows an attempt was made but cannot name who made it — a rejected sign-in, for example. The email in the request was never verified, so it appears as the target rather than the actor |
 | `public_key` | A connection created through the [legacy public key flow](/guides/platform/migrations/migrate-from-public-key). The key identifies your environment, not a person, so no end user is named |
