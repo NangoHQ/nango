@@ -3,6 +3,8 @@ import { generateKeyPairSync } from 'node:crypto';
 import express from 'express';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { createInternalServiceToken } from '../legacy/token.js';
+import { mint } from '../nango/mint.js';
 import {
     INTERNAL_SERVICE_AUDIENCE_JOBS,
     INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR,
@@ -10,12 +12,11 @@ import {
     INTERNAL_SERVICE_ISSUER_SERVER,
     nodeSubject,
     taskSubject
-} from './constants.js';
-import { mint } from './jwt.js';
-import { internalServiceAuthMiddleware, requireFleetAuth, requireTaskBoundAuth } from './middleware.js';
-import { createInternalServiceToken } from './token.js';
+} from '../nango/principals.js';
+import { internalServiceAuthMiddleware } from './middleware.js';
+import { requireParamBinding } from './requires.js';
 
-import type { InternalAuthEnvs } from './credential.js';
+import type { InternalAuthEnvs } from '../nango/env.js';
 
 const envs: InternalAuthEnvs = {
     NANGO_INTERNAL_AUTH_REQUIRED: false
@@ -30,10 +31,10 @@ function app(audience: string) {
     server.post('/v1/dequeue', (_req, res) => {
         res.json({ ok: true });
     });
-    server.put('/tasks/:taskId', requireTaskBoundAuth(envs), (_req, res) => {
+    server.put('/tasks/:taskId', requireParamBinding(envs, 'taskId'), (_req, res) => {
         res.status(204).end();
     });
-    server.post('/runners/:nodeId/register', requireFleetAuth(envs), (_req, res) => {
+    server.post('/runners/:nodeId/register', requireParamBinding(envs, 'nodeId'), (_req, res) => {
         res.json({ status: 'ok' });
     });
     return server;
@@ -43,16 +44,16 @@ function app(audience: string) {
 function jobsMountedApp() {
     const server = express();
     server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_JOBS, envs }));
-    server.put('/tasks/:taskId', requireTaskBoundAuth(envs), (_req, res) => {
+    server.put('/tasks/:taskId', requireParamBinding(envs, 'taskId'), (_req, res) => {
         res.status(204).end();
     });
-    server.post('/tasks/:taskId/heartbeat', requireTaskBoundAuth(envs), (_req, res) => {
+    server.post('/tasks/:taskId/heartbeat', requireParamBinding(envs, 'taskId'), (_req, res) => {
         res.status(201).end();
     });
-    server.post('/runners/:nodeId/register', requireFleetAuth(envs), (_req, res) => {
+    server.post('/runners/:nodeId/register', requireParamBinding(envs, 'nodeId'), (_req, res) => {
         res.json({ status: 'ok' });
     });
-    server.post('/runners/:nodeId/idle', requireFleetAuth(envs), (_req, res) => {
+    server.post('/runners/:nodeId/idle', requireParamBinding(envs, 'nodeId'), (_req, res) => {
         res.json({ status: 'ok' });
     });
     return server;
