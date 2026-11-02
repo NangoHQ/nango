@@ -1,9 +1,13 @@
+import type { TaskCapabilityScope } from './scopes.js';
+
 export const INTERNAL_SERVICE_TOKEN_ISSUER = 'nango-internal';
 export const INTERNAL_SERVICE_ISSUER_JOBS = 'service:jobs';
 export const INTERNAL_SERVICE_ISSUER_SERVER = 'service:server';
 export const INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR = 'orchestrator';
 export const INTERNAL_SERVICE_AUDIENCE_JOBS = 'jobs';
 export const INTERNAL_SERVICE_AUDIENCE_RUNNER = 'runner';
+export const INTERNAL_SERVICE_AUDIENCE_PERSIST = 'persist';
+export const INTERNAL_SERVICE_AUDIENCE_SERVER = 'server';
 /** Short-lived service-to-service token. Minted per request. */
 export const INTERNAL_SERVICE_TOKEN_TTL_SECS = 300;
 /** Info string for HKDF-style Ed25519 seed from the jobs HMAC signing key. */
@@ -21,6 +25,12 @@ export type InternalServiceAuthKind = 'hmac' | 'static' | 'eddsa' | 'jwt';
 
 export type InternalServiceIssuer = typeof INTERNAL_SERVICE_ISSUER_JOBS | typeof INTERNAL_SERVICE_ISSUER_SERVER;
 
+export interface TaskCapabilityResource {
+    environmentId: number;
+    connectionId: number;
+    syncId?: string | undefined;
+}
+
 export interface InternalServiceAuth {
     kind: InternalServiceAuthKind;
     subject: string;
@@ -32,12 +42,23 @@ export interface InternalServiceAuth {
     issuer?: InternalServiceIssuer;
     /** Unified JWT `sub` (`service:*`, `task:<id>`, or `node:<id>`). */
     sub?: string;
+    /** Present on a task capability token. Absent on service, node, and legacy tokens. */
+    res?: TaskCapabilityResource;
+    scopes?: readonly TaskCapabilityScope[];
 }
 
 export function taskSubject(taskId: string): string {
     return `task:${taskId}`;
 }
 
+export function isTaskSubject(sub: string | undefined): sub is `task:${string}` {
+    return typeof sub === 'string' && sub.startsWith('task:') && sub.length > 'task:'.length;
+}
+
 export function nodeSubject(nodeId: string): string {
     return `node:${nodeId}`;
+}
+
+export function isNodeSubject(sub: string | undefined): sub is `node:${string}` {
+    return typeof sub === 'string' && sub.startsWith('node:') && sub.length > 'node:'.length;
 }
