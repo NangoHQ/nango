@@ -37,6 +37,7 @@ import type {
     DBConnectionDecrypted,
     DBEnvironment,
     DBTeam,
+    EnvironmentWithoutSecrets,
     InstallPluginCredentials,
     IntegrationConfig,
     InternalProxyConfiguration,
@@ -275,7 +276,7 @@ export const connectionRefreshSuccess = async ({
     connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     config: IntegrationConfig;
     account?: DBTeam;
-    environment?: DBEnvironment;
+    environment?: EnvironmentWithoutSecrets;
     provider?: Provider;
 }): Promise<void> => {
     let clearedActiveAuthError = false;
@@ -340,7 +341,7 @@ export const connectionRefreshFailed = async ({
 }: {
     account: DBTeam;
     connection: DBConnection | DBConnectionDecrypted;
-    environment: DBEnvironment;
+    environment: EnvironmentWithoutSecrets;
     provider: Provider;
     config: IntegrationConfig;
     authError: { type: string; description: string };
