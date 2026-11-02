@@ -491,11 +491,11 @@ program
     .command('deploy')
     .description('Deploy a Nango integration')
     .argument('[environment]', 'The target environment (e.g., "dev" or "prod")')
-    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with.')
+    .option('-v, --version [version]', 'Optional: Set the deployment version for syncs/actions. Has no effect on functions.')
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
     .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
-    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
+    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation. Requires --auto-confirm.', false)
     .addOption(new Option('--sourcemap <mode>', 'Source map mode for compiled function bundles.').choices(SOURCEMAP_OPTIONS).default('inline'))
     .action(async function (this: Command, environment?: string) {
         const options = this.opts<DeployOptions>();
@@ -530,7 +530,7 @@ program
             return;
         }
 
-        const res = await deploy({ fullPath, options, environmentName: environment });
+        const res = await deploy({ fullPath, options, environmentName: environment, interactive });
         if (res.isErr()) {
             process.exitCode = NangoCliExitCode.DeployError;
             return;

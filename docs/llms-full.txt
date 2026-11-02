@@ -3297,7 +3297,7 @@ Local development is the default path for production integrations. Use it when y
     nango deploy --integration <integration-id> dev
     ```
 
-    A bare `nango deploy` reconciles every function in the environment and can overwrite teammates' work on a shared collaborative environment. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
+    A bare `nango deploy` reconciles each included function family across the environment: it deploys functions present locally and removes remote ones that aren't. This can delete teammates' functions in a shared environment. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
 
     For function-type-specific commands, see the [Sync function guide](/guides/functions/syncs/sync-functions#test-and-deploy), [Action function guide](/guides/functions/action-functions#test-and-deploy), and [Testing](/guides/functions/testing).
   </Step>
@@ -6167,7 +6167,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.22.2'
 
       - name: Install dependencies
         run: npm ci
@@ -6221,7 +6221,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.22.2'
 
       - name: Install dependencies
         run: npm ci
@@ -6247,7 +6247,7 @@ jobs:
             destructive_flag="--allow-destructive"
           fi
 
-          npx nango@latest deploy "$stage" --secret-key "$secret_key" --no-dependency-update $destructive_flag
+          npx nango@latest deploy "$stage" --auto-confirm --no-dependency-update $destructive_flag
 ```
 </Accordion>
 </AccordionGroup>
@@ -6255,9 +6255,9 @@ jobs:
 <Warning>
   **Destructive Changes**
 
-  A destructive change removes an integration, sync function, or action function. To prevent accidental deletions, `nango deploy` will prompt for confirmation when it detects one.
+  Deleting a sync function with existing connections, removing a sync/action record model, or deleting any other function requires confirmation.
 
-  In CI, use `--auto-confirm` or `--allow-destructive` to bypass the prompt. We recommend only doing this on a manual trigger, as shown above.
+  In CI, use both `--auto-confirm` and `--allow-destructive` to approve destructive changes. We recommend only doing this on a manual trigger, as shown above.
 </Warning>
 
 ## Testing in CI
@@ -14291,6 +14291,14 @@ Get details about a specific command by running:
 ```bash
 nango [command] --help
 ```
+
+`nango deploy <environment>` reconciles each included function family across the target environment: it deploys functions present locally and removes remote ones that aren't. Projects can contain syncs, actions, on-events, and tools together. The CLI previews the selected functions, shows one combined plan, and asks for confirmation at most once before deploying.
+
+- `--integration <id>` selects functions for that integration.
+- `--sync <name>` and `--action <name>` select the named sync or action.
+- `--version <version>` overrides sync/action versions. Tools use automatically generated versions.
+
+Deleting a sync with existing connections, removing a sync/action record model, or deleting any other function requires confirmation. In CI or with `--no-interactive`, approve these changes with both `--auto-confirm` and `--allow-destructive`. `NANGO_DEPLOY_AUTO_CONFIRM=true` can replace `--auto-confirm`.
 
 ## Interactive Mode
 

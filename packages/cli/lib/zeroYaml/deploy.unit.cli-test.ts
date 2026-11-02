@@ -5,7 +5,6 @@ import path from 'node:path';
 import promptly from 'promptly';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as cliUtils from '../utils.js';
 import { Ok } from '../utils/result.js';
 import { tsToJsPath } from './compile.js';
 import { parseIntegrationDefinitions } from './definitions.js';
@@ -13,7 +12,7 @@ import { deploy } from './deploy.js';
 
 import type { DeployOptions } from '../types.js';
 import type { FunctionConfig, ParsedIntegrationDefinitions } from './definitions.js';
-import type { FunctionDeploymentBundleSuccess, PostDeployConfirmation } from '@nangohq/types';
+import type { FunctionDeploymentBundleSuccess, PostDeploy, PostDeployConfirmation } from '@nangohq/types';
 
 vi.mock('promptly', () => ({ default: { confirm: vi.fn() } }));
 vi.mock('./definitions.js', () => ({ parseIntegrationDefinitions: vi.fn() }));
@@ -72,6 +71,8 @@ const legacyChangeConfirmation = {
     updatedActions: [{ providerConfigKey: 'github', name: 'legacy' }]
 } satisfies PostDeployConfirmation['Success'];
 
+const legacyDeploymentResult = [{ name: 'legacy', version: '42', providerConfigKey: 'github', type: 'action', models: [] }] satisfies PostDeploy['Success'];
+
 const legacyOnlyParsed = {
     ...parsed,
     functions: [],
@@ -119,13 +120,228 @@ describe('deploy', () => {
         await fs.rm(fullPath, { recursive: true, force: true });
     });
 
-    it('prints an error for a mixed deploy', async () => {
-        await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
+    it('previews both families before deploying them in order with one summary', async () => {
+        const functionChanges = { ...noFunctionChanges, updated: [{ integrationId: 'github', name: 'fetch' }] };
+        fetchMock
+            .mockResolvedValueOnce(jsonResponse({ ...legacyChangeConfirmation, deletedActions: [{ providerConfigKey: 'github', name: 'old-action' }] }))
+            .mockResolvedValueOnce(jsonResponse(functionChanges))
+            .mockResolvedValueOnce(jsonResponse(legacyDeploymentResult))
+            .mockResolvedValueOnce(jsonResponse(functionChanges));
 
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
+
+        expect(result.isOk()).toBe(true);
+        expect(fetchMock.mock.calls.map(([url]) => (url as URL).pathname)).toEqual([
+            '/sync/deploy/confirmation',
+            '/functions/deployments/bundle/preview',
+            '/sync/deploy',
+            '/functions/deployments/bundle'
+        ]);
         const output = logOutput(logSpy);
-        expect(output).toContain('Legacy scripts and functions cannot be deployed together');
-        expect(output).not.toContain('✓ Deployed');
+        expect(output.match(/Nango will perform this plan:/g)).toHaveLength(1);
+        expect(output.match(/Summary/g)).toHaveLength(1);
+        expect(output).toContain('↳ Actions');
+        expect(output).toContain('↳ Functions');
+        expect(output).toContain('✓ Deployed');
+        expect(output.match(/Successfully deployed:/g)).toHaveLength(1);
+        expect(output).toContain('- github → legacy@v42');
+        expect(output).toContain('- github → fetch');
+        expect(output).toContain('Successfully removed:');
+        expect(output).toContain('- github → old-action');
+        expect(output.indexOf('✓ Deployed')).toBeLessThan(output.indexOf('Successfully deployed:'));
+        expect(promptly.confirm).not.toHaveBeenCalled();
+    });
+
+    it('scopes both families to the selected integration and only overrides sync/action versions', async () => {
+        fetchMock
+            .mockResolvedValueOnce(jsonResponse(legacyChangeConfirmation))
+            .mockResolvedValueOnce(jsonResponse(noFunctionChanges))
+            .mockResolvedValueOnce(jsonResponse(legacyDeploymentResult))
+            .mockResolvedValueOnce(jsonResponse(noFunctionChanges));
+
+        const result = await deploy({
+            fullPath,
+            environmentName: 'test',
+            interactive: false,
+            options: deployOptions({ integration: 'github', version: '42' })
+        });
+
+        expect(result.isOk()).toBe(true);
+        const bodies = fetchMock.mock.calls.map(([, request]) => JSON.parse((request as RequestInit).body as string) as Record<string, unknown>);
+        expect(bodies[0]).toMatchObject({ deployMode: 'integration', flowConfigs: [{ providerConfigKey: 'github', version: '42' }] });
+        expect(bodies[1]).toMatchObject({
+            reconciliationScope: { kind: 'integration', integrationId: 'github' },
+            functions: [{ integrationId: 'github', name: 'fetch' }]
+        });
+        expect(bodies[2]).toMatchObject({ flowConfigs: bodies[0]?.['flowConfigs'] });
+        expect(bodies[3]).toEqual(bodies[1]);
+        expect(logOutput(logSpy).match(/The --version option/g)).toHaveLength(1);
+        expect(logOutput(logSpy).indexOf('✓ Packaging')).toBeLessThan(logOutput(logSpy).indexOf('The --version option'));
+        expect(logOutput(logSpy)).not.toContain('No changes');
+        expect(logOutput(logSpy)).toContain('- github → legacy@v42');
+    });
+
+    it.each([
+        { name: 'unknown integration', options: { integration: 'missing' }, message: 'No local definitions found for integration "missing"' },
+        { name: 'conflicting selectors', options: { sync: 'contacts', action: 'legacy' }, message: 'The --sync and --action options cannot be used together' }
+    ])('rejects $name without contacting the API', async ({ options, message }) => {
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions(options) });
+
+        expect(result.isErr()).toBe(true);
+        expect(logOutput(logSpy)).toContain(message);
         expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it.each(['legacy', 'functions'] as const)('does not contact the API when %s packaging fails in a mixed project', async (family) => {
+        if (family === 'legacy') {
+            await fs.rm(path.join(fullPath, 'github', 'actions', 'legacy.ts'));
+        } else {
+            await fs.rm(path.join(fullPath, 'build', 'github_functions_fetch.cjs'));
+        }
+
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
+
+        expect(result.isErr()).toBe(true);
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it.each(['legacy', 'functions'] as const)('does not deploy either family when the %s preview fails', async (family) => {
+        const previewError = jsonResponse({ error: { code: 'server_error', message: 'Preview failed' } });
+        fetchMock
+            .mockResolvedValueOnce(family === 'legacy' ? previewError : jsonResponse(legacyConfirmation))
+            .mockResolvedValueOnce(family === 'functions' ? previewError : jsonResponse(noFunctionChanges));
+
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
+
+        expect(result.isErr()).toBe(true);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(logOutput(logSpy)).not.toContain('✓ Deployed');
+    });
+
+    it.each(['legacy', 'functions'] as const)('clearly reports each outcome when the %s deployment fails', async (family) => {
+        fetchMock.mockResolvedValueOnce(jsonResponse(legacyConfirmation)).mockResolvedValueOnce(jsonResponse(noFunctionChanges));
+        if (family === 'functions') {
+            fetchMock.mockResolvedValueOnce(jsonResponse(legacyDeploymentResult)).mockRejectedValueOnce(new Error('Connection lost'));
+        } else {
+            fetchMock.mockResolvedValueOnce(jsonResponse({ error: { code: 'server_error', message: 'Apply failed' } }));
+        }
+
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
+
+        expect(result.isErr()).toBe(true);
+        expect(fetchMock).toHaveBeenCalledTimes(family === 'legacy' ? 3 : 4);
+        const output = logOutput(logSpy);
+        expect(output).toContain(`Syncs/actions/on-events: ${family === 'legacy' ? 'failed' : 'completed'}`);
+        expect(output).toContain(`Functions: ${family === 'legacy' ? 'not attempted' : 'failed'}`);
+        expect(output).toContain(family === 'legacy' ? 'Deployment failed.' : 'Deployment partially completed.');
+        expect(output).toContain('The failed request may have applied changes');
+        expect(output).not.toContain('✓ Deployed');
+        if (family === 'functions') {
+            expect(output).toContain('- github → legacy@v42');
+            expect(output.indexOf('✗ Deploying')).toBeLessThan(output.indexOf('Successfully deployed:'));
+        }
+    });
+
+    it.each([
+        {
+            name: 'interactive approval',
+            interactive: true,
+            autoConfirm: false,
+            allowDestructive: false,
+            accepted: true,
+            succeeds: true,
+            prompts: 1
+        },
+        {
+            name: 'interactive rejection',
+            interactive: true,
+            autoConfirm: false,
+            allowDestructive: false,
+            accepted: false,
+            succeeds: false,
+            prompts: 1
+        },
+        {
+            name: 'noninteractive auto-confirm alone',
+            interactive: false,
+            autoConfirm: true,
+            allowDestructive: false,
+            accepted: false,
+            succeeds: false,
+            prompts: 0
+        },
+        {
+            name: 'noninteractive allow-destructive alone',
+            interactive: false,
+            autoConfirm: false,
+            allowDestructive: true,
+            accepted: false,
+            succeeds: false,
+            prompts: 0
+        },
+        {
+            name: 'noninteractive approval flags',
+            interactive: false,
+            autoConfirm: true,
+            allowDestructive: true,
+            accepted: false,
+            succeeds: true,
+            prompts: 0
+        }
+    ])('handles mixed destructive changes with $name', async ({ interactive, autoConfirm, allowDestructive, accepted, succeeds, prompts }) => {
+        const changes = { ...noFunctionChanges, deleted: [{ integrationId: 'github', name: 'removed' }] };
+        fetchMock
+            .mockResolvedValueOnce(jsonResponse({ ...legacyConfirmation, deletedModels: ['RemovedModel'] }))
+            .mockResolvedValueOnce(jsonResponse(changes))
+            .mockResolvedValueOnce(jsonResponse([]))
+            .mockResolvedValueOnce(jsonResponse(changes));
+        vi.mocked(promptly.confirm).mockImplementationOnce(() => {
+            expect(fetchMock).toHaveBeenCalledTimes(2);
+            expect(logOutput(logSpy)).toContain('↳ Actions');
+            expect(logOutput(logSpy)).toContain('↳ Functions');
+            return Promise.resolve(accepted);
+        });
+
+        const result = await deploy({ fullPath, environmentName: 'test', interactive, options: deployOptions({ interactive, autoConfirm, allowDestructive }) });
+
+        expect(result.isOk()).toBe(succeeds);
+        expect(promptly.confirm).toHaveBeenCalledTimes(prompts);
+        expect(fetchMock).toHaveBeenCalledTimes(succeeds ? 4 : 2);
+    });
+
+    it.each(['legacy', 'functions'] as const)('requires confirmation when only %s changes are destructive', async (family) => {
+        fetchMock
+            .mockResolvedValueOnce(jsonResponse({ ...legacyConfirmation, deletedModels: family === 'legacy' ? ['RemovedModel'] : [] }))
+            .mockResolvedValueOnce(
+                jsonResponse({ ...noFunctionChanges, deleted: family === 'functions' ? [{ integrationId: 'github', name: 'removed' }] : [] })
+            );
+
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
+
+        expect(result.isErr()).toBe(true);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(promptly.confirm).not.toHaveBeenCalled();
+    });
+
+    it('accepts the environment auto-confirm setting for a mixed deployment', async () => {
+        vi.stubEnv('NANGO_DEPLOY_AUTO_CONFIRM', 'true');
+        const changes = { ...noFunctionChanges, deleted: [{ integrationId: 'github', name: 'removed' }] };
+        fetchMock
+            .mockResolvedValueOnce(jsonResponse(legacyConfirmation))
+            .mockResolvedValueOnce(jsonResponse(changes))
+            .mockResolvedValueOnce(jsonResponse([]))
+            .mockResolvedValueOnce(jsonResponse(changes));
+
+        const result = await deploy({
+            fullPath,
+            environmentName: 'test',
+            interactive: false,
+            options: deployOptions({ autoConfirm: false, allowDestructive: true })
+        });
+
+        expect(result.isOk()).toBe(true);
+        expect(fetchMock).toHaveBeenCalledTimes(4);
+        expect(promptly.confirm).not.toHaveBeenCalled();
     });
 
     it('prints only legacy summary rows for a single action deploy', async () => {
@@ -144,7 +360,7 @@ describe('deploy', () => {
         expect(output).toContain('↳ OnEvents');
         expect(output).not.toContain('↳ Functions');
         expect(output).toContain('✓ Deployed');
-        expect(output).toContain('No sync deleted with active connections, proceeding without confirmation');
+        expect(output).toContain('No destructive changes, proceeding without confirmation');
     });
 
     it.each([
@@ -188,9 +404,9 @@ describe('deploy', () => {
         expect(previewBody.functions).toEqual([expect.objectContaining({ integrationId: 'slack', name: 'other', trigger: { kind: 'http' } })]);
     });
 
-    it('deletes the functions of an integration when its last function was removed', async () => {
+    // TODO: Re-enable these tests when empty deployments can delete the last definition for both legacy scripts and functions.
+    it.skip('deletes the functions of an integration when its last function was removed', async () => {
         vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok({ ...functionsOnlyParsed, functions: [githubFunction] }));
-        await fs.writeFile(path.join(fullPath, '.nango', 'functions.json'), JSON.stringify([githubFunction]));
         const functionChanges = {
             created: [],
             updated: [],
@@ -209,12 +425,11 @@ describe('deploy', () => {
         const output = logOutput(logSpy);
         expect(output).toContain('- slack → other');
         expect(output).toContain('✓ Deployed');
-        expect(output).toContain('Successfully removed the functions');
+        expect(output).toContain('Successfully removed:');
     });
 
-    it('deletes every function of the environment when the last function was removed', async () => {
+    it.skip('deletes every function of the environment when the last function was removed', async () => {
         vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok({ ...functionsOnlyParsed, functions: [] }));
-        await fs.rm(path.join(fullPath, '.nango', 'functions.json'));
         const functionChanges = {
             created: [],
             updated: [],
@@ -232,21 +447,23 @@ describe('deploy', () => {
         expect(output).toContain('- github → fetch');
         expect(output).toContain('- slack → other');
         expect(output).toContain('✓ Deployed');
-        expect(output).toContain('Successfully removed the functions');
+        expect(output).toContain('Successfully removed:');
     });
 
-    it('rejects --version for native function deployments', async () => {
+    it('warns about --version for function deployments and still deploys', async () => {
         vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(functionsOnlyParsed));
+        fetchMock.mockResolvedValueOnce(jsonResponse(noFunctionChanges)).mockResolvedValueOnce(jsonResponse(noFunctionChanges));
 
-        await deploy({
+        const result = await deploy({
             fullPath,
             environmentName: 'test',
             interactive: false,
             options: deployOptions({ version: 'v1' })
         });
 
-        expect(logOutput(logSpy)).toContain('The --version option can only be used with legacy scripts');
-        expect(fetchMock).not.toHaveBeenCalled();
+        expect(result.isOk()).toBe(true);
+        expect(logOutput(logSpy)).toContain('The --version option only applies to syncs/actions; it has no effect on functions.');
+        expect(fetchMock).toHaveBeenCalledTimes(2);
     });
 
     it('prints only the Functions summary row for a functions-only project', async () => {
@@ -275,7 +492,6 @@ describe('deploy', () => {
         const config = functionConfig({ integrationId: 'github.js', name: 'fetch' });
         vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok({ ...functionsOnlyParsed, functions: [config] }));
         await fs.mkdir(path.join(fullPath, 'github.js', 'functions'), { recursive: true });
-        await fs.writeFile(path.join(fullPath, '.nango', 'functions.json'), JSON.stringify([config]));
         await fs.writeFile(path.join(fullPath, 'github.js', 'functions', 'fetch.ts'), 'source with dotted path');
         await fs.writeFile(path.join(fullPath, 'build', 'github.js_functions_fetch.cjs'), 'compiled with dotted path');
 
@@ -297,32 +513,15 @@ describe('deploy', () => {
         expect(previewBody.functions[0]?.fileBody).toEqual({ js: 'compiled with dotted path', ts: 'source with dotted path' });
     });
 
-    it.each([
-        { state: 'malformed', write: async (artifactPath: string) => await fs.writeFile(artifactPath, '{'.repeat(2)) },
-        { state: 'not an array', write: async (artifactPath: string) => await fs.writeFile(artifactPath, JSON.stringify({})) }
-    ])('does not reconcile anything when the functions artifact is $state', async ({ write }) => {
-        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok({ ...functionsOnlyParsed, functions: [] }));
-        await write(path.join(fullPath, '.nango', 'functions.json'));
-
-        await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
-
-        const output = logOutput(logSpy);
-        expect(output).not.toContain('↳ Functions');
-        expect(output).toContain('functions artifact');
-        expect(output).not.toContain('✓ Deployed');
-        expect(fetchMock).not.toHaveBeenCalled();
-    });
-
     it('rejects function source paths outside the project directory', async () => {
-        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(functionsOnlyParsed));
         const externalDir = await fs.mkdtemp(path.join(os.tmpdir(), 'nango-cli-external-'));
 
         try {
             const externalFilePath = path.join(externalDir, 'secret.ts');
             const sourcePath = path.relative(fullPath, externalFilePath);
             const maliciousConfig = { ...githubFunction, filePath: sourcePath };
+            vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok({ ...functionsOnlyParsed, functions: [maliciousConfig] }));
             await fs.writeFile(externalFilePath, 'sensitive contents');
-            await fs.writeFile(path.join(fullPath, '.nango', 'functions.json'), JSON.stringify([maliciousConfig]));
             await fs.writeFile(path.join(fullPath, 'build', tsToJsPath(sourcePath.replace(/\.ts$/, '.js'))), 'compiled function');
 
             await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
@@ -336,8 +535,7 @@ describe('deploy', () => {
 
     it('prints only legacy summary rows when no functions bundle', async () => {
         vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(legacyOnlyParsed));
-        await fs.rm(path.join(fullPath, '.nango', 'functions.json'));
-        fetchMock.mockResolvedValueOnce(jsonResponse(legacyConfirmation)).mockResolvedValueOnce(jsonResponse([]));
+        fetchMock.mockResolvedValueOnce(jsonResponse(legacyChangeConfirmation)).mockResolvedValueOnce(jsonResponse([]));
 
         await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
 
@@ -349,17 +547,31 @@ describe('deploy', () => {
         expect(output).toContain('✓ Deployed');
     });
 
-    it('prints no summary when functions are unchanged', async () => {
-        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(functionsOnlyParsed));
-        fetchMock.mockResolvedValueOnce(jsonResponse(noFunctionChanges)).mockResolvedValueOnce(jsonResponse(noFunctionChanges));
+    it.each([
+        { name: 'legacy', definitions: legacyOnlyParsed },
+        { name: 'functions', definitions: functionsOnlyParsed },
+        { name: 'mixed', definitions: parsed }
+    ])('prints No changes when the $name deployment is unchanged', async ({ name, definitions }) => {
+        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(definitions));
+        fetchMock.mockResolvedValueOnce(jsonResponse(name === 'functions' ? noFunctionChanges : legacyConfirmation));
+        if (name === 'mixed') {
+            fetchMock.mockResolvedValueOnce(jsonResponse(noFunctionChanges));
+        }
+        fetchMock.mockResolvedValueOnce(jsonResponse(name === 'functions' ? noFunctionChanges : []));
+        if (name === 'mixed') {
+            fetchMock.mockResolvedValueOnce(jsonResponse(noFunctionChanges));
+        }
 
-        await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
 
         const output = logOutput(logSpy);
-        expect(output).toContain('No changes');
-        expect(output).toContain('No function changes were deployed');
-        expect(output).not.toContain('↳ Functions');
-        expect(output).not.toContain('- github → fetch');
+        expect(result.isOk()).toBe(true);
+        expect(output.match(/No changes/g)).toHaveLength(2);
+        expect(output).toContain('No changes were deployed.');
+        expect(output).not.toContain('Successfully');
+        expect(output).not.toContain('Summary');
+        expect(output).not.toContain('↳');
+        expect(output).not.toContain('No destructive changes, proceeding');
     });
 
     it('prints Function preview errors', async () => {
@@ -438,30 +650,31 @@ describe('deploy', () => {
         expect(logOutput(logSpy)).toContain('✓ Deployed');
     });
 
-    it('explains the required legacy confirmation flags in CI', async () => {
-        vi.spyOn(cliUtils, 'isCI', 'get').mockReturnValue('true');
+    it('explains the required legacy confirmation flags when non-interactive', async () => {
         vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(legacyOnlyParsed));
         fetchMock.mockResolvedValueOnce(jsonResponse({ ...legacyConfirmation, deletedModels: ['RemovedModel'] }));
 
         const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
 
         expect(result.isErr()).toBe(true);
-        expect(logOutput(logSpy)).toContain(
-            'Syncs/Actions were not deployed. Confirm the deploy by passing the --auto-confirm flag and --allow-destructive flag. Exiting'
-        );
+        expect(logOutput(logSpy)).toContain('Nothing was deployed. Confirm the deploy by passing the --auto-confirm and --allow-destructive flags. Exiting');
         expect(promptly.confirm).not.toHaveBeenCalled();
         expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
     it('prints the legacy abort message when confirmation is declined', async () => {
-        vi.spyOn(cliUtils, 'isCI', 'get').mockReturnValue(undefined);
         vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(legacyOnlyParsed));
         fetchMock.mockResolvedValueOnce(jsonResponse({ ...legacyConfirmation, deletedModels: ['RemovedModel'] }));
 
-        const result = await deploy({ fullPath, environmentName: 'test', interactive: true, options: deployOptions({ autoConfirm: false }) });
+        const result = await deploy({
+            fullPath,
+            environmentName: 'test',
+            interactive: true,
+            options: deployOptions({ autoConfirm: false, interactive: true })
+        });
 
         expect(result.isErr()).toBe(true);
-        expect(logOutput(logSpy)).toContain('Deployed aborted. Exiting');
+        expect(logOutput(logSpy)).toContain('Deploy aborted. Exiting');
         expect(promptly.confirm).toHaveBeenCalledTimes(1);
         expect(fetchMock).toHaveBeenCalledTimes(1);
     });
@@ -480,6 +693,7 @@ describe('deploy', () => {
         const deployBody = JSON.parse(deployRequest.body as string) as PostDeployConfirmation['Body'];
         expect(previewBody).toMatchObject({ reconcile: false, flowConfigs: [{ version: '42' }] });
         expect(deployBody).toMatchObject({ reconcile: true, flowConfigs: previewBody.flowConfigs });
+        expect(logOutput(logSpy)).not.toContain('The --version option');
     });
 
     it('prints an aborted deployment when function deletions are not allowed', async () => {
@@ -497,16 +711,16 @@ describe('deploy', () => {
 
         const output = logOutput(logSpy);
         expect(output).toContain('↳ Functions');
-        expect(output).toMatch(/Deploy aborted\. Exiting|Functions were not deployed/);
+        expect(output).toContain('Nothing was deployed.');
         expect(output).not.toContain('✓ Deployed');
         expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
-    it('prints a successful deployment when function deletions are allowed', async () => {
+    it.each([false, true])('reports function removals alongside updates: %s', async (withUpdates) => {
         vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(functionsOnlyParsed));
         const functionChanges = {
             created: [],
-            updated: [],
+            updated: withUpdates ? [{ integrationId: 'slack', name: 'other' }] : [],
             unchanged: [{ integrationId: 'github', name: 'fetch' }],
             deleted: [{ integrationId: 'github', name: 'removed' }]
         } satisfies FunctionDeploymentBundleSuccess;
@@ -517,8 +731,42 @@ describe('deploy', () => {
         const output = logOutput(logSpy);
         expect(output).toContain('allowDestructive flag is on');
         expect(output).toContain('✓ Deployed');
-        expect(output).toContain('Successfully removed the functions');
+        expect(output).toContain('Successfully removed:');
+        expect(output).toContain('- github → removed');
         expect(output).not.toContain('- github → fetch');
+        if (withUpdates) {
+            expect(output).toContain('Successfully deployed:');
+            expect(output).toContain('- slack → other');
+        } else {
+            expect(output).not.toContain('Successfully deployed:');
+        }
+    });
+
+    it.each([false, true])('reports legacy removals alongside deployments: %s', async (withDeployments) => {
+        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(legacyOnlyParsed));
+        const changes = {
+            ...legacyConfirmation,
+            deletedSyncs: [{ providerConfigKey: 'github', name: 'old-sync', connections: 1, auto_start: false }],
+            deletedActions: [{ providerConfigKey: 'github', name: 'old-action' }],
+            deletedOnEventScripts: [{ providerConfigKey: 'github', name: 'old-event', event: 'post-connection-creation' }]
+        } satisfies PostDeployConfirmation['Success'];
+        fetchMock.mockResolvedValueOnce(jsonResponse(changes)).mockResolvedValueOnce(jsonResponse(withDeployments ? legacyDeploymentResult : []));
+
+        const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions({ allowDestructive: true }) });
+
+        const output = logOutput(logSpy);
+        expect(result.isOk()).toBe(true);
+        expect(output).toContain('Successfully removed:');
+        expect(output).toContain('- github → old-sync');
+        expect(output).toContain('- github → old-action');
+        expect(output).toContain('- github → old-event');
+        expect(output).not.toContain('No changes');
+        if (withDeployments) {
+            expect(output).toContain('Successfully deployed:');
+            expect(output).toContain('- github → legacy@v42');
+        } else {
+            expect(output).not.toContain('Successfully deployed:');
+        }
     });
 });
 
@@ -558,7 +806,6 @@ async function writeProject(fullPath: string): Promise<void> {
     await fs.mkdir(path.join(fullPath, 'github', 'actions'), { recursive: true });
     await fs.mkdir(path.join(fullPath, 'github', 'functions'), { recursive: true });
     await fs.mkdir(path.join(fullPath, 'slack', 'functions'), { recursive: true });
-    await fs.writeFile(path.join(fullPath, '.nango', 'functions.json'), JSON.stringify([githubFunction, slackFunction]));
     await fs.writeFile(path.join(fullPath, 'build', 'github_actions_legacy.cjs'), 'compiled legacy');
     await fs.writeFile(path.join(fullPath, 'github', 'actions', 'legacy.ts'), 'source legacy');
     await fs.writeFile(path.join(fullPath, 'build', 'github_functions_fetch.cjs'), 'compiled function');

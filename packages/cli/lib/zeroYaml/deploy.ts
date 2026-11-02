@@ -6,7 +6,7 @@ import columnify from 'columnify';
 import promptly from 'promptly';
 
 import { cliFetch } from '../tls.js';
-import { getCliHeaders, isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
+import { getCliHeaders, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
 import { NANGO_VERSION } from '../version.js';
@@ -36,24 +36,35 @@ import type {
 type LegacyPackage = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'deployMode'>;
 type FunctionsBundle = PostFunctionDeploymentBundle['Body'];
 type Deployment = { kind: 'legacy'; package: LegacyPackage } | { kind: 'functions'; bundle: FunctionsBundle };
-type DeploymentPlan = [Deployment, ...Deployment[]];
-type DeploymentConfirmation = { kind: 'legacy'; value: ScriptDifferences } | { kind: 'functions'; value: PostFunctionDeploymentBundlePreview['Success'] };
+type DeploymentPlan = Deployment[];
+type DeploymentConfirmation =
+    | { kind: 'legacy'; value: ScriptDifferences; deployment: Extract<Deployment, { kind: 'legacy' }> }
+    | { kind: 'functions'; value: PostFunctionDeploymentBundlePreview['Success']; deployment: Extract<Deployment, { kind: 'functions' }> };
+type DeploymentResult = {
+    deployed: { integrationId: string; name: string; version?: string | undefined }[];
+    deleted: { integrationId: string; name: string }[];
+};
 
 export async function deploy({
     fullPath,
     options,
     environmentName,
-    interactive = true
+    interactive
 }: {
     fullPath: string;
     options: DeployOptions;
     environmentName: string;
-    interactive?: boolean;
+    interactive: boolean;
 }): Promise<Result<boolean>> {
     const { env, version, debug } = options;
     const spinnerFactory = new Spinner({ interactive });
 
-    let plan: DeploymentPlan;
+    if (options.sync && options.action) {
+        console.log(chalk.red('The --sync and --action options cannot be used together.'));
+        return Err('invalid_options');
+    }
+
+    const plan: DeploymentPlan = [];
     const spinnerPackage = spinnerFactory.start('Packaging');
     try {
         const def = await parseIntegrationDefinitions({ fullPath, debug });
@@ -63,21 +74,25 @@ export async function deploy({
             console.log(def.error instanceof ReadableError ? def.error.toText() : chalk.red(def.error.message));
             return Err(def.error);
         }
+        if (
+            options.integration &&
+            !def.value.integrations.some((integration) => integration.providerConfigKey === options.integration) &&
+            !def.value.functions.some((config) => config.integrationId === options.integration)
+        ) {
+            spinnerPackage.fail();
+            console.log(chalk.red(`No local definitions found for integration "${options.integration}".`));
+            return Err('no_data');
+        }
 
-        const deploymentKind = getDeploymentKind({
+        const deploymentKinds = getDeploymentKinds({
             parsed: def.value,
             optionalIntegrationId: options.integration,
             optionalSyncName: options.sync,
             optionalActionName: options.action
         });
-        if (deploymentKind === 'mixed') {
-            spinnerPackage.fail();
-            console.log(chalk.red('Legacy scripts and functions cannot be deployed together.'));
-            return Err('no_data');
-        }
 
-        if (deploymentKind === 'legacy') {
-            const postData = await createDeployConfirmationPackage({
+        if (deploymentKinds.includes('legacy')) {
+            const postData = await createLegacyPackage({
                 parsed: def.value,
                 fullPath,
                 debug,
@@ -91,21 +106,21 @@ export async function deploy({
                 console.log(chalk.red(postData.error.message));
                 return Err('no_data');
             }
-            plan = [{ kind: 'legacy', package: postData.value }];
-        } else {
-            if (options.version) {
-                spinnerPackage.fail();
-                console.log(chalk.red('The --version option can only be used with legacy scripts.'));
-                return Err('no_data');
-            }
-
-            const bundle = await createFunctionsBundle({ fullPath, optionalIntegrationId: options.integration });
+            plan.push({ kind: 'legacy', package: postData.value });
+        }
+        if (deploymentKinds.includes('functions')) {
+            const bundle = await createFunctionsBundle({ fullPath, functionConfigs: def.value.functions, optionalIntegrationId: options.integration });
             if (bundle.isErr()) {
                 spinnerPackage.fail();
                 console.log(chalk.red(bundle.error.message));
                 return Err('no_data');
             }
-            plan = [{ kind: 'functions', bundle: bundle.value }];
+            plan.push({ kind: 'functions', bundle: bundle.value });
+        }
+        if (plan.length === 0) {
+            spinnerPackage.fail();
+            console.log(chalk.red('No functions to deploy.'));
+            return Err('no_data');
         }
 
         spinnerPackage.succeed();
@@ -113,6 +128,10 @@ export async function deploy({
         spinnerPackage.fail();
         console.error(chalk.red('Unknown error'), err);
         return Err('failed');
+    }
+
+    if (version && plan.some((deployment) => deployment.kind === 'functions')) {
+        console.log(chalk.yellow('The --version option only applies to syncs/actions; it has no effect on functions.'));
     }
 
     // Get the private key before reaching the API
@@ -127,8 +146,8 @@ export async function deploy({
     const spinnerState = spinnerFactory.start(`Acquiring remote state ${chalk.gray(`(${new URL(hostport).origin})`)}`);
     const confirmations: DeploymentConfirmation[] = [];
     try {
-        for (const deployment of plan) {
-            const confirmationRes = await previewDeployment({ deployment, hostport, debug, sdkVersion });
+        const confirmationResults = await Promise.all(plan.map((deployment) => previewDeployment({ deployment, hostport, debug, sdkVersion })));
+        for (const confirmationRes of confirmationResults) {
             if (confirmationRes.isErr()) {
                 spinnerState.fail();
                 console.log(chalk.red(confirmationRes.error.message));
@@ -144,11 +163,14 @@ export async function deploy({
 
     const deploySource = resolveDeploySource();
     const autoconfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] === 'true' || options.autoConfirm;
-    for (const confirmation of confirmations) {
-        const confirmed = await handleConfirmation({ autoconfirm, allowDestructive: options.allowDestructive || false, confirmation });
-        if (confirmed.isErr()) {
-            return Err('not_confirmed');
-        }
+    const confirmed = await handleConfirmation({
+        autoconfirm,
+        allowDestructive: options.allowDestructive || false,
+        confirmations,
+        interactive
+    });
+    if (confirmed.isErr()) {
+        return Err('not_confirmed');
     }
 
     console.log('');
@@ -162,26 +184,31 @@ export async function deploy({
         0
     );
     const spinnerDeploy = spinnerFactory.start(`Deploying ${total} functions`);
-    try {
-        const messages: string[] = [];
-        for (const deployment of plan) {
-            const deployRes = await executeDeployment({ deployment, hostport, debug, nangoYamlBody, sdkVersion, source: deploySource });
-            if (deployRes.isErr()) {
-                spinnerDeploy.fail();
-                console.log(chalk.red(deployRes.error.message));
-                return Err('failed_to_deploy');
+    const results: DeploymentResult[] = [];
+    // Deployments are intentionally not atomic: completed ones are not rolled back on failure.
+    for (const [failedIndex, confirmation] of confirmations.entries()) {
+        const deployRes = await executeDeployment({ confirmation, hostport, debug, nangoYamlBody, sdkVersion, source: deploySource });
+        if (deployRes.isErr()) {
+            spinnerDeploy.fail();
+            printDeploymentMessage(results);
+            console.log(chalk.red(deployRes.error.message));
+            console.log(chalk.red(failedIndex > 0 ? 'Deployment partially completed.' : 'Deployment failed.'));
+            for (const [index, { kind }] of confirmations.entries()) {
+                const status = index < failedIndex ? 'completed' : index === failedIndex ? 'failed' : 'not attempted';
+                console.log(`- ${kind === 'legacy' ? 'Syncs/actions/on-events' : 'Functions'}: ${status}`);
             }
-            messages.push(deployRes.value);
+            console.log(chalk.yellow('The failed request may have applied changes. Check remote state before retrying.'));
+            return Err('failed_to_deploy');
         }
-        spinnerDeploy.succeed('Deployed');
-        for (const message of messages) {
-            console.log(chalk.green(message));
-        }
-        return Ok(true);
-    } catch {
-        spinnerDeploy.fail();
-        return Err('failed');
+        results.push(deployRes.value);
     }
+    spinnerDeploy.succeed('Deployed');
+    if (results.every((result) => result.deployed.length + result.deleted.length === 0)) {
+        console.log(chalk.gray('No changes were deployed.'));
+    } else {
+        printDeploymentMessage(results);
+    }
+    return Ok(true);
 }
 
 async function previewDeployment({
@@ -197,35 +224,49 @@ async function previewDeployment({
 }): Promise<Result<DeploymentConfirmation>> {
     if (deployment.kind === 'legacy') {
         const result = await postLegacyConfirmation({ hostport, body: { ...deployment.package, reconcile: false, debug, sdkVersion } });
-        return result.map((value): DeploymentConfirmation => ({ kind: 'legacy', value }));
+        return result.map((value): DeploymentConfirmation => ({ kind: 'legacy', value, deployment }));
     }
     const result = await previewFunctionsDeployment({ hostport, body: deployment.bundle });
-    return result.map((value): DeploymentConfirmation => ({ kind: 'functions', value }));
+    return result.map((value): DeploymentConfirmation => ({ kind: 'functions', value, deployment }));
 }
 
 async function executeDeployment({
-    deployment,
+    confirmation,
     hostport,
     debug,
     nangoYamlBody,
     sdkVersion,
     source
 }: {
-    deployment: Deployment;
+    confirmation: DeploymentConfirmation;
     hostport: string;
     debug: boolean;
     nangoYamlBody: string;
     sdkVersion: string;
     source: 'standalone' | 'repo';
-}): Promise<Result<string>> {
-    if (deployment.kind === 'legacy') {
-        return postLegacyDeploy({ hostport, body: { ...deployment.package, reconcile: true, debug, nangoYamlBody, sdkVersion, source } });
+}): Promise<Result<DeploymentResult>> {
+    try {
+        if (confirmation.kind === 'legacy') {
+            const { deployment, value } = confirmation;
+            const result = await postLegacyDeploy({ hostport, body: { ...deployment.package, reconcile: true, debug, nangoYamlBody, sdkVersion, source } });
+            return result.map((deployed) => ({
+                deployed: deployed.map(({ providerConfigKey, name, version }) => ({ integrationId: providerConfigKey, name, version })),
+                // The legacy API only returns deployed entries.
+                // Getting deleted entries from the confirmation response instead.
+                deleted: [...value.deletedSyncs, ...value.deletedActions, ...value.deletedOnEventScripts].map(({ providerConfigKey, name }) => ({
+                    integrationId: providerConfigKey,
+                    name
+                }))
+            }));
+        }
+        const result = await deployFunctions({ hostport, body: confirmation.deployment.bundle });
+        return result.map((value) => ({ deployed: [...value.created, ...value.updated], deleted: value.deleted }));
+    } catch (err) {
+        return Err(new Error(`Unexpected deploy response:\n${err instanceof Error ? err.message : String(err)}`));
     }
-    const result = await deployFunctions({ hostport, body: deployment.bundle });
-    return result.map(functionsDeploymentMessage);
 }
 
-function getDeploymentKind({
+function getDeploymentKinds({
     parsed,
     optionalIntegrationId,
     optionalSyncName,
@@ -235,9 +276,9 @@ function getDeploymentKind({
     optionalIntegrationId?: string | undefined;
     optionalSyncName?: string | undefined;
     optionalActionName?: string | undefined;
-}): 'legacy' | 'functions' | 'mixed' {
+}): Deployment['kind'][] {
     if (optionalSyncName || optionalActionName) {
-        return 'legacy';
+        return ['legacy'];
     }
 
     const integrations = optionalIntegrationId
@@ -249,38 +290,25 @@ function getDeploymentKind({
     );
     const hasFunctions = parsed.functions.some((config) => !optionalIntegrationId || config.integrationId === optionalIntegrationId);
 
-    if (hasLegacyScripts && hasFunctions) {
-        return 'mixed';
-    }
+    const kinds: Deployment['kind'][] = [];
     if (hasLegacyScripts) {
-        return 'legacy';
+        kinds.push('legacy');
     }
-    return 'functions';
+    if (hasFunctions) {
+        kinds.push('functions');
+    }
+    return kinds;
 }
 
 async function createFunctionsBundle({
     fullPath,
+    functionConfigs,
     optionalIntegrationId
 }: {
     fullPath: string;
+    functionConfigs: FunctionConfig[];
     optionalIntegrationId?: string | undefined;
 }): Promise<Result<FunctionsBundle>> {
-    const artifactPath = path.join(fullPath, '.nango', 'functions.json');
-    let functionConfigs: FunctionConfig[] = [];
-    if (fs.existsSync(artifactPath)) {
-        try {
-            const content = await fs.promises.readFile(artifactPath, 'utf8');
-            const parsed = JSON.parse(content) as unknown;
-            if (!Array.isArray(parsed)) {
-                return Err(new Error(`Invalid functions artifact ${artifactPath}`));
-            }
-            functionConfigs = parsed as FunctionConfig[];
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            return Err(new Error(`Could not read functions artifact ${artifactPath}: ${message}`));
-        }
-    }
-
     const selectedConfigs = optionalIntegrationId ? functionConfigs.filter((config) => config.integrationId === optionalIntegrationId) : functionConfigs;
 
     const functions: FunctionsBundle['functions'] = [];
@@ -314,7 +342,7 @@ async function createFunctionsBundle({
  * while also loading the content of the related script files.
  * It also supports filtering by integration, sync or action name for single deploys.
  */
-async function createDeployConfirmationPackage({
+async function createLegacyPackage({
     parsed,
     fullPath,
     debug,
@@ -596,7 +624,7 @@ async function postLegacyConfirmation({
 /**
  * Call Nango api to actually deploy
  */
-async function postLegacyDeploy({ hostport, body }: { hostport: string; body: PostDeploy['Body'] }): Promise<Result<string>> {
+async function postLegacyDeploy({ hostport, body }: { hostport: string; body: PostDeploy['Body'] }): Promise<Result<PostDeploy['Success']>> {
     const url = new URL('/sync/deploy', hostport);
 
     try {
@@ -615,21 +643,10 @@ async function postLegacyDeploy({ hostport, body }: { hostport: string; body: Po
             return Err(new Error(`Error deploying:\n${json.error.message} ${chalk.gray(`(${json.error.code})`)}`));
         }
 
-        if (json.length === 0) {
-            return Ok(`Successfully removed the syncs/actions.`);
-        }
-
-        const nameAndVersions = json.map((result) => `${result.name}@v${result.version}`);
-        return Ok(
-            `Successfully deployed the functions: \r\n${nameAndVersions
-                .map((row) => {
-                    return `- ${row}`;
-                })
-                .join('\r\n')}`
-        );
+        return Ok(json);
     } catch (err) {
         const errorMessage = getFetchError(err);
-        return Err(new Error(`Error deploying the functions:\n${errorMessage}`));
+        return Err(new Error(`Error deploying:\n${errorMessage}`));
     }
 }
 
@@ -695,18 +712,26 @@ async function deployFunctions({
     }
 }
 
-function functionsDeploymentMessage(result: PostFunctionDeploymentBundle['Success']): string {
-    const deployed = [...result.created, ...result.updated];
-    if (deployed.length === 0) {
-        return result.deleted.length > 0 ? 'Successfully removed the functions.' : 'No function changes were deployed.';
+function printDeploymentMessage(results: DeploymentResult[]): void {
+    const deployed = results.flatMap((result) => result.deployed);
+    const deleted = results.flatMap((result) => result.deleted);
+    const messages: string[] = [];
+    if (deployed.length > 0) {
+        messages.push(
+            `Successfully deployed: \r\n${deployed.map((func) => `- ${func.integrationId} → ${func.name}${func.version ? `@v${func.version}` : ''}`).join('\r\n')}`
+        );
     }
-
-    return `Successfully deployed the functions: \r\n${deployed.map((func) => `- ${func.integrationId} → ${func.name}`).join('\r\n')}`;
+    if (deleted.length > 0) {
+        messages.push(`Successfully removed: \r\n${deleted.map((func) => `- ${func.integrationId} → ${func.name}`).join('\r\n')}`);
+    }
+    if (messages.length > 0) {
+        console.log(chalk.green(messages.join('\r\n')));
+    }
 }
 
-type ConfirmationPolicy = { requiresConfirmation: false; message?: string } | { requiresConfirmation: true; ciMessage: string; abortMessage: string };
+type RenderedConfirmation = { rows: ReturnType<typeof summaryMessageColumns>[]; requiresConfirmation: boolean };
 
-function renderLegacyConfirmation(confirmation: PostDeployConfirmation['Success']): ConfirmationPolicy {
+function renderLegacyConfirmation(confirmation: PostDeployConfirmation['Success']): RenderedConfirmation {
     const {
         newSyncs,
         updatedSyncs,
@@ -719,10 +744,18 @@ function renderLegacyConfirmation(confirmation: PostDeployConfirmation['Success'
         deletedOnEventScripts,
         deletedModels
     } = confirmation;
+    const scriptSummaries = [
+        { name: 'Actions', newItems: newActions, updatedItems: updatedActions, deleteItems: deletedActions },
+        { name: 'OnEvents', newItems: newOnEventScripts, updatedItems: updatedOnEventScripts, deleteItems: deletedOnEventScripts }
+    ];
+    const summaries = [{ name: 'Syncs', newItems: newSyncs, updatedItems: updatedSyncs, deleteItems: deletedSyncs }, ...scriptSummaries];
+    if (
+        deletedModels.length === 0 &&
+        summaries.every(({ newItems, updatedItems, deleteItems }) => newItems.length + updatedItems.length + deleteItems.length === 0)
+    ) {
+        return { rows: [], requiresConfirmation: false };
+    }
     let deletedSyncsConnectionsCount = 0;
-
-    console.log('');
-    console.log('', chalk.underline('Nango will perform this plan:'));
 
     // Syncs
     if (newSyncs.length > 0 || deletedSyncs.length > 0) {
@@ -759,27 +792,17 @@ function renderLegacyConfirmation(confirmation: PostDeployConfirmation['Success'
         console.log(columns);
     }
 
-    // Actions
-    if (newActions.length > 0 || deletedActions.length > 0) {
+    for (const { name, newItems, deleteItems } of scriptSummaries) {
+        if (newItems.length === 0 && deleteItems.length === 0) {
+            continue;
+        }
         console.log('');
-        console.log(shortSummaryMessage({ name: 'Actions', newItems: newActions, deleteItems: deletedActions }));
-        for (const action of newActions) {
-            console.log(` ${chalk.green('+')} ${action.providerConfigKey} → ${action.name}`);
+        console.log(shortSummaryMessage({ name, newItems, deleteItems }));
+        for (const item of newItems) {
+            console.log(` ${chalk.green('+')} ${item.providerConfigKey} → ${item.name}`);
         }
-        for (const action of deletedActions) {
-            console.log(` ${chalk.red('-')} ${action.providerConfigKey} → ${action.name}`);
-        }
-    }
-
-    // OnEvents
-    if (newOnEventScripts.length > 0 || deletedOnEventScripts.length > 0) {
-        console.log('');
-        console.log(shortSummaryMessage({ name: 'OnEvents', newItems: newOnEventScripts, deleteItems: deletedOnEventScripts }));
-        for (const onEvent of newOnEventScripts) {
-            console.log(` ${chalk.green('+')} ${onEvent.providerConfigKey} → ${onEvent.name}`);
-        }
-        for (const onEvent of deletedOnEventScripts) {
-            console.log(` ${chalk.red('-')} ${onEvent.providerConfigKey} → ${onEvent.name}`);
+        for (const item of deleteItems) {
+            console.log(` ${chalk.red('-')} ${item.providerConfigKey} → ${item.name}`);
         }
     }
 
@@ -792,62 +815,17 @@ function renderLegacyConfirmation(confirmation: PostDeployConfirmation['Success'
         );
     }
 
-    if (
-        newSyncs.length <= 0 &&
-        deletedSyncs.length <= 0 &&
-        newActions.length <= 0 &&
-        deletedActions.length <= 0 &&
-        newOnEventScripts.length <= 0 &&
-        deletedOnEventScripts.length <= 0 &&
-        deletedModels.length <= 0
-    ) {
-        console.log('');
-        console.log(chalk.gray.italic('  Only updates'));
-    }
-
-    console.log('');
-    console.log('', chalk.underline('Summary'));
-    const columns = columnify(
-        [
-            summaryMessageColumns({ name: 'Syncs', newItems: newSyncs, updatedItems: updatedSyncs, deleteItems: deletedSyncs }),
-            summaryMessageColumns({ name: 'Actions', newItems: newActions, updatedItems: updatedActions, deleteItems: deletedActions }),
-            summaryMessageColumns({ name: 'OnEvents', newItems: newOnEventScripts, updatedItems: updatedOnEventScripts, deleteItems: deletedOnEventScripts })
-        ],
-        {
-            showHeaders: false,
-            minWidth: 18,
-            config: {
-                name: {
-                    dataTransform: (a) => {
-                        return `\u2063\u2063${a}`;
-                    }
-                }
-            }
-        }
-    );
-    console.log(columns);
-    console.log('');
-
-    if (deletedSyncsConnectionsCount > 0 || deletedModels.length > 0) {
-        return {
-            requiresConfirmation: true,
-            ciMessage: 'Syncs/Actions were not deployed. Confirm the deploy by passing the --auto-confirm flag and --allow-destructive flag. Exiting',
-            abortMessage: 'Deployed aborted. Exiting'
-        };
-    }
-    return { requiresConfirmation: false, message: 'No sync deleted with active connections, proceeding without confirmation' };
+    return {
+        rows: summaries.map(summaryMessageColumns),
+        requiresConfirmation: deletedSyncsConnectionsCount > 0 || deletedModels.length > 0
+    };
 }
 
-function renderFunctionsConfirmation(confirmation: PostFunctionDeploymentBundlePreview['Success']): ConfirmationPolicy {
+function renderFunctionsConfirmation(confirmation: PostFunctionDeploymentBundlePreview['Success']): RenderedConfirmation {
     const { created, updated, deleted } = confirmation;
 
-    console.log('');
-    console.log('', chalk.underline('Nango will perform this plan:'));
-
     if (created.length + updated.length + deleted.length === 0) {
-        console.log('');
-        console.log(chalk.gray.italic('  No changes'));
-        return { requiresConfirmation: false };
+        return { rows: [], requiresConfirmation: false };
     } else if (created.length > 0 || deleted.length > 0) {
         console.log('');
         console.log(shortSummaryMessage({ name: 'Functions', newItems: created, deleteItems: deleted }));
@@ -857,49 +835,50 @@ function renderFunctionsConfirmation(confirmation: PostFunctionDeploymentBundleP
         for (const func of deleted) {
             console.log(` ${chalk.red('-')} ${func.integrationId} → ${func.name}`);
         }
-    } else if (updated.length > 0) {
-        console.log('');
-        console.log(chalk.gray.italic('  Only updates'));
     }
 
-    console.log('');
-    console.log('', chalk.underline('Summary'));
-    console.log(
-        columnify([summaryMessageColumns({ name: 'Functions', newItems: created, updatedItems: updated, deleteItems: deleted })], {
-            showHeaders: false,
-            minWidth: 18,
-            config: {
-                name: {
-                    dataTransform: (value) => `\u2063\u2063${value}`
-                }
-            }
-        })
-    );
-    console.log('');
-
-    if (deleted.length > 0) {
-        return {
-            requiresConfirmation: true,
-            ciMessage: 'Functions were not deployed. Confirm the deploy by passing the --auto-confirm and --allow-destructive flags. Exiting',
-            abortMessage: 'Deploy aborted. Exiting'
-        };
-    }
-    return { requiresConfirmation: false, message: 'No functions deleted, proceeding without confirmation' };
+    return {
+        rows: [summaryMessageColumns({ name: 'Functions', newItems: created, updatedItems: updated, deleteItems: deleted })],
+        requiresConfirmation: deleted.length > 0
+    };
 }
 
 async function handleConfirmation({
     autoconfirm,
     allowDestructive,
-    confirmation
+    confirmations,
+    interactive
 }: {
     autoconfirm: boolean;
     allowDestructive: boolean;
-    confirmation: DeploymentConfirmation;
+    confirmations: DeploymentConfirmation[];
+    interactive: boolean;
 }): Promise<Result<boolean>> {
-    const policy = confirmation.kind === 'legacy' ? renderLegacyConfirmation(confirmation.value) : renderFunctionsConfirmation(confirmation.value);
-    if (!policy.requiresConfirmation) {
-        if (policy.message) {
-            console.log(chalk.grey(policy.message));
+    console.log('');
+    console.log('', chalk.underline('Nango will perform this plan:'));
+    const summaries = confirmations.map((confirmation) =>
+        confirmation.kind === 'legacy' ? renderLegacyConfirmation(confirmation.value) : renderFunctionsConfirmation(confirmation.value)
+    );
+    const rows = summaries.flatMap((summary) => summary.rows);
+    if (rows.length > 0) {
+        console.log('');
+        console.log('', chalk.underline('Summary'));
+        console.log(
+            columnify(rows, {
+                showHeaders: false,
+                minWidth: 18,
+                config: { name: { dataTransform: (value) => `\u2063\u2063${value}` } }
+            })
+        );
+        console.log('');
+    } else {
+        console.log('');
+        console.log(chalk.gray.italic('  No changes'));
+    }
+
+    if (!summaries.some((summary) => summary.requiresConfirmation)) {
+        if (rows.length > 0) {
+            console.log(chalk.grey('No destructive changes, proceeding without confirmation'));
         }
         return Ok(true);
     }
@@ -909,20 +888,20 @@ async function handleConfirmation({
         return Ok(true);
     }
 
-    if (isCI) {
-        console.log(chalk.red(policy.ciMessage));
+    if (!interactive) {
+        console.log(chalk.red('Nothing was deployed. Confirm the deploy by passing the --auto-confirm and --allow-destructive flags. Exiting'));
         return Err('is_ci');
     }
 
     try {
         const wait = await promptly.confirm(`Are you sure you want to continue y/n?`);
         if (!wait) {
-            console.log(chalk.yellow(policy.abortMessage));
+            console.log(chalk.yellow('Deploy aborted. Exiting'));
             return Err('not_confirmed');
         }
     } catch {
         console.log('');
-        console.log(chalk.yellow(policy.abortMessage));
+        console.log(chalk.yellow('Deploy aborted. Exiting'));
         return Err('not_confirmed');
     }
 
@@ -937,7 +916,17 @@ function getFetchError(err: unknown): string {
           : 'Unknown error';
 }
 
-function summaryMessageColumns({ name, newItems, updatedItems, deleteItems }: { name: string; newItems: any[]; updatedItems: any[]; deleteItems: any[] }): any {
+function summaryMessageColumns({
+    name,
+    newItems,
+    updatedItems,
+    deleteItems
+}: {
+    name: string;
+    newItems: unknown[];
+    updatedItems: unknown[];
+    deleteItems: unknown[];
+}) {
     return {
         name: ` ↳ ${name}`,
         create: chalk.gray(`to create [ ${chalk.green(`${newItems.length}`)} ]`),
@@ -945,7 +934,7 @@ function summaryMessageColumns({ name, newItems, updatedItems, deleteItems }: { 
         delete: chalk.gray(`to delete [ ${chalk.red(`${deleteItems.length}`)} ]`)
     };
 }
-function shortSummaryMessage({ name, newItems, deleteItems }: { name: string; newItems: any[]; deleteItems: any[] }): string {
+function shortSummaryMessage({ name, newItems, deleteItems }: { name: string; newItems: unknown[]; deleteItems: unknown[] }): string {
     return ` [${name} ${chalk.green(`+${newItems.length}`)} ${chalk.red(`-${deleteItems.length}`)}]`;
 }
 
