@@ -32,6 +32,10 @@ const agentConfig = {
     }
 };
 
+// Zoho's token_url builds accounts.zoho.<extension>, but Canada's accounts server is accounts.zohocloud.ca
+// (accounts.zoho.ca doesn't exist), so refreshes for Canadian connections need the host swapped.
+const tokenHostOverrides = new Map([['accounts.zoho.ca', 'accounts.zohocloud.ca']]);
+
 export function getSimpleOAuth2ClientConfig(
     providerConfig: ProviderConfig,
     provider: Provider,
@@ -46,6 +50,11 @@ export function getSimpleOAuth2ClientConfig(
         // fallback to placeholder URL if interpolation fails
         // this can happen when token_url is not yet available (e.g., waiting for redirect_uri_metadata)
         tokenUrl = new URL('https://placeholder.invalid');
+    }
+
+    const tokenHostOverride = tokenHostOverrides.get(tokenUrl.host);
+    if (tokenHostOverride) {
+        tokenUrl.host = tokenHostOverride;
     }
 
     const headers = { 'User-Agent': 'Nango' };
