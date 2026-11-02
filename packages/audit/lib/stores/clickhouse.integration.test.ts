@@ -11,7 +11,7 @@ import type { AuditEvent } from '@nangohq/types';
 const database = 'audit_store_test';
 
 // Recent base time so rows aren't born-expired by the retention TTL.
-const base = new Date('2026-07-16T10:00:00.000Z').getTime();
+const base = Date.now();
 const at = (offsetMs: number) => new Date(base + offsetMs).toISOString();
 
 let client: ClickHouseClient;

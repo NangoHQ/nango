@@ -18,6 +18,7 @@ import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
 import { AuthBadge } from './components/AuthBadge';
 import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 
@@ -64,18 +65,33 @@ export const IntegrationsList = () => {
         });
     }, [initialIntegrations]);
 
+    const trackSearch = useMemo(
+        () => debounce((resultCount: number) => track('integrations:filter_update', { filter: 'search', result_count: resultCount }), 1000),
+        []
+    );
+
     const filterIntegrations = useCallback(
         (value: string) => {
-            if (!value.trim() || !fuse) {
+            if (!value.trim()) {
+                trackSearch.cancel();
                 setIntegrations(initialIntegrations);
+                return;
+            }
+
+            if (!fuse) {
+                setIntegrations(initialIntegrations);
+                if (initialIntegrations) {
+                    trackSearch(0);
+                }
                 return;
             }
 
             const results = fuse.search(value);
             const filtered = results.map((result) => result.item);
             setIntegrations(filtered);
+            trackSearch(filtered.length);
         },
-        [initialIntegrations, fuse]
+        [initialIntegrations, fuse, trackSearch]
     );
 
     const debouncedFilterIntegrations = useMemo(() => debounce(filterIntegrations, 300), [filterIntegrations]);
@@ -83,8 +99,9 @@ export const IntegrationsList = () => {
     useEffect(() => {
         return () => {
             debouncedFilterIntegrations.cancel();
+            trackSearch.flush();
         };
-    }, [debouncedFilterIntegrations]);
+    }, [debouncedFilterIntegrations, trackSearch]);
 
     const handleInputChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {

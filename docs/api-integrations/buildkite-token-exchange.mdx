@@ -1,0 +1,84 @@
+---
+title: 'Buildkite (Token Exchange)'
+sidebarTitle: 'Buildkite (Token Exchange)'
+description: 'Integrate your application with the Buildkite API using OAuth token exchange'
+---
+
+## 🚀 Quickstart
+
+Connect to Buildkite with Nango using OAuth token exchange and see data flow in 2 minutes. Nango signs a JWT with your app's private key and exchanges it for a short-lived API token that acts as a user in your Buildkite organization. No interactive login is needed.
+
+<Note>Buildkite token exchange is only available on Buildkite's Enterprise plan. To connect with a personal API access token instead, use the [Buildkite](/api-integrations/buildkite) integration.</Note>
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Buildkite (Token Exchange)_. Enter your Token Exchange App's client ID, key ID, private key, and signing algorithm. Follow the setup guide linked below to create them.
+    </Step>
+    <Step id="authorize-buildkite" title="Authorize Buildkite">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your organization slug and the email of the Buildkite user the token should act as. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-buildkite-api" title="Call the Buildkite API">
+    Let's make your first request to the Buildkite API to list pipelines. This requires the `read_pipelines` scope. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, connection ID, and organization slug:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/organizations/<ORG-SLUG>/pipelines" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/organizations/<ORG-SLUG>/pipelines',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Tokens last one hour by default, or up to your app's maximum token TTL. Nango exchanges a new one before the current token expires.
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Buildkite (Token Exchange) integration guides
+
+- [How to register your own Buildkite Token Exchange App](/api-integrations/buildkite-token-exchange/how-to-register-your-own-buildkite-token-exchange-app)  
+Generate a signing key, create a Token Exchange App in Buildkite, and add its details to Nango.
+
+- [How do I link my account?](/api-integrations/buildkite-token-exchange/connect)  
+Find your organization slug and choose the user the token acts as.
+
+Official docs: [Buildkite OAuth token exchange](https://buildkite.com/docs/apis/oauth-token-exchange)
+
+## 🧩 Pre-built syncs & actions for Buildkite (Token Exchange)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/buildkite-token-exchange/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

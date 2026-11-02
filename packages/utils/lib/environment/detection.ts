@@ -1,3 +1,5 @@
+import * as z from 'zod';
+
 import { localhostUrl, NodeEnv } from './constants.js';
 
 export const baseUrl = process.env['NANGO_SERVER_URL'] || localhostUrl;
@@ -42,5 +44,5 @@ export const flags = {
     hasAdminCapabilities: Boolean(process.env['NANGO_ADMIN_UUID']),
     hasAuthRoles: process.env['FLAG_AUTH_ROLES_ENABLED'] === 'true',
     hasAuditTrail: process.env['FLAG_AUDIT_TRAIL_ENABLED'] === 'true',
-    hasHostedTelemetry: process.env['FLAG_HOSTED_TELEMETRY_ENABLED'] === 'true'
+    hasHostedTelemetry: !isCloud && (z.stringbool().safeParse(process.env['FLAG_HOSTED_TELEMETRY_ENABLED']).data ?? true)
 };

@@ -2,6 +2,158 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.71.14] - 2026-10-29
+
+### Added
+
+- *(integrations)* Add support for microsoft-defender-cc (#7898) by @hassan254-prog
+- *(integrations)* Add support for rapid7 (#7899) by @hassan254-prog
+- *(orchestrator)* Sample active concurrency per environment (#7895) by @ErickRDev
+- *(types)* Add an event catalogue and agent skill for the taxonomy (#7768) by @macko911
+- *(integrations)* Add support for tenable (#7900) by @hassan254-prog
+- *(integrations)* Add support for chameleoni (#7906) by @hassan254-prog
+- *(integrations)* Add preview subdomain for ironclad (#7915) by @hassan254-prog
+- *(webapp)* Merge the Agent and Function Playgrounds into one page (#7897) by @macko911
+- *(server)* Handle OpenAI outages and spent credits in the Agent Playground (#7875) by @macko911
+- *(webapp)* Keep failed and stopped replies in the Agent Playground chat (#7901) by @macko911
+- *(webapp)* Keep the Agent Playground chat until 24 hours without a message (#7916) by @macko911
+- *(server)* Gate deprecated v1 passthrough and connections search param behind feature flags (#7881) by @hassan254-prog
+- *(hosted-telemetry)* Add the Postgres schema for hosted telemetry (#7911) by @pfreixes
+- *(analytics)* Track Agent Playground adoption (#7918) by @macko911
+- *(agent)* List pinned deployed actions with their input schema (NAN-7663) (#7934) by @agusayerza
+- *(server)* Gate Connection MCP behind an account feature flag (#7873) by @kaposke
+- *(analytics)* Track the main actions in each dashboard area (#7932) by @macko911
+- *(integrations)* Add support for attentive api key (#7923) by @hassan254-prog
+- *(integrations)* Add support for vwo (#7924) by @hassan254-prog
+- *(integrations)* Add support for fiix (#7891) by @hassan254-prog
+- GET /integrations/:key/tools/:name (#7903) by @TBonnin
+- GET integrations/:id/tools/:name to fallback to action (#7931) by @TBonnin
+- *(integrations)* Add support for Firecrawl (#7737) by @JuampiHernandez
+- *(integrations)* Migrate hubspot token and revocation endpoints (#7925) by @hassan254-prog
+- *(cli)* Add createTool (NAN-7597) (#7914) by @agusayerza
+- Add GET /integrations/:id/tools endpoint (#7942) by @TBonnin
+- *(server)* Link to the Integrations tab when an Agent Playground app isn't set up (#7941) by @macko911
+- *(integrations)* Add support for litmos (#7922) by @EpicWerf
+- Allow scopes when creating env API keys (#7948) by @ErickRDev
+- Allow updating env API keys (#7952) by @ErickRDev
+- Add POST /connections/:id/tools/:name/calls and node function (#7962) by @TBonnin
+- *(hosted-telemetry)* Create the schema on installations that enable it (#7926) by @pfreixes
+- *(hosted-telemetry)* Record metrics through OpenTelemetry into Postgres (#7927) by @pfreixes
+- *(webapp)* Turn off session recordings for BAA accounts (#7970) by @macko911
+- *(webapp)* Unmask text in PostHog session recordings (#7959) by @macko911
+- *(webapp)* Report dashboard crashes and error pages to Sentry (#7973) by @macko911
+- *(server)* Link Agent Playground events to session replays (#7971) by @macko911
+- *(analytics)* Carry permitted ad context on account signup (#7981) by @OmMistry25
+- *(webapp)* Move the Function Playground into function and integration pages (#7961) by @macko911
+- *(cli)* Add dryrun support for createFunction/createTool (#7972) by @TBonnin
+- *(integrations)* Add support for pocket (#7987) by @leo-paz
+- *(integrations)* Add support for haus (#8005) by @hassan254-prog
+- *(integrations)* Add support for navan (#8006) by @hassan254-prog
+- *(integrations)* Add support for buildkite (#8015) by @hassan254-prog
+- *(integrations)* Add support for bluebeam (#8010) by @hassan254-prog
+- *(webapp)* Rename Nango developer apps to Nango managed OAuth apps (#7995) by @macko911
+- *(integrations)* Add support for circleback (#7986) by @leo-paz
+- Adding datadog service catalog (#8023) by @rossmcewan
+- *(webapp)* Implement new account onboarding choice screen (#8021) by @macko911
+- *(webapp)* Animate the Playground hero illustration (#7974) by @macko911
+- *(providers)* Add publora (#7087) by @publora-team
+- List functions to return function tools (#8024) by @TBonnin
+- *(server)* Block disposable email domains during account registration (#8038) by @macko911
+- *(agent)* Reconnect a session's connection through nango_create_connection (NAN-7502) (#7944) by @agusayerza
+- *(integrations)* Add support for oracle-aconex (#8030) by @hassan254-prog
+- *(integrations)* Add support for aha (#8031) by @hassan254-prog
+- *(integrations)* Add support for freshservice-oauth (#8037) by @hassan254-prog
+- *(integrations)* Add support for loyaltylion (#8039) by @hassan254-prog
+- *(integrations)* Add support for attentive mcp (#8041) by @hassan254-prog
+- *(integrations)* Add support for arcsite (#8042) by @hassan254-prog
+- *(webapp)* Add search by record ID to the Records tab (#8034) by @macko911
+- *(integrations)* Improve grain api key to use newer version (#8053) by @hassan254-prog
+- *(analytics)* Track onboarding, integration setup and deploy events (#8016) by @kaposke
+- *(orch)* Concurrency hosted telemetry for BYOC/self-hosted (#8013) by @ErickRDev
+- *(service)* Support initial webhook settings during environment creation (#7998) by @ErickRDev
+- *(api)* Support webhook configuration during environment creation (#7999) by @ErickRDev
+- *(integrations)* Add support for extensiv (#8051) by @hassan254-prog
+- *(api)* Expose environment configuration through GET (#8027) by @ErickRDev
+- *(integrations)* Add support for cch-axcess (#8060) by @hassan254-prog
+- *(integrations)* Add support for buildkite-token-exchange (#8067) by @hassan254-prog
+- Tools support in playground (#8049) by @TBonnin
+- *(mcp)* Tools_call (#7979) by @TBonnin
+- *(providers)* Add the UK data centre to Zoho's domain extensions (#8056) by @eslamodeh
+- *(integrations)* Add support for command-alkon (#8080) by @hassan254-prog
+- *(integrations)* Add support for modjo-v2 (#8071) by @hassan254-prog
+- *(integrations)* Add support for metaview-mcp (#8072) by @hassan254-prog
+- *(integrations)* Add support for zscaler (#8090) by @hassan254-prog
+- Add sync functions to quickstart next steps (#8089) by @rguldener
+
+### Changed
+
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/e1005c8a13199105f43fd32337360a3fc46c28da by Victor Lang'at by @github-actions[bot]
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/5f3a8f2e936a2564852494de879884b8a15aa50b by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/e565103aadcd6a6e6158ed3a3a7827bf9b513e2e by Victor Lang'at by @github-actions[bot]
+- Remove deprecated connection endpoint (#7722) by @hassan254-prog
+- Document the OAuth state cookie enforcement flag for self-hosting (#7928) by @agusayerza
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9f836014ab8bd0043dfa5200ad15d298c7149dc6 by arctic-char by @github-actions[bot]
+- Changelog entries for mid-October (#7935) by @sapnesh-nango
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/40b2e8c6531c4f034da02cc2fb24905b9c751f7d by Victor Lang'at by @github-actions[bot]
+- *(lint)* Rewrite void returns so both lint rules pass (#7920) by @macko911
+- *(migrations)* Share the schema migration runner and daily partition daemon (#7912) by @pfreixes
+- Tighten Nango-managed OAuth apps wording in auth guide (#7969) by @rguldener
+- Changelog entries for the Agent Playground and scoped API keys (#7976) by @sapnesh-nango
+- Clarify third-party MCP servers in the agent sessions changelog entry (#7977) by @sapnesh-nango
+- Updated security policy (#7990) by @rossmcewan
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/12e121fa6d028e47396e22cc670ff7effa5949b1 by arctic-char by @github-actions[bot]
+- *(api)* Remove get/list tools endpoint (#8007) by @TBonnin
+- Document the Agent Playground for self-hosted Nango (#8004) by @macko911
+- Link self-managed Agent Playground setup from changelog (#8014) by @mintlify[bot]
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/4fdc27a203f56bd8b4f0b79d6e87b010944b31cf by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/a62b7f44f5c843d21146e099576c8246bf7f59ab by Victor Lang'at by @github-actions[bot]
+- Stop package-lock.json churn on fresh installs (#8003) by @macko911
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/14ee8f30e859051e0e1f66c2c9391e47ee1bf365 by Fran Ortiz by @github-actions[bot]
+- *(connect)* Issue reconnect sessions through createConnectSession (NAN-7684) (#7946) by @agusayerza
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/abea811f1884e7b050e6f70aaeb354209605f592 by Victor Lang'at by @github-actions[bot]
+- Document reconnecting connections from agent sessions (NAN-7832) (#8043) by @agusayerza
+- Catalog install instructions for self-hosted customers (#8026) by @rbwest
+- Webhook configuration on environment creation (#8001) by @ErickRDev
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/4a327634f804719d0dee1d4b44e7977edba04261 by Victor Lang'at by @github-actions[bot]
+- Rewrite quickstart around agent sessions (#8075) by @rguldener
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9afa0aabb8fe907a3c45e1dd559960dea870c35c by Victor Lang'at by @github-actions[bot]
+- Update integrations overview to 10,000+ pre-built tools (#8086) by @sapnesh-nango
+- Changelog entries for environment configuration API and smaller improvements (#8088) by @sapnesh-nango
+- Clarify that Nango-managed OAuth apps can be used in production (#8091) by @rguldener
+
+### Fixed
+
+- *(server)* Null unsafe check in oauth refresh eats error (#7930) by @rbwest
+- *(server)* Allow empty credentials when creating integration (#7852) by @rbwest
+- *(server)* Invalid config values silently fail connect (#7858) by @rbwest
+- *(webapp)* Polish the Agent Playground copy and UX (#7929) by @macko911
+- *(server)* Fix the Agent Playground pre-made prompts that fail in prod (#7940) by @macko911
+- *(webapp)* Fix the dark-mode OpenAI logo and Connect UI backdrop (#7937) by @macko911
+- Set DD_VERSION to commit hash (#7960) by @rossmcewan
+- *(hosted-telemetry)* Random producer id, 90-day retention floor (#7989) by @pfreixes
+- *(cli)* Allow node:-prefixed url and crypto imports in dryrun (#7991) by @marcindobry
+- *(feature-flags)* Default deprecation flags to true (#7957) by @hassan254-prog
+- *(slack)* Fix user token proxy header example (#8009) by @hassan254-prog
+- *(server)* Show the Agent Playground as unavailable when the model key is missing (#7996) by @macko911
+- Vulns (#8012) by @rossmcewan
+- Bump Node to 22.23.4 (#8011) by @pfreixes
+- *(ci)* Fix the slow CLI verify job in the merge queue (#8036) by @macko911
+- *(webapp)* Allow switching env from the getting started page (#8035) by @hassan254-prog
+- *(webapp)* Fix the Getting Started redirect loop (#8033) by @macko911
+- *(server)* Gracefully terminate syncs that made some progress (#8025) by @rbwest
+- *(audit)* Fix audit ClickHouse tests failing on expired TTL (#8054) by @macko911
+- Npm audit fix (#8050) by @rossmcewan
+- Pin every zod install to 4.6.7 (#8048) by @rossmcewan
+- Patch undici, body-parser, and multer advisories (#8057) by @rossmcewan
+- *(agent)* Fix the generic error when an agent hits the connection cap (#8032) by @macko911
+- *(runner)* Remove required config for env var (#8070) by @rossmcewan
+- *(server)* Accept `/action/trigger` requests without input (#8074) by @hassan254-prog
+- *(providers)* Correct Atlassian typo in subdomain description (#8083) by @uzagoranski
+
 ## [v0.71.13] - 2026-10-14
 
 ### Added
@@ -8410,6 +8562,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.71.14]: https://github.com/NangoHQ/nango/compare/v0.71.13..v0.71.14
 [v0.71.13]: https://github.com/NangoHQ/nango/compare/v0.71.12..v0.71.13
 [v0.71.12]: https://github.com/NangoHQ/nango/compare/v0.71.11..v0.71.12
 [v0.71.11]: https://github.com/NangoHQ/nango/compare/v0.71.10..v0.71.11

@@ -1,3 +1,5 @@
+import { productTracking } from '@nangohq/shared';
+
 import { makeAuditTarget } from '../../../audit.js';
 import * as functionDeploymentService from '../../../services/functionDeployment.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
@@ -33,13 +35,15 @@ export const deployTemplateTool = defineManagementMcpTool<typeof deployTemplateA
     confirmation: ({ args, environment }) =>
         `Deploy template "${args.template}" to integration "${args.integration_id}" in environment "${environment.name}"? Any same-named non-catalog function configuration will be replaced.`,
     async handler({ args, account, environment, plan }) {
-        return (
-            await functionDeploymentService.deployTemplate({
-                account,
-                environment,
-                plan,
-                body: { type: 'template', ...args }
-            })
-        ).mapError((error) => deployTemplateServiceErrorToMcp(error));
+        const result = await functionDeploymentService.deployTemplate({
+            account,
+            environment,
+            plan,
+            body: { type: 'template', ...args }
+        });
+        if (result.isOk()) {
+            productTracking.track({ name: 'functions:deploy_create', environment, eventProperties: { source: 'mcp', is_template: true, function_count: 1 } });
+        }
+        return result.mapError((error) => deployTemplateServiceErrorToMcp(error));
     }
 });

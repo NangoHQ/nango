@@ -1,5 +1,5 @@
 import { makeAuditTarget } from '../../../audit.js';
-import integrationService from '../../../services/integration.service.js';
+import integrationService, { trackIntegrationCreate } from '../../../services/integration.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { createIntegrationServiceErrorToMcp } from './errors.js';
 import { integrationToMcp } from './formatter.js';
@@ -41,6 +41,10 @@ export const createIntegrationsTool = defineManagementMcpTool<typeof createInteg
             environment,
             team: account
         });
+
+        if (result.isOk()) {
+            trackIntegrationCreate(result.value.integration, 'mcp', environment);
+        }
 
         return result
             .map(({ integration, provider }) => ({ data: integrationToMcp({ integration, provider }) }))

@@ -331,18 +331,22 @@ class CustomerKeyService {
         trx: Knex,
         {
             accountId,
-            environmentId
+            environmentId,
+            secret: plainText = uuid.v4()
         }: {
             accountId: number;
             environmentId: number;
+            secret?: string;
         }
     ): Promise<Result<DBCustomerKey>> {
-        try {
-            const plainText = uuid.v4();
+        if (plainText.trim().length === 0) {
+            return Err(new Error('Webhook signing key cannot be blank'));
+        }
 
+        try {
             const hashed = await this.hashSecret(plainText);
             if (hashed.isErr()) {
-                throw hashed.error;
+                return Err(hashed.error);
             }
 
             const customerKey = {
@@ -364,7 +368,7 @@ class CustomerKeyService {
 
             const [created] = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE).insert(encrypted).returning('*');
             if (!created) {
-                throw new NangoError('impossible_condition');
+                return Err(new NangoError('impossible_condition'));
             }
 
             await trx<DBCustomerKeyRelation>(CUSTOMER_KEYS_RELATIONS_TABLE).insert({

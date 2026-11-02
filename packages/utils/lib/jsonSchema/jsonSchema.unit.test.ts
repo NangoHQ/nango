@@ -1,8 +1,123 @@
 import { describe, expect, it } from 'vitest';
 
-import { filterJsonSchemaForModels, getDefinition, getDefinitionsRecursively } from './jsonSchema.js';
+import { filterJsonSchemaForModels, getDefinition, getDefinitionsRecursively, resolveSchemaRef } from './jsonSchema.js';
 
 import type { JSONSchema7 } from 'json-schema';
+
+describe('resolveSchemaRef', () => {
+    const jsonSchema: JSONSchema7 = {
+        definitions: {
+            Input: { type: 'object', properties: { user: { $ref: '#/definitions/User' } } },
+            User: { type: 'object', properties: { id: { type: 'string' } } },
+            Unrelated: { type: 'string' },
+            Flag: true
+        }
+    };
+
+    it('returns the referenced model with the definitions it uses and keeps the ref', () => {
+        expect(resolveSchemaRef(jsonSchema, '#/definitions/Input')).toEqual({
+            $ref: '#/definitions/Input',
+            definitions: {
+                Input: { type: 'object', properties: { user: { $ref: '#/definitions/User' } } },
+                User: { type: 'object', properties: { id: { type: 'string' } } }
+            }
+        });
+    });
+
+    it('returns null when the schema or the ref is missing', () => {
+        expect(resolveSchemaRef(null, '#/definitions/Input')).toBeNull();
+        expect(resolveSchemaRef(jsonSchema, null)).toBeNull();
+    });
+
+    const itemRef = { $ref: '#/definitions/Item' };
+    const schemaKeywords: [string, JSONSchema7][] = [
+        ['patternProperties', { patternProperties: { '^item': itemRef } }],
+        ['dependencies', { dependencies: { item: itemRef, names: ['$ref', 'NotADefinition'] } }],
+        ['additionalProperties', { additionalProperties: itemRef }],
+        ['additionalItems', { additionalItems: itemRef }],
+        ['contains', { contains: itemRef }],
+        ['propertyNames', { propertyNames: itemRef }],
+        ['not', { not: itemRef }],
+        ['if', { if: itemRef }],
+        // oxlint-disable-next-line unicorn/no-thenable -- This is the JSON Schema conditional keyword.
+        ['then', { then: itemRef }],
+        ['else', { else: itemRef }]
+    ];
+
+    it.each(schemaKeywords)('retains transitive definitions referenced through %s', (_keyword, input) => {
+        const item: JSONSchema7 = { properties: { value: { $ref: '#/definitions/Value' } } };
+        const value: JSONSchema7 = { type: 'string' };
+        const schema: JSONSchema7 = { definitions: { Input: input, Item: item, Value: value, Unrelated: { type: 'number' } } };
+
+        expect(resolveSchemaRef(schema, '#/definitions/Input')).toEqual({
+            $ref: '#/definitions/Input',
+            definitions: { Input: input, Item: item, Value: value }
+        });
+    });
+
+    it('retains references from all composition groups on the same schema', () => {
+        const input: JSONSchema7 = {
+            oneOf: [{ $ref: '#/definitions/One' }],
+            anyOf: [{ $ref: '#/definitions/Any' }],
+            allOf: [{ $ref: '#/definitions/All' }]
+        };
+        const definitions: NonNullable<JSONSchema7['definitions']> = {
+            Input: input,
+            One: { type: 'string' },
+            Any: { type: 'number' },
+            All: { type: 'boolean' }
+        };
+
+        expect(resolveSchemaRef({ definitions: { ...definitions, Unrelated: {} } }, '#/definitions/Input')).toEqual({
+            $ref: '#/definitions/Input',
+            definitions
+        });
+    });
+
+    it('ignores boolean subschemas and property-name dependencies', () => {
+        const input: JSONSchema7 = {
+            patternProperties: { '^item': true },
+            dependencies: { item: ['NotADefinition'], other: false },
+            additionalProperties: false,
+            additionalItems: true,
+            contains: false,
+            propertyNames: true,
+            not: false,
+            if: true,
+            // oxlint-disable-next-line unicorn/no-thenable -- This is the JSON Schema conditional keyword.
+            then: false,
+            else: true,
+            oneOf: [true],
+            anyOf: [false],
+            allOf: [true]
+        };
+
+        expect(resolveSchemaRef({ definitions: { Input: input, Unrelated: {} } }, '#/definitions/Input')).toEqual({
+            $ref: '#/definitions/Input',
+            definitions: { Input: input }
+        });
+    });
+
+    it('ignores siblings of a $ref under Draft 7 semantics', () => {
+        const input: JSONSchema7 = { $ref: '#/definitions/Item', additionalProperties: { $ref: '#/definitions/Missing' } };
+        const item: JSONSchema7 = { type: 'string' };
+
+        expect(resolveSchemaRef({ definitions: { Input: input, Item: item } }, '#/definitions/Input')).toEqual({
+            $ref: '#/definitions/Input',
+            definitions: { Input: input, Item: item }
+        });
+    });
+
+    it('returns null for a ref outside #/definitions/', () => {
+        expect(resolveSchemaRef(jsonSchema, '#/$defs/Input')).toBeNull();
+    });
+
+    it('returns null for an unknown, inherited or boolean definition', () => {
+        expect(resolveSchemaRef(jsonSchema, '#/definitions/Missing')).toBeNull();
+        expect(resolveSchemaRef(jsonSchema, '#/definitions/toString')).toBeNull();
+        expect(resolveSchemaRef(jsonSchema, '#/definitions/Flag')).toBeNull();
+    });
+});
 
 describe('filterJsonSchemaForModels', () => {
     it('should return empty schema when no definitions exist', () => {

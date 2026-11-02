@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
-import { seeders } from '@nangohq/shared';
+import { functionConfigService, seeders } from '@nangohq/shared';
 import { listCatalogTools } from '@nangohq/shared/lib/services/catalog/actions.js';
 
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
@@ -166,6 +166,71 @@ describe(`GET ${route}`, () => {
         const onEventEntry = res.json.data.find((f) => f.type === 'on-event');
         expect(onEventEntry?.type === 'on-event' && onEventEntry.event).toBe('post-connection-creation');
         expect(onEventEntry?.source).toBe('repo');
+
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'my-tool',
+            type: 'action'
+        });
+        const [tool] = (
+            await functionConfigService.upsert(db.knex, [
+                {
+                    environmentId: env.id,
+                    integrationId: 'github',
+                    name: 'my-tool',
+                    version: {
+                        description: 'Native HTTP tool',
+                        tags: {},
+                        file_location: 'github/functions/my-tool.js',
+                        version: 'test',
+                        source: 'repo',
+                        trigger: { kind: 'http' },
+                        requires: { connection: true, outbound: false, invoke: false },
+                        capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+                        limits: { concurrency: { perConnection: 'max' } },
+                        input_schema_ref: null,
+                        output_schema_ref: null,
+                        model_schema_refs: [],
+                        metadata_schema_ref: null,
+                        checkpoint_schema_ref: null,
+                        json_schema: {}
+                    }
+                }
+            ])
+        ).unwrap();
+        await db.knex('function_configs').where({ id: tool!.config.id }).update({ enabled: false });
+
+        const pages = [];
+        for (const page of [0, 1]) {
+            const response = await api.fetch(route, {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { providerConfigKey: 'github' },
+                query: { env: 'dev', type: 'tool', search: 'my-', limit: 1, page }
+            });
+            expect(response.res.status).toBe(200);
+            isSuccess(response.json);
+            expect(response.json.pagination).toEqual({ total: 2, page, limit: 1 });
+            pages.push(...response.json.data);
+        }
+        expect(pages.map(({ name, type }) => ({ name, type }))).toEqual([
+            { name: 'my-tool', type: 'tool' },
+            { name: 'my-action', type: 'action' }
+        ]);
+        expect(pages[0]).toMatchObject({ type: 'tool', enabled: false });
+
+        const actions = await api.fetch(route, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { providerConfigKey: 'github' },
+            query: { env: 'dev', type: 'action', search: 'my-', limit: 100 }
+        });
+        expect(actions.res.status).toBe(200);
+        isSuccess(actions.json);
+        expect(actions.json.pagination.total).toBe(1);
+        expect(actions.json.data.map(({ name, type }) => ({ name, type }))).toEqual([{ name: 'my-action', type: 'action' }]);
     });
 
     it('should filter by type=on-event', async () => {

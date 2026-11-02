@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
 
 export const ThirdStep = () => {
     const env = useStore((state) => state.env);
@@ -23,7 +24,7 @@ export const ThirdStep = () => {
                 <p className="text-text-strong">Now that you’ve had a glimpse of Nango, you can go ahead and configure your first integration!</p>
             </div>
 
-            <ButtonLink to={`/${env}/integrations/create`} variant="primary" size="lg">
+            <ButtonLink to={`/${env}/integrations/create`} onClick={() => track('onboarding:create_button_click')} variant="primary" size="lg">
                 Set up your own integrations
             </ButtonLink>
         </div>

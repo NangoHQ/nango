@@ -1,5 +1,13 @@
 import db from '@nangohq/database';
-import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider, getProviders, sharedCredentialsService } from '@nangohq/shared';
+import {
+    configService,
+    connectionService,
+    getGlobalWebhookReceiveUrl,
+    getProvider,
+    getProviders,
+    productTracking,
+    sharedCredentialsService
+} from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { normalizeMcpOAuth2Scopes } from '../controllers/v1/integrations/buildIntegrationConfig.js';
@@ -16,8 +24,26 @@ import {
 
 import type { IntegrationCredentials } from '../utils/integrations.js';
 import type { McpClientRegistration } from './mcpClientRegistration.js';
-import type { DBCreateIntegration, DBEnvironment, DBTeam, IntegrationConfig, Provider, ProviderMcpOAUTH2 } from '@nangohq/types';
+import type { AnalyticsEventProperties, DBCreateIntegration, DBEnvironment, DBTeam, IntegrationConfig, Provider, ProviderMcpOAUTH2 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+
+export function trackIntegrationCreate(
+    integration: Pick<IntegrationConfig, 'provider' | 'shared_credentials_id' | 'missing_fields'>,
+    source: Exclude<AnalyticsEventProperties<'integrations:integration_create'>['source'], 'playground'>,
+    environment?: Pick<DBEnvironment, 'is_production'>
+): void {
+    productTracking.track({
+        name: 'integrations:integration_create',
+        environment,
+        eventProperties: {
+            provider: integration.provider,
+            is_playground: false,
+            source,
+            is_shared_credentials: integration.shared_credentials_id !== null,
+            has_missing_fields: integration.missing_fields.length > 0
+        }
+    });
+}
 
 export type GetIntegrationServiceErrorCode = 'get_failed' | 'not_found';
 export type ListIntegrationsServiceErrorCode = 'list_failed';

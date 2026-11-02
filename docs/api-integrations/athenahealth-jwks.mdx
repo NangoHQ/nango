@@ -1,0 +1,82 @@
+---
+title: 'athenahealth (JWKS)'
+sidebarTitle: 'athenahealth (JWKS)'
+description: 'Integrate your application with the athenahealth API using JWT client assertions'
+---
+
+## 🚀 Quickstart
+
+Connect to athenahealth with Nango and see data flow in a few minutes. This integration uses 2-legged OAuth with a JWT client assertion: Nango signs a short-lived JWT with your private key, and athenahealth verifies it against the public key set (JWKS) registered on your app. There is no client secret and no end-user OAuth redirect.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** → _Configure New Integration_ → _athenahealth (JWKS)_. Enter your Client ID, Key ID, Private Key, and Scope in the **Settings** tab. See the [setup guide](/api-integrations/athenahealth-jwks/how-to-register-your-own-athenahealth-jwks-app). These are entered once and reused by every connection.
+    </Step>
+    <Step id="connect-athenahealth-practice" title="Connect a practice">
+    Each connection represents one athenahealth practice. Create it by selecting the **Hostname** and entering the **Practice ID**. See the [connect guide](/api-integrations/athenahealth-jwks/connect).
+    </Step>
+    <Step id="call-athenahealth-api" title="Call the athenahealth API">
+    Make your first request. Replace the placeholders with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, connection ID, and practice ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/<PRACTICE-ID>/practiceinfo" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/<PRACTICE-ID>/practiceinfo',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 athenahealth (JWKS) integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own athenahealth app](/api-integrations/athenahealth-jwks/how-to-register-your-own-athenahealth-jwks-app)  
+Generate a key pair, register your JWKS with athenahealth, and configure the integration in Nango
+
+- [How to connect a practice to athenahealth](/api-integrations/athenahealth-jwks/connect)  
+Create a connection for a practice once your app is registered
+
+Official docs: [athenahealth API documentation](https://docs.athenahealth.com/api/)
+
+## 🧩 Pre-built syncs & actions for athenahealth (JWKS)
+
+Explore Nango-provided actions in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/athenahealth-jwks/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -4,7 +4,6 @@ import * as vm from 'node:vm';
 import * as url from 'url';
 
 import { isAxiosError } from 'axios';
-import * as botbuilder from 'botbuilder';
 import tracer from 'dd-trace';
 import * as soap from 'soap';
 import * as unzipper from 'unzipper';
@@ -13,6 +12,7 @@ import * as zod from 'zod';
 import { ActionError, ExecutionError, SDKError } from '@nangohq/runner-sdk';
 import { Err, errorToObject, isEnterprise, Ok, truncateJson } from '@nangohq/utils';
 
+import { botbuilder } from './botbuilder.js';
 import { PersistClient } from './clients/persist.js';
 import { logger } from './logger.js';
 import { MapLocks } from './sdk/locks.js';

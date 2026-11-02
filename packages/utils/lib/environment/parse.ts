@@ -410,7 +410,7 @@ const ENVS_SHAPE = z.object({
         .number()
         .int()
         .refine((ms) => ms === 0 || ms >= 1000, { message: 'must be 0 (disabled) or at least 1000' })
-        .default(0),
+        .default(1000),
     ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS: z.coerce.number().int().min(1000).max(5000).default(1000),
     ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
@@ -636,7 +636,7 @@ const ENVS_SHAPE = z.object({
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
     FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
-    FLAG_HOSTED_TELEMETRY_ENABLED: z.stringbool().optional().default(false),
+    FLAG_HOSTED_TELEMETRY_ENABLED: z.stringbool().optional().default(true),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog

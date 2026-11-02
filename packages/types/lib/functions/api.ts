@@ -2,7 +2,7 @@ import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTags, FunctionTriggerDefinition } from '../function/config.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
-import type { FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
+import type { FunctionListType, FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
@@ -385,7 +385,7 @@ export type GetFunctionInvocation = ApiEndpoint<{
 // Shared between the private and public function-management endpoints. The two surfaces differ only in auth,
 // path, param names, and the `env` querystring (private) — the payloads and filters below are identical.
 export interface FunctionListFilters {
-    type?: FunctionType;
+    type?: FunctionListType;
     search?: string;
     page?: number;
     limit?: number;
@@ -421,7 +421,7 @@ export type GetIntegrationFunction = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
-    Querystring: { env: string; type?: FunctionType };
+    Querystring: { env: string; type?: FunctionListType };
     Params: { providerConfigKey: string; functionName: string };
     Success: ListedFunctionSuccess;
 }>;
@@ -459,7 +459,7 @@ export type GetPublicIntegrationFunction = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/integrations/:uniqueKey/functions/:name';
-    Querystring: { type?: FunctionType };
+    Querystring: { type?: FunctionListType };
     Params: { uniqueKey: string; name: string };
     Success: ListedFunctionSuccess;
 }>;
