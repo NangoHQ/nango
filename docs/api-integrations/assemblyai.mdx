@@ -1,0 +1,75 @@
+---
+title: 'AssemblyAI'
+sidebarTitle: 'AssemblyAI'
+description: 'Integrate your application with the AssemblyAI speech-to-text API'
+---
+
+AssemblyAI provides an API for audio transcription.
+
+## 🚀 Quickstart
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+        In Nango, go to **Integrations** -> **Configure New Integration** -> **AssemblyAI**.
+    </Step>
+    <Step id="authorize-assemblyai" title="Authorize AssemblyAI">
+        Go to **Connections** -> **Add Test Connection** -> **AssemblyAI**. Enter your **API Key** and select your **API Hostname**. The form defaults to `api.assemblyai.com` (US); select `api.eu.assemblyai.com` for the EU. See the [connect guide](/api-integrations/assemblyai/connect) for details, then click **Authorize**.
+    </Step>
+    <Step id="call-assemblyai-api" title="Call the AssemblyAI API">
+        List up to one transcript. Replace the placeholders with your [Nango Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID.
+
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/v2/transcript?limit=1" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+            <Tab title="Node">
+                Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+                ```typescript
+                import { Nango } from '@nangohq/node';
+
+                const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+                const res = await nango.get({
+                    endpoint: '/v2/transcript',
+                    providerConfigKey: '<INTEGRATION-ID>',
+                    connectionId: '<CONNECTION-ID>',
+                    params: { limit: 1 }
+                });
+
+                console.log(res.data);
+                ```
+            </Tab>
+        </Tabs>
+
+        Nango sends the AssemblyAI API key in the raw `authorization` header and routes the request to the host selected on the connection. Check the **Logs** tab to inspect the request.
+    </Step>
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow the [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+
+</Steps>
+
+## 📚 AssemblyAI integration guides
+
+- [How do I link my account?](/api-integrations/assemblyai/connect)
+
+## 🚨 API gotchas
+
+- AssemblyAI expects `authorization: <API-KEY>` without a `Bearer` prefix. The `Bearer` token in the proxy example authenticates to Nango, not AssemblyAI.
+- The connection verification request is `GET /v2/transcript?limit=1`. The `limit` parameter accepts values from 1 to 200.
+- A missing or invalid AssemblyAI API key returns `401`.
+- Choose the API region for the connection. The available hosts are `api.assemblyai.com` (US, the default) and `api.eu.assemblyai.com` (EU).
+
+## 🧩 Pre-built syncs & actions for AssemblyAI
+
+import PreBuiltUseCases from '/snippets/generated/assemblyai/PreBuiltUseCases.mdx';
+
+<PreBuiltUseCases />
+
+---

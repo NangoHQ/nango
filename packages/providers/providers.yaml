@@ -2173,6 +2173,40 @@ aspire:
             example: 7hLp************************nHa5
             doc_section: '#step-2-generate-your-client-id-and-secret'
 
+assemblyai:
+    display_name: AssemblyAI
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/transcript?limit=1
+    docs: https://nango.dev/docs/api-integrations/assemblyai
+    docs_connect: https://nango.dev/docs/api-integrations/assemblyai/connect
+    connection_config:
+        hostname:
+            type: string
+            title: API Hostname
+            description: The AssemblyAI API region to connect to.
+            default_value: api.assemblyai.com
+            format: hostname
+            enum:
+                - api.assemblyai.com
+                - api.eu.assemblyai.com
+            order: 1
+            doc_section: '#step-2-choose-your-api-region'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from your AssemblyAI dashboard.
+            doc_section: '#step-1-find-your-api-key'
+
 astro-mcp:
     display_name: Astro (MCP)
     categories:
