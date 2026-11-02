@@ -1,0 +1,92 @@
+---
+title: 'Famulor (MCP)'
+sidebarTitle: 'Famulor (MCP)'
+description: 'Connect your application to Famulor through the Model Context Protocol (MCP)'
+---
+
+## Quickstart
+
+Connect to Famulor's hosted MCP server with Nango and work with assistants, calls, transcripts, campaigns, and knowledge bases in a Famulor workspace. Famulor uses OAuth 2.0 with PKCE and dynamic client registration, so no app registration is required.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+        In Nango, open **Integrations**, select **Configure New Integration**, then choose **Famulor (MCP)**. Configure only the scopes your app needs, for example `assistants:read calls:read`.
+    </Step>
+    <Step id="authorize-famulor" title="Authorize Famulor">
+        Open **Connections**, select **Add Test Connection**, then sign in to Famulor and approve the requested permissions for the workspace you want to connect.
+    </Step>
+    <Step id="call-mcp" title="Call the Famulor MCP API">
+        Make an MCP initialization request. Replace the placeholders with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID.
+
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/mcp" \
+                  -X POST \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "initialize",
+                    "params": {
+                        "protocolVersion": "2025-06-18",
+                        "capabilities": {},
+                        "clientInfo": {
+                            "name": "nango-client",
+                            "version": "1.0.0"
+                        }
+                    }
+                }'
+                ```
+
+            </Tab>
+            <Tab title="Node">
+
+                Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+                ```typescript
+                import { Nango } from '@nangohq/node';
+
+                const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+                const response = await nango.post({
+                    endpoint: '/mcp',
+                    providerConfigKey: '<INTEGRATION-ID>',
+                    connectionId: '<CONNECTION-ID>',
+                    data: {
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: 'initialize',
+                        params: {
+                            protocolVersion: '2025-06-18',
+                            capabilities: {},
+                            clientInfo: {
+                                name: 'nango-client',
+                                version: '1.0.0'
+                            }
+                        }
+                    }
+                });
+
+                console.log(response.data);
+                ```
+
+            </Tab>
+        </Tabs>
+
+        The approved tools appear in `tools/list`. Calls, campaigns, and messages started through MCP are real actions on the connected workspace.
+    </Step>
+    <Step id="implement-auth" title="Implement Nango in your app">
+        Follow the [Auth implementation guide](/guides/auth/auth-guide) to let your users connect their Famulor workspaces.
+    </Step>
+</Steps>
+
+## Famulor MCP authorization
+
+Nango discovers Famulor's authorization server from `https://app.famulor.io/.well-known/oauth-protected-resource/mcp`, registers an OAuth client dynamically, and uses PKCE (S256). Access follows the user's workspace role and the approved scopes. The workspace plan must include **Connect AI / MCP**.
+
+Official resources: [Connect an AI client](https://docs.famulor.io/mcp/overview), [Tools and scopes](https://docs.famulor.io/mcp/tools-and-scopes)
