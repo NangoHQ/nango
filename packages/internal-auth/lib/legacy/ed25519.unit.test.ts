@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_RUNNER } from './constants.js';
-import { exportRunnerPublicKey, runnerPublicKeyFromEnv } from './ed25519.js';
-import { createInternalServiceToken, createRunnerDispatchToken, verifyInternalServiceToken, verifyRunnerDispatchToken } from './token.js';
+import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_RUNNER } from '../nango/principals.js';
+import { createRunnerDispatchToken, exportRunnerPublicKey, runnerPublicKeyFromEnv, verifyRunnerDispatchToken } from './ed25519.js';
+import { createInternalServiceToken, verifyInternalServiceToken } from './token.js';
 
 describe('exportRunnerPublicKey', () => {
     it('returns null when the jobs signing key is unset', () => {
