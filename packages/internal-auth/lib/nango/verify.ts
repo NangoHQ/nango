@@ -1,6 +1,6 @@
 import { verifyKidJwt } from '../core/verify.js';
 import { taskCapabilityResourceSchema } from './mint.js';
-import { INTERNAL_SERVICE_ISSUER_JOBS, INTERNAL_SERVICE_ISSUER_SERVER } from './principals.js';
+import { INTERNAL_SERVICE_ISSUER_JOBS, INTERNAL_SERVICE_ISSUER_SERVER, isTaskSubject } from './principals.js';
 import { TASK_CAPABILITY_SCOPES } from './scopes.js';
 
 import type { KeyRegistry } from '../core/registry.js';
@@ -72,10 +72,6 @@ export async function verifyTaskCapabilityToken(token: string, audience: string,
 
 const CAPABILITY_SCOPE_VALUES: ReadonlySet<string> = new Set(TASK_CAPABILITY_SCOPES);
 
-function isTaskSubject(sub: string | undefined): sub is string {
-    return typeof sub === 'string' && sub.startsWith('task:') && sub.length > 'task:'.length;
-}
-
 function readResource(value: unknown): TaskCapabilityResource | null | 'invalid' {
     if (value === undefined) {
         return null;
@@ -84,11 +80,7 @@ function readResource(value: unknown): TaskCapabilityResource | null | 'invalid'
     if (!parsed.success) {
         return 'invalid';
     }
-    const res: TaskCapabilityResource = { environmentId: parsed.data.environmentId, connectionId: parsed.data.connectionId };
-    if (parsed.data.syncId !== undefined) {
-        res.syncId = parsed.data.syncId;
-    }
-    return res;
+    return parsed.data;
 }
 
 function isCapabilityScope(value: unknown): value is TaskCapabilityScope {

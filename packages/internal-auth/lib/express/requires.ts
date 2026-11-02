@@ -1,4 +1,4 @@
-import { INTERNAL_SERVICE_ISSUER_JOBS } from '../nango/principals.js';
+import { INTERNAL_SERVICE_ISSUER_JOBS, isNodeSubject, isTaskSubject } from '../nango/principals.js';
 import { getInternalServiceAuth } from './middleware.js';
 
 import type { InternalAuthEnvs } from '../nango/env.js';
@@ -26,8 +26,8 @@ export function bindingsFrom(auth: InternalServiceAuth | undefined): Partial<Rec
         return {};
     }
     const bindings: Partial<Record<BindingKey, string | number>> = {};
-    if (auth.kind === 'jwt' && auth.issuer === INTERNAL_SERVICE_ISSUER_JOBS && auth.sub) {
-        if (auth.sub.startsWith('task:') && auth.sub.length > 'task:'.length) {
+    if (auth.kind === 'jwt' && auth.issuer === INTERNAL_SERVICE_ISSUER_JOBS) {
+        if (isTaskSubject(auth.sub)) {
             bindings.taskId = auth.sub.slice('task:'.length);
             if (auth.res) {
                 bindings.environmentId = auth.res.environmentId;
@@ -36,7 +36,7 @@ export function bindingsFrom(auth: InternalServiceAuth | undefined): Partial<Rec
                     bindings.syncId = auth.res.syncId;
                 }
             }
-        } else if (auth.sub.startsWith('node:') && auth.sub.length > 'node:'.length) {
+        } else if (isNodeSubject(auth.sub)) {
             bindings.nodeId = auth.sub.slice('node:'.length);
         }
     } else if ((auth.kind === 'hmac' || auth.kind === 'eddsa') && auth.op === 'task' && auth.taskId) {
@@ -73,39 +73,48 @@ export function requireBinding(
     };
 }
 
+/** The route param name is the binding key. */
+export function requireParamBinding(envs: InternalAuthEnvs, key: BindingKey): (req: Request, res: Response, next: NextFunction) => void {
+    return requireBinding(envs, key, (req) => routeParam(req, key));
+}
+
+export function isBound(auth: InternalServiceAuth | undefined, key: 'taskId' | 'nodeId', value: string | undefined): boolean {
+    return !!value && bindingsFrom(auth)[key] === value;
+}
+
 export function isTaskBoundAuth(auth: InternalServiceAuth | undefined, taskId: string | undefined): boolean {
-    if (!taskId) {
-        return false;
-    }
-    return bindingsFrom(auth).taskId === taskId;
+    return isBound(auth, 'taskId', taskId);
 }
 
 export function isNodeBoundAuth(auth: InternalServiceAuth | undefined, nodeId: string | undefined): boolean {
-    if (!nodeId) {
-        return false;
-    }
-    return bindingsFrom(auth).nodeId === nodeId;
+    return isBound(auth, 'nodeId', nodeId);
 }
 
-function isJobsTaskJwt(auth: InternalServiceAuth | undefined): auth is InternalServiceAuth {
-    return Boolean(
-        auth?.kind === 'jwt' &&
-            auth.issuer === INTERNAL_SERVICE_ISSUER_JOBS &&
-            typeof auth.sub === 'string' &&
-            auth.sub.startsWith('task:') &&
-            auth.sub.length > 'task:'.length
-    );
+function isJobsTaskJwt(auth: InternalServiceAuth | undefined): auth is InternalServiceAuth & { kind: 'jwt'; sub: string } {
+    return Boolean(auth?.kind === 'jwt' && auth.issuer === INTERNAL_SERVICE_ISSUER_JOBS && isTaskSubject(auth.sub));
+}
+
+/** Resource claim from a jobs task JWT. Undefined when the token is not a task capability token. */
+function taskCapabilities(auth: InternalServiceAuth | undefined): TaskCapabilityResource | undefined {
+    if (!isJobsTaskJwt(auth)) {
+        return undefined;
+    }
+    return auth.res;
 }
 
 export function hasScope(auth: InternalServiceAuth | undefined, scope: TaskCapabilityScope): boolean {
-    return isJobsTaskJwt(auth) && auth.res !== undefined && Boolean(auth.scopes?.includes(scope));
+    return taskCapabilities(auth) !== undefined && Boolean(auth?.scopes?.includes(scope));
 }
 
+/**
+ * Strict match against the typed resource claim. Numeric ids match only numbers, and `syncId` matches
+ * only a string. Route params are coerced in `requireBinding`.
+ */
 export function isResourceBound(auth: InternalServiceAuth | undefined, key: keyof TaskCapabilityResource, value: number | string | undefined): boolean {
-    if (value === undefined || !isJobsTaskJwt(auth) || !auth.res) {
+    if (value === undefined) {
         return false;
     }
-    return auth.res[key] === value;
+    return taskCapabilities(auth)?.[key] === value;
 }
 
 /**

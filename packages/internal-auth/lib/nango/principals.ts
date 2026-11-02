@@ -28,7 +28,7 @@ export type InternalServiceIssuer = typeof INTERNAL_SERVICE_ISSUER_JOBS | typeof
 export interface TaskCapabilityResource {
     environmentId: number;
     connectionId: number;
-    syncId?: string;
+    syncId?: string | undefined;
 }
 
 export interface InternalServiceAuth {
@@ -51,6 +51,14 @@ export function taskSubject(taskId: string): string {
     return `task:${taskId}`;
 }
 
+export function isTaskSubject(sub: string | undefined): sub is `task:${string}` {
+    return typeof sub === 'string' && sub.startsWith('task:') && sub.length > 'task:'.length;
+}
+
 export function nodeSubject(nodeId: string): string {
     return `node:${nodeId}`;
+}
+
+export function isNodeSubject(sub: string | undefined): sub is `node:${string}` {
+    return typeof sub === 'string' && sub.startsWith('node:') && sub.length > 'node:'.length;
 }
