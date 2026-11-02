@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, internalServiceAuthMiddleware, requireParamBinding } from '@nangohq/internal-auth';
+import { INTERNAL_SERVICE_AUDIENCE_JOBS, internalServiceAuthMiddleware, requireParamBinding, requireScope } from '@nangohq/internal-auth';
 import { serverRequestSizeLimit } from '@nangohq/nango-orchestrator';
 import { createRoute } from '@nangohq/utils';
 
@@ -21,8 +21,10 @@ server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_J
 server.use(express.json({ limit: serverRequestSizeLimit }));
 createRoute(server, postIdleHandler, { middleware: [requireParamBinding(envs, 'nodeId')] });
 createRoute(server, postRegisterHandler, { middleware: [requireParamBinding(envs, 'nodeId')] });
-createRoute(server, putTaskHandler, { middleware: [requireParamBinding(envs, 'taskId')] });
-createRoute(server, postHeartbeatHandler, { middleware: [requireParamBinding(envs, 'taskId')] });
+createRoute(server, putTaskHandler, { middleware: [requireParamBinding(envs, 'taskId'), requireScope(envs, 'jobs:putTask')] });
+createRoute(server, postHeartbeatHandler, {
+    middleware: [requireParamBinding(envs, 'taskId'), requireScope(envs, 'jobs:heartbeat')]
+});
 
 server.use((err: any, _req: Request, res: Response<ResDefaultErrors>, _next: NextFunction) => {
     if (err instanceof Error) {

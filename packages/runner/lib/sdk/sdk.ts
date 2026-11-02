@@ -18,6 +18,7 @@ import {
 import { PersistClient } from '../clients/persist.js';
 import { envs } from '../env.js';
 import { logger } from '../logger.js';
+import { nangoClientConfig } from '../runner-bearer.js';
 import { Checkpointing } from './checkpointing.js';
 
 import type { TelemetryRecorder } from '../telemetry.js';
@@ -81,32 +82,24 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; telemetryRecorder?: TelemetryRecorder; locks: Locks }) {
         super(props);
 
-        this.nango = new Nango(
-            {
-                isScript: true,
-                isSync: false,
-                dryRun: isTest,
-                ...props
-            },
-            {
-                ...internalAxiosProps,
-                interceptors: {
-                    request: (config) => {
-                        // @ts-expect-error yes it's internal
-                        config.metadata = { startTime: new Date() };
-                        return config;
-                    },
-                    response: { onFulfilled: this.logAPICall.bind(this) }
-                }
+        this.nango = new Nango(nangoClientConfig(props, { isSync: false, dryRun: isTest }), {
+            ...internalAxiosProps,
+            interceptors: {
+                request: (config) => {
+                    // @ts-expect-error yes it's internal
+                    config.metadata = { startTime: new Date() };
+                    return config;
+                },
+                response: { onFulfilled: this.logAPICall.bind(this) }
             }
-        );
+        });
 
         if (!this.activityLogId) throw new Error('Parameter activityLogId is required');
         if (!this.environmentId) throw new Error('Parameter environmentId is required');
         if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
         if (!this.syncConfig) throw new Error('Parameter syncConfig is required');
 
-        this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
+        this.persistClient = runnerProps?.persistClient || new PersistClient(props);
         this.telemetryRecorder = runnerProps?.telemetryRecorder;
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
         this.checkpointKey = getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name });
@@ -463,32 +456,24 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; telemetryRecorder?: TelemetryRecorder; locks: Locks }) {
         super(props);
 
-        this.nango = new Nango(
-            {
-                isScript: true,
-                isSync: true,
-                dryRun: isTest,
-                ...props
-            },
-            {
-                ...internalAxiosProps,
-                interceptors: {
-                    request: (config) => {
-                        // @ts-expect-error yes it's internal
-                        config.metadata = { startTime: new Date() };
-                        return config;
-                    },
-                    response: { onFulfilled: this.logAPICall.bind(this) }
-                }
+        this.nango = new Nango(nangoClientConfig(props, { isSync: true, dryRun: isTest }), {
+            ...internalAxiosProps,
+            interceptors: {
+                request: (config) => {
+                    // @ts-expect-error yes it's internal
+                    config.metadata = { startTime: new Date() };
+                    return config;
+                },
+                response: { onFulfilled: this.logAPICall.bind(this) }
             }
-        );
+        });
 
         if (!this.syncConfig) throw new Error('Parameter syncConfig is required');
         if (!this.syncId) throw new Error('Parameter syncId is required');
         if (!this.syncJobId) throw new Error('Parameter syncJobId is required');
         if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
 
-        this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
+        this.persistClient = runnerProps?.persistClient || new PersistClient(props);
         this.telemetryRecorder = runnerProps?.telemetryRecorder;
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
         this.checkpointKey = getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name, variant: this.variant });
