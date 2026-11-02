@@ -1,0 +1,29 @@
+---
+title: 'How to register your own LINE Yahoo Ads OAuth app'
+sidebarTitle: 'LINE Yahoo Ads setup'
+description: 'Register a LINE Yahoo Ads application and configure its credentials in Nango.'
+---
+
+<Steps>
+    <Step id="check-api-access" title="Confirm API access">
+        Have the organization's API administrator sign in to the [LINE Yahoo Ads API management tool](https://connect-business.yahoo.co.jp/cooperation/).
+        The organization must have applied for [API access](https://ads-developers.yahoo.co.jp/en/ads-api/startup-guide/apply-api-use.html).
+    </Step>
+    <Step id="register-oauth-app" title="Register the application">
+        In **Registered applications** (`登録アプリケーション`), select **Register** (`登録`).
+        Enter the application name, description, and the Nango callback URL as the redirect URI.
+        For standard Nango Cloud, the callback URL is `https://api.nango.dev/oauth/callback`.
+        For other deployments, use the callback URL configured in your Nango environment.
+        Confirm and save the registration.
+    </Step>
+    <Step id="configure-integration" title="Enter the credentials in Nango">
+        Copy the application's client ID and client secret into your **LINE Yahoo Ads** integration in Nango.
+        Set the scope to `yahooads`.
+    </Step>
+    <Step id="authorize-account" title="Authorize a connection">
+        Create a connection in Nango and complete authorization with a Business ID that can access the target advertising accounts.
+        For test accounts, use the Business ID that applied for API access, as described in the [test account documentation](https://ads-developers.yahoo.co.jp/en/ads-api/developers-guide/test-account.html).
+    </Step>
+</Steps>
+
+See the official [application registration](https://ads-developers.yahoo.co.jp/en/ads-api/startup-guide/app-registration.html) and [OAuth flow](https://ads-developers.yahoo.co.jp/en/ads-api/startup-guide/api-call.html) documentation.

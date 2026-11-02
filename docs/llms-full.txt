@@ -16690,6 +16690,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `lever-sandbox` | Lever (OAuth Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/lever-sandbox.md) |  |  | ats |
 | `lightfield` | Lightfield | API_KEY | [docs](https://nango.dev/docs/api-integrations/lightfield.md) | [connect](https://nango.dev/docs/api-integrations/lightfield/connect.md) |  | crm |
 | `lightspeed-retail` | Lightspeed Retail (X-Series) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/lightspeed-retail.md) |  | [setup](https://nango.dev/docs/api-integrations/lightspeed-retail/how-to-register-your-own-lightspeed-retail-api-oauth-app.md) | e-commerce |
+| `line-yahoo-ads` | LINE Yahoo Ads | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/line-yahoo-ads.md) |  | [setup](https://nango.dev/docs/api-integrations/line-yahoo-ads/how-to-register-your-own-line-yahoo-ads-api-oauth-app.md) | marketing |
 | `linear` | Linear | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/linear.md) |  | [setup](https://nango.dev/docs/api-integrations/linear/how-to-register-your-own-linear-api-oauth-app.md) | popular, productivity, ticketing |
 | `linear-mcp` | Linear (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/linear-mcp.md) |  |  | popular, productivity, ticketing, mcp |
 | `linkedin` | LinkedIn | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/linkedin.md) |  | [setup](https://nango.dev/docs/api-integrations/linkedin/how-to-register-your-own-linkedin-api-oauth-app.md) | ats, social |

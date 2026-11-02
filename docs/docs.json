@@ -1576,6 +1576,7 @@
               "integrations/all/lever-sandbox",
               "api-integrations/lightfield",
               "api-integrations/lightspeed-retail",
+              "api-integrations/line-yahoo-ads",
               "api-integrations/linear",
               "api-integrations/linear-mcp",
               "api-integrations/linkedin",
