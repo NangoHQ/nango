@@ -4639,7 +4639,7 @@ components:
                 default_value:
                     type: string
                 hidden:
-                    type: string
+                    type: boolean
                 prefix:
                     type: string
                 suffix:
