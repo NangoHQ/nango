@@ -103,6 +103,39 @@ describe('proxyService', () => {
         expect(capping.getStatus).toHaveBeenCalledWith(null, 'proxy', 'data_transfer');
     });
 
+    it('observes override scope gaps but sends the request', async () => {
+        const track = vi.spyOn(shared.proxyTrackingLogger, 'log').mockImplementation(() => undefined);
+        const connection = connectionFixture();
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integrationFixture());
+        vi.spyOn(shared.connectionService, 'getConnection').mockResolvedValue({ success: true, error: null, response: connection });
+        vi.spyOn(shared, 'refreshOrTestCredentials').mockResolvedValue(Ok(connection));
+        const call = vi.spyOn(shared.ProxyRequest.prototype, 'httpCall').mockResolvedValue(axiosResponse(200, {}, 'ok'));
+        const execution = await proxyService.request({
+            account: accountFixture(),
+            environment: environmentFixture(),
+            plan: null,
+            method: 'GET',
+            endpoint: '/users',
+            integrationId: 'github',
+            connectionId: 'connection-id',
+            baseUrlOverride: 'https://api.example.com',
+            apiKey: { type: 'api_key', source: 'customer_key', accountId: 1, environmentIds: [2], keyId: 123, scopes: ['environment:proxy'] }
+        });
+        expect(execution.result.isOk()).toBe(true);
+        expect(call).toHaveBeenCalledOnce();
+        expect(call.mock.calls[0]?.[0].url).toBe('https://api.example.com/users');
+        expect(track).toHaveBeenCalledWith(
+            'proxy:base_url_override',
+            expect.objectContaining({
+                account_id: 1,
+                provider: 'github',
+                api_key_id: 123,
+                missing_connection_credentials: true,
+                missing_integration_credentials: true
+            })
+        );
+    });
+
     it('returns a domain error when the integration does not exist', async () => {
         vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
         const connectionSpy = vi.spyOn(shared.connectionService, 'getConnection');
