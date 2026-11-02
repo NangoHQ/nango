@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getInternalAuthBearerHeaderIfPresent } from './credential.js';
+import { getInternalAuthBearerHeaderIfPresent } from './env.js';
 
 describe('getInternalAuthBearerHeaderIfPresent', () => {
     it('omits the header when there is no token', () => {

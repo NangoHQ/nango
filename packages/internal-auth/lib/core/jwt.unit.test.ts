@@ -2,6 +2,8 @@ import { generateKeyPairSync } from 'node:crypto';
 
 import { describe, expect, it } from 'vitest';
 
+import { verifyInternalServiceCredential } from '../authenticate.js';
+import { mint, signerForService } from '../nango/mint.js';
 import {
     INTERNAL_SERVICE_AUDIENCE_JOBS,
     INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR,
@@ -9,9 +11,8 @@ import {
     INTERNAL_SERVICE_ISSUER_JOBS,
     INTERNAL_SERVICE_ISSUER_SERVER,
     taskSubject
-} from './constants.js';
-import { keyRegistryFromPublicKeys, mint, signerForService } from './jwt.js';
-import { verifyInternalServiceCredential } from './verify.js';
+} from '../nango/principals.js';
+import { keyRegistryFromPublicKeys } from './registry.js';
 
 function ed25519Material(): { pem: string; raw: string } {
     const { publicKey, privateKey } = generateKeyPairSync('ed25519');
