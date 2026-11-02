@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1084
+Provider count: 1085
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -474,6 +474,7 @@ URL patterns:
 | `hubstaff` | Hubstaff | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hubstaff.md) |  | [setup](https://nango.dev/docs/api-integrations/hubstaff/how-to-register-your-own-hubstaff-oauth-app.md) | hr, productivity |
 | `humaans-io` | Humaans.io | API_KEY | [docs](https://nango.dev/docs/api-integrations/humaans-io.md) | [connect](https://nango.dev/docs/api-integrations/humaans-io/connect.md) |  | hr |
 | `huntress` | Huntress | BASIC | [docs](https://nango.dev/docs/api-integrations/huntress.md) | [connect](https://nango.dev/docs/api-integrations/huntress/connect.md) |  | other |
+| `hydradb` | HydraDB | API_KEY | [docs](https://nango.dev/docs/api-integrations/hydradb.md) | [connect](https://nango.dev/docs/api-integrations/hydradb/connect.md) |  | knowledge-base |
 | `icypeas` | Icypeas | API_KEY | [docs](https://nango.dev/docs/integrations/all/icypeas.md) | [connect](https://nango.dev/docs/integrations/all/icypeas/connect.md) |  | marketing, crm |
 | `ids-fulfillment` | IDS Fulfillment | API_KEY | [docs](https://nango.dev/docs/api-integrations/ids-fulfillment.md) | [connect](https://nango.dev/docs/api-integrations/ids-fulfillment/connect.md) |  | e-commerce |
 | `imanage` | iManage Work | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/imanage.md) | [connect](https://nango.dev/docs/api-integrations/imanage/connect.md) | [setup](https://nango.dev/docs/api-integrations/imanage/how-to-register-your-own-imanage-oauth-app.md) | legal, storage |
