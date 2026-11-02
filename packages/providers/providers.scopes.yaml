@@ -5963,6 +5963,10 @@ lightspeed-retail:
     - users:write
     - webhooks
 
+# source: https://ads-developers.yahoo.co.jp/en/ads-api/startup-guide/api-call.html
+line-yahoo-ads:
+    - yahooads
+
 # source: https://linear.app/developers/oauth-2-0-authentication
 linear:
     - admin

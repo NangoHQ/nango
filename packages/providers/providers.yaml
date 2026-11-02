@@ -15277,6 +15277,27 @@ lightspeed-retail:
             description: ''
             automated: true
 
+line-yahoo-ads:
+    display_name: LINE Yahoo Ads
+    categories:
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://biz-oauth.yahoo.co.jp/oauth/v1/authorize
+    token_url: https://biz-oauth.yahoo.co.jp/oauth/v1/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - yahooads
+    disable_pkce: true
+    proxy:
+        base_url: https://ads-search.yahooapis.jp
+    docs: https://nango.dev/docs/api-integrations/line-yahoo-ads
+    setup_guide_url: https://nango.dev/docs/api-integrations/line-yahoo-ads/how-to-register-your-own-line-yahoo-ads-api-oauth-app
+
 linear:
     display_name: Linear
     categories:
