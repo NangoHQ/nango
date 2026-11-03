@@ -1,0 +1,47 @@
+---
+title: 'LINE Yahoo Ads'
+sidebarTitle: 'LINE Yahoo Ads'
+description: 'Connect to the Japanese LINE Yahoo Ads Search Ads and Display Ads APIs with Business ID OAuth.'
+---
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+        In Nango, open **Integrations** → **Set up new integration** → **LINE Yahoo Ads**.
+        Enter your OAuth client ID, client secret, and the `yahooads` scope.
+        Obtain the credentials by [registering an OAuth app](/api-integrations/line-yahoo-ads/how-to-register-your-own-line-yahoo-ads-api-oauth-app).
+    </Step>
+    <Step id="authorize-business-id" title="Authorize a Business ID">
+        Open **Connections**, add a connection, and authorize with a Business ID that has access to the advertising accounts.
+    </Step>
+    <Step id="call-ads-api" title="Call the API">
+        Use a Nango Environment API key from **Environment settings** → **API Keys**, the integration ID, and the connection ID.
+        This read-only Search Ads request lists the accounts directly accessible to the Business ID:
+
+        ```bash
+        curl --request POST 'https://api.nango.dev/proxy/api/v20/BaseAccountService/get' \
+          --header 'Authorization: Bearer <NANGO-API-KEY>' \
+          --header 'Provider-Config-Key: <INTEGRATION-ID>' \
+          --header 'Connection-Id: <CONNECTION-ID>' \
+          --header 'Content-Type: application/json' \
+          --data '{}'
+        ```
+    </Step>
+    <Step id="connect-users" title="Connect users in your application">
+        Follow the [Auth guide](/guides/auth/auth-guide) to let users authorize their own Business IDs.
+    </Step>
+</Steps>
+
+## API details
+
+- The default proxy host is `https://ads-search.yahooapis.jp`. For Display Ads, set `Base-Url-Override: https://ads-display.yahooapis.jp` on proxy requests. Both products use the same Business ID OAuth endpoints and `yahooads` scope.
+- Most requests require an `x-z-base-account-id` header identifying an account directly accessible to the Business ID. `BaseAccountService/get` is an exception.
+- Access tokens expire after one hour. Nango refreshes them using the refresh token; the refresh response does not need to return a new refresh token.
+- This provider covers Japan's Search Ads and Display Ads APIs. It uses different OAuth endpoints from the existing Yahoo provider and from the separate LINE Ads API at `ads.line.me`.
+
+Official docs: [Authentication and API calls](https://ads-developers.yahoo.co.jp/en/ads-api/startup-guide/api-call.html).
+
+## Pre-built functions
+
+import PreBuiltUseCases from "/snippets/generated/line-yahoo-ads/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
