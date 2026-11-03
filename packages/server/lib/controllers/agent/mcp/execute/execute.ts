@@ -42,7 +42,14 @@ export const executeTool = defineAgentSessionMcpTool({
 
         const tool = callable.get(args.tool);
         if (!tool) {
-            trackAgentSessionToolCall({ metaTool: 'nango_execute', session, toolName: args.tool, errorCode: 'tool_not_in_session' });
+            trackAgentSessionToolCall({
+                metaTool: 'nango_execute',
+                session,
+                toolName: args.tool,
+                goal: args.goal,
+                intent: args.intent,
+                errorCode: 'tool_not_in_session'
+            });
             return Err(new PublicMcpError(unknownToolMessage(args.tool, session), { code: 'tool_not_in_session' }));
         }
 

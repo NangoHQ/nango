@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { NangoError, toolService } from '@nangohq/shared';
+import { NangoError, productTracking, toolService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { ActionExecutionError } from '../../../../services/action.service.js';
@@ -515,6 +515,19 @@ describe('nango_execute', () => {
         );
         expect(codeOf(result)).toBe('tool_not_in_session');
         expect(executeAction).not.toHaveBeenCalled();
+    });
+
+    it('keeps the goal and the intent when the name matches no tool', async () => {
+        const track = vi.spyOn(productTracking, 'track').mockImplementation(() => {});
+
+        await executeTool.handler({ tool: 'notion__delete_doc', ...PURPOSE }, context());
+
+        expect(track).toHaveBeenCalledWith(
+            expect.objectContaining({
+                name: 'agents:tool_call_complete',
+                eventProperties: expect.objectContaining({ error_code: 'tool_not_in_session', ...PURPOSE })
+            })
+        );
     });
 
     it('does not point at tool search when the session turned it off', async () => {
