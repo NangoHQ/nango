@@ -483,6 +483,7 @@ const ENVS_SHAPE = z.object({
 
     // Self-hosting
     NANGO_SELF_HOSTING_PORT: z.coerce.number().optional().default(3010),
+    NANGO_SELF_HOSTING_DB_POOL_MAX: z.coerce.number().optional().default(5),
 
     // Runner
     RUNNER_SECRET_KEY: z.string().optional(),
