@@ -481,6 +481,12 @@ const ENVS_SHAPE = z.object({
     WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(500),
     ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
 
+    // Self-hosting
+    NANGO_SELF_HOSTING_PORT: z.coerce.number().optional().default(3010),
+    NANGO_SELF_HOSTING_DATABASE_URL: z.url().optional(),
+    NANGO_SELF_HOSTING_DATABASE_SSL: z.stringbool().optional().default(false),
+    NANGO_SELF_HOSTING_DB_POOL_MAX: z.coerce.number().int().positive().optional().default(5),
+
     // Runner
     RUNNER_SECRET_KEY: z.string().optional(),
     RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES']).default('LOCAL'),
