@@ -123,7 +123,7 @@ describe('listFunctions with HTTP-triggered tools', () => {
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'legacy', type: 'action' });
         const version: Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> = {
             description: 'Fetch users',
-            tags: { instructions: 'Read users', required_scopes: ['read'], category: 'crm' },
+            tags: { instructions: 'Read users', required_scopes: { all: ['read'] }, category: 'crm' },
             file_location: 'functions/fetch-users',
             version: 'test',
             source: 'repo',
@@ -184,7 +184,7 @@ describe('listFunctions with HTTP-triggered tools', () => {
                 provider: 'github',
                 input_json_schema: { $ref: '#/definitions/Input', definitions: { Input: { type: 'string' } } },
                 output_json_schema: null,
-                meta: { instructions: 'Read users', required_scopes: ['read'], tags: { category: 'crm' } }
+                meta: { instructions: 'Read users', required_scopes: { all: ['read'] }, tags: { category: 'crm' } }
             })
         ]);
     });

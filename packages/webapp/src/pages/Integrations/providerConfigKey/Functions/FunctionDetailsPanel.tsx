@@ -166,7 +166,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                         <FunctionSourceLabel source={source} />
                     </Metadata>
                     {fn.scopes && fn.scopes.length > 0 && (
-                        <Metadata label="Required scopes" className="col-span-2">
+                        <Metadata label={fn.scopesMatch === 'any' ? 'Requires one of these scopes' : 'Required scopes'} className="col-span-2">
                             <div className="flex flex-wrap gap-2">
                                 {fn.scopes.map((scope) => (
                                     <Badge key={scope} variant="secondary">
