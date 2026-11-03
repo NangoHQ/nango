@@ -334,7 +334,8 @@ const GoFurther: React.FC<{ env: string }> = ({ env }) => {
             icon: Wrench,
             title: 'Explore the catalog',
             description: 'Pre-built tools your agent can use right away.',
-            to: `/${env}/integrations`
+            to: 'https://nango.dev/api-integrations',
+            external: true
         },
         {
             destination: 'syncs_docs',
