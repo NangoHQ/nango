@@ -382,9 +382,16 @@ describe('validateTool', () => {
         { reason: 'empty meta', params: { meta: {} } },
         { reason: 'long instructions', params: { meta: { instructions: 'a'.repeat(1024) } } },
         { reason: 'required scopes', params: { meta: { requiredScopes: ['repo', 'read:org'] } } },
-        { reason: 'tags', params: { meta: { tags: { domain: 'issues', owners: ['platform'] } } } }
+        { reason: 'tags', params: { meta: { tags: { domain: 'issues', owners: ['platform'] } } } },
+        { reason: 'metadata and checkpoint', params: { data: { metadata: z.object({}), checkpoint: z.object({ cursor: z.string() }) } } }
     ])('accepts $reason', ({ params }) => {
         expect(validateTool({ filePath, params }).isOk()).toBe(true);
+    });
+
+    it('rejects declaring models', () => {
+        const result = validateTool({ filePath, params: { data: { models: { Issue: z.object({}) } } } as never });
+        assert(result.isErr());
+        expect(result.error.message).toContain("declares 'data.models'");
     });
 
     it.each([

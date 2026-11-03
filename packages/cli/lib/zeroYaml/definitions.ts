@@ -124,7 +124,7 @@ interface FunctionDefinition {
     tags?: FunctionTags | undefined;
 }
 
-type CompiledTool = CreateToolProps & { type: 'function'; _nangoFactory: 'tool' };
+type CompiledTool = CreateToolProps<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint> & { type: 'function'; _nangoFactory: 'tool' };
 
 export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'> & { filePath: string };
 
@@ -497,7 +497,10 @@ export function validateFunction({
     return Ok(undefined);
 }
 
-export function validateTool({ params, filePath }: { params: Pick<CreateToolProps, 'name' | 'meta'>; filePath: string }): Result<void> {
+export function validateTool({ params, filePath }: { params: Pick<CompiledTool, 'name' | 'meta' | 'data'>; filePath: string }): Result<void> {
+    if (params.data && 'models' in params.data && params.data.models) {
+        return Err(new Error(`Tool '${filePath}' declares 'data.models', which is not supported yet.`));
+    }
     if (params.name !== undefined) {
         const nameValidation = toolNameSchema.safeParse(params.name);
         if (!nameValidation.success) {
