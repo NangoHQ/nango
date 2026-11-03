@@ -313,7 +313,7 @@ export type PostFunctionInvocation = ApiEndpoint<{
         invocation_type: FunctionInvocationType;
         options?: Record<string, unknown> | undefined;
     };
-    Error: ApiError<FunctionInvocationErrorCode>;
+    Error: ApiError<FunctionInvocationErrorCode | 'function_runtime_error'>;
     Success: FunctionInvocationSuccess;
 }>;
 
@@ -378,7 +378,9 @@ export type GetFunctionInvocation = ApiEndpoint<{
     Method: 'GET';
     Path: '/connections/:connectionId/functions/:functionUuid/invocations/:id';
     Params: { connectionId: string; functionUuid: string; id: string };
-    Error: ApiError<'invalid_uri_params' | 'not_found' | 'function_not_found' | 'connection_not_found' | 'function_failed' | 'server_error'>;
+    Error: ApiError<
+        'invalid_uri_params' | 'not_found' | 'function_not_found' | 'connection_not_found' | 'function_failed' | 'function_runtime_error' | 'server_error'
+    >;
     Success: FunctionInvocationSuccess;
 }>;
 
@@ -484,7 +486,7 @@ export type PostToolCall = ApiEndpoint<{
     Body: {
         input?: unknown | undefined;
     };
-    Error: ApiError<FunctionInvocationErrorCode | 'ambiguous_connection'>;
+    Error: ApiError<FunctionInvocationErrorCode | 'function_runtime_error' | 'ambiguous_connection'>;
     Success: FunctionInvocationSuccess;
 }>;
 

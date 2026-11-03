@@ -73,7 +73,10 @@ export class NangoActionCLI extends NangoActionBase<never, ZodCheckpoint> {
     }
 
     public override uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response> {
-        return executeUncontrolledFetch(options, () => {});
+        return executeUncontrolledFetch(options, {
+            onBytes: () => {},
+            ErrorClass: this.scriptType === 'function' ? this.Error : this.ActionError
+        });
     }
 
     public override log(...args: [...any]): void {
@@ -448,6 +451,7 @@ export function createFunctionCLI({
 }): Record<string, unknown> {
     let metadata = stubbedMetadata;
     const sdk: Record<string, unknown> = {
+        Error: nango.Error,
         log: (message: string, options?: unknown) => {
             if (options === undefined) {
                 nango.log(message);

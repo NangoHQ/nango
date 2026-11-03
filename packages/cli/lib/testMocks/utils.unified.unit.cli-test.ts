@@ -5,7 +5,7 @@ import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import * as z from 'zod';
 
-import { createFunction } from '@nangohq/runner-sdk';
+import { createFunction, FunctionError } from '@nangohq/runner-sdk';
 
 import { ResponseCollector } from '../services/response-collector.service.js';
 import { fixturesPath } from '../tests/helpers.js';
@@ -336,6 +336,21 @@ describe('UnifiedFixtureProvider matching behavior', () => {
 
 describe('native fixture replay', () => {
     const dirname = path.join(fixturesPath, 'replay/github/tests');
+
+    it('preserves nango.Error when a replayed function throws', async () => {
+        const payload = { code: 'invalid_input', message: 'A value is missing' };
+        const definition = createFunction({
+            description: 'Throw a structured function error',
+            requires: { outbound: false, connection: false },
+            exec: (nango) => {
+                throw new nango.Error(payload);
+            }
+        });
+
+        const replay = replayFunction({ dirname, name: 'echo', definition });
+        await expect(replay).rejects.toBeInstanceOf(FunctionError);
+        await expect(replay).rejects.toMatchObject({ type: 'function_runtime_error', payload });
+    });
 
     it.each([
         { name: 'echo', source: '../functions/echo.ts' },
