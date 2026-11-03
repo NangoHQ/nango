@@ -92,7 +92,6 @@ describe('hosted telemetry producer', () => {
 
     it('keeps both rows when one producer exports twice', async () => {
         await knex.raw('TRUNCATE ??.??', [schema, HOSTED_TELEMETRY_TABLE]);
-        // A row is keyed on the millisecond of the window's first record; a fast export lets both land in the same one.
         vi.useFakeTimers({ toFake: ['Date'] });
         const now = Date.now();
         const first = createHostedTelemetry({ knex, schema, exportIntervalMs });
