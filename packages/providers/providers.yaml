@@ -6420,6 +6420,8 @@ command-alkon:
         base_url: https://${connectionConfig.hostname}
         headers:
             x-api-key: ${credentials.apiKey}
+    webhook_routing_script: commandAlkonWebhookRouting
+    webhook_signature_enforced: true
     docs: https://nango.dev/docs/api-integrations/command-alkon
     docs_connect: https://nango.dev/docs/api-integrations/command-alkon/connect
     connection_config:
