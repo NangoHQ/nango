@@ -1,5 +1,5 @@
 import knexFactory from 'knex';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { ensureDailyPartitions } from '@nangohq/migrations';
 
@@ -45,6 +45,10 @@ afterAll(async () => {
 });
 
 describe('hosted telemetry producer', () => {
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     it('is a no-op without a store, and the shared instance is one until it is initialised', async () => {
         const telemetry = createHostedTelemetry();
         telemetry.increment('nango.hosted_metric.active_concurrency', 1, { environment_id: 7 });
@@ -88,9 +92,13 @@ describe('hosted telemetry producer', () => {
 
     it('keeps both rows when one producer exports twice', async () => {
         await knex.raw('TRUNCATE ??.??', [schema, HOSTED_TELEMETRY_TABLE]);
+        // A row is keyed on the millisecond of the window's first record; a fast export lets both land in the same one.
+        vi.useFakeTimers({ toFake: ['Date'] });
+        const now = Date.now();
         const first = createHostedTelemetry({ knex, schema, exportIntervalMs });
         first.increment('nango.hosted_metric.active_concurrency', 2, { environment_id: 7 });
         await first.shutdown();
+        vi.setSystemTime(now + 1000);
         const second = createHostedTelemetry({ knex, schema, exportIntervalMs });
         second.increment('nango.hosted_metric.active_concurrency', 4, { environment_id: 7 });
         await second.shutdown();
