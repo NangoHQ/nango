@@ -44,6 +44,9 @@ import { postForgotPassword } from './controllers/v1/account/postForgotPassword.
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
+import { getAgentGettingStarted } from './controllers/v1/agentGettingStarted/getAgentGettingStarted.js';
+import { postAgentGettingStartedDismiss } from './controllers/v1/agentGettingStarted/postAgentGettingStartedDismiss.js';
+import { postAgentGettingStartedRestart } from './controllers/v1/agentGettingStarted/postAgentGettingStartedRestart.js';
 import { postAgentPlaygroundChat } from './controllers/v1/agentPlayground/postChat.js';
 import { getAuditTrail } from './controllers/v1/audit-trail/getAuditTrail.js';
 import { getAuditTrailExport } from './controllers/v1/audit-trail/getAuditTrailExport.js';
@@ -405,6 +408,9 @@ web.route('/functions/invoke').post(webAuth, can('environment:syncs:execute'), p
 // Getting Started
 web.route('/getting-started').get(webAuth, getGettingStarted);
 web.route('/getting-started').patch(webAuth, patchGettingStarted);
+web.route('/agent-getting-started').get(webAuth, getAgentGettingStarted);
+web.route('/agent-getting-started/restart').post(webAuth, postAgentGettingStartedRestart);
+web.route('/agent-getting-started/dismiss').post(webAuth, postAgentGettingStartedDismiss);
 
 // Logs
 web.route('/audit-trail').get(webAuth, auditTrailQueried, can('account:audit_trail:read'), getAuditTrail);
