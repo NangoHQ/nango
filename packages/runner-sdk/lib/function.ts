@@ -1,4 +1,5 @@
 import type { ProxyConfiguration } from './action.js';
+import type { FunctionError } from './errors.js';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from './types.js';
 import type { UncontrolledFetchOptions } from './uncontrolledFetch.js';
 import type {
@@ -38,6 +39,7 @@ type InferZod<T> = T extends z.ZodTypeAny ? z.infer<T> : never;
 
 // Always present: base methods every function can use.
 export interface NangoBase {
+    Error: typeof FunctionError;
     log(message: string, options?: unknown): Promise<void>;
     setLogger(logger: SdkLogger): void;
     getEnvironmentVariables(): Promise<EnvironmentVariable[] | null>;
