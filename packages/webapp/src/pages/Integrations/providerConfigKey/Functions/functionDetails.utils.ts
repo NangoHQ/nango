@@ -13,6 +13,7 @@ export interface FunctionDetails {
     typeLabel: string;
     source: FunctionListSource | 'template';
     scopes: string[];
+    scopesMatch: 'all' | 'any';
     frequency: string | null;
     inputSchema: JSONSchema7 | null;
     outputSchemas: { name: string; schema: JSONSchema7 }[];
@@ -42,9 +43,11 @@ export function toFunctionDetails(fn: DetailsFunction, { env, integration }: { e
     };
     if (fn.type === 'tool') {
         const outputSchema = displaySchema(fn.output_json_schema);
+        const requiredScopes = fn.meta.required_scopes;
         return {
             ...base,
-            scopes: fn.meta.required_scopes ?? [],
+            scopes: requiredScopes?.all ?? requiredScopes?.any ?? [],
+            scopesMatch: requiredScopes?.any ? 'any' : 'all',
             inputSchema: displaySchema(fn.input_json_schema),
             outputSchemas: outputSchema ? [{ name: 'Output', schema: outputSchema }] : [],
             pullCommand: null,
@@ -56,6 +59,7 @@ export function toFunctionDetails(fn: DetailsFunction, { env, integration }: { e
     return {
         ...base,
         scopes: fn.scopes ?? [],
+        scopesMatch: 'all',
         inputSchema: displaySchema(input, schema),
         outputSchemas:
             fn.type === 'on-event'

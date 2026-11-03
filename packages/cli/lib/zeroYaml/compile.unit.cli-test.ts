@@ -89,7 +89,7 @@ describe('compileAll', () => {
             tags: {
                 domain: 'issues',
                 instructions: 'Use it to read a single issue. Search first when you only know the title.',
-                required_scopes: ['repo']
+                required_scopes: { all: ['repo'] }
             },
             trigger: { kind: 'http' },
             requires: { connection: true, outbound: true, invoke: false },
@@ -167,6 +167,118 @@ describe('tools', () => {
         return parseIntegrationDefinitions({ fullPath: dir, debug: false });
     }
 
+    it.each([
+        { declaration: "scopes.all('repo', 'read:org')", expected: { all: ['read:org', 'repo'] } },
+        { declaration: "scopes.any('repo', 'public_repo')", expected: { any: ['public_repo', 'repo'] } },
+        { declaration: 'scopes.none()', expected: { none: true } }
+    ])('preserves required scopes declared with $declaration through compilation', async ({ declaration, expected }) => {
+        const dir = await createToolProject(`tool_required_scopes_${Object.keys(expected)[0]}`);
+        try {
+            const parsed = (
+                await compileAndParseTool(
+                    dir,
+                    'getIssue',
+                    `import { scopes, createTool } from 'nango';
+                    import * as z from 'zod';
+                    export default createTool({
+                        description: 'Get an issue',
+                        input: z.object({}),
+                        output: z.object({}),
+                        meta: { requiredScopes: ${declaration} },
+                        exec: async () => ({})
+                    });`
+                )
+            ).unwrap();
+            expect(parsed.functions[0]?.tags).toEqual({ required_scopes: expected });
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it.each(['all', 'any'] as const)('rejects duplicate scopes declared with scopes.%s', async (operator) => {
+        const dir = await createToolProject(`tool_duplicate_scopes_${operator}`);
+        try {
+            const parsed = await compileAndParseTool(
+                dir,
+                'getIssue',
+                `import { scopes, createTool } from 'nango';
+                import * as z from 'zod';
+                export default createTool({
+                    description: 'Get an issue',
+                    input: z.object({}),
+                    output: z.object({}),
+                    meta: { requiredScopes: scopes.${operator}('repo', 'read:org', 'repo') },
+                    exec: async () => ({})
+                });`
+            );
+            assert(parsed.isErr(), 'Should be an error');
+            expect(parsed.error.message).toContain('Duplicate scopes are not allowed');
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it.each([
+        { style: 'combined', imports: "import { scopes as s, createTool } from 'nango';" },
+        { style: 'split', imports: "import { scopes as s } from 'nango'; import { createTool } from 'nango';" }
+    ])('rewrites scope helper calls into plain requirements with $style imports', async ({ style, imports }) => {
+        const dir = await createToolProject(`tool_scopes_rewrite_${style}`);
+        try {
+            const filePath = path.join(dir, 'github', 'tools', 'getIssue.js');
+            await fs.promises.writeFile(
+                filePath.replace(/\.js$/, '.ts'),
+                `${imports}
+                import * as z from 'zod';
+                const optional = ['public_repo'] as const;
+                export default createTool({
+                    description: 'Get an issue',
+                    input: z.object({}),
+                    output: z.object({}),
+                    meta: { requiredScopes: s.any('repo', ...optional) },
+                    exec: async () => ({})
+                });`
+            );
+            const code = (await bundleFile({ entryPoint: filePath, projectRootPath: dir })).unwrap();
+            expect(code).not.toContain('require("nango")');
+            const module: { exports: { default?: { meta?: unknown } } } = { exports: {} };
+            vm.runInNewContext(code, { module, exports: module.exports, require: () => z });
+            expect(module.exports.default?.meta).toEqual({ requiredScopes: { any: ['repo', 'public_repo'] } });
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it.each([
+        { reason: 'aliased into a variable', usage: 'const helpers = scopes; const requiredScopes = helpers.all("repo");' },
+        { reason: 'accessed with a computed key', usage: 'const requiredScopes = scopes["all"]("repo");' },
+        { reason: 'called with an unknown operator', usage: 'const requiredScopes = scopes.some("repo");' },
+        { reason: 'referenced without a call', usage: 'const all = scopes.all; const requiredScopes = all("repo");' }
+    ])('rejects scope helpers $reason', async ({ usage }) => {
+        const dir = await createToolProject(`tool_scopes_unsupported_${usage.length}`);
+        try {
+            const filePath = path.join(dir, 'github', 'tools', 'getIssue.js');
+            await fs.promises.writeFile(
+                filePath.replace(/\.js$/, '.ts'),
+                `import { scopes, createTool } from 'nango';
+                import * as z from 'zod';
+                ${usage}
+                export default createTool({
+                    description: 'Get an issue',
+                    input: z.object({}),
+                    output: z.object({}),
+                    meta: { requiredScopes },
+                    exec: async () => ({})
+                });`
+            );
+            const result = await bundleFile({ entryPoint: filePath, projectRootPath: dir });
+            assert(result.isErr(), 'Should be an error');
+            assert(result.error instanceof CompileError, 'Should be a compile error');
+            expect(result.error.type).toBe('unsupported_scopes_usage');
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
     it('preserves metadata and checkpoint schemas when loading a compiled tool', async () => {
         const dir = await createToolProject('tool_data_schemas');
         try {
@@ -225,7 +337,7 @@ describe('tools', () => {
         expect(tool).toMatchObject({
             type: 'function',
             _nangoFactory: 'tool',
-            meta: { instructions: 'Use it to check an issue', requiredScopes: ['repo'] }
+            meta: { instructions: 'Use it to check an issue', requiredScopes: { all: ['repo'] } }
         });
         expect(tool).not.toHaveProperty('tool');
         expect(tool).not.toHaveProperty('trigger');
@@ -240,8 +352,10 @@ describe('tools', () => {
         { reason: 'no metadata', meta: undefined },
         { reason: 'empty metadata', meta: {} },
         { reason: 'custom tags', meta: { tags: { domain: 'issues', owners: ['platform'] } } },
-        { reason: 'instructions and scopes', meta: { instructions: 'Use this tool', requiredScopes: ['repo'], tags: { domain: 'issues' } } },
-        { reason: 'empty instructions and scopes', meta: { instructions: '', requiredScopes: [] } }
+        { reason: 'instructions and all scopes', meta: { instructions: 'Use this tool', requiredScopes: { all: ['repo'] }, tags: { domain: 'issues' } } },
+        { reason: 'any scopes', meta: { requiredScopes: { any: ['repo', 'public_repo'] } } },
+        { reason: 'explicitly no scopes', meta: { requiredScopes: { none: true } } },
+        { reason: 'empty instructions', meta: { instructions: '' } }
     ])('preserves original metadata with $reason', async ({ meta }) => {
         const dir = await getTestDirectory('tool_metadata');
         await fs.promises.mkdir(dir, { recursive: true });
@@ -303,7 +417,7 @@ describe('tools', () => {
 
     it.each([false, true])('normalizes tools despite conflicting markers (constant export: %s)', async (constantExport) => {
         const dir = await createToolProject(`normalized_tool_${constantExport}`);
-        const meta = { instructions: 'a'.repeat(1024), requiredScopes: ['repo'], tags: { domain: 'issues' } };
+        const meta = { instructions: 'a'.repeat(1024), requiredScopes: { all: ['repo'] }, tags: { domain: 'issues' } };
         const definition = `createTool({ ...{ _nangoFactory: 'other' }, name: ${constantExport ? 'name' : "'get_issue'"}, description: 'Get an issue', input: z.object({}), output: z.object({}), meta: ${JSON.stringify(meta)}, exec: async () => ({}) })`;
         try {
             const parsed = (
@@ -317,7 +431,7 @@ describe('tools', () => {
             expect(parsed.functions[0]).toMatchObject({
                 name: 'get_issue',
                 trigger: { kind: 'http' },
-                tags: { instructions: 'a'.repeat(1024), required_scopes: ['repo'], domain: 'issues' }
+                tags: { instructions: 'a'.repeat(1024), required_scopes: { all: ['repo'] }, domain: 'issues' }
             });
             expect(parsed.functions[0]).not.toHaveProperty('tool');
             expect(parsed.functions[0]).not.toHaveProperty('meta');

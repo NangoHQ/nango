@@ -1,6 +1,7 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTags, FunctionTriggerDefinition } from '../function/config.js';
+import type { ToolTags } from '../function/tool.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
 import type { FunctionListType, FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 import type { JSONSchema7 } from 'json-schema';
@@ -242,7 +243,7 @@ export interface GetFunctionResponse {
     provider: string;
     name: string;
     description: string;
-    tags: FunctionTags;
+    tags: FunctionTags | ToolTags;
     state: 'enabled' | 'disabled';
     source: FunctionSource;
     trigger: FunctionTriggerDefinition;
@@ -511,7 +512,7 @@ export interface FunctionDeploymentArtifact {
     name: string;
     integrationId: string;
     description: string;
-    tags?: FunctionTags | undefined;
+    tags?: FunctionTags | ToolTags | undefined;
     trigger: FunctionTriggerDefinition;
     requires: FunctionRequires;
     capabilities: FunctionCapabilities;
