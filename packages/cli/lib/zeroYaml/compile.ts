@@ -586,9 +586,11 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         'batchDelete',
         'batchSave',
         'batchSend',
+        'clearCheckpoint',
         'delete',
         'deleteRecordsFromPreviousExecutions',
         'get',
+        'getCheckpoint',
         'getConnection',
         'getEnvironmentVariables',
         'getFieldMapping',
@@ -598,12 +600,14 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         'post',
         'proxy',
         'put',
+        'saveCheckpoint',
         'setFieldMapping',
         'setMergingStrategy',
         'setMetadata',
         'trackDeletesEnd',
         'trackDeletesStart',
-        'triggerAction'
+        'triggerAction',
+        'updateMetadata'
     ];
     const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
     const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];

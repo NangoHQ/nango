@@ -39,6 +39,68 @@ describe('createTool', () => {
         expect(tool).not.toHaveProperty('meta');
     });
 
+    it('infers metadata and checkpoint types and enables their capabilities', () => {
+        const data = {
+            metadata: z.object({ organization: z.string() }),
+            checkpoint: z.object({ cursor: z.string() })
+        };
+        const tool = createTool({
+            description: 'Resume fetching issues',
+            input: z.object({}),
+            output: z.object({ cursor: z.string() }),
+            data,
+            exec: (nango) => {
+                expectTypeOf(nango.getMetadata()).toEqualTypeOf<Promise<{ organization: string }>>();
+                expectTypeOf<typeof nango.setMetadata>().parameter(0).toEqualTypeOf<{ organization: string }>();
+                expectTypeOf<typeof nango.updateMetadata>().parameter(0).toEqualTypeOf<{ organization?: string }>();
+                expectTypeOf(nango.getCheckpoint()).toEqualTypeOf<Promise<{ cursor: string } | undefined>>();
+                expectTypeOf<typeof nango.saveCheckpoint>().parameter(0).toEqualTypeOf<{ cursor: string }>();
+                expectTypeOf(nango.clearCheckpoint()).toEqualTypeOf<Promise<void>>();
+                expectTypeOf<Has<typeof nango, 'batchSave'>>().toEqualTypeOf<false>();
+                return { cursor: 'next' };
+            }
+        });
+
+        expect(tool.data).toEqual(data);
+        expectTypeOf(tool.data?.metadata).toEqualTypeOf<typeof data.metadata | undefined>();
+        expectTypeOf(tool.data?.checkpoint).toEqualTypeOf<typeof data.checkpoint | undefined>();
+        expect(tool.capabilities).toEqual({
+            usesMetadata: true,
+            usesCheckpoints: true,
+            usesRecords: false,
+            usesOutbound: true,
+            usesInvoke: false
+        });
+    });
+
+    it('enables metadata independently', () => {
+        const tool = createTool({
+            description: 'Read connection settings',
+            input: z.object({}),
+            output: z.void(),
+            data: { metadata: z.object({ organization: z.string() }) },
+            exec: (nango) => {
+                expectTypeOf<Has<typeof nango, 'getMetadata'>>().toEqualTypeOf<true>();
+                expectTypeOf<Has<typeof nango, 'getCheckpoint'>>().toEqualTypeOf<false>();
+            }
+        });
+        expect(tool.capabilities).toMatchObject({ usesMetadata: true, usesCheckpoints: false });
+    });
+
+    it('enables checkpoints independently', () => {
+        const tool = createTool({
+            description: 'Resume fetching issues',
+            input: z.object({}),
+            output: z.void(),
+            data: { checkpoint: z.object({ cursor: z.string() }) },
+            exec: (nango) => {
+                expectTypeOf<Has<typeof nango, 'getMetadata'>>().toEqualTypeOf<false>();
+                expectTypeOf<Has<typeof nango, 'getCheckpoint'>>().toEqualTypeOf<true>();
+            }
+        });
+        expect(tool.capabilities).toMatchObject({ usesMetadata: false, usesCheckpoints: true });
+    });
+
     it('requires input and output', () => {
         // @ts-expect-error input and output are required
         createTool({ description: 'No schemas', exec: () => {} });
