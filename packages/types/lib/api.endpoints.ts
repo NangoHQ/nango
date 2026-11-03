@@ -78,6 +78,7 @@ import type {
     PatchApiKey,
     PatchEnvironment,
     PatchPublicApiKey,
+    PatchPublicEnvironment,
     PostEnvironment,
     PostPublicApiKey,
     PostPublicEnvironment,
@@ -260,6 +261,7 @@ export type PublicApiEndpoints =
     | PostPublicRotateWebhookSigningKey
     | AllPublicProxy
     | PostPublicEnvironment
+    | PatchPublicEnvironment
     | DeletePublicEnvironment
     | GetPublicEnvironment
     | GetPublicEnvironments
