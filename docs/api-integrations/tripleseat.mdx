@@ -1,0 +1,81 @@
+---
+title: 'Tripleseat'
+sidebarTitle: 'Tripleseat'
+description: 'Integrate your application with the Tripleseat API'
+---
+
+## Quickstart
+
+Connect to Tripleseat with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Tripleseat_.
+    </Step>
+    <Step id="authorize-tripleseat" title="Authorize Tripleseat">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then log in to Tripleseat and approve access. Only a Tripleseat customer admin can approve. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-tripleseat-api" title="Call the Tripleseat API">
+    Let's make your first request to the Tripleseat API to list the sites your connection can access. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/sites" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/sites',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    A connection covers every site in the customer's account. Pass `site_id` on other requests to pick one; it is optional when the account has a single active site.
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## Tripleseat integration guides
+
+- [How to register your own Tripleseat OAuth app](/api-integrations/tripleseat/how-to-register-your-own-tripleseat-oauth-app)  
+Create an OAuth 2.0 application in Tripleseat and connect it to Nango.
+
+Official docs: [Tripleseat API overview](https://support.tripleseat.com/hc/en-us/articles/41942861771543-API-Getting-Started)
+
+## 🧩 Pre-built syncs & actions for Tripleseat
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/tripleseat/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
