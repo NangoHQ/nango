@@ -11789,6 +11789,13 @@ tremendous-sandbox:
     - fraud_prevention
     - team_management
 
+# source: https://support.tripleseat.com/hc/en-us/articles/35211389645079-OAuth-1-0-to-OAuth-2-0-Migration-Guide-for-Tripleseat-API (partial list; apps are approved for scopes individually)
+tripleseat:
+    - events:read
+    - events:write
+    - leads:read
+    - leads:write
+
 # source: https://tsheetsteam.github.io/api_docs/ (no scopes required)
 tsheetsteam: []
 

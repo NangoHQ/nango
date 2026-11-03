@@ -27731,6 +27731,18 @@ perk:
             order: 1
             doc_section: '#step-1-choosing-your-environment'
 
+tripleseat:
+    display_name: Tripleseat
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://login.tripleseat.com/oauth2/authorize
+    token_url: https://api.tripleseat.com/oauth2/token
+    proxy:
+        base_url: https://api.tripleseat.com
+    docs: https://nango.dev/docs/api-integrations/tripleseat
+    setup_guide_url: https://nango.dev/docs/api-integrations/tripleseat/how-to-register-your-own-tripleseat-oauth-app
+
 tripletex:
     display_name: Tripletex
     categories:

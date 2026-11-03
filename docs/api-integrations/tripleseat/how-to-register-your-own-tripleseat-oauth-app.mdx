@@ -1,0 +1,40 @@
+---
+title: 'How to register your own Tripleseat OAuth app'
+sidebarTitle: 'Tripleseat setup'
+description: 'Create a Tripleseat OAuth 2.0 application and connect it to Nango'
+---
+
+This guide shows you how to create an OAuth 2.0 application in Tripleseat to obtain your client ID and client secret. These let Tripleseat customers grant your app access to their account.
+
+<Note>
+Partners building for many Tripleseat customers get their client ID, client secret, approved scopes, and registered redirect URI from their Tripleseat partner sandbox or from Tripleseat's partnership team. If that applies to you, skip to [Copy your credentials](#copy-credentials).
+</Note>
+
+<Steps>
+  <Step id="open-client-applications" title="Open your client applications">
+    Log in to Tripleseat as an admin. Go to **Settings** -> **Tripleseat API & Webhooks**, then under **Tripleseat API OAuth 2.0 Client Applications** click **View or Edit Client Applications**.
+  </Step>
+  <Step id="create-application" title="Create the application">
+    Click **+ New Application** and fill in:
+
+    | Field | Value |
+    |-------|-------|
+    | **Name** | Your company or app name. |
+    | **Description** | A short description of your app. |
+    | **Information URL** | Your company or app website. |
+    | **Redirect URL** | `https://api.nango.dev/oauth/callback` |
+    | **Scopes** | The scopes your app needs, such as `events:read` or `leads:write`. |
+
+    The redirect URL must match exactly.
+  </Step>
+  <Step id="copy-credentials" title="Copy your credentials">
+    Save the application. Copy the **UID** (your client ID) and **Secret** (your client secret) into your Tripleseat integration in Nango, and add the same scopes you set on the application. Request only scopes the application is approved for.
+  </Step>
+  <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+Tripleseat access tokens expire after 2 hours. Nango refreshes them for you; each refresh replaces the refresh token. A customer admin can revoke your app from **Settings** -> **OAuth Applications**, after which the connection stops working. For more details, see [Tripleseat's OAuth 2.0 documentation](https://support.tripleseat.com/hc/en-us/articles/40652011678231-OAuth-2-0-Implementation).
+
+---
