@@ -10,7 +10,10 @@ import type { Knex } from 'knex';
 let instance: Knex | undefined;
 
 export function cloudDb(): Knex {
-    instance ??= knex({ ...getDbConfig({ timeoutMs: 60_000 }), searchPath: SELF_HOSTING_SCHEMA, pool: { min: 0, max: envs.NANGO_SELF_HOSTING_DB_POOL_MAX } });
+    if (!instance) {
+        const config = getDbConfig({ timeoutMs: 60_000 });
+        instance = knex({ ...config, searchPath: SELF_HOSTING_SCHEMA, pool: { ...config.pool, min: 0, max: envs.NANGO_SELF_HOSTING_DB_POOL_MAX } });
+    }
     return instance;
 }
 
