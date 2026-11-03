@@ -2405,8 +2405,8 @@ If you are missing a catalog MCP server you can [request it](/integrations/contr
 
 ### Catalog MCP servers
 
-1. **Create the integration**  
-   In the Nango UI: [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → choose the MCP provider (e.g. _HubSpot (MCP)_, _Notion MCP_).  
+1. **Create the integration**
+   In the Nango UI: [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → choose the MCP provider (e.g. _HubSpot (MCP)_, _Notion MCP_).
    Some providers, for example HubSpot MCP, require you to [register an MCP auth app](/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app) and add **Client ID** and **Client Secret** in Nango. But most support dynamic client registrations: You can just enable them on Nango, and Nango registers a client for you in the background.
 
    <Accordion title="For agents">
@@ -3309,7 +3309,7 @@ Local development is the default path for production integrations. Use it when y
     nango deploy --integration <integration-id> dev
     ```
 
-    A bare `nango deploy` reconciles each included function family across the environment: it deploys functions present locally and removes remote ones that aren't. This can delete teammates' functions in a shared environment. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
+    A bare `nango deploy` reconciles all functions in the environment: it deploys functions present locally and removes remote ones that aren't. This can delete teammates' functions in a shared environment. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
 
     For function-type-specific commands, see the [Sync function guide](/guides/functions/syncs/sync-functions#test-and-deploy), [Action function guide](/guides/functions/action-functions#test-and-deploy), and [Testing](/guides/functions/testing).
   </Step>
@@ -14327,9 +14327,9 @@ Get details about a specific command by running:
 nango [command] --help
 ```
 
-`nango deploy <environment>` reconciles each included function family across the target environment: it deploys functions present locally and removes remote ones that aren't. Projects can contain syncs, actions, on-events, and tools together. The CLI previews the selected functions, shows one combined plan, and asks for confirmation at most once before deploying.
+`nango deploy <environment>` reconciles all functions in the target environment: it deploys functions present locally and removes remote ones that aren't, even when the project no longer contains any. The CLI previews the selected functions, shows one combined plan, and asks for confirmation at most once before deploying.
 
-- `--integration <id>` selects functions for that integration.
+- `--integration <id>` limits the deploy to that integration.
 - `--sync <name>` and `--action <name>` select the named sync or action.
 - `--version <version>` overrides sync/action versions. Tools use automatically generated versions.
 

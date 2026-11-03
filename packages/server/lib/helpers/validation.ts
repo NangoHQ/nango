@@ -14,6 +14,8 @@ import {
 
 import { envs } from '../env.js';
 
+import type { FunctionReconciliationScope } from '@nangohq/types';
+
 export { TAG_MAX_COUNT, connectionTagsKeySchema, connectionTagsSchema };
 
 /**
@@ -61,12 +63,20 @@ export const providerConfigKeySchema = z
     .string()
     .regex(/^[a-zA-Z0-9~:.@ _-]+$/) // For legacy reason (some people are using special characters)
     .max(255);
+export const reconciliationScopeSchema = z.discriminatedUnion('kind', [
+    z.object({ kind: z.literal('environment') }).strict(),
+    z.object({ kind: z.literal('integration'), integrationId: providerConfigKeySchema }).strict()
+]) satisfies z.ZodType<FunctionReconciliationScope>;
 export const integrationDisplayNameSchema = z.string().min(1).max(255).optional();
 export const integrationForwardWebhooksSchema = z.boolean().optional();
 export const scriptNameSchema = z
     .string()
     .regex(/^[a-zA-Z0-9_-]+$/)
     .max(255);
+export const functionReconciliationScopeSchema = z.discriminatedUnion('kind', [
+    ...reconciliationScopeSchema.options,
+    z.object({ kind: z.literal('function'), integrationId: providerConfigKeySchema, name: scriptNameSchema }).strict()
+]) satisfies z.ZodType<FunctionReconciliationScope>;
 export const functionTypeSchema = z.enum(['sync', 'action', 'on-event']);
 export const functionListTypeSchema = z.enum(['sync', 'action', 'on-event', 'tool']);
 // On-event functions can't be targeted by name alone yet, so deletion is limited to sync/action.

@@ -1,5 +1,6 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
+import type { FunctionReconciliationScope } from '../functions/api.js';
 import type { OnEventType } from '../scripts/on-events/api.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
 import type { CLIDeployFlowConfig, OnEventScriptsByProvider } from './incomingFlow.js';
@@ -16,6 +17,7 @@ export type PostDeployConfirmation = ApiEndpoint<{
         reconcile: boolean;
         debug: boolean;
         deployMode?: 'all' | 'single' | 'integration';
+        reconciliationScope?: FunctionReconciliationScope | undefined;
         /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
@@ -34,6 +36,7 @@ export type PostDeploy = ApiEndpoint<{
         reconcile: boolean;
         debug: boolean;
         deployMode?: 'all' | 'single' | 'integration';
+        reconciliationScope?: FunctionReconciliationScope | undefined;
         /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
@@ -56,6 +59,7 @@ export type PostDeployInternal = ApiEndpoint<{
         reconcile: boolean;
         debug: boolean;
         deployMode?: 'all' | 'single' | 'integration';
+        reconciliationScope?: FunctionReconciliationScope | undefined;
         /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
