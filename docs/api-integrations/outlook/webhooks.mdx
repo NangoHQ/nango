@@ -102,7 +102,7 @@ curl -X POST "https://api.nango.dev/proxy/v1.0/subscriptions" \
   -d '{
     "changeType": "created,updated,deleted",
     "notificationUrl": "<NANGO-WEBHOOK-URL>",
-    "resource": "me/mailFolders(\'inbox\')/messages",
+    "resource": "me/mailFolders('\''inbox'\'')/messages",
     "expirationDateTime": "2026-09-10T00:00:00.0000000Z",
     "clientState": "<YOUR-WEBHOOK-SECRET>"
   }'
