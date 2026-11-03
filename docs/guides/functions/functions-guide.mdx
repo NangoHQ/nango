@@ -72,7 +72,7 @@ nango pull github list-repos --catalog
 nango pull github list-repos --env dev
 ```
 
-`nango pull` writes a single function file. After pulling, review the source and schemas, import the function from `index.ts` if needed, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
+`nango pull` writes the function file and adds its import to `index.ts`. After pulling, review the source and schemas, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
 
 <Tip>
   Pull a pre-built function when you need custom fields, a smaller output shape, customer-specific filtering, different retry behavior, or a provider workflow that is close to the catalog but not identical.
