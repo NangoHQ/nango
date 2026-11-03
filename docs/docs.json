@@ -1359,6 +1359,7 @@
               "integrations/all/exa",
               "integrations/all/exact-online",
               "integrations/all/exist",
+              "api-integrations/exotel",
               "integrations/all/expensify",
               "api-integrations/extensiv",
               "api-integrations/facebook",

@@ -9430,6 +9430,54 @@ exist:
             link_path_in_response_body: next
     docs: https://nango.dev/docs/integrations/all/exist
 
+exotel:
+    display_name: Exotel
+    categories:
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/Accounts/${connectionConfig.accountSid}/Balance.json
+    docs: https://nango.dev/docs/api-integrations/exotel
+    docs_connect: https://nango.dev/docs/api-integrations/exotel/connect
+    connection_config:
+        hostname:
+            type: string
+            title: API Hostname
+            description: The Subdomain shown on your Exotel API Credentials page.
+            enum:
+                - api.exotel.com
+                - api.in.exotel.com
+            doc_section: '#step-1-find-your-api-credentials'
+            order: 1
+        accountSid:
+            type: string
+            title: Account SID
+            description: Your Exotel Account SID.
+            example: acme1
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-find-your-api-credentials'
+            order: 2
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Exotel API key.
+            example: 5bc4****************************************a11c
+            pattern: '^[a-f0-9]{48}$'
+            doc_section: '#step-1-find-your-api-credentials'
+        password:
+            type: string
+            title: API Token
+            description: Your Exotel API token.
+            example: 6945****************************************3e5b
+            pattern: '^[a-f0-9]{48}$'
+            secret: true
+            doc_section: '#step-1-find-your-api-credentials'
+
 expensify:
     display_name: Expensify
     categories:
