@@ -1490,6 +1490,7 @@
               "integrations/all/heap",
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
+              "api-integrations/heabsy",
               "api-integrations/hex",
               "api-integrations/hex-mcp",
               "api-integrations/heygen",

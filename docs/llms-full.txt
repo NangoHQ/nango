@@ -16601,6 +16601,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `halo-psa` | Halo PSA | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/halo-psa.md) | [connect](https://nango.dev/docs/api-integrations/halo-psa/connect.md) |  | support, ticketing |
 | `harvest` | Harvest | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/harvest.md) |  |  | productivity |
 | `haus` | Haus (Experiment Results API) | BASIC | [docs](https://nango.dev/docs/api-integrations/haus.md) | [connect](https://nango.dev/docs/api-integrations/haus/connect.md) |  | analytics, e-commerce, marketing |
+| `heabsy` | Heabsy | API_KEY | [docs](https://nango.dev/docs/api-integrations/heabsy.md) | [connect](https://nango.dev/docs/api-integrations/heabsy/connect.md) |  | dev-tools, productivity |
 | `health-gorilla` | Health Gorilla | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/health-gorilla.md) |  |  | other |
 | `heap` | Heap | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/heap.md) | [connect](https://nango.dev/docs/integrations/all/heap/connect.md) |  | other |
 | `helpscout-docs` | Help Scout Docs | BASIC | [docs](https://nango.dev/docs/integrations/all/helpscout-docs.md) | [connect](https://nango.dev/docs/integrations/all/helpscout-docs/connect.md) |  | knowledge-base, support |
