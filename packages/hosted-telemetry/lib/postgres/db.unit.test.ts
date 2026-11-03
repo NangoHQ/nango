@@ -20,12 +20,17 @@ const envs = vi.hoisted(() => ({
 }));
 vi.mock('../env.js', () => ({ envs }));
 
-vi.mock('@nangohq/database', () => ({
-    getDbConfig: ({ timeoutMs }: { timeoutMs: number }) => ({
+const database = vi.hoisted(() => {
+    const getDbConfig = ({ timeoutMs }: { timeoutMs: number }) => ({
         client: 'pg',
         connection: { connectionString: 'postgres://main:x@db:5432/nango', application_name: 'main', statement_timeout: timeoutMs },
         pool: { min: 2, max: 30, acquireTimeoutMillis: 30000, createTimeoutMillis: 10000 }
-    })
+    });
+    return { mainDbSet: true, getDbConfig };
+});
+vi.mock('@nangohq/database', () => ({
+    getDbConfig: database.getDbConfig,
+    getDbConfigIfSet: (opts: { timeoutMs: number }) => (database.mainDbSet ? database.getDbConfig(opts) : undefined)
 }));
 
 function connection(db: ReturnType<typeof hostedTelemetryDb>): { connectionString: string; application_name: string; statement_timeout: number } {
@@ -36,10 +41,12 @@ describe('hostedTelemetryDb', () => {
     afterEach(async () => {
         flags.hasHostedTelemetry = false;
         envs.NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL = undefined;
+        database.mainDbSet = true;
         await destroyHostedTelemetryDb();
     });
 
     it('is off without the flag, whatever the URL says', () => {
+        flags.hasHostedTelemetry = false;
         envs.NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL = 'postgres://telemetry:x@db:5432/telemetry';
         expect(hostedTelemetryDb()).toBeUndefined();
     });
@@ -62,6 +69,20 @@ describe('hostedTelemetryDb', () => {
             ssl: false
         });
         expect(hostedTelemetryDb()).toBe(first);
+    });
+
+    it('records nothing and warns when neither the main database nor a URL is configured', () => {
+        flags.hasHostedTelemetry = true;
+        database.mainDbSet = false;
+        expect(hostedTelemetryDb()).toBeUndefined();
+        expect(logger.warning).toHaveBeenCalledWith('Hosted telemetry is enabled but no database is configured, recording nothing');
+    });
+
+    it('uses the URL when the main database is not configured', () => {
+        flags.hasHostedTelemetry = true;
+        database.mainDbSet = false;
+        envs.NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL = 'postgres://telemetry:x@db:5432/telemetry';
+        expect(connection(hostedTelemetryDb()).connectionString).toBe('postgres://telemetry:x@db:5432/telemetry');
     });
 
     it('stops waiting on a pool that a running query keeps from closing, and hands out a new one after', async () => {

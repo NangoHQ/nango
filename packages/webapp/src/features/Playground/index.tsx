@@ -8,14 +8,12 @@ import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
+import { getPlaygroundInput, getPlaygroundInputFields } from './input.utils';
 import { PlaygroundInputs } from './PlaygroundInputs';
 import { PlaygroundResultData, PlaygroundResultStatus } from './PlaygroundResult';
 import { PlaygroundSelectors } from './PlaygroundSelectors';
-import { getInputFields } from './types';
 import { usePlayground } from './usePlayground';
 import { usePlaygroundFunctions } from './usePlaygroundFunctions';
-
-import type { JSONSchema7 } from 'json-schema';
 
 export const FunctionPlaygroundDrawer: React.FC = () => {
     const env = useStore((s) => s.env);
@@ -43,21 +41,11 @@ export const FunctionPlaygroundDrawer: React.FC = () => {
         return playgroundFunctions.rows.find((row) => row.name === playgroundFunctionName && row.type === playgroundFunctionType);
     }, [playgroundFunctions.rows, playgroundFunctionName, playgroundFunctionType]);
 
-    const inputSchema = useMemo((): JSONSchema7 | null => {
-        if (!playgroundFunction || !playgroundFunction.json_schema || typeof playgroundFunction.json_schema !== 'object') return null;
-        const defKey = playgroundFunction.input;
-        const schema =
-            (defKey ? (playgroundFunction.json_schema.definitions?.[defKey] as JSONSchema7 | undefined) : undefined) || playgroundFunction.json_schema;
-        if (!schema || typeof schema !== 'object') return null;
-        const props = schema.properties;
-        if (!props || Object.keys(props).length === 0) return null;
-        return schema;
-    }, [playgroundFunction]);
-
-    const inputFields = useMemo(() => getInputFields(inputSchema), [inputSchema]);
+    const input = useMemo(() => getPlaygroundInput(playgroundFunction), [playgroundFunction]);
+    const inputFields = useMemo(() => getPlaygroundInputFields(input), [input]);
 
     // Keep this outside SheetContent. SheetContent unmounts on close, and a sync run must keep polling.
-    const { handleRun, handleCancel } = usePlayground(inputFields);
+    const { handleRun, handleCancel } = usePlayground(input);
 
     const clearInputError = useCallback((name: string) => clearPlaygroundInputError(name), [clearPlaygroundInputError]);
 

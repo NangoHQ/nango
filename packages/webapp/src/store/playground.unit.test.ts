@@ -37,6 +37,12 @@ describe('usePlaygroundStore', () => {
     });
 
     describe('setFunction', () => {
+        it('keeps a native tool distinct from an action with the same name and clears its input', () => {
+            usePlaygroundStore.getState().setFunction('test-function', 'action');
+            usePlaygroundStore.getState().setInputValue('value', 'old input');
+            usePlaygroundStore.getState().setFunction('test-function', 'tool');
+            expect(usePlaygroundStore.getState()).toMatchObject({ function: 'test-function', functionType: 'tool', inputValues: {} });
+        });
         it('sets function name and type and clears inputValues', () => {
             usePlaygroundStore.setState({ inputValues: { a: '1', b: '2' } });
             usePlaygroundStore.getState().setFunction('fetchContacts', 'action');

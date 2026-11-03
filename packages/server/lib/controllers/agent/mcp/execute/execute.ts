@@ -1,15 +1,17 @@
 import tracer from 'dd-trace';
 
+import { invokeFunction, NangoError, toolService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { executeAction } from '../../../../services/action.service.js';
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
 import { callRemoteTool, withRemoteMcpSession } from '../../../../services/remoteMcp.service.js';
+import { getOrchestrator } from '../../../../utils/utils.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { notConnectedGuidance } from '../notConnectedGuidance.js';
 import { resolveSessionConnection } from '../sessionConnection.js';
 import { defineAgentSessionMcpTool, RemoteToolResult } from '../sessionTool.js';
-import { actionExecutionErrorToMcp, remoteMcpErrorToMcp } from './errors.js';
+import { actionExecutionErrorToMcp, functionInvokeErrorToMcp, remoteMcpErrorToMcp, toolUnavailableError } from './errors.js';
 import { executeInputSchema } from './schema.js';
 
 import type { AgentSessionMcpContext } from '../sessionTool.js';
@@ -138,6 +140,45 @@ export async function executeSessionTool({
             .setTag('nango.providerConfigKey', integrationId)
             .setTag('nango.actionName', toolName);
 
+        const tool = await toolService.findTool({ environmentId: environment.id, integrationKey: integrationId, name: toolName });
+        if (tool.isErr()) {
+            span.setTag('nango.error', tool.error);
+            track({ errorCode: 'internal_error' });
+            return Err(tool.error);
+        }
+
+        if (tool.value && !tool.value.config.enabled) {
+            track({ errorCode: 'tool_not_in_session' });
+            return Err(toolUnavailableError({ integrationId, toolName }));
+        }
+
+        if (tool.value) {
+            const { logCtx, result } = await invokeFunction({
+                account,
+                environment,
+                connectionId: connection.connectionId,
+                functionUuid: tool.value.config.uuid,
+                input: tool.value.currentVersion.input_schema_ref || !isEmptyObject(input) ? input : undefined,
+                request: { method: 'POST', path: '/mcp', headers: {}, query: {} },
+                invocationType: 'wait',
+                orchestrator: getOrchestrator(),
+                actor: { kind: 'session', id: session.id }
+            });
+
+            if (result.isErr()) {
+                span.setTag('nango.error', result.error);
+                track({
+                    logOperationId: logCtx?.id,
+                    errorCode: result.error.code,
+                    underlyingErrorCode: result.error.cause instanceof NangoError ? result.error.cause.type : undefined
+                });
+                return Err(functionInvokeErrorToMcp({ error: result.error, integrationId, toolName }));
+            }
+
+            track({ logOperationId: logCtx?.id });
+            return Ok('data' in result.value ? result.value.data : null);
+        }
+
         const { logCtx, result } = await executeAction({
             account,
             environment,
@@ -227,4 +268,8 @@ async function executeRemoteTool({
         track({ logOperationId, ...(result.value.isError ? { errorCode: 'tool_failed' } : {}) });
         return Ok(new RemoteToolResult(result.value));
     });
+}
+
+function isEmptyObject(input: unknown): boolean {
+    return typeof input === 'object' && input !== null && !Array.isArray(input) && Object.keys(input).length === 0;
 }

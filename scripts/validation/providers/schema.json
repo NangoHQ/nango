@@ -595,6 +595,7 @@
                                 "account_credentials",
                                 "urn:ietf:params:oauth:grant-type:saml2-bearer",
                                 "urn:ietf:params:oauth:grant-type:jwt-bearer",
+                                "urn:ietf:params:oauth:grant-type:token-exchange",
                                 "password",
                                 "refresh_token",
                                 "openapi_2lo",

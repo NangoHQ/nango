@@ -22,7 +22,7 @@ function parseFunctionOptionValue(value: string): { type: Exclude<PlaygroundFunc
     if (separator <= 0) return null;
     const type = value.slice(0, separator);
     const name = value.slice(separator + 1);
-    if ((type !== 'action' && type !== 'sync') || !name) return null;
+    if ((type !== 'action' && type !== 'sync' && type !== 'tool') || !name) return null;
     return { type, name };
 }
 

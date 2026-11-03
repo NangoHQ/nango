@@ -151,6 +151,64 @@ describe('experimental functions', () => {
 });
 
 describe('tools', () => {
+    async function createToolProject(name: string): Promise<string> {
+        const dir = await getTestDirectory(name);
+        await fs.promises.mkdir(path.join(dir, 'github', 'tools'), { recursive: true });
+        await fs.promises.mkdir(path.join(dir, 'node_modules'));
+        await fs.promises.symlink(path.dirname(fileURLToPath(import.meta.resolve('zod'))), path.join(dir, 'node_modules', 'zod'), 'dir');
+        return dir;
+    }
+
+    async function compileAndParseTool(dir: string, filename: string, source: string) {
+        const filePath = path.join(dir, 'github', 'tools', `${filename}.js`);
+        await fs.promises.writeFile(path.join(dir, 'index.ts'), `import './github/tools/${filename}.js';`);
+        await fs.promises.writeFile(filePath.replace(/\.js$/, '.ts'), source);
+        (await compileFunction({ entryPoint: filePath, projectRootPath: dir })).unwrap();
+        return parseIntegrationDefinitions({ fullPath: dir, debug: false });
+    }
+
+    it('preserves metadata and checkpoint schemas when loading a compiled tool', async () => {
+        const dir = await createToolProject('tool_data_schemas');
+        try {
+            const parsed = (
+                await compileAndParseTool(
+                    dir,
+                    'getIssue',
+                    `import { createTool } from 'nango';
+                    import * as z from 'zod';
+                    export default createTool({
+                        description: 'Fetch issues',
+                        input: z.object({}),
+                        output: z.object({}),
+                        data: {
+                            metadata: z.object({ organization: z.string() }),
+                            checkpoint: z.object({ cursor: z.string() })
+                        },
+                        exec: async () => ({})
+                    });`
+                )
+            ).unwrap();
+
+            expect(parsed.hasExperimentalFunctions).toBe(false);
+            expect(parsed.functions).toHaveLength(1);
+            const fn = parsed.functions[0]!;
+            expect(fn).toMatchObject({
+                name: 'getIssue',
+                trigger: { kind: 'http' },
+                capabilities: { usesMetadata: true, usesCheckpoints: true, usesRecords: false },
+                model_schema_refs: [],
+                metadata_schema_ref: '#/definitions/FunctionMetadata_github_getIssue',
+                checkpoint_schema_ref: '#/definitions/FunctionCheckpoint_github_getIssue'
+            });
+            expect(fn.json_schema.definitions).toMatchObject({
+                FunctionMetadata_github_getIssue: { properties: { organization: { type: 'string' } } },
+                FunctionCheckpoint_github_getIssue: { properties: { cursor: { type: 'string' } } }
+            });
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
     it('should bundle a createTool into a function', async () => {
         const result = await bundleFile({
             entryPoint: path.join(fixturesPath, 'zero/cases/createTool.valid.js'),
@@ -244,23 +302,17 @@ describe('tools', () => {
     });
 
     it.each([false, true])('normalizes tools despite conflicting markers (constant export: %s)', async (constantExport) => {
-        const dir = await getTestDirectory(`normalized_tool_${constantExport}`);
-        await fs.promises.mkdir(path.join(dir, 'github', 'tools'), { recursive: true });
-        await fs.promises.mkdir(path.join(dir, 'node_modules'));
-        await fs.promises.symlink(path.dirname(fileURLToPath(import.meta.resolve('zod'))), path.join(dir, 'node_modules', 'zod'), 'dir');
-        const filePath = path.join(dir, 'github', 'tools', 'getIssue.js');
-        await fs.promises.writeFile(path.join(dir, 'index.ts'), "import './github/tools/getIssue.js';");
-        const writeTool = async (meta: object) => {
-            const definition = `createTool({ ...{ _nangoFactory: 'other' }, name: ${constantExport ? 'name' : "'get_issue'"}, description: 'Get an issue', input: z.object({}), output: z.object({}), meta: ${JSON.stringify(meta)}, exec: async () => ({}) })`;
-            await fs.promises.writeFile(
-                filePath.replace(/\.js$/, '.ts'),
-                `import { createTool } from 'nango'; import * as z from 'zod'; ${constantExport ? `const name = 'get_issue', tool = ${definition}; export default tool;` : `export default ${definition};`}`
-            );
-            (await compileFunction({ entryPoint: filePath, projectRootPath: dir })).unwrap();
-        };
+        const dir = await createToolProject(`normalized_tool_${constantExport}`);
+        const meta = { instructions: 'a'.repeat(1024), requiredScopes: ['repo'], tags: { domain: 'issues' } };
+        const definition = `createTool({ ...{ _nangoFactory: 'other' }, name: ${constantExport ? 'name' : "'get_issue'"}, description: 'Get an issue', input: z.object({}), output: z.object({}), meta: ${JSON.stringify(meta)}, exec: async () => ({}) })`;
         try {
-            await writeTool({ instructions: 'a'.repeat(1024), requiredScopes: ['repo'], tags: { domain: 'issues' } });
-            const parsed = (await parseIntegrationDefinitions({ fullPath: dir, debug: false })).unwrap();
+            const parsed = (
+                await compileAndParseTool(
+                    dir,
+                    'getIssue',
+                    `import { createTool } from 'nango'; import * as z from 'zod'; ${constantExport ? `const name = 'get_issue', tool = ${definition}; export default tool;` : `export default ${definition};`}`
+                )
+            ).unwrap();
             expect(parsed.hasExperimentalFunctions).toBe(false);
             expect(parsed.functions[0]).toMatchObject({
                 name: 'get_issue',
@@ -271,14 +323,11 @@ describe('tools', () => {
             expect(parsed.functions[0]).not.toHaveProperty('meta');
 
             // Use a different filename so Node does not reuse the imported bundle.
-            const invalidPath = path.join(dir, 'github', 'tools', 'invalid.js');
-            await fs.promises.writeFile(
-                invalidPath.replace(/\.js$/, '.ts'),
+            const invalid = await compileAndParseTool(
+                dir,
+                'invalid',
                 "import { createTool } from 'nango'; import * as z from 'zod'; export default createTool({ description: 'Invalid', input: z.object({}), output: z.object({}), meta: { tags: { instructions: 'reserved' } }, exec: async () => ({}) });"
             );
-            await fs.promises.writeFile(path.join(dir, 'index.ts'), "import './github/tools/invalid.js';");
-            (await compileFunction({ entryPoint: invalidPath, projectRootPath: dir })).unwrap();
-            const invalid = await parseIntegrationDefinitions({ fullPath: dir, debug: false });
             expect(invalid.isErr()).toBe(true);
             if (invalid.isErr()) {
                 expect(invalid.error.message).toContain('reserved');
@@ -294,19 +343,13 @@ describe('tools', () => {
         { filename: 'a'.repeat(65), name: undefined, valid: false },
         { filename: 'get.issue', name: 'get_issue', valid: true }
     ])('validates the resolved tool name ($filename, explicit name: $name)', async ({ filename, name, valid }) => {
-        const dir = await getTestDirectory(`resolved_tool_name_${filename}_${name}`);
-        await fs.promises.mkdir(path.join(dir, 'github', 'tools'), { recursive: true });
-        await fs.promises.mkdir(path.join(dir, 'node_modules'));
-        await fs.promises.symlink(path.dirname(fileURLToPath(import.meta.resolve('zod'))), path.join(dir, 'node_modules', 'zod'), 'dir');
-        const filePath = path.join(dir, 'github', 'tools', `${filename}.js`);
+        const dir = await createToolProject(`resolved_tool_name_${filename}_${name}`);
         try {
-            await fs.promises.writeFile(path.join(dir, 'index.ts'), `import './github/tools/${filename}.js';`);
-            await fs.promises.writeFile(
-                filePath.replace(/\.js$/, '.ts'),
+            const parsed = await compileAndParseTool(
+                dir,
+                filename,
                 `import { createTool } from 'nango'; import * as z from 'zod'; export default createTool({ ${name === undefined ? '' : `name: '${name}',`} description: 'Get an issue', input: z.object({}), output: z.object({}), exec: async () => ({}) });`
             );
-            (await compileFunction({ entryPoint: filePath, projectRootPath: dir })).unwrap();
-            const parsed = await parseIntegrationDefinitions({ fullPath: dir, debug: false });
             expect(parsed.isOk()).toBe(valid);
             if (parsed.isErr()) {
                 expect(parsed.error.message).toContain('invalid name');

@@ -31,6 +31,29 @@ describe('proxyRequestTool', () => {
         vi.restoreAllMocks();
     });
 
+    it('passes API key scopes and identity through for override monitoring', async () => {
+        const apiKeyPrincipal = {
+            type: 'api_key' as const,
+            source: 'customer_key' as const,
+            accountId: 1,
+            environmentIds: [42],
+            keyId: 123,
+            scopes: ['environment:proxy']
+        };
+        const request = vi.spyOn(proxyService, 'request').mockResolvedValue({
+            result: Ok({ outcome: 'success', status: 200, headers: {}, body: Readable.from(['ok']), complete: vi.fn().mockResolvedValue(undefined) })
+        });
+        expect(
+            (
+                await proxyRequestTool.handler(
+                    { method: 'GET', path: '/items', integration_id: 'github', connection_id: 'connection-id', base_url_override: 'https://api.example.com' },
+                    { ...context, apiKeyPrincipal }
+                )
+            ).isOk()
+        ).toBe(true);
+        expect(request).toHaveBeenCalledWith(expect.objectContaining({ apiKey: apiKeyPrincipal, baseUrlOverride: 'https://api.example.com' }));
+    });
+
     it('maps all request options to the service and independently formats its response', async () => {
         const complete = vi.fn().mockResolvedValue(undefined);
         const requestSpy = vi.spyOn(proxyService, 'request').mockResolvedValue({

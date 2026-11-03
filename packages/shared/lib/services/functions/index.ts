@@ -1,3 +1,5 @@
+export { functionSourceFile } from './artifacts.js';
+export type { SourceFileRef } from './artifacts.js';
 export { deployBundle, prepareDeploymentBundle } from './deploy.js';
 export type { DeploymentBundleError, DeploymentBundlePreparationError } from './deploy.js';
 export * as functionLookupService from './lookup/index.js';
@@ -12,3 +14,6 @@ export type { DeploymentBundleReconciliation } from './reconcile.js';
 export { functionVersionHash } from './version.js';
 export { validateFunctionInput } from './models/validate.js';
 export { getFunctionMaxConcurrency, invokeFunction } from './invoke.js';
+export type { FunctionInvocation, FunctionInvokeError } from './invoke.js';
+export * as toolService from './tools.js';
+export type { ResolvedTool } from './tools.js';

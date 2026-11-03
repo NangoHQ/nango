@@ -296,7 +296,7 @@ export async function findActionInputs({
     environmentId: number;
     actions: { integrationId: string; name: string }[];
 }): Promise<Map<string, Map<string, AgentSessionToolInput>>> {
-    const rows = await functionLookupService.findActionInputSchemas({ environmentId, actions });
+    const rows = await functionLookupService.findInputSchemas({ environmentId, actions });
 
     const inputs = new Map<string, Map<string, AgentSessionToolInput>>();
     for (const row of rows) {

@@ -29,7 +29,7 @@ export function filterJsonSchemaForModels(jsonSchema: JSONSchema7, models: strin
     return Ok({ definitions });
 }
 
-const SCHEMA_REF_PREFIX = '#/definitions/';
+export const SCHEMA_REF_PREFIX = '#/definitions/';
 
 /**
  * Resolves a `#/definitions/<model>` ref into a schema holding that model's definitions, with the ref kept as `$ref`.

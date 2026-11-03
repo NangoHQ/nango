@@ -2,10 +2,10 @@ import { report } from '@nangohq/utils';
 
 import { sendFunctionFailure } from './errors.js';
 
-import type { invokeFunction } from '@nangohq/shared';
+import type { FunctionInvocation } from '@nangohq/shared';
 import type { Response } from 'express';
 
-export function sendFunctionInvocationResult({ res, result }: { res: Response; result: Awaited<ReturnType<typeof invokeFunction>> }): void {
+export function sendFunctionInvocationResult({ res, result }: { res: Response; result: FunctionInvocation['result'] }): void {
     if (result.isOk()) {
         if ('statusUrl' in result.value) {
             res.setHeader('X-Nango-Invocation-Id', result.value.id);

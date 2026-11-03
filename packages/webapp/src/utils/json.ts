@@ -1,0 +1,1 @@
+export const JSON_DISPLAY_LIMIT = 250_000;

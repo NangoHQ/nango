@@ -1,3 +1,8 @@
+/*!
+ * @license Elastic-2.0
+ * Copyright (c) Nango Inc. All rights reserved.
+ * See https://github.com/NangoHQ/nango/blob/master/LICENSE
+ */
 import crypto from 'node:crypto';
 import https from 'node:https';
 import util from 'node:util';
@@ -288,7 +293,7 @@ export class Nango {
     /**
      * Retrieves the source code of a deployed function
      * @param params - Identifies the function (`uniqueKey`, `name`)
-     * @param queries - Optional `type` to disambiguate when functions share a name
+     * @param queries - Optional `type` to select a function when several share a name
      * @returns A promise that resolves with the function type and code
      */
     public async getFunctionCode(

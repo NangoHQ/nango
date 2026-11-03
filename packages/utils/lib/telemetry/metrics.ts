@@ -130,6 +130,7 @@ export enum Types {
     DEPRECATED_V1_ENDPOINT_USED = 'nango.server.deprecated.v1.used',
 
     DEPRECATED_PUBLIC_ENDPOINT_USED = 'nango.server.deprecated.public.used',
+    DEPRECATED_API_KEY_SCOPE_USED = 'nango.server.deprecated.apiKeyScope.used',
 
     AUTH_SUCCESS = 'nango.server.auth.success',
     AUTH_FAILURE = 'nango.server.auth.failure',
