@@ -474,6 +474,10 @@ describe('nango_execute', () => {
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
     });
 
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     it('addresses a tool by the one name, and never by integration plus action', async () => {
         const result = await executeTool.handler({ tool: 'notion__read_doc', input: { id: '1' }, ...PURPOSE }, context());
 
