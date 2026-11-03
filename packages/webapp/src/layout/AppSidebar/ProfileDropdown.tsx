@@ -60,7 +60,7 @@ export const ProfileDropdown: React.FC = () => {
             });
         }
 
-        if (meta && meta.gettingStartedClosed && showGettingStarted) {
+        if (meta && meta.gettingStartedDismissed && showGettingStarted) {
             list.push({
                 label: 'Getting Started',
                 icon: Sparkle,

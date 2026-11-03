@@ -16,10 +16,10 @@ import {
     SidebarMenuItem
 } from '@/components/ui/Sidebar';
 import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
+import { useDismissAgentGettingStarted } from '@/hooks/useAgentGettingStarted';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
-import { apiPatchUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { EnvironmentDropdown } from './EnvironmentDropdown';
@@ -39,7 +39,8 @@ interface SidebarItem {
 export const AppSidebar: React.FC = () => {
     const env = useStore((state) => state.env);
     const { pathname } = useLocation();
-    const { data: metaData, refetch: refetchMeta } = useMeta();
+    const { data: metaData } = useMeta();
+    const { mutateAsync: dismissGettingStarted } = useDismissAgentGettingStarted();
     const meta = metaData?.data;
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const { data: environmentData } = useCurrentPlan(env);
@@ -53,15 +54,13 @@ export const AppSidebar: React.FC = () => {
             url: `/${env}/getting-started`,
             icon: Sprout,
             onClose: async () => {
-                await apiPatchUser({
-                    gettingStartedClosed: true
-                });
-                void refetchMeta();
+                track('onboarding:dismiss_button_click');
+                await dismissGettingStarted();
             }
         };
 
         return [
-            meta && showGettingStarted && !meta.gettingStartedClosed ? gettingStarted : null,
+            meta && showGettingStarted && !meta.gettingStartedDismissed ? gettingStarted : null,
             showPlayground ? { title: 'Playground', url: `/${env}/playground`, icon: Bot } : null,
             { title: 'Integrations', url: `/${env}/integrations`, icon: Blocks },
             { title: 'Connections', url: `/${env}/connections`, icon: Plug },
@@ -69,7 +68,7 @@ export const AppSidebar: React.FC = () => {
             { title: 'Metrics', url: `/${env}`, icon: BarChart3, exact: true },
             { title: 'Environment settings', url: `/${env}/environment-settings`, icon: Cog }
         ].filter((item) => item !== null);
-    }, [env, meta, refetchMeta, showGettingStarted, showPlayground]);
+    }, [env, meta, dismissGettingStarted, showGettingStarted, showPlayground]);
 
     // Only free accounts see the usage-limit alert. Paid accounts have no enforced caps, so it
     // just adds noise and surfaces upgrade/downgrade inconsistencies (NAN-5959).
