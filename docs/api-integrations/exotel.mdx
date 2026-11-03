@@ -73,7 +73,7 @@ Official docs: [Exotel API](https://developer.exotel.com/docs/references/authent
 - Every path includes your Account SID, such as `/v1/Accounts/<ACCOUNT-SID>/Calls.json`. It's saved in the connection config as `accountSid`.
 - The API hostname depends on your account's region: `api.exotel.com` for Singapore and `api.in.exotel.com` for Mumbai. The region is set when the account is created and can't be changed.
 - Voice APIs allow 200 requests per minute. Above that, Exotel returns `429`.
-- Exotel serves its APIs from two hosts. Nango uses the main API host by default. To call the contact center (CCM) APIs, send the CCM host in the `Base-Url-Override` header:
+- Exotel serves its APIs from two hosts. Nango uses the main API host by default. To call the contact center (CCM) APIs, set the `Base-Url-Override` header to `https://ccm-<HOSTNAME>`, where `<HOSTNAME>` is the connection's `hostname`:
 
 | Host (Singapore / Mumbai) | APIs |
 | - | - |
