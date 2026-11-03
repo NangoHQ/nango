@@ -97,7 +97,21 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
     'credentials.role_arn': { secret: false, title: 'IAM Role ARN', example: 'arn:aws:iam::123456789012:role/NangoAccessRole' },
     'credentials.issuerId': { secret: false, title: 'Issuer ID', example: 'Your Issuer ID' },
     'credentials.privateKeyId': { secret: false, title: 'Key ID', example: 'Your Key ID' },
-    'credentials.privateKey': { secret: true, title: 'Private Key', example: 'Your Private Key' }
+    'credentials.privateKey': { secret: true, title: 'Private Key', example: 'Your Private Key' },
+    'credentials.app_id': { secret: false, title: 'GitHub App ID', example: 'Your GitHub App ID' },
+    'credentials.private_key': { secret: true, title: 'GitHub App Private Key', example: '-----BEGIN RSA PRIVATE KEY-----...' },
+    'credentials.app_link': { secret: false, title: 'GitHub App Public Link', example: 'https://github.com/apps/your-app' },
+    'credentials.webhook_secret': { secret: true, title: 'GitHub App Webhook Secret', example: 'The webhook secret set on your GitHub App' }
+};
+
+const githubAppCredentialsShape = {
+    app_id: z.string().trim().min(1, 'This field is required').max(255),
+    private_key: z
+        .string()
+        .trim()
+        .regex(/^-----BEGIN RSA PRIVATE KEY-----[\s\S]+-----END RSA PRIVATE KEY-----$/, 'Must be a PEM private key (-----BEGIN RSA PRIVATE KEY-----)'),
+    app_link: z.url({ protocol: /^https$/, message: 'Must be a valid https URL' }),
+    webhook_secret: z.string().min(1, 'This field is required').max(255)
 };
 
 export const Go: React.FC = () => {
@@ -123,13 +137,17 @@ export const Go: React.FC = () => {
     }, [provider]);
 
     const preconfiguredParams = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.connection_config || {} : {};
+    const collectAppCredentials =
+        provider?.auth_mode === 'APP' &&
+        Boolean(session && integration && session.integrations_config_defaults?.[integration.unique_key]?.collect_app_credentials);
+    const appWebhookUrl = collectAppCredentials && integration ? session?.webhook_urls?.[integration.unique_key] : undefined;
     const initialExternalId = useMemo(() => {
         const value = preconfiguredParams['external_id'] as string | undefined;
         return value && value.length > 0 ? value : generateExternalId();
     }, [preconfiguredParams]);
     const [awsExternalId] = useState(initialExternalId);
-    const [externalIdCopied, setExternalIdCopied] = useState(false);
-    const externalIdCopyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [copied, setCopied] = useState(false);
+    const copyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const displayName = useMemo(() => {
         return integration?.display_name ?? provider?.display_name ?? '';
@@ -148,25 +166,25 @@ export const Go: React.FC = () => {
         // on unmount always clear popup and state
         return () => {
             nango?.clear();
-            if (externalIdCopyTimeout.current) {
-                clearTimeout(externalIdCopyTimeout.current);
+            if (copyTimeout.current) {
+                clearTimeout(copyTimeout.current);
             }
         };
     });
-    const handleCopyExternalId = useCallback(() => {
-        if (!awsExternalId) {
+    const handleCopy = useCallback((text: string) => {
+        if (!text) {
             return;
         }
         const onSuccess = () => {
-            setExternalIdCopied(true);
-            if (externalIdCopyTimeout.current) {
-                clearTimeout(externalIdCopyTimeout.current);
+            setCopied(true);
+            if (copyTimeout.current) {
+                clearTimeout(copyTimeout.current);
             }
-            externalIdCopyTimeout.current = setTimeout(() => setExternalIdCopied(false), 2000);
+            copyTimeout.current = setTimeout(() => setCopied(false), 2000);
         };
         if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
             navigator.clipboard
-                .writeText(awsExternalId)
+                .writeText(text)
                 .then(onSuccess)
                 .catch((err: unknown) => {
                     console.error('Failed to copy to clipboard:', err);
@@ -174,7 +192,7 @@ export const Go: React.FC = () => {
         } else {
             // Fallback for iframes or older browsers where Clipboard API is unavailable
             const textarea = document.createElement('textarea');
-            textarea.value = awsExternalId;
+            textarea.value = text;
             textarea.style.position = 'fixed';
             textarea.style.opacity = '0';
             document.body.appendChild(textarea);
@@ -187,7 +205,7 @@ export const Go: React.FC = () => {
             }
             document.body.removeChild(textarea);
         }
-    }, [awsExternalId]);
+    }, []);
 
     const { resolver, shouldAutoTrigger, orderedFields } = useMemo<{
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -298,6 +316,14 @@ export const Go: React.FC = () => {
             }
         }
 
+        if (collectAppCredentials) {
+            for (const [key, schema] of Object.entries(githubAppCredentialsShape)) {
+                credentialsShape[key] = schema;
+                order += 1;
+                orderedFields[`credentials.${key}`] = order;
+            }
+        }
+
         // Only add objects if they have something otherwise it breaks react-form
         const fields = z.object({
             ...(Object.keys(credentialsShape).length > 0 ? { credentials: z.object(credentialsShape) } : {}),
@@ -315,7 +341,7 @@ export const Go: React.FC = () => {
             resolver,
             orderedFields: Object.entries(orderedFields).sort((a, b) => (a[1] < b[1] ? -1 : 1))
         };
-    }, [provider, integration, preconfiguredParams, integrationConfigFallbackFields]);
+    }, [provider, integration, preconfiguredParams, integrationConfigFallbackFields, collectAppCredentials]);
 
     const form = useForm<z.infer<(typeof formSchema)['API_KEY']>>({
         resolver: resolver,
@@ -615,8 +641,22 @@ export const Go: React.FC = () => {
                         <p className="text-sm text-text-secondary">Use this External ID when configuring your IAM trust policy.</p>
                         <div className="flex gap-2 items-center">
                             <StandaloneInput readOnly className="font-mono text-xs" value={awsExternalId} />
-                            <Button size="sm" type="button" onClick={handleCopyExternalId}>
-                                {externalIdCopied ? 'Copied' : 'Copy'}
+                            <Button size="sm" type="button" onClick={() => handleCopy(awsExternalId)}>
+                                {copied ? 'Copied' : 'Copy'}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
+                {appWebhookUrl && (
+                    <div className="flex flex-col gap-2 border border-subtle rounded-md p-4 bg-elevated">
+                        <p className="text-sm text-text-secondary">
+                            Set this as the Webhook URL of your GitHub App, with the webhook secret you enter below, to receive its webhooks.
+                        </p>
+                        <div className="flex gap-2 items-center">
+                            <StandaloneInput readOnly className="font-mono text-xs" value={appWebhookUrl} />
+                            <Button size="sm" type="button" onClick={() => handleCopy(appWebhookUrl)}>
+                                {copied ? 'Copied' : 'Copy'}
                             </Button>
                         </div>
                     </div>

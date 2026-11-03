@@ -18,6 +18,7 @@ const {
     mockCreateCredentials,
     mockGetConnectSession,
     mockGenerateConnectionId,
+    mockGetConnection,
     mockUpsertConnection,
     mockConnectionCreated,
     mockConnectionCreationFailed,
@@ -32,6 +33,7 @@ const {
         mockCreateCredentials: vi.fn(),
         mockGetConnectSession: vi.fn(),
         mockGenerateConnectionId: vi.fn(),
+        mockGetConnection: vi.fn(),
         mockUpsertConnection: vi.fn(),
         mockConnectionCreated: vi.fn(),
         mockConnectionCreationFailed: vi.fn(),
@@ -62,6 +64,7 @@ vi.mock('@nangohq/shared', async () => {
         configService: { getProviderConfig: mockGetProviderConfig },
         connectionService: {
             generateConnectionId: mockGenerateConnectionId,
+            getConnection: mockGetConnection,
             upsertConnection: mockUpsertConnection
         },
         errorManager: { errRes: vi.fn() },
@@ -99,7 +102,8 @@ describe('AppAuthController.connect', () => {
             connectionId: 'conn-1',
             webSocketClientId: undefined,
             activityLogId: 'activity-1',
-            connectSessionId: 10
+            connectSessionId: 10,
+            connectionConfig: {}
         });
         mockGetAccountContext.mockResolvedValue({
             environment: { id: 2, uuid: 'e0000000-0000-4000-8000-000000000002', name: 'dev' },
@@ -109,6 +113,7 @@ describe('AppAuthController.connect', () => {
         mockGetProvider.mockReturnValue({ auth_mode: 'APP', token_url: 'https://api.github.com/app/installations' });
         mockCreateCredentials.mockResolvedValue(Ok({ type: 'APP', jwtToken: 'jwt-token' }));
         mockGenerateConnectionId.mockReturnValue('generated-connection-id');
+        mockGetConnection.mockResolvedValue({ success: false, error: new Error('unknown_connection'), response: null });
         mockGetConnectSession.mockResolvedValue(
             Ok({
                 connectSession: {
@@ -246,4 +251,84 @@ describe('AppAuthController.connect', () => {
             expect(mockFindById).not.toHaveBeenCalled();
         }
     );
+
+    const buildReqRes = () => {
+        const req = {
+            query: { installation_id: 'install-1', state: 'session-id' },
+            ip: '203.0.113.7',
+            get: vi.fn(() => 'vitest')
+        } as unknown as Request;
+        const res = {
+            locals: {},
+            redirect: vi.fn(),
+            sendStatus: vi.fn(),
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
+        return { req, res };
+    };
+
+    it('uses the app credentials the end user entered and keeps them out of connection_config', async () => {
+        const privateKey = Buffer.from('-----BEGIN RSA PRIVATE KEY-----\nkey\n-----END RSA PRIVATE KEY-----').toString('base64');
+        const appLink = 'https://github.com/apps/override';
+        mockFindById.mockResolvedValue({
+            id: 'session-id',
+            environmentId: 2,
+            providerConfigKey: 'github-app',
+            connectionId: 'conn-1',
+            webSocketClientId: undefined,
+            activityLogId: 'activity-1',
+            connectSessionId: 10,
+            connectionConfig: {
+                app_id_override: 'override-app',
+                private_key_override: privateKey,
+                app_link_override: appLink,
+                webhook_secret_override: 'whsec'
+            }
+        });
+
+        const { req, res } = buildReqRes();
+        await appAuthController.connect(req, res, vi.fn());
+
+        expect(mockCreateCredentials).toHaveBeenCalledWith(
+            expect.objectContaining({
+                override: { app_id: 'override-app', private_key: privateKey, app_link: appLink, webhook_secret: 'whsec' },
+                connectionConfig: expect.objectContaining({ app_id: 'override-app', installation_id: 'install-1' })
+            })
+        );
+
+        const saved = mockUpsertConnection.mock.calls[0]?.[0] as { connectionConfig: Record<string, unknown> };
+        expect(saved.connectionConfig['app_id']).toBe('override-app');
+        expect(saved.connectionConfig).not.toHaveProperty('app_id_override');
+        expect(saved.connectionConfig).not.toHaveProperty('private_key_override');
+        expect(saved.connectionConfig).not.toHaveProperty('app_link_override');
+        expect(saved.connectionConfig).not.toHaveProperty('webhook_secret_override');
+    });
+
+    it('falls back to the integration app when nothing was entered and the connection has no stored app', async () => {
+        const { req, res } = buildReqRes();
+        await appAuthController.connect(req, res, vi.fn());
+
+        const args = mockCreateCredentials.mock.calls[0]?.[0] as { override?: unknown; connection?: unknown; connectionConfig: Record<string, unknown> };
+        expect(args.override).toBeUndefined();
+        expect(args.connection).toBeUndefined();
+        expect(args.connectionConfig['app_id']).toBe('app-123');
+    });
+
+    it('reuses the app stored on the existing connection on reconnect', async () => {
+        const storedOverride = { app_id: 'stored-app', private_key: 'c3RvcmVk', app_link: 'https://github.com/apps/stored', webhook_secret: 'stored-secret' };
+        const existing = { connection_id: 'conn-1', credentials: { type: 'APP', config_override: storedOverride } };
+        mockGetConnection.mockResolvedValue({ success: true, error: null, response: existing });
+
+        const { req, res } = buildReqRes();
+        await appAuthController.connect(req, res, vi.fn());
+
+        expect(mockGetConnection).toHaveBeenCalledWith('conn-1', 'github-app', 2);
+        const args = mockCreateCredentials.mock.calls[0]?.[0] as { override?: unknown; connection?: unknown };
+        expect(args.override).toBeUndefined();
+        expect(args.connection).toBe(existing);
+
+        const saved = mockUpsertConnection.mock.calls[0]?.[0] as { connectionConfig: Record<string, unknown> };
+        expect(saved.connectionConfig['app_id']).toBe('stored-app');
+    });
 });

@@ -118,6 +118,33 @@ export const connectionCredential = z.union([
 ]);
 
 export const privateKeySchema = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsWith('-----END RSA PRIVATE KEY-----');
+
+const RSA_PRIVATE_KEY_BEGIN = '-----BEGIN RSA PRIVATE KEY-----';
+const RSA_PRIVATE_KEY_END = '-----END RSA PRIVATE KEY-----';
+
+/**
+ * Rebuilds a well-formed PEM: browsers strip newlines when a PEM is pasted in a single-line input,
+ * so we drop all whitespace from the body and re-wrap it at 64 characters.
+ */
+export function normalizeRsaPrivateKey(pem: string): string {
+    const body = pem.trim().slice(RSA_PRIVATE_KEY_BEGIN.length, -RSA_PRIVATE_KEY_END.length).replace(/\s+/g, '');
+    return `${RSA_PRIVATE_KEY_BEGIN}\n${(body.match(/.{1,64}/g) || []).join('\n')}\n${RSA_PRIVATE_KEY_END}`;
+}
+
+/**
+ * GitHub App credentials supplied by an end user (Connect UI, `collect_app_credentials`).
+ * The private key output is a normalized PEM.
+ */
+export const githubAppCredentialsSchema = z.object({
+    app_id: z.string().trim().min(1).max(255),
+    private_key: z
+        .string()
+        .trim()
+        .regex(new RegExp(`^${RSA_PRIVATE_KEY_BEGIN}\\s*[A-Za-z0-9+/=\\s]+?\\s*${RSA_PRIVATE_KEY_END}$`), 'Must be an RSA private key in PEM format')
+        .transform(normalizeRsaPrivateKey),
+    app_link: z.url({ protocol: /^https$/, message: 'Must be a valid https URL' }).max(2048),
+    webhook_secret: z.string().min(1).max(255)
+});
 // Some providers (e.g. Gong's "Show public key" UI) hand out the bare base64 DER body with no
 // PEM wrapper - accept that form too, alongside the full PEM, rather than requiring callers to
 // wrap it themselves.

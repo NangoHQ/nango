@@ -21,6 +21,7 @@ describe(`POST ${endpoint}`, () => {
         api = await runServer();
         seed = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(seed.env, 'github', 'github');
+        await seeders.createConfigSeed(seed.env, 'github-app', 'github-app');
     });
 
     afterAll(() => {
@@ -242,6 +243,48 @@ describe(`POST ${endpoint}`, () => {
                     subdomain: 'acme'
                 }
             }
+        });
+    });
+
+    describe('collect_app_credentials', () => {
+        it('should store the flag next to user_scopes (not in connection_config) for a GitHub App integration', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.apiKey.secret,
+                body: {
+                    end_user: { id: 'collect-app-credentials', email: 'a@b.com' },
+                    integrations_config_defaults: { 'github-app': { collect_app_credentials: true } }
+                }
+            });
+            isSuccess(res.json);
+
+            const session = await db.knex.from<DBConnectSession>('connect_sessions').where({ environment_id: seed.env.id }).orderBy('id', 'desc').first();
+
+            expect(session?.integrations_config_defaults).toEqual({ 'github-app': { collect_app_credentials: true } });
+        });
+
+        it('should reject the flag for an integration that is not a GitHub App integration', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.apiKey.secret,
+                body: {
+                    end_user: { id: 'collect-app-credentials-invalid', email: 'a@b.com' },
+                    integrations_config_defaults: { github: { collect_app_credentials: true } }
+                }
+            });
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error.code).toBe('invalid_body');
+            expect(res.json).toMatchObject({
+                error: {
+                    errors: [
+                        {
+                            message: 'collect_app_credentials is only supported for GitHub App integrations (auth_mode APP)',
+                            path: ['integrations_config_defaults', 'github', 'collect_app_credentials']
+                        }
+                    ]
+                }
+            });
         });
     });
 

@@ -24,6 +24,7 @@ vi.mock('@nangohq/shared', () => ({
         getConnectUISettings: mockGetConnectUISettings,
         getDefaultConnectUISettings: mockGetDefaultConnectUISettings
     },
+    getGlobalWebhookReceiveUrl: () => 'https://api.nango.dev/webhook',
     getWebsocketsPath: mockGetWebsocketsPath
 }));
 
@@ -60,7 +61,7 @@ function buildReqRes() {
                 overrides: null
             },
             account: { id: 1 },
-            environment: { id: 1 },
+            environment: { id: 1, uuid: 'env-uuid' },
             plan: null
         },
         status,
@@ -85,5 +86,30 @@ describe('getConnectSession', () => {
         expect(mockGetWebsocketsPath).not.toHaveBeenCalled();
         const sent = send.mock.calls[0]?.[0] as { data: Record<string, unknown> } | undefined;
         expect(sent?.data['websocketsPath']).toBeUndefined();
+    });
+
+    it('forwards collect_app_credentials and the webhook URL to Connect UI', async () => {
+        const { req, res, send } = buildReqRes();
+        (res.locals['connectSession'] as { integrationsConfigDefaults: unknown }).integrationsConfigDefaults = {
+            'github-app': { collect_app_credentials: true },
+            'other-app': {}
+        };
+
+        await getConnectSession(req, res, vi.fn());
+
+        const sent = send.mock.calls[0]?.[0] as
+            | { data: { integrations_config_defaults: Record<string, { collect_app_credentials?: boolean }>; webhook_urls?: Record<string, string> } }
+            | undefined;
+        expect(sent?.data.integrations_config_defaults['github-app']?.collect_app_credentials).toBe(true);
+        expect(sent?.data.webhook_urls).toStrictEqual({ 'github-app': 'https://api.nango.dev/webhook/env-uuid/github-app' });
+    });
+
+    it('omits the webhook URLs when no integration collects app credentials', async () => {
+        const { req, res, send } = buildReqRes();
+
+        await getConnectSession(req, res, vi.fn());
+
+        const sent = send.mock.calls[0]?.[0] as { data: Record<string, unknown> } | undefined;
+        expect(sent?.data['webhook_urls']).toBeUndefined();
     });
 });

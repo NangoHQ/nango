@@ -10,6 +10,7 @@ export interface ConnectSessionInput {
               {
                   user_scopes?: string | undefined;
                   authorization_params?: Record<string, string> | undefined;
+                  collect_app_credentials?: boolean | undefined;
                   connection_config?:
                       | {
                             [key: string]: unknown;
@@ -43,6 +44,7 @@ export type ConnectSessionOutput = Omit<ConnectSessionInput, 'end_user' | 'organ
     endUser: ApiEndUser | null;
     isReconnecting?: boolean;
     connectUISettings: ConnectUISettings;
+    webhook_urls?: Record<string, string>;
     /**
      * Server-side WebSocket upgrade path (NANGO_SERVER_WEBSOCKETS_PATH), sent on self-hosted
      * deployments so Connect UI opens its OAuth-result socket on the matching path.

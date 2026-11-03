@@ -52,6 +52,35 @@ export function validateConnectionConfigDefaults(
     return issues;
 }
 
+/**
+ * `collect_app_credentials` makes Connect UI ask the end user for their own GitHub App credentials,
+ * so it only makes sense for integrations whose provider uses `auth_mode: APP` (GitHub App).
+ */
+export function validateCollectAppCredentials(
+    defaultsByIntegration: Record<string, { collect_app_credentials?: boolean | undefined } | undefined>,
+    integrations: Pick<IntegrationConfig, 'unique_key' | 'provider'>[]
+): z.core.$ZodIssue[] {
+    const issues: z.core.$ZodIssue[] = [];
+
+    for (const [integrationId, defaults] of Object.entries(defaultsByIntegration)) {
+        if (!defaults?.collect_app_credentials) {
+            continue;
+        }
+
+        const integration = integrations.find((candidate) => candidate.unique_key === integrationId);
+        if (integration && getProvider(integration.provider)?.auth_mode !== 'APP') {
+            issues.push({
+                code: 'custom',
+                message: 'collect_app_credentials is only supported for GitHub App integrations (auth_mode APP)',
+                input: defaults.collect_app_credentials,
+                path: ['integrations_config_defaults', integrationId, 'collect_app_credentials']
+            });
+        }
+    }
+
+    return issues;
+}
+
 function validate(definition: SimplifiedJSONSchema, value: unknown): string | null {
     if (typeof value !== 'string') {
         return `${definition.title} must be a string`;

@@ -23,6 +23,8 @@ export interface ConnectSessionIntegrationConfigDefaults {
     /** Only used by Slack */
     user_scopes?: string | undefined;
     authorization_params?: Record<string, string> | undefined;
+    /** Only works for GitHub App integrations (auth_mode APP): Connect UI asks the end user for their own app credentials and webhook secret. */
+    collect_app_credentials?: boolean | undefined;
     connectionConfig?:
         | {
               [key: string]: unknown;

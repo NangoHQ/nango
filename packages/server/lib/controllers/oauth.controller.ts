@@ -42,6 +42,7 @@ import { basePublicUrl, errorToObject, metrics, stringifyError } from '@nangohq/
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import publisher from '../clients/publisher.client.js';
+import { githubAppCredentialsSchema } from '../helpers/validation.js';
 import { noteConnectionUpsert, oauthAuthType, recordConnectionCreated } from '../hooks/auditConnection.js';
 import { handleValidateConnectionFailure, validateConnection } from '../hooks/connection/on/validate-connection.js';
 import {
@@ -260,6 +261,35 @@ class OAuthController {
 
             if (userScope) {
                 session.connectionConfig['user_scope'] = userScope;
+            }
+
+            // GitHub App credentials collected from the end user (only when the connect session asked for them)
+            if (provider.auth_mode === 'APP' && isConnectSession && connectSession.integrationsConfigDefaults?.[config.unique_key]?.collect_app_credentials) {
+                const appCredentials = githubAppCredentialsSchema.safeParse({
+                    app_id: overrideCredentials['app_id'],
+                    private_key: overrideCredentials['private_key'],
+                    app_link: overrideCredentials['app_link'],
+                    webhook_secret: overrideCredentials['webhook_secret']
+                });
+                if (!appCredentials.success) {
+                    const error = WSErrBuilder.InvalidGithubAppCredentials(
+                        appCredentials.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join(', ')
+                    );
+                    void logCtx.error(error.message);
+                    await logCtx.failed();
+
+                    await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+                    return;
+                }
+
+                // Same short-lived holder as OAuth client secrets: moved to the encrypted connection credentials in the callback
+                session.connectionConfig = {
+                    ...session.connectionConfig,
+                    app_id_override: appCredentials.data.app_id,
+                    private_key_override: Buffer.from(appCredentials.data.private_key).toString('base64'),
+                    app_link_override: appCredentials.data.app_link,
+                    webhook_secret_override: appCredentials.data.webhook_secret
+                };
             }
 
             // certain providers need the credentials to be specified in the config
@@ -870,12 +900,22 @@ class OAuthController {
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
 
+        // Connection-first: app link entered by the end user, else the one stored on the connection (reconnect), else the integration's
+        let appPublicLink: string | null | undefined = session.connectionConfig['app_link_override'];
+        if (!appPublicLink && connectionId && provider.auth_mode === 'APP') {
+            const existing = await connectionService.getConnection(connectionId, providerConfigKey, session.environmentId);
+            if (existing.response?.credentials.type === 'APP') {
+                appPublicLink = existing.response.credentials.config_override?.app_link;
+            }
+        }
+
         const connectionConfig = {
             ...authorizationParams,
-            appPublicLink: providerConfig.app_link
+            appPublicLink: appPublicLink || providerConfig.app_link
         };
 
-        session.connectionConfig = connectionConfig as Record<string, string>;
+        // The app secrets must never end up in logs: only `connectionConfig` is logged, the override keys only live on the session
+        session.connectionConfig = { ...session.connectionConfig, ...connectionConfig } as Record<string, string>;
 
         try {
             if (missesInterpolationParam(provider.authorization_url!, connectionConfig)) {

@@ -4,31 +4,46 @@ import { AuthCredentialsError } from '../utils/error.js';
 import { interpolateStringFromObject } from '../utils/utils.js';
 import * as jwtClient from './jwt.js';
 
-import type { AppCredentials, ConnectionConfig, DBConnectionDecrypted, IntegrationConfig, ProviderCustom, ProviderGithubApp } from '@nangohq/types';
+import type {
+    AppCredentials,
+    ConnectionConfig,
+    DBConnectionDecrypted,
+    GithubAppConfigOverride,
+    IntegrationConfig,
+    ProviderCustom,
+    ProviderGithubApp
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 /**
  * Create Github APP credentials
+ * The connection's own app (`override`, else the one stored on `connection`) wins over the integration's.
  */
 export async function createCredentials({
     connection,
     provider,
     integration,
     connectionConfig,
-    refreshGithubAppJwtToken
+    refreshGithubAppJwtToken,
+    override
 }: {
     connection?: DBConnectionDecrypted;
     provider: ProviderGithubApp | ProviderCustom;
     integration: IntegrationConfig;
     connectionConfig: ConnectionConfig;
     refreshGithubAppJwtToken?: boolean | undefined;
+    override?: GithubAppConfigOverride | undefined;
 }): Promise<Result<AppCredentials, AuthCredentialsError>> {
     try {
         const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : provider.token_url.APP;
         const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
-        const privateKeyBase64 = integration.custom ? integration.custom['private_key'] : integration.oauth_client_secret;
+        const configOverride = override ?? (connection?.credentials.type === 'APP' ? connection.credentials.config_override : undefined);
+        const appId = configOverride ? configOverride.app_id : ((integration.custom ? integration.custom['app_id'] : integration.oauth_client_id) as string);
+        const privateKeyBase64 = configOverride
+            ? configOverride.private_key
+            : ((integration.custom ? integration.custom['private_key'] : integration.oauth_client_secret) as string);
 
-        const privateKey = Buffer.from(privateKeyBase64 as string, 'base64').toString('utf8');
+        const privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
 
         const headers = {
             Accept: 'application/vnd.github.v3+json'
@@ -40,7 +55,7 @@ export async function createCredentials({
         const payload: Record<string, string | number> = {
             iat: now,
             exp: expiration,
-            iss: (integration.custom ? integration.custom['app_id'] : integration.oauth_client_id) as string
+            iss: appId
         };
 
         if (!payload['iss'] && connectionConfig['app_id']) {
@@ -77,7 +92,8 @@ export async function createCredentials({
                 access_token: connection.credentials['access_token'],
                 expires_at: connection.credentials['expires_at'],
                 raw: connection.credentials.raw,
-                jwtToken
+                jwtToken,
+                config_override: configOverride
             });
         }
 
@@ -95,15 +111,14 @@ export async function createCredentials({
 
         const { tokenResponse, jwtToken } = create.value;
 
-        const credentials: AppCredentials = {
+        return Ok({
             type: 'APP',
             access_token: tokenResponse.token!,
             expires_at: tokenResponse.expires_at,
             raw: tokenResponse,
-            jwtToken
-        };
-
-        return Ok(credentials);
+            jwtToken,
+            config_override: configOverride
+        });
     } catch (err) {
         return Err(new AuthCredentialsError('github_app_token_fetch_error', { cause: err }));
     }

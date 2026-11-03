@@ -122,6 +122,21 @@ export const dualConfigIntegrationFixtureNoPreconfig: GetPublicIntegration['Succ
     preconfigured_connection_config: undefined
 };
 
+export const githubAppProvider = {
+    auth_mode: 'APP',
+    display_name: 'GitHub (App)',
+    docs: 'https://docs.example.com/github-app',
+    name: 'github-app',
+    logo_url: 'https://app.nango.dev/images/template-logos/github-app.svg'
+} satisfies GetPublicProvider['Success']['data'];
+
+export const githubAppIntegrationFixture: GetPublicIntegration['Success']['data'] = {
+    ...integrationFixture,
+    unique_key: 'github-app',
+    provider: 'github-app',
+    display_name: 'GitHub (App)'
+};
+
 export const authResultFixture = {
     providerConfigKey: 'github',
     connectionId: 'conn_test_123'

@@ -32,6 +32,7 @@ export const bodySchema = z
                     .object({
                         user_scopes: z.string().optional(),
                         authorization_params: z.record(z.string(), z.string()).optional(),
+                        collect_app_credentials: z.boolean().optional(),
                         connection_config: z
                             .looseObject({
                                 oauth_scopes_override: z.string().optional()
@@ -155,7 +156,12 @@ export function toIntegrationsConfigDefaults(
     return Object.fromEntries(
         Object.entries(defaults).map(([key, value]) => [
             key,
-            { user_scopes: value.user_scopes, authorization_params: value.authorization_params, connectionConfig: value.connection_config }
+            {
+                user_scopes: value.user_scopes,
+                authorization_params: value.authorization_params,
+                collect_app_credentials: value.collect_app_credentials,
+                connectionConfig: value.connection_config
+            }
         ])
     );
 }

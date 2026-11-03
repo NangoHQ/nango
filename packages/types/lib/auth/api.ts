@@ -78,6 +78,15 @@ export interface AppCredentials {
     expires_at?: Date | undefined;
     raw: Record<string, any>;
     jwtToken?: string;
+    /** Connection-level GitHub App, used instead of the integration's. */
+    config_override?: GithubAppConfigOverride | undefined;
+}
+
+export interface GithubAppConfigOverride {
+    app_id: string;
+    private_key: string;
+    app_link: string;
+    webhook_secret: string;
 }
 
 export interface OAuth2Credentials extends CredentialsCommon {

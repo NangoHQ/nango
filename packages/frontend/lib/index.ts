@@ -166,6 +166,7 @@ export default class Nango {
             options &&
             (('installation' in options && options.installation === 'outbound') ||
                 ('credentials' in options &&
+                    !('app_id' in options.credentials) &&
                     (('token_id' in options.credentials && 'token_secret' in options.credentials) ||
                         !('oauth_client_id_override' in options.credentials) ||
                         !('oauth_client_secret_override' in options.credentials)) &&
@@ -600,6 +601,12 @@ export default class Nango {
 
                 if ('oauth_refresh_token_override' in credentials) {
                     query.push(`credentials[oauth_refresh_token_override]=${encodeURIComponent(credentials.oauth_refresh_token_override)}`);
+                }
+
+                if ('app_id' in credentials && 'private_key' in credentials && 'app_link' in credentials) {
+                    query.push(`credentials[app_id]=${encodeURIComponent(credentials.app_id)}`);
+                    query.push(`credentials[private_key]=${encodeURIComponent(credentials.private_key)}`);
+                    query.push(`credentials[app_link]=${encodeURIComponent(credentials.app_link)}`);
                 }
 
                 if ('token_id' in credentials) {

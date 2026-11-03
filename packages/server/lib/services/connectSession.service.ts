@@ -4,7 +4,7 @@ import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@na
 import { buildTagsFromEndUser, configService, ConnectionCreationCappedError, connectionService, connectionTagsSchema } from '@nangohq/shared';
 import { buildConnectUiSessionLink, Err, flagHasPlan, Ok } from '@nangohq/utils';
 
-import { validateConnectionConfigDefaults } from './connectionConfigDefaults.js';
+import { validateCollectAppCredentials, validateConnectionConfigDefaults } from './connectionConfigDefaults.js';
 
 import type { Knex } from '@nangohq/database';
 import type {
@@ -397,10 +397,15 @@ async function validateIntegrationReferences(params: CreateConnectSessionParams)
         });
     }
 
-    const issues = validateConnectionConfigDefaults(
-        Object.fromEntries(Object.entries(params.integrationsConfigDefaults || {}).map(([integrationId, value]) => [integrationId, value.connectionConfig])),
-        integrations
-    );
+    const issues = [
+        ...validateConnectionConfigDefaults(
+            Object.fromEntries(
+                Object.entries(params.integrationsConfigDefaults || {}).map(([integrationId, value]) => [integrationId, value.connectionConfig])
+            ),
+            integrations
+        ),
+        ...validateCollectAppCredentials(params.integrationsConfigDefaults || {}, integrations)
+    ];
     if (issues.length > 0) {
         return new CreateConnectSessionError({
             code: 'invalid_connection_config',

@@ -17,6 +17,12 @@ const integrationConfigDefaultsSchema = z
             .object({
                 user_scopes: z.string().optional(),
                 authorization_params: z.record(z.string(), z.string()).optional(),
+                collect_app_credentials: z
+                    .boolean()
+                    .optional()
+                    .describe(
+                        'Ask the end user for their own GitHub App ID, private key, app link and webhook secret in Connect UI. Only works for GitHub App integrations (provider github-app, auth_mode APP); rejected for any other integration.'
+                    ),
                 connection_config: z
                     .looseObject({
                         oauth_scopes_override: z.string().optional()

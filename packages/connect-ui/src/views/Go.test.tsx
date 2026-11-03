@@ -12,6 +12,8 @@ import {
     dualConfigIntegrationFixture,
     dualConfigIntegrationFixtureNoPreconfig,
     dualConfigProvider,
+    githubAppIntegrationFixture,
+    githubAppProvider,
     integrationFixture,
     twoStepIntegrationFixture,
     twoStepIntegrationFixtureNoPreconfig,
@@ -23,6 +25,7 @@ import { renderApp } from '@/test/render';
 
 import type * as EventsModule from '@/lib/events';
 import type Nango from '@nangohq/frontend';
+import type { ConnectSessionOutput } from '@nangohq/types';
 
 vi.mock('@/lib/nango', () => ({ useNango: vi.fn() }));
 
@@ -174,6 +177,67 @@ describe('Go', () => {
             await expect.element(page.getByRole('heading', { name: 'Link Stripe App (Sandbox) Account' })).toBeInTheDocument();
 
             await expect.element(page.getByPlaceholder('App Domain')).toBeInTheDocument();
+        });
+    });
+
+    describe('GitHub App credentials (collect_app_credentials)', () => {
+        const webhookUrl = 'https://api.nango.dev/webhook/env-uuid/github-app';
+        const sessionWith = (collect: boolean) =>
+            ({
+                endUser: null,
+                connectUISettings: {},
+                integrations_config_defaults: { 'github-app': { collect_app_credentials: collect } },
+                ...(collect && { webhook_urls: { 'github-app': webhookUrl } })
+            }) as unknown as ConnectSessionOutput;
+
+        it('does not ask the end user for app credentials when the session does not request them', async () => {
+            await renderApp({
+                route: '/go',
+                seedStore: { provider: githubAppProvider, integration: githubAppIntegrationFixture, session: sessionWith(false) }
+            });
+            await expect.element(page.getByRole('heading', { name: 'Link GitHub (App) Account' })).toBeInTheDocument();
+
+            expect(page.getByPlaceholder('Your GitHub App ID').query()).toBeNull();
+            expect(page.getByRole('button', { name: 'Copy' }).query()).toBeNull();
+        });
+
+        it('shows the webhook URL, asks for the app id, private key, app link and webhook secret and sends them to nango.auth', async () => {
+            await renderApp({ route: '/go', seedStore: { provider: githubAppProvider, integration: githubAppIntegrationFixture, session: sessionWith(true) } });
+            await expect.element(page.getByRole('heading', { name: 'Link GitHub (App) Account' })).toBeInTheDocument();
+
+            await expect.element(page.getByRole('textbox').first()).toHaveValue(webhookUrl);
+
+            const connect = page.getByRole('button', { name: 'Connect' });
+            await userEvent.type(page.getByPlaceholder('Your GitHub App ID'), '12345');
+            await userEvent.type(page.getByPlaceholder('The webhook secret set on your GitHub App'), 'my-webhook-secret');
+            await userEvent.type(page.getByPlaceholder('https://github.com/apps/your-app'), 'http://github.com/apps/not-https');
+            await userEvent.type(page.getByPlaceholder('-----BEGIN RSA PRIVATE KEY-----...'), 'not a pem');
+            await expect.element(connect).toBeDisabled();
+
+            await userEvent.clear(page.getByPlaceholder('https://github.com/apps/your-app'));
+            await userEvent.type(page.getByPlaceholder('https://github.com/apps/your-app'), 'https://github.com/apps/my-app');
+            await userEvent.clear(page.getByPlaceholder('-----BEGIN RSA PRIVATE KEY-----...'));
+            // newlines are stripped by single-line inputs, so the key is entered on one line
+            await userEvent.type(
+                page.getByPlaceholder('-----BEGIN RSA PRIVATE KEY-----...'),
+                '-----BEGIN RSA PRIVATE KEY-----abc123-----END RSA PRIVATE KEY-----'
+            );
+            await expect.element(connect).toBeEnabled();
+            await userEvent.click(connect);
+
+            await vi.waitFor(() => {
+                expect(auth).toHaveBeenCalledWith(
+                    'github-app',
+                    expect.objectContaining({
+                        credentials: {
+                            app_id: '12345',
+                            private_key: '-----BEGIN RSA PRIVATE KEY-----abc123-----END RSA PRIVATE KEY-----',
+                            app_link: 'https://github.com/apps/my-app',
+                            webhook_secret: 'my-webhook-secret'
+                        }
+                    })
+                );
+            });
         });
     });
 

@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import * as endUserService from '@nangohq/shared';
-import { connectUISettingsService, getWebsocketsPath } from '@nangohq/shared';
+import { connectUISettingsService, getGlobalWebhookReceiveUrl, getWebsocketsPath } from '@nangohq/shared';
 import { isCloud, report, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
@@ -87,11 +87,19 @@ export const getConnectSession = asyncWrapperWithEnvironment<GetConnectSession>(
                 key,
                 {
                     connection_config: value.connectionConfig,
+                    collect_app_credentials: value.collect_app_credentials,
                     // For debugging reason, it's enforced in the backend
                     authorization_params: value.authorization_params
                 }
             ])
         );
+    }
+    // Where the end user must point the webhooks of the GitHub App they bring
+    const webhookUrls = Object.entries(connectSession.integrationsConfigDefaults || {})
+        .filter(([, defaults]) => defaults.collect_app_credentials)
+        .map(([key]) => [key, `${getGlobalWebhookReceiveUrl()}/${environment.uuid}/${encodeURIComponent(key)}`]);
+    if (webhookUrls.length > 0) {
+        data.webhook_urls = Object.fromEntries(webhookUrls);
     }
     if (connectSession.connectionId) {
         data.isReconnecting = true;

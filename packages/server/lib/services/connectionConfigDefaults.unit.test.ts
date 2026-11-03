@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { validateConnectionConfigDefaults } from './connectionConfigDefaults.js';
+import { validateCollectAppCredentials, validateConnectionConfigDefaults } from './connectionConfigDefaults.js';
 
 const integrations = [
     { unique_key: 'auth0', provider: 'auth0' },
@@ -63,6 +63,45 @@ describe('validateConnectionConfigDefaults', () => {
             'Hostname must be a valid hostname',
             'Hostname must be one of: app.clio.com, eu.app.clio.com, ca.app.clio.com, au.app.clio.com',
             'Events API Domain must be a string'
+        ]);
+    });
+});
+
+describe('validateCollectAppCredentials', () => {
+    const appIntegrations = [
+        { unique_key: 'my-github-app', provider: 'github-app' },
+        { unique_key: 'my-github', provider: 'github' },
+        { unique_key: 'my-github-app-oauth', provider: 'github-app-oauth' }
+    ];
+
+    it('accepts the flag on a GitHub App integration, and ignores false or absent flags anywhere', () => {
+        const issues = validateCollectAppCredentials(
+            {
+                'my-github-app': { collect_app_credentials: true },
+                'my-github': { collect_app_credentials: false },
+                'my-github-app-oauth': {}
+            },
+            appIntegrations
+        );
+
+        expect(issues).toEqual([]);
+    });
+
+    it('rejects the flag on integrations that are not GitHub App (auth_mode APP) integrations', () => {
+        const issues = validateCollectAppCredentials(
+            { 'my-github': { collect_app_credentials: true }, 'my-github-app-oauth': { collect_app_credentials: true } },
+            appIntegrations
+        );
+
+        expect(issues.map(({ path, message }) => ({ path, message }))).toEqual([
+            {
+                path: ['integrations_config_defaults', 'my-github', 'collect_app_credentials'],
+                message: 'collect_app_credentials is only supported for GitHub App integrations (auth_mode APP)'
+            },
+            {
+                path: ['integrations_config_defaults', 'my-github-app-oauth', 'collect_app_credentials'],
+                message: 'collect_app_credentials is only supported for GitHub App integrations (auth_mode APP)'
+            }
         ]);
     });
 });

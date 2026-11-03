@@ -31,6 +31,7 @@ export const createConnectSessionTool = defineManagementMcpTool<typeof createCon
                       {
                           user_scopes: value.user_scopes,
                           authorization_params: value.authorization_params,
+                          collect_app_credentials: value.collect_app_credentials,
                           connectionConfig: value.connection_config
                       }
                   ])

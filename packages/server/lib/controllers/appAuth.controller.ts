@@ -119,9 +119,26 @@ class AppAuthController {
                 return;
             }
 
+            // App credentials the end user entered for this connect session (see oauthRequest)
+            const {
+                app_id_override: app_id,
+                private_key_override: private_key,
+                app_link_override: app_link,
+                webhook_secret_override: webhook_secret
+            } = session.connectionConfig;
+            const override = app_id && private_key && app_link && webhook_secret ? { app_id, private_key, app_link, webhook_secret } : undefined;
+
+            // Connection-first: when re-authenticating an existing connection that has its own app, keep using it
+            const existingConnection = receivedConnectionId
+                ? (await connectionService.getConnection(receivedConnectionId, providerConfigKey, environment.id)).response
+                : null;
+            const storedOverride = existingConnection?.credentials.type === 'APP' ? existingConnection.credentials.config_override : undefined;
+            // Plain (non secret) app id of the app used by this connection: webhooks use it to find the connection's app
+            const appId = override?.app_id || storedOverride?.app_id || config.oauth_client_id;
+
             const connectionConfig: Record<string, string | undefined> = {
                 installation_id,
-                app_id: config.oauth_client_id
+                app_id: appId
             };
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
@@ -139,7 +156,13 @@ class AppAuthController {
                 return;
             }
 
-            const credentialsRes = await githubAppClient.createCredentials({ provider: provider as ProviderGithubApp, integration: config, connectionConfig });
+            const credentialsRes = await githubAppClient.createCredentials({
+                provider: provider as ProviderGithubApp,
+                integration: config,
+                connectionConfig,
+                ...(existingConnection && { connection: existingConnection }),
+                override
+            });
             if (credentialsRes.isErr()) {
                 report(credentialsRes.error);
                 void logCtx.error('Error during Github App credentials creation', { error: credentialsRes.error });
@@ -175,6 +198,9 @@ class AppAuthController {
             resolvedConnectionConfig = resolveConnectionConfig({ params: undefined, connectSession: connectSession?.connectSession, providerConfigKey });
             resolvedWebhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession: connectSession?.connectSession });
             Object.assign(connectionConfig, resolvedConnectionConfig);
+            if (override || storedOverride) {
+                connectionConfig['app_id'] = appId;
+            }
 
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,

@@ -30,6 +30,7 @@ export interface ConnectionConfig {
     assertionOption?: Record<string, string>;
     credentials?:
         | OAuthCredentialsOverride
+        | GithubAppCredentials
         | BasicApiCredentials
         | ApiKeyCredentials
         | TBACredentials
@@ -44,6 +45,13 @@ export interface OAuthCredentialsOverride {
     oauth_client_id_override: string;
     oauth_client_secret_override: string;
     oauth_refresh_token_override?: string;
+}
+
+export interface GithubAppCredentials {
+    app_id: string;
+    private_key: string;
+    app_link: string;
+    webhook_secret: string;
 }
 
 export interface BasicApiCredentials {
