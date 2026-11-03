@@ -704,6 +704,7 @@ URL patterns:
 | `passportal` | Passportal | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/passportal.md) | [connect](https://nango.dev/docs/integrations/all/passportal/connect.md) |  | support |
 | `pave` | Pave | API_KEY | [docs](https://nango.dev/docs/api-integrations/pave.md) | [connect](https://nango.dev/docs/api-integrations/pave/connect.md) |  | hr, analytics |
 | `pax8` | Pax8 | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/pax8.md) | [connect](https://nango.dev/docs/integrations/all/pax8/connect.md) |  | other |
+| `paximal-mcp` | Paximal (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/paximal-mcp.md) |  |  | legal, mcp |
 | `paychex` | Paychex | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/paychex.md) | [connect](https://nango.dev/docs/integrations/all/paychex/connect.md) |  | hr |
 | `paycom` | Paycom | BASIC | [docs](https://nango.dev/docs/integrations/all/paycom.md) | [connect](https://nango.dev/docs/integrations/all/paycom/connect.md) |  | hr |
 | `paycor` | Paycor | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/paycor.md) | [connect](https://nango.dev/docs/integrations/all/paycor/connect.md) |  | hr |

@@ -124,7 +124,13 @@ const deployedToolFunctionSchema = z
         meta: z
             .object({
                 instructions: z.string().optional(),
-                required_scopes: z.array(z.string()).optional(),
+                required_scopes: z
+                    .union([
+                        z.object({ all: z.tuple([z.string()], z.string()) }).strict(),
+                        z.object({ any: z.tuple([z.string()], z.string()) }).strict(),
+                        z.object({ none: z.literal(true) }).strict()
+                    ])
+                    .optional(),
                 tags: z.record(z.string(), z.union([z.string(), z.array(z.string())]))
             })
             .strict()

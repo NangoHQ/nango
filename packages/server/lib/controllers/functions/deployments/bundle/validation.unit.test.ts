@@ -2,7 +2,7 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import { validation } from './validation.js';
 
-import type { FunctionDeploymentBundleBody, FunctionTags } from '@nangohq/types';
+import type { FunctionDeploymentBundleBody, FunctionTags, ToolTags } from '@nangohq/types';
 import type * as z from 'zod';
 
 type DeployBody = FunctionDeploymentBundleBody;
@@ -91,10 +91,55 @@ describe('function deploy validation', () => {
         }
     );
 
+    it.each([{ all: ['repo', 'read:org'] }, { any: ['repo', 'public_repo'] }, { none: true }])('accepts required scopes %j', (requiredScopes) => {
+        const body = { ...validBody, functions: [{ ...validFunction, tags: { domain: 'issues', required_scopes: requiredScopes } }] };
+        expect(validation.parse(body)).toEqual(body);
+    });
+
+    it.each([{ requiredScopes: 'repo' }, { requiredScopes: ['repo'] }])(
+        'explains the required scopes shape for an ordinary tag value $requiredScopes',
+        ({ requiredScopes }) => {
+            const result = validation.safeParse({ ...validBody, functions: [{ ...validFunction, tags: { required_scopes: requiredScopes } }] });
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues).toContainEqual(
+                    expect.objectContaining({
+                        path: ['functions', 0, 'tags', 'required_scopes'],
+                        message: 'Expected { all: string[] }, { any: string[] }, or { none: true }'
+                    })
+                );
+            }
+        }
+    );
+
+    it.each([
+        { reason: 'legacy scope arrays', requiredScopes: ['repo'] },
+        { reason: 'a string', requiredScopes: 'repo' },
+        { reason: 'no operator', requiredScopes: {} },
+        { reason: 'mixed operators', requiredScopes: { all: ['repo'], any: ['read:org'] } },
+        { reason: 'an empty group', requiredScopes: { all: [] } },
+        { reason: 'duplicate scopes', requiredScopes: { any: ['repo', 'repo'] } },
+        { reason: 'too many scopes', requiredScopes: { all: Array.from({ length: 65 }, (_, i) => `scope${i}`) } },
+        { reason: 'a long scope', requiredScopes: { all: ['s'.repeat(1025)] } },
+        { reason: 'a nonempty none', requiredScopes: { none: ['repo'] } },
+        { reason: 'none set to false', requiredScopes: { none: false } },
+        { reason: 'nested groups', requiredScopes: { all: [{ any: ['repo'] }] } }
+    ])('rejects required scopes with $reason', ({ requiredScopes }) => {
+        expect(validation.safeParse({ ...validBody, functions: [{ ...validFunction, tags: { required_scopes: requiredScopes } }] }).success).toBe(false);
+    });
+
+    it('rejects scope requirements under other tag keys', () => {
+        expect(validation.safeParse({ ...validBody, functions: [{ ...validFunction, tags: { domain: { all: ['repo'] } } }] }).success).toBe(false);
+    });
+
     it('stays structurally aligned with the endpoint body', () => {
-        expectTypeOf<z.input<typeof validation>>().toEqualTypeOf<DeployBody>();
+        type DeployFunction = DeployBody['functions'][number];
+        type ParsedFunction<T extends 'input' | 'output'> = (T extends 'input' ? z.input<typeof validation> : z.output<typeof validation>)['functions'][number];
+        expectTypeOf<Omit<z.input<typeof validation>, 'functions'>>().toEqualTypeOf<Omit<DeployBody, 'functions'>>();
+        expectTypeOf<Omit<ParsedFunction<'input'>, 'tags'>>().toEqualTypeOf<Omit<DeployFunction, 'tags'>>();
+        expectTypeOf<ParsedFunction<'input'>['tags']>().toMatchTypeOf<DeployFunction['tags']>();
         expectTypeOf<z.output<typeof validation>>().toMatchTypeOf<DeployBody>();
-        expectTypeOf<z.output<typeof validation>['functions'][number]['tags']>().toEqualTypeOf<FunctionTags>();
+        expectTypeOf<ParsedFunction<'output'>['tags']>().toMatchTypeOf<FunctionTags | ToolTags>();
     });
 
     it('rejects inconsistent capabilities', () => {

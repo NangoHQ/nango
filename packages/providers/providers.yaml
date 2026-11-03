@@ -19902,6 +19902,38 @@ pave:
             example: '3A8F92C4********V4D'
             doc_section: '#step-1-generating-your-api-key'
 
+paximal-mcp:
+    display_name: Paximal (MCP)
+    categories:
+        - legal
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://clerk.paximal.com/oauth/authorize
+    token_url: https://clerk.paximal.com/oauth/token
+    registration_url: https://clerk.paximal.com/oauth/register
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+        resource: https://next.paximal.com/api/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://next.paximal.com/api
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/paximal-mcp
+
 paychex:
     display_name: Paychex
     categories:

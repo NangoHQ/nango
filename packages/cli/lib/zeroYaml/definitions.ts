@@ -40,7 +40,8 @@ import type {
     NangoYamlParsedIntegration,
     ParsedNangoAction,
     ParsedNangoSync,
-    Result
+    Result,
+    ToolTags
 } from '@nangohq/types';
 
 // TODO: consolidate with the `server` schemas to have a single source of truth
@@ -75,6 +76,16 @@ const functionTriggerDefinitionSchema = z.discriminatedUnion('kind', [
 ]) satisfies z.ZodType<FunctionTriggerDefinition>;
 
 const functionTagStringSchema = z.string().max(64);
+const scopeValuesSchema = z
+    .array(functionTagStringSchema)
+    .min(1)
+    .max(64)
+    .refine((values) => new Set(values).size === values.length, { message: 'Duplicate scopes are not allowed' });
+const requiredScopesSchema = z.union([
+    z.object({ all: scopeValuesSchema }).strict(),
+    z.object({ any: scopeValuesSchema }).strict(),
+    z.object({ none: z.literal(true) }).strict()
+]);
 const functionTagKeySchema = z
     .string()
     .regex(/^[a-z][a-z0-9_\-./]*$/, {
@@ -97,7 +108,7 @@ export const functionTagsSchema = functionTagsRecordSchema.refine((tags) => Obje
 const toolMetaSchema = z
     .object({
         instructions: z.string().max(1024).optional(),
-        requiredScopes: z.array(functionTagStringSchema).max(64).optional(),
+        requiredScopes: requiredScopesSchema.optional(),
         tags: functionTagsRecordSchema
             .refine((tags) => reservedToolTagKeys.every((key) => !(key in tags)), {
                 message: `Tag keys ${reservedToolTagKeys.map((key) => `'${key}'`).join(', ')} are reserved`
@@ -121,7 +132,7 @@ interface FunctionDefinition {
     input?: z.ZodTypeAny | undefined;
     output?: z.ZodTypeAny | undefined;
     data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
-    tags?: FunctionTags | undefined;
+    tags?: FunctionTags | ToolTags | undefined;
 }
 
 type CompiledTool = CreateToolProps<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint> & { type: 'function'; _nangoFactory: 'tool' };

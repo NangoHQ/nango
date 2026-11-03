@@ -3,7 +3,14 @@ import { Err, Ok, resolveSchemaRef } from '@nangohq/utils';
 import { eventTypeMapper } from '../../on-event-scripts.service.js';
 
 import type { FunctionRow } from './models/functions.js';
-import type { DBOnEventScript, ListedNangoActionFunction, ListedNangoFunction, ListedNangoOnEventFunction, ListedNangoSyncFunction } from '@nangohq/types';
+import type {
+    DBOnEventScript,
+    FunctionTagValue,
+    ListedNangoActionFunction,
+    ListedNangoFunction,
+    ListedNangoOnEventFunction,
+    ListedNangoSyncFunction
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export function toListedNangoFunction(row: FunctionRow): Result<ListedNangoFunction> {
@@ -26,7 +33,10 @@ export function toListedNangoFunction(row: FunctionRow): Result<ListedNangoFunct
             if (!row.tool) {
                 return Err(new Error('Missing tool function details'));
             }
-            const { instructions, required_scopes, ...tags } = row.tool.tags;
+            const { instructions, required_scopes, ...customTags } = row.tool.tags;
+            const tags = Object.fromEntries(
+                Object.entries(customTags).filter((entry): entry is [string, FunctionTagValue] => typeof entry[1] === 'string' || Array.isArray(entry[1]))
+            );
             return Ok({
                 ...base,
                 ...availability,
@@ -40,7 +50,7 @@ export function toListedNangoFunction(row: FunctionRow): Result<ListedNangoFunct
                 meta: {
                     tags,
                     ...(typeof instructions === 'string' && { instructions }),
-                    ...(Array.isArray(required_scopes) && { required_scopes })
+                    ...(typeof required_scopes === 'object' && !Array.isArray(required_scopes) && { required_scopes })
                 }
             });
         }

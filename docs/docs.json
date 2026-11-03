@@ -1740,6 +1740,7 @@
               "integrations/all/passportal",
               "api-integrations/pave",
               "integrations/all/pax8",
+              "api-integrations/paximal-mcp",
               "integrations/all/paychex",
               "integrations/all/paycom",
               "integrations/all/paycor",

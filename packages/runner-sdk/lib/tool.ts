@@ -2,12 +2,35 @@ import { createFunction } from './function.js';
 
 import type { CreateFunctionProps, CreateFunctionResponse } from './function.js';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from './types.js';
-import type { FunctionTags, ToolTags } from '@nangohq/types';
+import type { FunctionTags, RequiredScopes, ToolTags } from '@nangohq/types';
 import type * as z from 'zod';
 
 type ToolModels = Record<never, ZodModel>;
 type ToolTrigger = { kind: 'http' };
 type ToolRequires = { outbound: true; connection: true };
+
+function assertUniqueScopes(values: string[]): void {
+    if (new Set(values).size !== values.length) {
+        throw new Error('Duplicate scopes are not allowed');
+    }
+}
+
+export const scopes = {
+    /** Require every listed provider scope. */
+    all(...values: [string, ...string[]]): RequiredScopes {
+        assertUniqueScopes(values);
+        return { all: values };
+    },
+    /** Require at least one of the listed provider scopes. */
+    any(...values: [string, ...string[]]): RequiredScopes {
+        assertUniqueScopes(values);
+        return { any: values };
+    },
+    /** Explicitly declare that no provider scopes are needed. */
+    none(): RequiredScopes {
+        return { none: true };
+    }
+};
 
 type ToolFunctionProps<
     TInput extends z.ZodTypeAny,
@@ -20,7 +43,8 @@ export interface ToolMeta {
     // How and when an agent should use the tool. Can be long.
     instructions?: string;
     // Provider scopes the connection needs. Currently indicative only; not enforced.
-    requiredScopes?: string[];
+    // Use scopes.all(...) for AND, scopes.any(...) for OR, or scopes.none() for no scopes. Omit when unknown.
+    requiredScopes?: RequiredScopes;
     tags?: FunctionTags;
 }
 
@@ -54,7 +78,7 @@ export type CreateToolResponse<
  *     description: 'Get a GitHub issue',
  *     input: z.object({ issueNumber: z.number() }),
  *     output: z.object({ title: z.string() }),
- *     meta: { requiredScopes: ['repo'] },
+ *     meta: { requiredScopes: scopes.any('repo', 'public_repo') },
  *     exec: async (nango, trigger) => {
  *         const issue = await nango.get<{ title: string }>({ endpoint: `/repos/NangoHQ/nango/issues/${trigger.input.issueNumber}` });
  *         return { title: issue.data.title };
@@ -94,13 +118,28 @@ export function toolToFunctionProps<
 
 export const reservedToolTagKeys = ['instructions', 'required_scopes'] as const satisfies readonly (keyof ToolTags)[];
 
+function sortScopes(values: [string, ...string[]]): [string, ...string[]] {
+    const [first, ...rest] = [...values].sort();
+    return [first!, ...rest];
+}
+
+function sortedScopes(scopes: RequiredScopes): RequiredScopes {
+    if (scopes.all) {
+        return { all: sortScopes(scopes.all) };
+    }
+    if (scopes.any) {
+        return { any: sortScopes(scopes.any) };
+    }
+    return scopes;
+}
+
 export function toolMetaToTags(meta: ToolMeta | undefined): ToolTags {
     const tags: ToolTags = { ...meta?.tags };
     if (meta?.instructions !== undefined) {
         tags.instructions = meta.instructions;
     }
     if (meta?.requiredScopes !== undefined) {
-        tags.required_scopes = meta.requiredScopes;
+        tags.required_scopes = sortedScopes(meta.requiredScopes);
     }
     return tags;
 }
