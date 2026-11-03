@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1085
+Provider count: 1086
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -324,6 +324,7 @@ URL patterns:
 | `exa` | Exa | API_KEY | [docs](https://nango.dev/docs/integrations/all/exa.md) |  |  | analytics |
 | `exact-online` | Exact Online | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/exact-online.md) |  |  | accounting, erp |
 | `exist` | Exist | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/exist.md) |  |  | other |
+| `exotel` | Exotel | BASIC | [docs](https://nango.dev/docs/api-integrations/exotel.md) | [connect](https://nango.dev/docs/api-integrations/exotel/connect.md) |  | communication |
 | `expensify` | Expensify | BASIC | [docs](https://nango.dev/docs/integrations/all/expensify.md) | [connect](https://nango.dev/docs/integrations/all/expensify/connect.md) |  | productivity |
 | `extensiv` | Extensiv | BASIC | [docs](https://nango.dev/docs/api-integrations/extensiv.md) | [connect](https://nango.dev/docs/api-integrations/extensiv/connect.md) |  | e-commerce |
 | `facebook` | Facebook | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/facebook.md) |  | [setup](https://nango.dev/docs/api-integrations/facebook/how-to-register-your-own-facebook-api-oauth-app.md) | marketing, social |

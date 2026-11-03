@@ -1,0 +1,91 @@
+---
+title: 'Exotel'
+sidebarTitle: 'Exotel'
+description: 'Integrate your application with the Exotel API'
+---
+
+## 🚀 Quickstart
+
+Connect to Exotel with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Exotel_.
+    </Step>
+    <Step id="authorize-exotel" title="Authorize Exotel">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then select your API hostname and enter your Account SID, API key, and API token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-exotel-api" title="Call the Exotel API">
+    Let's make your first request to the Exotel API to get your account balance. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, connection ID, and Account SID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/Accounts/<ACCOUNT-SID>/Balance.json" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/Accounts/<ACCOUNT-SID>/Balance.json',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Nango sends your API key and API token with HTTP Basic authentication on every request.
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Exotel integration guides
+
+- [How do I link my account?](/api-integrations/exotel/connect)  
+Find your Exotel API key, API token, Account SID, and API hostname.
+
+Official docs: [Exotel API](https://developer.exotel.com/docs/references/authentication)
+
+## API gotchas
+
+- Every path includes your Account SID, such as `/v1/Accounts/<ACCOUNT-SID>/Calls.json`. It's saved in the connection config as `accountSid`.
+- The API hostname depends on your account's region: `api.exotel.com` for Singapore and `api.in.exotel.com` for Mumbai. The region is set when the account is created and can't be changed.
+- Voice APIs allow 200 requests per minute. Above that, Exotel returns `429`.
+- Exotel serves its APIs from two hosts. Nango uses the main API host by default. To call the contact center (CCM) APIs, send the CCM host in the `Base-Url-Override` header:
+
+| Host (Singapore / Mumbai) | APIs |
+| - | - |
+| `api.exotel.com` / `api.in.exotel.com` (default) | `/v1/...`: calls, call flows, call records, SMS, numbers, and account balance |
+| `ccm-api.exotel.com` / `ccm-api.in.exotel.com` | `/v2/...` and `/v3/...` contact center APIs, such as connecting agents and CCM call records |
+
+## 🧩 Pre-built syncs & actions for Exotel
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/exotel/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
