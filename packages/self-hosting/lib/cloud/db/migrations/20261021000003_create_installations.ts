@@ -6,7 +6,7 @@ export async function up(knex: Knex, schema: string): Promise<void> {
     await knex.raw(
         `CREATE TABLE IF NOT EXISTS ??.?? (
             id           INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-            uuid         UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
+            uuid         UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
             customer_id  INTEGER NOT NULL REFERENCES ??.??(id) ON DELETE CASCADE,
             name         TEXT NOT NULL,
             mode         TEXT NOT NULL CHECK (mode IN ('byoc', 'self_managed')),
