@@ -58,7 +58,8 @@ export async function invokeFunction({
     invocationType,
     options,
     orchestrator,
-    actor
+    actor,
+    logMeta
 }: {
     account: DBTeam;
     environment: DBEnvironment;
@@ -70,6 +71,8 @@ export async function invokeFunction({
     options?: Record<string, unknown> | undefined;
     orchestrator: Orchestrator;
     actor?: OperationActor | undefined;
+    /** Added to the operation's meta, next to the input. */
+    logMeta?: Record<string, unknown> | undefined;
 }): Promise<FunctionInvocation> {
     let logCtx: LogContextOrigin | undefined;
     const result = await tracer.trace('nango.function.invocation', async (span): Promise<Result<FunctionInvocationResult, FunctionInvokeError>> => {
@@ -165,7 +168,8 @@ export async function invokeFunction({
                 meta: {
                     invocation_type: invocationType,
                     ...(options ? { options } : {}),
-                    ...(input !== undefined ? truncateJson({ input: envs.NANGO_LOG_FUNCTION_INPUT ? input : 'REDACTED' }) : {})
+                    ...(input !== undefined ? truncateJson({ input: envs.NANGO_LOG_FUNCTION_INPUT ? input : 'REDACTED' }) : {}),
+                    ...logMeta
                 }
             }
         );

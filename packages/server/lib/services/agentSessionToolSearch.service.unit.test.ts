@@ -350,9 +350,17 @@ describe('searchOperationMeta', () => {
         };
     }
 
-    it('logs the query and the tool names, without their descriptions or input', () => {
-        expect(searchOperationMeta({ query: 'send an email', matches: [match('gmail__send_email')], related: [match('gmail__list_labels')] })).toStrictEqual({
+    it('logs the query, the goal and the tool names, without their descriptions or input', () => {
+        expect(
+            searchOperationMeta({
+                query: 'send an email',
+                goal: 'email the weekly report to the team',
+                matches: [match('gmail__send_email')],
+                related: [match('gmail__list_labels')]
+            })
+        ).toStrictEqual({
             query: 'send an email',
+            goal: 'email the weekly report to the team',
             matches: ['gmail__send_email'],
             related: ['gmail__list_labels']
         });

@@ -37,7 +37,12 @@ function twoStepModel(secondStep: LanguageModelV4StreamPart[] | 'until-aborted' 
                 return Promise.resolve({
                     stream: simulateReadableStream<LanguageModelV4StreamPart>({
                         chunks: [
-                            { type: 'tool-call', toolCallId: 'call-1', toolName: 'nango_tool_search', input: JSON.stringify({ query: 'calendar' }) },
+                            {
+                                type: 'tool-call',
+                                toolCallId: 'call-1',
+                                toolName: 'nango_tool_search',
+                                input: JSON.stringify({ query: 'calendar', goal: 'show my calendar for today' })
+                            },
                             { type: 'finish', finishReason: { unified: 'tool-calls', raw: undefined }, usage: stepUsage }
                         ]
                     })

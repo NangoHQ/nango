@@ -52,6 +52,7 @@ export const executeTool = defineAgentSessionMcpTool({
             toolName: tool.name,
             pinned: tool.pinned,
             input: args.input,
+            purpose: { goal: args.goal, intent: args.intent },
             context
         });
     }
@@ -76,6 +77,7 @@ export async function executeSessionTool({
     toolName,
     pinned,
     input,
+    purpose,
     context
 }: {
     metaTool?: AgentSessionMetaTool | undefined;
@@ -83,12 +85,13 @@ export async function executeSessionTool({
     toolName: string;
     pinned: boolean;
     input?: unknown;
+    purpose?: ToolCallPurpose | undefined;
     context: AgentSessionMcpContext;
 }): Promise<Result<unknown>> {
     const { account, environment, session } = context;
 
     const track = (properties: ToolCallOutcome) => {
-        trackAgentSessionToolCall({ metaTool, session, integrationId, toolName, pinned, ...properties });
+        trackAgentSessionToolCall({ metaTool, session, integrationId, toolName, pinned, ...purpose, ...properties });
     };
 
     const integration = Object.hasOwn(session.compiledToolset, integrationId) ? session.compiledToolset[integrationId] : undefined;
@@ -128,7 +131,15 @@ export async function executeSessionTool({
     }
 
     if (compiledTool.mcp) {
-        return await executeRemoteTool({ integrationId, toolName, input, connection, context, track: (properties) => track({ ...properties, mcpTool: true }) });
+        return await executeRemoteTool({
+            integrationId,
+            toolName,
+            input,
+            purpose,
+            connection,
+            context,
+            track: (properties) => track({ ...properties, mcpTool: true })
+        });
     }
 
     return await tracer.trace<Promise<Result<unknown>>>('server.mcp.agentSession.execute', async (span: Span) => {
@@ -162,7 +173,8 @@ export async function executeSessionTool({
                 request: { method: 'POST', path: '/mcp', headers: {}, query: {} },
                 invocationType: 'wait',
                 orchestrator: getOrchestrator(),
-                actor: { kind: 'session', id: session.id }
+                actor: { kind: 'session', id: session.id },
+                logMeta: purpose
             });
 
             if (result.isErr()) {
@@ -189,7 +201,8 @@ export async function executeSessionTool({
             isAsync: false,
             retryMax: RETRY_MAX,
             span,
-            actor: { kind: 'session', id: session.id }
+            actor: { kind: 'session', id: session.id },
+            logMeta: purpose
         });
 
         if (result.isErr()) {
@@ -203,6 +216,11 @@ export async function executeSessionTool({
     });
 }
 
+type ToolCallPurpose = {
+    goal: string;
+    intent: string;
+};
+
 interface ToolCallOutcome {
     logOperationId?: string | undefined;
     errorCode?: string | undefined;
@@ -214,6 +232,7 @@ async function executeRemoteTool({
     integrationId,
     toolName,
     input,
+    purpose,
     connection,
     context,
     track
@@ -221,6 +240,7 @@ async function executeRemoteTool({
     integrationId: string;
     toolName: string;
     input: unknown;
+    purpose: ToolCallPurpose | undefined;
     connection: AgentSessionResolvedConnection;
     context: AgentSessionMcpContext;
     track: (properties: ToolCallOutcome) => void;
@@ -253,7 +273,8 @@ async function executeRemoteTool({
                 integrationId,
                 connectionId: connection.connectionId,
                 provider: connection.provider,
-                actor: { kind: 'session', id: session.id }
+                actor: { kind: 'session', id: session.id },
+                logMeta: purpose
             },
             async (mcp) => await callRemoteTool(mcp, { name: toolName, args: (input as Record<string, unknown> | undefined) ?? {} })
         );

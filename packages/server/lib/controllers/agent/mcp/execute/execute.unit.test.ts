@@ -114,6 +114,8 @@ function integrationOf(result: Result<unknown>): string | undefined {
     return error instanceof PublicMcpError ? error.integrationId : undefined;
 }
 
+const PURPOSE = { goal: 'summarize the roadmap doc in Notion', intent: 'read the roadmap doc' };
+
 describe('executeSessionTool', () => {
     afterEach(() => {
         vi.restoreAllMocks();
@@ -154,7 +156,7 @@ describe('executeSessionTool', () => {
     // A tool's input is validated against its own deployed schema, and 34 template actions have a
     // non-object root: anrok's transaction actions take an array, others a oneOf or a bare null.
     it.each([[[{ id: '1' }]], ['a string'], [null], [42], [false], [0], ['']])('passes a non-object input through as %j', async (input) => {
-        const parsed = executeInputSchema.safeParse({ tool: 'notion__read_doc', input });
+        const parsed = executeInputSchema.safeParse({ tool: 'notion__read_doc', input, ...PURPOSE });
 
         expect(parsed.success).toBe(true);
 
@@ -465,21 +467,38 @@ describe('nango_execute', () => {
     });
 
     it('addresses a tool by the one name, and never by integration plus action', async () => {
-        const result = await executeTool.handler({ tool: 'notion__read_doc', input: { id: '1' } }, context());
+        const result = await executeTool.handler({ tool: 'notion__read_doc', input: { id: '1' }, ...PURPOSE }, context());
 
         expect(result.isOk()).toBe(true);
         expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ providerConfigKey: 'notion', actionName: 'read_doc', input: { id: '1' } }));
     });
 
     it('reaches a searchable tool, which no listing ever named', async () => {
-        const result = await executeTool.handler({ tool: 'notion__upsert_doc' }, context());
+        const result = await executeTool.handler({ tool: 'notion__upsert_doc', ...PURPOSE }, context());
 
         expect(result.isOk()).toBe(true);
         expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ actionName: 'upsert_doc' }));
     });
 
+    it('logs the goal and the intent on the operation', async () => {
+        await executeTool.handler({ tool: 'notion__read_doc', input: { id: '1' }, ...PURPOSE }, context());
+
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ logMeta: PURPOSE }));
+    });
+
+    it.each([['goal'], ['intent']])('rejects a call without its %s', async (field) => {
+        const args: Record<string, unknown> = { tool: 'notion__read_doc', ...PURPOSE };
+        delete args[field];
+
+        const result = await executeTool.handler(args, context());
+
+        expect(errorOf(result).message).toContain('Invalid nango_execute arguments');
+        expect(codeOf(result)).toBe('invalid_input');
+        expect(executeAction).not.toHaveBeenCalled();
+    });
+
     it('rejects the old integration plus tool shape rather than silently ignoring it', async () => {
-        const result = await executeTool.handler({ integration: 'notion', tool: 'read_doc' }, context());
+        const result = await executeTool.handler({ integration: 'notion', tool: 'read_doc', ...PURPOSE }, context());
 
         expect(errorOf(result).message).toContain('Invalid nango_execute arguments');
         expect(codeOf(result)).toBe('invalid_input');
@@ -488,7 +507,7 @@ describe('nango_execute', () => {
 
     // A name carries no integration to fall back on, so the message has to point somewhere.
     it('points an unknown name at tool search when the session has it', async () => {
-        const result = await executeTool.handler({ tool: 'notion__delete_doc' }, context());
+        const result = await executeTool.handler({ tool: 'notion__delete_doc', ...PURPOSE }, context());
 
         expect(errorOf(result)).toBeInstanceOf(PublicMcpError);
         expect(errorOf(result).message).toBe(
@@ -507,7 +526,7 @@ describe('nango_execute', () => {
             }
         };
 
-        const result = await executeTool.handler({ tool: 'notion__delete_doc' }, withoutSearch);
+        const result = await executeTool.handler({ tool: 'notion__delete_doc', ...PURPOSE }, withoutSearch);
 
         expect(errorOf(result).message).toBe("Tool 'notion__delete_doc' is not one of this session's tools. Call a tool by the name it is listed under.");
     });

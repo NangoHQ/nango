@@ -49,7 +49,8 @@ export async function executeAction({
     isAsync,
     retryMax,
     span,
-    actor
+    actor,
+    logMeta
 }: {
     account: DBTeam;
     environment: DBEnvironment;
@@ -61,6 +62,8 @@ export async function executeAction({
     retryMax: number;
     span: Span;
     actor?: OperationActor | undefined;
+    /** Added to the operation's meta, next to the input. */
+    logMeta?: Record<string, unknown> | undefined;
 }): Promise<ActionExecution> {
     let logCtx: LogContextOrigin | undefined;
     try {
@@ -99,7 +102,7 @@ export async function executeAction({
                 integration: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
                 connection: { id: connection.id, name: connection.connection_id },
                 syncConfig: loggedSyncConfig,
-                meta: truncateJson({ input: envs.NANGO_LOG_FUNCTION_INPUT ? input : 'REDACTED' })
+                meta: { ...truncateJson({ input: envs.NANGO_LOG_FUNCTION_INPUT ? input : 'REDACTED' }), ...logMeta }
             }
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation));
