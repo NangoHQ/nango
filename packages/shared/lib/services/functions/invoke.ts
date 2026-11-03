@@ -166,10 +166,10 @@ export async function invokeFunction({
                 connection: { id: connection.id, name: connection.connection_id },
                 syncConfig: { id: currentVersion.id, name: config.name },
                 meta: {
+                    ...logMeta,
                     invocation_type: invocationType,
                     ...(options ? { options } : {}),
-                    ...(input !== undefined ? truncateJson({ input: envs.NANGO_LOG_FUNCTION_INPUT ? input : 'REDACTED' }) : {}),
-                    ...logMeta
+                    ...(input !== undefined ? truncateJson({ input: envs.NANGO_LOG_FUNCTION_INPUT ? input : 'REDACTED' }) : {})
                 }
             }
         );

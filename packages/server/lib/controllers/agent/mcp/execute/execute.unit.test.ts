@@ -392,6 +392,14 @@ describe('executeSessionTool', () => {
         expect(executeAction).not.toHaveBeenCalled();
     });
 
+    it('logs the goal and the intent on the invocation', async () => {
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(TOOL));
+
+        await execute('read_doc', { input: { id: '1' }, purpose: PURPOSE });
+
+        expect(invokeFunction).toHaveBeenCalledWith(expect.objectContaining({ logMeta: PURPOSE }));
+    });
+
     it('omits empty MCP arguments for a tool without an input schema', async () => {
         vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ ...TOOL, currentVersion: { ...TOOL.currentVersion, input_schema_ref: null } }));
 
