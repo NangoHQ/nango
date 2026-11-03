@@ -42,6 +42,7 @@ export {
     auditEnvironmentCreated,
     auditEnvironmentDeleted,
     auditEnvironmentUpdated,
+    auditPublicEnvironmentUpdated,
     auditEnvironmentVariablesChanged,
     auditEnvironmentWebhookUrlsChanged,
     auditPublicEnvironmentCreated,

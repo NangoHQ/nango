@@ -94,7 +94,7 @@ export type PostPublicEnvironment = ApiEndpoint<{
 }>;
 
 export type PatchPublicEnvironment = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'environment', 'updated', 'environment'>;
     Method: 'PATCH';
     Path: '/environments/:environmentUuid';
     Params: { environmentUuid: string };
