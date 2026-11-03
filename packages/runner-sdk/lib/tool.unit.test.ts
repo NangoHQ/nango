@@ -1,7 +1,7 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import * as z from 'zod';
 
-import { createTool, toolMetaToTags } from './tool.js';
+import { createTool, scopes, toolMetaToTags } from './tool.js';
 
 import type { HttpResponse } from './function.js';
 
@@ -14,7 +14,7 @@ describe('createTool', () => {
             description: 'Get an issue',
             input: z.object({ issueNumber: z.number() }),
             output: z.object({ title: z.string() }),
-            meta: { instructions: 'Use it to read one issue', requiredScopes: ['repo'], tags: { domain: 'issues' } },
+            meta: { instructions: 'Use it to read one issue', requiredScopes: scopes.all('repo'), tags: { domain: 'issues' } },
             exec: (nango, trigger) => {
                 expectTypeOf<Has<typeof nango, 'proxy'>>().toEqualTypeOf<true>();
                 expectTypeOf(nango.get<{ title: string }>({ endpoint: '/issues/1' })).toEqualTypeOf<Promise<HttpResponse<{ title: string }>>>();
@@ -33,7 +33,7 @@ describe('createTool', () => {
             name: 'get_issue',
             description: 'Get an issue',
             trigger: { kind: 'http' },
-            tags: { domain: 'issues', instructions: 'Use it to read one issue', required_scopes: ['repo'] },
+            tags: { domain: 'issues', instructions: 'Use it to read one issue', required_scopes: { all: ['repo'] } },
             capabilities: { usesRecords: false, usesCheckpoints: false, usesMetadata: false, usesOutbound: true, usesInvoke: false }
         });
         expect(tool).not.toHaveProperty('meta');
@@ -118,12 +118,60 @@ describe('createTool', () => {
     });
 });
 
+describe('scopes', () => {
+    it.each(['all', 'any'] as const)('rejects duplicate values in %s', (operator) => {
+        expect(() => scopes[operator]('repo', 'read:org', 'repo')).toThrow('Duplicate scopes are not allowed');
+    });
+
+    it.each(['all', 'any'] as const)('compares %s values exactly without normalization', (operator) => {
+        expect(scopes[operator]('repo', 'Repo', ' repo')).toEqual({ [operator]: ['repo', 'Repo', ' repo'] });
+    });
+});
+
 describe('toolMetaToTags', () => {
     it('returns no tags without meta', () => {
         expect(toolMetaToTags(undefined)).toStrictEqual({});
     });
 
-    it('only sets the fields that are present', () => {
-        expect(toolMetaToTags({ requiredScopes: [] })).toStrictEqual({ required_scopes: [] });
+    it.each([
+        { requirement: scopes.all('repo', 'read:org'), expected: { all: ['read:org', 'repo'] } },
+        { requirement: scopes.any('repo', 'public_repo'), expected: { any: ['public_repo', 'repo'] } },
+        { requirement: scopes.none(), expected: { none: true } }
+    ])('preserves the scope requirement $expected', ({ requirement, expected }) => {
+        expect(toolMetaToTags({ requiredScopes: requirement })).toStrictEqual({ required_scopes: expected });
+    });
+
+    it('produces the same tags regardless of scope order', () => {
+        expect(toolMetaToTags({ requiredScopes: scopes.any('repo', 'public_repo') })).toStrictEqual(
+            toolMetaToTags({ requiredScopes: scopes.any('public_repo', 'repo') })
+        );
+    });
+
+    it('requires nonempty groups of strings without mixing operators', () => {
+        // @ts-expect-error at least one scope is required
+        scopes.all();
+        // @ts-expect-error at least one scope is required
+        scopes.any();
+        // @ts-expect-error nested expressions are not supported
+        scopes.all('repo', scopes.any('read:org', 'admin:org'));
+        // @ts-expect-error legacy arrays are not supported
+        toolMetaToTags({ requiredScopes: ['repo'] });
+        // @ts-expect-error only one operator can be specified
+        toolMetaToTags({ requiredScopes: { all: ['repo'], any: ['read:org'] } });
+        // @ts-expect-error groups cannot be empty
+        toolMetaToTags({ requiredScopes: { all: [] } });
+        // @ts-expect-error none cannot be combined with another operator
+        toolMetaToTags({ requiredScopes: { none: true, all: ['repo'] } });
+        // @ts-expect-error none takes no arguments
+        scopes.none('repo');
+        // @ts-expect-error none must be true
+        toolMetaToTags({ requiredScopes: { none: ['repo'] } });
+        // @ts-expect-error the old empty array representation is not supported
+        toolMetaToTags({ requiredScopes: { none: [] } });
+    });
+
+    it('distinguishes unknown requirements from explicitly requiring no scopes', () => {
+        expect(toolMetaToTags({})).not.toHaveProperty('required_scopes');
+        expect(toolMetaToTags({ requiredScopes: scopes.none() })).toStrictEqual({ required_scopes: { none: true } });
     });
 });

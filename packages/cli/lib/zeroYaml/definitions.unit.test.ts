@@ -364,8 +364,8 @@ describe('validateTool', () => {
     it.each([
         { reserved: {}, customTags: 30 },
         { reserved: { instructions: 'Use this tool' }, customTags: 30 },
-        { reserved: { requiredScopes: ['repo'] }, customTags: 30 },
-        { reserved: { instructions: 'Use this tool', requiredScopes: ['repo'] }, customTags: 30 }
+        { reserved: { requiredScopes: { all: ['repo'] as [string] } }, customTags: 30 },
+        { reserved: { instructions: 'Use this tool', requiredScopes: { any: ['repo'] as [string] } }, customTags: 30 }
     ])('allows $customTags custom tags with metadata $reserved', ({ reserved, customTags }) => {
         const tags = Object.fromEntries(Array.from({ length: customTags }, (_, i) => [`tag${i}`, 'value']));
         expect(validateTool({ filePath, params: { meta: { ...reserved, tags } } }).isOk()).toBe(true);
@@ -380,12 +380,26 @@ describe('validateTool', () => {
         { reason: 'no name or meta', params: {} },
         { reason: 'a name', params: { name: 'get_issue-2' } },
         { reason: 'empty meta', params: { meta: {} } },
+        { reason: 'explicitly no scopes', params: { meta: { requiredScopes: { none: true as const } } } },
         { reason: 'long instructions', params: { meta: { instructions: 'a'.repeat(1024) } } },
-        { reason: 'required scopes', params: { meta: { requiredScopes: ['repo', 'read:org'] } } },
+        { reason: 'all required scopes', params: { meta: { requiredScopes: { all: ['repo', 'read:org'] as [string, string] } } } },
+        { reason: 'any required scope', params: { meta: { requiredScopes: { any: ['repo', 'public_repo'] as [string, string] } } } },
         { reason: 'tags', params: { meta: { tags: { domain: 'issues', owners: ['platform'] } } } },
         { reason: 'metadata and checkpoint', params: { data: { metadata: z.object({}), checkpoint: z.object({ cursor: z.string() }) } } }
     ])('accepts $reason', ({ params }) => {
         expect(validateTool({ filePath, params }).isOk()).toBe(true);
+    });
+
+    it.each(['all', 'any'] as const)('rejects duplicate scopes in a plain %s declaration', (operator) => {
+        const params = { meta: { requiredScopes: { [operator]: ['repo', 'read:org', 'repo'] } } };
+        const result = validateTool({ filePath, params: params as never });
+        assert(result.isErr());
+        expect(result.error.message).toContain('Duplicate scopes are not allowed');
+    });
+
+    it.each(['all', 'any'] as const)('preserves distinct scope strings in a plain %s declaration', (operator) => {
+        const params = { meta: { requiredScopes: { [operator]: ['repo', 'Repo', ' repo'] } } };
+        expect(validateTool({ filePath, params: params as never }).isOk()).toBe(true);
     });
 
     it('rejects declaring models', () => {
@@ -398,7 +412,20 @@ describe('validateTool', () => {
         { reason: 'a name with invalid characters', params: { name: 'get issue' } },
         { reason: 'a name that is too long', params: { name: 'a'.repeat(65) } },
         { reason: 'instructions that are too long', params: { meta: { instructions: 'a'.repeat(1025) } } },
-        { reason: 'a required scope that is too long', params: { meta: { requiredScopes: ['a'.repeat(65)] } } },
+        { reason: 'a required scope that is too long', params: { meta: { requiredScopes: { all: ['a'.repeat(65)] } } } },
+        { reason: 'legacy scope arrays', params: { meta: { requiredScopes: ['repo'] } } },
+        { reason: 'none combined with all', params: { meta: { requiredScopes: { none: true, all: ['repo'] } } } },
+        { reason: 'none combined with any', params: { meta: { requiredScopes: { none: true, any: ['repo'] } } } },
+        { reason: 'a nonempty none group', params: { meta: { requiredScopes: { none: ['repo'] } } } },
+        { reason: 'none set to false', params: { meta: { requiredScopes: { none: false } } } },
+        { reason: 'none set to an empty array', params: { meta: { requiredScopes: { none: [] } } } },
+        { reason: 'a requirement with no operator', params: { meta: { requiredScopes: {} } } },
+        { reason: 'an empty all group', params: { meta: { requiredScopes: { all: [] } } } },
+        { reason: 'an empty any group', params: { meta: { requiredScopes: { any: [] } } } },
+        { reason: 'mixed scope operators', params: { meta: { requiredScopes: { all: ['repo'], any: ['read:org'] } } } },
+        { reason: 'nested scope groups', params: { meta: { requiredScopes: { all: [{ any: ['repo', 'public_repo'] }] } } } },
+        { reason: 'a non-string scope', params: { meta: { requiredScopes: { any: [42] } } } },
+        { reason: 'too many required scopes', params: { meta: { requiredScopes: { any: Array.from({ length: 65 }, (_, i) => `scope${i}`) } } } },
         { reason: 'a tag value that is too long', params: { meta: { tags: { domain: 'a'.repeat(65) } } } },
         { reason: 'an invalid tag key', params: { meta: { tags: { Domain: 'issues' } } } },
         { reason: 'the reserved instructions tag', params: { meta: { tags: { instructions: 'issues' } } } },

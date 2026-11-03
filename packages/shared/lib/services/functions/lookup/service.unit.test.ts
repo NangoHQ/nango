@@ -104,7 +104,7 @@ describe('function lookup service', () => {
                         provider: 'github',
                         input_schema_ref: '#/definitions/Input',
                         output_schema_ref: null,
-                        tags: { instructions: 'Read users', required_scopes: ['read'], category: 'crm' }
+                        tags: { instructions: 'Read users', required_scopes: { all: ['read'] }, category: 'crm' }
                     }
                 }
             ],
@@ -125,7 +125,7 @@ describe('function lookup service', () => {
             output_json_schema: null
         });
         expect(row.input_json_schema).toEqual({ $ref: '#/definitions/Input', definitions: { Input: input, Item: item } });
-        expect(row.meta).toEqual({ instructions: 'Read users', required_scopes: ['read'], tags: { category: 'crm' } });
+        expect(row.meta).toEqual({ instructions: 'Read users', required_scopes: { all: ['read'] }, tags: { category: 'crm' } });
     });
 
     it('returns mapped rows and total for valid functions', async () => {
