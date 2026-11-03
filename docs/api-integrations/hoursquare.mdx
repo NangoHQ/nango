@@ -1,0 +1,89 @@
+---
+title: 'HourSquare'
+sidebarTitle: 'HourSquare'
+description: 'Integrate your application with the HourSquare API'
+---
+
+## 🚀 Quickstart
+
+Connect to HourSquare with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _HourSquare_.
+    </Step>
+    <Step id="authorize-hoursquare" title="Authorize HourSquare">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter the Key ID and API Key of an HourSquare API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-hoursquare-api" title="Call the HourSquare API">
+    Let's make your first request to the HourSquare API to describe the connected API key. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/public/v1/me" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/public/v1/me',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Nango exchanges the API key for an access token and renews it before it expires.
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 HourSquare integration guides
+
+- [How do I link my account?](/api-integrations/hoursquare/connect)  
+Create an API key in HourSquare and choose its scopes.
+
+Official docs: [HourSquare API](https://hoursquare.com/developers/) and [OpenAPI specification](https://api.hoursquare.com/api/public/v1/openapi.json)
+
+## API gotchas
+
+- All endpoints are under `/api/public/v1`, so include that prefix in Proxy requests.
+- An API key belongs to one HourSquare company and carries the scopes chosen when it was created, such as `employees.read` or `attendance.record`. A request without the needed scope returns `403 insufficient_scope`.
+- Access tokens last 15 minutes. Nango requests a new token when needed. The token endpoint allows 60 requests per minute per key.
+- The API allows about 300 requests per minute per key. A `429` response includes a `Retry-After` header, which Nango uses to retry.
+- Write requests accept an `Idempotency-Key` header to make retries safe, and an `X-HourSquare-Dry-Run: true` header to validate a request without saving it.
+- Errors use the `application/problem+json` format (RFC 9457), with a stable `error` code such as `employee_not_found` or `validation_failed`.
+- Revoking a key stops new tokens right away, but tokens already issued keep working for up to 15 minutes.
+
+## 🧩 Pre-built syncs & actions for HourSquare
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/hoursquare/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -13169,6 +13169,36 @@ holded-v2:
             pattern: '^pat_[a-f0-9]{24}_[a-f0-9]{64}$'
             example: pat_************************_************************************************************24d4
 
+hoursquare:
+    display_name: HourSquare
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    token_url: https://api.hoursquare.com/api/public/v1/oauth/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.hoursquare.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/hoursquare
+    docs_connect: https://nango.dev/docs/api-integrations/hoursquare/connect
+    credentials:
+        client_id:
+            type: string
+            title: Key ID
+            description: The public ID of your HourSquare API key, which starts with hsq_.
+            example: hsq_a1b2c3d4
+            doc_section: '#step-2-create-an-api-key'
+        client_secret:
+            type: string
+            title: API Key
+            description: The full API key from HourSquare, which starts with hsq_. HourSquare shows it once, when you create the key.
+            secret: true
+            doc_section: '#step-2-create-an-api-key'
+
 hover:
     display_name: Hover
     categories:
