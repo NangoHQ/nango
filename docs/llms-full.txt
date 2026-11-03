@@ -3008,10 +3008,10 @@ Meta tools are Nango's own tools. They are always pinned to the MCP server's too
 
 ### nango_tool_search
 
-Takes a plain-language `query` describing what the agent wants to do.
+Takes a `query` of a few keywords naming the action, and a `goal` with the task the user asked for, in their words.
 
 ```json
-{ "query": "find emails by subject" }
+{ "query": "find emails by subject", "goal": "find the invoice email from last week and forward it to accounting" }
 ```
 
 The result carries `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status.
@@ -3020,10 +3020,15 @@ Only a best match includes `input`, its argument schema — a weak match is a le
 
 ### nango_execute
 
-Runs one of the session's tools by name, on the connection the session resolved for that integration.
+Runs one of the session's tools by name, on the connection the session resolved for that integration. Along with the tool and its input, it takes the task's `goal` and an `intent`, the step of the goal this call is for.
 
 ```json
-{ "tool": "notion__read_doc", "input": { "doc_id": "abc" } }
+{
+    "tool": "notion__read_doc",
+    "input": { "doc_id": "abc" },
+    "goal": "summarize the Q3 roadmap doc in Notion",
+    "intent": "read the roadmap doc"
+}
 ```
 
 Execution is synchronous and goes through the same path as [triggering an action function](/reference/backend/http-api/action/trigger), so it is capped by the synchronous execution limit and appears in Nango logs like any other function run.
