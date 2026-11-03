@@ -1114,6 +1114,7 @@
               "integrations/all/asana-scim",
               "integrations/all/ashby",
               "api-integrations/aspire",
+              "api-integrations/assemblyai",
               "api-integrations/astro-mcp",
               "api-integrations/athenahealth",
               "api-integrations/athenahealth-jwks",
