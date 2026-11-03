@@ -1,5 +1,5 @@
 import type { FunctionTags } from '../function/config.js';
-import type { RequiredScopes } from '../function/tool.js';
+import type { ToolTags } from '../function/tool.js';
 import type { OnEventType } from '../scripts/on-events/api.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
 import type { JSONSchema7 } from 'json-schema';
@@ -72,9 +72,7 @@ export type ListedNangoToolFunction = NangoFunctionBase &
         description: string;
         input_json_schema: JSONSchema7 | null;
         output_json_schema: JSONSchema7 | null;
-        meta: {
-            instructions?: string;
-            required_scopes?: RequiredScopes;
+        meta: Pick<ToolTags, 'instructions' | 'required_scopes'> & {
             tags: FunctionTags;
         };
     };
