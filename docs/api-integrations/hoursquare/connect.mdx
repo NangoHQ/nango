@@ -1,0 +1,50 @@
+---
+title: 'HourSquare - How do I link my account?'
+sidebarTitle: 'HourSquare'
+---
+
+## Overview
+
+To connect with HourSquare, you need:
+
+1. **Key ID** — The public ID of an API key. It starts with `hsq_`.
+2. **API Key** — The full API key, which also starts with `hsq_`.
+
+This guide walks you through creating an API key in HourSquare.
+
+### Prerequisites
+
+- An HourSquare account ([hoursquare.com](https://hoursquare.com)) with permission to manage API keys.
+- Each scope you add to the key must be a permission you hold yourself. HourSquare doesn't let you give a key more access than your own account has.
+
+### Step 1: Decide which scopes you need
+
+A key can only use the scopes it was created with. Pick the ones your use case needs:
+
+| Scope | Allows |
+| - | - |
+| `employees.read` | Read employees (ID, external ID, name, email, status) |
+| `attendance.read` | Read time entries |
+| `attendance.record` | Record clock events and completed shifts, and set employee external IDs |
+| `attendance.reports` | Read time reports |
+| `leave.read` | Read leave balances and requests |
+
+### Step 2: Create an API key
+
+1. Sign in to HourSquare and open **Settings** -> **API & integrations**.
+2. Click **Create key**.
+3. Enter a **Name** for the key, such as `Nango`.
+4. Select the **Scopes** from Step 1.
+5. Choose an **Expiry**: Never, 30 days, 90 days, 1 year, or a custom date. An expired key stops working, so set a reminder to replace it before then.
+6. Optional: under **Advanced**, restrict the key to **Allowed IP ranges**. Leave it empty to allow any address.
+7. Click **Create key**.
+8. HourSquare shows the full key once. Copy it, then select **I have saved this key**. If you lose it, rotate the key to get a new one.
+9. The key list shows the key ID (`hsq_` followed by eight characters). Use **Copy key id** to copy it.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with HourSquare.
+2. Enter the **Key ID** and the **API Key**.
+3. Submit the form.
+
+You are now connected to HourSquare.
