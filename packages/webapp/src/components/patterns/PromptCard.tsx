@@ -41,6 +41,11 @@ export const PromptCard: React.FC<PromptCardProps> = ({ prompt, provider, name, 
             <span className="flex-1">
                 <PromptText prompt={prompt} name={name} />
             </span>
+            {action === 'copy' && (
+                <span className="sr-only" aria-live="polite">
+                    {copied ? 'Copied' : ''}
+                </span>
+            )}
             <ActionIcon
                 aria-hidden
                 className={cn(

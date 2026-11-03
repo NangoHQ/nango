@@ -32,6 +32,7 @@ import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
+import { useUser } from '@/hooks/useUser';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
@@ -56,6 +57,7 @@ type Copied = 'prompt' | 'key' | `try:${string}`;
 
 export const AgentGettingStarted: React.FC = () => {
     const env = useStore((state) => state.env);
+    const { user } = useUser();
     const { data: meta } = useMeta();
     const { can } = usePermissions();
     const { toast } = useToast();
@@ -63,8 +65,10 @@ export const AgentGettingStarted: React.FC = () => {
 
     const canReadSecret = can('environment:settings:read_secret');
     const showPlaygroundLink = Boolean(meta?.data.agentPlayground) && can('environment:agent_sessions:write');
-    const { data: apiKeys } = useApiKeys(canReadSecret ? env : '');
-    const { data: environment } = useEnvironment(canReadSecret ? env : '');
+    const { data: apiKeys, isLoading: isLoadingApiKeys } = useApiKeys(canReadSecret ? env : '');
+    const { data: environment, isLoading: isLoadingEnvironment } = useEnvironment(canReadSecret ? env : '');
+    // Permissions and keys decide what the prompt contains, so it can't be copied before they're known.
+    const isLoadingPrompt = !user || !meta || isLoadingApiKeys || isLoadingEnvironment;
     // Self-hosted instances can pin the key with an env var; it isn't in the API keys list.
     const managedSecretKey = environment?.environmentAndAccount.managed_secret_key ?? null;
     const apiKey = canReadSecret ? (managedSecretKey ?? (apiKeys ? (pickPromptApiKey(apiKeys.data)?.secret ?? null) : null)) : null;
@@ -149,7 +153,7 @@ export const AgentGettingStarted: React.FC = () => {
                     <p className="type-text-regular-sm text-text-secondary">Could not load your progress. Refresh the page to try again.</p>
                 ) : (
                     <StepList label="Setup steps">
-                        {!progress ? (
+                        {!progress || isLoadingPrompt ? (
                             <StepCard state="current" icon={MessageSquareCode} title="Install Nango">
                                 <div className="flex gap-2">
                                     <Skeleton className="h-8 w-56" />
