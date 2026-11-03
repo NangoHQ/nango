@@ -16,7 +16,6 @@
         "directory": "packages/self-hosting"
     },
     "dependencies": {
-        "@nangohq/database": "file:../database",
         "@nangohq/migrations": "file:../migrations",
         "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils",
