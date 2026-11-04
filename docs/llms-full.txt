@@ -10555,7 +10555,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/update.md
   Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:update` scope.
 </Info>
 
-Partially update environment settings. Omitted fields, including fields inside `webhooks`, retain their existing values. Set a webhook flag to `false` to disable it, or a webhook URL to an empty string or `null` to clear it.
+Partially update environment settings. Omitted fields, including fields inside `webhooks`, retain their existing values.
 
 Changing `is_production` additionally requires `account:environments:set_production`. The reserved `prod` environment cannot be renamed or have its production flag changed.
 
@@ -10565,7 +10565,7 @@ Changing OpenTelemetry settings requires access to realtime logs export (include
     Supplying `otlp_headers` replaces the entire header set; pass an empty array to clear it.
 </Warning>
 
-To rotate/import a webhook signing key, use [Rotate the webhook signing key](/reference/backend/http-api/environments/rotate-webhook-signing-key) with an Environment API key.
+To import a webhook signing key, use [Rotate the webhook signing key](/reference/backend/http-api/environments/rotate-webhook-signing-key) with an [Environment API key](/reference/backend/http-api/api-keys#environment-api-keys).
 
 The response is an acknowledgement on successful updates or an error on failures. To retrieve the updated configuration, use [Get an environment](/reference/backend/http-api/environments/get) with the required read permissions.
 
