@@ -88,27 +88,45 @@ SplitButton.displayName = 'SplitButton';
 /** The main half. Type and size come from the parent `SplitButton`. */
 export type SplitButtonActionProps = Omit<ButtonProps, 'variant' | 'size'>;
 
-export const SplitButtonAction = forwardRef<HTMLButtonElement, SplitButtonActionProps>(({ className, disabled, ...props }, ref) => {
-    const { variant, size, disabled: groupDisabled } = useSplitButton('SplitButtonAction');
+export const SplitButtonAction = forwardRef<HTMLButtonElement, SplitButtonActionProps>(
+    ({ className, disabled, loading, asChild, onClickCapture, ...props }, ref) => {
+        const { variant, size, disabled: groupDisabled } = useSplitButton('SplitButtonAction');
+        const isDisabled = groupDisabled || disabled || loading;
+        // Same guard as IconButton: pointer-events-none only stops the mouse, so a disabled slotted link could still
+        // be activated with Enter or a programmatic click. Capturing the click first blocks both navigation and the
+        // child's own onClick.
+        const handleClickCapture = (event: React.MouseEvent<HTMLButtonElement>) => {
+            if (isDisabled && asChild) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+            onClickCapture?.(event);
+        };
 
-    return (
-        <Button
-            ref={ref}
-            variant={variant}
-            size={size}
-            disabled={groupDisabled || disabled}
-            // square inner corners: the right edge meets the menu half
-            className={cn(HALF_CLASSES, 'rounded-r-none', className)}
-            {...props}
-        />
-    );
-});
+        return (
+            <Button
+                ref={ref}
+                variant={variant}
+                size={size}
+                asChild={asChild}
+                loading={loading}
+                disabled={groupDisabled || disabled}
+                // square inner corners: the right edge meets the menu half
+                className={cn(HALF_CLASSES, 'rounded-r-none', className)}
+                {...props}
+                onClickCapture={handleClickCapture}
+            />
+        );
+    }
+);
 
 SplitButtonAction.displayName = 'SplitButtonAction';
 
 // ─── SplitButtonMenuTrigger ───────────────────────────────────────────────────
 
-export interface SplitButtonMenuTriggerProps extends Omit<IconButtonProps, 'variant' | 'size' | 'label' | 'children' | 'asChild'> {
+// `loading` is omitted: a spinner would replace the chevron and disable the trigger. Show loading on the main half.
+export interface SplitButtonMenuTriggerProps extends Omit<IconButtonProps, 'variant' | 'size' | 'label' | 'children' | 'asChild' | 'loading'> {
     /** Accessible name for the chevron. Defaults to "More options" — prefer naming what the menu holds. */
     label?: string;
 }
