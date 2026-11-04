@@ -28,7 +28,7 @@ const result = await nango.callTool(
 
 For HTTP, replace `POST /action/trigger` with `POST /connections/<CONNECTION-ID>/tools/create-issue/calls`. Move the action name into the URL and send `{ "input": ... }` as the body. Both APIs return the operation's output directly.
 
-Use a Nango Environment API key from **Environment Settings > API Keys** as `Authorization: Bearer <NANGO-API-KEY>`. Scoped tool callers need **both** `environment:functions:invocations` and `environment:actions:execute`.
+Use a Nango Environment API key from **Environment Settings > API Keys** as `Authorization: Bearer <NANGO-API-KEY>`. Scoped keys need `environment:tools:call`, which replaces `environment:actions:execute`. Existing keys with the old scope keep working.
 
 For Management MCP clients, replace `actions_trigger` with `tools_call` and replace the `action_name` argument with `name`. Keep `integration_id`, `connection_id`, and optional `input`.
 
@@ -37,7 +37,8 @@ For Management MCP clients, replace `actions_trigger` with `tools_call` and repl
 1. Replace `createAction` with `createTool`, imported from `nango`.
 2. Keep the input and output schemas and the externally visible name.
 3. Change `exec: async (nango, input)` to `exec: async (nango, trigger)` and read the input from `trigger.input`.
-4. Remove action-only configuration such as `version`, `endpoint`, and `metadata`. Move descriptive provider scopes from `scopes` to `meta.requiredScopes`; they remain indicative, not enforced. Use `meta.instructions` for agent guidance.
-5. Import the tool from `index.ts`, dry run it with realistic input and `--validate`, then deploy. See [Tools](/guides/functions/tools#create-a-tool) for a complete example.
+4. Remove action-only configuration such as `version` and `endpoint`. Move a `metadata` schema to `data.metadata`. Move descriptive provider scopes from `scopes` to `meta.requiredScopes`, for example `scopes.all('repo')`; they remain indicative, not enforced. Use `meta.instructions` for agent guidance.
+5. Replace `nango.ActionError` with `nango.Error`. The payload is returned as `error.payload` with the `function_runtime_error` code.
+6. Import the tool from `index.ts`, dry run it with realistic input and `--validate`, then deploy. See [Tools](/guides/functions/tools#create-a-tool) for a complete example.
 
 If the action uses SDK methods beyond outbound provider requests and logging, check the [Functions SDK](/reference/functions/functions-sdk) before migrating; tool capabilities differ from legacy actions.

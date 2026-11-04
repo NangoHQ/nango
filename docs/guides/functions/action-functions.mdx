@@ -31,14 +31,14 @@ export default createAction({
 });
 ```
 
-Keep importing the file from your project's `index.ts`. Existing projects can dry run actions with `nango dryrun <name> <connection-id> --input '<JSON>'` and deploy one with `nango deploy <environment> <integration-id>/actions/<file>.ts`.
+Keep importing the file from your project's `index.ts`. Existing projects can dry run actions with `nango dryrun <name> <connection-id> --input '<JSON>'` and deploy one with `nango deploy <environment> <integration>/actions/<file>.ts`.
 
 <a id="trigger-synchronously"></a>
 ## Synchronous calls
 
 Prefer [calling the action through the tool-call API](/guides/functions/tools#call-a-tool). Existing callers can continue to use `nango.triggerAction(integrationId, connectionId, actionName, input)` or [`POST /action/trigger`](/reference/backend/http-api/action/trigger).
 
-Legacy HTTP calls send `Connection-Id`, `Provider-Config-Key`, and `Content-Type: application/json` headers, with `{ "action_name": "<ACTION-NAME>", "input": {} }` as the body. Authenticate with a Nango Environment API key from **Environment Settings > API Keys**, sent as `Authorization: Bearer <NANGO-API-KEY>`. Scoped keys need `environment:actions:execute`.
+Legacy HTTP calls send `Connection-Id`, `Provider-Config-Key`, and `Content-Type: application/json` headers, with `{ "action_name": "<ACTION-NAME>", "input": {} }` as the body. Authenticate with a Nango Environment API key from **Environment Settings > API Keys**, sent as `Authorization: Bearer <NANGO-API-KEY>`. Scoped keys need `environment:tools:call`.
 
 <a id="trigger-asynchronously"></a>
 ## Asynchronous calls
