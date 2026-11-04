@@ -28,11 +28,12 @@ const STATES = [
     { label: 'Hover', props: { 'data-story-state': 'hover' } },
     { label: 'Pressed', props: { 'data-story-state': 'active' } },
     { label: 'Focus', props: { 'data-story-state': 'focus-visible' } },
-    { label: 'Disabled', props: { disabled: true } }
+    { label: 'Disabled', props: { disabled: true } },
+    { label: 'Loading', props: { loading: true } }
 ] as const;
 
 const StateMatrix = ({ tone }: { tone: (typeof TONES)[number] }) => (
-    <div className="grid grid-cols-[auto_repeat(5,max-content)] items-center gap-x-8 gap-y-6">
+    <div className="grid grid-cols-[auto_repeat(6,max-content)] items-center gap-x-8 gap-y-6">
         <span />
         {STATES.map((state) => (
             <span key={state.label} className="story-section-heading">
@@ -90,6 +91,34 @@ export const AllTonesAndSizes: Story = {
                             </LinkButton>
                             <LinkButton tone={tone} size={size} leftIcon={<Plus />} rightIcon={<ChevronRight />}>
                                 Both icons
+                            </LinkButton>
+                        </div>
+                    ))}
+                </div>
+            ))}
+        </div>
+    )
+};
+
+// Loading never changes width. Each pair stacks resting over loading in a shrink-wrapped column with a
+// dashed outline; matching right edges mean matching widths.
+export const LoadingKeepsWidth: Story = {
+    name: 'Loading keeps width',
+    render: () => (
+        <div className="flex flex-col gap-6">
+            {SIZES.map((size) => (
+                <div key={size} className="flex items-start gap-8">
+                    <span className="text-ds-xs text-text-secondary w-8 shrink-0">{size}</span>
+                    {[
+                        { label: 'Left icon — spinner replaces it', leftIcon: <Plus /> },
+                        { label: 'Label only — spinner overlays', leftIcon: undefined }
+                    ].map((shape) => (
+                        <div key={shape.label} className="flex flex-col items-start gap-2 outline outline-dashed outline-border-default">
+                            <LinkButton tone="danger" size={size} leftIcon={shape.leftIcon}>
+                                Delete integration
+                            </LinkButton>
+                            <LinkButton tone="danger" size={size} leftIcon={shape.leftIcon} loading>
+                                Delete integration
                             </LinkButton>
                         </div>
                     ))}

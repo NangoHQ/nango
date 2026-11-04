@@ -3,7 +3,9 @@ import { cva } from 'class-variance-authority';
 import { forwardRef } from 'react';
 
 import { cn } from '../../lib/cn';
+import { Spinner } from './spinner';
 
+import type { SpinnerSize } from './spinner';
 import type { VariantProps } from 'class-variance-authority';
 
 // Disabled controls still receive pointer events (the base keeps them so `cursor-not-allowed` shows), so
@@ -69,9 +71,17 @@ export const linkButtonVariants = cva(
     }
 );
 
+// Spinner matches each size's icon (sm 12, md 14, lg 16) so it can stand in for the left icon.
+const SPINNER_SIZE = { sm: 'xs', md: 'sm', lg: 'md' } as const satisfies Record<NonNullable<VariantProps<typeof linkButtonVariants>['size']>, SpinnerSize>;
+
 export interface LinkButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof linkButtonVariants> {
     /** Render the single child (e.g. a router `<Link>` or `<a>`) instead of a `<button>`, keeping the styles. */
     asChild?: boolean;
+    /**
+     * Disables the link and shows a spinner without changing its width: the spinner replaces `leftIcon` when
+     * there is one, otherwise it's centred over the hidden label. Ignored with `asChild`.
+     */
+    loading?: boolean;
     /** Icon before the label. Sized by `size` unless it sets its own `size-*` class. */
     leftIcon?: React.ReactNode;
     /** Icon after the label. Sized by `size` unless it sets its own `size-*` class. */
@@ -79,21 +89,46 @@ export interface LinkButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 }
 
 export const LinkButton = forwardRef<HTMLButtonElement, LinkButtonProps>(
-    ({ className, tone, size, asChild = false, leftIcon, rightIcon, disabled, children, ...props }, ref) => {
+    ({ className, tone, size, asChild = false, loading = false, leftIcon, rightIcon, disabled, children, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
+        const isDisabled = disabled || loading;
+        const showSpinner = loading && !asChild;
+        const swapsLeftIcon = showSpinner && Boolean(leftIcon);
+        const spinner = <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} />;
+
+        let content: React.ReactNode = (
+            <>
+                {swapsLeftIcon ? spinner : leftIcon}
+                <Slottable>{children}</Slottable>
+                {rightIcon}
+            </>
+        );
+        if (showSpinner && !swapsLeftIcon) {
+            content = (
+                <>
+                    {/* display:contents keeps the children as flex items (same width); visibility is inherited */}
+                    <span className="contents invisible">{content}</span>
+                    <span className="absolute inset-0 flex items-center justify-center">{spinner}</span>
+                </>
+            );
+        }
 
         return (
             <Comp
                 ref={ref}
                 type={asChild ? undefined : 'button'}
-                className={cn(linkButtonVariants({ tone, size }), disabled && asChild && 'pointer-events-none', className)}
-                disabled={disabled}
-                aria-disabled={disabled || undefined}
+                className={cn(
+                    linkButtonVariants({ tone, size }),
+                    showSpinner && !swapsLeftIcon && 'relative',
+                    isDisabled && asChild && 'pointer-events-none',
+                    className
+                )}
+                disabled={isDisabled}
+                aria-disabled={isDisabled || undefined}
+                aria-busy={loading || undefined}
                 {...props}
             >
-                {leftIcon}
-                <Slottable>{children}</Slottable>
-                {rightIcon}
+                {content}
             </Comp>
         );
     }
