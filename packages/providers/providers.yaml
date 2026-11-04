@@ -27294,6 +27294,34 @@ terraform:
             example: VbQo****************************
             pattern: '^[a-zA-Z0-9.]{50,}$'
 
+testmu-ai:
+    display_name: TestMu AI
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.lambdatest.com
+        verification:
+            method: GET
+            endpoints:
+                - /automation/api/v1/builds
+    docs: https://nango.dev/docs/api-integrations/testmu-ai
+    docs_connect: https://nango.dev/docs/api-integrations/testmu-ai/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your TestMu AI username.
+            example: johndoe
+            doc_section: '#step-1-find-your-username-and-access-key'
+        password:
+            type: string
+            title: Access Key
+            description: Your TestMu AI access key.
+            example: LT_abc1****************************xyz9
+            secret: true
+            doc_section: '#step-1-find-your-username-and-access-key'
+
 textus:
     display_name: TextUs
     categories:
