@@ -29,7 +29,7 @@ export function toFunctionDetails(fn: DetailsFunction, { env, integration }: { e
     const base = {
         name: fn.name,
         description: fn.description,
-        typeLabel: fn.type === 'on-event' ? 'trigger' : fn.type,
+        typeLabel: fn.type === 'on-event' ? 'trigger' : fn.type === 'action' ? 'tool' : fn.type,
         source: listed ? fn.source : ('template' as const),
         frequency: fn.type === 'sync' ? fn.runs : null,
         runType: listed && fn.enabled && isRunnableFunction(fn) ? fn.type : null,
@@ -38,7 +38,7 @@ export function toFunctionDetails(fn: DetailsFunction, { env, integration }: { e
             description:
                 deleteType === 'sync'
                     ? `You are about to permanently delete the sync "${fn.name}" and all of its synced records. This operation is not reversible, are you sure you wish to continue?`
-                    : `You are about to permanently delete the action "${fn.name}". This operation is not reversible, are you sure you wish to continue?`
+                    : `You are about to permanently delete the tool "${fn.name}". This operation is not reversible, are you sure you wish to continue?`
         }
     };
     if (fn.type === 'tool') {

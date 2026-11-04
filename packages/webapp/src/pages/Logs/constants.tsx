@@ -149,7 +149,7 @@ export const typesOptions: FilterOption<SearchOperationsType>[] = [
             { label: 'Connection deletion webhook', value: 'webhook:connection_delete' }
         ]
     },
-    { value: 'action', label: 'Action' },
+    { value: 'action', label: 'Tool' },
     { value: 'events', label: 'Event-based execution' },
     { value: 'proxy', label: 'Proxy' },
     { value: 'deploy', label: 'Deploy' },

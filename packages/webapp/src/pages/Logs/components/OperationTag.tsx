@@ -8,7 +8,8 @@ import type { SearchOperationsData } from '@nangohq/types';
 
 // shortening agent session to prevent column overflow
 const typeLabels: Partial<Record<SearchOperationsData['operation']['type'], string>> = {
-    agent_session: 'session'
+    agent_session: 'session',
+    action: 'tool'
 };
 
 const actorIcons: Record<NonNullable<SearchOperationsData['actor']>['kind'], React.ReactNode> = {
