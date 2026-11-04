@@ -10,6 +10,16 @@
         "url": "git+https://github.com/NangoHQ/nango.git",
         "directory": "packages/license"
     },
+    "dependencies": {
+        "@nangohq/utils": "file:../utils",
+        "ecdsa-sig-formatter": "1.0.11",
+        "jose": "6.2.12",
+        "zod": "4.6.7"
+    },
+    "devDependencies": {
+        "@nangohq/types": "file:../types",
+        "vitest": "4.1.11"
+    },
     "files": [
         "dist/**/*"
     ]
