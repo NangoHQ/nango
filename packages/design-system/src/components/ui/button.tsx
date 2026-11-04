@@ -151,8 +151,8 @@ export const buttonVariants = cva(
             // link-danger alone gets 2px horizontal padding that link-accent/link-neutral don't have.
             { variant: ['link-accent', 'link-neutral', 'link-neutral-danger'], className: 'h-auto w-auto p-0' },
             { variant: 'link-danger', className: 'h-auto w-auto px-0.5 py-0' },
-            // Link variants aren't part of the Dharma button refresh: keep their previous type and gap scale
-            // (4px gap at xs/sm, 6px at md/lg; 14px label at md). Icon sizes come from the size variant.
+            // Link variants deliberately don't take the size scale's radius, gap or label size, only its icon size.
+            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], className: 'rounded-ds-xs' },
             { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: 'sm', className: 'gap-1' },
             { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: 'md', className: 'text-ds-md' },
             { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: 'lg', className: 'gap-1.5' }
