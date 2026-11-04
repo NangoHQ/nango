@@ -2,7 +2,7 @@ import type { ApiEndpoint, ApiError, ApiTimestamps } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { AuthModes, AuthModeType } from '../auth/api.js';
 import type { NangoSyncConfig } from '../flow/index.js';
-import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
+import type { FunctionListType } from '../functions/domain.js';
 import type { Provider } from '../providers/provider.js';
 import type { IntegrationConfig } from './db.js';
 import type { Merge } from 'type-fest';
@@ -75,19 +75,28 @@ export type PostPublicIntegration = ApiEndpoint<{
         provider: string;
         unique_key: string;
         display_name?: string | undefined;
-        credentials?: ApiPublicIntegrationCredentials | undefined;
         forward_webhooks?: boolean | undefined;
-        // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
-        // Validated server-side against the provider schema and persisted to the `custom` column.
-        integration_config?: Record<string, string> | undefined;
-        // Free-form custom values, for providers without an `integration_config` schema.
-        custom?: Record<string, string> | undefined;
-    };
+    } & (
+        | {
+              credentials?: ApiPublicIntegrationCredentials | undefined;
+              // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
+              // Validated server-side against the provider schema and persisted to the `custom` column.
+              integration_config?: Record<string, string> | undefined;
+              // Free-form custom values, for providers without an `integration_config` schema.
+              custom?: Record<string, string> | undefined;
+          }
+        | {
+              credentials: { type: 'NANGO_MANAGED' };
+              integration_config?: never;
+              custom?: never;
+          }
+    );
     Success: {
         data: ApiPublicIntegration;
     };
 }>;
 
+// TODO: remove this deprecated alias of POST /integrations with NANGO_MANAGED credentials (NAN-7880)
 export type PostPublicQuickstartIntegration = ApiEndpoint<{
     Audit: AuditPolicy<'integration', 'created', 'environment'>;
     Method: 'POST';
@@ -150,13 +159,13 @@ export type GetPublicFunctionCode = ApiEndpoint<{
         name: string;
     };
     Querystring: {
-        type?: ScriptTypeLiteral | undefined;
+        type?: FunctionListType | undefined;
     };
     Success: {
-        type: ScriptTypeLiteral;
+        type: FunctionListType;
         code: string;
     };
-    Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
+    Error: ApiError<'not_found'>;
 }>;
 
 export type GetFunctionCode = ApiEndpoint<{
@@ -169,13 +178,13 @@ export type GetFunctionCode = ApiEndpoint<{
     };
     Querystring: {
         env: string;
-        type?: ScriptTypeLiteral | undefined;
+        type?: FunctionListType | undefined;
     };
     Success: {
-        type: ScriptTypeLiteral;
+        type: FunctionListType;
         code: string;
     };
-    Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
+    Error: ApiError<'not_found'>;
 }>;
 
 export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;

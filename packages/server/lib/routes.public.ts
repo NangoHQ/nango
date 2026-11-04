@@ -82,6 +82,7 @@ import { getConnectionToolsMcp, postConnectionToolsMcp, requireConnectionMcp } f
 import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
+import { getPublicProviderTemplateCode } from './controllers/providers/provider/templates/getCode.js';
 import { getPublicProviderTemplates } from './controllers/providers/provider/templates/getTemplates.js';
 import { allPublicProxy } from './controllers/proxy/allProxy.js';
 import { getPublicRecords } from './controllers/records/getRecords.js';
@@ -130,6 +131,7 @@ import {
     auditSyncVariantCreated,
     auditSyncVariantDeleted
 } from './middleware/audit/index.js';
+import { catalogCodeRateLimit } from './middleware/catalogCodeRateLimit.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { withEnvironmentTarget } from './middleware/environment-target.middleware.js';
@@ -276,6 +278,7 @@ publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrEnvAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrEnvAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProvider);
 publicAPI.route('/providers/:provider/templates').get(envAuth, withEnvironmentTarget, getPublicProviderTemplates);
+publicAPI.route('/providers/:provider/templates/:name/code').get(envAuth, withEnvironmentTarget, catalogCodeRateLimit, getPublicProviderTemplateCode);
 
 publicAPI.use('/environments', jsonContentTypeMiddleware);
 publicAPI.route('/environments').get(apiAuth, can('account:environments:list'), getPublicEnvironments);
@@ -308,9 +311,16 @@ publicAPI
     .route('/integrations')
     .get(connectSessionOrEnvAuth, can('environment:integrations:list', 'environment:integrations:list_credentials'), getPublicListIntegrations);
 publicAPI.route('/integrations').post(envAuth, auditPublicIntegrationCreated, can('environment:integrations:create'), postPublicIntegration);
+// TODO: remove this deprecated alias of POST /integrations with NANGO_MANAGED credentials (NAN-7880)
 publicAPI
     .route('/integrations/quickstart')
-    .post(envAuth, auditPublicQuickstartIntegrationCreated, can('environment:integrations:create'), postPublicQuickstartIntegration);
+    .post(
+        envAuth,
+        auditPublicQuickstartIntegrationCreated,
+        can('environment:integrations:create'),
+        trackDeprecatedPublicEndpoint('POST /integrations/quickstart'),
+        postPublicQuickstartIntegration
+    );
 publicAPI.route('/integrations/:uniqueKey').patch(envAuth, auditPublicIntegrationUpdated, can('environment:integrations:update'), patchPublicIntegration);
 publicAPI
     .route('/integrations/:uniqueKey')
@@ -465,9 +475,7 @@ publicAPI.route('/functions/deployments/bundle').post(envAuth, auditFunctionDepl
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid/invocations')
     .post(envAuth, can('environment:functions:invocations'), postFunctionInvocation);
-publicAPI
-    .route('/connections/:connectionId/tools/:name/calls')
-    .post(envAuth, can('environment:functions:invocations'), can('environment:actions:execute'), postToolCall);
+publicAPI.route('/connections/:connectionId/tools/:name/calls').post(envAuth, can('environment:tools:call'), postToolCall);
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid')
     .patch(envAuth, auditFunctionVariantUpdated, can('environment:functions:update'), patchConnectionFunction);
@@ -488,8 +496,8 @@ publicAPI
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);
-publicAPI.route('/action/trigger').post(envAuth, can('environment:actions:execute'), postPublicTriggerAction); //TODO: to deprecate
-publicAPI.route('/action/:id').get(envAuth, can('environment:actions:execute'), getAsyncActionResult);
+publicAPI.route('/action/trigger').post(envAuth, can('environment:tools:call'), postPublicTriggerAction); //TODO: to deprecate
+publicAPI.route('/action/:id').get(envAuth, can('environment:tools:call'), getAsyncActionResult);
 
 // Connect sessions
 publicAPI.use('/connect', jsonContentTypeMiddleware);

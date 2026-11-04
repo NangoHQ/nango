@@ -427,3 +427,14 @@ export interface ZoomWebhookPayload {
         object?: Record<string, any>;
     };
 }
+
+export interface CommandAlkonWebhookEvent {
+    entityRef?: string;
+    itemRef?: string;
+    itemTypeId?: string;
+    changeType?: string;
+    timestamp?: string;
+    detail?: Record<string, unknown>;
+    metaData?: Record<string, unknown>;
+    payload?: Record<string, unknown>;
+}

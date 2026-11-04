@@ -53,12 +53,13 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
 
       ```bash
       curl --request POST \
-        --url https://api.nango.dev/integrations/quickstart \
+        --url https://api.nango.dev/integrations \
         --header 'Authorization: Bearer <NANGO-API-KEY>' \
         --header 'Content-Type: application/json' \
         --data '{
           "provider": "google-mail",
-          "unique_key": "google-mail"
+          "unique_key": "google-mail",
+          "credentials": { "type": "NANGO_MANAGED" }
         }'
       ```
 

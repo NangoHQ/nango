@@ -85,7 +85,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
         --header 'Authorization: Bearer <NANGO-API-KEY>'
       ```
 
-      For OAuth providers, first try to create the integration with a [Nango-managed OAuth app](#nango-managed-oauth-apps): `POST /integrations/quickstart` with `unique_key` and `provider` in the body. If the response is a `400` saying no Nango-provided developer app is configured for this provider, or the user wants their own app, fall back to the steps below.
+      For OAuth providers, first try to create the integration with a [Nango-managed OAuth app](#nango-managed-oauth-apps): [`POST /integrations`](/reference/backend/http-api/integration/create) with `unique_key`, `provider`, and `"credentials": { "type": "NANGO_MANAGED" }` in the body. If the response is a `400` saying no Nango-provided developer app is configured for this provider, or the user wants their own app, fall back to the steps below.
 
       To use the user's own OAuth app, you can try registering it for them by following the setup guide on the API's docs page in [APIs & Integrations](/integrations/overview), for example [Gmail](/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app). Check with the user first, and tell them that a Nango-managed OAuth app is faster and easier to set up. Use the `Callback URL` from the Nango integration settings, then pass the app's `client_id` and `client_secret` in the request body.
 
@@ -382,23 +382,26 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
 Many OAuth APIs have a Nango-managed OAuth app: a pre-approved OAuth app that Nango registers and maintains with the provider. You can use it to connect users without registering an app yourself.
 
-Nango-managed OAuth apps can be used in production. Whether to use a Nango-managed app or your own is a product choice. Register your own OAuth app if any of these matter to you:
+Nango-managed OAuth apps are production-ready. They let you launch faster and support many APIs at once, because you don't register an app or wait for provider approval for each API.
+
+They come with some tradeoffs:
 
 - **Whitelabel auth** — with a Nango-managed app, the consent screen shows Nango, not your product.
 - **Scopes** — Nango-managed apps have fixed scopes. Your own app can request any scope the provider offers.
 - **Callback URL** — Nango-managed apps use Nango's callback URL. Your own app can use a [custom callback URL](#custom-oauth-callback-url-optional) on your domain.
 - **Marketplace listings** — provider marketplaces require your own app.
-- **API features** — some provider features are only available to first-party apps.
-- **Revocation risk** — most providers don't allow shared credentials. If a provider revokes a Nango-managed app, every connection using it stops working.
+- **Revocation risk** — if a provider revokes a Nango-managed app, every connection using it stops working.
 - **Portability** — only with your own app can you export access and refresh tokens and move off Nango without users re-authorizing.
 
 These tradeoffs apply to shared OAuth apps from any auth platform, not just Nango.
 
+To make registering your own app easier, Nango maintains step-by-step setup guides for most OAuth APIs in [APIs & Integrations](/integrations/overview), for example [Gmail](/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app).
+
 ### APIs with a Nango-managed OAuth app
 
-These APIs have a Nango-managed OAuth app on Nango Cloud. Every other OAuth API needs your own OAuth app. You can also check from code: `POST /integrations/quickstart` returns a `400` when an API has no Nango-managed OAuth app.
+We add more OAuth apps every week. If an API you need is missing, please contact us and we will do our best to add it.
 
-<Accordion title="List of APIs with a Nango-managed OAuth app (76)">
+<Accordion title="List of APIs with a Nango-managed OAuth app (81)">
 - [Airtable](/api-integrations/airtable)
 - [Asana](/api-integrations/asana)
 - [Basecamp](/integrations/all/basecamp)
@@ -408,6 +411,7 @@ These APIs have a Nango-managed OAuth app on Nango Cloud. Every other OAuth API 
 - [Cal.com (OAuth)](/api-integrations/cal-com-oauth)
 - [Calendly](/api-integrations/calendly)
 - [ClickUp](/api-integrations/clickup)
+- [Close](/integrations/all/close)
 - [Confluence](/api-integrations/confluence)
 - [Contentful](/integrations/all/contentful)
 - [Discord](/api-integrations/discord)
@@ -425,6 +429,7 @@ These APIs have a Nango-managed OAuth app on Nango Cloud. Every other OAuth API 
 - [Google Docs](/api-integrations/google-docs)
 - [Google Drive](/api-integrations/google-drive)
 - [Google Sheets](/api-integrations/google-sheet)
+- [Google Tasks](/api-integrations/google-tasks)
 - [Gumroad](/integrations/all/gumroad)
 - [HubSpot](/api-integrations/hubspot)
 - [Hubstaff](/api-integrations/hubstaff)
@@ -453,14 +458,17 @@ These APIs have a Nango-managed OAuth app on Nango Cloud. Every other OAuth API 
 - [Salesforce](/api-integrations/salesforce)
 - [SharePoint Online (v2)](/api-integrations/sharepoint-online)
 - [Slack](/api-integrations/slack)
+- [Smartsheet](/api-integrations/smartsheet)
 - [Splitwise](/integrations/all/splitwise)
 - [Stack Exchange](/integrations/all/stackexchange)
 - [Strava (Web)](/integrations/all/strava-web)
 - [TickTick](/integrations/all/ticktick)
 - [Timely](/integrations/all/timely)
 - [Todoist](/integrations/all/todoist)
+- [Twitch](/integrations/all/twitch)
 - [Typeform](/api-integrations/typeform)
 - [Wakatime](/integrations/all/wakatime)
+- [Webex](/integrations/all/webex)
 - [Wrike](/integrations/all/wrike)
 - [Xero](/api-integrations/xero)
 - [YouTube](/api-integrations/youtube)
@@ -476,8 +484,6 @@ These APIs have a Nango-managed OAuth app on Nango Cloud. Every other OAuth API 
 - [Zoho People](/integrations/all/zoho-people)
 - [Zoom](/api-integrations/zoom)
 </Accordion>
-
-To make registering your own app easier, Nango maintains step-by-step setup guides for most OAuth APIs in [APIs & Integrations](/integrations/overview), for example [Gmail](/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app).
 
 ## Related guides
 

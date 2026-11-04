@@ -58,6 +58,7 @@ export * from './services/providers.js';
 export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
 export * from './services/proxy/outbound-policy.js';
+export { proxyTrackingLogger } from './services/proxy/telemetry.js';
 export { type MeteredBytes, createMeteringTransport } from './services/proxy/byte-metering-transport.js';
 export { isBillableDataTransfer, makeDataTransferEvent } from './services/proxy/data-transfer-event.js';
 export * from './services/plans/plans.js';
@@ -69,6 +70,8 @@ export * as connectUISettingsService from './services/connect-ui-settings.servic
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
 export { listCatalogTools, getCatalogTool, isTemplatesZeroPath } from './services/catalog/actions.js';
 export type { CatalogTool } from './services/catalog/actions.js';
+export { findCatalogFunctions } from './services/catalog/functions.js';
+export type { CatalogFunction } from './services/catalog/functions.js';
 export { resolveRunnableTool } from './services/catalog/resolveTool.js';
 export type { ResolveRunnableToolResult } from './services/catalog/resolveTool.js';
 

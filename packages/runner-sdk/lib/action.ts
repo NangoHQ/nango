@@ -2,7 +2,14 @@ import { isDeepStrictEqual } from 'node:util';
 
 import { getProvider } from '@nangohq/providers';
 
-import { ActionError, ExecutionAbortedSDKError, ExecutionInterruptedSDKError, ExecutionTimeoutSDKError, UnknownProviderSDKError } from './errors.js';
+import {
+    ActionError,
+    ExecutionAbortedSDKError,
+    ExecutionInterruptedSDKError,
+    ExecutionTimeoutSDKError,
+    FunctionError,
+    UnknownProviderSDKError
+} from './errors.js';
 import paginateService from './paginate.service.js';
 
 import type { ZodCheckpoint, ZodMetadata } from './types.js';
@@ -74,6 +81,7 @@ export abstract class NangoActionBase<
     public integrationConfig?: NangoProps['integrationConfig'];
     private readonly functionVariant: string;
 
+    public Error = FunctionError;
     public ActionError = ActionError;
 
     public telemetryBag: TelemetryBag = {
