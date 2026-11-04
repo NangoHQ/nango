@@ -75,19 +75,28 @@ export type PostPublicIntegration = ApiEndpoint<{
         provider: string;
         unique_key: string;
         display_name?: string | undefined;
-        credentials?: ApiPublicIntegrationCredentials | undefined;
         forward_webhooks?: boolean | undefined;
-        // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
-        // Validated server-side against the provider schema and persisted to the `custom` column.
-        integration_config?: Record<string, string> | undefined;
-        // Free-form custom values, for providers without an `integration_config` schema.
-        custom?: Record<string, string> | undefined;
-    };
+    } & (
+        | {
+              credentials?: ApiPublicIntegrationCredentials | undefined;
+              // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
+              // Validated server-side against the provider schema and persisted to the `custom` column.
+              integration_config?: Record<string, string> | undefined;
+              // Free-form custom values, for providers without an `integration_config` schema.
+              custom?: Record<string, string> | undefined;
+          }
+        | {
+              credentials: { type: 'NANGO_MANAGED' };
+              integration_config?: never;
+              custom?: never;
+          }
+    );
     Success: {
         data: ApiPublicIntegration;
     };
 }>;
 
+// TODO: remove this deprecated alias of POST /integrations with NANGO_MANAGED credentials (NAN-7880)
 export type PostPublicQuickstartIntegration = ApiEndpoint<{
     Audit: AuditPolicy<'integration', 'created', 'environment'>;
     Method: 'POST';
