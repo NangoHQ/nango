@@ -43,6 +43,7 @@ export {
     DialogTrigger
 } from './components/ui/dialog';
 export { Input, type InputProps, inputVariants } from './components/ui/input';
+export { LinkButton, type LinkButtonProps, linkButtonVariants } from './components/ui/link-button';
 export { Textarea, type TextareaProps } from './components/ui/textarea';
 export {
     InputGroup,
