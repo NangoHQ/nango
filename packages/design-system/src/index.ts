@@ -35,6 +35,18 @@ export {
     type IconButtonVariant,
     buttonVariants
 } from './components/ui/button';
+export {
+    SplitButton,
+    SplitButtonAction,
+    type SplitButtonActionProps,
+    SplitButtonMenuTrigger,
+    type SplitButtonMenuTriggerProps,
+    type SplitButtonProps,
+    type SplitButtonSize,
+    type SplitButtonVariant,
+    SPLIT_BUTTON_SIZES,
+    SPLIT_BUTTON_VARIANTS
+} from './components/ui/split-button';
 export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './components/ui/card';
 export {
     Dialog,
