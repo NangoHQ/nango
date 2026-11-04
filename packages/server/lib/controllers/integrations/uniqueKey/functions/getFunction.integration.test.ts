@@ -94,7 +94,7 @@ describe(`GET ${route}`, () => {
                     name: 'shared-name',
                     version: {
                         description: 'Read users',
-                        tags: { instructions: 'Read users', required_scopes: ['read'], category: 'crm' },
+                        tags: { instructions: 'Read users', required_scopes: { all: ['read'] }, category: 'crm' },
                         file_location: 'functions/shared-name',
                         version: 'test',
                         source: 'repo',
@@ -144,7 +144,7 @@ describe(`GET ${route}`, () => {
             uuid: tool.config.uuid,
             input_json_schema: { $ref: '#/definitions/Input', definitions: { Input: { type: 'string' } } },
             output_json_schema: null,
-            meta: { instructions: 'Read users', required_scopes: ['read'], tags: { category: 'crm' } }
+            meta: { instructions: 'Read users', required_scopes: { all: ['read'] }, tags: { category: 'crm' } }
         });
 
         const unmatched = await fetchFunction('on-event');

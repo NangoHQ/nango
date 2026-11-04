@@ -40,7 +40,7 @@ const tool: ListedNangoToolFunction = {
     last_deployed: null,
     input_json_schema: { $ref: '#/definitions/Input', definitions: action.json_schema?.definitions },
     output_json_schema: { $ref: '#/definitions/Output', definitions: action.json_schema?.definitions },
-    meta: { tags: {}, required_scopes: ['issues:write'] }
+    meta: { tags: {}, required_scopes: { all: ['issues:write'] } }
 };
 
 describe('toFunctionDetails', () => {
@@ -91,6 +91,16 @@ describe('toFunctionDetails', () => {
         expect(toFunctionDetails(action, context).delete?.description).toContain('delete the action "create-issue"');
         expect(toFunctionDetails({ ...tool, enabled: false }, context).runType).toBeNull();
         expect(toFunctionDetails({ ...action, enabled: false }, context).runType).toBeNull();
+    });
+
+    it.each([
+        { requiredScopes: { all: ['repo', 'read:org'] as [string, string] }, scopes: ['repo', 'read:org'], scopesMatch: 'all' },
+        { requiredScopes: { any: ['repo', 'public_repo'] as [string, string] }, scopes: ['repo', 'public_repo'], scopesMatch: 'any' },
+        { requiredScopes: { none: true as const }, scopes: [], scopesMatch: 'all' },
+        { requiredScopes: undefined, scopes: [], scopesMatch: 'all' }
+    ])('displays tool scope requirement $requiredScopes', ({ requiredScopes, scopes, scopesMatch }) => {
+        const details = toFunctionDetails({ ...tool, meta: { tags: {}, ...(requiredScopes && { required_scopes: requiredScopes }) } }, context);
+        expect(details).toMatchObject({ scopes, scopesMatch });
     });
 
     it('keeps templates on catalog source loading with no execution or deletion', () => {

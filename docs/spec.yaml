@@ -4221,9 +4221,36 @@ components:
                         instructions:
                             type: string
                         required_scopes:
-                            type: array
-                            items:
-                                type: string
+                            description: Provider scopes the tool needs. Absent when unknown.
+                            oneOf:
+                                - type: object
+                                  description: Every listed scope is required.
+                                  required: [all]
+                                  additionalProperties: false
+                                  properties:
+                                      all:
+                                          type: array
+                                          minItems: 1
+                                          items:
+                                              type: string
+                                - type: object
+                                  description: At least one listed scope is required.
+                                  required: [any]
+                                  additionalProperties: false
+                                  properties:
+                                      any:
+                                          type: array
+                                          minItems: 1
+                                          items:
+                                              type: string
+                                - type: object
+                                  description: No scopes are required.
+                                  required: [none]
+                                  additionalProperties: false
+                                  properties:
+                                      none:
+                                          type: boolean
+                                          enum: [true]
                         tags:
                             type: object
                             additionalProperties:
