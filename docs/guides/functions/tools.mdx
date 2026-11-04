@@ -13,7 +13,7 @@ Nango catalog tools are available without deploying code. Build your own when yo
 In your [functions project](/guides/functions/functions-guide#build-locally-with-the-cli), add a tool and import it from `index.ts`:
 
 ```typescript github/tools/create-issue.ts
-import { createTool } from 'nango';
+import { createTool, scopes } from 'nango';
 import * as z from 'zod';
 
 export default createTool({
@@ -27,7 +27,7 @@ export default createTool({
     output: z.object({ id: z.number(), url: z.string().url() }),
     meta: {
         instructions: 'Use when the user asks to create an issue. Confirm the repository and title first.',
-        requiredScopes: ['repo']
+        requiredScopes: scopes.any('repo', 'public_repo')
     },
     exec: async (nango, trigger) => {
         const { owner, repo, title, body } = trigger.input;
@@ -44,7 +44,9 @@ export default createTool({
 import './github/tools/create-issue';
 ```
 
-The tool name defaults to its file name. Read input from `trigger.input`. Nango validates the input against the schema before execution. `meta.requiredScopes` documents provider permissions; Nango does not enforce them. See [`createTool`](/reference/functions/functions-sdk#createtool) for all options.
+The tool name defaults to its file name. Read input from `trigger.input`. Nango validates the input against the schema before execution. `meta.requiredScopes` documents provider permissions with `scopes.all(...)`, `scopes.any(...)`, or `scopes.none()`; Nango does not enforce them. Tools can also read connection metadata and save checkpoints when you declare `data.metadata` or `data.checkpoint` schemas. See [`createTool`](/reference/functions/functions-sdk#createtool) for all options.
+
+To fail a call with a custom payload, throw `new nango.Error({ ... })`. The tool-call API returns it as `error.payload` with the `function_runtime_error` code.
 
 ## Test and deploy
 
@@ -52,7 +54,7 @@ Create a test connection in the **Connections** tab, then dry run the tool with 
 
 ```bash
 nango dryrun create-issue '<CONNECTION-ID>' -e dev --input '{"owner":"NangoHQ","repo":"interactive-demo","title":"Bug report"}' --validate
-nango deploy --integration github dev
+nango deploy dev github/tools/create-issue.ts
 ```
 
 To simulate an HTTP request, use `--trigger-http` instead of `--input`:
@@ -65,7 +67,7 @@ A dry run calls real provider APIs and can create or change data. See [Testing](
 
 ## Call a tool
 
-Use a Nango Environment API key from **Environment Settings > API Keys**. Scoped keys need both `environment:functions:invocations` and `environment:actions:execute`.
+Use a Nango Environment API key from **Environment Settings > API Keys**. Scoped keys need `environment:tools:call`.
 
 <Tabs>
   <Tab title="cURL">

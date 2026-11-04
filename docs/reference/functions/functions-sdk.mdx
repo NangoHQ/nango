@@ -196,12 +196,24 @@ Import `createTool` from `nango`. It creates a function with an HTTP trigger and
 | `output` | Zod schema | Yes | Returned JSON value's contract. |
 | `exec` | `(nango, trigger) => output` | Yes | Implementation; read arguments from `trigger.input`. Can return a promise. |
 | `meta.instructions` | `string` | No | Guidance on when and how an agent should use the tool. |
-| `meta.requiredScopes` | `string[]` | No | Indicative provider scopes; Nango does not enforce them. |
+| `meta.requiredScopes` | `RequiredScopes` | No | Indicative provider scopes; Nango does not enforce them. Omit when unknown. |
 | `meta.tags` | `FunctionTags` | No | Additional tool tags. `instructions` and `required_scopes` are reserved keys. |
+| `data.metadata` | Zod schema | No | Connection metadata schema. Enables `getMetadata`, `setMetadata`, and `updateMetadata`. |
+| `data.checkpoint` | Zod schema | No | Checkpoint schema. Enables `getCheckpoint`, `saveCheckpoint`, and `clearCheckpoint`. |
+
+Build `meta.requiredScopes` with the `scopes` helper exported by `nango`:
+
+```typescript
+import { scopes } from 'nango';
+
+scopes.all('repo', 'read:org');   // every scope is required
+scopes.any('repo', 'public_repo'); // at least one scope is required
+scopes.none();                     // no scopes are required
+```
 
 Tag values can be strings or arrays of strings.
 
-The `nango` argument provides connection access, outbound requests (`get`, `post`, `put`, `patch`, `delete`, `proxy`, `paginate`, `uncontrolledFetch`), logging, and environment variables. Tools do not expose sync record, checkpoint, or metadata capabilities.
+The `nango` argument provides connection access, outbound requests (`get`, `post`, `put`, `patch`, `delete`, `proxy`, `paginate`, `uncontrolledFetch`), logging, environment variables, and [`nango.Error`](#nango-error). Metadata and checkpoint methods are available only when the matching `data` schema is declared. Tools cannot save sync records.
 
 The HTTP trigger also includes `trigger.request` (method, path, headers, query, body) and connection context. `trigger.input` contains the validated input. The tool-call API supplies an HTTP trigger with method `POST`.
 
@@ -986,13 +998,34 @@ export default createSync({
 });
 ```
 
+<a id="nango-error"></a>
+## Errors
+
+Throw `nango.Error` to fail a function with a custom payload:
+
+```typescript
+throw new nango.Error({ errno: 19, message: 'Input n is too small' });
+```
+
+The [tool-call API](/reference/backend/http-api/tools/call) returns the payload unchanged:
+
+```json
+{
+  "error": {
+    "message": "The function failed with a runtime error",
+    "code": "function_runtime_error",
+    "payload": { "errno": 19, "message": "Input n is too small" }
+  }
+}
+```
+
 <a id="action-specific-helper-methods"></a>
 ## Helpers for deprecated actions
 
 ### `ActionError`
 
 <Warning>
-  This helper is for deprecated actions. See [legacy action errors](/guides/functions/action-functions#action-errors). It is not a tool error contract.
+  This helper is for deprecated actions. See [legacy action errors](/guides/functions/action-functions#action-errors). Use [`nango.Error`](#nango-error) in tools.
 </Warning>
 
 ## Relative imports in functions

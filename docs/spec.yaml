@@ -2645,7 +2645,7 @@ paths:
             summary: Call a tool
             description: |
                 Calls an enabled tool synchronously and returns its JSON output directly.
-                Requires both `environment:functions:invocations` and `environment:actions:execute` scopes.
+                Requires the `environment:tools:call` scope.
             parameters:
                 - name: connectionId
                   in: path
