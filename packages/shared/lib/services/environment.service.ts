@@ -322,7 +322,7 @@ class EnvironmentService {
                 return Err(new UpdateEnvironmentError('not_found'));
             }
 
-            if (name !== undefined) {
+            if (name !== undefined && name !== environment.name) {
                 if (environment.name === PROD_ENVIRONMENT_NAME) {
                     return Err(new UpdateEnvironmentError('cannot_change_prod_environment_name'));
                 }
