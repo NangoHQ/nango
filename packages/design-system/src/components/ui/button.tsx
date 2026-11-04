@@ -268,33 +268,57 @@ Button.displayName = 'Button';
 
 // ─── IconButton ───────────────────────────────────────────────────────────────
 
-export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+/** Square, icon-only button types — the same palette and states as Button's non-link variants. */
+export const ICON_BUTTON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const;
+/** Square sizes from the Figma Dharma spec — box / icon: xs 24/12, sm 28/14, md 32/16, lg 36/16. */
+export const ICON_BUTTON_SIZES = ['xs', 'sm', 'md', 'lg'] as const;
+
+export type IconButtonVariant = (typeof ICON_BUTTON_VARIANTS)[number];
+export type IconButtonSize = (typeof ICON_BUTTON_SIZES)[number];
+// Accepted so existing screens keep rendering, but outside the IconButton spec — don't use in new code.
+type LegacyIconButtonVariant = 'link-accent' | 'link-danger' | 'link-neutral';
+type LegacyIconButtonSize = '2xs';
+
+// `aria-label` is omitted so `label` is the single, required source of the accessible name.
+export interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label'> {
+    /**
+     * primary | secondary | outline | ghost | danger.
+     * @deprecated values: `link-accent`, `link-danger`, `link-neutral` — kept for existing call sites only.
+     */
+    variant?: IconButtonVariant | LegacyIconButtonVariant | null;
+    /**
+     * xs 24 · sm 28 · md 32 · lg 36 (icon 12 · 14 · 16 · 16).
+     * @deprecated value: `2xs` (20px) — kept for existing call sites only.
+     */
+    size?: IconButtonSize | LegacyIconButtonSize | null;
     asChild?: boolean;
     loading?: boolean;
-    /** Accessible label — applied as aria-label and title. Required for icon-only buttons. */
+    /** Accessible name — required for icon-only buttons. Applied as `aria-label`, and as the `title` tooltip unless one is passed. */
     label: string;
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, disabled, label, children, ...props }, ref) => {
+    ({ className, variant, size, asChild = false, loading = false, disabled, label, title, children, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
-        // Spinner has no 2xs size; clamp to xs for the loading indicator
-        const iconSize = size === '2xs' ? 'xs' : (size ?? 'md');
+        // Same rule as Button: Slot needs its single child, so asChild never swaps in a spinner.
+        const showSpinner = loading && !asChild;
 
         return (
             <Comp
                 ref={ref}
                 type={asChild ? undefined : 'button'}
+                // aspect-square + px-0 turns each size's height into a square box; the size variant sets the icon size.
                 className={cn(buttonVariants({ variant, size }), 'aspect-square px-0', isDisabled && asChild && 'pointer-events-none', className)}
                 disabled={isDisabled}
                 aria-disabled={isDisabled || undefined}
                 aria-busy={loading || undefined}
-                aria-label={label}
-                title={label}
+                title={title ?? label}
                 {...props}
+                aria-label={label}
             >
-                {loading ? <Spinner size={iconSize} /> : children}
+                {/* the spinner matches the icon it replaces, so the box never changes */}
+                {showSpinner ? <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} /> : children}
             </Comp>
         );
     }
