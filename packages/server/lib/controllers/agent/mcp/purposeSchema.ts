@@ -15,5 +15,5 @@ export const intentSchema = z
     .min(1)
     .max(255)
     .describe(
-        'Why you are calling this tool, as one step of the goal, such as "read the next batch of unread emails". Leave out names, emails, IDs and other personal details.'
+        'Why you are calling this tool, as one step of the goal, such as "read the next batch of unread emails". It changes from call to call, the goal does not. Leave out names, emails, IDs and other personal details.'
     );

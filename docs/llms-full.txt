@@ -3024,12 +3024,14 @@ Runs one of the session's tools by name, on the connection the session resolved 
 
 ```json
 {
-    "tool": "notion__read_doc",
-    "input": { "doc_id": "abc" },
-    "goal": "summarize the Q3 roadmap doc in Notion",
-    "intent": "read the roadmap doc"
+    "tool": "google-calendar__list_events",
+    "input": { "date": "2026-11-05" },
+    "goal": "move my Thursday 1:1 with my manager to Friday and let them know",
+    "intent": "find the 1:1 to move"
 }
 ```
+
+The goal stays the same on every call made for one task. The intent changes with each call. A later call to the same tool with Friday's date keeps the goal and sends the intent `check Friday has a free slot`.
 
 Execution is synchronous and goes through the same path as [triggering an action function](/reference/backend/http-api/action/trigger), so it is capped by the synchronous execution limit and appears in Nango logs like any other function run.
 
