@@ -31,7 +31,6 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             version: NANGO_VERSION,
             baseUrl,
             debugMode: req.session.debugMode === true,
-            gettingStartedClosed: sessionUser.getting_started_closed,
             gettingStartedDismissed: await agentGettingStartedService.isDismissed(db.knex, account.id),
             auditTrail: await canViewAuditTrail(req, plan),
             toolsCatalog: await getFlags().hasCatalogTools(account.uuid),

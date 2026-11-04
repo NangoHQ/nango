@@ -119,13 +119,7 @@ import type {
     PostFunctionVariant,
     PostToolCall
 } from './functions/api.js';
-import type {
-    GetAgentGettingStarted,
-    GetGettingStarted,
-    PatchGettingStarted,
-    PostAgentGettingStartedDismiss,
-    PostAgentGettingStartedRestart
-} from './gettingStarted/api.js';
+import type { GetAgentGettingStarted, PostAgentGettingStartedDismiss, PostAgentGettingStartedRestart } from './gettingStarted/api.js';
 import type {
     DeleteIntegration,
     DeletePublicIntegration,
@@ -367,11 +361,9 @@ export type PrivateApiEndpoints =
     | GetSharedCredentialsProvider
     | PostSharedCredentialsProvider
     | PatchSharedCredentialsProvider
-    | GetGettingStarted
     | GetAgentGettingStarted
     | PostAgentGettingStartedRestart
     | PostAgentGettingStartedDismiss
-    | PatchGettingStarted
     | GetConnectUISettings
     | PutConnectUISettings
     | GetProviders

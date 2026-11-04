@@ -103,7 +103,6 @@ export interface TeamUpdatedMetadata {
 
 export interface UserUpdatedMetadata {
     name?: string;
-    gettingStartedClosed?: boolean;
 }
 
 export interface EnvironmentUpdatedMetadata {

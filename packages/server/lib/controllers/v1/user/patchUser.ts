@@ -10,8 +10,7 @@ import type { DBUser, PatchUser } from '@nangohq/types';
 
 const validation = z
     .object({
-        name: z.string().min(3).max(255).optional(),
-        gettingStartedClosed: z.boolean().optional()
+        name: z.string().min(3).max(255).optional()
     })
     .strict();
 
@@ -39,10 +38,6 @@ export const patchUser = asyncWrapper<PatchUser, never>(async (req, res) => {
 
     if (body.name !== undefined) {
         update.name = body.name;
-    }
-
-    if (body.gettingStartedClosed !== undefined) {
-        update.getting_started_closed = body.gettingStartedClosed;
     }
 
     const updated = await userService.update(update);

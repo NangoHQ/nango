@@ -9,7 +9,6 @@ export const auditUserUpdated = auditable<PatchUser>({
     target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email),
     metadata: (req) =>
         omitUndefined({
-            name: nonEmptyString(req.body.name),
-            gettingStartedClosed: typeof req.body.gettingStartedClosed === 'boolean' ? req.body.gettingStartedClosed : undefined
+            name: nonEmptyString(req.body.name)
         })
 });

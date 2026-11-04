@@ -24,7 +24,6 @@ export type GetMeta = ApiEndpoint<{
             version: string;
             baseUrl: string;
             debugMode: boolean;
-            gettingStartedClosed: boolean;
             /** Getting started was hidden for the whole account */
             gettingStartedDismissed: boolean;
             // Whether this account can reach its own trail; gates the dashboard UI.

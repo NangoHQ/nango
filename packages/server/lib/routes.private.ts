@@ -81,8 +81,6 @@ import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js'
 import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.js';
 import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.js';
 import { postInvokeFunction } from './controllers/v1/functions/postInvoke.js';
-import { getGettingStarted } from './controllers/v1/gettingStarted/getGettingStarted.js';
-import { patchGettingStarted } from './controllers/v1/gettingStarted/patchGettingStarted.js';
 import { getIntegrations } from './controllers/v1/integrations/getIntegrations.js';
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
@@ -406,8 +404,6 @@ web.route('/flow/:flowName').get(webAuth, can('environment:functions:read'), flo
 web.route('/functions/invoke').post(webAuth, can('environment:syncs:execute'), postInvokeFunction);
 
 // Getting Started
-web.route('/getting-started').get(webAuth, getGettingStarted);
-web.route('/getting-started').patch(webAuth, patchGettingStarted);
 web.route('/agent-getting-started').get(webAuth, getAgentGettingStarted);
 web.route('/agent-getting-started/restart').post(webAuth, postAgentGettingStartedRestart);
 web.route('/agent-getting-started/dismiss').post(webAuth, postAgentGettingStartedDismiss);
