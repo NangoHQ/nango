@@ -9,6 +9,38 @@
     --font-mono: var(--ds-typography-font-family-mono);
 }
 
+/*
+ * Storybook-only: let stories freeze interaction states. An element with data-story-state="hover" (or
+ * "active" / "focus-visible") gets that variant's real classes, so state matrices render the component's own
+ * styles. These overrides only exist in Storybook's Tailwind build — apps keep the built-in variants.
+ */
+@custom-variant hover {
+    @media (hover: hover) {
+        &:hover {
+            @slot;
+        }
+    }
+    &[data-story-state='hover'] {
+        @slot;
+    }
+}
+@custom-variant active {
+    &:active {
+        @slot;
+    }
+    &[data-story-state='active'] {
+        @slot;
+    }
+}
+@custom-variant focus-visible {
+    &:focus-visible {
+        @slot;
+    }
+    &[data-story-state='focus-visible'] {
+        @slot;
+    }
+}
+
 *,
 *::before,
 *::after {
