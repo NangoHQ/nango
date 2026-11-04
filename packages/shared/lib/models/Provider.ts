@@ -16,6 +16,7 @@ export interface Config extends TimestampsAndDeleted {
     missing_fields: string[];
     display_name: string | null;
     forward_webhooks: boolean;
+    allow_unverified_webhooks: boolean;
     shared_credentials_id: number | null;
 }
 

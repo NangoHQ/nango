@@ -7,11 +7,10 @@ import {
     toFunctionDryrunCreate
 } from '@nangohq/sandbox';
 import { configService, connectionService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { sendStepError } from '../errors.js';
-import { getFunctionCallbackBaseUrl } from '../helpers.js';
 import { functionDryrunBodySchema } from '../validation.js';
 import { createDryrunSandboxApiKey, defaultFunctionName, requireCustomerKeyId, toFunctionDryrunError } from './helpers.js';
 
@@ -75,13 +74,12 @@ export const postFunctionDryrun = asyncWrapperWithEnvironment<PostFunctionDryrun
     const dryrun = dryrunResult.value;
     let prepared: Awaited<ReturnType<typeof prepareAsyncDryrun>> | null = null;
     try {
-        const nangoHost = getFunctionCallbackBaseUrl();
         const sandboxApiKey = await createDryrunSandboxApiKey(parentCustomerKeyId, environment.id, dryrun.id);
         if (sandboxApiKey.isErr()) {
             throw sandboxApiKey.error;
         }
 
-        const callbackUrl = new URL(`/functions/dryruns/${dryrun.id}/result`, nangoHost).toString();
+        const callbackUrl = new URL(`/functions/dryruns/${dryrun.id}/result`, baseUrl).toString();
         prepared = await prepareAsyncDryrun({
             integration_id: body.integration_id,
             function_name: defaultFunctionName,
@@ -90,7 +88,7 @@ export const postFunctionDryrun = asyncWrapperWithEnvironment<PostFunctionDryrun
             environment_name: environment.name,
             connection_id: body.connection_id,
             nango_secret_key: sandboxApiKey.value,
-            nango_host: nangoHost,
+            nango_host: baseUrl,
             dryrun_id: dryrun.id,
             callback_url: callbackUrl,
             ...(body.input !== undefined ? { input: body.input } : {}),

@@ -21,7 +21,7 @@ export const inviteSchema = z.object({ invites: z.array(inviteRowSchema).min(1) 
             return; // empty rows are handled by the per-row email() check
         }
         if (seen.has(email)) {
-            ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'This email is already in the list', path: ['invites', index, 'email'] });
+            ctx.addIssue({ code: 'custom', message: 'This email is already in the list', path: ['invites', index, 'email'] });
         } else {
             seen.add(email);
         }

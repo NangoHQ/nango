@@ -6,7 +6,7 @@ description: 'Run Nango outside our cloud: BYOC or Self-Managed.'
 
 Nango offers two ways to run outside of Nango Cloud, both on the Enterprise plan:
 
-- **[BYOC](/guides/platform/self-hosting/byoc)** — Nango deploys and operates your instance inside your own AWS account or GCP project. Recommended for most Enterprise self-hosting customers.
+- **[BYOC](/guides/platform/self-hosting/byoc)** — Nango deploys and operates your instance inside your own AWS account, GCP project or Azure subscription. Recommended for most Enterprise self-hosting customers.
 - **[Self-Managed](/guides/platform/self-hosting/self-managed)** — you deploy and operate Nango yourself, on your own infrastructure, using our Helm chart.
 
 Both run the same Nango codebase you get on Cloud, with all paid Cloud features included.
@@ -15,11 +15,11 @@ Both run the same Nango codebase you get on Cloud, with all paid Cloud features 
 
 | | **BYOC** (recommended) | **Self-Managed** |
 | --- | --- | --- |
-| Runs in | Your AWS account or GCP project | Your infrastructure — any cloud or on-prem |
+| Runs in | Your AWS account, GCP project or Azure subscription | Your infrastructure — any cloud or on-prem |
 | Deployed by | Nango, via Terraform + GitOps | You, via the [Helm chart](https://github.com/NangoHQ/nango-helm-charts) |
 | Operated day-to-day by | Nango — upgrades, scaling, incident response | You |
 | What leaves your account | Only Datadog telemetry, for Nango to monitor instance health | Nothing |
-| Clouds supported today | AWS, GCP (Azure coming soon) | AWS, GCP, Azure, on-prem Kubernetes |
+| Clouds supported today | AWS, GCP, Azure | AWS, GCP, Azure, on-prem Kubernetes |
 | Operational overhead | Low | High |
 | Best fit | Teams that want infrastructure ownership and data residency without operating Nango themselves | Teams with the platform capacity to run it, or infrastructure constraints BYOC doesn't fit yet |
 
@@ -102,6 +102,14 @@ Nango uses emails for account verification, password reset, and sending invitati
 ## Free self-hosting
 
 A limited free self-hosting option is available for hobby projects, separate from BYOC and Self-Managed. It is intended for lightweight deployments that need Auth and Proxy, without the managed features and support included with Enterprise self-hosting (BYOC or Self-Managed) or Nango Cloud.
+
+### Trust model
+
+A self-hosted Nango instance is intended for a single organization. Accounts on the same instance keep their own data separate in normal use, but they are not designed or hardened as a security boundary between users who don't trust each other. Only give dashboard access to people you trust.
+
+Instance-level configuration is shared across all accounts. In particular, `NANGO_SECRET_KEY_<ENV>` and `NANGO_PUBLIC_KEY_<ENV>` apply to environments by name, in any account on the instance.
+
+Signup is enabled by default. If your dashboard is reachable by anyone you don't fully trust, disable signup and protect the dashboard with basic auth (below), or keep it on a private network.
 
 For more details, see the [pricing page](https://nango.dev/pricing) or [schedule a call](https://nango.dev/contact) to discuss BYOC or Self-Managed.
 

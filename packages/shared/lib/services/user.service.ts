@@ -3,6 +3,8 @@ import * as uuid from 'uuid';
 import db from '@nangohq/database';
 import { ENVS, Err, normalizeEmail, Ok, parseEnvs } from '@nangohq/utils';
 
+import { productTracking } from '../utils/productTracking.js';
+
 import type { DBUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
@@ -182,8 +184,16 @@ class UserService {
             .returning('id');
 
         if (result.length === 1 && result[0]?.id) {
-            const userId = result[0].id;
-            return this.getUserById(userId);
+            const user = await this.getUserById(result[0].id);
+            if (user) {
+                productTracking.track({
+                    name: 'auth:user_create',
+                    team: { id: account_id },
+                    user,
+                    eventProperties: { method: hashed_password ? 'password' : 'google' }
+                });
+            }
+            return user;
         }
 
         return null;

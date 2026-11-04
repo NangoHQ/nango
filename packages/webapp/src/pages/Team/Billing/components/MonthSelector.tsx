@@ -27,7 +27,7 @@ export const MonthSelector: React.FC = () => {
     );
 
     const step = (delta: number) => {
-        track('web:usage:month_changed', { direction: delta < 0 ? 'previous' : 'next' });
+        track('billing:usage_update', { change: 'month', direction: delta < 0 ? 'previous' : 'next' });
         const next = new Date(selectedMonth);
         next.setUTCMonth(selectedMonth.getUTCMonth() + delta);
         setSelectedMonth(next);

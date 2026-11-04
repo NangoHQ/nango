@@ -1,0 +1,87 @@
+---
+title: 'Grain (API Key)'
+sidebarTitle: 'Grain (API Key)'
+description: 'Integrate your application with the Grain API using a personal access token'
+---
+
+## 🚀 Quickstart
+
+Connect to Grain with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Grain (API Key)_.
+    </Step>
+    <Step title="Authorize Grain">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Grain personal access token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Grain API">
+    Let's make your first request to the Grain API by fetching details about the token. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/_/public-api/v2/token-info" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/_/public-api/v2/token-info',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Grain integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my Grain account?](/api-integrations/grain-api-key/connect)  
+  Generate a Grain personal access token and connect it to Nango
+
+Official docs: [Grain API docs](https://developers.grain.com/overview.html)
+
+## API gotchas
+
+- Grain requires a `Public-Api-Version` header on every request. Nango sends `2026-10-01` by default. To pin another version, send `Nango-Proxy-Public-Api-Version` with your proxy request (or set the header in your function). See Grain's [versions page](https://developers.grain.com/versions.html) for current and deprecated versions.
+- A personal access token has the same access as the user who created it. It doesn't expire, but the user can revoke it at any time.
+- To access all recordings in a workspace, use a workspace access token instead. Only workspace admins can generate one, and it isn't available on all Grain plans.
+- List endpoints, such as `POST /_/public-api/v2/recordings`, use `POST` with a JSON body and cursor pagination. Pass the returned `cursor` to fetch the next page; a `null` cursor means there are no more results.
+- Rate limits apply per token: a burst of 30 requests, refilling at 2 requests per second. Requests over the limit return `429` with a `Retry-After` header.
+
+## 🧩 Pre-built syncs & actions for Grain
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/grain-api-key/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

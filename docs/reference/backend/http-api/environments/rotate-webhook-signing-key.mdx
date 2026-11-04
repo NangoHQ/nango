@@ -1,0 +1,24 @@
+---
+title: 'Rotate the webhook signing key'
+openapi: 'POST /environment/webhook-signing-key/rotate'
+---
+
+<Info>
+  Requires an [Environment API key](/reference/backend/http-api/api-keys#environment-api-keys) with the `environment:webhook_signing_key:rotate` scope. It rotates the key of the environment the API key belongs to.
+</Info>
+
+Replaces the key Nango uses to [sign webhooks](/guides/platform/webhooks-from-nango#verifying-webhooks-from-nango). The new key is returned once, and stays readable under **Environment Settings > Webhooks > Signing key**.
+
+<Warning>
+  For up to 5 minutes after a rotation, webhooks are signed with either the old or the new key. Accept both until then.
+</Warning>
+
+<ResponseExample>
+```json Example Response
+{
+  "data": {
+    "webhook_signing_key": "5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f"
+  }
+}
+```
+</ResponseExample>

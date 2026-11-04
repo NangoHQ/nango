@@ -83,7 +83,7 @@ const CreateAccountApiKeyDialog: React.FC = () => {
 
         try {
             await createAccountApiKey({ display_name: name });
-            track('web:account_api_keys:created', {});
+            track('auth:api_key_create', {});
             handleOpenChange(false);
             toast({ title: 'Account API key created', variant: 'success' });
         } catch (err) {
@@ -189,7 +189,7 @@ export const AccountApiKeysShow: React.FC = () => {
     const handleDelete = async (apiKey: AccountApiKey) => {
         try {
             await deleteAccountApiKey(apiKey.id);
-            track('web:account_api_keys:deleted', {});
+            track('auth:api_key_delete', {});
             toast({ title: 'Account API key deleted', variant: 'success' });
         } catch (err) {
             toast({ title: apiErrorMessage(err, 'Failed to delete the Account API key'), variant: 'error' });
@@ -300,7 +300,10 @@ export const AccountApiKeysShow: React.FC = () => {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-1">
-                                            <CopyButton text={apiKey.secret} onCopy={() => track('web:account_api_keys:secret_copied', {})} />
+                                            <CopyButton
+                                                text={apiKey.secret}
+                                                onCopy={() => track('auth:copy_button_click', { copied_item: 'api_key_secret' })}
+                                            />
                                             <DeleteAccountApiKeyButton apiKey={apiKey} disabled={isDeleting || !canDeleteAccountKeys} onDelete={handleDelete} />
                                         </div>
                                     </TableCell>

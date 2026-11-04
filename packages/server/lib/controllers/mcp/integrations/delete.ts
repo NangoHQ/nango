@@ -9,7 +9,7 @@ import type { DeleteIntegrationsOutput } from './schema.js';
 export const deleteIntegrationsTool = defineManagementMcpTool<typeof deleteIntegrationsArgumentsSchema, DeleteIntegrationsOutput>({
     name: 'integrations_delete',
     title: 'Delete Integration',
-    description: 'Delete a configured integration by ID.',
+    description: 'Deletes a configured integration by ID.',
     inputSchema: deleteIntegrationsArgumentsSchema,
     outputSchema: deleteIntegrationsOutputSchema,
     requiredScopes: { every: ['environment:integrations:delete'] },
@@ -26,6 +26,8 @@ export const deleteIntegrationsTool = defineManagementMcpTool<typeof deleteInteg
         idempotentHint: true,
         openWorldHint: false
     },
+    confirmation: ({ args, environment }) =>
+        `Delete integration "${args.integration_id}" from environment "${environment.name}"? This action cannot be undone.`,
     async handler({ args, environment }) {
         const result = await integrationService.delete({
             environmentId: environment.id,

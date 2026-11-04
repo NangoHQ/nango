@@ -20,7 +20,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>();
     useDebounce(() => setDebouncedSearch(search), 250, [search]);
-    const { data, loading, trigger } = useSearchFilters(open, env, { category, search: debouncedSearch });
+    const { data, loading } = useSearchFilters(open, env, { category, search: debouncedSearch });
 
     const options = useMemo(() => {
         const all = [{ label: 'All', value: 'all' }];
@@ -32,13 +32,10 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
     }, [data]);
 
     useEffect(() => {
-        if (open && !data) {
-            trigger();
-        }
         if (!open) {
             setSearch('');
         }
-    }, [open, data]);
+    }, [open]);
 
     const handleSearchChange = useCallback((value: string) => {
         setSearch(value);

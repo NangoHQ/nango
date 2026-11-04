@@ -4,23 +4,13 @@ import { PostHog } from 'posthog-node';
 
 import { baseUrl, FixedSizeMap, NANGO_VERSION, report } from '@nangohq/utils';
 
-import type { CliTelemetryEvent, DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
-
-export type ProductTrackingTypes =
-    | CliTelemetryEvent
-    | 'account:billing:plan_changed'
-    | 'account:billing:plan_changed:v2'
-    | 'account:billing:downgraded'
-    | 'account:billing:upgraded'
-    | 'agents:session_start'
-    | 'agents:session_end'
-    | 'agents:tool_call_complete'
-    | 'agents:proxy_request_complete'
-    | 'agents:tool_search_complete';
+import type { AccountGroupProperties, AnalyticsEventNameFor, AnalyticsEventPropertiesInput, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 
 const ACCOUNT_GROUP = 'company';
 
-type TrackedTeam = Pick<DBTeam, 'id'> & Partial<Pick<DBTeam, 'name'>>;
+type TrackedTeam = Pick<DBTeam, 'id'> & Partial<Pick<DBTeam, 'name' | 'created_at'>>;
+
+type TrackedPlan = Pick<DBPlan, 'name'>;
 
 /** No email and no person's name. The account name and plan are group properties, never event ones. */
 export interface TrackingContext {
@@ -30,6 +20,8 @@ export interface TrackingContext {
      */
     environment?: Pick<DBEnvironment, 'is_production'> | null | undefined;
     user?: Pick<DBUser, 'id'> | null | undefined;
+    plan?: TrackedPlan | null | undefined;
+    analyticsSessionId?: string | undefined;
 }
 
 /**
@@ -42,9 +34,11 @@ export type TrackingContextInput = Partial<Omit<TrackingContext, 'team'>> & { te
  * Resolved lazily, at emit time: a request enters this context before auth runs, so the account
  * and environment it reads are only set later in the request.
  */
-type TrackingContextResolver = () => TrackingContextInput;
+type TrackingContextResolver = () => TrackingContextInput & { impersonated?: boolean };
 
 const contextStorage = new AsyncLocalStorage<TrackingContextResolver>();
+
+const IMPERSONATED = 'impersonated';
 
 /**
  * Run `fn` with a tracking context that every posthog event emitted inside it inherits.
@@ -56,12 +50,16 @@ export function withProductTrackingContext<T>(resolver: TrackingContextResolver,
     return contextStorage.run(resolver, fn);
 }
 
-function resolveContext(explicit: TrackingContextInput): TrackingContext | null {
-    let ambient: TrackingContextInput | undefined;
+function resolveContext(explicit: TrackingContextInput): TrackingContext | typeof IMPERSONATED | null {
+    let ambient: ReturnType<TrackingContextResolver> | undefined;
     try {
         ambient = contextStorage.getStore()?.();
     } catch (err) {
         report(err);
+    }
+
+    if (ambient?.impersonated) {
+        return IMPERSONATED;
     }
 
     const team = explicit.team ?? ambient?.team;
@@ -72,8 +70,24 @@ function resolveContext(explicit: TrackingContextInput): TrackingContext | null 
     return {
         team,
         environment: explicit.environment ?? ambient?.environment,
-        user: explicit.user ?? ambient?.user
+        user: explicit.user ?? ambient?.user,
+        // Without an explicit plan, an event uses the plan its request loaded during auth.
+        // A plan change later in that request makes it stale, so `plan: null` turns the fallback off.
+        plan: explicit.plan === null ? null : (explicit.plan ?? ambient?.plan),
+        analyticsSessionId: explicit.analyticsSessionId ?? ambient?.analyticsSessionId
     };
+}
+
+export function accountGroupProperties(team: TrackedTeam, plan: TrackedPlan | null | undefined): AccountGroupProperties {
+    return {
+        ...(team.name ? { name: team.name } : {}),
+        ...(plan ? { plan: plan.name } : {}),
+        ...(team.created_at ? { created_date: new Date(team.created_at).toISOString() } : {})
+    };
+}
+
+export function isInternalAccount(users: Pick<DBUser, 'email'>[]): boolean {
+    return users.length > 0 && users.every((user) => user.email.toLowerCase().endsWith('@nango.dev'));
 }
 
 function commonProperties(surface: 'server' | 'cli'): Record<string, unknown> {
@@ -84,18 +98,14 @@ function commonProperties(surface: 'server' | 'cli'): Record<string, unknown> {
     };
 }
 
-function contextProperties({ environment, user }: TrackingContext): Record<string, unknown> {
+function contextProperties({ environment, analyticsSessionId }: TrackingContext): Record<string, unknown> {
     return {
         ...(environment ? { is_production: environment.is_production } : {}),
-        // An event with no person behind it is attached to the account group instead of inventing one.
-        ...(user ? {} : { $process_person_profile: false })
+        ...(analyticsSessionId ? { $session_id: analyticsSessionId } : {})
     };
 }
 
-/**
- * A person is their user id. An event with no person still needs a distinct id, so it carries the
- * account's, which creates no profile because person processing is off for those events.
- */
+// Keep person processing on for `account-<id>`: PostHog links no personless event to a group.
 function distinctIdFor({ team, user }: TrackingContext): string {
     return user ? String(user.id) : `account-${team.id}`;
 }
@@ -107,8 +117,8 @@ function groupsFor({ team }: TrackingContext): Record<string, string> {
 
 class ProductTracking {
     client: PostHog | undefined;
-    // Each groupIdentify sends its own $groupidentify event. Send one per account name, not one per capture.
-    readonly identifiedAccountNames = new FixedSizeMap<number, string>(10_000);
+    // Each groupIdentify sends its own $groupidentify event. Send one per property change, not one per capture.
+    readonly identifiedAccounts = new FixedSizeMap<number, AccountGroupProperties>(10_000);
 
     constructor() {
         const key = process.env['PUBLIC_POSTHOG_KEY'];
@@ -129,12 +139,16 @@ class ProductTracking {
     /** Use the same account identity, group name and properties for events captured outside `track`. */
     public getServerEventAttribution(context: TrackingContextInput) {
         const resolved = resolveContext(context);
-        if (!resolved) {
+        if (!resolved || resolved === IMPERSONATED) {
             return null;
         }
 
+        return this.attribute(resolved);
+    }
+
+    private attribute(resolved: TrackingContext) {
         if (this.client) {
-            this.identifyAccount(this.client, resolved.team);
+            this.identifyAccount(this.client, resolved);
         }
 
         return {
@@ -144,38 +158,31 @@ class ProductTracking {
         };
     }
 
-    public track({
+    public track<E extends AnalyticsEventNameFor<'server'>>({
         name,
         team,
         environment,
         user,
-        eventProperties,
-        structuredProperties
-    }: {
-        name: ProductTrackingTypes;
-        eventProperties?: Record<string, string | number | boolean | null | undefined>;
-        /**
-         * Values the taxonomy's primitives-only rule does not allow, carried by the exception granted
-         * to tool search so a query can be read next to the results it returned.
-         */
-        structuredProperties?: Record<string, ReadonlyArray<Record<string, string | number | boolean>>>;
-    } & TrackingContextInput) {
+        plan,
+        analyticsSessionId,
+        eventProperties
+    }: { name: E } & AnalyticsEventPropertiesInput<E> & TrackingContextInput) {
         try {
             if (this.client == null) {
                 return;
             }
 
-            const attribution = this.getServerEventAttribution({ team, environment, user });
-            if (!attribution) {
+            const resolved = resolveContext({ team, environment, user, plan, analyticsSessionId });
+            if (resolved === IMPERSONATED) {
+                return;
+            }
+            if (!resolved) {
                 report(new Error(`Product tracking event "${name}" has no account to attach to`));
                 return;
             }
+            const attribution = this.attribute(resolved);
 
-            const properties = {
-                ...eventProperties,
-                ...structuredProperties,
-                ...attribution.properties
-            };
+            const properties: Record<string, unknown> = { ...eventProperties, ...attribution.properties };
 
             this.client.capture({ event: name, distinctId: attribution.distinctId, properties, groups: attribution.groups });
         } catch (err) {
@@ -183,14 +190,26 @@ class ProductTracking {
         }
     }
 
-    private identifyAccount(client: PostHog, team: TrackedTeam) {
-        if (!team.name || this.identifiedAccountNames.get(team.id) === team.name) {
-            return;
+    public identifyAccountGroup(teamId: number, properties: AccountGroupProperties) {
+        if (this.client) {
+            this.sendGroupProperties(this.client, teamId, properties);
         }
+    }
 
+    private identifyAccount(client: PostHog, { team, plan }: TrackingContext) {
+        this.sendGroupProperties(client, team.id, accountGroupProperties(team, plan));
+    }
+
+    private sendGroupProperties(client: PostHog, teamId: number, properties: AccountGroupProperties) {
         try {
-            client.groupIdentify({ groupType: ACCOUNT_GROUP, groupKey: String(team.id), properties: { name: team.name } });
-            this.identifiedAccountNames.set(team.id, team.name);
+            const sent = this.identifiedAccounts.get(teamId) ?? {};
+            const changed = Object.fromEntries(Object.entries(properties).filter(([key, value]) => sent[key as keyof AccountGroupProperties] !== value));
+            if (Object.keys(changed).length === 0) {
+                return;
+            }
+
+            client.groupIdentify({ groupType: ACCOUNT_GROUP, groupKey: String(teamId), properties: changed });
+            this.identifiedAccounts.set(teamId, { ...sent, ...changed });
         } catch (err) {
             report(err);
         }
@@ -201,15 +220,14 @@ class ProductTracking {
      * The distinctId is a client-generated device id, and the event keeps the surface it came from
      * rather than the one relaying it.
      */
-    public trackAnonymous({
+    public trackAnonymous<E extends AnalyticsEventNameFor<'cli'>>({
         name,
         distinctId,
         eventProperties
     }: {
-        name: ProductTrackingTypes;
+        name: E;
         distinctId: string;
-        eventProperties?: Record<string, string | number | boolean | null | undefined>;
-    }) {
+    } & AnalyticsEventPropertiesInput<E>) {
         try {
             if (this.client == null) {
                 return;

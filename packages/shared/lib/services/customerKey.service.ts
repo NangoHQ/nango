@@ -331,18 +331,22 @@ class CustomerKeyService {
         trx: Knex,
         {
             accountId,
-            environmentId
+            environmentId,
+            secret: plainText = uuid.v4()
         }: {
             accountId: number;
             environmentId: number;
+            secret?: string;
         }
     ): Promise<Result<DBCustomerKey>> {
-        try {
-            const plainText = uuid.v4();
+        if (plainText.trim().length === 0) {
+            return Err(new Error('Webhook signing key cannot be blank'));
+        }
 
+        try {
             const hashed = await this.hashSecret(plainText);
             if (hashed.isErr()) {
-                throw hashed.error;
+                return Err(hashed.error);
             }
 
             const customerKey = {
@@ -364,7 +368,7 @@ class CustomerKeyService {
 
             const [created] = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE).insert(encrypted).returning('*');
             if (!created) {
-                throw new NangoError('impossible_condition');
+                return Err(new NangoError('impossible_condition'));
             }
 
             await trx<DBCustomerKeyRelation>(CUSTOMER_KEYS_RELATIONS_TABLE).insert({
@@ -401,6 +405,17 @@ class CustomerKeyService {
         return key;
     }
 
+    private async readWebhookSigningKey(trx: Knex, envId: number): Promise<{ key: string; updatedAt: Date }> {
+        const row = await this.webhookSigningKeyForEnv(trx, envId).first();
+
+        if (!row) {
+            throw new NangoError('no_webhook_signing_key', { environment_id: envId });
+        }
+
+        const decrypted = getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey;
+        return { key: decrypted.secret, updatedAt: row.updated_at };
+    }
+
     public async getWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<string>> {
         const cached = webhookSigningKeyCache.get(envId);
         if (cached && cached.expiresAt > Date.now()) {
@@ -408,14 +423,17 @@ class CustomerKeyService {
         }
 
         try {
-            const row = await this.webhookSigningKeyForEnv(trx, envId).first();
+            const { key, updatedAt } = await this.readWebhookSigningKey(trx, envId);
+            return Ok(this.cacheWebhookSigningKey(envId, key, updatedAt));
+        } catch (err) {
+            return Err(err);
+        }
+    }
 
-            if (!row) {
-                throw new NangoError('no_webhook_signing_key', { environment_id: envId });
-            }
-
-            const decrypted = getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey;
-            return Ok(this.cacheWebhookSigningKey(envId, decrypted.secret, row.updated_at));
+    public async getUncachedWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<string>> {
+        try {
+            const { key } = await this.readWebhookSigningKey(trx, envId);
+            return Ok(key);
         } catch (err) {
             return Err(err);
         }

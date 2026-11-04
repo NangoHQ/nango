@@ -294,7 +294,7 @@ export function resetPasswordSecret() {
 }
 
 export function getOrchestratorClient() {
-    return new OrchestratorClient({ baseUrl: getOrchestratorUrl() });
+    return new OrchestratorClient({ baseUrl: getOrchestratorUrl(), service: 'server' });
 }
 
 export function getOrchestrator() {

@@ -16,6 +16,7 @@ const { mockGetUserByIdAndAccountId, mockUpdateUser } = vi.hoisted(() => {
 });
 
 vi.mock('@nangohq/shared', () => ({
+    productTracking: { track: vi.fn() },
     userService: {
         getUserByIdAndAccountId: mockGetUserByIdAndAccountId,
         update: mockUpdateUser

@@ -144,7 +144,7 @@ class Kubernetes {
         }
 
         // Create Secrets first, otherwise pods that secretKeyRef them cannot start.
-        const authEnv = mintRunnerAuthEnv(node.id);
+        const authEnv = await mintRunnerAuthEnv(node.id);
         const tlsSecretResult = await this.createTlsSecret(name, namespace);
         if (tlsSecretResult.isErr()) {
             return tlsSecretResult;
@@ -795,6 +795,8 @@ class Kubernetes {
                 ? [{ name: 'NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', value: JSON.stringify(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST) }]
                 : []),
             ...(envs.NANGO_OUTBOUND_URL_POLICY ? [{ name: 'NANGO_OUTBOUND_URL_POLICY', value: JSON.stringify(envs.NANGO_OUTBOUND_URL_POLICY) }] : []),
+            { name: 'NANGO_PROXY_IDLE_TIMEOUT_MS', value: String(envs.NANGO_PROXY_IDLE_TIMEOUT_MS) },
+            { name: 'NANGO_PROXY_MAX_RETRY_WAIT_MS', value: String(envs.NANGO_PROXY_MAX_RETRY_WAIT_MS) },
             ...(envs.DD_ENV ? [{ name: 'DD_ENV', value: envs.DD_ENV }] : []),
             ...(envs.DD_SITE ? [{ name: 'DD_SITE', value: envs.DD_SITE }] : []),
             ...(envs.DD_TRACE_AGENT_URL ? [{ name: 'DD_TRACE_AGENT_URL', value: envs.DD_TRACE_AGENT_URL }] : []),

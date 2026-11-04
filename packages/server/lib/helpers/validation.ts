@@ -26,7 +26,12 @@ export const webhookUrlSchema = z
     .refine(
         (url) => {
             if (!url || url.trim() === '') return true;
-            const hostname = new URL(url).hostname.replace(/\.+$/, '');
+            let hostname: string;
+            try {
+                hostname = new URL(url).hostname.replace(/\.+$/, '');
+            } catch {
+                return true;
+            }
             return hostname !== 'nango.dev' && !hostname.endsWith('.nango.dev');
         },
         { message: `Webhook URLs cannot point to Nango's domain (nango.dev).` }
@@ -63,6 +68,7 @@ export const scriptNameSchema = z
     .regex(/^[a-zA-Z0-9_-]+$/)
     .max(255);
 export const functionTypeSchema = z.enum(['sync', 'action', 'on-event']);
+export const functionListTypeSchema = z.enum(['sync', 'action', 'on-event', 'tool']);
 // On-event functions can't be targeted by name alone yet, so deletion is limited to sync/action.
 export const deletableFunctionTypeSchema = z.enum(['sync', 'action']);
 export const paginationQueryFields = {
@@ -72,7 +78,7 @@ export const paginationQueryFields = {
 // Shared querystring fields for the function-list endpoints. The private route adds `env`; the public route
 // derives the environment from the secret key, so it spreads these as-is.
 export const functionListQueryFields = {
-    type: functionTypeSchema.optional(),
+    type: functionListTypeSchema.optional(),
     search: z.string().trim().min(1).max(255).optional(),
     ...paginationQueryFields
 };
@@ -124,14 +130,15 @@ export const publicKeySchema = z.union([
         .min(100)
         .max(2000)
 ]);
+
 export const integrationCredentialsSchema = z.discriminatedUnion(
     'type',
     [
         z
             .object({
                 type: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
-                client_id: z.string().min(1).max(255),
-                client_secret: z.string().min(1),
+                client_id: z.string().min(1).max(255).optional(),
+                client_secret: z.string().min(1).optional(),
                 scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.*-]+(,[0-9a-zA-Z:/_.*-]+)*$/), z.string().max(0)]).optional(),
                 webhook_secret: z.string().min(0).max(255).optional()
             })
@@ -139,19 +146,19 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
         z
             .object({
                 type: z.enum(['APP']),
-                app_id: z.string().min(1).max(255),
-                app_link: z.string().min(1),
-                private_key: privateKeySchema
+                app_id: z.string().min(1).max(255).optional(),
+                app_link: z.string().min(1).optional(),
+                private_key: privateKeySchema.optional()
             })
             .strict(),
         z
             .object({
                 type: z.enum(['CUSTOM']),
-                client_id: z.string().min(1).max(255),
-                client_secret: z.string().min(1),
-                app_id: z.string().min(1).max(255),
-                app_link: z.string().min(1),
-                private_key: privateKeySchema
+                client_id: z.string().min(1).max(255).optional(),
+                client_secret: z.string().min(1).optional(),
+                app_id: z.string().min(1).max(255).optional(),
+                app_link: z.string().min(1).optional(),
+                private_key: privateKeySchema.optional()
             })
             .strict(),
         z

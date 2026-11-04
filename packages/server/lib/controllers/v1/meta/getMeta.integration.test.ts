@@ -1,5 +1,7 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 
 import { authenticateUser, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
@@ -30,5 +32,38 @@ describe(`GET ${route}`, () => {
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         expect(res.json.data.auditTrail).toBe(false);
+    });
+
+    it('returns the account group properties the server sends to posthog', async () => {
+        const { account, user, plan } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        // @ts-expect-error type declares `env` but the controller rejects any query param
+        const res = await api.fetch(route, { method: 'GET', session });
+        isSuccess(res.json);
+        expect(res.json.data.accountGroup).toStrictEqual({ name: account.name, plan: plan.name, created_date: new Date(account.created_at).toISOString() });
+    });
+
+    it.each([false, true])('returns hasBaa %s from the account', async (hasBaa) => {
+        const { account, user } = await seeders.seedAccountEnvAndUser();
+        await db.knex('_nango_accounts').where({ id: account.id }).update({ has_baa: hasBaa });
+        const session = await authenticateUser(api, user);
+        // @ts-expect-error type declares `env` but the controller rejects any query param
+        const res = await api.fetch(route, { method: 'GET', session });
+
+        isSuccess(res.json);
+        expect(res.json.data.hasBaa).toBe(hasBaa);
+    });
+
+    it('returns the tools-catalog flag for the account', async () => {
+        const spy = vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
+        const { account, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        // @ts-expect-error type declares `env` but the controller rejects any query param
+        const res = await api.fetch(route, { method: 'GET', session });
+
+        isSuccess(res.json);
+        expect(res.json.data.toolsCatalog).toBe(true);
+        expect(spy).toHaveBeenCalledWith(account.uuid);
+        spy.mockRestore();
     });
 });

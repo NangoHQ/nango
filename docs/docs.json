@@ -98,6 +98,14 @@
       "destination": "/api-integrations/snowflake"
     },
     {
+      "source": "/integrations/all/grain-api-key",
+      "destination": "/api-integrations/grain-api-key"
+    },
+    {
+      "source": "/integrations/all/webflow",
+      "destination": "/api-integrations/webflow"
+    },
+    {
       "source": "/integrations/all/pandadoc",
       "destination": "/api-integrations/pandadoc"
     },
@@ -623,35 +631,67 @@
     },
     {
       "source": "/reference/api/connection/update-metadata-legacy",
-      "destination": "/reference/backend/http-api/connection/update-metadata-legacy"
+      "destination": "/reference/backend/http-api/connections/update-metadata"
     },
     {
       "source": "/reference/api/connection/update-metadata",
-      "destination": "/reference/backend/http-api/connection/update-metadata"
+      "destination": "/reference/backend/http-api/connections/update-metadata"
     },
     {
       "source": "/reference/api/connection/set-metadata",
-      "destination": "/reference/backend/http-api/connection/set-metadata"
+      "destination": "/reference/backend/http-api/connections/set-metadata"
     },
     {
       "source": "/reference/api/connection/delete",
-      "destination": "/reference/backend/http-api/connection/delete"
+      "destination": "/reference/backend/http-api/connections/delete"
     },
     {
       "source": "/reference/api/connection/get",
-      "destination": "/reference/backend/http-api/connection/get"
+      "destination": "/reference/backend/http-api/connections/get"
     },
     {
       "source": "/reference/api/connection/post",
-      "destination": "/reference/backend/http-api/connection/post"
+      "destination": "/reference/backend/http-api/connections/post"
     },
     {
       "source": "/reference/api/connection/set-metadata-legacy",
-      "destination": "/reference/backend/http-api/connection/set-metadata-legacy"
+      "destination": "/reference/backend/http-api/connections/set-metadata"
     },
     {
       "source": "/reference/api/connection/list",
-      "destination": "/reference/backend/http-api/connection/list"
+      "destination": "/reference/backend/http-api/connections/list"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/update-metadata-legacy",
+      "destination": "/reference/backend/http-api/connections/update-metadata"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/update-metadata",
+      "destination": "/reference/backend/http-api/connections/update-metadata"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/set-metadata",
+      "destination": "/reference/backend/http-api/connections/set-metadata"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/delete",
+      "destination": "/reference/backend/http-api/connections/delete"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/get",
+      "destination": "/reference/backend/http-api/connections/get"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/post",
+      "destination": "/reference/backend/http-api/connections/post"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/set-metadata-legacy",
+      "destination": "/reference/backend/http-api/connections/set-metadata"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/list",
+      "destination": "/reference/backend/http-api/connections/list"
     },
     {
       "source": "/reference/api/proxy/patch",
@@ -724,6 +764,14 @@
     {
       "source": "/guides/functions/tool-calling",
       "destination": "/guides/agent-sessions"
+    },
+    {
+      "source": "/integrations/all/lattice",
+      "destination": "/api-integrations/lattice"
+    },
+    {
+      "source": "/integrations/all/lattice/connect",
+      "destination": "/api-integrations/lattice/connect"
     }
   ],
   "navigation": {
@@ -826,6 +874,7 @@
                       "guides/platform/migrations/migrate-to-checkpoints",
                       "guides/platform/migrations/migrate-from-end-user",
                       "guides/platform/migrations/migrate-from-public-key",
+                      "guides/platform/migrations/migrate-from-connection-mcp",
                       "guides/platform/migrations/migrate-to-zero-yaml"
                     ]
                   },
@@ -857,12 +906,15 @@
                         "group": "Environments",
                         "pages": [
                           "reference/backend/http-api/environments/list",
+                          "reference/backend/http-api/environments/get",
                           "reference/backend/http-api/environments/create",
                           "reference/backend/http-api/environments/delete",
                           "reference/backend/http-api/environments/list-api-keys",
                           "reference/backend/http-api/environments/get-api-key",
                           "reference/backend/http-api/environments/create-api-key",
-                          "reference/backend/http-api/environments/delete-api-key"
+                          "reference/backend/http-api/environments/update-api-key",
+                          "reference/backend/http-api/environments/delete-api-key",
+                          "reference/backend/http-api/environments/rotate-webhook-signing-key"
                         ]
                       },
                       {
@@ -949,19 +1001,6 @@
                           "reference/backend/http-api/providers/get",
                           "reference/backend/http-api/providers/templates"
                         ]
-                      },
-                      {
-                        "group": "Deprecated",
-                        "pages": [
-                          "reference/backend/http-api/connection/list",
-                          "reference/backend/http-api/connection/get",
-                          "reference/backend/http-api/connection/post",
-                          "reference/backend/http-api/connection/set-metadata",
-                          "reference/backend/http-api/connection/set-metadata-legacy",
-                          "reference/backend/http-api/connection/update-metadata",
-                          "reference/backend/http-api/connection/update-metadata-legacy",
-                          "reference/backend/http-api/connection/delete"
-                        ]
                       }
                     ]
                   },
@@ -1038,6 +1077,7 @@
               "api-integrations/agentline",
               "api-integrations/agiloft",
               "api-integrations/agiloft-cc",
+              "api-integrations/aha",
               "api-integrations/ahrefs",
               "integrations/all/aimfox",
               "integrations/all/aimfox-oauth",
@@ -1068,12 +1108,15 @@
               "api-integrations/apple-business-manager",
               "api-integrations/apple-calendar",
               "integrations/all/appstle-subscriptions",
+              "api-integrations/arcsite",
               "api-integrations/asana",
               "api-integrations/asana-mcp",
               "integrations/all/asana-scim",
               "integrations/all/ashby",
               "api-integrations/aspire",
+              "api-integrations/astro-mcp",
               "api-integrations/athenahealth",
+              "api-integrations/athenahealth-jwks",
               "integrations/all/atlas-so",
               "integrations/all/atlassian",
               "integrations/all/atlassian-admin",
@@ -1081,6 +1124,8 @@
               "api-integrations/atlassian-service-account-api-token",
               "api-integrations/atlassian-service-account-oauth2",
               "api-integrations/attention",
+              "api-integrations/attentive-api-key",
+              "api-integrations/attentive-mcp",
               "api-integrations/attio",
               "api-integrations/attio-mcp",
               "integrations/all/auth0",
@@ -1129,6 +1174,7 @@
               "integrations/all/blackbaud-basic",
               "integrations/all/blandai",
               "api-integrations/bliro",
+              "api-integrations/bluebeam",
               "api-integrations/bol-com",
               "integrations/all/boldsign",
               "integrations/all/booking-com",
@@ -1137,6 +1183,7 @@
               "integrations/all/braintree",
               "integrations/all/braintree-sandbox",
               "integrations/all/braze",
+              "api-integrations/breathehr",
               "integrations/all/breezy-hr",
               "integrations/all/brevo-api-key",
               "api-integrations/brex",
@@ -1146,6 +1193,8 @@
               "api-integrations/buffer",
               "api-integrations/builder-io-private",
               "api-integrations/builder-io-public",
+              "api-integrations/buildkite",
+              "api-integrations/buildkite-token-exchange",
               "integrations/all/buildium",
               "integrations/all/builtwith",
               "integrations/all/bullhorn",
@@ -1160,15 +1209,19 @@
               "api-integrations/canva-mcp",
               "integrations/all/canva-scim",
               "api-integrations/canvas-lms",
+              "api-integrations/cch-axcess",
               "api-integrations/cdw",
               "api-integrations/cerby",
               "integrations/all/certn",
               "integrations/all/certn-partner",
+              "api-integrations/chameleoni",
               "integrations/all/chargebee",
+              "api-integrations/charliehr",
               "api-integrations/chartboost",
               "api-integrations/chatarmin",
               "api-integrations/chatgpt-enterprise",
               "integrations/all/chattermill",
+              "api-integrations/checkbox",
               "integrations/all/checkhq",
               "integrations/all/checkout-com",
               "integrations/all/checkout-com-sandbox",
@@ -1179,9 +1232,11 @@
               "integrations/all/chorus",
               "api-integrations/cin7-core",
               "integrations/all/circle-so",
+              "api-integrations/circleback",
               "api-integrations/circleback-mcp",
               "api-integrations/cisco-duo-admin",
               "integrations/all/clari-copilot",
+              "api-integrations/clarify",
               "api-integrations/clay",
               "api-integrations/clay-mcp",
               "integrations/all/clerk",
@@ -1200,6 +1255,7 @@
               "integrations/all/coda",
               "integrations/all/codeclimate",
               "integrations/all/codegen",
+              "api-integrations/command-alkon",
               "integrations/all/commercetools",
               "integrations/all/companycam",
               "api-integrations/conductorone",
@@ -1224,6 +1280,8 @@
               "api-integrations/crisp-plugin-install",
               "integrations/all/crowdstrike",
               "api-integrations/crunchbase",
+              "api-integrations/crustdata",
+              "api-integrations/crustdata-mcp",
               "integrations/all/cursor",
               "integrations/all/cursor-admin",
               "api-integrations/customer-io",
@@ -1249,8 +1307,11 @@
               "integrations/all/digitalocean",
               "api-integrations/digits",
               "api-integrations/digits-mcp",
+              "api-integrations/discogs",
+              "api-integrations/discogs-token",
               "api-integrations/discolike",
               "api-integrations/discord",
+              "api-integrations/discord-bot",
               "integrations/all/discourse",
               "integrations/all/dixa",
               "integrations/all/document360",
@@ -1272,6 +1333,7 @@
               "api-integrations/easypost",
               "integrations/all/ebay",
               "integrations/all/ebay-sandbox",
+              "api-integrations/eclinicalworks",
               "api-integrations/ecu360",
               "api-integrations/ecu360-production",
               "integrations/all/egnyte",
@@ -1282,6 +1344,7 @@
               "api-integrations/embat",
               "integrations/all/employment-hero",
               "integrations/all/entrata",
+              "api-integrations/envoice",
               "integrations/all/envoy",
               "api-integrations/epc-gov-uk",
               "api-integrations/epic",
@@ -1296,7 +1359,9 @@
               "integrations/all/exa",
               "integrations/all/exact-online",
               "integrations/all/exist",
+              "api-integrations/exotel",
               "integrations/all/expensify",
+              "api-integrations/extensiv",
               "api-integrations/facebook",
               "api-integrations/facebook-system-user",
               "integrations/all/factorial",
@@ -1312,10 +1377,12 @@
               "integrations/all/figjam",
               "integrations/all/figma",
               "integrations/all/figma-scim",
+              "api-integrations/fiix",
               "integrations/all/fillout",
               "integrations/all/fillout-api-key",
               "integrations/all/findymail",
               "api-integrations/finta",
+              "api-integrations/firecrawl",
               "integrations/all/firefish",
               "integrations/all/fireflies",
               "api-integrations/firstbase",
@@ -1325,14 +1392,18 @@
               "integrations/all/float",
               "api-integrations/folk",
               "api-integrations/followupboss",
+              "api-integrations/formstack-documents",
               "integrations/all/fortnox",
               "api-integrations/freeagent",
               "api-integrations/freeagent-sandbox",
               "api-integrations/freepik",
               "integrations/all/freshbooks",
               "api-integrations/freshdesk",
+              "api-integrations/freshdesk-mcp",
               "api-integrations/freshsales",
               "integrations/all/freshservice",
+              "api-integrations/freshservice-mcp",
+              "api-integrations/freshservice-oauth",
               "integrations/all/freshteam",
               "api-integrations/freshworks",
               "integrations/all/front",
@@ -1388,7 +1459,7 @@
               "integrations/all/gorgias-basic",
               "integrations/all/grafana",
               "integrations/all/grain",
-              "integrations/all/grain-api-key",
+              "api-integrations/grain-api-key",
               "integrations/all/grammarly",
               "integrations/all/grammarly-scim",
               "api-integrations/granola",
@@ -1414,6 +1485,7 @@
               "api-integrations/hail-mcp",
               "api-integrations/haileyhr",
               "api-integrations/halo-psa",
+              "api-integrations/haus",
               "integrations/all/harvest",
               "integrations/all/health-gorilla",
               "integrations/all/heap",
@@ -1429,6 +1501,7 @@
               "api-integrations/highlevel",
               "api-integrations/highlevel-white-label",
               "api-integrations/highq",
+              "api-integrations/hitpay",
               "integrations/all/holded",
               "api-integrations/holded-v2",
               "integrations/all/hover",
@@ -1437,9 +1510,11 @@
               "api-integrations/hubstaff",
               "api-integrations/humaans-io",
               "api-integrations/huntress",
+              "api-integrations/hydradb",
               "integrations/all/icypeas",
               "api-integrations/ids-fulfillment",
               "api-integrations/immybot",
+              "api-integrations/imanage",
               "integrations/all/incident-io",
               "api-integrations/infor",
               "api-integrations/infor-cc",
@@ -1491,7 +1566,7 @@
               "integrations/all/kustomer",
               "integrations/all/lagrowthmachine",
               "integrations/all/lastpass",
-              "integrations/all/lattice",
+              "api-integrations/lattice",
               "api-integrations/leadfeeder",
               "integrations/all/leadmagic",
               "api-integrations/leapsome",
@@ -1510,6 +1585,7 @@
               "api-integrations/linkly",
               "integrations/all/listmonk",
               "api-integrations/listrak",
+              "api-integrations/litmos",
               "api-integrations/liveswitch",
               "api-integrations/livetennisapi",
               "api-integrations/lob",
@@ -1520,6 +1596,7 @@
               "integrations/all/loop-returns",
               "integrations/all/loops-so",
               "api-integrations/lovable-mcp",
+              "api-integrations/loyaltylion",
               "integrations/all/lucid-scim",
               "integrations/all/luma",
               "api-integrations/luma-v2",
@@ -1528,6 +1605,7 @@
               "api-integrations/mailerlite",
               "integrations/all/mailgun",
               "api-integrations/mailjet",
+              "api-integrations/mailtrap",
               "integrations/all/make",
               "integrations/all/malwarebytes",
               "integrations/all/manatal",
@@ -1544,11 +1622,13 @@
               "api-integrations/meta-marketing-api",
               "api-integrations/meta-mcp",
               "api-integrations/metabase",
+              "api-integrations/metaview-mcp",
               "api-integrations/microsoft",
               "integrations/all/microsoft-admin",
               "integrations/all/microsoft-ads",
               "integrations/all/microsoft-business-central",
               "api-integrations/microsoft-dataverse",
+              "api-integrations/microsoft-defender-cc",
               "api-integrations/microsoft-dynamics-365-finance-and-operations",
               "api-integrations/microsoft-dynamics-365-finance-and-operations-cc",
               "integrations/all/microsoft-entra-id",
@@ -1579,10 +1659,13 @@
               "integrations/all/missive",
               "integrations/all/mixpanel",
               "api-integrations/modjo-ai",
+              "api-integrations/modjo-ai-v2",
               "api-integrations/modmed",
+              "api-integrations/modmed-fhir",
               "api-integrations/mollie",
               "integrations/all/momentum-io",
               "api-integrations/monday",
+              "api-integrations/monday-api-key",
               "api-integrations/moneybird",
               "integrations/all/mural",
               "api-integrations/myob",
@@ -1591,9 +1674,11 @@
               "integrations/all/namely",
               "integrations/all/namely-pat",
               "integrations/all/nationbuilder",
+              "api-integrations/navan",
               "api-integrations/neon",
               "api-integrations/neon-mcp",
               "api-integrations/nerdio",
+              "api-integrations/netdocuments",
               "api-integrations/netsapiens",
               "integrations/all/netsuite",
               "api-integrations/netsuite-client-credentials",
@@ -1632,7 +1717,9 @@
               "integrations/all/open-hands",
               "integrations/all/openai",
               "integrations/all/openai-admin",
+              "api-integrations/openrouter",
               "api-integrations/optum-real",
+              "api-integrations/oracle-aconex",
               "api-integrations/oracle-cloud-identity",
               "integrations/all/oracle-hcm",
               "api-integrations/orange-logic",
@@ -1653,6 +1740,7 @@
               "integrations/all/passportal",
               "api-integrations/pave",
               "integrations/all/pax8",
+              "api-integrations/paximal-mcp",
               "integrations/all/paychex",
               "integrations/all/paycom",
               "integrations/all/paycor",
@@ -1689,6 +1777,8 @@
               "api-integrations/planning-center-online-pat",
               "api-integrations/pleo",
               "api-integrations/pleo-api-key",
+              "api-integrations/pleo-mcp",
+              "api-integrations/pocket",
               "integrations/all/podium",
               "api-integrations/podscribe",
               "api-integrations/posthog",
@@ -1707,6 +1797,7 @@
               "api-integrations/prospeo",
               "api-integrations/provenexpert",
               "api-integrations/prtg-classic",
+              "api-integrations/publora",
               "api-integrations/pushpay-chms-v1",
               "api-integrations/pushpay-chms-v2",
               "api-integrations/pverify",
@@ -1722,6 +1813,7 @@
               "api-integrations/raindrop-mcp",
               "integrations/all/ramp",
               "integrations/all/ramp-sandbox",
+              "api-integrations/rapid7",
               "integrations/all/rapidapi",
               "integrations/all/razorpay",
               "api-integrations/read-ai",
@@ -1802,6 +1894,7 @@
               "integrations/all/sendgrid",
               "api-integrations/sentinelone",
               "integrations/all/sentry",
+              "api-integrations/sentry-mcp",
               "integrations/all/sentry-oauth",
               "integrations/all/servicem8",
               "api-integrations/servicenow",
@@ -1832,6 +1925,7 @@
               "integrations/all/skio",
               "api-integrations/slab",
               "api-integrations/slack",
+              "api-integrations/slack-app-configuration",
               "api-integrations/slack-mcp",
               "integrations/all/smartlead-ai",
               "integrations/all/smartrecruiters-api-key",
@@ -1889,6 +1983,7 @@
               "integrations/all/teamwork",
               "api-integrations/telegram",
               "api-integrations/tempo",
+              "api-integrations/tenable",
               "integrations/all/terraform",
               "api-integrations/textus",
               "api-integrations/the-swarm",
@@ -1905,6 +2000,7 @@
               "integrations/all/timely",
               "api-integrations/timetastic",
               "api-integrations/timify",
+              "api-integrations/timocom",
               "integrations/all/tldv",
               "api-integrations/toast",
               "integrations/all/todoist",
@@ -1966,14 +2062,16 @@
               "integrations/all/vimeo-basic",
               "api-integrations/vincere",
               "api-integrations/vtex",
+              "api-integrations/vwo",
               "integrations/all/wakatime",
               "api-integrations/walmart",
               "api-integrations/wappalyzer",
               "integrations/all/wave-accounting",
               "integrations/all/wealthbox",
               "integrations/all/webex",
-              "integrations/all/webflow",
+              "api-integrations/webflow",
               "api-integrations/webinarjam",
+              "api-integrations/weflow",
               "api-integrations/wejam",
               "api-integrations/whatsapp-business",
               "integrations/all/whoop",
@@ -2031,6 +2129,7 @@
               "api-integrations/zoom-cc",
               "integrations/all/zoominfo",
               "api-integrations/zorus",
+              "api-integrations/zscaler",
               "integrations/all/zuora"
             ]
           }

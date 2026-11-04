@@ -1,0 +1,45 @@
+---
+title: 'Exotel - How do I link my account?'
+sidebarTitle: 'Exotel'
+---
+
+## Overview
+
+To connect with Exotel, you need:
+
+1. **API Hostname** — the API host for your account's region.
+2. **Account SID** — your Exotel account identifier.
+3. **API Key** and **API Token** — your Exotel API credentials.
+
+### Prerequisites
+
+- An Exotel account. If you don't see **Developer** in the dashboard menu, ask your account administrator for access.
+
+### Step 1: Find your API credentials
+
+1. Log in to the [Exotel Dashboard](https://my.exotel.com).
+2. At the bottom left, click **Developer**. The developer portal opens in a new tab on **Developer Settings** > **API Settings**.
+
+<img
+    src="/api-integrations/exotel/developer.png"
+    alt="Exotel dashboard with the Developer link highlighted at the bottom of the left menu"
+/>
+
+3. On the **API Credentials** tab, copy your **Account SID**.
+4. In the API keys table, copy the **API Key (Username)** and **API Token (Password)**. The token is masked, so use its copy icon. If the table is empty, click **Create API Key** first.
+5. Copy the **Subdomain** shown on the same tab, such as `api.exotel.com`. This is the **API Hostname** you will pick.
+
+<img
+    src="/api-integrations/exotel/api_keys.png"
+    alt="Exotel API Credentials page showing the Account SID, Subdomain, API key, and API token"
+/>
+
+### Step 2: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Exotel.
+2. Select your **API Hostname** and enter your **Account SID**, **API Key**, and **API Token**.
+3. Click **Connect**.
+
+<img src="/api-integrations/exotel/form.png" alt="Nango Connect UI form for entering the Exotel API Hostname, Account SID, API Key, and API Token" style={{maxWidth: "450px" }}/>
+
+You are now connected to Exotel.

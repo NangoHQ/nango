@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { functionConfigService, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
 
@@ -66,6 +67,55 @@ describe(`GET ${route}`, () => {
         for (const tpl of res.json.data) {
             expect(tpl).not.toHaveProperty('deployed');
         }
+    });
+
+    it('omits action templates replaced by disabled native tools', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const res = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev' },
+            params: { providerConfigKey: 'github' },
+            token: apiKey.secret
+        });
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+
+        const action = res.json.data.find((fn) => fn.type === 'action');
+        expect(action).toBeDefined();
+        const [tool] = (
+            await functionConfigService.upsert(db.knex, [
+                {
+                    environmentId: env.id,
+                    integrationId: 'github',
+                    name: action!.name,
+                    version: {
+                        description: 'Native tool',
+                        tags: {},
+                        file_location: 'github/functions/native.js',
+                        version: 'test',
+                        source: 'repo',
+                        trigger: { kind: 'http' },
+                        requires: { connection: true, outbound: false, invoke: false },
+                        capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+                        limits: { concurrency: { perConnection: 'max' } },
+                        input_schema_ref: null,
+                        output_schema_ref: null,
+                        model_schema_refs: [],
+                        metadata_schema_ref: null,
+                        checkpoint_schema_ref: null,
+                        json_schema: {}
+                    }
+                }
+            ])
+        ).unwrap();
+        await db.knex('function_configs').where({ id: tool!.config.id }).update({ enabled: false });
+        const updated = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' }, params: { providerConfigKey: 'github' } });
+        expect(updated.res.status).toBe(200);
+        isSuccess(updated.json);
+        expect(updated.json.data.some((fn) => fn.type === 'action' && fn.name === action!.name)).toBe(false);
+        expect(updated.json.data).toHaveLength(res.json.data.length - 1);
     });
 
     it('should attach deployed metadata when a function with the same name+type exists', async () => {

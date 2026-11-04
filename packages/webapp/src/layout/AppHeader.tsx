@@ -1,20 +1,12 @@
-import { BookOpen, Box, MessageSquareMore as HelpIcon, Moon, Sun } from 'lucide-react';
+import { BookOpen, MessageSquareMore as HelpIcon, Moon, Sun } from 'lucide-react';
 
-import { Button, IconButton } from '@nangohq/design-system';
+import { IconButton } from '@nangohq/design-system';
 
 import { Breadcrumbs } from '@/components/patterns/Breadcrumbs';
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { trackPlaygroundOpened } from '@/features/Playground/analytics';
-import { usePermissions } from '@/hooks/usePermissions';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
-import { usePlaygroundStore } from '@/store/playground';
 import { openSupportChat } from '@/utils/support';
 
 export const AppHeader: React.FC = () => {
-    const playgroundOpen = usePlaygroundStore((s) => s.isOpen);
-    const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
-    const { can } = usePermissions();
-    const canUsePlayground = can('environment:syncs:execute');
     const darkMode = useThemeStore(darkModeSelector);
     const toggleDarkMode = useThemeStore((s) => s.toggleDarkMode);
 
@@ -22,24 +14,6 @@ export const AppHeader: React.FC = () => {
         <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b-[0.5px] border-border-default bg-surface-canvas px-6">
             <Breadcrumbs />
             <div className="flex justify-end gap-2">
-                <PermissionGate condition={canUsePlayground}>
-                    {(allowed) => (
-                        <Button
-                            variant="outline"
-                            size="md"
-                            disabled={!allowed}
-                            onClick={() => {
-                                if (!playgroundOpen) {
-                                    trackPlaygroundOpened('header');
-                                }
-                                setPlaygroundOpen(!playgroundOpen);
-                            }}
-                        >
-                            <Box />
-                            Playground
-                        </Button>
-                    )}
-                </PermissionGate>
                 <IconButton asChild variant="outline" size="md" label="Docs">
                     <a href="https://nango.dev/docs" target="_blank" rel="noreferrer">
                         <BookOpen />

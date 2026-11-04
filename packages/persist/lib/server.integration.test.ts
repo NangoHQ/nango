@@ -373,8 +373,8 @@ describe('Persist API', () => {
                 code: 'invalid_request',
                 errors: [
                     {
-                        code: 'invalid_union',
-                        message: 'Invalid input',
+                        code: 'too_big',
+                        message: 'Too big: expected string to have <=255 characters',
                         path: ['records', '0', 'id']
                     }
                 ]
@@ -1104,7 +1104,7 @@ describe('Persist API', () => {
 const initDb = async () => {
     const now = new Date();
     const account = await seeders.createAccount();
-    const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'testEnv' })).unwrap();
+    const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'testEnv' })).unwrap().environment;
     const secret = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
 
     const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();

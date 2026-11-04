@@ -3,6 +3,7 @@
 // - move template deployment to its own endpoint `POST /functions/deployments/template`.
 // - move sandbox deployment to its own endpoint alongside the other deployment endpoints.
 
+import { productTracking } from '@nangohq/shared';
 import { getLogger, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import * as functionDeploymentService from '../../../services/functionDeployment.service.js';
@@ -32,6 +33,7 @@ async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeplo
         return;
     }
 
+    productTracking.track({ name: 'functions:deploy_create', eventProperties: { source: 'api', is_template: true, function_count: 1 } });
     res.status(202).send(result.value);
 }
 
@@ -47,6 +49,7 @@ async function handleDeployCode(res: DeploymentResponse, body: FunctionDeploymen
         return;
     }
 
+    productTracking.track({ name: 'functions:deploy_create', eventProperties: { source: 'api', is_template: false, function_count: 1 } });
     res.status(202).send(result.value);
 }
 

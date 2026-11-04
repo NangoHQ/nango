@@ -130,7 +130,9 @@ describe(`POST ${endpoint}`, () => {
                 provider: 'github',
                 unique_key: 'github-quickstart',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: false
+                forward_webhooks: false,
+                // Nango supplies the developer app, so nothing is outstanding
+                missing_fields: []
             }
         });
 

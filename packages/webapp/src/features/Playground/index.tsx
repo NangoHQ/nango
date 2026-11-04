@@ -1,189 +1,136 @@
-import { Play, RotateCcw, X } from 'lucide-react';
+import { Braces, Play, RotateCcw, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { Button, IconButton } from '@nangohq/design-system';
+import { Button, FieldLabel } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Sheet, SheetContent } from '@/components/ui/Sheet';
-import { usePermissions } from '@/hooks/usePermissions';
+import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
-import { cn } from '@/utils/utils';
+import { getPlaygroundInput, getPlaygroundInputFields } from './input.utils';
 import { PlaygroundInputs } from './PlaygroundInputs';
-import { PlaygroundResult } from './PlaygroundResult';
+import { PlaygroundResultData, PlaygroundResultStatus } from './PlaygroundResult';
 import { PlaygroundSelectors } from './PlaygroundSelectors';
-import { getInputFields } from './types';
 import { usePlayground } from './usePlayground';
 import { usePlaygroundFunctions } from './usePlaygroundFunctions';
 
-import type { JSONSchema7 } from 'json-schema';
-
-export const Playground: React.FC = () => {
+export const FunctionPlaygroundDrawer: React.FC = () => {
     const env = useStore((s) => s.env);
-    const playgroundOpen = usePlaygroundStore((s) => s.isOpen);
+    const isOpen = usePlaygroundStore((s) => s.isOpen);
+    const setOpen = usePlaygroundStore((s) => s.setOpen);
     const playgroundIntegration = usePlaygroundStore((s) => s.integration);
+    const playgroundConnection = usePlaygroundStore((s) => s.connection);
     const playgroundFunctionName = usePlaygroundStore((s) => s.function);
     const playgroundFunctionType = usePlaygroundStore((s) => s.functionType);
     const result = usePlaygroundStore((s) => s.result);
     const running = usePlaygroundStore((s) => s.running);
     const inputErrors = usePlaygroundStore((s) => s.inputErrors);
-    const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
     const clearPlaygroundInputError = usePlaygroundStore((s) => s.clearInputError);
+    const { pathname } = useLocation();
 
-    const location = useLocation();
-
+    // `pathname` is the trigger: the drawer closes on every navigation.
     useEffect(() => {
-        // Auto-close the sheet when the route changes
-        if (playgroundOpen) {
-            setPlaygroundOpen(false);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [location.pathname]);
+        usePlaygroundStore.getState().setOpen(false);
+    }, [pathname]);
 
-    const queryEnv = playgroundOpen ? env : '';
-
-    const playgroundFunctions = usePlaygroundFunctions({ env: queryEnv, providerConfigKey: playgroundIntegration || '' });
+    const playgroundFunctions = usePlaygroundFunctions({ env: isOpen ? env : '', providerConfigKey: playgroundIntegration || '' });
 
     const playgroundFunction = useMemo(() => {
         if (!playgroundFunctionName || !playgroundFunctionType) return undefined;
         return playgroundFunctions.rows.find((row) => row.name === playgroundFunctionName && row.type === playgroundFunctionType);
     }, [playgroundFunctions.rows, playgroundFunctionName, playgroundFunctionType]);
 
-    const inputSchema = useMemo((): JSONSchema7 | null => {
-        if (!playgroundFunction || !playgroundFunction.json_schema || typeof playgroundFunction.json_schema !== 'object') return null;
-        const defKey = playgroundFunction.input;
-        const schema =
-            (defKey ? (playgroundFunction.json_schema.definitions?.[defKey] as JSONSchema7 | undefined) : undefined) || playgroundFunction.json_schema;
-        if (!schema || typeof schema !== 'object') return null;
-        const props = schema.properties;
-        if (!props || Object.keys(props).length === 0) return null;
-        return schema;
-    }, [playgroundFunction]);
+    const input = useMemo(() => getPlaygroundInput(playgroundFunction), [playgroundFunction]);
+    const inputFields = useMemo(() => getPlaygroundInputFields(input), [input]);
 
-    const inputFields = useMemo(() => getInputFields(inputSchema), [inputSchema]);
-
-    const { handleRun, handleCancel } = usePlayground(inputFields);
-
-    const { can } = usePermissions();
-    const canUsePlayground = can('environment:syncs:execute');
+    // Keep this outside SheetContent. SheetContent unmounts on close, and a sync run must keep polling.
+    const { handleRun, handleCancel } = usePlayground(input);
 
     const clearInputError = useCallback((name: string) => clearPlaygroundInputError(name), [clearPlaygroundInputError]);
 
-    const playgroundConnection = usePlaygroundStore((s) => s.connection);
     const isFunctionDisabled = Boolean(playgroundFunction && playgroundFunction.enabled === false);
     const canRun = Boolean(playgroundIntegration && playgroundConnection && playgroundFunction && playgroundFunctionType) && !isFunctionDisabled;
     const isSync = playgroundFunctionType === 'sync';
     const showInputs = Boolean(playgroundFunction && (isSync || inputFields.length > 0));
 
     return (
-        <>
-            {/* Custom overlay — click to close, pointer-events-none so it never blocks the page */}
-            <div
-                className={cn(
-                    'fixed inset-0 z-50 bg-black/30 transition-opacity duration-300 ease-in-out',
-                    playgroundOpen ? 'opacity-100' : 'opacity-0 pointer-events-none invisible'
-                )}
-                onClick={() => setPlaygroundOpen(false)}
-            />
-            <Sheet open={playgroundOpen} onOpenChange={setPlaygroundOpen} modal={false}>
-                <SheetContent
-                    side="right"
-                    overlayClassName="hidden"
-                    insetTop={88}
-                    insetBottom={24}
-                    insetRight={24}
-                    onInteractOutside={(e) => e.preventDefault()}
-                    onPointerDownOutside={(e) => e.preventDefault()}
-                    onFocusOutside={(e) => e.preventDefault()}
-                    className={cn(
-                        'text-text-strong rounded-lg border border-border-muted shadow-lg p-6',
-                        'flex flex-col items-start gap-2.5',
-                        'w-[537px] max-w-none sm:max-w-none',
-                        'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
-                        '[&>button]:hidden'
-                    )}
-                >
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-8">
-                            {/* Header */}
-                            <div className="flex w-full items-start justify-between">
-                                <div className="min-w-0 flex flex-col gap-2">
-                                    <h2 className="text-text-strong text-heading-medium">Playground</h2>
-                                    <p className="text-body-medium-regular text-text-secondary">Quickly run any function.</p>
-                                </div>
-                                <IconButton variant="ghost" size="2xs" label="Close playground" onClick={() => setPlaygroundOpen(false)}>
-                                    <X />
-                                </IconButton>
-                            </div>
-
-                            {/* Content */}
-                            <div className="flex w-full flex-col gap-6">
-                                <PlaygroundSelectors
-                                    env={env}
-                                    queryEnv={queryEnv}
-                                    functions={playgroundFunctions.rows}
-                                    functionsReady={playgroundFunctions.ready}
-                                    functionsError={playgroundFunctions.error}
-                                    onRetryFunctions={playgroundFunctions.retry}
-                                />
-
-                                {showInputs && (
-                                    <PlaygroundInputs
-                                        env={env}
-                                        queryEnv={queryEnv}
-                                        isSync={isSync}
-                                        inputFields={inputFields}
-                                        inputErrors={inputErrors}
-                                        clearInputError={clearInputError}
-                                    />
-                                )}
-
-                                {/* Run controls */}
-                                <div className="flex gap-2">
-                                    {running ? (
-                                        <>
-                                            <Button variant="primary" disabled loading={true} size="md">
-                                                Running
-                                            </Button>
-                                            {isSync && (
-                                                <Button variant="danger" size="md" onClick={handleCancel}>
-                                                    <X />
-                                                    Cancel run
-                                                </Button>
-                                            )}
-                                        </>
-                                    ) : result ? (
-                                        <ConditionalTooltip condition={isFunctionDisabled} content="Enable this function to run it from the Playground.">
-                                            <PermissionGate condition={canUsePlayground} message="Your role does not have permission to use the playground.">
-                                                {(allowed) => (
-                                                    <Button variant="primary" size="md" onClick={handleRun} disabled={!canRun || !allowed}>
-                                                        <RotateCcw />
-                                                        Run again
-                                                    </Button>
-                                                )}
-                                            </PermissionGate>
-                                        </ConditionalTooltip>
-                                    ) : (
-                                        <ConditionalTooltip condition={isFunctionDisabled} content="Enable this function to run it from the Playground.">
-                                            <PermissionGate condition={canUsePlayground} message="Your role does not have permission to use the playground.">
-                                                {(allowed) => (
-                                                    <Button variant="primary" size="md" onClick={handleRun} disabled={!canRun || !allowed}>
-                                                        <Play />
-                                                        Run
-                                                    </Button>
-                                                )}
-                                            </PermissionGate>
-                                        </ConditionalTooltip>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        <PlaygroundResult env={env} isSync={isSync} />
+        <Sheet open={isOpen} onOpenChange={setOpen}>
+            <SheetContent
+                side="right"
+                hideCloseButton
+                className="w-full sm:w-[720px] max-w-none sm:max-w-none p-0 bg-surface-page text-text-strong border-l-border-muted"
+            >
+                <div className="h-full overflow-y-auto">
+                    <div className="flex h-14 items-center justify-between border-b border-border-muted px-6">
+                        <SheetTitle className="type-heading-sm text-text-strong">Test run</SheetTitle>
+                        <SheetClose
+                            title="Close"
+                            className="-mr-2 flex size-8 items-center justify-center bg-transparent text-text-muted transition-colors hover:text-text-strong focus:text-text-strong"
+                        >
+                            <X size={16} />
+                        </SheetClose>
                     </div>
-                </SheetContent>
-            </Sheet>
-        </>
+                    <div className="flex w-full flex-col gap-8 p-6">
+                        <div className="flex flex-col gap-6">
+                            <PlaygroundSelectors
+                                env={env}
+                                functions={playgroundFunctions.rows}
+                                functionsReady={playgroundFunctions.ready}
+                                functionsError={playgroundFunctions.error}
+                                onRetryFunctions={playgroundFunctions.retry}
+                            />
+
+                            {showInputs && (
+                                <PlaygroundInputs
+                                    env={env}
+                                    isSync={isSync}
+                                    inputFields={inputFields}
+                                    inputErrors={inputErrors}
+                                    clearInputError={clearInputError}
+                                />
+                            )}
+
+                            <div className="flex gap-2">
+                                {running ? (
+                                    <>
+                                        <Button variant="primary" disabled loading={true} size="md">
+                                            Running
+                                        </Button>
+                                        {isSync && (
+                                            <Button variant="danger" size="md" onClick={handleCancel}>
+                                                <X />
+                                                Cancel run
+                                            </Button>
+                                        )}
+                                    </>
+                                ) : (
+                                    <ConditionalTooltip condition={isFunctionDisabled} content="Enable this function to run it.">
+                                        <Button variant="primary" size="md" onClick={handleRun} disabled={!canRun}>
+                                            {result ? <RotateCcw /> : <Play />}
+                                            {result ? 'Run again' : 'Run'}
+                                        </Button>
+                                    </ConditionalTooltip>
+                                )}
+                            </div>
+
+                            <PlaygroundResultStatus env={env} isSync={isSync} />
+                        </div>
+
+                        <div className="flex min-w-0 flex-col gap-3">
+                            <FieldLabel>Result</FieldLabel>
+                            {result ? (
+                                <PlaygroundResultData />
+                            ) : (
+                                <div className="flex min-h-48 flex-col items-center justify-center gap-2 rounded-ds-md border border-dashed border-border-default text-body-medium-regular text-text-muted">
+                                    <Braces className="size-5" />
+                                    Run a function to see its result here.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </SheetContent>
+        </Sheet>
     );
 };

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { NangoError, toolService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { ActionExecutionError } from '../../../../services/action.service.js';
@@ -10,13 +11,16 @@ import { executeInputSchema } from './schema.js';
 
 import type * as actionService from '../../../../services/action.service.js';
 import type { AgentSessionMcpContext } from '../sessionTool.js';
+import type * as NangoShared from '@nangohq/shared';
+import type { functionConfigService, FunctionInvokeError } from '@nangohq/shared';
 import type {
     AgentSession,
     AgentSessionCompiledToolset,
     AgentSessionCreateConnectionConfig,
     AgentSessionResolvedConnections,
     DBEnvironment,
-    DBTeam
+    DBTeam,
+    FunctionInvocationErrorCode
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -26,7 +30,28 @@ vi.mock('../../../../services/action.service.js', async (importOriginal) => ({
     executeAction: (...args: unknown[]) => executeAction(...args)
 }));
 
+const invokeFunction = vi.fn();
+vi.mock('@nangohq/shared', async (importOriginal) => ({
+    ...(await importOriginal<typeof NangoShared>()),
+    invokeFunction: (...args: unknown[]) => invokeFunction(...args)
+}));
+vi.mock('../../../../utils/utils.js', () => ({ getOrchestrator: () => ({}) }));
+
 const { executeSessionTool, executeTool } = await import('./execute.js');
+
+const TOOL = {
+    config: { uuid: '11111111-1111-4111-8111-111111111111', name: 'read_doc', enabled: true },
+    currentVersion: { input_schema_ref: '#/definitions/ReadDocInput' }
+} as functionConfigService.CurrentFunctionConfig;
+
+beforeEach(() => {
+    vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
+    invokeFunction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
+});
+
+function functionInvokeError(code: FunctionInvocationErrorCode, { cause, errors = [] }: { cause?: unknown; errors?: unknown[] } = {}): FunctionInvokeError {
+    return Object.assign(new Error(code, { cause }), { code, errors }) as unknown as FunctionInvokeError;
+}
 
 const TOOLSET: AgentSessionCompiledToolset = {
     notion: {
@@ -261,6 +286,57 @@ describe('executeSessionTool', () => {
         );
     });
 
+    it.each([
+        {
+            shape: 'every message in a GraphQL errors array',
+            errors: [{ message: 'Invalid scope: read_content required', extensions: { code: 'FORBIDDEN' } }, { message: 'Page not found' }],
+            reason: 'Invalid scope: read_content required; Page not found'
+        },
+        {
+            shape: 'the entries that carry a message',
+            errors: [{ extensions: { code: 'FORBIDDEN' } }, { message: 'Page not found' }],
+            reason: 'Page not found'
+        },
+        { shape: 'an errors string', errors: 'Invalid API key', reason: 'Invalid API key' },
+        { shape: 'an array of error strings', errors: ['Page not found', 'Title is required'], reason: 'Page not found; Title is required' }
+    ])('surfaces $shape', async ({ errors, reason }) => {
+        executeAction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(
+                new ActionExecutionError({
+                    code: 'action_failed',
+                    message: 'wrapped',
+                    nangoError: { message: 'An error occurred during an HTTP call', payload: { errors } } as never
+                })
+            )
+        });
+
+        const result = await execute('read_doc');
+
+        expect(errorOf(result).message).toBe(
+            `Tool 'read_doc' ran on integration 'notion' and failed: An error occurred during an HTTP call: ${reason}. Read the failure before deciding whether to call it again with different input or to tell the user.`
+        );
+    });
+
+    it('falls back to the error message when the errors carry no message', async () => {
+        executeAction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(
+                new ActionExecutionError({
+                    code: 'action_failed',
+                    message: 'wrapped',
+                    nangoError: { message: 'An error occurred during an HTTP call', payload: { errors: [{ extensions: { code: 'FORBIDDEN' } }] } } as never
+                })
+            )
+        });
+
+        const result = await execute('read_doc');
+
+        expect(errorOf(result).message).toBe(
+            "Tool 'read_doc' ran on integration 'notion' and failed: An error occurred during an HTTP call. Read the failure before deciding whether to call it again with different input or to tell the user."
+        );
+    });
+
     it('does not repeat a reason the error message already carries', async () => {
         executeAction.mockResolvedValue({
             logCtx: undefined,
@@ -293,6 +369,93 @@ describe('executeSessionTool', () => {
 
         expect(errorOf(result)).toBeInstanceOf(InternalMcpError);
         expect(errorOf(result).message).toBe('Internal error');
+    });
+
+    it('runs a tool by invoking it as the session', async () => {
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(TOOL));
+
+        const result = await execute('read_doc', { input: { id: '1' } });
+
+        expect(result.unwrap()).toStrictEqual({ ok: true });
+        expect(toolService.findTool).toHaveBeenCalledWith({ environmentId: 1, integrationKey: 'notion', name: 'read_doc' });
+        expect(invokeFunction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                connectionId: 'notion-acme',
+                functionUuid: TOOL.config.uuid,
+                input: { id: '1' },
+                invocationType: 'wait',
+                actor: { kind: 'session', id: 'session-1' }
+            })
+        );
+        expect(executeAction).not.toHaveBeenCalled();
+    });
+
+    it('omits empty MCP arguments for a tool without an input schema', async () => {
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ ...TOOL, currentVersion: { ...TOOL.currentVersion, input_schema_ref: null } }));
+
+        await execute('read_doc', { input: {} });
+
+        expect(invokeFunction).toHaveBeenCalledWith(expect.objectContaining({ input: undefined }));
+        expect(executeAction).not.toHaveBeenCalled();
+    });
+
+    it('refuses a disabled tool rather than running the action it shadows', async () => {
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ ...TOOL, config: { ...TOOL.config, enabled: false } }));
+
+        const result = await execute('read_doc');
+
+        expect(errorOf(result).message).toBe(
+            "Tool 'read_doc' is not available on integration 'notion'. Use another tool for the task, or tell the user it cannot be done."
+        );
+        expect(codeOf(result)).toBe('tool_not_in_session');
+        expect(invokeFunction).not.toHaveBeenCalled();
+        expect(executeAction).not.toHaveBeenCalled();
+    });
+
+    it('refuses an integration that was deleted after the session was created', async () => {
+        executeAction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(new ActionExecutionError({ code: 'unknown_provider', message: 'Failed to find provider' }))
+        });
+
+        const result = await execute('read_doc');
+
+        expect(codeOf(result)).toBe('unknown_integration');
+        expect(invokeFunction).not.toHaveBeenCalled();
+    });
+
+    it.each<{ code: FunctionInvocationErrorCode; cause?: unknown; expected: string | undefined }>([
+        { code: 'connection_not_found', expected: 'integration_not_connected' },
+        { code: 'function_not_found', expected: 'tool_not_in_session' },
+        { code: 'function_disabled', expected: 'tool_not_in_session' },
+        { code: 'invalid_invocation', expected: 'tool_not_in_session' },
+        { code: 'validation_error', expected: 'invalid_input' },
+        { code: 'function_failed', cause: new NangoError('function_failure'), expected: 'tool_failed' },
+        { code: 'server_error', expected: undefined }
+    ])('maps a tool $code to $expected', async ({ code, cause, expected }) => {
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(TOOL));
+        invokeFunction.mockResolvedValue({ logCtx: undefined, result: Err(functionInvokeError(code, { cause })) });
+
+        const result = await execute('read_doc');
+
+        expect(codeOf(result)).toBe(expected);
+        if (!expected) {
+            expect(errorOf(result)).toBeInstanceOf(InternalMcpError);
+        }
+    });
+
+    it('tells the agent which part of its input a tool rejected', async () => {
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(TOOL));
+        invokeFunction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(functionInvokeError('validation_error', { errors: [{ path: '/id', message: 'must be string' }] }))
+        });
+
+        const result = await execute('read_doc');
+
+        expect(errorOf(result).message).toBe(
+            'Tool \'read_doc\' on integration \'notion\' rejected its input: [{"path":"/id","message":"must be string"}]. Correct the input and call it again.'
+        );
     });
 });
 

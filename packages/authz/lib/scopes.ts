@@ -34,6 +34,7 @@ export const PUBLIC_ENVIRONMENT_SCOPES = [
     // Functions
     'environment:functions:list',
     'environment:functions:read',
+    'environment:functions:update',
     'environment:functions:delete',
     'environment:functions:compile',
     'environment:functions:dryrun',
@@ -45,8 +46,8 @@ export const PUBLIC_ENVIRONMENT_SCOPES = [
     'environment:records:write',
     // Logs
     'environment:logs:read',
-    // Actions
-    'environment:actions:execute',
+    // Tools
+    'environment:tools:call',
     // Proxy
     'environment:proxy',
     // Variables
@@ -66,12 +67,15 @@ true satisfies [Exclude<ConcreteApiKeyScope, (typeof PUBLIC_ENVIRONMENT_SCOPES)[
 export const PUBLIC_ACCOUNT_SCOPES = [
     // Environments
     'account:environments:list',
+    'account:environments:read',
+    'account:environments:read_secret',
     'account:environments:create', // any environment
     'account:environments:delete',
     'account:environments:set_production',
     'account:environments:api_keys:list',
     'account:environments:api_keys:read',
     'account:environments:api_keys:create',
+    'account:environments:api_keys:update',
     'account:environments:api_keys:delete'
 ] as const satisfies readonly AccountApiKeyScope[];
 
@@ -147,9 +151,19 @@ export function isAccountScope(scope: string): boolean {
  * The concrete issuable scopes matching `granted`
  */
 export function expandIssuable(granted: readonly ScopeSelector[]): IssuableScope[] {
-    return ISSUABLE_SCOPES.filter((scope) =>
+    const expanded = ISSUABLE_SCOPES.filter((scope) =>
         granted.some((selector) => selector === scope || (selector.endsWith(':*') && scope.startsWith(selector.slice(0, -1))))
     );
+    // Keys written with the old name by a server still running older code after the migration ran
+    if (granted.some(isRenamedToolsCallScope) && !expanded.includes('environment:tools:call')) {
+        expanded.push('environment:tools:call');
+    }
+    return expanded;
+}
+
+/** Old names of `environment:tools:call`, no longer issued but still honored on stored keys. */
+export function isRenamedToolsCallScope(value: unknown): boolean {
+    return value === 'environment:actions:execute' || value === 'environment:actions:*';
 }
 
 /**

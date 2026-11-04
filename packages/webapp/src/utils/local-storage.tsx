@@ -52,6 +52,7 @@ export enum LocalStorageKeys {
     Playground = 'nango_playground',
     Theme = 'nango_theme',
     RecordsDocsBannerDismissed = 'nango_records_docs_banner_dismissed',
+    IntegrationSetupGuideDismissed = 'nango_integration_setup_guide_dismissed',
     DevPlanOverride = 'nango_dev_plan_override'
 }
 
@@ -60,8 +61,8 @@ export enum LocalStorageKeys {
  * keys (theme) survive. The Record type forces every key to be classified, so
  * a new one can't accidentally skip this decision.
  *
- * Playground lives in sessionStorage, so clearing it here is a no-op; logout
- * resets it separately via resetPlayground() (see useSignout).
+ * Playground lives in sessionStorage and Agent Playground chats are keyed per chat, so logout resets
+ * them separately (see useSignout).
  */
 const KEY_CATEGORY: Record<LocalStorageKeys, 'session' | 'preference'> = {
     [LocalStorageKeys.UserEmail]: 'session',
@@ -72,6 +73,7 @@ const KEY_CATEGORY: Record<LocalStorageKeys, 'session' | 'preference'> = {
     [LocalStorageKeys.Playground]: 'session',
     [LocalStorageKeys.Theme]: 'preference',
     [LocalStorageKeys.RecordsDocsBannerDismissed]: 'preference',
+    [LocalStorageKeys.IntegrationSetupGuideDismissed]: 'preference',
     [LocalStorageKeys.DevPlanOverride]: 'session'
 };
 

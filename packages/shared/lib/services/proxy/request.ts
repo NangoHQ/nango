@@ -4,8 +4,10 @@ import { isAxiosError } from 'axios';
 
 import { axiosInstance as axios, Err, getLogger, Ok, redactHeaders, redactURL, retryFlexible } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
 import { createMeteringTransport } from './byte-metering-transport.js';
 import { getProxyRetryFromErr } from './retry.js';
+import { proxyMonitoringAttributes, trackBaseUrlOverride } from './telemetry.js';
 import { getAxiosConfiguration, ProxyError } from './utils.js';
 
 import type { MeteredBytes } from './byte-metering-transport.js';
@@ -26,6 +28,8 @@ interface Props {
     getIntegrationConfig: () => MaybePromise<IntegrationConfigForProxy>;
     outboundPolicy: OutboundUrlPolicy;
     maxWaitMs: number;
+    abortSignal?: AbortSignal | undefined;
+    idleTimeoutMs?: number | undefined;
 }
 
 /**
@@ -85,6 +89,13 @@ export class ProxyRequest {
      */
     maxWaitMs: number;
 
+    /**
+     * Aborts the in-flight attempt, e.g. when the script running this request is cancelled
+     */
+    abortSignal?: AbortSignal | undefined;
+
+    idleTimeoutMs: number;
+
     constructor(props: Props) {
         this.config = props.proxyConfig;
         this.logger = props.logger;
@@ -94,12 +105,16 @@ export class ProxyRequest {
         this.getIntegrationConfig = props.getIntegrationConfig;
         this.outboundPolicy = props.outboundPolicy;
         this.maxWaitMs = props.maxWaitMs;
+        this.abortSignal = props.abortSignal;
+        this.idleTimeoutMs = props.idleTimeoutMs && props.idleTimeoutMs > 0 ? props.idleTimeoutMs : envs.NANGO_PROXY_IDLE_TIMEOUT_MS;
     }
 
     /**
      * Send a request to the third-party with retry.
      */
     public async request(): Promise<Result<AxiosResponse>> {
+        const interpolations = new Set<string>();
+        let overrideTracked = false;
         try {
             const response = await retryFlexible<Promise<AxiosResponse>>(
                 async (retryAttempt) => {
@@ -113,16 +128,35 @@ export class ProxyRequest {
                         Object.values(proxyHeaders).some((v) => typeof v === 'string' && (v.includes('${clientId}') || v.includes('${clientSecret}')));
 
                     const needsIntegrationConfig = Boolean(this.config.provider.integration_config);
-                    if (this.connection.credentials.type === 'OAUTH1' || headersNeedOAuthAppCredentials || needsIntegrationConfig) {
+                    // Override telemetry also needs integration secrets available for URL redaction.
+                    if (
+                        (this.config.baseUrlOverride && this.config.monitoringContext) ||
+                        this.connection.credentials.type === 'OAUTH1' ||
+                        headersNeedOAuthAppCredentials ||
+                        needsIntegrationConfig
+                    ) {
                         this.integrationConfig = await this.getIntegrationConfig();
+                    }
+
+                    const properties = proxyMonitoringAttributes(this.config, this.connection, this.integrationConfig);
+                    if (properties && this.config.baseUrlOverride && !overrideTracked) {
+                        overrideTracked = true;
+                        trackBaseUrlOverride(this.config, properties);
                     }
 
                     this.axiosConfig = getAxiosConfiguration({
                         integrationConfig: this.integrationConfig,
                         proxyConfig: this.config,
                         connection: this.connection,
-                        outboundPolicy: this.outboundPolicy
+                        outboundPolicy: this.outboundPolicy,
+                        tracking: properties ? { properties, interpolations } : undefined
                     });
+                    // In Node, axios' timeout is a hard limit until the response headers arrive (sending the body included),
+                    // then a socket inactivity timeout that every chunk resets. Undocumented: https://github.com/axios/axios/issues/5896
+                    this.axiosConfig.timeout = this.idleTimeoutMs;
+                    if (this.abortSignal) {
+                        this.axiosConfig.signal = this.abortSignal;
+                    }
 
                     const byteTotals = { sent: 0, received: 0 };
 
@@ -168,6 +202,7 @@ export class ProxyRequest {
                 {
                     max: this.config.retries || 0,
                     maxWaitMs: this.maxWaitMs,
+                    signal: this.abortSignal,
                     onError: async ({ err, nextWait, max, attempt }) => {
                         let retry = getProxyRetryFromErr({ err, proxyConfig: this.config, maxWaitMs: this.maxWaitMs });
 

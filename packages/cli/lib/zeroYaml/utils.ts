@@ -36,10 +36,11 @@ export type CompileErrorType =
     | 'failed_to_build_unknown'
     | 'method_need_await'
     | 'retryon_need_retries'
-    | 'disallowed_import';
+    | 'disallowed_import'
+    | 'unsupported_scopes_usage';
 
 // createFunction intentionally omitted from this message while experimental. Add on GA
-export const badExportCompilerError = 'Invalid default export: should be createAction(), createSync() or createOnEvent()';
+export const badExportCompilerError = 'Invalid default export: should be createAction(), createSync(), createOnEvent() or createTool()';
 
 export abstract class ReadableError extends Error {
     abstract toText(): string;
@@ -124,5 +125,15 @@ export class DuplicateModelDefinitionError extends DefinitionError {
 export class TrackDeletesDefinitionError extends DefinitionError {
     constructor(filePath: string, property: string[]) {
         super(`Track deletes is not supported for incremental syncs`, filePath, property);
+    }
+}
+
+export class UnusedCheckpointDefinitionError extends DefinitionError {
+    constructor(filePath: string, property: string[]) {
+        super(
+            `A 'checkpoint' schema is declared but never used. Call 'saveCheckpoint()', 'getCheckpoint()', or 'clearCheckpoint()' in your function, or remove the 'checkpoint' option -- declaring it alone does not persist or resume any state.`,
+            filePath,
+            property
+        );
     }
 }

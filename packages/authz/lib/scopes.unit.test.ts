@@ -102,3 +102,18 @@ describe('what a key may hold', () => {
         }
     });
 });
+
+describe('renamed scopes', () => {
+    it.each(['environment:actions:execute', 'environment:actions:*'])('%s also grants environment:tools:call', (selector) => {
+        expect(expandIssuable([selector as ScopeSelector])).toContain('environment:tools:call');
+    });
+
+    it('environment:tools:call does not grant the old name', () => {
+        expect(expandIssuable(['environment:tools:call'])).toEqual(['environment:tools:call']);
+    });
+
+    it('lists the new name once', () => {
+        const expanded = expandIssuable(['environment:*']);
+        expect(expanded.filter((scope) => scope === 'environment:tools:call')).toHaveLength(1);
+    });
+});

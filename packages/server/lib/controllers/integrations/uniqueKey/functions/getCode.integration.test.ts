@@ -1,8 +1,10 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import fs from 'node:fs';
+
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
-import { remoteFileService, seeders } from '@nangohq/shared';
-import { flags } from '@nangohq/utils';
+import { getFlags } from '@nangohq/feature-flags';
+import { functionConfigService, localFileService, remoteFileService, seeders } from '@nangohq/shared';
 
 import { isError, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
@@ -59,7 +61,43 @@ async function insertOnEventScript({ config_id, name }: { config_id: number; nam
     });
 }
 
+async function insertNativeTool({ environmentId, name }: { environmentId: number; name: string }) {
+    (
+        await functionConfigService.upsert(db.knex, [
+            {
+                environmentId,
+                integrationId: 'github',
+                name,
+                version: {
+                    description: 'Native tool',
+                    tags: {},
+                    file_location: '_LOCAL_FILE_',
+                    version: 'test',
+                    source: 'repo',
+                    trigger: { kind: 'http' },
+                    requires: { connection: true, outbound: false, invoke: false },
+                    capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+                    limits: { concurrency: { perConnection: 'max' } },
+                    input_schema_ref: null,
+                    output_schema_ref: null,
+                    model_schema_refs: [],
+                    metadata_schema_ref: null,
+                    checkpoint_schema_ref: null,
+                    json_schema: {}
+                }
+            }
+        ])
+    ).unwrap();
+}
+
+function mockLocalSource(code: string) {
+    vi.spyOn(fs.promises, 'readFile').mockResolvedValue(code);
+    return vi.spyOn(localFileService, 'checkForIntegrationSourceFile').mockReturnValue({ result: true, path: '/source.ts' });
+}
+
 describe(`GET ${endpoint}`, () => {
+    afterEach(() => vi.restoreAllMocks());
+
     beforeAll(async () => {
         api = await runServer();
     });
@@ -113,8 +151,7 @@ describe(`GET ${endpoint}`, () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aircall', 'aircall');
 
-        const original = flags.hasCatalogTools;
-        flags.hasCatalogTools = false;
+        const spy = vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(false);
         try {
             const res = await api.fetch(endpoint, {
                 method: 'GET',
@@ -128,7 +165,7 @@ describe(`GET ${endpoint}`, () => {
             expect(res.json.error.code).toBe('not_found');
             expect(res.json.error.message).toContain('Function');
         } finally {
-            flags.hasCatalogTools = original;
+            spy.mockRestore();
         }
     });
 
@@ -136,8 +173,7 @@ describe(`GET ${endpoint}`, () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aircall', 'aircall');
 
-        const original = flags.hasCatalogTools;
-        flags.hasCatalogTools = true;
+        const catalogSpy = vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
         const getFileSpy = vi.spyOn(remoteFileService, 'getFile').mockResolvedValue('catalog source');
         try {
             const res = await api.fetch(endpoint, {
@@ -152,16 +188,17 @@ describe(`GET ${endpoint}`, () => {
             expect(getFileSpy).toHaveBeenCalledWith('templates-zero/aircall/actions/create-contact.ts');
         } finally {
             getFileSpy.mockRestore();
-            flags.hasCatalogTools = original;
+            catalogSpy.mockRestore();
         }
     });
 
-    it('returns 409 ambiguous_function when sync and action share a name', async () => {
+    it('returns the action when a sync and an action share a name and no type is given', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'github', 'github');
 
         await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'shared-name', type: 'sync' });
         await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'shared-name', type: 'action' });
+        const lookup = mockLocalSource('export default sharedName;');
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
@@ -170,15 +207,28 @@ describe(`GET ${endpoint}`, () => {
             query: {}
         });
 
-        expect(res.res.status).toBe(409);
-        isError(res.json);
-        expect(res.json.error.code).toBe('ambiguous_function');
-        expect(res.json.error.payload).toStrictEqual({
-            matches: expect.arrayContaining([
-                { type: 'sync', name: 'shared-name' },
-                { type: 'action', name: 'shared-name' }
-            ])
+        expect(res.res.status).toBe(200);
+        expect(res.json).toEqual({ type: 'action', code: 'export default sharedName;' });
+        expect(lookup).toHaveBeenCalledWith('github/actions/shared-name.ts');
+    });
+
+    it.each([{}, { type: 'tool' as const }])('returns native tool code when the tool hides a legacy action (query %o)', async (query) => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const config = await seeders.createConfigSeed(env, 'github', 'github');
+        await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'native', type: 'action' });
+        await insertNativeTool({ environmentId: env.id, name: 'native' });
+        const lookup = mockLocalSource('export default nativeTool;');
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github', name: 'native' },
+            query
         });
+
+        expect(res.res.status).toBe(200);
+        expect(res.json).toEqual({ type: 'tool', code: 'export default nativeTool;' });
+        expect(lookup).toHaveBeenCalledWith('github/functions/native.ts');
     });
 
     it('disambiguates with --type and returns the matching function', async () => {
@@ -223,12 +273,13 @@ describe(`GET ${endpoint}`, () => {
         expect(res.json.error.message).toContain('Source file');
     });
 
-    it('returns 409 ambiguous_function when an action and an on-event script share a name', async () => {
+    it('returns the action when an action and an on-event script share a name and no type is given', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'github', 'github');
 
         await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'test-script', type: 'action' });
         await insertOnEventScript({ config_id: config.id!, name: 'test-script' });
+        const lookup = mockLocalSource('export default testScript;');
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
@@ -237,24 +288,18 @@ describe(`GET ${endpoint}`, () => {
             query: {}
         });
 
-        expect(res.res.status).toBe(409);
-        isError(res.json);
-        expect(res.json.error.code).toBe('ambiguous_function');
-        expect(res.json.error.payload).toStrictEqual({
-            matches: expect.arrayContaining([
-                { type: 'action', name: 'test-script' },
-                { type: 'on-event', name: 'test-script' }
-            ])
-        });
+        expect(res.res.status).toBe(200);
+        expect(res.json).toEqual({ type: 'action', code: 'export default testScript;' });
+        expect(lookup).toHaveBeenCalledWith('github/actions/test-script.ts');
     });
 
-    it('returns 409 when a deployed sync shares a name with a catalog action', async () => {
+    it('returns the catalog action when a deployed sync shares its name and no type is given', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'aircall', 'aircall');
         await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'create-contact', type: 'sync' });
 
-        const original = flags.hasCatalogTools;
-        flags.hasCatalogTools = true;
+        const catalogSpy = vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
+        const getFileSpy = vi.spyOn(remoteFileService, 'getFile').mockResolvedValue('catalog source');
         try {
             const res = await api.fetch(endpoint, {
                 method: 'GET',
@@ -263,15 +308,9 @@ describe(`GET ${endpoint}`, () => {
                 query: {}
             });
 
-            expect(res.res.status).toBe(409);
-            isError(res.json);
-            expect(res.json.error.code).toBe('ambiguous_function');
-            expect(res.json.error.payload).toStrictEqual({
-                matches: expect.arrayContaining([
-                    { type: 'sync', name: 'create-contact' },
-                    { type: 'action', name: 'create-contact' }
-                ])
-            });
+            expect(res.res.status).toBe(200);
+            expect(res.json).toEqual({ type: 'action', code: 'catalog source' });
+            expect(getFileSpy).toHaveBeenCalledWith('templates-zero/aircall/actions/create-contact.ts');
 
             const syncOnly = await api.fetch(endpoint, {
                 method: 'GET',
@@ -284,7 +323,7 @@ describe(`GET ${endpoint}`, () => {
             expect(syncOnly.json.error.code).toBe('not_found');
             expect(syncOnly.json.error.message).toContain('Source file');
         } finally {
-            flags.hasCatalogTools = original;
+            catalogSpy.mockRestore();
         }
     });
 });

@@ -10,7 +10,7 @@ import {
     providerConfigKeySchema,
     providerSchema
 } from '../../helpers/validation.js';
-import integrationService from '../../services/integration.service.js';
+import integrationService, { trackIntegrationCreate } from '../../services/integration.service.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
 import type { CreateIntegrationServiceError } from '../../services/integration.service.js';
@@ -67,6 +67,7 @@ export const postPublicIntegration = asyncWrapperWithEnvironment<PostPublicInteg
         return;
     }
 
+    trackIntegrationCreate(result.value.integration, 'api');
     res.status(200).send({
         data: integrationToPublicApi(result.value)
     });
@@ -100,6 +101,7 @@ export const postPublicQuickstartIntegration = asyncWrapperWithEnvironment<PostP
         return;
     }
 
+    trackIntegrationCreate(result.value.integration, 'api');
     res.status(200).send({
         data: integrationToPublicApi(result.value)
     });

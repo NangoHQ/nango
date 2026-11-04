@@ -1,5 +1,5 @@
 import { makeAuditTarget } from '../../../audit.js';
-import integrationService from '../../../services/integration.service.js';
+import integrationService, { trackIntegrationCreate } from '../../../services/integration.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { createIntegrationServiceErrorToMcp } from './errors.js';
 import { integrationToMcp } from './formatter.js';
@@ -10,7 +10,7 @@ import type { CreateIntegrationsOutput } from './schema.js';
 export const createIntegrationsTool = defineManagementMcpTool<typeof createIntegrationArgumentsSchema, CreateIntegrationsOutput>({
     name: 'integrations_create',
     title: 'Create Integration',
-    description: 'Create an integration in Nango using caller-supplied or Nango-provided developer-app credentials.',
+    description: 'Creates an integration in Nango using caller-supplied or Nango-provided developer-app credentials.',
     inputSchema: createIntegrationArgumentsSchema,
     outputSchema: createIntegrationsOutputSchema,
     requiredScopes: { every: ['environment:integrations:create'] },
@@ -41,6 +41,10 @@ export const createIntegrationsTool = defineManagementMcpTool<typeof createInteg
             environment,
             team: account
         });
+
+        if (result.isOk()) {
+            trackIntegrationCreate(result.value.integration, 'mcp', environment);
+        }
 
         return result
             .map(({ integration, provider }) => ({ data: integrationToMcp({ integration, provider }) }))

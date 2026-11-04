@@ -1,12 +1,13 @@
 import assert from 'node:assert';
 
 import { AxiosError } from 'axios';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DEFAULT_OUTBOUND_URL_POLICY, OutboundUrlError } from '@nangohq/egress';
 
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 import { ProxyRequest } from './request.js';
+import { proxyTrackingLogger } from './telemetry.js';
 import { getDefaultProxy } from './utils.test.js';
 
 import type { InternalAxiosRequestConfig } from 'axios';
@@ -24,6 +25,97 @@ function makeAxiosError(status: number): AxiosError {
 }
 
 describe('call', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('monitors caller credential interpolation and still sends the request', async () => {
+        const track = vi.spyOn(proxyTrackingLogger, 'log').mockImplementation(() => undefined);
+        const proxy = new ProxyRequest({
+            logger: vi.fn(),
+            proxyConfig: getDefaultProxy({
+                provider: { proxy: { base_url: 'https://api.example.com', headers: { 'x-api-key': '${apiKey}' } } },
+                endpoint: '/${credentials.apiKey}',
+                monitoringContext: { accountId: 1, environmentId: 2, callsite: 'proxy' }
+            }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            maxWaitMs: Infinity,
+            getConnection: () => getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'stored-token' } }),
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
+        });
+        const call = vi
+            .spyOn(proxy, 'httpCall')
+            .mockResolvedValue({ status: 200, data: {}, headers: {}, config: {} as InternalAxiosRequestConfig, statusText: 'OK' });
+        expect((await proxy.request()).isOk()).toBe(true);
+        expect(call).toHaveBeenCalledOnce();
+        expect(proxy.axiosConfig?.url).toBe('https://api.example.com/stored-token');
+        expect(track).toHaveBeenCalledWith('proxy:interpolation', expect.objectContaining({ location: 'caller_endpoint', caller_supplied: true }));
+        expect(proxy.axiosConfig?.headers).toMatchObject({ 'x-api-key': 'stored-token' });
+        expect(track).toHaveBeenCalledOnce();
+    });
+
+    it('tracks SDK interpolation and overrides once per request across retries', async () => {
+        const track = vi.spyOn(proxyTrackingLogger, 'log').mockImplementation(() => undefined);
+        const proxy = new ProxyRequest({
+            logger: vi.fn(),
+            proxyConfig: getDefaultProxy({
+                provider: { proxy: { base_url: 'https://api.example.com' } },
+                endpoint: '/${credentials.apiKey}',
+                baseUrlOverride: 'https://other.example.com/client-secret',
+                retries: 1,
+                monitoringContext: { accountId: 1, environmentId: 2, callsite: 'sdk' }
+            }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            maxWaitMs: Infinity,
+            getConnection: () => getTestConnection(),
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: 'client-secret' }),
+            onError: ({ retry }) => ({ ...retry, wait: 0 })
+        });
+        const call = vi
+            .spyOn(proxy, 'httpCall')
+            .mockRejectedValueOnce(makeAxiosError(500))
+            .mockResolvedValue({ status: 200, data: {}, headers: {}, config: {} as InternalAxiosRequestConfig, statusText: 'OK' });
+        expect((await proxy.request()).isOk()).toBe(true);
+        expect(call).toHaveBeenCalledTimes(2);
+        expect(track).toHaveBeenCalledTimes(2);
+        expect(track).toHaveBeenCalledWith(
+            'proxy:base_url_override',
+            expect.objectContaining({
+                callsite: 'sdk',
+                override_host: 'other.example.com',
+                base_url_override: 'https://other.example.com/REDACTED',
+                scope_check_performed: false
+            })
+        );
+        expect(track).toHaveBeenCalledWith('proxy:interpolation', expect.objectContaining({ location: 'caller_endpoint', fields: 'credentials.apiKey' }));
+        expect((await proxy.request()).isOk()).toBe(true);
+        expect(call).toHaveBeenCalledTimes(3);
+        expect(track).toHaveBeenCalledTimes(4);
+    });
+
+    it('does not track internal proxy requests without customer monitoring context', async () => {
+        const track = vi.spyOn(proxyTrackingLogger, 'log').mockImplementation(() => undefined);
+        const getIntegrationConfig = vi.fn(() => ({ oauth_client_id: null, oauth_client_secret: null }));
+        const proxy = new ProxyRequest({
+            logger: vi.fn(),
+            proxyConfig: getDefaultProxy({
+                provider: { proxy: { base_url: 'https://api.example.com', headers: { 'x-api-key': '${apiKey}' } } },
+                endpoint: '/${credentials.apiKey}',
+                baseUrlOverride: 'https://other.example.com'
+            }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            maxWaitMs: Infinity,
+            getConnection: () => getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'stored-token' } }),
+            getIntegrationConfig
+        });
+        vi.spyOn(proxy, 'httpCall').mockResolvedValue({ status: 200, data: {}, headers: {}, config: {} as InternalAxiosRequestConfig, statusText: 'OK' });
+        expect((await proxy.request()).isOk()).toBe(true);
+        expect(proxy.axiosConfig?.url).toBe('https://other.example.com/stored-token');
+        expect(proxy.axiosConfig?.headers).toMatchObject({ 'x-api-key': 'stored-token' });
+        expect(track).not.toHaveBeenCalled();
+        expect(getIntegrationConfig).not.toHaveBeenCalled();
+    });
+
     it('should make a single successful http call', async () => {
         const fn = vi.fn();
         const proxy = new ProxyRequest({
@@ -151,5 +243,83 @@ describe('call', () => {
         const result = await proxy.request();
         assert(result.isErr());
         expect(result.error).toBeInstanceOf(OutboundUrlError);
+    });
+});
+
+describe('timeouts', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    function getProxy(props: { retries?: number; abortSignal?: AbortSignal } = {}) {
+        return new ProxyRequest({
+            logger: vi.fn(),
+            proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/200', retries: props.retries ?? 0 }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            maxWaitMs: Infinity,
+            abortSignal: props.abortSignal,
+            getConnection: () => getTestConnection(),
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
+        });
+    }
+
+    const okResponse = { status: 200, data: {}, headers: {}, config: {} as InternalAxiosRequestConfig, statusText: 'OK' };
+
+    it('should set an idle timeout', async () => {
+        const proxy = getProxy();
+        const httpCall = vi.spyOn(proxy, 'httpCall').mockResolvedValue(okResponse);
+
+        (await proxy.request()).unwrap();
+
+        const config = httpCall.mock.calls[0]![0];
+        expect(config.timeout).toBe(5 * 60 * 1000);
+        expect(config.signal).toBeUndefined();
+    });
+
+    it.each([0, -1])('should fall back to the default idle timeout when given %d', async (idleTimeoutMs) => {
+        const proxy = new ProxyRequest({
+            logger: vi.fn(),
+            proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/200' }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            maxWaitMs: Infinity,
+            idleTimeoutMs,
+            getConnection: () => getTestConnection(),
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
+        });
+        const httpCall = vi.spyOn(proxy, 'httpCall').mockResolvedValue(okResponse);
+
+        (await proxy.request()).unwrap();
+
+        expect(httpCall.mock.calls[0]?.[0].timeout).toBe(5 * 60 * 1000);
+    });
+
+    it('should abort the in-flight attempt when the caller aborts', async () => {
+        const controller = new AbortController();
+        const proxy = getProxy({ abortSignal: controller.signal });
+        const httpCall = vi.spyOn(proxy, 'httpCall').mockImplementation((config) => {
+            controller.abort();
+            expect((config.signal as AbortSignal).aborted).toBe(true);
+            return Promise.reject(new AxiosError('canceled', AxiosError.ERR_CANCELED));
+        });
+
+        const result = await proxy.request();
+        assert(result.isErr());
+        expect(httpCall).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not wait out the retry backoff once the caller aborts', async () => {
+        const controller = new AbortController();
+        const proxy = getProxy({ retries: 1, abortSignal: controller.signal });
+        const httpCall = vi.spyOn(proxy, 'httpCall').mockImplementation(() => {
+            controller.abort();
+            return Promise.reject(makeAxiosError(500));
+        });
+
+        const start = Date.now();
+        const result = await proxy.request();
+        assert(result.isErr());
+        expect(httpCall).toHaveBeenCalledTimes(1);
+        // the first retry would otherwise wait 3s
+        expect(Date.now() - start).toBeLessThan(1000);
     });
 });

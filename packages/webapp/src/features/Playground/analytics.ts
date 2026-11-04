@@ -1,19 +1,21 @@
 import { track } from '@/utils/analytics';
 
-export type PlaygroundOpenSource = 'header' | 'connection' | 'integration' | 'function';
+import type { AnalyticsEventProperties } from '@nangohq/types';
+
+export type PlaygroundOpenSource = AnalyticsEventProperties<'playground:playground_view'>['source'];
 
 export function trackPlaygroundOpened(source: PlaygroundOpenSource) {
-    track('web:playground:opened', { source });
+    track('playground:playground_view', { source });
 }
 
-export function trackPlaygroundRunClicked(properties: { function_type: string; integration: string; is_run_again: boolean }) {
-    track('web:playground:run:clicked', properties);
+export function trackPlaygroundRunClicked(properties: AnalyticsEventProperties<'playground:run_start'>) {
+    track('playground:run_start', properties);
 }
 
-export function trackPlaygroundRunCompleted(properties: { function_type: string; integration: string; success: boolean; state: string; duration_ms: number }) {
-    track('web:playground:run:completed', properties);
+export function trackPlaygroundRunCompleted(properties: AnalyticsEventProperties<'playground:run_complete'>) {
+    track('playground:run_complete', properties);
 }
 
-export function trackPlaygroundRunCancelled(properties: { function_type: string; integration: string }) {
-    track('web:playground:run:cancelled', properties);
+export function trackPlaygroundRunCancelled(properties: AnalyticsEventProperties<'playground:run_cancel'>) {
+    track('playground:run_cancel', properties);
 }

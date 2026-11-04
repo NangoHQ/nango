@@ -36,6 +36,7 @@ services:
             - NANGO_SERVER_URL=${NANGO_SERVER_URL:-http://localhost:3003}
             - NANGO_PUBLIC_SERVER_URL=${NANGO_PUBLIC_SERVER_URL:-http://localhost:3000}
             - FLAG_AUTH_ENABLED
+            - AUTH_ALLOW_SIGNUP
             - NANGO_DASHBOARD_USERNAME
             - NANGO_DASHBOARD_PASSWORD
             - LOG_LEVEL=${LOG_LEVEL:-info}

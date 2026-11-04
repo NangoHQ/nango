@@ -32,6 +32,9 @@ export type CodeBlockProps = {
     hintText?: string;
     /** When false, the save button does not show a loading state (e.g. when saving launches a confirmation dialog instead of issuing a network request) Default true. */
     showLoadingOnSave?: boolean;
+    wrapLines?: boolean;
+    copyValue?: string;
+    syntaxHighlight?: boolean;
 } & HTMLAttributes<HTMLDivElement>;
 
 const highlight = {
@@ -55,6 +58,9 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     validate,
     hintText,
     showLoadingOnSave = true,
+    wrapLines = false,
+    copyValue,
+    syntaxHighlight = true,
     ...props
 }) => {
     const darkMode = useThemeStore(darkModeSelector);
@@ -153,7 +159,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
         }
     };
 
-    const copyText = editing ? draft : code;
+    const copyText = editing ? draft : (copyValue ?? code);
 
     return (
         <div {...props} className={cn('border border-border-muted rounded', props.className)}>
@@ -251,10 +257,11 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                         {!isSecretVisible && <div className="absolute z-10 w-full h-full backdrop-blur-xs bg-black/0"></div>}
                         <Prism
                             className="w-full min-w-0"
-                            language={language}
+                            // A language without a grammar skips tokenizing and renders the same box as plain text.
+                            language={syntaxHighlight ? language : ('plain' as PrismProps['language'])}
                             colorScheme={darkMode ? 'dark' : 'light'}
                             noCopy={true}
-                            styles={{ code: { fontSize: '12px' } }}
+                            styles={{ code: { fontSize: '12px', ...(wrapLines ? { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } : {}) } }}
                             highlightLines={Object.fromEntries(highlightedLines?.map((line) => [line, highlight]) ?? [])}
                         >
                             {code}

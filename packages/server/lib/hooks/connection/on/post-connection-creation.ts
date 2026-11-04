@@ -85,8 +85,7 @@ export async function postConnectionCreation(
             const res = await getOrchestrator().invokeFunction({
                 environment,
                 connection,
-                functionConfigId: config.id,
-                functionName: config.name,
+                functionUuid: config.uuid,
                 trigger: {
                     kind: 'event',
                     input: { event },

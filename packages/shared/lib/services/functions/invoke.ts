@@ -4,12 +4,14 @@ import db from '@nangohq/database';
 import { logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { Err, Ok, truncateJson } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
 import connectionService from '../connection.service.js';
 import * as functionConfigService from './models/functions.js';
 import { validateFunctionInput } from './models/validate.js';
 
 import type { Orchestrator } from '../../clients/orchestrator.js';
 import type { FunctionInputValidationError } from './models/validate.js';
+import type { LogContextOrigin } from '@nangohq/logs';
 import type {
     AsyncFunctionResponse,
     DBEnvironment,
@@ -17,7 +19,8 @@ import type {
     DBTeam,
     FunctionInvocationErrorCode,
     FunctionInvocationType,
-    FunctionTrigger
+    FunctionTrigger,
+    OperationActor
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
@@ -25,6 +28,12 @@ import type { JsonValue } from 'type-fest';
 type ValidationErrors = FunctionInputValidationError['validationErrors'];
 
 export type FunctionInvocationResult = AsyncFunctionResponse | { data: JsonValue };
+
+export interface FunctionInvocation {
+    /** Created once the invocation is known to be valid, so callers can enrich the operation afterwards. */
+    logCtx: LogContextOrigin | undefined;
+    result: Result<FunctionInvocationResult, FunctionInvokeError>;
+}
 
 export class FunctionInvokeError extends Error {
     readonly code: FunctionInvocationErrorCode;
@@ -42,50 +51,39 @@ export class FunctionInvokeError extends Error {
 export async function invokeFunction({
     account,
     environment,
-    integrationId,
     connectionId,
-    functionName,
+    functionUuid,
     input,
     request,
     invocationType,
     options,
-    orchestrator
+    orchestrator,
+    actor
 }: {
     account: DBTeam;
     environment: DBEnvironment;
-    integrationId: string;
     connectionId: string;
-    functionName: string;
+    functionUuid: string;
     input?: unknown | undefined;
     request: Omit<Extract<FunctionTrigger, { kind: 'http' }>['request'], 'body'>;
     invocationType: FunctionInvocationType;
     options?: Record<string, unknown> | undefined;
     orchestrator: Orchestrator;
-}): Promise<Result<FunctionInvocationResult, FunctionInvokeError>> {
-    return tracer.trace('nango.function.invocation', async (span) => {
+    actor?: OperationActor | undefined;
+}): Promise<FunctionInvocation> {
+    let logCtx: LogContextOrigin | undefined;
+    const result = await tracer.trace('nango.function.invocation', async (span): Promise<Result<FunctionInvocationResult, FunctionInvokeError>> => {
         span.addTags({
             accountId: account.id,
             environmentId: environment.id,
-            integrationId,
             connectionId,
-            functionName,
+            functionUuid,
             invocationType
         });
 
-        const connectionRes = await connectionService.getConnection(connectionId, integrationId, environment.id);
-
-        if (!connectionRes.success) {
-            return Err(
-                new FunctionInvokeError({
-                    code: 'connection_not_found',
-                    message: `Connection '${connectionId}' was not found for integration '${integrationId}'`
-                })
-            );
-        }
-
         const functionRes = await functionConfigService.search(db.knex, {
             environmentId: environment.id,
-            filter: { integrationKey: integrationId, name: functionName }
+            filter: { uuid: functionUuid }
         });
 
         if (functionRes.isErr()) {
@@ -102,7 +100,7 @@ export async function invokeFunction({
             return Err(
                 new FunctionInvokeError({
                     code: 'function_not_found',
-                    message: `Function '${functionName}' was not found`
+                    message: `Function '${functionUuid}' was not found`
                 })
             );
         }
@@ -111,12 +109,19 @@ export async function invokeFunction({
             return Err(
                 new FunctionInvokeError({
                     code: 'function_disabled',
-                    message: `Function '${functionName}' is disabled`
+                    message: `Function '${functionUuid}' is disabled`
                 })
             );
         }
 
         const { currentVersion, integration, config } = functionRes.value[0];
+        const integrationId = integration.unique_key;
+        span.addTags({ integrationId });
+        const connectionRes = await connectionService.getConnection(connectionId, integrationId, environment.id);
+        const connection = connectionRes.response;
+        if (!connection) {
+            return Err(new FunctionInvokeError({ code: 'connection_not_found', message: `Connection '${connectionId}' was not found` }));
+        }
 
         const canInvokeRes = canInvoke(currentVersion, invocationType);
         if (canInvokeRes.isErr()) {
@@ -135,7 +140,6 @@ export async function invokeFunction({
             );
         }
 
-        const connection = connectionRes.response!;
         const trigger = buildInvokeTrigger({
             version: currentVersion,
             input: validation.value,
@@ -150,8 +154,8 @@ export async function invokeFunction({
         }
         const timeoutMs = executionTimeoutMs(invocationType);
 
-        const logCtx = await logContextGetter.create(
-            { operation: { type: 'function', action: 'invoke' }, expiresAt: new Date(Date.now() + timeoutMs).toISOString() },
+        logCtx = await logContextGetter.create(
+            { operation: { type: 'function', action: 'invoke' }, expiresAt: new Date(Date.now() + timeoutMs).toISOString(), actor },
             {
                 account,
                 environment,
@@ -161,7 +165,7 @@ export async function invokeFunction({
                 meta: {
                     invocation_type: invocationType,
                     ...(options ? { options } : {}),
-                    ...(input !== undefined ? truncateJson({ input }) : {})
+                    ...(input !== undefined ? truncateJson({ input: envs.NANGO_LOG_FUNCTION_INPUT ? input : 'REDACTED' }) : {})
                 }
             }
         );
@@ -173,8 +177,7 @@ export async function invokeFunction({
         const invocation = await orchestrator.invokeFunction({
             environment,
             connection,
-            functionConfigId: config.id,
-            functionName,
+            functionUuid: config.uuid,
             trigger: trigger.value,
             async: invocationType === 'no_wait',
             retryMax: 0,
@@ -199,6 +202,7 @@ export async function invokeFunction({
         }
         return Ok(invocation.value);
     });
+    return { logCtx, result };
 }
 
 /** Convert a function's per-connection concurrency setting to the orchestrator convention (0 means unbounded). */

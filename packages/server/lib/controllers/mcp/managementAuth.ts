@@ -117,8 +117,8 @@ async function authenticateOAuthToken(token: string, res: Response<unknown, Part
         return { kind: 'invalid_token' };
     }
 
-    const userId = parsePositiveInteger(accessToken.accountId);
-    if (!userId) {
+    const userId = parseNonNegativeInteger(accessToken.accountId);
+    if (userId === null) {
         return { kind: 'invalid_token' };
     }
     const user = await userService.getUserById(userId);
@@ -151,12 +151,12 @@ function hasExactAudience(value: unknown, resource: string): boolean {
     return value === resource || (Array.isArray(value) && value.length === 1 && value[0] === resource);
 }
 
-function parsePositiveInteger(value: unknown): number | null {
+function parseNonNegativeInteger(value: unknown): number | null {
     if (typeof value !== 'string') {
         return null;
     }
     const parsed = Number(value);
-    return Number.isSafeInteger(parsed) && parsed > 0 && String(parsed) === value ? parsed : null;
+    return Number.isSafeInteger(parsed) && parsed >= 0 && String(parsed) === value ? parsed : null;
 }
 
 function readBearerToken(req: Request): string | null {

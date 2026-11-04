@@ -128,7 +128,7 @@ export const Usage: React.FC = () => {
                                     href={usage.data.customer.portalUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    onClick={() => track('web:usage:billing_portal_clicked', {})}
+                                    onClick={() => track('billing:portal_link_click', {})}
                                 >
                                     View billing portal
                                     <ExternalLink />
@@ -170,7 +170,7 @@ export const Usage: React.FC = () => {
                         checked={showLegacy}
                         onCheckedChange={(checked) => {
                             void setShowLegacy(checked);
-                            track('web:usage:legacy_metrics_toggled', { shown: checked });
+                            track('billing:usage_update', { change: 'legacy_metrics', is_legacy_metrics_shown: checked });
                         }}
                     />
                     <label htmlFor="legacy-metrics" className="cursor-pointer text-text-secondary text-body-small-regular">

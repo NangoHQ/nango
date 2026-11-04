@@ -1,20 +1,34 @@
-import type { CliTelemetryEvent } from '@nangohq/types';
+import type { CliTelemetryCommand, LegacyCliTelemetryEvent } from '@nangohq/types';
 
-export const cliTelemetryEvents = [
-    'cli:init',
-    'cli:create',
-    'cli:compile',
-    'cli:dev',
-    'cli:dryrun',
-    'cli:generate:docs',
-    'cli:generate:tests',
-    'cli:clone',
-    'cli:migrate_to_zero_yaml',
-    'cli:deploy',
-    'cli:pull'
-] as const satisfies readonly CliTelemetryEvent[];
+export const cliTelemetryCommands = [
+    'init',
+    'create',
+    'compile',
+    'dev',
+    'dryrun',
+    'generate:docs',
+    'generate:tests',
+    'clone',
+    'migrate-to-zero-yaml',
+    'deploy',
+    'pull'
+] as const satisfies readonly CliTelemetryCommand[];
 
-// The `satisfies` above rejects entries that aren't valid `CliTelemetryEvent`s;
-// the assertion below rejects any `CliTelemetryEvent` missing from this array.
+// The `satisfies` above rejects entries that aren't valid `CliTelemetryCommand`s;
+// the assertion below rejects any `CliTelemetryCommand` missing from this array.
 // Together they keep the two lists in sync.
-true satisfies [Exclude<CliTelemetryEvent, (typeof cliTelemetryEvents)[number]>] extends [never] ? true : never;
+true satisfies [Exclude<CliTelemetryCommand, (typeof cliTelemetryCommands)[number]>] extends [never] ? true : never;
+
+export const legacyCliTelemetryEvents: Record<LegacyCliTelemetryEvent, CliTelemetryCommand> = {
+    'cli:init': 'init',
+    'cli:create': 'create',
+    'cli:compile': 'compile',
+    'cli:dev': 'dev',
+    'cli:dryrun': 'dryrun',
+    'cli:generate:docs': 'generate:docs',
+    'cli:generate:tests': 'generate:tests',
+    'cli:clone': 'clone',
+    'cli:migrate_to_zero_yaml': 'migrate-to-zero-yaml',
+    'cli:deploy': 'deploy',
+    'cli:pull': 'pull'
+};

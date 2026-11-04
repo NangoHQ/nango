@@ -540,6 +540,17 @@ export async function refreshCredentialsIfNeeded({
                 delete newCredentials.raw['botFrameworkAccessToken'];
             }
 
+            if (
+                newCredentials &&
+                'raw' in newCredentials &&
+                newCredentials.raw &&
+                typeof newCredentials.raw === 'object' &&
+                'devPortalAccessToken' in newCredentials.raw
+            ) {
+                connectionToRefresh['connection_config']['devPortalAccessToken'] = newCredentials.raw['devPortalAccessToken'];
+                delete newCredentials.raw['devPortalAccessToken'];
+            }
+
             const updatedConnection = await connectionService.updateConnection({
                 ...connectionToRefresh,
                 last_fetched_at: new Date(),
@@ -630,6 +641,17 @@ export async function shouldRefreshCredentials({
                 const exp = new Date(connection.connection_config['botFrameworkAccessToken']['expires_at']);
                 if (isTokenExpired(exp, expirationBufferInSeconds)) {
                     return { should: true, reason: 'expired_bot_framework_access_token' };
+                }
+            }
+        }
+    }
+
+    if (providerConfig.provider === 'microsoft-teams') {
+        if (connection.connection_config['devPortalAccessToken']) {
+            if (connection.connection_config['devPortalAccessToken']['expires_at']) {
+                const exp = new Date(connection.connection_config['devPortalAccessToken']['expires_at']);
+                if (isTokenExpired(exp, expirationBufferInSeconds)) {
+                    return { should: true, reason: 'expired_dev_portal_access_token' };
                 }
             }
         }

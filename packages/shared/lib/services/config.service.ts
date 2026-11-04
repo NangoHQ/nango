@@ -5,7 +5,7 @@ import { gettingStartedService } from '../index.js';
 import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfig } from '../services/sync/config/config.service.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
-import * as functionLifecycle from './functions/lifecycle.js';
+import * as functionLifecycle from './functions/lifecycle/index.js';
 import { getProvider } from './providers.js';
 import syncManager from './sync/manager.service.js';
 
@@ -93,6 +93,11 @@ class ConfigService {
         delete result.credentials;
 
         return getEncryptionManager().decryptProviderConfig(result);
+    }
+
+    async listIntegrationKeys(trx: Knex, environment_id: number): Promise<string[]> {
+        const results = await trx.select('unique_key').from<ProviderConfig>(`_nango_configs`).where({ environment_id, deleted: false });
+        return results.map((result: Pick<ProviderConfig, 'unique_key'>) => result.unique_key);
     }
 
     async listProviderConfigs(trx: Knex, environment_id: number): Promise<ProviderConfig[]> {

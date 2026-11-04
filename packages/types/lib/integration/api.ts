@@ -2,13 +2,13 @@ import type { ApiEndpoint, ApiError, ApiTimestamps } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { AuthModes, AuthModeType } from '../auth/api.js';
 import type { NangoSyncConfig } from '../flow/index.js';
-import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
+import type { FunctionListType } from '../functions/domain.js';
 import type { Provider } from '../providers/provider.js';
 import type { IntegrationConfig } from './db.js';
 import type { Merge } from 'type-fest';
 
 export type ApiPublicIntegration = Merge<
-    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks'>,
+    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks' | 'missing_fields'>,
     ApiTimestamps
 > & {
     logo: string;
@@ -150,13 +150,13 @@ export type GetPublicFunctionCode = ApiEndpoint<{
         name: string;
     };
     Querystring: {
-        type?: ScriptTypeLiteral | undefined;
+        type?: FunctionListType | undefined;
     };
     Success: {
-        type: ScriptTypeLiteral;
+        type: FunctionListType;
         code: string;
     };
-    Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
+    Error: ApiError<'not_found'>;
 }>;
 
 export type GetFunctionCode = ApiEndpoint<{
@@ -169,13 +169,13 @@ export type GetFunctionCode = ApiEndpoint<{
     };
     Querystring: {
         env: string;
-        type?: ScriptTypeLiteral | undefined;
+        type?: FunctionListType | undefined;
     };
     Success: {
-        type: ScriptTypeLiteral;
+        type: FunctionListType;
         code: string;
     };
-    Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
+    Error: ApiError<'not_found'>;
 }>;
 
 export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;
@@ -319,6 +319,7 @@ export type PatchIntegration = ApiEndpoint<{
               webhookSecret?: string | undefined;
               displayName?: string | undefined;
               forward_webhooks?: boolean | undefined;
+              allow_unverified_webhooks?: boolean | undefined;
               // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic, aws-sigv4).
               integrationConfig?: Record<string, string> | undefined;
           }
@@ -357,24 +358,24 @@ export type GetIntegrationFlows = ApiEndpoint<{
 export type ApiPublicIntegrationCredentials =
     | {
           type: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
-          client_id: string;
-          client_secret: string;
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
           scopes?: string | undefined;
           webhook_secret?: string | undefined;
       }
     | {
           type: Extract<AuthModeType, 'APP'>;
-          app_id: string;
-          app_link: string;
-          private_key: string;
+          app_id?: string | undefined;
+          app_link?: string | undefined;
+          private_key?: string | undefined;
       }
     | {
           type: Extract<AuthModeType, 'CUSTOM'>;
-          client_id: string;
-          client_secret: string;
-          app_id: string;
-          app_link: string;
-          private_key: string;
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
+          app_id?: string | undefined;
+          app_link?: string | undefined;
+          private_key?: string | undefined;
       }
     | {
           type: Extract<AuthModeType, 'MCP_OAUTH2_GENERIC'>;

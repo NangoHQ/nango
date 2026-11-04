@@ -1,3 +1,5 @@
+import { productTracking } from '@nangohq/shared';
+
 import { makeAuditTarget } from '../../../audit.js';
 import * as functionDeploymentService from '../../../services/functionDeployment.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
@@ -10,7 +12,7 @@ export const deployFunctionTool = defineManagementMcpTool<typeof deployFunctionA
     name: 'deploy_function',
     title: 'Deploy Function',
     description:
-        'Start a code function deployment and return its initial job status. This tool does not wait for completion; use get_deployment_status to retrieve the final status.',
+        'Starts a code function deployment and returns its initial job status. The tool does not wait for completion; get_deployment_status returns the final status.',
     inputSchema: deployFunctionArgumentsSchema,
     outputSchema: deploymentCreateOutputSchema,
     requiredScopes: { every: ['environment:deploy'] },
@@ -29,12 +31,14 @@ export const deployFunctionTool = defineManagementMcpTool<typeof deployFunctionA
         openWorldHint: true
     },
     async handler({ args, environment, customerApiKeyId }) {
-        return (
-            await functionDeploymentService.deployFunction({
-                environment,
-                body: { type: 'function', ...args },
-                ...(customerApiKeyId ? { parentCustomerApiKeyId: customerApiKeyId } : {})
-            })
-        ).mapError((error) => deployFunctionServiceErrorToMcp(error));
+        const result = await functionDeploymentService.deployFunction({
+            environment,
+            body: { type: 'function', ...args },
+            ...(customerApiKeyId ? { parentCustomerApiKeyId: customerApiKeyId } : {})
+        });
+        if (result.isOk()) {
+            productTracking.track({ name: 'functions:deploy_create', environment, eventProperties: { source: 'mcp', is_template: false, function_count: 1 } });
+        }
+        return result.mapError((error) => deployFunctionServiceErrorToMcp(error));
     }
 });

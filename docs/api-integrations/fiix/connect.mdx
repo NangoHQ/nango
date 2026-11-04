@@ -1,0 +1,43 @@
+---
+title: 'Fiix - How do I link my account?'
+sidebarTitle: 'Fiix'
+---
+
+## Overview
+
+To authenticate with Fiix, you need:
+
+1. **Subdomain** — the subdomain of your Fiix URL.
+2. **App Key**, **Access Key**, and **Secret Key** — the keys of a Fiix API application.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Fiix administrator account.
+
+### Step 1: Find your subdomain
+
+Your subdomain is the first part of the URL you use to log in to Fiix. For example, if your Fiix URL is `https://acme.macmms.com`, your subdomain is `acme`.
+
+### Step 2: Create an API application
+
+1. Log in to Fiix as an administrator.
+2. Go to **Settings** > **Connect Management** > **MA Connect API Application Settings**.
+3. Click **New Api Application**.
+4. Enter a description for the application, leave the other fields empty, and click **OK**.
+5. Copy the **Application Key**, **Access Key**, and **Secret Key**.
+
+<Note>
+Fiix only shows the Secret Key once. Save it somewhere secure before leaving the page.
+</Note>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Fiix.
+2. Enter your **Subdomain**, **App Key**, **Access Key**, and **Secret Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/fiix/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Fiix.

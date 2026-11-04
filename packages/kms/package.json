@@ -12,10 +12,12 @@
     },
     "dependencies": {
         "@aws-crypto/client-node": "5.0.0",
+        "@azure/identity": "4.13.2",
+        "@azure/keyvault-keys": "4.10.2",
         "@google-cloud/kms": "5.7.0",
         "@nangohq/utils": "file:../utils"
     },
     "devDependencies": {
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     }
 }

@@ -52,10 +52,8 @@ export function trackMcpServer({
                 event.distinct_id = accountAttribution.distinctId;
                 Object.assign(event.properties, accountAttribution.properties);
                 event.properties['$groups'] = accountAttribution.groups;
-                if (user) {
-                    // The MCP SDK disables person profiles for its anonymous identity by default.
-                    delete event.properties['$process_person_profile'];
-                }
+                // The MCP SDK turns person profiles off, and PostHog links no personless event to a group.
+                delete event.properties['$process_person_profile'];
 
                 // MCP arguments, responses and errors can contain customer data or secrets.
                 delete event.properties['$mcp_parameters'];

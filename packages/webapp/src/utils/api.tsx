@@ -1,14 +1,17 @@
 import { toast } from 'sonner';
 
+import { analyticsSessionHeaders } from './analytics';
 import { globalEnv } from './env';
 
 import type { ApiError } from '@nangohq/types';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit) {
-    return await fetch(new URL(input as string, globalEnv.dashboardApiUrl), {
+    const url = new URL(input as string, globalEnv.dashboardApiUrl);
+    return await fetch(url, {
         ...init,
         headers: {
             'Content-Type': 'application/json',
+            ...analyticsSessionHeaders(url),
             ...(init?.headers ? (init.headers as Record<string, string>) : {})
         },
         credentials: 'include' // For cookies
@@ -90,4 +93,17 @@ export function isNoSessionError(status: number, json: unknown): boolean {
     }
     const { error } = json;
     return typeof error === 'object' && error !== null && 'code' in error && error.code === 'unauthorized';
+}
+
+export function isNoSessionApiError(error: unknown): boolean {
+    return error instanceof APIError && isNoSessionError(error.res.status, error.json);
+}
+
+export function apiErrorCode(err: unknown): string {
+    const json: unknown = err instanceof APIError ? err.json : undefined;
+    if (typeof json !== 'object' || json === null || !('error' in json)) {
+        return 'unknown_error';
+    }
+    const { error } = json;
+    return typeof error === 'object' && error !== null && 'code' in error && typeof error.code === 'string' ? error.code : 'unknown_error';
 }

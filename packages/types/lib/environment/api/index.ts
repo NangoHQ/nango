@@ -29,6 +29,27 @@ export type GetPublicEnvironments = ApiEndpoint<{
     };
 }>;
 
+export type GetPublicEnvironment = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/environments/:environmentUuid';
+    Params: { environmentUuid: string };
+    Querystring: { with_secrets?: 'true' | 'false' | undefined };
+    Success: {
+        data: {
+            id: number;
+            uuid: string;
+            name: string;
+            is_production: boolean;
+            callback_url: string;
+            slack_notifications: boolean;
+            otlp_endpoint: string | null;
+            otlp_headers?: { name: string; value: string }[];
+            webhooks: ApiWebhooks & { signing_key?: string };
+        };
+    };
+}>;
+
 export type PostEnvironment = ApiEndpoint<{
     Audit: AuditPolicy<'environment', 'created', 'account'>;
     Method: 'POST';
@@ -53,9 +74,32 @@ export type PostPublicEnvironment = ApiEndpoint<{
         slack_notifications?: boolean | undefined;
         otlp_endpoint?: string | undefined;
         otlp_headers?: { name: string; value: string }[] | undefined;
+        webhooks?:
+            | {
+                  primary_url?: string | undefined;
+                  secondary_url?: string | undefined;
+                  on_sync_completion_always?: boolean | undefined;
+                  on_auth_creation?: boolean | undefined;
+                  on_auth_refresh_error?: boolean | undefined;
+                  on_sync_error?: boolean | undefined;
+                  on_async_action_completion?: boolean | undefined;
+                  on_connection_deletion?: boolean | undefined;
+                  signing_key?: string | undefined;
+              }
+            | undefined;
     };
     Success: {
-        data: Pick<DBEnvironment, 'id' | 'uuid' | 'name'>;
+        data: {
+            id: number;
+            uuid: string;
+            name: string;
+            is_production: boolean;
+            callback_url: string;
+            slack_notifications: boolean;
+            otlp_endpoint: string | null;
+            otlp_headers: { name: string; value: string }[];
+            webhooks: ApiWebhooks & { signing_key: string };
+        };
     };
     Error: ApiError<'conflict' | 'resource_capped' | 'invalid_is_prod_flag'>;
 }>;
@@ -189,6 +233,7 @@ export type PostPublicApiKey = ApiEndpoint<{
     Params: { environmentUuid: string };
     Body: {
         display_name: string;
+        scopes?: ApiKeyScope[];
     };
     Success: {
         data: {
@@ -237,6 +282,28 @@ export type GetPublicApiKey = ApiEndpoint<{
             created_at: string;
         };
     };
+}>;
+
+export type PatchPublicApiKey = ApiEndpoint<{
+    Audit: AuditPolicy<'api_key', 'updated', 'environment'>;
+    Method: 'PATCH';
+    Path: '/environments/:environmentUuid/api-keys/:keyUuid';
+    Params: { environmentUuid: string; keyUuid: string };
+    Body: {
+        display_name?: string;
+        scopes?: ApiKeyScope[];
+    };
+    Success: {
+        data: {
+            id: number;
+            uuid: string;
+            display_name: string;
+            scopes: ApiKeyScope[];
+            last_used_at: string | null;
+            created_at: string;
+        };
+    };
+    Error: ApiError<'conflict' | 'not_found'>;
 }>;
 
 export type DeletePublicApiKey = ApiEndpoint<{

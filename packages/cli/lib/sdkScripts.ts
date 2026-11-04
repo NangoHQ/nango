@@ -1,8 +1,8 @@
 // This file is only used by scripts locally
 
-export type { ActionError, NangoActionBase as NangoAction, NangoSyncBase as NangoSync, ProxyConfiguration } from '@nangohq/runner-sdk';
+export type { ActionError, FunctionError, NangoActionBase as NangoAction, NangoSyncBase as NangoSync, ProxyConfiguration } from '@nangohq/runner-sdk';
 
-export { createAction, createOnEvent, createSync } from '@nangohq/runner-sdk';
+export { scopes, createAction, createOnEvent, createSync, createTool } from '@nangohq/runner-sdk';
 export type {
     CreateActionProps,
     CreateActionResponse,
@@ -10,5 +10,10 @@ export type {
     CreateOnEventProps,
     CreateOnEventResponse,
     CreateSyncProps,
-    CreateSyncResponse
+    CreateSyncResponse,
+    CreateToolProps,
+    CreateToolResponse,
+    HttpResponse,
+    RequiredScopes,
+    ToolMeta
 } from '@nangohq/runner-sdk';

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { productTracking, withProductTrackingContext } from '@nangohq/shared';
 
+import { PLAYGROUND_USER_TAG_KEY } from './agentPlaygroundTags.js';
 import {
     trackAgentSessionCreated,
     trackAgentSessionProxyRequest,
@@ -62,12 +63,23 @@ describe('trackAgentSessionCreated', () => {
         expect(event).toBe('agents:session_start');
         expect(properties).toMatchObject({
             agent_session_id: 'session-1',
+            is_playground: false,
             integration_count: 2,
             is_tool_search_enabled: true,
             is_execute_enabled: true,
             is_proxy_enabled: false,
             is_create_connection_enabled: false
         });
+    });
+
+    it('marks a session the Agent Playground created', () => {
+        const playgroundSession: AgentSession = {
+            ...session,
+            metaTools: { ...session.metaTools, nangoCreateConnection: { enabled: true, tags: { [PLAYGROUND_USER_TAG_KEY]: 'user-a' } } }
+        };
+        inRequest(() => trackAgentSessionCreated(playgroundSession));
+
+        expect(onlyEvent().properties).toMatchObject({ agent_session_id: 'session-1', is_playground: true });
     });
 
     it('inherits the account and environment of the request', () => {
@@ -163,6 +175,18 @@ describe('trackAgentSessionToolCall', () => {
         inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc', pinned }));
 
         expect(onlyEvent().properties).toMatchObject({ is_pinned: pinned });
+    });
+
+    it('marks a tool that ran on an MCP server', () => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'linear-mcp', toolName: 'list_issues', mcpTool: true }));
+
+        expect(onlyEvent().properties).toMatchObject({ is_mcp_tool: true });
+    });
+
+    it('leaves the MCP marker off a deployed action', () => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc' }));
+
+        expect(onlyEvent().properties).not.toHaveProperty('is_mcp_tool');
     });
 
     it('leaves pinned out when the call site cannot say', () => {

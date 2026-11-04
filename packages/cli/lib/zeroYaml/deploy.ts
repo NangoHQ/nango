@@ -19,6 +19,7 @@ import type { DeployOptions } from '../types.js';
 import type { FunctionConfig, ParsedIntegrationDefinitions } from './definitions.js';
 import type { ResolvedProjectPath } from './project-path.js';
 import type {
+    ApiError,
     CLIDeployFlowConfig,
     NangoConfigMetadata,
     NangoYamlParsed,
@@ -611,6 +612,14 @@ async function postLegacyDeploy({ hostport, body }: { hostport: string; body: Po
     }
 }
 
+function formatFunctionsDeploymentError(error: ApiError<string>['error']): string {
+    const details = error.errors?.map((issue) => {
+        const path = 'path' in issue ? issue.path.join('.') : '';
+        return `- ${path ? `${path}: ` : ''}${issue.message}`;
+    });
+    return [`${error.message || 'Error'} ${chalk.gray(`(${error.code})`)}`, ...(details ?? [])].join('\n');
+}
+
 async function previewFunctionsDeployment({
     hostport,
     body
@@ -633,7 +642,7 @@ async function previewFunctionsDeployment({
 
         const json = (await res.json()) as PostFunctionDeploymentBundlePreview['Reply'];
         if ('error' in json) {
-            return Err(new Error(`Error checking functions state:\n${json.error.message || 'Error'} ${chalk.gray(`(${json.error.code})`)}`));
+            return Err(new Error(`Error checking functions state:\n${formatFunctionsDeploymentError(json.error)}`));
         }
 
         return Ok(json);
@@ -664,7 +673,7 @@ async function deployFunctions({
 
         const json = (await res.json()) as PostFunctionDeploymentBundle['Reply'];
         if ('error' in json) {
-            return Err(new Error(`Error deploying functions:\n${json.error.message || 'Error'} ${chalk.gray(`(${json.error.code})`)}`));
+            return Err(new Error(`Error deploying functions:\n${formatFunctionsDeploymentError(json.error)}`));
         }
 
         return Ok(json);
