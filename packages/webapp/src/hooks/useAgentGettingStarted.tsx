@@ -21,13 +21,20 @@ export function useAgentGettingStarted() {
             }
             return json;
         },
-        refetchInterval: POLL_INTERVAL_MS
+        refetchInterval: (query) => {
+            const progress = query.state.data?.data;
+            return progress?.first_agent_connection_at && progress.first_tool_call_at ? false : POLL_INTERVAL_MS;
+        }
     });
 }
 
 export function useRestartAgentGettingStarted() {
     const queryClient = useQueryClient();
     return useMutation<PostAgentGettingStartedRestart['Success'], APIError>({
+        onMutate: async () => {
+            // A poll already in flight would otherwise land after the reset and bring the old progress back.
+            await queryClient.cancelQueries({ queryKey: agentGettingStartedQueryKey });
+        },
         mutationFn: async () => {
             const res = await apiFetch('/api/v1/agent-getting-started/restart', { method: 'POST' });
             const json = (await res.json()) as PostAgentGettingStartedRestart['Reply'];

@@ -36,6 +36,7 @@ import { useUser } from '@/hooks/useUser';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
+import { copyText } from '@/utils/clipboard';
 import { globalEnv } from '@/utils/env';
 import { deriveAgentProgress } from './agentProgress';
 import { getInstallPrompt, pickPromptApiKey } from './agentPrompt';
@@ -65,8 +66,8 @@ export const AgentGettingStarted: React.FC = () => {
 
     const canReadSecret = can('environment:settings:read_secret');
     const showPlaygroundLink = Boolean(meta?.data.agentPlayground) && can('environment:agent_sessions:write');
-    const { data: apiKeys, isLoading: isLoadingApiKeys } = useApiKeys(canReadSecret ? env : '');
-    const { data: environment, isLoading: isLoadingEnvironment } = useEnvironment(canReadSecret ? env : '');
+    const { data: apiKeys, isLoading: isLoadingApiKeys, error: apiKeysError } = useApiKeys(canReadSecret ? env : '');
+    const { data: environment, isLoading: isLoadingEnvironment, error: environmentError } = useEnvironment(canReadSecret ? env : '');
     // Permissions and keys decide what the prompt contains, so it can't be copied before they're known.
     const isLoadingPrompt = !user || !meta || isLoadingApiKeys || isLoadingEnvironment;
     // Self-hosted instances can pin the key with an env var; it isn't in the API keys list.
@@ -91,7 +92,7 @@ export const AgentGettingStarted: React.FC = () => {
     const copy = useCallback(
         async (text: string, what: Copied): Promise<boolean> => {
             try {
-                await navigator.clipboard.writeText(text);
+                await copyText(text);
             } catch {
                 toast({ title: 'Could not copy, your browser blocked clipboard access', variant: 'error' });
                 return false;
@@ -149,7 +150,7 @@ export const AgentGettingStarted: React.FC = () => {
             <div className="mx-auto flex w-full max-w-[820px] flex-col gap-7">
                 <h2 className="text-ds-3xl font-ds-regular leading-ds-tight tracking-ds-tight text-text-strong">Add Nango to your agent</h2>
 
-                {error ? (
+                {error && !data ? (
                     <p className="type-text-regular-sm text-text-secondary">Could not load your progress. Refresh the page to try again.</p>
                 ) : (
                     <StepList label="Setup steps">
@@ -192,9 +193,11 @@ export const AgentGettingStarted: React.FC = () => {
                                 {!apiKey && (
                                     <p className="flex items-center gap-2 type-text-regular-xs text-text-secondary">
                                         <Lock className="size-3.5 text-icon-secondary" aria-hidden />
-                                        {canReadSecret
-                                            ? 'No full-access API key in this environment, so the prompt leaves the key out. Your agent will ask for it.'
-                                            : 'Only admins can view secret keys, so the prompt leaves the key out. Your agent will ask for it.'}
+                                        {!canReadSecret
+                                            ? 'Only admins can view secret keys, so the prompt leaves the key out. Your agent will ask for it.'
+                                            : apiKeysError || environmentError
+                                              ? 'Could not load your API key, so the prompt leaves it out. Your agent will ask for it.'
+                                              : 'No full-access API key in this environment, so the prompt leaves the key out. Your agent will ask for it.'}
                                     </p>
                                 )}
                                 {showPlaygroundLink && (
@@ -223,7 +226,7 @@ export const AgentGettingStarted: React.FC = () => {
                     </StepList>
                 )}
 
-                {progress?.hasProgress && (
+                {progress?.install === 'done' && (
                     <div className="-mt-4 flex justify-end">
                         <Button variant="ghost" size="sm" onClick={restart}>
                             <RotateCcw />

@@ -20,6 +20,7 @@ import { useDismissAgentGettingStarted } from '@/hooks/useAgentGettingStarted';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
+import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { EnvironmentDropdown } from './EnvironmentDropdown';
@@ -41,6 +42,7 @@ export const AppSidebar: React.FC = () => {
     const { pathname } = useLocation();
     const { data: metaData } = useMeta();
     const { mutateAsync: dismissGettingStarted } = useDismissAgentGettingStarted();
+    const { toast } = useToast();
     const meta = metaData?.data;
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const { data: environmentData } = useCurrentPlan(env);
@@ -54,8 +56,13 @@ export const AppSidebar: React.FC = () => {
             url: `/${env}/getting-started`,
             icon: Sprout,
             onClose: async () => {
+                try {
+                    await dismissGettingStarted();
+                } catch {
+                    toast({ title: 'Could not hide Getting started', variant: 'error' });
+                    return;
+                }
                 track('onboarding:dismiss_button_click');
-                await dismissGettingStarted();
             }
         };
 
@@ -68,7 +75,7 @@ export const AppSidebar: React.FC = () => {
             { title: 'Metrics', url: `/${env}`, icon: BarChart3, exact: true },
             { title: 'Environment settings', url: `/${env}/environment-settings`, icon: Cog }
         ].filter((item) => item !== null);
-    }, [env, meta, dismissGettingStarted, showGettingStarted, showPlayground]);
+    }, [env, meta, dismissGettingStarted, toast, showGettingStarted, showPlayground]);
 
     // Only free accounts see the usage-limit alert. Paid accounts have no enforced caps, so it
     // just adds noise and surfaces upgrade/downgrade inconsistencies (NAN-5959).

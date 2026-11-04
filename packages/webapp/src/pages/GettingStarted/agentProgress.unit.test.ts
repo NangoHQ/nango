@@ -13,8 +13,7 @@ describe('deriveAgentProgress', () => {
             install: 'current',
             tryIntegrations: 'upcoming',
             hasConnection: false,
-            hasToolCall: false,
-            hasProgress: false
+            hasToolCall: false
         });
     });
 
@@ -22,7 +21,6 @@ describe('deriveAgentProgress', () => {
         const progress = deriveAgentProgress({ progress: empty, promptCopied: true });
         expect(progress.install).toBe('done');
         expect(progress.tryIntegrations).toBe('current');
-        expect(progress.hasProgress).toBe(true);
     });
 
     it.each([

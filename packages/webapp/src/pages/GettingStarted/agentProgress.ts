@@ -7,7 +7,6 @@ export interface AgentProgress {
     tryIntegrations: StepState;
     hasConnection: boolean;
     hasToolCall: boolean;
-    hasProgress: boolean;
 }
 
 /**
@@ -24,7 +23,6 @@ export function deriveAgentProgress({ progress, promptCopied }: { progress: ApiA
         install: isInstalled ? 'done' : 'current',
         tryIntegrations: !isInstalled ? 'upcoming' : isTried ? 'done' : 'current',
         hasConnection,
-        hasToolCall,
-        hasProgress: isInstalled
+        hasToolCall
     };
 }
