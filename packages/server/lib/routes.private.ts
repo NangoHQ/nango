@@ -165,7 +165,7 @@ import {
     auditEnvironmentDeleted,
     auditEnvironmentUpdated,
     auditEnvironmentVariablesChanged,
-    auditEnvironmentWebhookUrlsChanged,
+    auditEnvironmentWebhooksUpdated,
     auditFunctionDeleted,
     auditFunctionUpgraded,
     auditIntegrationCreated,
@@ -314,7 +314,7 @@ web.route('/environments').post(webAuth, auditEnvironmentCreated, can('account:e
 web.route('/environments/').patch(webAuth, auditEnvironmentUpdated, can('environment:settings:update'), patchEnvironment);
 web.route('/environments/').delete(webAuth, auditEnvironmentDeleted, can('environment:delete'), deleteEnvironment);
 web.route('/environments/current').get(webAuth, can('environment:settings:read'), getEnvironment);
-web.route('/environments/webhook').patch(webAuth, auditEnvironmentWebhookUrlsChanged, can('environment:webhooks:update'), patchWebhook);
+web.route('/environments/webhook').patch(webAuth, auditEnvironmentWebhooksUpdated, can('environment:webhooks:update'), patchWebhook);
 web.route('/environments/variables').post(webAuth, auditEnvironmentVariablesChanged, can('environment:variables:update'), postEnvironmentVariables);
 
 // API Key management

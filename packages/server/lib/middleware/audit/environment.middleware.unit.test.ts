@@ -6,7 +6,7 @@ import {
     auditEnvironmentCreated,
     auditEnvironmentUpdated,
     auditEnvironmentVariablesChanged,
-    auditEnvironmentWebhookUrlsChanged,
+    auditEnvironmentWebhooksUpdated,
     auditPublicEnvironmentCreated,
     auditPublicEnvironmentUpdated,
     auditPublicWebhookSigningKeyRotated
@@ -237,31 +237,50 @@ describe('environment audit middleware (unit)', () => {
 
     it('webhook settings: records only the URL origin, never the path or secret query params', async () => {
         const req = fakeReq({ body: { primary_url: 'https://hooks.example/primary?token=shh-secret' } });
-        const event = await runAudit(auditEnvironmentWebhookUrlsChanged, req, fakeRes(locals));
+        const event = await runAudit(auditEnvironmentWebhooksUpdated, req, fakeRes(locals));
         expect(event).toMatchObject({
             resource: 'environment',
-            action: 'webhook_urls_changed',
+            action: 'updated',
             outcome: 'success',
             accountId: 42,
             environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
-            metadata: { changedFields: ['primary_url'], primaryUrl: 'https://hooks.example' }
+            actor: { type: 'user', id: '7', display: 'dev@example.com' },
+            targets: [{ type: 'environment', id: '9', display: 'dev' }],
+            metadata: { changedFields: ['webhooks.primary_url'], primaryUrl: 'https://hooks.example' }
         });
         expect(JSON.stringify(event)).not.toContain('shh-secret');
     });
 
-    it('webhook settings: a toggled notification is recorded, though the endpoint only ever named URLs', async () => {
+    it('webhook settings: records subscription changes as environment updates', async () => {
         const req = fakeReq({ body: { on_auth_creation: true, on_sync_error: false } });
-        const event = await runAudit(auditEnvironmentWebhookUrlsChanged, req, fakeRes(locals));
+        const event = await runAudit(auditEnvironmentWebhooksUpdated, req, fakeRes(locals));
         expect(event).toMatchObject({
             resource: 'environment',
-            action: 'webhook_urls_changed',
+            action: 'updated',
             outcome: 'success',
             accountId: 42,
             environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
-            metadata: { changedFields: ['on_auth_creation', 'on_sync_error'] }
+            metadata: { changedFields: ['webhooks.on_auth_creation', 'webhooks.on_sync_error'] }
         });
         expect(event?.metadata ?? {}).not.toHaveProperty('primaryUrl');
         expect(event?.metadata ?? {}).not.toHaveProperty('secondaryUrl');
+    });
+
+    it('webhook settings: records cleared URLs as null', async () => {
+        const event = await runAudit(auditEnvironmentWebhooksUpdated, fakeReq({ body: { primary_url: '', secondary_url: '' } }), fakeRes(locals));
+        expect(event?.metadata).toEqual({
+            changedFields: ['webhooks.primary_url', 'webhooks.secondary_url'],
+            primaryUrl: null,
+            secondaryUrl: null
+        });
+    });
+
+    it('webhook settings: a missing body records the event without an enrichment failure', async () => {
+        const increment = vi.spyOn(metrics, 'increment');
+        const event = await runAudit(auditEnvironmentWebhooksUpdated, fakeReq({ body: undefined }), fakeRes(locals, 400));
+        expect(event).toMatchObject({ resource: 'environment', action: 'updated', outcome: 'failure', accountId: 42 });
+        expect(event?.metadata).toBeUndefined();
+        expect(increment).not.toHaveBeenCalledWith(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, expect.anything(), expect.anything());
     });
 
     it.each([

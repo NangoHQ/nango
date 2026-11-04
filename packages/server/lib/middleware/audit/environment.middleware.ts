@@ -39,6 +39,16 @@ export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
         })
 });
 
+export const auditEnvironmentWebhooksUpdated = auditable<PatchWebhook>({
+    policy: Audit.auditable({ resource: 'environment', action: 'updated', scope: 'environment' }),
+    target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
+    metadata: (req) =>
+        omitUndefined<EnvironmentUpdatedMetadata>({
+            changedFields: changedFields(req.body)?.map((field) => `webhooks.${field}`),
+            ...webhookMetadata(req.body)
+        })
+});
+
 export const auditPublicEnvironmentUpdated = auditable<PatchPublicEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'updated', scope: 'environment' }),
     environment: (req, locals) => environmentFromUuid(req.params.environmentUuid, locals),
@@ -70,17 +80,6 @@ export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariabl
             .filter((n): n is string => n !== undefined);
         return omitUndefined({ variableCount: variables.length, variableNames: variableNames.length > 0 ? variableNames : undefined });
     }
-});
-
-export const auditEnvironmentWebhookUrlsChanged = auditable<PatchWebhook>({
-    policy: Audit.auditable({ resource: 'environment', action: 'webhook_urls_changed', scope: 'environment' }),
-    target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
-    metadata: (req) =>
-        omitUndefined({
-            changedFields: changedFields(req.body),
-            primaryUrl: safeUrl(req.body.primary_url),
-            secondaryUrl: safeUrl(req.body.secondary_url)
-        })
 });
 
 export const auditWebhookSigningKeyRotated = auditable<PostRotateWebhookSigningKey>({
