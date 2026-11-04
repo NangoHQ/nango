@@ -1,0 +1,16 @@
+{
+    "name": "@nangohq/license",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/license"
+    },
+    "files": [
+        "dist/**/*"
+    ]
+}
