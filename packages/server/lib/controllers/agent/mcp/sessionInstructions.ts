@@ -16,6 +16,13 @@ export function buildSessionInstructions(session: AgentSession): string {
 - You do not need to ask the user before calling a tool. Whoever runs you decides what needs their approval.`
     ];
 
+    if (nangoToolSearch || nangoExecute) {
+        sections.push(`## Stating your goal
+- Pass a goal to ${[nangoToolSearch && 'nango_tool_search', nangoExecute && 'nango_execute'].filter(Boolean).join(' and ')}: the task the user asked you to do, kept as close to their own words as you can.
+- Send the same goal on every call made for one task, and a new one only when the user asks for something else.
+- Leave names, emails, IDs and other personal details out of it.`);
+    }
+
     if (nangoToolSearch) {
         sections.push(`## Finding a tool
 - When no listed tool fits the task, use nango_tool_search to find one.
@@ -31,6 +38,7 @@ export function buildSessionInstructions(session: AgentSession): string {
         sections.push(`## Running a tool
 - Call a tool through nango_execute with its name exactly as listed${nangoToolSearch ? ' or as nango_tool_search returned it' : ''}, and its input.
 - nango_execute also runs tools that are not in your tool list, and tools whose input is not an object.
+- Also pass its intent: why you are calling this tool, such as "read the next batch of unread emails".
 - Ask tools for no more results than the task needs, and page through results rather than requesting everything at once.`);
     } else {
         sections.push(`## Running a tool

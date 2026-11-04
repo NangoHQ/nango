@@ -210,6 +210,9 @@ async function listTools({ token, mcpPath, cursor }: { token: string; mcpPath: s
     });
 }
 
+const GOAL = 'update the roadmap page in Notion';
+const PURPOSE = { goal: GOAL, intent: 'write the new roadmap section' };
+
 describe('/session/:sessionId/mcp', () => {
     beforeAll(async () => {
         api = await runServer();
@@ -309,7 +312,7 @@ describe('/session/:sessionId/mcp', () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey);
 
-        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { tool: 'zendesk__get_ticket' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { tool: 'zendesk__get_ticket', ...PURPOSE } });
 
         expect(res.json.result.isError).toBe(true);
         expect(res.json.result.content[0].text).toBe(
@@ -322,7 +325,7 @@ describe('/session/:sessionId/mcp', () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey);
 
-        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { integration: 'notion', tool: 'read_doc' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { integration: 'notion', tool: 'read_doc', ...PURPOSE } });
 
         expect(res.json.result.isError).toBe(true);
         expect(res.json.result.content[0].text).toContain('Invalid nango_execute arguments');
@@ -345,7 +348,7 @@ describe('/session/:sessionId/mcp', () => {
         const { token, mcpPath } = await createSession(apiKey);
         await disableAction({ environmentId: env.id, name: 'upsert_doc' });
 
-        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { tool: 'notion__upsert_doc' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { tool: 'notion__upsert_doc', ...PURPOSE } });
 
         expect(res.json.result.content[0].text).toBe(
             "Tool 'upsert_doc' is not available on integration 'notion'. Use another tool for the task, or tell the user it cannot be done."
@@ -357,7 +360,7 @@ describe('/session/:sessionId/mcp', () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {} });
 
-        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { tool: 'zendesk__create_ticket' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { tool: 'zendesk__create_ticket', ...PURPOSE } });
 
         expect(res.json.result.isError).toBe(true);
         expect(res.json.result.content[0].text).toBe(
@@ -414,7 +417,7 @@ describe('/session/:sessionId/mcp', () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey);
 
-        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'create or update a page' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'create or update a page', goal: GOAL } });
 
         expect(res.json.result.isError).toBeUndefined();
         expect(searchResult(res).matches.map((match) => [match.integration, match.action])).toContainEqual(['notion', 'upsert_doc']);
@@ -429,7 +432,7 @@ describe('/session/:sessionId/mcp', () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: { notion: ['read_doc'] } });
 
-        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'create or update a page' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'create or update a page', goal: GOAL } });
 
         expect(toolSearchOutputSchema.safeParse(searchResult(res)).error).toBeUndefined();
         expect(res.json.result.structuredContent).toStrictEqual(searchResult(res));
@@ -450,7 +453,7 @@ describe('/session/:sessionId/mcp', () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey);
 
-        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'create or update a page' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'create or update a page', goal: GOAL } });
         const match = searchResult(res).matches.find((match) => match.action === 'upsert_doc');
 
         expect(match?.input).toStrictEqual({
@@ -476,7 +479,7 @@ describe('/session/:sessionId/mcp', () => {
             .update({ input: 'ReadDocInput', models_json_schema: { definitions: {} } });
         const { token, mcpPath } = await createSession(apiKey);
 
-        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'read a doc' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'read a doc', goal: GOAL } });
         const result = searchResult(res);
         const match = result.matches.find((match) => match.action === 'read_doc');
 
@@ -489,7 +492,7 @@ describe('/session/:sessionId/mcp', () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {} });
 
-        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket', goal: GOAL } });
         const result = searchResult(res);
         const match = result.matches.find((match) => match.action === 'create_ticket');
 
@@ -501,7 +504,7 @@ describe('/session/:sessionId/mcp', () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey);
 
-        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'send a message' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'send a message', goal: GOAL } });
         const result = searchResult(res);
         const match = [...result.matches, ...result.related].find((match) => match.action === 'send_message');
 
@@ -514,7 +517,7 @@ describe('/session/:sessionId/mcp', () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {} });
 
-        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket', goal: GOAL } });
         const result = searchResult(res);
         const match = [...result.matches, ...result.related].find((match) => match.action === 'create_ticket');
 
@@ -528,7 +531,7 @@ describe('/session/:sessionId/mcp', () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {}, meta_tools: { nango_create_connection: true } });
 
-        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket', goal: GOAL } });
 
         expect(searchResult(res).guidance).toContain(
             "'zendesk' has no connection in this session. Their tools are listed for completeness and will fail if you call them. Call nango_create_connection with integration 'zendesk' to get a link the user can follow, then try again once they tell you they are done."
@@ -541,7 +544,7 @@ describe('/session/:sessionId/mcp', () => {
 
         await seeders.createConnectionSeed({ env, provider: 'zendesk', connectionId: 'zendesk-acme', tags: { [AGENT_SESSION_TAG_KEY]: sessionId } });
 
-        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket', goal: GOAL } });
         const result = searchResult(res);
         const match = [...result.matches, ...result.related].find((match) => match.action === 'create_ticket');
 
@@ -589,7 +592,9 @@ describe('/session/:sessionId/mcp', () => {
                 expect.objectContaining({ name: 'notion-mcp__notion-search', _meta: { 'nango/integration': 'notion-mcp', 'nango/tool': 'notion-search' } })
             );
 
-            const search = searchResult(await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'fetch a notion page by its id' } }));
+            const search = searchResult(
+                await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'fetch a notion page by its id', goal: GOAL } })
+            );
             const match = [...search.matches, ...search.related].find((match) => match.action === 'notion-fetch');
             expect(match?.connection).toStrictEqual({ status: 'connected', connection_id: 'notion-mcp-acme' });
 
@@ -603,7 +608,7 @@ describe('/session/:sessionId/mcp', () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey);
 
-        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'provision a kubernetes cluster' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'provision a kubernetes cluster', goal: GOAL } });
         const result = searchResult(res);
 
         expect(result.matches).toStrictEqual([]);
@@ -611,11 +616,21 @@ describe('/session/:sessionId/mcp', () => {
         expect(result.guidance).toContain('No tool in this session matches');
     });
 
+    it('rejects a search without a goal', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'send a message' } });
+
+        expect(res.json.result.isError).toBe(true);
+        expect(res.json.result.content[0].text).toContain('Invalid nango_tool_search arguments');
+    });
+
     it('takes no integration filter', async () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey);
 
-        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'send a message', integration: 'slack' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'send a message', goal: GOAL, integration: 'slack' } });
 
         expect(res.json.result.isError).toBe(true);
         expect(res.json.result.content[0].text).toContain('Invalid nango_tool_search arguments');

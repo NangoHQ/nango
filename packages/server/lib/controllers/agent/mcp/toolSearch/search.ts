@@ -20,7 +20,7 @@ export const toolSearchTool = defineAgentSessionMcpTool({
         trackAgentSessionToolSearch({ session, matches: [], related: [], errorCode: 'invalid_input' });
     },
     async handler({ args, account, environment, session, callable }) {
-        return Ok(await searchSessionTools({ account, environment, session, query: args.query, slugOf: slugLookup(callable) }));
+        return Ok(await searchSessionTools({ account, environment, session, query: args.query, goal: args.goal, slugOf: slugLookup(callable) }));
     }
 });
 

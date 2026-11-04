@@ -517,7 +517,7 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'agents:tool_call_complete': {
         surface: 'server',
-        insight: 'Which tools do agents call most, and which fail most often?',
+        insight: 'Which tools do agents call most, which fail most often, and what the agent was trying to get done with each call',
         fires: 'When a tool call in an agent session returns',
         properties: z.object({
             ...agentSession,
@@ -527,7 +527,9 @@ export const analyticsEventCatalogue = defineCatalogue({
             is_pinned: z.boolean().optional(),
             integration_id: z.string().optional(),
             underlying_error_code: z.string().optional(),
-            is_mcp_tool: z.boolean().optional()
+            is_mcp_tool: z.boolean().optional(),
+            goal: z.string().optional(),
+            intent: z.string().optional()
         })
     },
     'agents:proxy_request_complete': {
@@ -547,13 +549,14 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'agents:tool_search_complete': {
         surface: 'server',
-        insight: 'How often does tool search return a tool the agent then uses?',
+        insight: 'How often does tool search return a tool the agent then uses, read against the task the agent was searching for',
         fires: 'When a tool search in an agent session returns',
         properties: z.object({
             ...agentSession,
             meta_tool: z.literal('nango_tool_search'),
             ...outcome,
             query: z.string().optional(),
+            goal: z.string().optional(),
             match_count: z.number(),
             related_count: z.number(),
             top_match_confidence: z.number().optional(),

@@ -126,6 +126,21 @@ describe('trackAgentSessionToolCall', () => {
         expect(properties).not.toHaveProperty('error_code');
     });
 
+    it('carries the goal and the intent the agent gave', () => {
+        inRequest(() =>
+            trackAgentSessionToolCall({
+                metaTool: 'nango_execute',
+                session,
+                integrationId: 'notion',
+                toolName: 'read_doc',
+                goal: 'summarize the roadmap doc',
+                intent: 'read the roadmap doc'
+            })
+        );
+
+        expect(onlyEvent().properties).toMatchObject({ goal: 'summarize the roadmap doc', intent: 'read the roadmap doc' });
+    });
+
     // A tool called by the name it is listed under goes through no meta tool of ours.
     // A meta tool that runs no integration tool of its own still reports as a call.
     it('reports a meta tool that runs no integration tool, like asking for a connect link', () => {
@@ -276,8 +291,17 @@ describe('trackAgentSessionToolSearch', () => {
     ];
     const related = [{ tool_name: 'create_ticket', tool_slug: 'zendesk__create_ticket', integration_id: 'zendesk', confidence: 0.28 }];
 
-    it('carries the query as sent, with both result tiers and their confidence', () => {
-        inRequest(() => trackAgentSessionToolSearch({ session, query: 'email a customer', matches, related, logOperationId: 'op-3' }));
+    it('carries the query and goal as sent, with both result tiers and their confidence', () => {
+        inRequest(() =>
+            trackAgentSessionToolSearch({
+                session,
+                query: 'email a customer',
+                goal: 'reply to the customer about their refund',
+                matches,
+                related,
+                logOperationId: 'op-3'
+            })
+        );
 
         const { event, properties } = onlyEvent();
         expect(event).toBe('agents:tool_search_complete');
@@ -285,6 +309,7 @@ describe('trackAgentSessionToolSearch', () => {
             agent_session_id: 'session-1',
             meta_tool: 'nango_tool_search',
             query: 'email a customer',
+            goal: 'reply to the customer about their refund',
             match_count: 2,
             related_count: 1,
             top_match_confidence: 0.82,
