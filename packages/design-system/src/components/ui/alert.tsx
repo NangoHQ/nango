@@ -145,14 +145,23 @@ export const AlertActions = forwardRef<HTMLDivElement, React.ComponentProps<'div
 AlertActions.displayName = 'AlertActions';
 
 /**
- * Figma "AlertButton": a LinkButton whose tone follows the parent alert's status (info, success, warning,
- * danger, neutral), so it never has to be told which status it sits in and picks up every LinkButton change.
+ * Figma "AlertButton": a LinkButton whose tone follows the parent alert's status, so it never has to be told
+ * which status it sits in and picks up every LinkButton change. Info alerts use the accent tone (text/link,
+ * the colour alert links have always had); the other statuses use the tone of the same name.
  * Renders at LinkButton `md` (13px label, 14px icons); pass icons as children or via `leftIcon`/`rightIcon`.
  */
 export type AlertButtonProps = Omit<LinkButtonProps, 'tone'>;
 
+const TONE_FOR_STATUS = {
+    info: 'accent',
+    success: 'success',
+    warning: 'warning',
+    danger: 'danger',
+    neutral: 'neutral'
+} as const satisfies Record<AlertStatus, NonNullable<LinkButtonProps['tone']>>;
+
 export const AlertButton = forwardRef<HTMLButtonElement, AlertButtonProps>(({ size = 'md', ...props }, ref) => {
     const status = useContext(AlertStatusContext);
-    return <LinkButton ref={ref} data-slot="alert-button" tone={status} size={size} {...props} />;
+    return <LinkButton ref={ref} data-slot="alert-button" tone={TONE_FOR_STATUS[status]} size={size} {...props} />;
 });
 AlertButton.displayName = 'AlertButton';
