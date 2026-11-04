@@ -1371,6 +1371,7 @@
               "api-integrations/fanvue",
               "api-integrations/fathom",
               "api-integrations/fathom-oauth",
+              "integrations/all/faxforagents",
               "api-integrations/fellow",
               "api-integrations/fern",
               "api-integrations/fiber-ai",
