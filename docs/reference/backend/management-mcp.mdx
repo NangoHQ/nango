@@ -101,7 +101,7 @@ Use the Actions tool to trigger an action function synchronously for a connectio
 
 | Tool              | Description                                                | Additional permission          |
 | ----------------- | ---------------------------------------------------------- | ------------------------------ |
-| `actions_trigger` | Trigger an action function synchronously for a connection. | `environment:actions:execute`  |
+| `actions_trigger` | Trigger an action function synchronously for a connection. | `environment:tools:call`  |
 
 ### Syncs
 
@@ -125,7 +125,7 @@ Tools are functions that can be called on demand: HTTP-triggered functions, depl
 | Tool                    | Description                                                                   | Additional permission        |
 | ----------------------- | ----------------------------------------------------------------------------- | ---------------------------- |
 | `functions_list`        | List and filter available functions by integration, including Nango catalog actions. | `environment:functions:list` |
-| `tools_call`            | Call an enabled tool of an integration synchronously for a connection.        | `environment:functions:invocations`, `environment:actions:execute` |
+| `tools_call`            | Call an enabled tool of an integration synchronously for a connection.        | `environment:tools:call`     |
 | `deploy_template`       | Deploy a function template.                                                   | `environment:deploy`         |
 | `get_deployment_status` | Retrieve a deployment's current status and result.                            | `environment:deploy`         |
 

@@ -1,0 +1,140 @@
+---
+title: 'How to set up webhooks with Command Alkon on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Command Alkon events in your app using Nango webhooks'
+---
+
+Command Alkon webhooks notify your app when an item changes in a CONNEX entity, such as a ticket being created, an order being edited, or an invoice being issued. You register a hook on the Command Alkon API with your Nango webhook URL as the endpoint; Nango verifies the request and routes it to the right connection.
+
+## How it works
+
+1. You register a hook for each item type you want, such as `ticket` or `order`, with your Nango webhook URL as the endpoint and the connection's Nango webhook secret in a custom header.
+2. When a matching item changes, Command Alkon sends a POST request to that URL with an array of events.
+3. Nango checks the secret, matches each event's `entityRef` to the connection's `entityRef`, and forwards the events to your app.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Command Alkon integration and copy the **Webhook URL**.
+
+### 2. Set a webhook secret on the connection
+
+Command Alkon does not sign its webhooks, so Nango checks a secret you choose for each connection instead. Generate a random secret of at least 16 characters and store it as `webhookSecret` in the connection's [metadata](/reference/backend/http-api/connections/update-metadata):
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": "<RANDOM-SECRET>" }
+  }'
+```
+
+Use a different secret for each connection. See [Webhook forwarding](/guides/platform/webhook-forwarding#providers-that-do-not-sign-webhooks) for how Nango verifies it.
+
+### 3. Register a hook
+
+Each Command Alkon service that emits events (`billing`, `dispatch`, `supply`, `setup`, `telematics`, `message` and `bulk-materials`) exposes a `/hooks` resource. A hook watches one item type for a set of change types. Create one per item type, sending the connection's secret in the `X-Nango-Webhook-Secret` header. For example, to receive ticket changes through the Nango proxy:
+
+```bash
+curl -X POST "https://api.nango.dev/proxy/v4/services/dispatch/<ENTITY-REF>/hooks" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "myapp: ticket",
+    "itemTypeId": "ticket",
+    "changeTypes": ["add", "update", "delete"],
+    "endpoint": "<NANGO-WEBHOOK-URL>",
+    "headers": { "X-Nango-Webhook-Secret": "<RANDOM-SECRET>" },
+    "status": "ACTIVE"
+  }'
+```
+
+The response includes the hook's `crn`, which is the `webhookRef` you use to update or retire it.
+
+Nango only reads the secret from the `X-Nango-Webhook-Secret` header, not from a query param on the webhook URL. Anyone with read access to the hooks API can read the header back, which is why each connection needs its own secret.
+
+<Note>
+The API scope behind the connection must allow managing hooks on that service. A `403` means the scope does not grant it, and a new token will not help.
+</Note>
+
+## Webhook payload
+
+The POST body is an array of events, so one request can carry several changes:
+
+```json
+[
+  {
+    "timestamp": "2026-10-01T12:00:00Z",
+    "entityRef": "<ENTITY-REF>",
+    "itemRef": "<TICKET-REF>",
+    "itemTypeId": "ticket",
+    "changeType": "update",
+    "detail": {}
+  }
+]
+```
+
+| Field | Description |
+| --- | --- |
+| `entityRef` | The CONNEX entity the event belongs to. Used for connection matching. |
+| `itemRef` | The ID of the changed item. For `ticket-event`, it is `<TICKET-REF>-<STATUS-CODE>` and `detail.ticketRef` holds the ticket. |
+| `itemTypeId` | The item type the hook watches, such as `ticket`, `order` or `invoice`. |
+| `changeType` | `add`, `update` or `delete`. |
+| `detail` | Usually empty. Some item types carry a few fields, such as `statusCode` on ticket events. |
+
+Events identify the item but do not include the full record. Fetch it by `itemRef` from the owning service, such as `GET /v4/services/dispatch/<ENTITY-REF>/tickets/<ITEM-REF>`, except for `delete` events.
+
+## Connection matching
+
+Nango matches each event's `entityRef` against the connection's `entityRef`, which is saved when the connection is created, so no extra configuration is needed.
+
+If several connections share the same entity, each one with a matching secret receives its own copy of the event. Events whose `entityRef` matches no verified connection are dropped, and the rest of the request is still delivered.
+
+<Warning>
+Nango rejects the request:
+
+- with a `400` if any event in it has no `entityRef`;
+- with a `401` if no event matches a connection whose `webhookSecret` equals the `X-Nango-Webhook-Secret` header.
+
+A connection without a `webhookSecret` only receives events when the integration [allows unverified webhooks](/guides/platform/webhook-forwarding#unverified-webhooks).
+</Warning>
+
+## Handle the webhook
+
+Once routed to a connection, you have two options:
+
+- **Forward it to your app**: Nango forwards the events to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. Nango matches subscriptions against each event's `itemTypeId`, such as `ticket` or `order`. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+Command Alkon does not document retries, ordering or delivery guarantees. Fetch the current record on each event rather than applying events in order, and keep a periodic sync running to catch anything a webhook missed.
+
+## Supported events
+
+| Service | Item types | Change types |
+| --- | --- | --- |
+| `billing` | `invoice` | `add` |
+| `dispatch` | `ticket`, `ticket-event`, `order`, `order-request`, `vehicle-event`, `scheduled-load` and more | `add`, `update`, `delete` |
+| `supply` | `inventory-transaction`, `scheduled-supply-load`, `asphalt-drum-production` | `add`, `update` |
+| `setup` | `customer`, `contact`, `project`, `product`, `mix-design`, `location`, `driver`, `vehicle` and more | `add`, `update`, `delete` |
+| `telematics` | `location-event`, `probe-data` | `add` |
+
+For the full list, see the [Command Alkon developer portal](https://developer.commandalkon.io/).
+
+## Rollback strategy
+
+To stop a hook, retire it on the service that owns it:
+
+- `billing`, `dispatch` and `supply`: `DELETE /hooks/<WEBHOOK-REF>`, or send the full hook back with `PUT` and `"status": "INACTIVE"`.
+- `setup`, `telematics`, `message` and `bulk-materials`: `PATCH /hooks/<WEBHOOK-REF>` with `{ "status": "INACTIVE" }`.
+
+List calls hide inactive hooks unless you pass `activeOnly=false`. Set the status back to `ACTIVE` to resume.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+---

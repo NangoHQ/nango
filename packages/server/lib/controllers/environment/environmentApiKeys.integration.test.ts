@@ -291,6 +291,26 @@ describe('Public environment API key management', () => {
         });
 
         it.each([
+            { scopes: ['environment:actions:execute', 'environment:deploy'], expected: ['environment:tools:call', 'environment:deploy'] },
+            { scopes: ['environment:actions:*', 'environment:tools:call'], expected: ['environment:tools:call'] }
+        ])('should store the old names of environment:tools:call under the new name: $scopes', async ({ scopes, expected }) => {
+            const { account, env } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:create']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys', {
+                method: 'POST',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid },
+                body: { display_name: 'renamed-scope', scopes: scopes as ApiKeyScope[] }
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json.data.scopes).toEqual(expected);
+            expect(await findEnvironmentKey(account.id, env.id, res.json.data.uuid)).toMatchObject({ scopes: expected });
+        });
+
+        it.each([
             { name: 'empty scopes', scopes: [] },
             { name: 'an unknown scope', scopes: ['environment:not_a_scope'] },
             { name: 'an account scope with wildcard', scopes: ['account:*'] },
@@ -576,6 +596,25 @@ describe('Public environment API key management', () => {
             isSuccess(res.json);
             expect(res.json.data).toMatchObject({ display_name: 'rescoped', scopes: ['environment:deploy'] });
             expect(await findEnvironmentKey(account.id, env.id, key.uuid)).toMatchObject({ display_name: 'rescoped', scopes: ['environment:deploy'] });
+        });
+
+        it('should store the old name of environment:tools:call under the new name', async () => {
+            const { account, env } = await seedAccount();
+            const key = await createEnvironmentKey(account.id, env.id, 'renamed-scope');
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:update']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'PATCH',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: key.uuid },
+                // @ts-expect-error the old name is no longer a scope type
+                body: { scopes: ['environment:actions:execute'] }
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json.data.scopes).toEqual(['environment:tools:call']);
+            expect(await findEnvironmentKey(account.id, env.id, key.uuid)).toMatchObject({ scopes: ['environment:tools:call'] });
         });
 
         it('should update display name and scopes together', async () => {

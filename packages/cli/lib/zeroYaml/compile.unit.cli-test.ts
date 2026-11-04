@@ -89,7 +89,7 @@ describe('compileAll', () => {
             tags: {
                 domain: 'issues',
                 instructions: 'Use it to read a single issue. Search first when you only know the title.',
-                required_scopes: ['repo']
+                required_scopes: { all: ['repo'] }
             },
             trigger: { kind: 'http' },
             requires: { connection: true, outbound: true, invoke: false },
@@ -151,6 +151,176 @@ describe('experimental functions', () => {
 });
 
 describe('tools', () => {
+    async function createToolProject(name: string): Promise<string> {
+        const dir = await getTestDirectory(name);
+        await fs.promises.mkdir(path.join(dir, 'github', 'tools'), { recursive: true });
+        await fs.promises.mkdir(path.join(dir, 'node_modules'));
+        await fs.promises.symlink(path.dirname(fileURLToPath(import.meta.resolve('zod'))), path.join(dir, 'node_modules', 'zod'), 'dir');
+        return dir;
+    }
+
+    async function compileAndParseTool(dir: string, filename: string, source: string) {
+        const filePath = path.join(dir, 'github', 'tools', `${filename}.js`);
+        await fs.promises.writeFile(path.join(dir, 'index.ts'), `import './github/tools/${filename}.js';`);
+        await fs.promises.writeFile(filePath.replace(/\.js$/, '.ts'), source);
+        (await compileFunction({ entryPoint: filePath, projectRootPath: dir })).unwrap();
+        return parseIntegrationDefinitions({ fullPath: dir, debug: false });
+    }
+
+    it.each([
+        { declaration: "scopes.all('repo', 'read:org')", expected: { all: ['read:org', 'repo'] } },
+        { declaration: "scopes.any('repo', 'public_repo')", expected: { any: ['public_repo', 'repo'] } },
+        { declaration: 'scopes.none()', expected: { none: true } }
+    ])('preserves required scopes declared with $declaration through compilation', async ({ declaration, expected }) => {
+        const dir = await createToolProject(`tool_required_scopes_${Object.keys(expected)[0]}`);
+        try {
+            const parsed = (
+                await compileAndParseTool(
+                    dir,
+                    'getIssue',
+                    `import { scopes, createTool } from 'nango';
+                    import * as z from 'zod';
+                    export default createTool({
+                        description: 'Get an issue',
+                        input: z.object({}),
+                        output: z.object({}),
+                        meta: { requiredScopes: ${declaration} },
+                        exec: async () => ({})
+                    });`
+                )
+            ).unwrap();
+            expect(parsed.functions[0]?.tags).toEqual({ required_scopes: expected });
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it.each(['all', 'any'] as const)('rejects duplicate scopes declared with scopes.%s', async (operator) => {
+        const dir = await createToolProject(`tool_duplicate_scopes_${operator}`);
+        try {
+            const parsed = await compileAndParseTool(
+                dir,
+                'getIssue',
+                `import { scopes, createTool } from 'nango';
+                import * as z from 'zod';
+                export default createTool({
+                    description: 'Get an issue',
+                    input: z.object({}),
+                    output: z.object({}),
+                    meta: { requiredScopes: scopes.${operator}('repo', 'read:org', 'repo') },
+                    exec: async () => ({})
+                });`
+            );
+            assert(parsed.isErr(), 'Should be an error');
+            expect(parsed.error.message).toContain('Duplicate scopes are not allowed');
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it.each([
+        { style: 'combined', imports: "import { scopes as s, createTool } from 'nango';" },
+        { style: 'split', imports: "import { scopes as s } from 'nango'; import { createTool } from 'nango';" }
+    ])('rewrites scope helper calls into plain requirements with $style imports', async ({ style, imports }) => {
+        const dir = await createToolProject(`tool_scopes_rewrite_${style}`);
+        try {
+            const filePath = path.join(dir, 'github', 'tools', 'getIssue.js');
+            await fs.promises.writeFile(
+                filePath.replace(/\.js$/, '.ts'),
+                `${imports}
+                import * as z from 'zod';
+                const optional = ['public_repo'] as const;
+                export default createTool({
+                    description: 'Get an issue',
+                    input: z.object({}),
+                    output: z.object({}),
+                    meta: { requiredScopes: s.any('repo', ...optional) },
+                    exec: async () => ({})
+                });`
+            );
+            const code = (await bundleFile({ entryPoint: filePath, projectRootPath: dir })).unwrap();
+            expect(code).not.toContain('require("nango")');
+            const module: { exports: { default?: { meta?: unknown } } } = { exports: {} };
+            vm.runInNewContext(code, { module, exports: module.exports, require: () => z });
+            expect(module.exports.default?.meta).toEqual({ requiredScopes: { any: ['repo', 'public_repo'] } });
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it.each([
+        { reason: 'aliased into a variable', usage: 'const helpers = scopes; const requiredScopes = helpers.all("repo");' },
+        { reason: 'accessed with a computed key', usage: 'const requiredScopes = scopes["all"]("repo");' },
+        { reason: 'called with an unknown operator', usage: 'const requiredScopes = scopes.some("repo");' },
+        { reason: 'referenced without a call', usage: 'const all = scopes.all; const requiredScopes = all("repo");' }
+    ])('rejects scope helpers $reason', async ({ usage }) => {
+        const dir = await createToolProject(`tool_scopes_unsupported_${usage.length}`);
+        try {
+            const filePath = path.join(dir, 'github', 'tools', 'getIssue.js');
+            await fs.promises.writeFile(
+                filePath.replace(/\.js$/, '.ts'),
+                `import { scopes, createTool } from 'nango';
+                import * as z from 'zod';
+                ${usage}
+                export default createTool({
+                    description: 'Get an issue',
+                    input: z.object({}),
+                    output: z.object({}),
+                    meta: { requiredScopes },
+                    exec: async () => ({})
+                });`
+            );
+            const result = await bundleFile({ entryPoint: filePath, projectRootPath: dir });
+            assert(result.isErr(), 'Should be an error');
+            assert(result.error instanceof CompileError, 'Should be a compile error');
+            expect(result.error.type).toBe('unsupported_scopes_usage');
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it('preserves metadata and checkpoint schemas when loading a compiled tool', async () => {
+        const dir = await createToolProject('tool_data_schemas');
+        try {
+            const parsed = (
+                await compileAndParseTool(
+                    dir,
+                    'getIssue',
+                    `import { createTool } from 'nango';
+                    import * as z from 'zod';
+                    export default createTool({
+                        description: 'Fetch issues',
+                        input: z.object({}),
+                        output: z.object({}),
+                        data: {
+                            metadata: z.object({ organization: z.string() }),
+                            checkpoint: z.object({ cursor: z.string() })
+                        },
+                        exec: async () => ({})
+                    });`
+                )
+            ).unwrap();
+
+            expect(parsed.hasExperimentalFunctions).toBe(false);
+            expect(parsed.functions).toHaveLength(1);
+            const fn = parsed.functions[0]!;
+            expect(fn).toMatchObject({
+                name: 'getIssue',
+                trigger: { kind: 'http' },
+                capabilities: { usesMetadata: true, usesCheckpoints: true, usesRecords: false },
+                model_schema_refs: [],
+                metadata_schema_ref: '#/definitions/FunctionMetadata_github_getIssue',
+                checkpoint_schema_ref: '#/definitions/FunctionCheckpoint_github_getIssue'
+            });
+            expect(fn.json_schema.definitions).toMatchObject({
+                FunctionMetadata_github_getIssue: { properties: { organization: { type: 'string' } } },
+                FunctionCheckpoint_github_getIssue: { properties: { cursor: { type: 'string' } } }
+            });
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
     it('should bundle a createTool into a function', async () => {
         const result = await bundleFile({
             entryPoint: path.join(fixturesPath, 'zero/cases/createTool.valid.js'),
@@ -167,7 +337,7 @@ describe('tools', () => {
         expect(tool).toMatchObject({
             type: 'function',
             _nangoFactory: 'tool',
-            meta: { instructions: 'Use it to check an issue', requiredScopes: ['repo'] }
+            meta: { instructions: 'Use it to check an issue', requiredScopes: { all: ['repo'] } }
         });
         expect(tool).not.toHaveProperty('tool');
         expect(tool).not.toHaveProperty('trigger');
@@ -182,8 +352,10 @@ describe('tools', () => {
         { reason: 'no metadata', meta: undefined },
         { reason: 'empty metadata', meta: {} },
         { reason: 'custom tags', meta: { tags: { domain: 'issues', owners: ['platform'] } } },
-        { reason: 'instructions and scopes', meta: { instructions: 'Use this tool', requiredScopes: ['repo'], tags: { domain: 'issues' } } },
-        { reason: 'empty instructions and scopes', meta: { instructions: '', requiredScopes: [] } }
+        { reason: 'instructions and all scopes', meta: { instructions: 'Use this tool', requiredScopes: { all: ['repo'] }, tags: { domain: 'issues' } } },
+        { reason: 'any scopes', meta: { requiredScopes: { any: ['repo', 'public_repo'] } } },
+        { reason: 'explicitly no scopes', meta: { requiredScopes: { none: true } } },
+        { reason: 'empty instructions', meta: { instructions: '' } }
     ])('preserves original metadata with $reason', async ({ meta }) => {
         const dir = await getTestDirectory('tool_metadata');
         await fs.promises.mkdir(dir, { recursive: true });
@@ -244,41 +416,32 @@ describe('tools', () => {
     });
 
     it.each([false, true])('normalizes tools despite conflicting markers (constant export: %s)', async (constantExport) => {
-        const dir = await getTestDirectory(`normalized_tool_${constantExport}`);
-        await fs.promises.mkdir(path.join(dir, 'github', 'tools'), { recursive: true });
-        await fs.promises.mkdir(path.join(dir, 'node_modules'));
-        await fs.promises.symlink(path.dirname(fileURLToPath(import.meta.resolve('zod'))), path.join(dir, 'node_modules', 'zod'), 'dir');
-        const filePath = path.join(dir, 'github', 'tools', 'getIssue.js');
-        await fs.promises.writeFile(path.join(dir, 'index.ts'), "import './github/tools/getIssue.js';");
-        const writeTool = async (meta: object) => {
-            const definition = `createTool({ ...{ _nangoFactory: 'other' }, name: ${constantExport ? 'name' : "'get_issue'"}, description: 'Get an issue', input: z.object({}), output: z.object({}), meta: ${JSON.stringify(meta)}, exec: async () => ({}) })`;
-            await fs.promises.writeFile(
-                filePath.replace(/\.js$/, '.ts'),
-                `import { createTool } from 'nango'; import * as z from 'zod'; ${constantExport ? `const name = 'get_issue', tool = ${definition}; export default tool;` : `export default ${definition};`}`
-            );
-            (await compileFunction({ entryPoint: filePath, projectRootPath: dir })).unwrap();
-        };
+        const dir = await createToolProject(`normalized_tool_${constantExport}`);
+        const meta = { instructions: 'a'.repeat(1024), requiredScopes: { all: ['repo'] }, tags: { domain: 'issues' } };
+        const definition = `createTool({ ...{ _nangoFactory: 'other' }, name: ${constantExport ? 'name' : "'get_issue'"}, description: 'Get an issue', input: z.object({}), output: z.object({}), meta: ${JSON.stringify(meta)}, exec: async () => ({}) })`;
         try {
-            await writeTool({ instructions: 'a'.repeat(1024), requiredScopes: ['repo'], tags: { domain: 'issues' } });
-            const parsed = (await parseIntegrationDefinitions({ fullPath: dir, debug: false })).unwrap();
+            const parsed = (
+                await compileAndParseTool(
+                    dir,
+                    'getIssue',
+                    `import { createTool } from 'nango'; import * as z from 'zod'; ${constantExport ? `const name = 'get_issue', tool = ${definition}; export default tool;` : `export default ${definition};`}`
+                )
+            ).unwrap();
             expect(parsed.hasExperimentalFunctions).toBe(false);
             expect(parsed.functions[0]).toMatchObject({
                 name: 'get_issue',
                 trigger: { kind: 'http' },
-                tags: { instructions: 'a'.repeat(1024), required_scopes: ['repo'], domain: 'issues' }
+                tags: { instructions: 'a'.repeat(1024), required_scopes: { all: ['repo'] }, domain: 'issues' }
             });
             expect(parsed.functions[0]).not.toHaveProperty('tool');
             expect(parsed.functions[0]).not.toHaveProperty('meta');
 
             // Use a different filename so Node does not reuse the imported bundle.
-            const invalidPath = path.join(dir, 'github', 'tools', 'invalid.js');
-            await fs.promises.writeFile(
-                invalidPath.replace(/\.js$/, '.ts'),
+            const invalid = await compileAndParseTool(
+                dir,
+                'invalid',
                 "import { createTool } from 'nango'; import * as z from 'zod'; export default createTool({ description: 'Invalid', input: z.object({}), output: z.object({}), meta: { tags: { instructions: 'reserved' } }, exec: async () => ({}) });"
             );
-            await fs.promises.writeFile(path.join(dir, 'index.ts'), "import './github/tools/invalid.js';");
-            (await compileFunction({ entryPoint: invalidPath, projectRootPath: dir })).unwrap();
-            const invalid = await parseIntegrationDefinitions({ fullPath: dir, debug: false });
             expect(invalid.isErr()).toBe(true);
             if (invalid.isErr()) {
                 expect(invalid.error.message).toContain('reserved');
@@ -294,19 +457,13 @@ describe('tools', () => {
         { filename: 'a'.repeat(65), name: undefined, valid: false },
         { filename: 'get.issue', name: 'get_issue', valid: true }
     ])('validates the resolved tool name ($filename, explicit name: $name)', async ({ filename, name, valid }) => {
-        const dir = await getTestDirectory(`resolved_tool_name_${filename}_${name}`);
-        await fs.promises.mkdir(path.join(dir, 'github', 'tools'), { recursive: true });
-        await fs.promises.mkdir(path.join(dir, 'node_modules'));
-        await fs.promises.symlink(path.dirname(fileURLToPath(import.meta.resolve('zod'))), path.join(dir, 'node_modules', 'zod'), 'dir');
-        const filePath = path.join(dir, 'github', 'tools', `${filename}.js`);
+        const dir = await createToolProject(`resolved_tool_name_${filename}_${name}`);
         try {
-            await fs.promises.writeFile(path.join(dir, 'index.ts'), `import './github/tools/${filename}.js';`);
-            await fs.promises.writeFile(
-                filePath.replace(/\.js$/, '.ts'),
+            const parsed = await compileAndParseTool(
+                dir,
+                filename,
                 `import { createTool } from 'nango'; import * as z from 'zod'; export default createTool({ ${name === undefined ? '' : `name: '${name}',`} description: 'Get an issue', input: z.object({}), output: z.object({}), exec: async () => ({}) });`
             );
-            (await compileFunction({ entryPoint: filePath, projectRootPath: dir })).unwrap();
-            const parsed = await parseIntegrationDefinitions({ fullPath: dir, debug: false });
             expect(parsed.isOk()).toBe(valid);
             if (parsed.isErr()) {
                 expect(parsed.error.message).toContain('invalid name');

@@ -1,6 +1,7 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTags, FunctionTriggerDefinition } from '../function/config.js';
+import type { ToolTags } from '../function/tool.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
 import type { FunctionListType, FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 import type { JSONSchema7 } from 'json-schema';
@@ -242,7 +243,7 @@ export interface GetFunctionResponse {
     provider: string;
     name: string;
     description: string;
-    tags: FunctionTags;
+    tags: FunctionTags | ToolTags;
     state: 'enabled' | 'disabled';
     source: FunctionSource;
     trigger: FunctionTriggerDefinition;
@@ -313,7 +314,7 @@ export type PostFunctionInvocation = ApiEndpoint<{
         invocation_type: FunctionInvocationType;
         options?: Record<string, unknown> | undefined;
     };
-    Error: ApiError<FunctionInvocationErrorCode>;
+    Error: ApiError<FunctionInvocationErrorCode | 'function_runtime_error'>;
     Success: FunctionInvocationSuccess;
 }>;
 
@@ -378,7 +379,9 @@ export type GetFunctionInvocation = ApiEndpoint<{
     Method: 'GET';
     Path: '/connections/:connectionId/functions/:functionUuid/invocations/:id';
     Params: { connectionId: string; functionUuid: string; id: string };
-    Error: ApiError<'invalid_uri_params' | 'not_found' | 'function_not_found' | 'connection_not_found' | 'function_failed' | 'server_error'>;
+    Error: ApiError<
+        'invalid_uri_params' | 'not_found' | 'function_not_found' | 'connection_not_found' | 'function_failed' | 'function_runtime_error' | 'server_error'
+    >;
     Success: FunctionInvocationSuccess;
 }>;
 
@@ -484,7 +487,7 @@ export type PostToolCall = ApiEndpoint<{
     Body: {
         input?: unknown | undefined;
     };
-    Error: ApiError<FunctionInvocationErrorCode | 'ambiguous_connection'>;
+    Error: ApiError<FunctionInvocationErrorCode | 'function_runtime_error' | 'ambiguous_connection'>;
     Success: FunctionInvocationSuccess;
 }>;
 
@@ -494,6 +497,31 @@ export type GetPublicProviderTemplates = ApiEndpoint<{
     Path: '/providers/:provider/templates';
     Params: { provider: string };
     Success: ProviderTemplatesSuccess;
+}>;
+
+type ProviderTemplateCodeError =
+    | ApiError<'unknown_function'>
+    | ApiError<'source_unavailable'>
+    | ApiError<'ambiguous_function', undefined, { matches: { type: FunctionType; name: string }[] }>;
+
+export type GetPublicProviderTemplateCode = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/providers/:provider/templates/:name/code';
+    Params: { provider: string; name: string };
+    Querystring: { type?: FunctionType | undefined };
+    Success: { type: FunctionType; code: string };
+    Error: ProviderTemplateCodeError;
+}>;
+
+export type GetProviderTemplateCode = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/providers/:providerConfigKey/templates/:name/code';
+    Params: { providerConfigKey: string; name: string };
+    Querystring: { env: string; type?: FunctionType | undefined };
+    Success: { type: FunctionType; code: string };
+    Error: ProviderTemplateCodeError;
 }>;
 
 export type GetIntegrationTemplates = ApiEndpoint<{
@@ -509,7 +537,7 @@ export interface FunctionDeploymentArtifact {
     name: string;
     integrationId: string;
     description: string;
-    tags?: FunctionTags | undefined;
+    tags?: FunctionTags | ToolTags | undefined;
     trigger: FunctionTriggerDefinition;
     requires: FunctionRequires;
     capabilities: FunctionCapabilities;

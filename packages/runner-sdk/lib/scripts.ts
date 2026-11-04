@@ -22,7 +22,7 @@ export type CreateAnyResponse =
     | CreateOnEventResponse<ZodMetadata, ZodCheckpoint>
     | CreateAnyFunctionResponse;
 
-export type { ActionError } from './errors.js';
+export type { ActionError, FunctionError } from './errors.js';
 export type { NangoActionBase as NangoAction, ProxyConfiguration } from './action.js';
 export type { NangoSyncBase as NangoSync } from './sync.js';
 

@@ -150,7 +150,7 @@ describe(`GET ${route}`, () => {
                     name: 'fetch-users',
                     version: {
                         description: 'Fetch users',
-                        tags: { instructions: 'Read users', required_scopes: ['read'], category: 'crm' },
+                        tags: { instructions: 'Read users', required_scopes: { all: ['read'] }, category: 'crm' },
                         file_location: 'functions/fetch-users',
                         version: 'test',
                         source: 'repo',
@@ -186,7 +186,7 @@ describe(`GET ${route}`, () => {
                 provider: 'github',
                 input_json_schema: { $ref: '#/definitions/Input', definitions: { Input: { type: 'string' } } },
                 output_json_schema: null,
-                meta: { instructions: 'Read users', required_scopes: ['read'], tags: { category: 'crm' } }
+                meta: { instructions: 'Read users', required_scopes: { all: ['read'] }, tags: { category: 'crm' } }
             })
         ]);
     });
