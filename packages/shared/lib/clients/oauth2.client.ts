@@ -72,11 +72,17 @@ export function getSimpleOAuth2ClientConfig(
         authSection.authorizePath = authorizeUrl.pathname;
     }
 
+    // A public client (token_endpoint_auth_method "none") sends only its client_id. simple-oauth2 always writes a
+    // client_secret param in body mode, so it is pointed at client_id to leave a single client_id in the body.
+    const isPublicClient = authConfig.token_request_auth_method === 'none';
+
     return {
-        client: {
-            id: providerConfig.oauth_client_id,
-            secret: providerConfig.oauth_client_secret
-        },
+        client: isPublicClient
+            ? { id: providerConfig.oauth_client_id, secret: providerConfig.oauth_client_id, secretParamName: 'client_id' }
+            : {
+                  id: providerConfig.oauth_client_id,
+                  secret: providerConfig.oauth_client_secret
+              },
         http: {
             headers,
             // @ts-expect-error agents are not specified in the types, but are available as an option
@@ -84,7 +90,7 @@ export function getSimpleOAuth2ClientConfig(
         },
         auth: authSection,
         options: {
-            authorizationMethod: authConfig.authorization_method || 'body',
+            authorizationMethod: isPublicClient ? 'body' : authConfig.authorization_method || 'body',
             bodyFormat: authConfig.body_format === 'json' ? 'json' : 'form',
             // @ts-expect-error seems unused ?
             scopeSeparator: provider.scope_separator || ' '
