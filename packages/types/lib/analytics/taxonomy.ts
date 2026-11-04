@@ -10,6 +10,7 @@ export interface AnalyticsCategories {
     billing: 'Plans, usage and payment';
     agents: 'Agent sessions and the tools agents call through them';
     integrations: 'Creating and configuring integrations';
+    catalog: 'Browsing providers and their pre-built functions';
     environments: 'Environments and their settings';
     team: 'The people in an account and their roles';
     logs: 'Searching and reading operation logs';

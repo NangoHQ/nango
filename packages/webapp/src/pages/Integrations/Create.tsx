@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
+import { getBrowsableCategories, getCategoryLabel } from '../Catalog/categories';
 import { CardContent, CardHeader, CardLayout } from './components/CardLayout';
 import { AuthCreateForm } from './components/forms/AuthCreateForm';
 import { getDisplayName } from './utils';
@@ -26,8 +27,8 @@ export const CreateIntegration = () => {
     const navigate = useNavigate();
     const { mutateAsync: postIntegration } = usePostIntegration(env);
 
-    const { providerConfigKey } = useParams();
-    const { data: providerData, isLoading: loadingProvider } = useProvider(env, providerConfigKey);
+    const params = useParams();
+    const { data: providerData, isLoading: loadingProvider } = useProvider(env, params.provider ?? params.providerConfigKey);
 
     const provider = providerData?.data;
     const providerName = provider?.name;
@@ -96,10 +97,8 @@ export const CreateIntegration = () => {
                             </div>
                             <div className="flex flex-wrap gap-3 gap-y-2">
                                 {provider.authMode !== 'NONE' && <Badge variant="brand">{getDisplayName(provider.authMode)}</Badge>}
-                                {provider.categories?.map((category) => (
-                                    <Badge key={category} case="capitalize">
-                                        {category}
-                                    </Badge>
+                                {getBrowsableCategories(provider).map((category) => (
+                                    <Badge key={category}>{getCategoryLabel(category)}</Badge>
                                 ))}
                             </div>
                         </div>

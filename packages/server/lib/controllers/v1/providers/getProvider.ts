@@ -6,6 +6,7 @@ import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerListItemToAPI } from '../../../formatters/provider.js';
 import { providerNameSchema } from '../../../helpers/validation.js';
+import flowService from '../../../services/flow.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { GetProvider } from '@nangohq/types';
@@ -50,6 +51,7 @@ export const getProviderItem = asyncWrapper<GetProvider>(async (req, res) => {
             provider,
             isPreConfigured,
             preConfiguredScopes,
+            flowService.getFunctionCounts(params.providerConfigKey),
             allScopes?.[params.providerConfigKey]
         );
         res.status(200).send({ data: providerListItem });

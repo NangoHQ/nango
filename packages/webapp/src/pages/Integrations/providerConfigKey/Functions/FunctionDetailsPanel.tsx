@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteIntegrationFunction, useGetIntegration } from '@/hooks/useIntegration';
 import { useGetIntegrationFunctionCode, useGetTemplateFunctionCode } from '@/hooks/useIntegrationFunctions';
+import { useMeta } from '@/hooks/useMeta';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
@@ -36,34 +37,36 @@ function isListedFunction(fn: DetailsFunction): fn is ListedDetailsFunction {
 
 interface FunctionDetailsPanelProps {
     fn: DetailsFunction;
-    integration: ApiIntegration;
-    onDeleted: () => void;
+    provider: string;
+    /** Absent when browsing the catalog, before any integration exists. */
+    integration?: ApiIntegration;
+    onDeleted?: () => void;
 }
 
-export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, integration, onDeleted }) => {
+export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, provider, integration, onDeleted }) => {
     const env = useStore((state) => state.env);
     const canOpenPlayground = useCanRunFunctions();
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
     const [activeTab, setActiveTab] = useState<'input' | 'output' | 'code'>('input');
     const functionType = fn.type === 'sync' ? 'sync' : 'action';
-    const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, integration.unique_key, fn.name, functionType);
+    const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, integration?.unique_key ?? '', fn.name, functionType);
 
     const inputSchema = useMemo(() => getInputSchema(fn), [fn]);
     const outputSchemas = useMemo(() => getOutputSchemas(fn), [fn]);
     const listed = isListedFunction(fn);
-    const { data: integrationDetails } = useGetIntegration(env, integration.unique_key);
-    const repoProvider = integrationDetails?.data.symLinkTargetName ?? integration.provider;
+    const { data: integrationDetails } = useGetIntegration(env, integration?.unique_key ?? '');
+    const repoProvider = integrationDetails?.data.symLinkTargetName ?? provider;
     const {
         data: codeData,
         isPending: deployedCodePending,
         error: deployedCodeError
     } = useGetIntegrationFunctionCode({
         env,
-        providerConfigKey: integration.unique_key,
+        providerConfigKey: integration?.unique_key ?? '',
         name: fn.name,
         type: fn.type,
-        enabled: listed && activeTab === 'code'
+        enabled: Boolean(integration) && listed && activeTab === 'code'
     });
     const {
         data: templateCode,
@@ -83,7 +86,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
         try {
             await deleteFunction();
             toast({ title: `Function "${fn.name}" has been deleted`, variant: 'success' });
-            onDeleted();
+            onDeleted?.();
         } catch (err) {
             const errorCode = err instanceof APIError ? (err.json as { error?: { code?: string } }).error?.code : undefined;
             toast({
@@ -94,15 +97,16 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
         }
     }, [deleteFunction, fn.name, onDeleted, toast]);
 
-    const source = listed ? fn.source : 'template';
+    const { data: metaData } = useMeta();
+    const source = listed ? fn.source : fn.type === 'action' && metaData?.data.toolsCatalog ? 'tools-catalog' : 'template';
     const pullCommand = buildPullCommand({
-        integration: integration.unique_key,
+        integration: integration?.unique_key ?? provider,
         name: fn.name,
         type: fn.type,
         source: listed ? { env } : { catalog: true }
     });
-    const canDelete = listed && fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn);
-    const canUsePlayground = listed && fn.enabled && isSyncOrAction(fn);
+    const canDelete = Boolean(integration) && listed && fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn);
+    const canUsePlayground = Boolean(integration) && listed && fn.enabled && isSyncOrAction(fn);
     const copyPullCommand = async () => {
         await navigator.clipboard.writeText(pullCommand);
         toast({ title: 'Pull command copied', variant: 'success' });
@@ -130,7 +134,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                                 className={menuItemClassName}
                                 disabled={!canUsePlayground}
                                 onSelect={() => {
-                                    if (!isListedFunction(fn) || !isSyncOrAction(fn)) return;
+                                    if (!integration || !isListedFunction(fn) || !isSyncOrAction(fn)) return;
                                     openPlaygroundWithContext({
                                         source: 'function',
                                         integration: integration.unique_key,
@@ -283,14 +287,14 @@ const CompactEmptyState: React.FC<{ children: React.ReactNode }> = ({ children }
     </EmptyCard>
 );
 
-function getInputSchema(fn: DetailsFunction): JSONSchema7 | null {
+export function getInputSchema(fn: DetailsFunction): JSONSchema7 | null {
     if (fn.type === 'on-event' || !fn.input || !fn.json_schema) return null;
     const schema = fn.json_schema.definitions?.[fn.input] ?? null;
     if (!schema || isNullSchema(schema as JSONSchema7) || isObjectWithNoProperties(schema as JSONSchema7)) return null;
     return schema as JSONSchema7;
 }
 
-function getOutputSchemas(fn: DetailsFunction): { name: string; schema: JSONSchema7 }[] {
+export function getOutputSchemas(fn: DetailsFunction): { name: string; schema: JSONSchema7 }[] {
     if (fn.type === 'on-event' || !fn.returns || !fn.json_schema) return [];
     return fn.returns.flatMap((name) => {
         const schema = fn.json_schema?.definitions?.[name] ?? null;

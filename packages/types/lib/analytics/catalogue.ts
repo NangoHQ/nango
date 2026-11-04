@@ -305,6 +305,19 @@ export const analyticsEventCatalogue = defineCatalogue({
         fires: "When a provider's create integration form loads",
         properties: z.object({ provider: z.string(), has_shared_credentials: z.boolean() })
     },
+    'catalog:filter_update': {
+        surface: 'web',
+        insight:
+            'Which categories people browse in the catalog, how often search finds nothing, and which providers people look for that Nango does not support',
+        fires: 'When someone stops typing in the catalog search, or picks a category',
+        properties: z.object({
+            filter: z.enum(['search', 'category']),
+            result_count: z.number(),
+            // Only when nothing matched: the misses are the insight, and skipping hits keeps typed text out of most events.
+            query: z.string().optional(),
+            category: z.string().optional()
+        })
+    },
     'integrations:integration_update': {
         surface: 'server',
         insight: 'How many accounts change integration settings from the dashboard each week',
@@ -352,9 +365,10 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'functions:function_view': {
         surface: 'web',
-        insight: "How many accounts browse an integration's functions, and whether they look at catalog templates or functions they already deployed",
-        fires: "When someone opens a function's details from the list on an integration's Functions tab",
-        properties: z.object({ provider: z.string(), function_type: z.string(), is_deployed: z.boolean() })
+        insight:
+            "How many accounts browse an integration's functions, whether they look at catalog templates or functions they already deployed, and whether they browse from the catalog before setting up an integration",
+        fires: "When someone opens a function's details from the list on an integration's Functions tab or a provider's catalog page",
+        properties: z.object({ provider: z.string(), function_type: z.string(), is_deployed: z.boolean(), is_catalog: z.boolean().optional() })
     },
     'functions:deploy_create': {
         surface: 'server',

@@ -19,6 +19,7 @@ export const IntegrationLogo = ({ provider, className }: IntegrationLogoProps) =
                 <img
                     src={`/images/template-logos/${provider}.svg`}
                     alt={`${provider} logo`}
+                    loading="lazy"
                     className={`size-full object-contain`}
                     onError={() => setImgError(true)}
                 />

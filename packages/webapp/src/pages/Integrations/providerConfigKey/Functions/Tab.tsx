@@ -54,7 +54,7 @@ function ColumnHead({ className, children }: { className?: string; children: str
     );
 }
 
-function FunctionNameCell({ name, description }: { name: string; description?: string }) {
+export function FunctionNameCell({ name, description }: { name: string; description?: string }) {
     return (
         <TableCell className="max-w-0 px-3 py-0 whitespace-normal">
             <div className="flex min-w-0 flex-col gap-0.5">
@@ -98,8 +98,8 @@ function FunctionStatus({ fn, integration }: { fn: ListedNangoFunction; integrat
     );
 }
 
-const FUNCTION_ROW_CLASS = 'group/function-row h-13 cursor-pointer hover:bg-surface-panel-inset';
-const FUNCTION_ROW_SELECTED_CLASS = 'border-l-2 border-l-interactive-selected-fill bg-state-selected';
+export const FUNCTION_ROW_CLASS = 'group/function-row h-13 cursor-pointer hover:bg-surface-panel-inset';
+export const FUNCTION_ROW_SELECTED_CLASS = 'border-l-2 border-l-interactive-selected-fill bg-state-selected';
 
 function templateRowKey(template: NangoFunctionTemplate): string {
     return `${template.type}:${template.name}:`;
@@ -195,15 +195,17 @@ function FunctionTemplateRow({
     );
 }
 
-function FunctionListWithDetails({
+export function FunctionListWithDetails({
     selectedFunction,
+    provider,
     integration,
     onDeleted,
     children
 }: {
     selectedFunction: ListedNangoFunction | NangoFunctionTemplate | null;
-    integration: ApiIntegration;
-    onDeleted: () => void;
+    provider: string;
+    integration?: ApiIntegration;
+    onDeleted?: () => void;
     children: React.ReactNode;
 }) {
     const [displayedFunction, setDisplayedFunction] = useState(selectedFunction);
@@ -250,6 +252,7 @@ function FunctionListWithDetails({
                     <FunctionDetailsPanel
                         key={'enabled' in displayedFunction ? functionRowKey(displayedFunction) : templateRowKey(displayedFunction)}
                         fn={displayedFunction}
+                        provider={provider}
                         integration={integration}
                         onDeleted={onDeleted}
                     />
@@ -556,6 +559,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     ) : typeFilter === 'action' ? (
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
+                            provider={integration.provider}
                             integration={integration}
                             onDeleted={() => void setSelectedFunctionName(null)}
                         >
@@ -580,6 +584,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     ) : typeFilter === 'sync' ? (
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
+                            provider={integration.provider}
                             integration={integration}
                             onDeleted={() => void setSelectedFunctionName(null)}
                         >
@@ -604,6 +609,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     ) : (
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
+                            provider={integration.provider}
                             integration={integration}
                             onDeleted={() => void setSelectedFunctionName(null)}
                         >

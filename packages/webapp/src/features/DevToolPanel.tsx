@@ -4,6 +4,8 @@ import { create } from 'zustand';
 
 import { IconButton } from '@nangohq/design-system';
 
+import { Switch } from '@/components/ui/Switch';
+import { useCatalogPrototypeStore } from '@/features/catalogPrototype';
 import { syncPersistedOverridesToTheme } from '@/features/tokenEditorPersistence';
 import { useTeam } from '@/hooks/useTeam';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
@@ -66,6 +68,8 @@ export const DevToolPanel: React.FC = () => {
     const setView = useDevPanelStore((s) => s.setView);
     const toggle = useDevPanelStore((s) => s.toggle);
     const darkMode = useThemeStore(darkModeSelector);
+    const readableFunctionNames = useCatalogPrototypeStore((s) => s.readableFunctionNames);
+    const setReadableFunctionNames = useCatalogPrototypeStore((s) => s.setReadableFunctionNames);
 
     // Restore persisted token overrides on load and when the app theme changes, without opening the editor.
     useEffect(() => {
@@ -127,6 +131,12 @@ export const DevToolPanel: React.FC = () => {
                                 </button>
                             </li>
                         </ul>
+
+                        <p className="mt-6 mb-3 text-xs font-medium uppercase tracking-wider text-text-muted">Catalog prototype</p>
+                        <label className="flex cursor-pointer items-center justify-between gap-2.5 rounded px-2 py-1.5 text-sm text-text-default hover:bg-surface-panel-inset">
+                            <span>Readable function names</span>
+                            <Switch checked={readableFunctionNames} onCheckedChange={setReadableFunctionNames} />
+                        </label>
                     </div>
 
                     {/* Footer */}

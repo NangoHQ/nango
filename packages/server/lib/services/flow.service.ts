@@ -103,6 +103,11 @@ class FlowService {
         return standardConfig;
     }
 
+    public getFunctionCounts(provider: string): { syncs: number; actions: number } {
+        const flow = this.getAllAvailableFlowsAsStandardConfig().find((value) => value.providerConfigKey === provider);
+        return { syncs: flow?.syncs.length ?? 0, actions: flow?.actions.length ?? 0 };
+    }
+
     public getSymLinkTargetName(provider: string): string | null {
         return this.flowsJson.find((flow) => flow.providerConfigKey === provider)?.symLinkTargetName ?? null;
     }

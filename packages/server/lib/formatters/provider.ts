@@ -25,6 +25,7 @@ export function providerListItemToAPI(
     properties: Provider,
     preConfigured: boolean,
     preConfiguredScopes: string[],
+    functionCounts: { syncs: number; actions: number },
     availableScopes?: string[]
 ): ApiProviderListItem {
     const item: ApiProviderListItem = {
@@ -38,6 +39,8 @@ export function providerListItemToAPI(
         docs_connect: properties.docs_connect,
         preConfigured,
         preConfiguredScopes,
+        syncCount: functionCounts.syncs,
+        actionCount: functionCounts.actions,
         ...(properties.integration_config && { integration_config: properties.integration_config }),
         ...(properties.auth_mode === 'MCP_OAUTH2' && {
             clientRegistration: (properties as ProviderMcpOAUTH2).client_registration

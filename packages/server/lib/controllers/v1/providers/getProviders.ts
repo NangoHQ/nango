@@ -3,6 +3,7 @@ import { getProviders, sharedCredentialsService } from '@nangohq/shared';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerListItemToAPI } from '../../../formatters/provider.js';
+import flowService from '../../../services/flow.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { GetProviders } from '@nangohq/types';
@@ -30,7 +31,14 @@ export const getProvidersList = asyncWrapper<GetProviders>(async (req, res) => {
             const isPreConfigured = preConfiguredInfo ? preConfiguredInfo.preConfigured : false;
             const preConfiguredScopes = preConfiguredInfo ? preConfiguredInfo.scopes : [];
 
-            return providerListItemToAPI(provider, properties, isPreConfigured, preConfiguredScopes, allScopes?.[provider]);
+            return providerListItemToAPI(
+                provider,
+                properties,
+                isPreConfigured,
+                preConfiguredScopes,
+                flowService.getFunctionCounts(provider),
+                allScopes?.[provider]
+            );
         });
         const sortedList = list.sort((a, b) => a.name.localeCompare(b.name));
         res.status(200).send({ data: sortedList });
