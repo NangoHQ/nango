@@ -89,7 +89,7 @@ export interface LinkButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 }
 
 export const LinkButton = forwardRef<HTMLButtonElement, LinkButtonProps>(
-    ({ className, tone, size, asChild = false, loading = false, leftIcon, rightIcon, disabled, children, ...props }, ref) => {
+    ({ className, tone, size, asChild = false, loading = false, leftIcon, rightIcon, disabled, onClick, children, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
         const showSpinner = loading && !asChild;
@@ -123,9 +123,21 @@ export const LinkButton = forwardRef<HTMLButtonElement, LinkButtonProps>(
                     isDisabled && asChild && 'pointer-events-none',
                     className
                 )}
-                disabled={isDisabled}
+                // `disabled` does nothing on a non-form element, so with asChild the state is carried by aria-disabled
+                // plus pointer/tab removal. The handler is swallowed too: pointer-events and tabIndex don't stop a
+                // programmatic click, or an Enter press on an anchor something else has focused.
+                disabled={asChild ? undefined : isDisabled}
                 aria-disabled={isDisabled || undefined}
                 aria-busy={loading || undefined}
+                tabIndex={isDisabled && asChild ? -1 : undefined}
+                onClick={
+                    isDisabled
+                        ? (event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                          }
+                        : onClick
+                }
                 {...props}
             >
                 {content}

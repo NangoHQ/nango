@@ -51,18 +51,18 @@ interface Shape {
 // Titled shapes first, then the description-only ones together, ending with the barest.
 const SHAPES: Shape[] = [
     { label: 'With title', title: true, allVariants: true },
-    { label: 'With title and action', title: true, withAction: true },
+    { label: 'With title and action', title: true, withAction: true, allVariants: true },
     { label: 'With title and action, not dismissible', title: true, withAction: true, dismissible: false },
     { label: 'Description only' },
-    { label: 'Description only, with action', withAction: true },
+    { label: 'Description only, with action', withAction: true, allVariants: true },
     { label: 'Description only, no icon or dismiss', icon: false, dismissible: false }
 ];
 
 const TOAST_SHAPES: Shape[] = [
     { label: 'Description only', allVariants: true },
-    { label: 'Description only, with action', withAction: true },
+    { label: 'Description only, with action', withAction: true, allVariants: true },
     { label: 'With title', title: true },
-    { label: 'With title and action', title: true, withAction: true }
+    { label: 'With title and action', title: true, withAction: true, allVariants: true }
 ];
 
 const ShapeGroups = ({ shapes, size, description, className }: { shapes: Shape[]; size: AlertProps['size']; description: string; className?: string }) => (
