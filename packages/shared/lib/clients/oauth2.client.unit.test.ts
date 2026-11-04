@@ -352,7 +352,10 @@ describe('public clients (token_request_auth_method: none)', () => {
         );
     });
 
-    it('still sends client_secret when the provider does not opt in', async () => {
+    it.each([
+        { description: 'a configured secret', clientSecret: 'client-secret' },
+        { description: 'an empty secret', clientSecret: '' }
+    ])('still sends $description as client_secret when the provider does not opt in', async ({ clientSecret }) => {
         let received: URLSearchParams | null = null;
         await withServer(
             captureBody((body) => (received = body)),
@@ -360,13 +363,13 @@ describe('public clients (token_request_auth_method: none)', () => {
                 const provider = makeProvider({ token_url: `${baseUrl}/token` });
                 await getFreshOAuth2Credentials({
                     connection: staleConnection(),
-                    config: makeConfig({ oauth_client_secret: '' }),
+                    config: makeConfig({ oauth_client_secret: clientSecret }),
                     provider,
                     logCtx: logContextGetter.getBuffer({ accountId: 1 })
                 });
 
                 expect(received?.get('client_id')).toBe('client-id');
-                expect(received?.has('client_secret')).toBe(true);
+                expect(received?.get('client_secret')).toBe(clientSecret);
             }
         );
     });
