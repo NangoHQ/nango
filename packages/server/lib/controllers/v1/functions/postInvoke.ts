@@ -65,7 +65,7 @@ export const postInvokeFunction = asyncWrapperWithEnvironment<PostInternalInvoke
             res.status(404).send({ error: { code: 'function_not_found', message: `Tool '${function_name}' was not found` } });
             return;
         }
-        const result = await invokeFunction({
+        const { result } = await invokeFunction({
             account,
             environment,
             connectionId: connection_id,

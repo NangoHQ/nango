@@ -379,6 +379,33 @@ describe('deploy', () => {
         expect(logOutput(logSpy)).toContain('Error deploying functions');
     });
 
+    it.each(['preview', 'deploy'])('prints backend validation details during function %s', async (stage) => {
+        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(functionsOnlyParsed));
+        if (stage === 'deploy') {
+            fetchMock.mockResolvedValueOnce(jsonResponse(noFunctionChanges));
+        }
+        fetchMock.mockResolvedValueOnce(
+            jsonResponse({
+                error: {
+                    code: 'invalid_body',
+                    errors: [
+                        { code: 'invalid_union', path: ['functions', 0, 'tags', 'required_scopes'], message: 'Expected a structured scope requirement' },
+                        { code: 'custom', path: [], message: 'Another validation error' }
+                    ]
+                }
+            })
+        );
+
+        await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
+
+        const output = logOutput(logSpy);
+        expect(output).toContain('invalid_body');
+        expect(output).toContain('- functions.0.tags.required_scopes: Expected a structured scope requirement');
+        expect(output).toContain('- Another validation error');
+        expect(output).not.toContain('✓ Deployed');
+        expect(fetchMock).toHaveBeenCalledTimes(stage === 'preview' ? 1 : 2);
+    });
+
     it('prints an aborted deployment when function deletions are not allowed', async () => {
         vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(functionsOnlyParsed));
         fetchMock.mockResolvedValueOnce(

@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getFunction, listFunctions, ListFunctionsError } from './service.js';
+import { getFunction, listFunctions, ListFunctionsError, listTemplates } from './service.js';
 
 import type { FunctionRow } from './models/functions.js';
 
-const { mockFindActiveByEnvironment, mockFindActiveByName, mockGetIdByProviderConfigKey } = vi.hoisted(() => {
+const { mockFindActiveByEnvironment, mockFindActiveByName, mockFindActiveFunctionAvailability, mockGetIdByProviderConfigKey } = vi.hoisted(() => {
     return {
         mockFindActiveByEnvironment: vi.fn(),
         mockFindActiveByName: vi.fn(),
+        mockFindActiveFunctionAvailability: vi.fn(),
         mockGetIdByProviderConfigKey: vi.fn()
     };
 });
@@ -18,7 +19,8 @@ vi.mock('../../config.service.js', () => ({
 
 vi.mock('./models/functions.js', () => ({
     findActiveByEnvironment: mockFindActiveByEnvironment,
-    findActiveByName: mockFindActiveByName
+    findActiveByName: mockFindActiveByName,
+    findActiveFunctionAvailability: mockFindActiveFunctionAvailability
 }));
 
 const baseRow: FunctionRow = {
@@ -46,6 +48,47 @@ describe('function lookup service', () => {
         mockFindActiveByEnvironment.mockResolvedValue({ rows: [baseRow], total: 1 });
     });
 
+    it('returns only visible templates, with native tools taking precedence over legacy actions', async () => {
+        const deployment = {
+            id: 1,
+            name: 'users',
+            type: 'action',
+            enabled: false,
+            last_deployed: new Date('2026-01-01T00:00:00.000Z'),
+            source: 'repo'
+        };
+        mockFindActiveFunctionAvailability.mockResolvedValue({
+            deployed: [deployment, { ...deployment, id: 2, type: 'sync' }, { ...deployment, id: 3, name: 'legacy' }],
+            toolNames: ['users', 'native-only']
+        });
+        const action = { type: 'action' as const, name: 'users', returns: [], json_schema: null };
+        const sync = { ...action, type: 'sync' as const, runs: null, auto_start: false, track_deletes: false };
+
+        const templates = await listTemplates({
+            environmentId: 1,
+            providerConfigKey: 'github',
+            templates: [action, sync, { ...action, name: 'legacy' }, { ...action, name: 'native-only' }, { ...action, name: 'undeployed' }]
+        });
+
+        expect(templates.unwrap()).toEqual([
+            { ...sync, deployed: { id: 2, enabled: false, last_deployed: deployment.last_deployed.toISOString(), source: 'repo' } },
+            { ...action, name: 'legacy', deployed: { id: 3, enabled: false, last_deployed: deployment.last_deployed.toISOString(), source: 'repo' } },
+            { ...action, name: 'undeployed' }
+        ]);
+    });
+
+    it('returns Err when template availability lookup fails', async () => {
+        const cause = new Error('Database unavailable');
+        mockFindActiveFunctionAvailability.mockRejectedValue(cause);
+
+        const result = await listTemplates({ environmentId: 1, providerConfigKey: 'github', templates: [] });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toMatchObject({ message: 'Failed to list templates', cause });
+        }
+    });
+
     it('returns tools', async () => {
         const input = { type: 'object', properties: { item: { $ref: '#/definitions/Item' } } } as const;
         const item = { type: 'string' } as const;
@@ -61,7 +104,7 @@ describe('function lookup service', () => {
                         provider: 'github',
                         input_schema_ref: '#/definitions/Input',
                         output_schema_ref: null,
-                        tags: { instructions: 'Read users', required_scopes: ['read'], category: 'crm' }
+                        tags: { instructions: 'Read users', required_scopes: { all: ['read'] }, category: 'crm' }
                     }
                 }
             ],
@@ -82,7 +125,7 @@ describe('function lookup service', () => {
             output_json_schema: null
         });
         expect(row.input_json_schema).toEqual({ $ref: '#/definitions/Input', definitions: { Input: input, Item: item } });
-        expect(row.meta).toEqual({ instructions: 'Read users', required_scopes: ['read'], tags: { category: 'crm' } });
+        expect(row.meta).toEqual({ instructions: 'Read users', required_scopes: { all: ['read'] }, tags: { category: 'crm' } });
     });
 
     it('returns mapped rows and total for valid functions', async () => {

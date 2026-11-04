@@ -2289,6 +2289,92 @@ athenahealth:
             secret: true
             doc_section: '#step-4-connect-your-athenahealth-account'
 
+athenahealth-jwks:
+    display_name: athenahealth (JWKS)
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.hostname}/oauth2/v1/token
+    token_params:
+        grant_type: client_credentials
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+        scope: ${credentials.scope}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    assertion:
+        type: jwt
+        singleUse: true
+        key: ${credentials.privateKey}
+        lifetimeInSeconds: 300
+        header:
+            alg: RS384
+            kid: ${credentials.keyId}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://${connectionConfig.hostname}/oauth2/v1/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        connection_config:
+            practiceId: ${connectionConfig.practiceId}
+    docs: https://nango.dev/docs/api-integrations/athenahealth-jwks
+    setup_guide_url: https://nango.dev/docs/api-integrations/athenahealth-jwks/how-to-register-your-own-athenahealth-jwks-app
+    docs_connect: https://nango.dev/docs/api-integrations/athenahealth-jwks/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The athenahealth API hostname for your environment.
+            enum:
+                - api.platform.athenahealth.com
+                - api.preview.platform.athenahealth.com
+            doc_section: '#step-1-choose-your-environment'
+            order: 1
+        practiceId:
+            type: string
+            title: Practice ID
+            description: The ID of your athenahealth practice.
+            pattern: '^[0-9]+$'
+            example: '195900'
+            doc_section: '#step-2-find-your-practice-id'
+            order: 2
+    integration_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your registered athenahealth app's Client ID.
+            order: 1
+        keyId:
+            type: string
+            title: Key ID
+            description: The kid of the RSA key registered in your app's JWKS.
+            order: 2
+        privateKey:
+            type: string
+            title: Private Key
+            description: The RSA private key (PEM) matching your registered JWKS public key. Signed with RS384.
+            secret: true
+            order: 3
+        scope:
+            type: string
+            title: Scope
+            description: The space-separated scope(s) granted to your app (e.g. system/Patient.r).
+            order: 4
+    credentials:
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 atlassian-admin:
     display_name: Atlassian Cloud Admin
     categories:
@@ -6334,6 +6420,8 @@ command-alkon:
         base_url: https://${connectionConfig.hostname}
         headers:
             x-api-key: ${credentials.apiKey}
+    webhook_routing_script: commandAlkonWebhookRouting
+    webhook_signature_enforced: true
     docs: https://nango.dev/docs/api-integrations/command-alkon
     docs_connect: https://nango.dev/docs/api-integrations/command-alkon/connect
     connection_config:
@@ -7921,6 +8009,71 @@ crunchbase:
             pattern: '^[a-zA-Z0-9]{32}$'
             example: 0f9c************************5336
 
+crustdata:
+    display_name: Crustdata
+    categories:
+        - crm
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.crustdata.com
+        headers:
+            authorization: Bearer ${apiKey}
+            x-api-version: ${connectionConfig.version} || 2025-11-01
+        retry:
+            after:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            endpoints:
+                - /account/credits
+    docs: https://nango.dev/docs/api-integrations/crustdata
+    docs_connect: https://nango.dev/docs/api-integrations/crustdata/connect
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Crustdata API key.
+            example: cd_dc06****************************1957
+            pattern: '^cd_[a-f0-9]+$'
+            doc_section: '#step-1-find-your-api-key'
+
+crustdata-mcp:
+    display_name: Crustdata (MCP)
+    categories:
+        - crm
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://install.crustdata.com/authorize
+    token_url: https://install.crustdata.com/token
+    registration_url: https://install.crustdata.com/register
+    authorization_params:
+        response_type: code
+        resource: https://install.crustdata.com/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://install.crustdata.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/crustdata-mcp
+
 dixa:
     display_name: Dixa
     categories:
@@ -8758,6 +8911,47 @@ entrata:
             suffix: .entrata.com
             prefix: https://
 
+envoice:
+    display_name: Envoice
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.environment}/partner/authorize
+    token_url: https://${connectionConfig.environment}/partner/access_token
+    authorization_method: header
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    redirect_uri_metadata:
+        - tenantId
+    proxy:
+        base_url: https://${connectionConfig.environment}/partner
+        headers:
+            envoice-tenant-id: ${connectionConfig.tenantId}
+    docs: https://nango.dev/docs/api-integrations/envoice
+    docs_connect: https://nango.dev/docs/api-integrations/envoice/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/envoice/how-to-register-your-own-envoice-api-oauth-app
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The Envoice environment to connect to.
+            enum:
+                - api.envoice.eu
+                - demo-api.envoice.eu
+        tenantId:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 envoy:
     display_name: Envoy
     categories:
@@ -9237,6 +9431,54 @@ exist:
             type: link
             link_path_in_response_body: next
     docs: https://nango.dev/docs/integrations/all/exist
+
+exotel:
+    display_name: Exotel
+    categories:
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/Accounts/${connectionConfig.accountSid}/Balance.json
+    docs: https://nango.dev/docs/api-integrations/exotel
+    docs_connect: https://nango.dev/docs/api-integrations/exotel/connect
+    connection_config:
+        hostname:
+            type: string
+            title: API Hostname
+            description: The Subdomain shown on your Exotel API Credentials page.
+            enum:
+                - api.exotel.com
+                - api.in.exotel.com
+            doc_section: '#step-1-find-your-api-credentials'
+            order: 1
+        accountSid:
+            type: string
+            title: Account SID
+            description: Your Exotel Account SID.
+            example: acme1
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-find-your-api-credentials'
+            order: 2
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Exotel API key.
+            example: 5bc4****************************************a11c
+            pattern: '^[a-f0-9]{48}$'
+            doc_section: '#step-1-find-your-api-credentials'
+        password:
+            type: string
+            title: API Token
+            description: Your Exotel API token.
+            example: 6945****************************************3e5b
+            pattern: '^[a-f0-9]{48}$'
+            secret: true
+            doc_section: '#step-1-find-your-api-credentials'
 
 expensify:
     display_name: Expensify
@@ -10067,6 +10309,37 @@ float:
             title: App Details
             description: The details of your app
             automated: true
+
+formstack-documents:
+    display_name: Formstack Documents
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://www.webmerge.me/api
+        verification:
+            method: GET
+            endpoints:
+                - /documents
+    docs: https://nango.dev/docs/api-integrations/formstack-documents
+    docs_connect: https://nango.dev/docs/api-integrations/formstack-documents/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Formstack Documents API key
+            pattern: '^[A-Za-z0-9]+$'
+            example: 3K83************************
+            secret: true
+            doc_section: '#step-1-generate-your-api-key-and-secret'
+        password:
+            type: string
+            title: API Secret
+            description: Your Formstack Documents API secret
+            pattern: '^[A-Za-z0-9]+$'
+            example: I51*****
+            secret: true
+            doc_section: '#step-1-generate-your-api-key-and-secret'
 
 folk:
     display_name: Folk
@@ -12498,14 +12771,14 @@ halo-psa:
             doc_section: '#step-3-create-an-api-application'
 
 haus:
-    display_name: Haus
+    display_name: Haus (Experiment Results API)
     categories:
         - analytics
         - e-commerce
         - marketing
     auth_mode: BASIC
     proxy:
-        base_url: https://harbor.haus.io
+        base_url: https://geolift.apis.haus
         query:
             org_id: ${connectionConfig.orgId}
     docs: https://nango.dev/docs/api-integrations/haus
@@ -13092,6 +13365,36 @@ hubstaff:
                 - 'x-rate-limit-reset'
     docs: https://nango.dev/docs/api-integrations/hubstaff
     setup_guide_url: https://nango.dev/docs/api-integrations/hubstaff/how-to-register-your-own-hubstaff-oauth-app
+
+hydradb:
+    display_name: HydraDB
+    categories:
+        - knowledge-base
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.hydradb.com
+        headers:
+            authorization: Bearer ${apiKey}
+            api-version: ${connectionConfig.apiVersion} || '2'
+        verification:
+            method: GET
+            endpoints:
+                - /databases
+    docs: https://nango.dev/docs/api-integrations/hydradb
+    docs_connect: https://nango.dev/docs/api-integrations/hydradb/connect
+    connection_config:
+        apiVersion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your HydraDB account.
+            pattern: '^sk_(live|test)_[A-Za-z0-9]+\.[A-Za-z0-9]+$'
+            example: sk_live_RwnXtfVW23BO.****************************
 
 imanage:
     display_name: iManage Work
@@ -19601,6 +19904,38 @@ pave:
             example: '3A8F92C4********V4D'
             doc_section: '#step-1-generating-your-api-key'
 
+paximal-mcp:
+    display_name: Paximal (MCP)
+    categories:
+        - legal
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://clerk.paximal.com/oauth/authorize
+    token_url: https://clerk.paximal.com/oauth/token
+    registration_url: https://clerk.paximal.com/oauth/register
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+        resource: https://next.paximal.com/api/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://next.paximal.com/api
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/paximal-mcp
+
 paychex:
     display_name: Paychex
     categories:
@@ -23929,6 +24264,34 @@ semble:
             secret: true
             doc_section: '#step-1-authenticating-with-email-and-password'
 
+sendcloud:
+    display_name: Sendcloud
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    token_url: https://account.sendcloud.com/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    default_scopes:
+        - api
+    proxy:
+        base_url: https://panel.sendcloud.sc
+    docs: https://nango.dev/docs/api-integrations/sendcloud
+    docs_connect: https://nango.dev/docs/api-integrations/sendcloud/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Public Key of your Sendcloud API integration.
+            doc_section: '#step-1-create-your-sendcloud-api-integration'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Secret Key of your Sendcloud API integration.
+            secret: true
+            doc_section: '#step-1-create-your-sendcloud-api-integration'
+
 sendgrid:
     display_name: SendGrid
     categories:
@@ -26312,19 +26675,26 @@ symplr-ctm:
         - ats
     auth_mode: BASIC
     proxy:
-        base_url: https://ctms.contingenttalentmanagement.com/${connectionConfig.siteName}/clearConnect
-        verification:
-            method: GET
-            endpoints:
-                - /2_0/index.cfm?action=getRegions&resultType=json
+        base_url: https://${connectionConfig.hostname}/${connectionConfig.siteName}/clearConnect || https://ctms.contingenttalentmanagement.com/${connectionConfig.siteName}/clearConnect
     docs: https://nango.dev/docs/api-integrations/symplr-ctm
     docs_connect: https://nango.dev/docs/api-integrations/symplr-ctm/connect
     connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: Your CTM hostname.
+            enum:
+                - ctms.contingenttalentmanagement.com
+                - ctmscs.contingenttalentmanagement.com
+            prefix: https://
+            format: hostname
+            order: 1
+            doc_section: '#step-1-locate-your-clearconnect-credentials'
         siteName:
             type: string
             title: Site Name
             description: Your CTM customer site name.
-            order: 1
+            order: 2
             example: myCTM
     credentials:
         username:

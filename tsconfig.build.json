@@ -122,6 +122,9 @@
             "path": "packages/license"
         },
         {
+            "path": "packages/self-hosting"
+        },
+        {
             "path": "packages/email"
         },
         {

@@ -172,6 +172,8 @@ await nango.createIntegration({ provider: '<PROVIDER-ID>', unique_key: '<UNIQUE_
 
     <ResponseField name="credentials" type="Record<string, string>">
         For `OAUTH1`, `OAUTH2`, `TBA`, `APP`, and `CUSTOM` credentials, you can create an integration without credentials or with partial credentials, then provide missing credentials with an update call or as per-connection overrides.
+
+        Pass `{ type: 'NANGO_MANAGED' }` to use a [Nango-managed developer app](/guides/auth/auth-guide#nango-managed-oauth-apps) instead of your own credentials. Only works for `OAUTH1`, `OAUTH2`, and `APP` providers that Nango has a managed app for. Can't be combined with `integration_config`, and the credentials can't be updated later.
     </ResponseField>
 
     <ResponseField name="integration_config" type="Record<string, string>">
@@ -981,7 +983,7 @@ await nango.getFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' 
         The function name.
     </ResponseField>
     <ResponseField name="type" type="string">
-        Disambiguates when functions share a name: `sync`, `action`, or `on-event`.
+        The function type: `sync`, `action`, `on-event`, or `tool`. When omitted and several functions share the name, the first one is returned in this order: `tool`, `action`, `on-event`, `sync`.
     </ResponseField>
 </Expandable>
 
@@ -1023,7 +1025,7 @@ await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { typ
         The function name.
     </ResponseField>
     <ResponseField name="type" type="string">
-        Disambiguates when functions share a name: `sync`, `action`, or `on-event`.
+        The function type: `sync`, `action`, `on-event`, or `tool`. When omitted and several functions share the name, the first one is returned in this order: `tool`, `action`, `on-event`, `sync`.
     </ResponseField>
 </Expandable>
 

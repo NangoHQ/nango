@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.71.14",
+    "version": "0.72.0",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -104,7 +104,7 @@
         "@apidevtools/swagger-cli": {
             "js-yaml": "3.15.2"
         },
-        "dd-trace": "5.117.0",
+        "dd-trace": "5.134.0",
         "@elastic/transport": {
             "undici": "6.29.1"
         },
@@ -123,9 +123,9 @@
         "compression": "1.8.2",
         "@xmldom/xmldom": "0.8.15",
         "axios": "1.20.0",
-        "joi": "17.13.8",
+        "joi": "17.13.9",
         "valibot": "1.5.0",
-        "follow-redirects": "1.16.1",
+        "follow-redirects": "1.16.2",
         "vite": "8.3.5",
         "zod": "4.6.7"
     }
