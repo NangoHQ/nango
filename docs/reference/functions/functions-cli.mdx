@@ -56,6 +56,14 @@ Get details about a specific command by running:
 nango [command] --help
 ```
 
+`nango deploy <environment>` reconciles each included function family across the target environment: it deploys functions present locally and removes remote ones that aren't. Projects can contain syncs, actions, on-events, and tools together. The CLI previews the selected functions, shows one combined plan, and asks for confirmation at most once before deploying.
+
+- `--integration <id>` selects functions for that integration.
+- `--sync <name>` and `--action <name>` select the named sync or action.
+- `--version <version>` overrides sync/action versions. Tools use automatically generated versions.
+
+Deleting a sync with existing connections, removing a sync/action record model, or deleting any other function requires confirmation. In CI or with `--no-interactive`, approve these changes with both `--auto-confirm` and `--allow-destructive`. `NANGO_DEPLOY_AUTO_CONFIRM=true` can replace `--auto-confirm`.
+
 ## Interactive Mode
 
 The Nango CLI includes an interactive mode that prompts you for missing arguments. For example, if you run `nango create` without specifying the function type, integration, or name, the CLI will prompt you for them.
