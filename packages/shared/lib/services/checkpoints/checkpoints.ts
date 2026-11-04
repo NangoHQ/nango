@@ -127,6 +127,7 @@ export async function upsertCheckpoint(
  * @param connectionId - The connection ID the checkpoint belongs to.
  * @param key - The key of the checkpoint to delete.
  * @param expectedVersion - The expected version of the checkpoint. Delete will fail if version doesn't match.
+ *                          Deleting a checkpoint that doesn't exist or is already deleted succeeds.
  * @param force - If true, will delete without checking version.
  */
 export async function deleteCheckpoint(
@@ -149,7 +150,14 @@ export async function deleteCheckpoint(
         const count = await query;
 
         if (count === 0) {
-            return Err(new Error('checkpoint_conflict'));
+            const live = await db
+                .from<DBCheckpoint>(TABLE)
+                .where({ environment_id: props.environmentId, connection_id: props.connectionId, key: props.key })
+                .whereNull('deleted_at')
+                .first('id');
+            if (live) {
+                return Err(new Error('checkpoint_conflict'));
+            }
         }
         return Ok(undefined);
     } catch (err) {

@@ -216,18 +216,16 @@ describe('Checkpoint service', () => {
             }
         });
 
-        it('should fail to delete non-existent checkpoint', async () => {
+        it('should succeed when deleting non-existent checkpoint', async () => {
             const key = 'function:888';
 
             const result = await deleteCheckpoint(db.knex, { environmentId, connectionId, key, expectedVersion: 1 });
 
-            expect(result.isErr()).toBe(true);
-            if (result.isErr()) {
-                expect(result.error.message).toBe('checkpoint_conflict');
-            }
+            expect(result.isOk()).toBe(true);
+            expect((await getCheckpoint(db.knex, { environmentId, connectionId, key })).unwrap()).toBeNull();
         });
 
-        it('should fail to delete already deleted checkpoint', async () => {
+        it('should succeed when deleting already deleted checkpoint', async () => {
             const key = 'function:23';
             const created = (await upsertCheckpoint(db.knex, { environmentId, connectionId, key, checkpoint: { test: true } })).unwrap();
             await deleteCheckpoint(db.knex, { environmentId, connectionId, key, expectedVersion: created.version });
@@ -235,10 +233,10 @@ describe('Checkpoint service', () => {
             // Try to delete again with the new version (2)
             const result = await deleteCheckpoint(db.knex, { environmentId, connectionId, key, expectedVersion: 2 });
 
-            expect(result.isErr()).toBe(true);
-            if (result.isErr()) {
-                expect(result.error.message).toBe('checkpoint_conflict');
-            }
+            expect(result.isOk()).toBe(true);
+            const res = (await getCheckpoint(db.knex, { environmentId, connectionId, key })).unwrap();
+            expect(res?.deleted_at).not.toBeNull();
+            expect(res?.version).toBe(2);
         });
     });
 
