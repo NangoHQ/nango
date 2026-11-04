@@ -24719,7 +24719,7 @@ sharefile:
         - storage
     auth_mode: OAUTH2
     authorization_url: https://secure.sharefile.com/oauth/authorize
-    token_url: https://${connectionConfig.subdomain}.sf-api.com/oauth/token
+    token_url: https://${connectionConfig.subdomain}.${connectionConfig.apicp}/oauth/token
     disable_pkce: true
     authorization_params:
         response_type: code
@@ -24727,18 +24727,24 @@ sharefile:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    redirect_uri_metadata:
+        - subdomain
+        - apicp
     proxy:
-        base_url: https://${connectionConfig.subdomain}.sf-api.com/sf/v3
-    docs: https://nango.dev/docs/integrations/all/sharefile
+        base_url: https://${connectionConfig.subdomain}.${connectionConfig.apicp}
+    docs: https://nango.dev/docs/api-integrations/sharefile
+    setup_guide_url: https://nango.dev/docs/api-integrations/sharefile/how-to-register-your-own-sharefile-api-oauth-app
     connection_config:
         subdomain:
             type: string
-            title: ShareFile Subdomain
-            description: The subdomain of your ShareFile account
-            pattern: '^[a-z0-9_-]+$'
-            example: mycompany
-            suffix: .sharefile.com
-            prefix: https://
+            title: ''
+            description: ''
+            automated: true
+        apicp:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 
 sharepoint-online:
     display_name: SharePoint Online (v2)

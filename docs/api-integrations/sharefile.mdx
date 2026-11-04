@@ -1,0 +1,94 @@
+---
+title: 'ShareFile'
+sidebarTitle: 'ShareFile'
+description: 'Integrate your application with the ShareFile API'
+---
+
+## 🚀 Quickstart
+
+Connect to ShareFile with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _ShareFile_.
+
+    <Note>
+      ShareFile has no Nango-managed OAuth app. Register your own by following the [setup guide](/api-integrations/sharefile/how-to-register-your-own-sharefile-api-oauth-app) and enter its client ID and client secret when you create the integration.
+    </Note>
+
+    </Step>
+    <Step title="Authorize ShareFile">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to ShareFile. If your login belongs to more than one ShareFile account, pick the account to connect. Later, you'll let your users do the same directly from your app.
+
+    ShareFile returns the account's `subdomain` and API control plane (`apicp`) on the callback. Nango stores both on the connection and uses them to build the token and API hosts, so there is nothing to type.
+    </Step>
+    <Step title="Call the ShareFile API">
+    Let's make your first request to the ShareFile API (fetch the home folder of the signed-in user). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/sf/v3/Items(home)" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/sf/v3/Items(home)',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+
+    Or fetch credentials dynamically via the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 ShareFile Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own ShareFile OAuth app](/api-integrations/sharefile/how-to-register-your-own-sharefile-api-oauth-app)
+Create a ShareFile API key and obtain credentials to connect it to Nango
+
+Official docs: [ShareFile REST API v3 reference](https://api.sharefile.com/html/docs/)
+
+## 🧩 Pre-built syncs & actions for ShareFile
+
+Explore Nango-provided actions in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/sharefile/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
+
+## API gotchas
+
+- The API base URL is `https://{subdomain}.{apicp}`, both values taken from the OAuth callback. Prefix every endpoint with `/sf/v3/`, for example `/sf/v3/Items(home)`.
+- Access tokens expire after 8 hours. ShareFile issues a refresh token, and the refresh grant returns a new access token.
+- PKCE is disabled for this provider.
