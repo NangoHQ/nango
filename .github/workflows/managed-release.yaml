@@ -12,6 +12,11 @@ on:
                 required: false
                 type: boolean
                 default: false
+            push_candidate:
+                description: 'With dry_run, still push nangohq/nango:managed-candidate-<sha> so the image can be deployed to one of our own installations'
+                required: false
+                type: boolean
+                default: false
 
 permissions:
     contents: write
@@ -455,6 +460,8 @@ jobs:
                   docker tag nangohq/nango:managed-candidate-${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:${IMAGE_TAG}
                   if [ "${{ inputs.dry_run }}" != "true" ]; then
                       docker push nangohq/nango:${IMAGE_TAG}
+                  elif [ "${{ inputs.push_candidate }}" = "true" ]; then
+                      docker push nangohq/nango:managed-candidate-${{ needs.manage-versions.outputs.commit_hash }}
                   fi
 
                   echo "tag_name=${IMAGE_TAG}" >> $GITHUB_OUTPUT
