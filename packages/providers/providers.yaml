@@ -24739,11 +24739,13 @@ sharefile:
             type: string
             title: ''
             description: ''
+            pattern: '^[a-z0-9-]+$'
             automated: true
         apicp:
             type: string
             title: ''
             description: ''
+            pattern: '^(sf-api\.com|sf-api\.eu|sharefile\.com|sharefile\.eu|securevdr\.com)$'
             automated: true
 
 sharepoint-online:
