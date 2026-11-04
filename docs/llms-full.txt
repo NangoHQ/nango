@@ -10555,15 +10555,19 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/update.md
   Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:update` scope.
 </Info>
 
-Partially update environment settings and webhook configuration in one atomic request. Omitted fields, including fields inside `webhooks`, retain their existing values. Set a webhook flag to `false` to disable it, or a webhook URL to an empty string or `null` to clear it. Supply at least one field to update; `{}` and `{ "webhooks": {} }` are rejected.
+Partially update environment settings. Omitted fields, including fields inside `webhooks`, retain their existing values. Set a webhook flag to `false` to disable it, or a webhook URL to an empty string or `null` to clear it.
 
 Changing `is_production` additionally requires `account:environments:set_production`. The reserved `prod` environment cannot be renamed or have its production flag changed.
 
-Changing OpenTelemetry settings requires a plan with OpenTelemetry export. Omitted endpoint or header settings are preserved. Supplying `otlp_headers` replaces the entire header set; pass an empty array to clear it. Header values are never included in the acknowledgement response.
+Changing OpenTelemetry settings requires access to realtime logs export (included with the [Growth add-on](https://www.nango.dev/pricing)).
 
-HMAC settings are not supported by this endpoint. To rotate a webhook signing key, use [Rotate the webhook signing key](/reference/backend/http-api/environments/rotate-webhook-signing-key) with an Environment API key.
+<Warning>
+    Supplying `otlp_headers` replaces the entire header set; pass an empty array to clear it.
+</Warning>
 
-On success, the response is `200 { "success": true }`. To retrieve the updated configuration, use [Get an environment](/reference/backend/http-api/environments/get) with the required read permissions.
+To rotate/import a webhook signing key, use [Rotate the webhook signing key](/reference/backend/http-api/environments/rotate-webhook-signing-key) with an Environment API key.
+
+The response is an acknowledgement on successful updates or an error on failures. To retrieve the updated configuration, use [Get an environment](/reference/backend/http-api/environments/get) with the required read permissions.
 
 ## Delete an environment
 

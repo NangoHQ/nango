@@ -3167,7 +3167,7 @@ paths:
         patch:
             operationId: updateEnvironment
             summary: Update an environment
-            description: Partially update environment and webhook settings atomically. Omitted fields are preserved; supplied OTLP headers replace the entire header set. Supply at least one field to update. Requires an Account API key with account:environments:update. Signing keys cannot be updated here; use POST /environment/webhook-signing-key/rotate with an Environment API key.
+            description: Update an environment
             parameters:
                 - name: environmentUuid
                   in: path
@@ -3224,7 +3224,7 @@ paths:
                                 webhooks:
                                     type: object
                                     additionalProperties: false
-                                    description: Partial webhook settings. Omitted fields retain their existing values. An empty object is allowed when other environment settings are supplied.
+                                    description: Partial webhook settings. Omitted fields retain their existing values.
                                     properties:
                                         primary_url:
                                             type:
@@ -3254,17 +3254,6 @@ paths:
                                         on_connection_deletion:
                                             type: boolean
                                             description: Send webhooks when connections are deleted.
-                            anyOf:
-                                - required: [name]
-                                - required: [is_production]
-                                - required: [callback_url]
-                                - required: [slack_notifications]
-                                - required: [otlp_endpoint]
-                                - required: [otlp_headers]
-                                - required: [webhooks]
-                                  properties:
-                                      webhooks:
-                                          minProperties: 1
             responses:
                 '200':
                     description: Successfully updated the environment.
