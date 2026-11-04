@@ -68,7 +68,8 @@ export const buttonVariants = cva(
                 // text/secondary → --text-secondary → text-text-secondary
                 ghost: [
                     'bg-interactive-ghost text-text-secondary border-transparent',
-                    // hover/active give feedback via icon/text colour, not a background fill
+                    // hover/active fill with the ghost tokens and lift the text to text/strong
+                    'hover:bg-interactive-ghost-hover active:bg-interactive-ghost-active',
                     'hover:text-text-strong active:text-text-strong',
                     'disabled:text-text-disabled',
                     'aria-disabled:text-text-disabled',
