@@ -90,7 +90,7 @@ describe('hosted telemetry producer', () => {
         ]);
     });
 
-    it('keeps both rows when one producer exports twice', async () => {
+    it('keeps both rows when two instances with the same producer id export at different times', async () => {
         await knex.raw('TRUNCATE ??.??', [schema, HOSTED_TELEMETRY_TABLE]);
         vi.useFakeTimers({ toFake: ['Date'] });
         const now = Date.now();
