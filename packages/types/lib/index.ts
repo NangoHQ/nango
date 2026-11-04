@@ -142,3 +142,5 @@ export type * from './lambda/index.js';
 export type * from './pubsub/events.js';
 
 export type { SignupAdvertising } from './account/signupAdvertising.js';
+
+export type * from './self-hosting/db.js';

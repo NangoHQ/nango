@@ -1557,7 +1557,7 @@ To make registering your own app easier, Nango maintains step-by-step setup guid
 
 We add more OAuth apps every week. If an API you need is missing, please contact us and we will do our best to add it.
 
-<Accordion title="List of APIs with a Nango-managed OAuth app (76)">
+<Accordion title="List of APIs with a Nango-managed OAuth app (81)">
 - [Airtable](/api-integrations/airtable)
 - [Asana](/api-integrations/asana)
 - [Basecamp](/integrations/all/basecamp)
@@ -1567,6 +1567,7 @@ We add more OAuth apps every week. If an API you need is missing, please contact
 - [Cal.com (OAuth)](/api-integrations/cal-com-oauth)
 - [Calendly](/api-integrations/calendly)
 - [ClickUp](/api-integrations/clickup)
+- [Close](/integrations/all/close)
 - [Confluence](/api-integrations/confluence)
 - [Contentful](/integrations/all/contentful)
 - [Discord](/api-integrations/discord)
@@ -1584,6 +1585,7 @@ We add more OAuth apps every week. If an API you need is missing, please contact
 - [Google Docs](/api-integrations/google-docs)
 - [Google Drive](/api-integrations/google-drive)
 - [Google Sheets](/api-integrations/google-sheet)
+- [Google Tasks](/api-integrations/google-tasks)
 - [Gumroad](/integrations/all/gumroad)
 - [HubSpot](/api-integrations/hubspot)
 - [Hubstaff](/api-integrations/hubstaff)
@@ -1612,14 +1614,17 @@ We add more OAuth apps every week. If an API you need is missing, please contact
 - [Salesforce](/api-integrations/salesforce)
 - [SharePoint Online (v2)](/api-integrations/sharepoint-online)
 - [Slack](/api-integrations/slack)
+- [Smartsheet](/api-integrations/smartsheet)
 - [Splitwise](/integrations/all/splitwise)
 - [Stack Exchange](/integrations/all/stackexchange)
 - [Strava (Web)](/integrations/all/strava-web)
 - [TickTick](/integrations/all/ticktick)
 - [Timely](/integrations/all/timely)
 - [Todoist](/integrations/all/todoist)
+- [Twitch](/integrations/all/twitch)
 - [Typeform](/api-integrations/typeform)
 - [Wakatime](/integrations/all/wakatime)
+- [Webex](/integrations/all/webex)
 - [Wrike](/integrations/all/wrike)
 - [Xero](/api-integrations/xero)
 - [YouTube](/api-integrations/youtube)
@@ -3130,7 +3135,7 @@ The template catalog contains pre-built Nango functions for common provider oper
   **Catalog actions and stability.** Catalog actions are maintained by Nango and update automatically. Their input schema, output shape, and behavior may change as the catalog evolves. They are best suited to agentic workflows, such as MCP tool calling. If deterministic application code needs a stable contract, [pull the action into your functions project and deploy it](#extend-a-template). The deployed function becomes your owned implementation and no longer follows catalog updates.
 </Note>
 
-You can find templates in the [template catalog](https://www.nango.dev/templates), in the integration page of the Nango dashboard, and in the [Nango integration templates repository](https://github.com/NangoHQ/integration-templates).
+You can find templates in the [integrations catalog](https://nango.dev/api-integrations) and in the integration page of the Nango dashboard.
 
 You can use catalog actions with [Agent sessions](/guides/agent-sessions) or call them directly from your backend. For deterministic application code, [pull and deploy it](#extend-a-template) to avoid unexpected changes.
 
@@ -3139,14 +3144,14 @@ When a sync template matches your use case, enable it on the integration. If a s
 <a id="extend-a-template"></a>
 #### Extend a template
 
-Use the CLI to pull a function's code into your local functions project. Pull from the public catalog with `--catalog`, or pull the version currently served by an environment with `--env`:
+Use the CLI to pull a function's code into your local functions project. Pull from the public catalog with `--catalog` (add `--target <integration-id>` if your integration ID isn't the provider name), or pull the version currently served by an environment with `--env`:
 
 ```bash
 nango pull github list-repos --catalog
 nango pull github list-repos --env dev
 ```
 
-`nango pull` writes a single function and its dependencies. After pulling, review the source and schemas, import the function from `index.ts` if needed, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
+`nango pull` writes the function file and adds its import to `index.ts`. After pulling, review the source and schemas, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
 
 <Tip>
   Pull a pre-built function when you need custom fields, a smaller output shape, customer-specific filtering, different retry behavior, or a provider workflow that is close to the catalog but not identical.
@@ -7672,12 +7677,12 @@ Use [webhook functions](/guides/functions/webhook-functions) when Nango should u
 
 ## Providers that do not sign webhooks
 
-Affinity, Fillout and ShipStation do not sign their webhooks, so Nango checks a secret you choose for each connection instead. Nango rejects a webhook unless it carries the secret of the connection it is routed to, or the connection has no secret and the integration [allows unverified webhooks](#unverified-webhooks).
+Affinity, Command Alkon, Fillout and ShipStation do not sign their webhooks, so Nango checks a secret you choose for each connection instead. Nango rejects a webhook unless it carries the secret of the connection it is routed to, or the connection has no secret and the integration [allows unverified webhooks](#unverified-webhooks).
 
 1. Generate a random secret of at least 16 characters per connection and store it as `webhookSecret` in that connection's [metadata](/reference/backend/http-api/connections/update-metadata).
 2. Send that connection's secret with every webhook registered for it, in the `X-Nango-Webhook-Secret` header or, when the provider only lets you set a URL, as a `nangoWebhookSecret` query param on the Nango webhook URL.
 
-Prefer the header when the provider supports custom headers (Fillout, ShipStation v2). Affinity and ShipStation v1 only take a URL. Nango removes the secret before the webhook reaches your functions or your app.
+Prefer the header when the provider supports custom headers (Command Alkon, Fillout, ShipStation v2). Affinity and ShipStation v1 only take a URL. Nango removes the secret before the webhook reaches your functions or your app.
 
 Affinity's payload does not say which connection it is for, so also add `nangoConnectionId=<CONNECTION-ID>` to the webhook URL registered in each end user's Affinity instance.
 
@@ -16474,6 +16479,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `exa` | Exa | API_KEY | [docs](https://nango.dev/docs/integrations/all/exa.md) |  |  | analytics |
 | `exact-online` | Exact Online | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/exact-online.md) |  |  | accounting, erp |
 | `exist` | Exist | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/exist.md) |  |  | other |
+| `exotel` | Exotel | BASIC | [docs](https://nango.dev/docs/api-integrations/exotel.md) | [connect](https://nango.dev/docs/api-integrations/exotel/connect.md) |  | communication |
 | `expensify` | Expensify | BASIC | [docs](https://nango.dev/docs/integrations/all/expensify.md) | [connect](https://nango.dev/docs/integrations/all/expensify/connect.md) |  | productivity |
 | `extensiv` | Extensiv | BASIC | [docs](https://nango.dev/docs/api-integrations/extensiv.md) | [connect](https://nango.dev/docs/api-integrations/extensiv/connect.md) |  | e-commerce |
 | `facebook` | Facebook | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/facebook.md) |  | [setup](https://nango.dev/docs/api-integrations/facebook/how-to-register-your-own-facebook-api-oauth-app.md) | marketing, social |
@@ -16624,6 +16630,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `hubstaff` | Hubstaff | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hubstaff.md) |  | [setup](https://nango.dev/docs/api-integrations/hubstaff/how-to-register-your-own-hubstaff-oauth-app.md) | hr, productivity |
 | `humaans-io` | Humaans.io | API_KEY | [docs](https://nango.dev/docs/api-integrations/humaans-io.md) | [connect](https://nango.dev/docs/api-integrations/humaans-io/connect.md) |  | hr |
 | `huntress` | Huntress | BASIC | [docs](https://nango.dev/docs/api-integrations/huntress.md) | [connect](https://nango.dev/docs/api-integrations/huntress/connect.md) |  | other |
+| `hydradb` | HydraDB | API_KEY | [docs](https://nango.dev/docs/api-integrations/hydradb.md) | [connect](https://nango.dev/docs/api-integrations/hydradb/connect.md) |  | knowledge-base |
 | `icypeas` | Icypeas | API_KEY | [docs](https://nango.dev/docs/integrations/all/icypeas.md) | [connect](https://nango.dev/docs/integrations/all/icypeas/connect.md) |  | marketing, crm |
 | `ids-fulfillment` | IDS Fulfillment | API_KEY | [docs](https://nango.dev/docs/api-integrations/ids-fulfillment.md) | [connect](https://nango.dev/docs/api-integrations/ids-fulfillment/connect.md) |  | e-commerce |
 | `imanage` | iManage Work | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/imanage.md) | [connect](https://nango.dev/docs/api-integrations/imanage/connect.md) | [setup](https://nango.dev/docs/api-integrations/imanage/how-to-register-your-own-imanage-oauth-app.md) | legal, storage |
@@ -16852,6 +16859,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `passportal` | Passportal | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/passportal.md) | [connect](https://nango.dev/docs/integrations/all/passportal/connect.md) |  | support |
 | `pave` | Pave | API_KEY | [docs](https://nango.dev/docs/api-integrations/pave.md) | [connect](https://nango.dev/docs/api-integrations/pave/connect.md) |  | hr, analytics |
 | `pax8` | Pax8 | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/pax8.md) | [connect](https://nango.dev/docs/integrations/all/pax8/connect.md) |  | other |
+| `paximal-mcp` | Paximal (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/paximal-mcp.md) |  |  | legal, mcp |
 | `paychex` | Paychex | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/paychex.md) | [connect](https://nango.dev/docs/integrations/all/paychex/connect.md) |  | hr |
 | `paycom` | Paycom | BASIC | [docs](https://nango.dev/docs/integrations/all/paycom.md) | [connect](https://nango.dev/docs/integrations/all/paycom/connect.md) |  | hr |
 | `paycor` | Paycor | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/paycor.md) | [connect](https://nango.dev/docs/integrations/all/paycor/connect.md) |  | hr |
