@@ -20,36 +20,41 @@ vi.mock('./definitions.js', () => ({ parseIntegrationDefinitions: vi.fn() }));
 const githubFunction = functionConfig({ integrationId: 'github', name: 'fetch' });
 const slackFunction = functionConfig({ integrationId: 'slack', name: 'other' });
 
+const githubIntegration = {
+    providerConfigKey: 'github',
+    syncs: [],
+    actions: [
+        {
+            name: 'legacy',
+            type: 'action',
+            description: 'Legacy action',
+            input: null,
+            output: [],
+            endpoint: null,
+            scopes: [],
+            usedModels: [],
+            version: '',
+            json_schema: { definitions: {} },
+            features: []
+        }
+    ],
+    onEventScripts: {
+        'post-connection-creation': [],
+        'pre-connection-deletion': [],
+        'validate-connection': []
+    }
+} satisfies ParsedIntegrationDefinitions['integrations'][number];
+
 const parsed = {
     yamlVersion: 'v2',
     models: new Map(),
-    integrations: [
-        {
-            providerConfigKey: 'github',
-            syncs: [],
-            actions: [
-                {
-                    name: 'legacy',
-                    type: 'action',
-                    description: 'Legacy action',
-                    input: null,
-                    output: [],
-                    endpoint: null,
-                    scopes: [],
-                    usedModels: [],
-                    version: '',
-                    json_schema: { definitions: {} },
-                    features: []
-                }
-            ],
-            onEventScripts: {
-                'post-connection-creation': [],
-                'pre-connection-deletion': [],
-                'validate-connection': []
-            }
-        }
-    ],
+    integrations: [githubIntegration],
     functions: [githubFunction, slackFunction],
+    entryPoints: [
+        { filePath: './github/actions/legacy.ts', integrationId: 'github', type: 'action', name: 'legacy' },
+        { filePath: githubFunction.filePath, integrationId: 'github', type: 'function', name: 'fetch' },
+        { filePath: slackFunction.filePath, integrationId: 'slack', type: 'function', name: 'other' }
+    ],
     hasExperimentalFunctions: true
 } satisfies ParsedIntegrationDefinitions;
 
@@ -76,12 +81,49 @@ const legacyDeploymentResult = [{ name: 'legacy', version: '42', providerConfigK
 const legacyOnlyParsed = {
     ...parsed,
     functions: [],
+    entryPoints: parsed.entryPoints.filter((entryPoint) => entryPoint.type !== 'function'),
     hasExperimentalFunctions: false
 } satisfies ParsedIntegrationDefinitions;
 
 const functionsOnlyParsed = {
     ...parsed,
-    integrations: parsed.integrations.map((integration) => ({ ...integration, syncs: [], actions: [] }))
+    integrations: parsed.integrations.map((integration) => ({ ...integration, syncs: [], actions: [] })),
+    entryPoints: parsed.entryPoints.filter((entryPoint) => entryPoint.type === 'function')
+} satisfies ParsedIntegrationDefinitions;
+
+const multiIntegrationLegacyParsed = {
+    ...legacyOnlyParsed,
+    integrations: [
+        {
+            ...githubIntegration,
+            syncs: [
+                {
+                    name: 'contacts',
+                    type: 'sync',
+                    endpoints: [],
+                    description: 'Contacts',
+                    sync_type: 'full',
+                    track_deletes: false,
+                    auto_start: true,
+                    runs: 'every day',
+                    scopes: [],
+                    input: null,
+                    output: [],
+                    usedModels: [],
+                    webhookSubscriptions: [],
+                    version: '',
+                    json_schema: { definitions: {} },
+                    features: []
+                }
+            ]
+        },
+        { ...githubIntegration, providerConfigKey: 'slack' }
+    ],
+    entryPoints: [
+        { filePath: './github/actions/legacy.ts', integrationId: 'github', type: 'action', name: 'legacy' },
+        { filePath: './github/syncs/contacts.ts', integrationId: 'github', type: 'sync', name: 'contacts' },
+        { filePath: './slack/actions/legacy.ts', integrationId: 'slack', type: 'action', name: 'legacy' }
+    ]
 } satisfies ParsedIntegrationDefinitions;
 
 const noFunctionChanges = {
@@ -361,6 +403,204 @@ describe('deploy', () => {
         expect(output).not.toContain('↳ Functions');
         expect(output).toContain('✓ Deployed');
         expect(output).toContain('No destructive changes, proceeding without confirmation');
+        expect(output).toContain('--sync and --action are deprecated');
+    });
+
+    describe('with a file', () => {
+        const functionChanges = {
+            created: [{ integrationId: 'github', name: 'fetch' }],
+            updated: [],
+            unchanged: [],
+            deleted: []
+        } satisfies FunctionDeploymentBundleSuccess;
+
+        it.each([
+            { label: 'a relative path', file: () => 'github/functions/fetch.ts' },
+            { label: 'a ./ relative path', file: () => './github/functions/fetch.ts' },
+            { label: 'a path with backslashes', file: () => 'github\\functions\\fetch.ts' },
+            { label: 'a .js path', file: () => 'github/functions/fetch.js' },
+            { label: 'an absolute path', file: () => path.join(fullPath, 'github', 'functions', 'fetch.ts') }
+        ])('deploys only that function from $label in a mixed project', async ({ file }) => {
+            fetchMock.mockResolvedValueOnce(jsonResponse(functionChanges)).mockResolvedValueOnce(jsonResponse(functionChanges));
+
+            await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions(), file: file() });
+
+            expect(logOutput(logSpy)).toContain('✓ Deployed');
+            for (const [, request] of fetchMock.mock.calls as [URL, RequestInit][]) {
+                const body = JSON.parse(request.body as string) as { reconciliationScope: unknown; functions: FunctionConfig[] };
+                expect(body.reconciliationScope).toEqual({ kind: 'function', integrationId: 'github', name: 'fetch' });
+                expect(body.functions).toEqual([expect.objectContaining({ integrationId: 'github', name: 'fetch' })]);
+            }
+            expect(fetchMock).toHaveBeenCalledTimes(2);
+        });
+
+        it('deploys a tool under its declared name', async () => {
+            const toolConfig = { ...functionConfig({ integrationId: 'github', name: 'get_issue' }), filePath: './github/tools/getIssue.ts' };
+            vi.mocked(parseIntegrationDefinitions).mockResolvedValue(
+                Ok({
+                    ...parsed,
+                    functions: [githubFunction, toolConfig],
+                    entryPoints: [...parsed.entryPoints, { filePath: toolConfig.filePath, integrationId: 'github', type: 'function', name: 'get_issue' }]
+                })
+            );
+            await fs.mkdir(path.join(fullPath, 'github', 'tools'), { recursive: true });
+            await fs.writeFile(path.join(fullPath, '.nango', 'functions.json'), JSON.stringify([githubFunction, toolConfig]));
+            await fs.writeFile(path.join(fullPath, 'github', 'tools', 'getIssue.ts'), 'source tool');
+            await fs.writeFile(path.join(fullPath, 'build', 'github_tools_getIssue.cjs'), 'compiled tool');
+            const toolChanges = { ...functionChanges, created: [{ integrationId: 'github', name: 'get_issue' }] };
+            fetchMock.mockResolvedValueOnce(jsonResponse(toolChanges)).mockResolvedValueOnce(jsonResponse(toolChanges));
+
+            await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions(), file: 'github/tools/getIssue.ts' });
+
+            expect(logOutput(logSpy)).toContain('✓ Deployed');
+            const previewRequest = fetchMock.mock.calls[0]?.[1] as RequestInit;
+            const previewBody = JSON.parse(previewRequest.body as string) as {
+                reconciliationScope: unknown;
+                functions: (FunctionConfig & { fileBody: { js: string; ts: string } })[];
+            };
+            expect(previewBody.reconciliationScope).toEqual({ kind: 'function', integrationId: 'github', name: 'get_issue' });
+            expect(previewBody.functions).toEqual([expect.objectContaining({ name: 'get_issue', fileBody: { js: 'compiled tool', ts: 'source tool' } })]);
+        });
+
+        it('deploys a legacy action as a single script', async () => {
+            fetchMock.mockResolvedValueOnce(jsonResponse(legacyChangeConfirmation)).mockResolvedValueOnce(jsonResponse([]));
+
+            await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions(), file: 'github/actions/legacy.ts' });
+
+            const output = logOutput(logSpy);
+            expect(output).toContain('✓ Deployed');
+            expect(output).not.toContain('--sync and --action are deprecated');
+            const confirmationRequest = fetchMock.mock.calls[0]?.[1] as RequestInit;
+            const confirmationBody = JSON.parse(confirmationRequest.body as string) as PostDeployConfirmation['Body'];
+            expect(confirmationBody.deployMode).toBe('single');
+            expect(confirmationBody.onEventScriptsByProvider).toBeUndefined();
+            expect(confirmationBody.flowConfigs).toEqual([expect.objectContaining({ syncName: 'legacy', providerConfigKey: 'github', type: 'action' })]);
+        });
+
+        describe('in a project with legacy scripts sharing names across integrations', () => {
+            beforeEach(async () => {
+                vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(multiIntegrationLegacyParsed));
+                await fs.mkdir(path.join(fullPath, 'github', 'syncs'), { recursive: true });
+                await fs.mkdir(path.join(fullPath, 'slack', 'actions'), { recursive: true });
+                await fs.writeFile(path.join(fullPath, 'build', 'github_syncs_contacts.cjs'), 'compiled contacts');
+                await fs.writeFile(path.join(fullPath, 'github', 'syncs', 'contacts.ts'), 'source contacts');
+                await fs.writeFile(path.join(fullPath, 'build', 'slack_actions_legacy.cjs'), 'compiled slack legacy');
+                await fs.writeFile(path.join(fullPath, 'slack', 'actions', 'legacy.ts'), 'source slack legacy');
+                fetchMock.mockResolvedValueOnce(jsonResponse(legacyChangeConfirmation)).mockResolvedValueOnce(jsonResponse([]));
+            });
+
+            it('deploys a legacy sync as a single script', async () => {
+                await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions(), file: 'github/syncs/contacts.ts' });
+
+                expect(logOutput(logSpy)).toContain('✓ Deployed');
+                const confirmationRequest = fetchMock.mock.calls[0]?.[1] as RequestInit;
+                const confirmationBody = JSON.parse(confirmationRequest.body as string) as PostDeployConfirmation['Body'];
+                expect(confirmationBody.deployMode).toBe('single');
+                expect(confirmationBody.flowConfigs).toEqual([
+                    expect.objectContaining({
+                        syncName: 'contacts',
+                        providerConfigKey: 'github',
+                        type: 'sync',
+                        fileBody: { js: 'compiled contacts', ts: 'source contacts' }
+                    })
+                ]);
+            });
+
+            it("deploys only the file's integration when another integration has an action with the same name", async () => {
+                await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions(), file: 'slack/actions/legacy.ts' });
+
+                expect(logOutput(logSpy)).toContain('✓ Deployed');
+                const confirmationRequest = fetchMock.mock.calls[0]?.[1] as RequestInit;
+                const confirmationBody = JSON.parse(confirmationRequest.body as string) as PostDeployConfirmation['Body'];
+                expect(confirmationBody.flowConfigs).toEqual([
+                    expect.objectContaining({
+                        syncName: 'legacy',
+                        providerConfigKey: 'slack',
+                        type: 'action',
+                        fileBody: { js: 'compiled slack legacy', ts: 'source slack legacy' }
+                    })
+                ]);
+            });
+        });
+
+        it.each([
+            { label: 'an unknown file', file: 'github/functions/missing.ts', message: "'github/functions/missing.ts' is not a script" },
+            { label: 'a file outside the project', file: '../outside.ts', message: "'../outside.ts' must be inside the project folder" },
+            { label: 'an absolute path outside the project', file: '/outside.ts', message: "'/outside.ts' must be inside the project folder" },
+            {
+                label: 'an on-event script',
+                file: 'github/on-events/cleanup.ts',
+                message: "can't be deployed on its own. Use `nango deploy <environment> --integration github`",
+                entryPoint: { filePath: './github/on-events/cleanup.ts', integrationId: 'github', type: 'on-event', name: 'cleanup' }
+            }
+        ] satisfies { label: string; file: string; message: string; entryPoint?: ParsedIntegrationDefinitions['entryPoints'][number] }[])(
+            'rejects $label',
+            async ({ file, message, entryPoint }) => {
+                if (entryPoint) {
+                    vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok({ ...parsed, entryPoints: [...parsed.entryPoints, entryPoint] }));
+                }
+
+                const res = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions(), file });
+
+                expect(res.isErr()).toBe(true);
+                expect(logOutput(logSpy)).toContain(message);
+                expect(fetchMock).not.toHaveBeenCalled();
+            }
+        );
+
+        it.each([
+            { flag: '--sync', options: { sync: 'legacy' } },
+            { flag: '--action', options: { action: 'legacy' } },
+            { flag: '--integration', options: { integration: 'github' } }
+        ] satisfies { flag: string; options: Partial<DeployOptions> }[])('rejects a file combined with $flag', async ({ options }) => {
+            const res = await deploy({
+                fullPath,
+                environmentName: 'test',
+                interactive: false,
+                options: deployOptions(options),
+                file: 'github/functions/fetch.ts'
+            });
+
+            expect(res.isErr()).toBe(true);
+            expect(logOutput(logSpy)).toContain('A file cannot be combined with --sync, --action or --integration');
+            expect(parseIntegrationDefinitions).not.toHaveBeenCalled();
+            expect(fetchMock).not.toHaveBeenCalled();
+        });
+
+        it.each(['', '   '])('rejects an empty file argument %j instead of deploying everything', async (file) => {
+            const res = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions(), file });
+
+            expect(res.isErr()).toBe(true);
+            expect(logOutput(logSpy)).toContain('The file argument is empty');
+            expect(parseIntegrationDefinitions).not.toHaveBeenCalled();
+            expect(fetchMock).not.toHaveBeenCalled();
+        });
+
+        it('rejects a file passed in place of the environment', async () => {
+            const res = await deploy({ fullPath, environmentName: 'github/syncs/fetchIssues.ts', interactive: false, options: deployOptions() });
+
+            expect(res.isErr()).toBe(true);
+            expect(logOutput(logSpy)).toContain("'github/syncs/fetchIssues.ts' is not a valid environment name");
+            expect(parseIntegrationDefinitions).not.toHaveBeenCalled();
+            expect(fetchMock).not.toHaveBeenCalled();
+        });
+
+        it('does not deploy when the server rejects the function scope', async () => {
+            fetchMock.mockResolvedValueOnce(
+                jsonResponse({
+                    error: {
+                        code: 'invalid_body',
+                        errors: [{ code: 'invalid_union_discriminator', message: 'Invalid discriminator value', path: ['reconciliationScope', 'kind'] }]
+                    }
+                })
+            );
+
+            const res = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions(), file: 'github/functions/fetch.ts' });
+
+            expect(res.isErr()).toBe(true);
+            expect(logOutput(logSpy)).toContain('reconciliationScope.kind: Invalid discriminator value');
+            expect(fetchMock).toHaveBeenCalledTimes(1);
+        });
     });
 
     it.each([

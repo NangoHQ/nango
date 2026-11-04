@@ -4,6 +4,7 @@ import path from 'node:path';
 import chalk from 'chalk';
 import columnify from 'columnify';
 import promptly from 'promptly';
+import * as z from 'zod';
 
 import { cliFetch } from '../tls.js';
 import { getCliHeaders, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
@@ -12,7 +13,7 @@ import { Spinner } from '../utils/spinner.js';
 import { NANGO_VERSION } from '../version.js';
 import { tsToJsPath } from './compile.js';
 import { parseIntegrationDefinitions } from './definitions.js';
-import { resolveProjectPath } from './project-path.js';
+import { normalizeProjectRelativePath, resolveProjectPath } from './project-path.js';
 import { ReadableError } from './utils.js';
 
 import type { DeployOptions } from '../types.js';
@@ -21,6 +22,7 @@ import type { ResolvedProjectPath } from './project-path.js';
 import type {
     ApiError,
     CLIDeployFlowConfig,
+    FunctionReconciliationScope,
     NangoConfigMetadata,
     NangoYamlParsed,
     OnEventScriptsByProvider,
@@ -45,17 +47,22 @@ type DeploymentResult = {
     deployed: { integrationId: string; name: string; version?: string | undefined }[];
     deleted: { integrationId: string; name: string }[];
 };
+type DeploymentSelection =
+    | { kind: 'legacy'; integrationId?: string | undefined; syncName?: string | undefined; actionName?: string | undefined }
+    | { kind: 'functions'; reconciliationScope: FunctionReconciliationScope };
 
 export async function deploy({
     fullPath,
     options,
     environmentName,
+    file,
     interactive
 }: {
     fullPath: string;
     options: DeployOptions;
     environmentName: string;
     interactive: boolean;
+    file?: string | undefined;
 }): Promise<Result<boolean>> {
     const { env, version, debug } = options;
     const spinnerFactory = new Spinner({ interactive });
@@ -63,6 +70,15 @@ export async function deploy({
     if (options.sync && options.action) {
         console.log(chalk.red('The --sync and --action options cannot be used together.'));
         return Err('invalid_options');
+    }
+
+    const validArguments = validateDeployArguments({ environment: environmentName, file, options });
+    if (validArguments.isErr()) {
+        console.log(chalk.red(validArguments.error.message));
+        return Err(validArguments.error);
+    }
+    if (options.sync || options.action) {
+        console.log(chalk.yellow('--sync and --action are deprecated. Use `nango deploy <environment> <file>` to deploy a single script.'));
     }
 
     const plan: DeploymentPlan = [];
@@ -85,38 +101,46 @@ export async function deploy({
             return Err('no_data');
         }
 
-        const deploymentKinds = getDeploymentKinds({
-            parsed: def.value,
-            optionalIntegrationId: options.integration,
-            optionalSyncName: options.sync,
-            optionalActionName: options.action
-        });
-
-        if (deploymentKinds.includes('legacy')) {
-            const postData = await createLegacyPackage({
-                parsed: def.value,
-                fullPath,
-                debug,
-                version,
-                optionalIntegrationId: options.integration,
-                optionalSyncName: options.sync,
-                optionalActionName: options.action
-            });
-            if (postData.isErr()) {
-                spinnerPackage.fail();
-                console.log(chalk.red(postData.error.message));
-                return Err('no_data');
-            }
-            plan.push({ kind: 'legacy', package: postData.value });
+        const selections =
+            file !== undefined
+                ? planFileDeployment({ fullPath, file, parsed: def.value }).map((selection) => [selection])
+                : Ok(planDeployment({ parsed: def.value, options }));
+        if (selections.isErr()) {
+            spinnerPackage.fail();
+            console.log(chalk.red(selections.error.message));
+            return Err('no_data');
         }
-        if (deploymentKinds.includes('functions')) {
-            const bundle = await createFunctionsBundle({ fullPath, functionConfigs: def.value.functions, optionalIntegrationId: options.integration });
-            if (bundle.isErr()) {
-                spinnerPackage.fail();
-                console.log(chalk.red(bundle.error.message));
-                return Err('no_data');
+
+        for (const selection of selections.value) {
+            if (selection.kind === 'legacy') {
+                const postData = await createLegacyPackage({
+                    parsed: def.value,
+                    fullPath,
+                    debug,
+                    version,
+                    optionalIntegrationId: selection.integrationId,
+                    optionalSyncName: selection.syncName,
+                    optionalActionName: selection.actionName
+                });
+                if (postData.isErr()) {
+                    spinnerPackage.fail();
+                    console.log(chalk.red(postData.error.message));
+                    return Err('no_data');
+                }
+                plan.push({ kind: 'legacy', package: postData.value });
+            } else {
+                const bundle = await createFunctionsBundle({
+                    fullPath,
+                    functionConfigs: def.value.functions,
+                    reconciliationScope: selection.reconciliationScope
+                });
+                if (bundle.isErr()) {
+                    spinnerPackage.fail();
+                    console.log(chalk.red(bundle.error.message));
+                    return Err('no_data');
+                }
+                plan.push({ kind: 'functions', bundle: bundle.value });
             }
-            plan.push({ kind: 'functions', bundle: bundle.value });
         }
         if (plan.length === 0) {
             spinnerPackage.fail();
@@ -267,50 +291,109 @@ async function executeDeployment({
     }
 }
 
-function getDeploymentKinds({
-    parsed,
-    optionalIntegrationId,
-    optionalSyncName,
-    optionalActionName
-}: {
-    parsed: ParsedIntegrationDefinitions;
-    optionalIntegrationId?: string | undefined;
-    optionalSyncName?: string | undefined;
-    optionalActionName?: string | undefined;
-}): Deployment['kind'][] {
-    if (optionalSyncName || optionalActionName) {
-        return ['legacy'];
+function planDeployment({ parsed, options }: { parsed: ParsedIntegrationDefinitions; options: DeployOptions }): DeploymentSelection[] {
+    const { integration: integrationId, sync: syncName, action: actionName } = options;
+    if (syncName || actionName) {
+        return [{ kind: 'legacy', integrationId, syncName, actionName }];
     }
 
-    const integrations = optionalIntegrationId
-        ? parsed.integrations.filter((integration) => integration.providerConfigKey === optionalIntegrationId)
-        : parsed.integrations;
+    const integrations = integrationId ? parsed.integrations.filter((integration) => integration.providerConfigKey === integrationId) : parsed.integrations;
     const hasLegacyScripts = integrations.some(
         (integration) =>
             integration.syncs.length > 0 || integration.actions.length > 0 || Object.values(integration.onEventScripts).some((scripts) => scripts.length > 0)
     );
-    const hasFunctions = parsed.functions.some((config) => !optionalIntegrationId || config.integrationId === optionalIntegrationId);
+    const hasFunctions = parsed.functions.some((config) => !integrationId || config.integrationId === integrationId);
 
-    const kinds: Deployment['kind'][] = [];
+    const selections: DeploymentSelection[] = [];
     if (hasLegacyScripts) {
-        kinds.push('legacy');
+        selections.push({ kind: 'legacy', integrationId });
     }
     if (hasFunctions) {
-        kinds.push('functions');
+        selections.push({ kind: 'functions', reconciliationScope: integrationId ? { kind: 'integration', integrationId } : { kind: 'environment' } });
     }
-    return kinds;
+    return selections;
+}
+
+const environmentNameSchema = z
+    .string()
+    .regex(/^[a-z0-9_-]+$/)
+    .max(255);
+
+export function validateDeployArguments({
+    environment,
+    file,
+    options
+}: {
+    environment: string;
+    file?: string | undefined;
+    options: DeployOptions;
+}): Result<void> {
+    if (!environmentNameSchema.safeParse(environment).success) {
+        return Err(new Error(`'${environment}' is not a valid environment name. Usage: nango deploy <environment> [file]`));
+    }
+    if (file === undefined) {
+        return Ok(undefined);
+    }
+    if (file.trim() === '') {
+        return Err(new Error('The file argument is empty.'));
+    }
+    if (options.sync || options.action || options.integration) {
+        return Err(new Error('A file cannot be combined with --sync, --action or --integration.'));
+    }
+    return Ok(undefined);
+}
+
+function planFileDeployment({ fullPath, file, parsed }: { fullPath: string; file: string; parsed: ParsedIntegrationDefinitions }): Result<DeploymentSelection> {
+    const tsFile = file.replace(/\.js$/, '.ts');
+    const resolved = resolveProjectPath({ projectRoot: fullPath, filePath: path.isAbsolute(tsFile) ? path.relative(fullPath, tsFile) : tsFile });
+    if (!resolved) {
+        return Err(new Error(`'${file}' must be inside the project folder.`));
+    }
+
+    const entryPoint = parsed.entryPoints.find((candidate) => normalizeProjectRelativePath(candidate.filePath) === resolved.relative);
+    if (!entryPoint) {
+        return Err(new Error(`'${file}' is not a script. Make sure it is imported from index.ts.`));
+    }
+
+    const { integrationId, name } = entryPoint;
+    switch (entryPoint.type) {
+        case 'function':
+            return Ok({ kind: 'functions', reconciliationScope: { kind: 'function', integrationId, name } });
+        case 'sync':
+            return Ok({ kind: 'legacy', integrationId, syncName: name });
+        case 'action':
+            return Ok({ kind: 'legacy', integrationId, actionName: name });
+        case 'on-event':
+            return Err(
+                new Error(
+                    `'${file}' is an on-event script and can't be deployed on its own. Use \`nango deploy <environment> --integration ${integrationId}\` or deploy the whole project.`
+                )
+            );
+    }
 }
 
 async function createFunctionsBundle({
     fullPath,
     functionConfigs,
-    optionalIntegrationId
+    reconciliationScope
 }: {
     fullPath: string;
     functionConfigs: FunctionConfig[];
-    optionalIntegrationId?: string | undefined;
+    reconciliationScope: FunctionReconciliationScope;
 }): Promise<Result<FunctionsBundle>> {
-    const selectedConfigs = optionalIntegrationId ? functionConfigs.filter((config) => config.integrationId === optionalIntegrationId) : functionConfigs;
+    const selectedConfigs = functionConfigs.filter((config) => {
+        switch (reconciliationScope.kind) {
+            case 'environment':
+                return true;
+            case 'function':
+                return config.integrationId === reconciliationScope.integrationId && config.name === reconciliationScope.name;
+            case 'integration':
+                return config.integrationId === reconciliationScope.integrationId;
+        }
+    });
+    if (reconciliationScope.kind === 'function' && selectedConfigs.length === 0) {
+        return Err(new Error(`No compiled function found for "${reconciliationScope.name}"`));
+    }
 
     const functions: FunctionsBundle['functions'] = [];
     for (const config of selectedConfigs) {
@@ -332,10 +415,7 @@ async function createFunctionsBundle({
         functions.push({ ...artifact, fileBody });
     }
 
-    return Ok({
-        reconciliationScope: optionalIntegrationId ? { kind: 'integration', integrationId: optionalIntegrationId } : { kind: 'environment' },
-        functions
-    });
+    return Ok({ reconciliationScope, functions });
 }
 
 /**
