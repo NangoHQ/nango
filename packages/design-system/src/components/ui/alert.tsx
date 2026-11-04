@@ -13,6 +13,9 @@ import type { VariantProps } from 'class-variance-authority';
  * `AlertTitle`, `AlertDescription` and `AlertActions` as flat siblings. Horizontal spacing lives on
  * the children (not `gap-x`) so that empty `auto` tracks collapse instead of leaving a gap behind.
  */
+// Shared by the cva default and the status context so an Alert without `variant` styles and tones its actions alike.
+const DEFAULT_ALERT_VARIANT = 'success';
+
 export const alertVariants = cva(
     [
         'relative grid w-full items-start gap-y-0.5',
@@ -81,7 +84,7 @@ export const alertVariants = cva(
             }
         },
         defaultVariants: {
-            variant: 'success',
+            variant: DEFAULT_ALERT_VARIANT,
             size: 'wide'
         }
     }
@@ -102,7 +105,7 @@ export interface AlertProps extends React.ComponentProps<'div'>, VariantProps<ty
 
 export const Alert = forwardRef<HTMLDivElement, AlertProps>(({ className, variant, size, onDismiss, dismissLabel = 'Dismiss', children, ...props }, ref) => (
     <div ref={ref} data-slot="alert" role="alert" className={cn(alertVariants({ variant, size }), className)} {...props}>
-        <AlertStatusContext.Provider value={variant ?? 'success'}>{children}</AlertStatusContext.Provider>
+        <AlertStatusContext.Provider value={variant ?? DEFAULT_ALERT_VARIANT}>{children}</AlertStatusContext.Provider>
         {onDismiss && (
             <button
                 type="button"

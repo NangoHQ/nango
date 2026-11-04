@@ -47,10 +47,13 @@ export const linkButtonVariants = cva(
                     'active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active',
                     'focus-visible:shadow-focus-outline-danger'
                 ],
-                // No text/link-info token yet: status/info/text and status/info/strong are the closest match.
-                // info, success and warning have no icon/link-* tokens either, so icons follow the text colour
-                // (lucide icons use currentColor).
-                info: ['text-status-info-text', 'active:text-status-info-strong', 'focus-visible:shadow-focus-outline-default'],
+                // No text/link-info token yet, so info shares accent's text/link tokens.
+                info: [
+                    'text-text-link [&_svg]:text-icon-link',
+                    'active:text-text-link-active active:[&_svg]:text-icon-link-active',
+                    'focus-visible:shadow-focus-outline-default'
+                ],
+                // success and warning have no icon/link-* tokens, so icons follow the text colour (lucide icons use currentColor).
                 success: ['text-text-link-success', 'active:text-text-link-success-active', 'focus-visible:shadow-focus-outline-default'],
                 warning: ['text-text-link-warning', 'active:text-text-link-warning-active', 'focus-visible:shadow-focus-outline-default']
             },
