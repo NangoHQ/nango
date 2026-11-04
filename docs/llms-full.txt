@@ -2405,8 +2405,8 @@ If you are missing a catalog MCP server you can [request it](/integrations/contr
 
 ### Catalog MCP servers
 
-1. **Create the integration**
-   In the Nango UI: [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → choose the MCP provider (e.g. _HubSpot (MCP)_, _Notion MCP_).
+1. **Create the integration**  
+   In the Nango UI: [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → choose the MCP provider (e.g. _HubSpot (MCP)_, _Notion MCP_).  
    Some providers, for example HubSpot MCP, require you to [register an MCP auth app](/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app) and add **Client ID** and **Client Secret** in Nango. But most support dynamic client registrations: You can just enable them on Nango, and Nango registers a client for you in the background.
 
    <Accordion title="For agents">
