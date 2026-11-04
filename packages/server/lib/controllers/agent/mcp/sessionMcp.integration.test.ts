@@ -1,13 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import { request } from 'node:http';
 
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { customerKeyService, seeders } from '@nangohq/shared';
 
 import { AGENT_SESSION_TAG_KEY } from '../../../services/agentSessionConnections.service.js';
+import * as agentSessionMcpDiscoveryService from '../../../services/agentSessionMcpDiscovery.service.js';
 import { runServer } from '../../../utils/tests.js';
 import { toolSearchOutputSchema } from './toolSearch/schema.js';
 
@@ -546,6 +547,56 @@ describe('/session/:sessionId/mcp', () => {
 
         expect(match?.connection).toStrictEqual({ status: 'connected', connection_id: 'zendesk-acme' });
         expect(result.guidance).not.toContain('nango_create_connection');
+    });
+
+    describe('an MCP server the agent connects mid-session', () => {
+        afterEach(() => {
+            vi.restoreAllMocks();
+        });
+
+        it('lists and finds its tools once it is connected', async () => {
+            const { env, apiKey } = await seedTenant();
+            await seeders.createConfigSeed(env, 'notion-mcp', 'notion-mcp');
+            const notionMcpTools = [
+                { name: 'notion-search', description: 'Search the Notion workspace.', inputSchema: { type: 'object', properties: {} } },
+                { name: 'notion-fetch', description: 'Fetch a Notion page by its id.', inputSchema: { type: 'object', properties: {} } }
+            ];
+            // Answers only for the notion-mcp connection, as the real lister only lists MCP servers.
+            const discoverMcpTools = vi
+                .spyOn(agentSessionMcpDiscoveryService, 'discoverMcpTools')
+                .mockImplementation(async ({ connections }) =>
+                    Promise.resolve(
+                        new Map(
+                            connections
+                                .filter((connection) => connection.integrationId === 'notion-mcp')
+                                .map((connection) => [connection.integrationId, { status: 'available' as const, tools: notionMcpTools }])
+                        )
+                    )
+                );
+            const { sessionId, token, mcpPath } = await createSession(apiKey, {
+                toolset: '*',
+                pinned_tools: { 'notion-mcp': ['notion-search'] },
+                meta_tools: { nango_create_connection: true }
+            });
+
+            const before = await listTools({ token, mcpPath });
+            expect(before.json.result.tools.map((tool: { name: string }) => tool.name)).not.toContain('notion-mcp__notion-search');
+
+            await seeders.createConnectionSeed({ env, provider: 'notion-mcp', connectionId: 'notion-mcp-acme', tags: { [AGENT_SESSION_TAG_KEY]: sessionId } });
+
+            const after = await listTools({ token, mcpPath });
+            expect(after.json.result.tools).toContainEqual(
+                expect.objectContaining({ name: 'notion-mcp__notion-search', _meta: { 'nango/integration': 'notion-mcp', 'nango/tool': 'notion-search' } })
+            );
+
+            const search = searchResult(await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'fetch a notion page by its id' } }));
+            const match = [...search.matches, ...search.related].find((match) => match.action === 'notion-fetch');
+            expect(match?.connection).toStrictEqual({ status: 'connected', connection_id: 'notion-mcp-acme' });
+
+            expect(
+                discoverMcpTools.mock.calls.filter(([{ connections }]) => connections.some((connection) => connection.integrationId === 'notion-mcp'))
+            ).toHaveLength(1);
+        });
     });
 
     it('answers a query nothing matches without pretending otherwise', async () => {
