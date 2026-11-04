@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.72.1] - 2026-11-04
+
+### Added
+
+- *(webhooks)* Add support for command-alkon webhooks (#8142) by @hassan254-prog
+- *(integrations)* Add support for sendcloud (#7777) by @Jiliac
+- Add NANGO_MANAGED credentials and deprecate /integrations/quickstart (#8073) by @marcindobry
+- *(deploy)* Add the self-hosting service to the deploy workflow (#8066) by @pfreixes
+- *(managed-release)* Build the managed image with the license public key (#8099) by @pfreixes
+
+### Changed
+
+- Document --target and server-backed catalog pulls (#8148) by @kaposke
+- Remove integration-templates source code links (#8129) by @viictoo
+
+### Fixed
+
+- *(hosted-telemetry)* Fix flaky double-export test (#8135) by @pfreixes
+
 ## [v0.72.0] - 2026-11-03
 
 ### Added
@@ -8609,6 +8628,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.72.1]: https://github.com/NangoHQ/nango/compare/v0.72.0..v0.72.1
 [v0.72.0]: https://github.com/NangoHQ/nango/compare/v0.71.14..v0.72.0
 [v0.71.14]: https://github.com/NangoHQ/nango/compare/v0.71.13..v0.71.14
 [v0.71.13]: https://github.com/NangoHQ/nango/compare/v0.71.12..v0.71.13

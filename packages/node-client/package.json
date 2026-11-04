@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/node",
-    "version": "0.72.0",
+    "version": "0.72.1",
     "description": "Nango's Node client.",
     "type": "module",
     "main": "dist/index.js",
@@ -27,7 +27,7 @@
     },
     "license": "Elastic-2.0",
     "dependencies": {
-        "@nangohq/types": "0.72.0",
+        "@nangohq/types": "0.72.1",
         "axios": "1.20.0"
     },
     "engines": {
