@@ -5819,7 +5819,7 @@ components:
             description: >
                 Uses a Nango-managed developer app instead of your own credentials. Only available when creating an
                 integration for an `OAUTH1`, `OAUTH2`, or `APP` provider that Nango has a managed app for. Can't be
-                combined with `integration_config`, and the credentials can't be edited afterwards.
+                combined with `integration_config` or `custom`, and the credentials can't be edited afterwards.
             type: object
             additionalProperties: false
             required:
