@@ -8,7 +8,8 @@ import {
     auditEnvironmentVariablesChanged,
     auditEnvironmentWebhookUrlsChanged,
     auditPublicEnvironmentCreated,
-    auditPublicEnvironmentUpdated
+    auditPublicEnvironmentUpdated,
+    auditPublicWebhookSigningKeyRotated
 } from './environment.middleware.js';
 import {
     fakeReq,
@@ -180,6 +181,22 @@ describe('environment audit middleware (unit)', () => {
             fakeRes(accountKeyLocals)
         );
         expect(event?.metadata).toEqual({ name: 'staging', changedFields: ['name'] });
+    });
+
+    it('public signing key rotation: records the event without the imported key', async () => {
+        const key = '8a27fe09-327c-43ec-8f75-b1f212904f45';
+        const event = await runAudit(auditPublicWebhookSigningKeyRotated, fakeReq({ body: { webhook_signing_key: key } }), fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'environment',
+            action: 'webhook_signing_key_rotated',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: locals.environment.uuid, display: 'dev' },
+            actor: { type: 'api_key', id: secretKeyLocals.apiKeyUuid },
+            targets: [{ type: 'environment', id: '9', display: 'dev' }]
+        });
+        expect(event?.metadata).toBeUndefined();
+        expect(JSON.stringify(event)).not.toContain(key);
     });
 
     it('builds the event and records variable names but never their values', async () => {

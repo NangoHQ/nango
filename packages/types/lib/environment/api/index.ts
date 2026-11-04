@@ -184,6 +184,7 @@ export type PostPublicRotateWebhookSigningKey = ApiEndpoint<{
     Audit: AuditPolicy<'environment', 'webhook_signing_key_rotated', 'environment'>;
     Method: 'POST';
     Path: '/environment/webhook-signing-key/rotate';
+    Body: { webhook_signing_key?: string | undefined };
     Success: {
         data: { webhook_signing_key: string };
     };
