@@ -364,6 +364,90 @@ describe(prepareDeploymentBundle, () => {
         }
     });
 
+    it('creates a function without deleting its siblings for a function-scoped deployment', async () => {
+        const environmentId = await seedEnvironmentWithFunctions();
+        const newGithubArtifact = { ...githubArtifact, name: 'fetchPullRequests' } satisfies FunctionDeploymentArtifact;
+
+        const reconciliation = (
+            await prepareDeploymentBundle({
+                functions: [newGithubArtifact],
+                environmentId,
+                reconciliationScope: { kind: 'function', integrationId: newGithubArtifact.integrationId, name: newGithubArtifact.name }
+            })
+        ).unwrap();
+
+        expect(reconciliation).toStrictEqual({ created: [newGithubArtifact], updated: [], unchanged: [], deleted: [] });
+    });
+
+    it('updates only the scoped function for a function-scoped deployment', async () => {
+        const environmentId = await seedEnvironmentWithFunctions();
+        const siblingGithubArtifact = { ...githubArtifact, name: 'fetchPullRequests' } satisfies FunctionDeploymentArtifact;
+        await upsert(db.knex, [
+            {
+                environmentId,
+                integrationId: siblingGithubArtifact.integrationId,
+                name: siblingGithubArtifact.name,
+                version: functionVersion(siblingGithubArtifact)
+            }
+        ]);
+        const changedGithubArtifact = { ...githubArtifact, description: 'Fetch all issues' } satisfies FunctionDeploymentArtifact;
+
+        const reconciliation = (
+            await prepareDeploymentBundle({
+                functions: [changedGithubArtifact],
+                environmentId,
+                reconciliationScope: { kind: 'function', integrationId: githubArtifact.integrationId, name: githubArtifact.name }
+            })
+        ).unwrap();
+
+        expect(reconciliation.created).toStrictEqual([]);
+        expect(reconciliation.unchanged).toStrictEqual([]);
+        expect(reconciliation.deleted).toStrictEqual([]);
+        expect(reconciliation.updated.map(({ before, after }) => ({ before: before.config.name, after }))).toStrictEqual([
+            { before: githubArtifact.name, after: changedGithubArtifact }
+        ]);
+    });
+
+    it.each([
+        { label: 'no function', functions: [] },
+        { label: 'another function', functions: [{ ...githubArtifact, name: 'fetchPullRequests' }] },
+        { label: 'the function from another integration', functions: [{ ...githubArtifact, integrationId: gitlabArtifact.integrationId }] },
+        { label: 'an extra function', functions: [githubArtifact, { ...githubArtifact, name: 'fetchPullRequests' }] }
+    ] satisfies { label: string; functions: FunctionDeploymentArtifact[] }[])(
+        'rejects a function-scoped deployment containing $label',
+        async ({ functions }) => {
+            const environmentId = await seedEnvironmentWithFunctions();
+
+            const result = await prepareDeploymentBundle({
+                functions,
+                environmentId,
+                reconciliationScope: { kind: 'function', integrationId: githubArtifact.integrationId, name: githubArtifact.name }
+            });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.code).toBe('functions_deployment_error');
+                expect(result.error.cause).toEqual(expect.objectContaining({ message: 'function_scope_mismatch' }));
+            }
+        }
+    );
+
+    it('rejects a function-scoped deployment for a missing integration', async () => {
+        const environmentId = await seedEnvironmentWithFunctions();
+        const missingArtifact = { ...githubArtifact, integrationId: 'missing' } satisfies FunctionDeploymentArtifact;
+
+        const result = await prepareDeploymentBundle({
+            functions: [missingArtifact],
+            environmentId,
+            reconciliationScope: { kind: 'function', integrationId: missingArtifact.integrationId, name: missingArtifact.name }
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.code).toBe('integration_not_found');
+        }
+    });
+
     it('reconciles every integration for an environment-scoped deployment', async () => {
         const environmentId = await seedEnvironmentWithFunctions();
 

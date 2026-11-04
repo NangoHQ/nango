@@ -554,7 +554,10 @@ export interface FunctionDeploymentArtifact {
     };
 }
 
-export type FunctionReconciliationScope = { kind: 'environment' } | { kind: 'integration'; integrationId: string };
+export type FunctionReconciliationScope =
+    | { kind: 'environment' }
+    | { kind: 'integration'; integrationId: string }
+    | { kind: 'function'; integrationId: string; name: string };
 
 export interface FunctionDeploymentBundleBody {
     reconciliationScope: FunctionReconciliationScope;

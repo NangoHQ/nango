@@ -252,6 +252,46 @@ describe('function deploy validation', () => {
         expect(result.success).toBe(true);
     });
 
+    it('accepts a function-scoped deployment of the scoped function', () => {
+        const result = validation.safeParse({
+            reconciliationScope: { kind: 'function', integrationId: 'github', name: 'consumeWebhook' },
+            functions: [validFunction]
+        });
+
+        expect(result.success).toBe(true);
+    });
+
+    it.each([
+        { label: 'no function', functions: [] },
+        { label: 'another function', functions: [{ ...validFunction, name: 'consumePullRequestWebhook' }] },
+        { label: 'the function from another integration', functions: [{ ...validFunction, integrationId: 'gitlab' }] },
+        { label: 'an extra function', functions: [validFunction, { ...validFunction, name: 'consumePullRequestWebhook' }] }
+    ])('rejects a function-scoped deployment containing $label', ({ functions }) => {
+        const result = validation.safeParse({
+            reconciliationScope: { kind: 'function', integrationId: 'github', name: 'consumeWebhook' },
+            functions
+        });
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+            expect(result.error.issues).toContainEqual(
+                expect.objectContaining({
+                    message: 'A function-scoped deployment must contain the scoped function',
+                    path: ['functions']
+                })
+            );
+        }
+    });
+
+    it('rejects a function-scoped deployment without a name', () => {
+        const result = validation.safeParse({
+            reconciliationScope: { kind: 'function', integrationId: 'github' },
+            functions: [validFunction]
+        });
+
+        expect(result.success).toBe(false);
+    });
+
     it('rejects functions outside the integration reconciliation scope', () => {
         const result = validation.safeParse({
             reconciliationScope: { kind: 'integration', integrationId: 'github' },
