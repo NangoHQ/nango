@@ -592,7 +592,9 @@ describe('/session/:sessionId/mcp', () => {
                 expect.objectContaining({ name: 'notion-mcp__notion-search', _meta: { 'nango/integration': 'notion-mcp', 'nango/tool': 'notion-search' } })
             );
 
-            const search = searchResult(await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'fetch a notion page by its id' } }));
+            const search = searchResult(
+                await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'fetch a notion page by its id', goal: GOAL } })
+            );
             const match = [...search.matches, ...search.related].find((match) => match.action === 'notion-fetch');
             expect(match?.connection).toStrictEqual({ status: 'connected', connection_id: 'notion-mcp-acme' });
 
