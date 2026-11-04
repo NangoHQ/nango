@@ -1,4 +1,4 @@
-import { ChevronsUpDown, CreditCard, KeyRound, LogOut, ScrollText, SlidersHorizontal, Sparkle, UserRoundCog, Users } from 'lucide-react';
+import { ChevronsUpDown, CreditCard, KeyRound, LogOut, ScrollText, SlidersHorizontal, Sprout, UserRoundCog, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -60,14 +60,6 @@ export const ProfileDropdown: React.FC = () => {
             });
         }
 
-        if (meta && meta.gettingStartedDismissed && showGettingStarted) {
-            list.push({
-                label: 'Getting Started',
-                icon: Sparkle,
-                href: `/dev/getting-started`
-            });
-        }
-
         if (globalEnv.features.plan) {
             list.push({
                 label: 'Billing & usage',
@@ -81,6 +73,14 @@ export const ProfileDropdown: React.FC = () => {
                 label: 'Audit trail',
                 icon: ScrollText,
                 href: `/team/audit`
+            });
+        }
+
+        if (meta && meta.gettingStartedDismissed && showGettingStarted) {
+            list.push({
+                label: 'Getting Started',
+                icon: Sprout,
+                href: `/dev/getting-started`
             });
         }
 
