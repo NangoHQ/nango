@@ -1,6 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
 import { cva } from 'class-variance-authority';
-import { Children, forwardRef, Fragment, isValidElement } from 'react';
+import { Children, cloneElement, forwardRef, Fragment, isValidElement } from 'react';
 
 import { cn } from '../../lib/cn';
 import { Spinner } from './spinner';
@@ -269,11 +269,25 @@ export interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLBut
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, disabled, label, title, children, ...props }, ref) => {
+    ({ className, variant, size, asChild = false, loading = false, disabled, label, title, children, onClickCapture, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
         // Same rule as Button: Slot needs its single child, so asChild never swaps in a spinner.
         const showSpinner = loading && !asChild;
+        // Slot lets the child's own props override the ones passed here, so a slotted child's aria-label would
+        // replace `label`. Setting it on the child itself keeps `label` the accessible name.
+        const slotted = asChild && isValidElement<{ 'aria-label'?: string }>(children) ? cloneElement(children, { 'aria-label': label }) : children;
+        // pointer-events-none only stops the mouse: a disabled or loading slotted link can still be activated with
+        // Enter. The capture handler runs before the child's own onClick (e.g. a router Link), so stopping it there
+        // blocks both the browser's navigation and the child's handler.
+        const handleClickCapture = (event: React.MouseEvent<HTMLButtonElement>) => {
+            if (isDisabled && asChild) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+            onClickCapture?.(event);
+        };
 
         return (
             <Comp
@@ -287,9 +301,10 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
                 title={title ?? label}
                 {...props}
                 aria-label={label}
+                onClickCapture={handleClickCapture}
             >
                 {/* the spinner matches the icon it replaces, so the box never changes */}
-                {showSpinner ? <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} /> : children}
+                {showSpinner ? <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} /> : slotted}
             </Comp>
         );
     }
