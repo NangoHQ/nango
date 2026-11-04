@@ -2405,8 +2405,8 @@ If you are missing a catalog MCP server you can [request it](/integrations/contr
 
 ### Catalog MCP servers
 
-1. **Create the integration**
-   In the Nango UI: [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → choose the MCP provider (e.g. _HubSpot (MCP)_, _Notion MCP_).
+1. **Create the integration**  
+   In the Nango UI: [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → choose the MCP provider (e.g. _HubSpot (MCP)_, _Notion MCP_).  
    Some providers, for example HubSpot MCP, require you to [register an MCP auth app](/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app) and add **Client ID** and **Client Secret** in Nango. But most support dynamic client registrations: You can just enable them on Nango, and Nango registers a client for you in the background.
 
    <Accordion title="For agents">
@@ -2496,26 +2496,26 @@ If you are missing a catalog MCP server you can [request it](/integrations/contr
      For all fields and response shapes, see [Create](/reference/backend/http-api/integration/create), [Get](/reference/backend/http-api/integration/get), [List](/reference/backend/http-api/integration/list), [Update](/reference/backend/http-api/integration/update), and [Delete an integration](/reference/backend/http-api/integration/delete).
    </Accordion>
 
-2. **Run the same auth flow as standard OAuth**
-   - Backend: [create a Connect session](/guides/auth/auth-guide#generate-session-token) with `allowed_integrations: ['<integration-id>']` (e.g. `hubspot-mcp`, `notion-mcp`).
-   - Frontend: [open the Connect UI](/guides/auth/auth-guide#trigger-auth-flow) with the session token.
+2. **Run the same auth flow as standard OAuth**  
+   - Backend: [create a Connect session](/guides/auth/auth-guide#generate-session-token) with `allowed_integrations: ['<integration-id>']` (e.g. `hubspot-mcp`, `notion-mcp`).  
+   - Frontend: [open the Connect UI](/guides/auth/auth-guide#trigger-auth-flow) with the session token.  
    - Backend: [persist the connection ID](/guides/auth/auth-guide#save-connection-id-from-webhook) from the auth webhook or Connect UI callback.
 
-3. **Call the MCP server**
+3. **Call the MCP server**  
    Use the stored `connection_id` and integration id (e.g. `hubspot-mcp`) with the [Proxy API](/reference/backend/http-api/proxy/post) (JSON-RPC `tools/call`, etc.).
 
 ### Generic MCP Server OAuth2
 
-1. **Create a generic MCP integration**
+1. **Create a generic MCP integration**  
    [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → _MCP Server OAuth2 (Generic)_. Optionally set **OAuth Client Name**, **URI**, and **Logo URI** (used in dynamic client registration with the MCP server).
 
-2. **Same Connect session + Connect UI flow**
+2. **Same Connect session + Connect UI flow**  
    As above: backend creates a session with `allowed_integrations: ['mcp-generic']` (or your custom integration id), frontend opens Connect UI with that token, backend stores the connection ID.
 
-3. **End user supplies the MCP server URL**
+3. **End user supplies the MCP server URL**  
    When the user starts the connection, the Connect UI prompts for **MCP Server URL** (e.g. `https://mcp.notion.com/mcp`). Nango automatically discovers the OAuth endpoints from the server and walks the user through the OAuth connection flow.
 
-4. **Call the MCP server**
+4. **Call the MCP server**  
    Same as pre-built: use the connection with the [Proxy API](/reference/backend/http-api/proxy/post). The connection is tied to the MCP server URL the user entered.
 
 <Info>
@@ -2524,10 +2524,10 @@ Our generic MCP provider currently only works with MCP servers that support auto
 
 ## End user experience
 
-- **Catalog MCP servers**
+- **Catalog MCP servers**  
   User sees a list of supported MCP servers in your app → clicks connect → is redirected to the provider’s OAuth page (e.g. HubSpot or Notion) → signs in and approves → connection is created in Nango
 
-- **MCP Generic**
+- **MCP Generic**  
   User clicks connect → sees a form asking for the MCP Server URL → submits → is redirected to that MCP server’s OAuth page → signs in and approves → connection is created in Nango
 
 In both cases, your app only needs to open the Connect UI and pass the session token. Nango handles the rest.
@@ -2775,7 +2775,7 @@ Create a session with the tools and access your agent needs.
     "notion": { "allow": { "tools": ["read_doc", "upsert_doc"] } },
     "slack": "*"
   },
-
+ 
   "pinned_tools": {  // Optional, defaults to no pinned tools
     "notion": ["read_doc"]
   },
@@ -6537,7 +6537,7 @@ Nango provides detailed filtering and searching of log messages by integration, 
 
 We recommend exploring the logs in your own Nango account under **Logs**.
 
-Logs are retained for **15 days**, then permanently deleted.
+Logs are retained for **15 days**, then permanently deleted. 
 
 ## Logs MCP tools
 
@@ -7716,7 +7716,7 @@ If you encounter an issue not documented here, reach out on the [Slack community
 Yes, you can change the folder structure. You can move files, zod definitions, types, rename files, folders, etc.
 The results of the migration is just an example of how you can structure your project.
 
-## I'm getting `ZodXX is missing the following properties` errors
+## I'm getting `ZodXX is missing the following properties` errors 
 
 If you are getting Zod errors, it's most likely because you are using a different version of Zod than the one we use in our CLI. We currently require zod `4.0.5`.
 
@@ -11361,8 +11361,8 @@ A response may contain fewer records than `limit` when records have a large size
 By default this returns an array of objects in the data model that you queried with some metadata about each record.
 
 ```json
-{
-    records:
+{ 
+    records: 
         [
             {
                 id: 123,
