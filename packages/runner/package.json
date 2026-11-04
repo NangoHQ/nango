@@ -27,7 +27,6 @@
         "@trpc/client": "10.45.3",
         "@trpc/server": "10.45.3",
         "axios": "1.20.0",
-        "botbuilder": "4.23.3",
         "connect-timeout": "1.9.1",
         "dd-trace": "5.134.0",
         "express": "5.1.0",
