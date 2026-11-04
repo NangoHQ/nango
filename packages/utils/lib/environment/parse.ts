@@ -247,6 +247,11 @@ const ENVS_SHAPE = z.object({
     // necessary — a larger TTL widens that eventual-consistency window. Read once at startup.
     AUTH_PERSIST_CONTEXT_CACHE_TTL_MS: z.coerce.number().int().positive().max(60_000).optional().default(60_000), // 1 minute
 
+    // License configuration options
+    NANGO_LICENSE: z.string().optional(),
+    // Experimental, disabled by default for now
+    NANGO_LICENSE_CHECK: z.stringbool().optional().default(false),
+
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
