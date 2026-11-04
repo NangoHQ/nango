@@ -31,9 +31,16 @@ function validateIntegration(integration: IntegrationConfig, headerSignature: st
 
 /**
  * The integration has no app: each connection brought its own app and the webhook secret the end user set on it.
- * The app id header only picks the candidate connections, the signature still has to match their secret.
+ * The app id header only picks the candidate connections. The connection must also be the installation the payload
+ * is about, otherwise the owner of one app could sign a payload that gets dispatched to another app's connection.
  */
-async function validateConnections(nango: InternalNango, headers: Record<string, string>, headerSignature: string, rawBody: string): Promise<boolean> {
+async function validateConnections(
+    nango: InternalNango,
+    headers: Record<string, string>,
+    body: { installation?: { id?: number | string } } | undefined,
+    headerSignature: string,
+    rawBody: string
+): Promise<boolean> {
     const appId = headers['x-github-hook-installation-target-id'];
     if (!appId) {
         return false;
@@ -46,6 +53,8 @@ async function validateConnections(nango: InternalNango, headers: Record<string,
                 connection.provider_config_key === nango.integration.unique_key &&
                 connection.credentials.type === 'APP' &&
                 connection.credentials.config_override &&
+                // Payloads without an installation (app level events) are never dispatched to a connection
+                (body?.installation?.id === undefined || String(connection.connection_config['installation_id']) === String(body.installation.id)) &&
                 signatureMatches(connection.credentials.config_override.webhook_secret, headerSignature, rawBody)
         )
     );
@@ -57,7 +66,7 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
     if (signature) {
         const valid = nango.integration.oauth_client_secret
             ? validateIntegration(nango.integration, signature, rawBody)
-            : await validateConnections(nango, headers, signature, rawBody);
+            : await validateConnections(nango, headers, body, signature, rawBody);
 
         if (!valid) {
             logger.error('Github App webhook signature invalid');

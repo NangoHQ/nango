@@ -603,10 +603,11 @@ export default class Nango {
                     query.push(`credentials[oauth_refresh_token_override]=${encodeURIComponent(credentials.oauth_refresh_token_override)}`);
                 }
 
-                if ('app_id' in credentials && 'private_key' in credentials && 'app_link' in credentials) {
+                if ('app_id' in credentials) {
                     query.push(`credentials[app_id]=${encodeURIComponent(credentials.app_id)}`);
                     query.push(`credentials[private_key]=${encodeURIComponent(credentials.private_key)}`);
                     query.push(`credentials[app_link]=${encodeURIComponent(credentials.app_link)}`);
+                    query.push(`credentials[webhook_secret]=${encodeURIComponent(credentials.webhook_secret)}`);
                 }
 
                 if ('token_id' in credentials) {

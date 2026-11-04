@@ -109,7 +109,10 @@ const githubAppCredentialsShape = {
     private_key: z
         .string()
         .trim()
-        .regex(/^-----BEGIN RSA PRIVATE KEY-----[\s\S]+-----END RSA PRIVATE KEY-----$/, 'Must be a PEM private key (-----BEGIN RSA PRIVATE KEY-----)'),
+        .regex(
+            /^-----BEGIN RSA PRIVATE KEY-----\s*[A-Za-z0-9+/=\s]+?\s*-----END RSA PRIVATE KEY-----$/,
+            'Must be a PEM private key (-----BEGIN RSA PRIVATE KEY-----)'
+        ),
     app_link: z.url({ protocol: /^https$/, message: 'Must be a valid https URL' }),
     webhook_secret: z.string().min(1, 'This field is required').max(255)
 };

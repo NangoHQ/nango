@@ -144,13 +144,6 @@ export function InvalidConnectionConfig(url: string, params: string): WSErr {
     };
 }
 
-export function InvalidGithubAppCredentials(errorMessage: string): WSErr {
-    return {
-        type: 'invalid_app_credentials',
-        message: `Invalid GitHub App credentials: ${errorMessage}`
-    };
-}
-
 export function FailedCredentialsCheck(errorMessage: string): WSErr {
     return {
         type: 'connection_validation_failed',

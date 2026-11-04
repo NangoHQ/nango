@@ -272,7 +272,7 @@ class OAuthController {
                     webhook_secret: overrideCredentials['webhook_secret']
                 });
                 if (!appCredentials.success) {
-                    const error = WSErrBuilder.InvalidGithubAppCredentials(
+                    const error = WSErrBuilder.FailedCredentialsCheck(
                         appCredentials.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join(', ')
                     );
                     void logCtx.error(error.message);

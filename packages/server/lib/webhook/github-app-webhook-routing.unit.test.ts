@@ -150,9 +150,10 @@ describe('github-app-webhook-routing', () => {
             return made;
         }
 
-        function connection(overrides: { provider_config_key?: string; webhook_secret?: string } = {}) {
+        function connection(overrides: { provider_config_key?: string; webhook_secret?: string; installation_id?: string } = {}) {
             return {
                 provider_config_key: overrides.provider_config_key ?? 'github-app',
+                connection_config: { app_id: APP_ID, installation_id: overrides.installation_id ?? String(body.installation.id) },
                 credentials: {
                     type: 'APP',
                     access_token: 'token',
@@ -193,6 +194,20 @@ describe('github-app-webhook-routing', () => {
 
             expect(result.isOk()).toBe(true);
             expect(execute).toHaveBeenCalledOnce();
+            findConnections.mockRestore();
+        });
+
+        it('rejects a payload signed with the secret of a connection that is not the installation of the payload', async () => {
+            const { nango, execute } = makeEmptyNango();
+            nango.integration.unique_key = 'github-app';
+            const findConnections = vi
+                .spyOn(connectionService, 'findConnectionsByMultipleConnectionConfigValues')
+                .mockResolvedValue([connection({ installation_id: '9999' })]);
+
+            const result = await GithubAppWebhookRouting.default(nango, headers(signWith(CONNECTION_SECRET, rawBody)), body as never, rawBody);
+
+            expect(errType(result)).toBe('webhook_invalid_signature');
+            expect(execute).not.toHaveBeenCalled();
             findConnections.mockRestore();
         });
 
