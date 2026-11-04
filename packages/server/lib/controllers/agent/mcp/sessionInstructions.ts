@@ -38,7 +38,7 @@ export function buildSessionInstructions(session: AgentSession): string {
         sections.push(`## Running a tool
 - Call a tool through nango_execute with its name exactly as listed${nangoToolSearch ? ' or as nango_tool_search returned it' : ''}, and its input.
 - nango_execute also runs tools that are not in your tool list, and tools whose input is not an object.
-- Also pass its intent: why you are calling this tool, as one step of the goal, such as "read the next batch of unread emails".
+- Also pass its intent: why you are calling this tool, such as "read the next batch of unread emails".
 - Ask tools for no more results than the task needs, and page through results rather than requesting everything at once.`);
     } else {
         sections.push(`## Running a tool

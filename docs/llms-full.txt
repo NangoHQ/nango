@@ -3020,7 +3020,7 @@ Only a best match includes `input`, its argument schema — a weak match is a le
 
 ### nango_execute
 
-Runs one of the session's tools by name, on the connection the session resolved for that integration. Along with the tool and its input, it takes the task's `goal` and an `intent`, the step of the goal this call is for.
+Runs one of the session's tools by name, on the connection the session resolved for that integration. Along with the tool and its input, it takes the task's `goal` and an `intent`, why this call is made.
 
 ```json
 {
