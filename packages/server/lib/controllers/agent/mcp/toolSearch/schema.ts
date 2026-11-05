@@ -2,16 +2,24 @@ import * as z from 'zod/v4';
 
 import { goalSchema } from '../purposeSchema.js';
 
+const MAX_TOOL_SEARCH_QUERIES = 5;
+
 export const toolSearchInputSchema = z
     .object({
-        query: z
-            .string()
-            .trim()
+        queries: z
+            .array(
+                z
+                    .string()
+                    .trim()
+                    .min(1)
+                    .max(255)
+                    .describe(
+                        'A few keywords naming the action and what it acts on, such as "list calendar events". Leave out the app\'s name, because every tool of that app matches it.'
+                    )
+            )
             .min(1)
-            .max(255)
-            .describe(
-                'A few keywords naming the action and what it acts on, such as "list calendar events". Leave out the app\'s name, because every tool of that app matches it.'
-            ),
+            .max(MAX_TOOL_SEARCH_QUERIES)
+            .describe('One query per tool the task needs, such as ["list calendar events", "send an email"]. Each is searched on its own.'),
         goal: goalSchema
     })
     .strict();
@@ -49,10 +57,17 @@ const matchSchema = z
     })
     .strict();
 
-export const toolSearchOutputSchema = z
+const queryResultSchema = z
     .object({
+        query: z.string(),
         guidance: z.string(),
         matches: z.array(matchSchema).describe('Tools that fit the query, returned with their input and ready to call.'),
         related: z.array(matchSchema).describe('Weaker matches, without their input. Leads to search again on rather than tools to call.')
+    })
+    .strict();
+
+export const toolSearchOutputSchema = z
+    .object({
+        results: z.array(queryResultSchema).describe('One result per query, in the order the queries were sent.')
     })
     .strict();

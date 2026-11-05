@@ -70,12 +70,17 @@ export function describeTool(toolName: string, input: unknown, labels?: Integrat
         integrationId ? { integrationId, integration: labelFor(integrationId, labels) } : {};
 
     if (toolName === 'nango_tool_search') {
-        const query = typeof args['query'] === 'string' ? args['query'] : undefined;
-        const named = query && !/\s/.test(query) ? integrationTool(query) : null;
+        const queries = Array.isArray(args['queries']) ? args['queries'].filter((query): query is string => typeof query === 'string') : [];
+        const [only] = queries.length === 1 ? queries : [];
+        const named = only && !/\s/.test(only) ? integrationTool(only) : null;
         if (named) {
             return { kind: 'search', title: `Checking how to use ${humanize(named.action)}` };
         }
-        return { kind: 'search', title: 'Searching for the right tool', ...(query ? { subtitle: `“${query}”` } : {}) };
+        return {
+            kind: 'search',
+            title: queries.length > 1 ? 'Searching for the right tools' : 'Searching for the right tool',
+            ...(queries.length > 0 ? { subtitle: queries.map((query) => `“${query}”`).join(', ') } : {})
+        };
     }
     if (toolName === 'nango_create_connection') {
         const integrationId = typeof args['integration'] === 'string' ? args['integration'] : undefined;
