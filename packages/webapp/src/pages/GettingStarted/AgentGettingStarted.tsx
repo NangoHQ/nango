@@ -333,7 +333,7 @@ const GoFurther: React.FC<{ env: string }> = ({ env }) => {
             icon: Blocks,
             title: 'Add more integrations',
             description: 'Give your agent access to 1,000+ APIs.',
-            to: `/${env}/integrations/create`
+            to: `/${env}/catalog`
         },
         { destination: 'logs', icon: List, title: 'View logs', description: 'Every tool call and API request your agent makes.', to: `/${env}/logs` },
         {
@@ -341,8 +341,7 @@ const GoFurther: React.FC<{ env: string }> = ({ env }) => {
             icon: Wrench,
             title: 'Explore the catalog',
             description: 'Pre-built tools your agent can use right away.',
-            to: 'https://nango.dev/api-integrations',
-            external: true
+            to: `/${env}/catalog`
         },
         {
             destination: 'syncs_docs',

@@ -1,10 +1,12 @@
 import { CopyButton } from '@/components/ui/CopyButton';
+import { CountBadge } from '@/components/ui/CountBadge';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 
 import type { FunctionSchemas } from './functionDetails.utils';
+import type { JSONSchema7 } from 'json-schema';
 
 export const FunctionPanel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <aside className="sticky top-0 flex max-h-[calc(100dvh-7rem)] min-h-[min(606px,calc(100dvh-7rem))] w-full flex-col overflow-y-auto overscroll-y-contain bg-surface-panel">
@@ -41,16 +43,19 @@ interface ExtraTab {
 
 interface FunctionSchemaTabsProps extends FunctionSchemas {
     extraTabs?: ExtraTab[];
+    showFieldCounts?: boolean;
 }
 
-export const FunctionSchemaTabs: React.FC<FunctionSchemaTabsProps> = ({ inputSchema, outputSchemas, extraTabs = [] }) => (
+export const FunctionSchemaTabs: React.FC<FunctionSchemaTabsProps> = ({ inputSchema, outputSchemas, extraTabs = [], showFieldCounts = false }) => (
     <Tabs defaultValue="input" className="gap-3 px-3 pt-3">
         <TabsList className="w-fit gap-3">
             <TabsTrigger value="input" className="px-2 py-1.5">
                 Input
+                {showFieldCounts && <CountBadge count={countFields(inputSchema)} />}
             </TabsTrigger>
             <TabsTrigger value="output" className="px-2 py-1.5">
                 Output
+                {showFieldCounts && <CountBadge count={outputSchemas.reduce((total, output) => total + countFields(output.schema), 0)} />}
             </TabsTrigger>
             {extraTabs.map((tab) => (
                 <TabsTrigger key={tab.value} value={tab.value} className="px-2 py-1.5">
@@ -90,6 +95,10 @@ export const FunctionSchemaTabs: React.FC<FunctionSchemaTabsProps> = ({ inputSch
         ))}
     </Tabs>
 );
+
+function countFields(schema: JSONSchema7 | null): number {
+    return Object.keys(schema?.properties ?? {}).length;
+}
 
 export const CompactEmptyState: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <EmptyCard className="h-24 min-h-0 p-3">

@@ -117,7 +117,7 @@ export const IntegrationsList = () => {
                 </InputGroup>
                 <PermissionGate asChild condition={canWriteIntegration}>
                     {(allowed) => (
-                        <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="md">
+                        <ButtonLink disabled={!allowed} to={`/${env}/catalog`} size="md">
                             Set up new integration
                         </ButtonLink>
                     )}
@@ -149,7 +149,7 @@ export const IntegrationsList = () => {
                     <p className="text-text-secondary text-body-medium-regular">You don’t have any integrations set up yet with Nango.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
-                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
+                            <ButtonLink disabled={!allowed} to={`/${env}/catalog`} size="lg">
                                 Set up new integration
                             </ButtonLink>
                         )}
@@ -163,7 +163,7 @@ export const IntegrationsList = () => {
                     <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
-                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
+                            <ButtonLink disabled={!allowed} to={`/${env}/catalog`} size="lg">
                                 Set up new integration
                             </ButtonLink>
                         )}

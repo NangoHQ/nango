@@ -1,4 +1,4 @@
-import { ArrowUpRight, BarChart3, Blocks, BookOpen, Cog, List, MessageSquareCode, MessagesSquare, Plug, Sprout, X } from 'lucide-react';
+import { ArrowUpRight, BarChart3, Blocks, BookOpen, Cog, LibraryBig, List, MessageSquareCode, MessagesSquare, Plug, Sprout, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -51,6 +51,7 @@ export const AppSidebar: React.FC = () => {
 
     const items = useMemo<SidebarItem[]>(() => {
         return [
+            { title: 'Catalog', url: `/${env}/catalog`, icon: LibraryBig },
             showPlayground ? { title: 'Playground', url: `/${env}/playground`, icon: MessageSquareCode } : null,
             { title: 'Integrations', url: `/${env}/integrations`, icon: Blocks },
             { title: 'Connections', url: `/${env}/connections`, icon: Plug },

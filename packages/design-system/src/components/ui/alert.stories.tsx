@@ -115,3 +115,13 @@ export const ButtonCta: Story = {
         </Alert>
     )
 };
+
+export const IconColor: Story = {
+    render: () => (
+        <Alert variant="neutral" icon="success">
+            <CircleCheck />
+            <AlertTitle>Icon: success</AlertTitle>
+            <AlertDescription>{DESCRIPTION}</AlertDescription>
+        </Alert>
+    )
+};
