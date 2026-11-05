@@ -60,7 +60,7 @@ nango-registry license create --installation <uuid> --expires-at 2028-11-05T00:0
 
 ### Re-sending the current license
 
-When a customer lost the value, the active license comes back out of the registry as it was issued; nothing is re-minted.
+When a customer lost the value, the active license comes back out of the registry as it was issued; nothing is re-minted. The installation key cannot be re-sent, the registry never had its private half: a lost key is a rotation, `key create` then `key delete` of the old one.
 
 ```bash
 nango-registry license list --installation <uuid> | jq -r '.[] | select(.active) | .license'
