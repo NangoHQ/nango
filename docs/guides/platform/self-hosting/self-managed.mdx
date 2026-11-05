@@ -187,7 +187,7 @@ https://<your-app-url>/signup/<token>
 That is the dashboard URL — `NANGO_PUBLIC_SERVER_URL` — which is the same host as the API when the server serves the dashboard itself. The account is created with the `administrator` role; every other user is invited from inside the dashboard, so you need this URL once.
 
 <Warning>
-Treat the token as a secret. It is not consumed by the first signup and it does not expire, so anyone holding that URL can create another administrator at any time. Rotate it once your first user exists: change the value and restart the server.
+Treat the token as a secret, and remove it once it has been used. It is not consumed by the first signup and it does not expire, so for as long as it is set, anyone holding that URL can create another administrator. Unset `NANGO_ADMIN_INVITE_TOKEN` and restart the server once your first administrator exists; set it again only if you ever need to bootstrap another one.
 </Warning>
 
 ### Pre-built integrations catalog
