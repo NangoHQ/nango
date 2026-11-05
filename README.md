@@ -14,6 +14,8 @@ Connect your AI agents to 1,000+ APIs with 10,000+ pre-built tools and Nango man
 
 </div>
 
+## Nango
+
 Nango is an open-source platform for building agent integrations. It provides [10,000+ prebuilt tools across 1,000+ APIs](https://nango.dev/platform/mcp), with managed authentication and execution for tool calls, triggers, syncs, webhooks, and API proxy requests. Customize tools in TypeScript and sync external data into your app when your use case needs more.
 
 **Used in production by ServiceNow, Replit, Ramp, Mercor, and hundreds more.**
