@@ -1,12 +1,14 @@
 import { changedFields, makeAuditTarget as makeTarget } from '../../audit.js';
 import { Audit, auditable } from './auditable.js';
 import { nonEmptyString, omitUndefined } from './input.js';
-import { accountEnvironmentTarget } from './lookups.js';
+import { accountEnvironmentTarget, environmentFromUuid } from './lookups.js';
 
 import type {
     DeleteEnvironment,
     DeletePublicEnvironment,
+    EnvironmentUpdatedMetadata,
     PatchEnvironment,
+    PatchPublicEnvironment,
     PatchWebhook,
     PostEnvironment,
     PostEnvironmentVariables,
@@ -35,6 +37,24 @@ export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
             name: nonEmptyString(req.body.name),
             changedFields: changedFields(req.body)
         })
+});
+
+export const auditPublicEnvironmentUpdated = auditable<PatchPublicEnvironment>({
+    policy: Audit.auditable({ resource: 'environment', action: 'updated', scope: 'environment' }),
+    environment: (req, locals) => environmentFromUuid(req.params.environmentUuid, locals),
+    target: (req, locals) => accountEnvironmentTarget(req.params.environmentUuid, locals),
+    metadata: (req) => {
+        const body = req.body;
+        const webhooks = body && typeof body.webhooks === 'object' && !Array.isArray(body.webhooks) ? body.webhooks : undefined;
+        const fields = changedFields(body)?.flatMap((field) =>
+            field === 'webhooks' && webhooks ? (changedFields(webhooks)?.map((key) => `webhooks.${key}`) ?? []) : [field]
+        );
+        return omitUndefined<EnvironmentUpdatedMetadata>({
+            name: nonEmptyString(body?.name),
+            changedFields: fields?.length ? fields : undefined,
+            ...webhookMetadata(webhooks)
+        });
+    }
 });
 
 export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariables>({
@@ -95,4 +115,15 @@ function safeUrl(value: unknown): string | undefined {
     } catch {
         return undefined;
     }
+}
+
+function webhookMetadata(value: unknown): Pick<EnvironmentUpdatedMetadata, 'primaryUrl' | 'secondaryUrl'> | undefined {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return {};
+    }
+    const fields = value as Record<string, unknown>;
+    return omitUndefined({
+        primaryUrl: fields['primary_url'] === null || fields['primary_url'] === '' ? null : safeUrl(fields['primary_url']),
+        secondaryUrl: fields['secondary_url'] === null || fields['secondary_url'] === '' ? null : safeUrl(fields['secondary_url'])
+    });
 }
