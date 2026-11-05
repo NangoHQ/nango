@@ -1,10 +1,10 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import { INSTALLATIONS_TABLE } from '../db/schema.js';
+import { INSTALLATION_KEYS_TABLE, INSTALLATION_LICENSES_TABLE, INSTALLATIONS_TABLE } from '../db/schema.js';
 import { inserted, table } from './db.js';
 
 import type { RegistryDb } from './db.js';
-import type { DBSelfHostingInstallation } from '@nangohq/types';
+import type { DBSelfHostingInstallation, DBSelfHostingInstallationKey, DBSelfHostingInstallationLicense } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const installations = (db: RegistryDb) => table<DBSelfHostingInstallation>(db, INSTALLATIONS_TABLE);
@@ -40,6 +40,56 @@ export async function createInstallation(
 export async function getInstallationByUuid(db: RegistryDb, { uuid }: { uuid: string }): Promise<Result<DBSelfHostingInstallation | null>> {
     try {
         return Ok((await installations(db).where({ uuid, deleted_at: null }).first()) ?? null);
+    } catch (err) {
+        return Err(err);
+    }
+}
+
+export async function listInstallations(db: RegistryDb, { customerId }: { customerId?: number } = {}): Promise<Result<DBSelfHostingInstallation[]>> {
+    try {
+        return Ok(
+            await installations(db)
+                .where({ deleted_at: null, ...(customerId !== undefined && { customer_id: customerId }) })
+                .orderBy('id')
+        );
+    } catch (err) {
+        return Err(err);
+    }
+}
+
+/** A changed telemetry flag reaches the installation with its next license. */
+export async function updateInstallation(
+    db: RegistryDb,
+    { id, name, telemetry, alerts }: { id: number; name?: string; telemetry?: boolean; alerts?: DBSelfHostingInstallation['alerts'] }
+): Promise<Result<DBSelfHostingInstallation>> {
+    try {
+        const [row] = await installations(db)
+            .where({ id, deleted_at: null })
+            .update({ updated_at: new Date(), ...(name && { name }), ...(telemetry !== undefined && { telemetry }), ...(alerts && { alerts }) })
+            .returning('*');
+        return row ? Ok(row) : Err(new Error(`no live installation ${id}`));
+    } catch (err) {
+        return Err(err);
+    }
+}
+
+export async function deleteInstallation(db: RegistryDb, { id }: { id: number }): Promise<Result<DBSelfHostingInstallation>> {
+    try {
+        return await db.knex.transaction(async (trx) => {
+            const inTrx = { ...db, knex: trx };
+            const now = new Date();
+            const [row] = await installations(inTrx).where({ id, deleted_at: null }).update({ deleted_at: now, updated_at: now }).returning('*');
+            if (!row) {
+                return Err(new Error(`no live installation ${id}`));
+            }
+            await table<DBSelfHostingInstallationLicense>(inTrx, INSTALLATION_LICENSES_TABLE)
+                .where({ installation_id: id, active: true })
+                .update({ active: false });
+            await table<DBSelfHostingInstallationKey>(inTrx, INSTALLATION_KEYS_TABLE)
+                .where({ installation_id: id, deleted_at: null })
+                .update({ deleted_at: now });
+            return Ok(row);
+        });
     } catch (err) {
         return Err(err);
     }

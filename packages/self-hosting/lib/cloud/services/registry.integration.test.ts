@@ -5,10 +5,10 @@ import knexFactory from 'knex';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { migrate } from '../db/migrate.js';
-import { createCustomer, getCustomerByName } from './customer.service.js';
+import { createCustomer, deleteCustomer, getCustomerByName } from './customer.service.js';
 import { createInstallationKey, deleteInstallationKey, listInstallationKeys } from './installation-key.service.js';
 import { createInstallationLicense, deactivateLicense, getActiveLicense } from './installation-license.service.js';
-import { createInstallation, getInstallationByUuid } from './installation.service.js';
+import { createInstallation, deleteInstallation, getInstallationByUuid, listInstallations, updateInstallation } from './installation.service.js';
 
 import type { RegistryDb } from './db.js';
 import type { Knex } from 'knex';
@@ -178,5 +178,64 @@ describe('installation licenses', () => {
         (await deactivateLicense(db, { installationId })).unwrap();
 
         expect((await getActiveLicense(db, { installationId })).unwrap()).toBeNull();
+    });
+});
+
+describe('customer deletion', () => {
+    it('is refused while the customer has a live installation, then succeeds once it is deleted', async () => {
+        const customerId = (await createCustomer(db, { name: 'leaving' })).unwrap().id;
+        const installationId = (await createInstallation(db, { customerId, name: 'prod', mode: 'byoc', stage: 'production' })).unwrap().id;
+
+        const refused = await deleteCustomer(db, { name: 'leaving' });
+        expect(refused.isErr() && refused.error.message).toBe('customer leaving still has 1 live installations');
+
+        (await deleteInstallation(db, { id: installationId })).unwrap();
+        expect((await deleteCustomer(db, { name: 'leaving' })).unwrap().deleted_at).toBeInstanceOf(Date);
+        expect((await getCustomerByName(db, { name: 'leaving' })).unwrap()).toBeNull();
+    });
+
+    it('returns an unknown customer as an error', async () => {
+        expect((await deleteCustomer(db, { name: 'nobody' })).isErr()).toBe(true);
+    });
+});
+
+describe('installation updates and deletion', () => {
+    it('updates only the given fields and bumps updated_at', async () => {
+        const created = (await createInstallation(db, { customerId: await customer(), name: 'before', mode: 'byoc', stage: 'production' })).unwrap();
+
+        const updated = (await updateInstallation(db, { id: created.id, name: 'after', telemetry: false })).unwrap();
+
+        expect(updated).toMatchObject({ id: created.id, name: 'after', telemetry: false, alerts: 'off', mode: 'byoc', stage: 'production' });
+        expect(updated.updated_at.getTime()).toBeGreaterThan(created.updated_at.getTime());
+    });
+
+    it('lists the live installations of a customer in creation order', async () => {
+        const customerId = await customer();
+        const first = (await createInstallation(db, { customerId, name: 'a', mode: 'byoc', stage: 'production' })).unwrap();
+        const second = (await createInstallation(db, { customerId, name: 'b', mode: 'byoc', stage: 'production' })).unwrap();
+        (await deleteInstallation(db, { id: second.id })).unwrap();
+
+        expect((await listInstallations(db, { customerId })).unwrap().map((i) => i.id)).toStrictEqual([first.id]);
+    });
+
+    it('deleting an installation deactivates its license, deletes its keys and frees its name', async () => {
+        const customerId = await customer();
+        const created = (await createInstallation(db, { customerId, name: 'gone', mode: 'byoc', stage: 'production' })).unwrap();
+        const { key } = (await createInstallationKey(db, { installationId: created.id })).unwrap();
+        await createInstallationLicense(db, licenseInput(created.id));
+
+        const deleted = (await deleteInstallation(db, { id: created.id })).unwrap();
+
+        expect(deleted.deleted_at).toBeInstanceOf(Date);
+        expect((await getInstallationByUuid(db, { uuid: created.uuid })).unwrap()).toBeNull();
+        expect((await getActiveLicense(db, { installationId: created.id })).unwrap()).toBeNull();
+        expect((await listInstallationKeys(db, { installationId: created.id })).unwrap()).toStrictEqual([]);
+        expect((await deleteInstallationKey(db, { kid: key.kid })).isErr()).toBe(true);
+        expect((await createInstallation(db, { customerId, name: 'gone', mode: 'byoc', stage: 'production' })).isOk()).toBe(true);
+    });
+
+    it('refuses to update or delete an unknown installation', async () => {
+        expect((await updateInstallation(db, { id: 999999, name: 'x' })).isErr()).toBe(true);
+        expect((await deleteInstallation(db, { id: 999999 })).isErr()).toBe(true);
     });
 });

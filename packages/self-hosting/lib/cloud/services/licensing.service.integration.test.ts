@@ -6,10 +6,10 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { verifyLicense } from '@nangohq/license';
 
 import { migrate } from '../db/migrate.js';
-import { getCustomerByName } from './customer.service.js';
-import { listInstallationKeys } from './installation-key.service.js';
+import { createCustomer } from './customer.service.js';
 import { getActiveLicense } from './installation-license.service.js';
-import { disableInstallation, onboardInstallation, renewLicense, rotateInstallationKey } from './licensing.service.js';
+import { createInstallation } from './installation.service.js';
+import { issueLicense } from './licensing.service.js';
 
 import type { LicenseSigner } from '../licensing/signer.js';
 import type { RegistryDb } from './db.js';
@@ -33,8 +33,9 @@ const signer = localSigner();
 const expiresAt = new Date('2027-11-05T00:00:00Z');
 const graceUntil = new Date('2028-02-03T00:00:00Z');
 
-function onboard(name: string, overrides: Partial<Parameters<typeof onboardInstallation>[1]> = {}) {
-    return onboardInstallation(db, { customer: 'acme', name, mode: 'byoc', stage: 'production', expiresAt, graceUntil, signer, ...overrides });
+async function installation(name: string, telemetry = true): Promise<DBSelfHostingInstallation> {
+    const customer = (await createCustomer(db, { name: `customer-${name}` })).unwrap();
+    return (await createInstallation(db, { customerId: customer.id, name, mode: 'byoc', stage: 'production', telemetry })).unwrap();
 }
 
 beforeAll(async () => {
@@ -50,91 +51,60 @@ afterAll(async () => {
     await knex.destroy();
 });
 
-describe('onboardInstallation', () => {
-    it('creates the customer, the installation, one key and a license that verifies and names the installation', async () => {
-        const { installation, key, envelope } = (await onboard('prod', { telemetry: false, alerts: 'slack' })).unwrap();
+describe('issueLicense', () => {
+    it('signs the installation as it is in the registry and stores the envelope as the active license', async () => {
+        const row = await installation('prod', false);
 
-        expect(installation).toMatchObject({ name: 'prod', mode: 'byoc', stage: 'production', telemetry: false, alerts: 'slack' });
-        expect((await getCustomerByName(db, { name: 'acme' })).unwrap()?.id).toBe(installation.customer_id);
-        expect((await listInstallationKeys(db, { installationId: installation.id })).unwrap().map((k) => k.kid)).toStrictEqual([key.kid]);
-        expect(key.privateKeyPem).toMatch(/^-----BEGIN PRIVATE KEY-----/);
+        const { envelope, license } = (await issueLicense(db, { installation: row, signer, expiresAt, graceUntil })).unwrap();
 
-        const license = (await verifyLicense(envelope, signer.publicKeyPem)).unwrap();
-        expect(license).toMatchObject({
+        expect((await verifyLicense(envelope, signer.publicKeyPem)).unwrap()).toMatchObject({
             version: 1,
-            installation_id: installation.uuid,
+            installation_id: row.uuid,
             name: 'prod',
             expires_at: expiresAt.toISOString(),
             grace_until: graceUntil.toISOString(),
             telemetry: false
         });
-
-        const active = (await getActiveLicense(db, { installationId: installation.id })).unwrap();
-        expect(active).toMatchObject({ license: envelope, signature: envelope.split('.')[2], expires_at: expiresAt, grace_until: graceUntil, active: true });
-        expect(active?.signing_kid).toBe((JSON.parse(Buffer.from(envelope.split('.')[0] ?? '', 'base64url').toString()) as { kid: string }).kid);
+        expect(license).toMatchObject({
+            installation_id: row.id,
+            license: envelope,
+            signature: envelope.split('.')[2],
+            expires_at: expiresAt,
+            grace_until: graceUntil,
+            active: true
+        });
+        expect(license.signing_kid).toBe((JSON.parse(Buffer.from(envelope.split('.')[0] ?? '', 'base64url').toString()) as { kid: string }).kid);
+        expect((await getActiveLicense(db, { installationId: row.id })).unwrap()).toStrictEqual(license);
     });
 
-    it('reuses an existing customer', async () => {
-        const first = (await onboard('staging')).unwrap();
-        const second = (await onboard('dev')).unwrap();
-        expect(second.installation.customer_id).toBe(first.installation.customer_id);
-    });
-
-    it('writes nothing when signing fails', async () => {
-        const res = await onboard('broken', { signer: { ...signer, sign: () => Promise.reject(new Error('kms down')) } });
-
-        expect(res.isErr() && res.error.message).toBe('kms down');
-        expect(await knex.withSchema(schema).table<DBSelfHostingInstallation>('installations').where({ name: 'broken' }).first()).toBeUndefined();
-    });
-
-    it('returns a duplicate installation name as an error', async () => {
-        (await onboard('twice')).unwrap();
-        expect((await onboard('twice')).isErr()).toBe(true);
-    });
-});
-
-describe('renewLicense', () => {
-    it('issues a new active license and keeps the previous one inactive', async () => {
-        const { installation, envelope: first } = (await onboard('renew')).unwrap();
+    it('issued again, replaces the active license and keeps the previous row inactive', async () => {
+        const row = await installation('renew');
+        const { envelope: first } = (await issueLicense(db, { installation: row, signer, expiresAt, graceUntil })).unwrap();
         const later = new Date('2028-11-05T00:00:00Z');
 
-        const { envelope } = (
-            await renewLicense(db, { installationUuid: installation.uuid, expiresAt: later, graceUntil: new Date('2029-02-03T00:00:00Z'), signer })
-        ).unwrap();
+        const { envelope } = (await issueLicense(db, { installation: row, signer, expiresAt: later, graceUntil: new Date('2029-02-03T00:00:00Z') })).unwrap();
 
         expect(envelope).not.toBe(first);
         expect((await verifyLicense(envelope, signer.publicKeyPem)).unwrap().expires_at).toBe(later.toISOString());
         const rows = await knex
             .withSchema(schema)
             .table<DBSelfHostingInstallationLicense>('installation_licenses')
-            .where({ installation_id: installation.id })
+            .where({ installation_id: row.id })
             .orderBy('id');
         expect(rows.map((r: DBSelfHostingInstallationLicense) => r.active)).toStrictEqual([false, true]);
     });
 
-    it('refuses an unknown installation', async () => {
-        const res = await renewLicense(db, { installationUuid: '00000000-0000-4000-8000-000000000000', expiresAt, graceUntil, signer });
-        expect(res.isErr() && res.error.message).toBe('no live installation 00000000-0000-4000-8000-000000000000');
-    });
-});
+    it('stores nothing when signing fails', async () => {
+        const row = await installation('broken');
 
-describe('rotateInstallationKey', () => {
-    it('adds a second live key under the same installation', async () => {
-        const { installation, key } = (await onboard('rotate')).unwrap();
+        const res = await issueLicense(db, {
+            installation: row,
+            signer: { ...signer, sign: () => Promise.reject(new Error('kms down')) },
+            expiresAt,
+            graceUntil
+        });
 
-        const rotated = (await rotateInstallationKey(db, { installationUuid: installation.uuid })).unwrap();
-
-        expect(rotated.kid).not.toBe(key.kid);
-        expect((await listInstallationKeys(db, { installationId: installation.id })).unwrap().map((k) => k.kid)).toStrictEqual([key.kid, rotated.kid]);
-    });
-});
-
-describe('disableInstallation', () => {
-    it('leaves the installation without an active license', async () => {
-        const { installation } = (await onboard('disable')).unwrap();
-
-        (await disableInstallation(db, { installationUuid: installation.uuid })).unwrap();
-
-        expect((await getActiveLicense(db, { installationId: installation.id })).unwrap()).toBeNull();
+        expect(res.isErr() && res.error.message).toBe('kms down');
+        expect((await getActiveLicense(db, { installationId: row.id })).unwrap()).toBeNull();
     });
 });
