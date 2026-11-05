@@ -98,6 +98,23 @@ describe('getSimpleOAuth2ClientConfig', () => {
         expect(agents.http).toBe(getOAuthSafeHttpAgents().httpAgent);
         expect(agents.https).toBe(getOAuthSafeHttpAgents().httpsAgent);
     });
+
+    describe('zoho token host', () => {
+        const provider = makeProvider({
+            token_url: 'https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token || ${connectionConfig.accounts-server}/oauth/v2/token'
+        });
+
+        it.each([
+            ['Canada', { 'accounts-server': 'https://accounts.zohocloud.ca', extension: 'ca' }, 'https://accounts.zohocloud.ca'],
+            ['another extension', { 'accounts-server': 'https://accounts.zoho.eu', extension: 'eu' }, 'https://accounts.zoho.eu'],
+            ['a bare accounts-server code', { 'accounts-server': 'us', extension: 'com' }, 'https://accounts.zoho.com'],
+            ['accounts-server without extension', { 'accounts-server': 'https://accounts.zohocloud.ca' }, 'https://accounts.zohocloud.ca']
+        ])('resolves %s', (_, connectionConfig, expectedHost) => {
+            const cfg = getSimpleOAuth2ClientConfig(makeConfig(), provider, connectionConfig);
+            expect(cfg.auth.tokenHost).toBe(expectedHost);
+            expect(cfg.auth.tokenPath).toBe('/oauth/v2/token');
+        });
+    });
 });
 
 describe('OAuth2 token generation and refresh', () => {

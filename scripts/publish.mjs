@@ -138,15 +138,7 @@ async function npmPublish(packageName) {
 }
 
 async function runPublishPreparation(packageName) {
-    if (packageName === '@nangohq/node') {
-        echo(chalk.grey(`  ${figures.tick} Building ${packageName}`));
-        await $`npm run -w "${packageName}" build`;
-    }
-
-    if (packageName === 'nango') {
-        echo(chalk.grey(`  ${figures.tick} Copying CLI package files`));
-        await $`npm run -w "${packageName}" copy:files`;
-    }
+    await $`node ./scripts/prepare-publish-package.mjs ${packageName}`;
 }
 
 // --- Version bump functions ---

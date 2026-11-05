@@ -2,6 +2,94 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.72.2] - 2026-11-05
+
+### Added
+
+- *(license)* License schema, signed envelope and verification (#8108) by @pfreixes
+- Add single function deployment (#8158) by @TBonnin
+- *(server)* License check at boot behind NANGO_LICENSE_CHECK (#8110) by @pfreixes
+- *(agent)* Discover MCP tools for connections added mid-session (NAN-7841) (#8068) by @agusayerza
+- *(agent)* Ask agents for their goal and intent on tool calls (NAN-7828) (#8143) by @agusayerza
+- *(cli)* Add single function deploy via path (#8160) by @TBonnin
+
+### Changed
+
+- *(cli)* Combine deployments of legacy and functions (#8130) by @TBonnin
+- Allow growth plans to temporarily have the add-on flag (#8171) by @ErickRDev
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/bbea1a1231d92b7dcb7223a2ce17dddcf1980b13 by Victor Lang'at by @github-actions[bot]
+
+### Fixed
+
+- Azure identity upgrade (#8170) by @rossmcewan
+- More vuln fixes (#8173) by @rossmcewan
+
+## [v0.72.1] - 2026-11-04
+
+### Added
+
+- *(webhooks)* Add support for command-alkon webhooks (#8142) by @hassan254-prog
+- *(integrations)* Add support for sendcloud (#7777) by @Jiliac
+- Add NANGO_MANAGED credentials and deprecate /integrations/quickstart (#8073) by @marcindobry
+- *(deploy)* Add the self-hosting service to the deploy workflow (#8066) by @pfreixes
+- *(managed-release)* Build the managed image with the license public key (#8099) by @pfreixes
+
+### Changed
+
+- Document --target and server-backed catalog pulls (#8148) by @kaposke
+- Remove integration-templates source code links (#8129) by @viictoo
+
+### Fixed
+
+- *(hosted-telemetry)* Fix flaky double-export test (#8135) by @pfreixes
+
+## [v0.72.0] - 2026-11-03
+
+### Added
+
+- *(hosted-telemetry)* On by default outside cloud (#8079) by @pfreixes
+- *(server)* Allow setting webhook signing key on env creation (#8087) by @ErickRDev
+- *(authz)* Rename actions:execute scope to tools:call (NAN-7879) (#8084) by @agusayerza
+- *(integrations)* Add support for crustdata (#8094) by @hassan254-prog
+- *(authz)* Migrate stored actions:execute scopes to tools:call (NAN-7882) (#8093) by @agusayerza
+- *(dasbhoard)* Add tools support to functions list and details (#8076) by @TBonnin
+- *(agent)* Run tools from agent sessions (#8065) by @agusayerza
+- *(integrations)* Add support for envoice (#8052) by @arhaikal
+- *(integrations)* Add support for Formstack Documents (#7884) by @juansoultrek
+- *(integrations)* Add support for athenahealth-jwks (#8106) by @hassan254-prog
+- *(internal-auth)* Task capability claims (#7978) by @rossmcewan
+- *(integrations)* Add support for hydradb (#7968) by @arrry-hydraDB
+- *(sdk)* Expose metadata and checkpoint in createTool (#8131) by @TBonnin
+- Add Close, Google Tasks, Smartsheet, Twitch and Webex Nango managed OAuth apps (#8117) by @viictoo
+- *(sdk)* Add `nango.Error()` to function sdk (#8134) by @TBonnin
+- *(self-hosting)* Add the package and the cloud database for installations (#8062) by @pfreixes
+- *(sdk)* Structured required scopes for createTool (#8139) by @TBonnin
+- *(self-hosting)* Add the service with its probe and the cloud migrations at boot (#8064) by @pfreixes
+- *(integrations)* Add support for paximal-mcp (#8137) by @hassan254-prog
+- *(integrations)* Add support for exotel (#8138) by @hassan254-prog
+- *(server)* Add endpoints to fetch catalog function code (#8044) by @kaposke
+- *(cli)* Pull catalog functions from the Nango API instead of GitHub (#8045) by @kaposke
+
+### Changed
+
+- October 2026 changelog roundup (#8101) by @sapnesh-nango
+- Refine Nango-managed OAuth apps section in the auth guide (#8105) by @rguldener
+- Changelog entries for Nango-managed OAuth apps and pre-built tools (#8115) by @sapnesh-nango
+- *(spec)* Align integration and provider schemas with the API (#8116) by @hassan254-prog
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/71eb20d512b797f238f17b16a79d4b1b6dc90ea0 by Agustin Ayerza by @github-actions[bot]
+- Update the October roundup to 52 new APIs (#8133) by @sapnesh-nango
+
+### Fixed
+
+- *(providers)* Fix symplr CTM to use a selectable hostname (#8102) by @hassan254-prog
+- *(providers)* Fix haus api base url (#8111) by @hassan254-prog
+- Include the Elastic-2.0 license in the frontend and node packages (#8107) by @rossmcewan
+- *(proxy)* Prevent fallback host takeover and add proxy tracking logs (#7847) by @marcindobry
+- *(jobs,lambda)* Default schema fields that zod 4.4 made required (#8078) by @hassan254-prog
+- *(integrations)* Fix zoho refresh canadian connections against `accounts.zohocloud.ca` (#8109) by @hassan254-prog
+- Vulns (#8128) by @rossmcewan
+- Dd-trace upgrade (#8136) by @rossmcewan
+
 ## [v0.71.14] - 2026-10-29
 
 ### Added
@@ -8562,6 +8650,9 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.72.2]: https://github.com/NangoHQ/nango/compare/v0.72.1..v0.72.2
+[v0.72.1]: https://github.com/NangoHQ/nango/compare/v0.72.0..v0.72.1
+[v0.72.0]: https://github.com/NangoHQ/nango/compare/v0.71.14..v0.72.0
 [v0.71.14]: https://github.com/NangoHQ/nango/compare/v0.71.13..v0.71.14
 [v0.71.13]: https://github.com/NangoHQ/nango/compare/v0.71.12..v0.71.13
 [v0.71.12]: https://github.com/NangoHQ/nango/compare/v0.71.11..v0.71.12

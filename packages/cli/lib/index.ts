@@ -30,7 +30,7 @@ import { MissingArgumentError } from './utils/errors.js';
 import { checkAndSyncPackageJson } from './zeroYaml/check.js';
 import { compileAllFunctions } from './zeroYaml/compile.js';
 import { parseIntegrationDefinitions } from './zeroYaml/definitions.js';
-import { deploy } from './zeroYaml/deploy.js';
+import { deploy, validateDeployArguments } from './zeroYaml/deploy.js';
 import { dev } from './zeroYaml/dev.js';
 import { initZero } from './zeroYaml/init.js';
 import { ReadableError } from './zeroYaml/utils.js';
@@ -491,13 +491,14 @@ program
     .command('deploy')
     .description('Deploy a Nango integration')
     .argument('[environment]', 'The target environment (e.g., "dev" or "prod")')
-    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with.')
-    .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
-    .option('-a, --action [actionName]', 'Optional deploy only this action name.')
+    .argument('[file]', 'Optional: Deploy only this script file (e.g., "github/tools/getIssue.ts").')
+    .option('-v, --version [version]', 'Optional: Set the deployment version for syncs/actions. Has no effect on functions.')
+    .option('-s, --sync [syncName]', 'Deprecated, pass the script file instead. Optional deploy only this sync name.')
+    .option('-a, --action [actionName]', 'Deprecated, pass the script file instead. Optional deploy only this action name.')
     .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
-    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
+    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation. Requires --auto-confirm.', false)
     .addOption(new Option('--sourcemap <mode>', 'Source map mode for compiled function bundles.').choices(SOURCEMAP_OPTIONS).default('inline'))
-    .action(async function (this: Command, environment?: string) {
+    .action(async function (this: Command, environment?: string, file?: string) {
         const options = this.opts<DeployOptions>();
         const { debug, interactive, dependencyUpdate, sourcemap } = options;
         const fullPath = process.cwd();
@@ -510,6 +511,13 @@ program
             if (err instanceof MissingArgumentError) {
                 this.help();
             }
+            process.exitCode = NangoCliExitCode.DeployError;
+            return;
+        }
+
+        const validArguments = validateDeployArguments({ environment, file, options });
+        if (validArguments.isErr()) {
+            console.error(chalk.red(validArguments.error.message));
             process.exitCode = NangoCliExitCode.DeployError;
             return;
         }
@@ -530,7 +538,7 @@ program
             return;
         }
 
-        const res = await deploy({ fullPath, options, environmentName: environment });
+        const res = await deploy({ fullPath, options, environmentName: environment, file, interactive });
         if (res.isErr()) {
             process.exitCode = NangoCliExitCode.DeployError;
             return;
@@ -648,6 +656,7 @@ program
     .argument('<name>', 'Function name')
     .option('-c, --catalog', 'Pull from the public catalog')
     .option('-e, --env <environment>', 'Pull from a deployed function in this environment')
+    .option('-t, --target <integration>', 'With --catalog, the integration to write the function for, when its name differs from the provider')
     .option('-s, --sync', 'Disambiguate to a sync when multiple functions share the name')
     .option('-a, --action', 'Disambiguate to an action when multiple functions share the name')
     .option('--on-event', 'Disambiguate to an on-event script when multiple functions share the name')
@@ -657,6 +666,7 @@ program
         const opts = this.opts<{
             catalog?: boolean;
             env?: string;
+            target?: string;
             sync?: boolean;
             action?: boolean;
             onEvent?: boolean;
@@ -671,6 +681,14 @@ program
             console.error(chalk.gray('Examples:'));
             console.error(chalk.gray('  nango pull github list-repos --catalog'));
             console.error(chalk.gray('  nango pull github list-repos --env dev'));
+            process.exitCode = 1;
+            return;
+        }
+
+        if (opts.target && !opts.catalog) {
+            console.error(chalk.red('--target can only be used with --catalog.'));
+            console.error(chalk.gray('Example:'));
+            console.error(chalk.gray('  nango pull github list-repos --catalog --target my-github'));
             process.exitCode = 1;
             return;
         }
@@ -696,7 +714,7 @@ program
 
         let success: boolean;
         if (opts.catalog) {
-            success = await pullFromCatalog(baseOptions);
+            success = await pullFromCatalog({ ...baseOptions, target: opts.target });
         } else {
             let environmentName: string;
             try {

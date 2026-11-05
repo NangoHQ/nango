@@ -4,7 +4,7 @@ import { isInitializeRequest } from '@modelcontextprotocol/server';
 import { report } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
-import { withConnectionsCreatedInSession } from './sessionConnection.js';
+import { hasPendingMcpServers, withConnectionsCreatedInSession, withMcpToolsDiscovered } from './sessionConnection.js';
 import { createAgentSessionMcpServer } from './sessionServer.js';
 
 import type { GetAgentSessionMcp, PostAgentSessionMcp } from '@nangohq/types';
@@ -17,13 +17,17 @@ export const postAgentSessionMcp = asyncWrapperWithEnvironment<PostAgentSessionM
         return;
     }
 
-    // Only initialize carries the instructions, which say what is connected, so only it pays for the lookup.
-    const session = isInitializeRequest(req.body)
-        ? await withConnectionsCreatedInSession(agentSession).catch((err: unknown) => {
-              report(err);
-              return agentSession;
-          })
-        : agentSession;
+    // Initialize carries the instructions, which say what is connected. Past that, only an MCP server the
+    // agent may have connected since makes the lookup worth it, because it brings tools of its own.
+    const session =
+        isInitializeRequest(req.body) || hasPendingMcpServers(agentSession)
+            ? await withConnectionsCreatedInSession(agentSession)
+                  .then(async (current) => await withMcpToolsDiscovered({ account, environment, plan, session: current }))
+                  .catch((err: unknown) => {
+                      report(err);
+                      return agentSession;
+                  })
+            : agentSession;
     const server = createAgentSessionMcpServer({ account, environment, plan, session }, req.body);
     const transport = new NodeStreamableHTTPServerTransport();
 

@@ -4,11 +4,12 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
-<Update label="43 new APIs in October" description="November 1, 2026">
+<Update label="52 new APIs in October" description="November 1, 2026">
   <AccordionGroup>
-    <Accordion icon="webhook" title="43 new APIs in October">
+    <Accordion icon="webhook" title="52 new APIs in October">
       - [Aha!](/api-integrations/aha)
       - [ArcSite](/api-integrations/arcsite)
+      - [athenahealth (JWKS)](/api-integrations/athenahealth-jwks)
       - [Attentive (API Key)](/api-integrations/attentive-api-key)
       - [Attentive (MCP)](/api-integrations/attentive-mcp)
       - [Bluebeam](/api-integrations/bluebeam)
@@ -21,21 +22,28 @@ description: "Important developer & product updates, including deprecations & br
       - [Checkbox](/api-integrations/checkbox)
       - [Circleback](/api-integrations/circleback)
       - [Clarify](/api-integrations/clarify)
+      - [Command Alkon](/api-integrations/command-alkon)
+      - [Crustdata](/api-integrations/crustdata)
+      - [Crustdata (MCP)](/api-integrations/crustdata-mcp)
       - [Discogs](/api-integrations/discogs)
       - [Discogs (Personal Access Token)](/api-integrations/discogs-token)
       - [Discord Bot](/api-integrations/discord-bot)
+      - [Envoice](/api-integrations/envoice)
       - [Extensiv](/api-integrations/extensiv)
       - [Fiix](/api-integrations/fiix)
       - [Firecrawl](/api-integrations/firecrawl)
+      - [Formstack Documents](/api-integrations/formstack-documents)
       - [FreshDesk (MCP)](/api-integrations/freshdesk-mcp)
       - [Freshservice (MCP)](/api-integrations/freshservice-mcp)
       - [Freshservice (OAuth)](/api-integrations/freshservice-oauth)
-      - [Haus](/api-integrations/haus)
+      - [Haus (Experiment Results API)](/api-integrations/haus)
       - [iManage Work](/api-integrations/imanage)
       - [Litmos](/api-integrations/litmos)
       - [LoyaltyLion](/api-integrations/loyaltylion)
       - [Mailtrap](/api-integrations/mailtrap)
+      - [Metaview (MCP)](/api-integrations/metaview-mcp)
       - [Microsoft Defender (Client Credentials)](/api-integrations/microsoft-defender-cc)
+      - [Modjo AI (v2)](/api-integrations/modjo-ai-v2)
       - [ModMed (FHIR)](/api-integrations/modmed-fhir)
       - [Monday (API Key)](/api-integrations/monday-api-key)
       - [Navan](/api-integrations/navan)
@@ -50,6 +58,7 @@ description: "Important developer & product updates, including deprecations & br
       - [Tenable](/api-integrations/tenable)
       - [TIMOCOM](/api-integrations/timocom)
       - [Wingify (VWO)](/api-integrations/vwo)
+      - [Zscaler (OneAPI)](/api-integrations/zscaler)
     </Accordion>
   </AccordionGroup>
 
@@ -66,7 +75,23 @@ description: "Important developer & product updates, including deprecations & br
 </Update>
 ---
 
-<Update label="Environment configuration from the API" description="October 27, 2026">
+<Update label="Nango-managed OAuth apps" description="October 29, 2026">
+  Nango provides pre-approved OAuth apps for 75+ APIs, including CASA-verified apps for Gmail, Google Drive, and Google Calendar. You can now use them in production without waiting for your own app to be approved.
+
+  In the dashboard, pick the **Nango-managed OAuth app** tab when creating an integration. See the [list of APIs with a Nango-managed OAuth app](/guides/auth/auth-guide#apis-with-a-nango-managed-oauth-app) and the [trade-offs](/guides/auth/auth-guide#nango-managed-oauth-apps) compared to your own app.
+
+  ![The Nango-managed OAuth app tab when creating a Google Drive integration](/images/changelog/nango-managed-oauth-app.png)
+</Update>
+---
+
+<Update label="10,000+ tools for agents" description="October 27, 2026">
+  Nango now has 10,000+ pre-built tools across 1,000+ APIs, available in [agent sessions](/guides/agent-sessions). Your agent can use them even when an API has no official MCP server.
+
+  All tools are customizable. Browse them in [APIs & Integrations](/integrations/overview), or [take ownership of a tool](/guides/functions/functions-guide#take-ownership-of-a-function) to change what it does.
+</Update>
+---
+
+<Update label="Environment configuration from API" description="October 27, 2026">
   Set up a new environment entirely from the API, webhooks included, and read its configuration back.
 
   - [Create environment API](/reference/backend/http-api/environments/create) accepts a `webhooks` object with the destination URLs and event subscriptions. The response now returns the complete environment settings, including the webhook signing key.
@@ -76,7 +101,7 @@ description: "Important developer & product updates, including deprecations & br
 </Update>
 ---
 
-<Update label="Smaller improvements" description="October 27, 2026">
+<Update label="Small improvements" description="October 27, 2026">
   - **Clearer errors when agents hit the connection limit:** Agent sessions now get a clear error when creating a connection fails because the account is at its plan's connection limit.
   - **Syncs that checkpoint keep going:** A sync stopped at the execution time limit now reschedules immediately if it saved a checkpoint during the run, instead of failing and waiting for the next scheduled run.
   - **Pre-built integrations on self-managed instances:** Self-managed instances can now install Nango's integration catalog in their own object storage. See [Self-managed Nango instances](/guides/platform/self-hosting/install-integration-catalog).
@@ -113,7 +138,7 @@ description: "Important developer & product updates, including deprecations & br
 </Update>
 ---
 
-<Update label="Scoped environment API keys from the API" description="October 19, 2026">
+<Update label="Scoped environment API keys" description="October 19, 2026">
   The account-level API can now create Environment API keys with specific scopes, and update a key's name or scopes after creation.
 
   - [Create environment API key](/reference/backend/http-api/environments/create-api-key) accepts an optional `scopes` array. Without it, the key keeps full environment access as before.
@@ -144,7 +169,7 @@ description: "Important developer & product updates, including deprecations & br
 </Update>
 ---
 
-<Update label="MCP server tools in agent sessions" description="October 13, 2026">
+<Update label="MCP passthrough in agent sessions" description="October 13, 2026">
   Connected third-party MCP servers now show up in agent sessions next to Nango actions. Their tools are searchable, pinnable, and covered by the same allow and deny lists, and every call goes through Nango with credential refresh and logs.
 
   Include an MCP integration such as [Notion (MCP)](/api-integrations/notion-mcp) or [Linear (MCP)](/api-integrations/linear-mcp) in the session's toolset, and its tools join the session alongside Nango actions.
@@ -1770,7 +1795,7 @@ description: "Important developer & product updates, including deprecations & br
 
   **Am I impacted?**
 
-  - If you use actions with heavy outputs. Typical large-output actions include [`fetch-attachment`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/actions/fetch-attachment.ts), [`fetch-call-transcripts`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/fetch-call-transcripts.ts), and in general anything fetching an object from an external system. We've added dedicated proxy code to help with the migration: [`fetch-document`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/proxy/fetch-document.ts), [`fetch-spreadsheet`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-sheet/proxy/fetch-spreadsheet.ts), [`fetch-file`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/proxy/fetch-file.ts), [`fetch-database`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/proxy/fetch-database.ts).
+  - If you use actions with heavy outputs. Typical large-output actions include `fetch-attachment`, `fetch-call-transcripts`, and in general anything fetching an object from an external system. We've added dedicated proxy code to help with the migration: `fetch-document`, `fetch-spreadsheet`, `fetch-file`, `fetch-database`.
   - If you're using a now-deprecated template function that fetches objects from an external system.
 
   **What to do:**
@@ -2511,7 +2536,7 @@ description: "Important developer & product updates, including deprecations & br
   <Frame>
     ![Integration docs illustration](/images/changelog/integration-docs.png)
   </Frame>
-  Each template function now includes a ReadMe file with detailed information about the function, how to use it, the API reference, and its changelog. For example, see the [Hubspot Create Company template function](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-company.md). These ReadMe files are automatically generated and kept up-to-date.
+  Each template function now includes a ReadMe file with detailed information about the function, how to use it, the API reference, and its changelog. These ReadMe files are automatically generated and kept up-to-date.
 </Update>
 ---
 

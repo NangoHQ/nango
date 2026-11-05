@@ -40,7 +40,8 @@ import type {
     NangoYamlParsedIntegration,
     ParsedNangoAction,
     ParsedNangoSync,
-    Result
+    Result,
+    ToolTags
 } from '@nangohq/types';
 
 // TODO: consolidate with the `server` schemas to have a single source of truth
@@ -75,6 +76,16 @@ const functionTriggerDefinitionSchema = z.discriminatedUnion('kind', [
 ]) satisfies z.ZodType<FunctionTriggerDefinition>;
 
 const functionTagStringSchema = z.string().max(64);
+const scopeValuesSchema = z
+    .array(functionTagStringSchema)
+    .min(1)
+    .max(64)
+    .refine((values) => new Set(values).size === values.length, { message: 'Duplicate scopes are not allowed' });
+const requiredScopesSchema = z.union([
+    z.object({ all: scopeValuesSchema }).strict(),
+    z.object({ any: scopeValuesSchema }).strict(),
+    z.object({ none: z.literal(true) }).strict()
+]);
 const functionTagKeySchema = z
     .string()
     .regex(/^[a-z][a-z0-9_\-./]*$/, {
@@ -97,7 +108,7 @@ export const functionTagsSchema = functionTagsRecordSchema.refine((tags) => Obje
 const toolMetaSchema = z
     .object({
         instructions: z.string().max(1024).optional(),
-        requiredScopes: z.array(functionTagStringSchema).max(64).optional(),
+        requiredScopes: requiredScopesSchema.optional(),
         tags: functionTagsRecordSchema
             .refine((tags) => reservedToolTagKeys.every((key) => !(key in tags)), {
                 message: `Tag keys ${reservedToolTagKeys.map((key) => `'${key}'`).join(', ')} are reserved`
@@ -121,22 +132,37 @@ interface FunctionDefinition {
     input?: z.ZodTypeAny | undefined;
     output?: z.ZodTypeAny | undefined;
     data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
-    tags?: FunctionTags | undefined;
+    tags?: FunctionTags | ToolTags | undefined;
 }
 
-type CompiledTool = CreateToolProps & { type: 'function'; _nangoFactory: 'tool' };
+type CompiledTool = CreateToolProps<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint> & { type: 'function'; _nangoFactory: 'tool' };
 
 export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'> & { filePath: string };
 
+export interface ParsedEntryPoint {
+    filePath: string;
+    integrationId: string;
+    type: 'sync' | 'action' | 'on-event' | 'function';
+    name: string;
+}
+
 export interface ParsedIntegrationDefinitions extends NangoYamlParsed {
     functions: FunctionConfig[];
+    entryPoints: ParsedEntryPoint[];
     hasExperimentalFunctions: boolean;
 }
 
 const allowed = ['action', 'sync', 'onEvent', 'function'];
 
 export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<ParsedIntegrationDefinitions>> {
-    const parsed: ParsedIntegrationDefinitions = { yamlVersion: 'v2', integrations: [], models: new Map(), functions: [], hasExperimentalFunctions: false };
+    const parsed: ParsedIntegrationDefinitions = {
+        yamlVersion: 'v2',
+        integrations: [],
+        models: new Map(),
+        functions: [],
+        entryPoints: [],
+        hasExperimentalFunctions: false
+    };
 
     printDebug('Rebuilding parsed from js files', debug);
 
@@ -211,6 +237,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                     return Err(parsedSyncRes.error);
                 }
                 integration.syncs.push(parsedSyncRes.value);
+                parsed.entryPoints.push({ filePath: realPath, integrationId, type: 'sync', name: basename });
                 break;
             }
             case 'action': {
@@ -226,6 +253,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                     return Err(parsedActionRes.error);
                 }
                 integration.actions.push(parsedActionRes.value);
+                parsed.entryPoints.push({ filePath: realPath, integrationId, type: 'action', name: basename });
                 break;
             }
             case 'onEvent': {
@@ -236,6 +264,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 } else if (script.event === 'validate-connection') {
                     integration.onEventScripts['validate-connection'].push(basename);
                 }
+                parsed.entryPoints.push({ filePath: realPath, integrationId, type: 'on-event', name: basename });
                 break;
             }
             case 'function': {
@@ -276,6 +305,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                     }),
                     filePath: realPath
                 });
+                parsed.entryPoints.push({ filePath: realPath, integrationId, type: 'function', name });
                 break;
             }
         }
@@ -497,7 +527,10 @@ export function validateFunction({
     return Ok(undefined);
 }
 
-export function validateTool({ params, filePath }: { params: Pick<CreateToolProps, 'name' | 'meta'>; filePath: string }): Result<void> {
+export function validateTool({ params, filePath }: { params: Pick<CompiledTool, 'name' | 'meta' | 'data'>; filePath: string }): Result<void> {
+    if (params.data && 'models' in params.data && params.data.models) {
+        return Err(new Error(`Tool '${filePath}' declares 'data.models', which is not supported yet.`));
+    }
     if (params.name !== undefined) {
         const nameValidation = toolNameSchema.safeParse(params.name);
         if (!nameValidation.success) {

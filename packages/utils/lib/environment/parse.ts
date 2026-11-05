@@ -247,6 +247,11 @@ const ENVS_SHAPE = z.object({
     // necessary — a larger TTL widens that eventual-consistency window. Read once at startup.
     AUTH_PERSIST_CONTEXT_CACHE_TTL_MS: z.coerce.number().int().positive().max(60_000).optional().default(60_000), // 1 minute
 
+    // License configuration options
+    NANGO_LICENSE: z.string().optional(),
+    // Experimental, disabled by default for now
+    NANGO_LICENSE_CHECK: z.stringbool().optional().default(false),
+
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
@@ -261,6 +266,7 @@ const ENVS_SHAPE = z.object({
     NANGO_OAUTH_SERVER_JWKS: z.string().optional(),
     NANGO_SERVER_KEEP_ALIVE_TIMEOUT: z.coerce.number().optional().default(61_000),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional().default(200),
+    NANGO_CATALOG_CODE_RATE_LIMIT_PER_DAY: z.coerce.number().int().min(0).optional().default(500),
     NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
@@ -480,6 +486,12 @@ const ENVS_SHAPE = z.object({
     ACTION_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(500),
     WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(500),
     ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
+
+    // Self-hosting
+    NANGO_SELF_HOSTING_PORT: z.coerce.number().optional().default(3010),
+    NANGO_SELF_HOSTING_DATABASE_URL: z.url().optional(),
+    NANGO_SELF_HOSTING_DATABASE_SSL: z.stringbool().optional().default(false),
+    NANGO_SELF_HOSTING_DB_POOL_MAX: z.coerce.number().int().positive().optional().default(5),
 
     // Runner
     RUNNER_SECRET_KEY: z.string().optional(),
