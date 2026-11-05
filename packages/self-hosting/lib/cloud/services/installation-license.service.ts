@@ -73,3 +73,11 @@ export async function deactivateLicense(db: RegistryDb, { installationId }: { in
         return Err(err);
     }
 }
+
+export async function listLicenses(db: RegistryDb, { installationId }: { installationId: number }): Promise<Result<DBSelfHostingInstallationLicense[]>> {
+    try {
+        return Ok(await licenses(db).where({ installation_id: installationId }).orderBy('id'));
+    } catch (err) {
+        return Err(err);
+    }
+}

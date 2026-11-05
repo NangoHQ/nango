@@ -1,7 +1,7 @@
 import { Err, Ok } from '@nangohq/utils';
 
 import { CUSTOMERS_TABLE } from '../db/schema.js';
-import { inserted, table } from './db.js';
+import { inserted, isUniqueViolation, table } from './db.js';
 import { deleteInstallation, listInstallations } from './installation.service.js';
 
 import type { RegistryDb } from './db.js';
@@ -14,7 +14,7 @@ export async function createCustomer(db: RegistryDb, { name }: { name: string })
     try {
         return Ok(inserted(await customers(db).insert({ name }).returning('*')));
     } catch (err) {
-        return Err(err);
+        return Err(isUniqueViolation(err) ? new Error(`customer ${name} already exists`) : err);
     }
 }
 
@@ -41,6 +41,18 @@ export async function deleteCustomer(db: RegistryDb, { name }: { name: string })
             const [row] = await customers(inTrx).where({ id: customer.id, deleted_at: null }).update({ deleted_at: now, updated_at: now }).returning('*');
             return row ? Ok(row) : Err(new Error(`no live customer ${name}`));
         });
+    } catch (err) {
+        return Err(err);
+    }
+}
+
+export async function listCustomers(db: RegistryDb, { includeDeleted = false }: { includeDeleted?: boolean } = {}): Promise<Result<DBSelfHostingCustomer[]>> {
+    try {
+        return Ok(
+            await customers(db)
+                .where(includeDeleted ? {} : { deleted_at: null })
+                .orderBy('id')
+        );
     } catch (err) {
         return Err(err);
     }

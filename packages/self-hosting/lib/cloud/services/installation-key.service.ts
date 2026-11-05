@@ -30,9 +30,16 @@ export async function createInstallationKey(
     }
 }
 
-export async function listInstallationKeys(db: RegistryDb, { installationId }: { installationId: number }): Promise<Result<DBSelfHostingInstallationKey[]>> {
+export async function listInstallationKeys(
+    db: RegistryDb,
+    { installationId, includeDeleted = false }: { installationId: number; includeDeleted?: boolean }
+): Promise<Result<DBSelfHostingInstallationKey[]>> {
     try {
-        return Ok(await keys(db).where({ installation_id: installationId, deleted_at: null }).orderBy('id'));
+        return Ok(
+            await keys(db)
+                .where({ installation_id: installationId, ...(!includeDeleted && { deleted_at: null }) })
+                .orderBy('id')
+        );
     } catch (err) {
         return Err(err);
     }

@@ -1,7 +1,7 @@
 import { Err, Ok } from '@nangohq/utils';
 
 import { INSTALLATION_KEYS_TABLE, INSTALLATION_LICENSES_TABLE, INSTALLATIONS_TABLE } from '../db/schema.js';
-import { inserted, table } from './db.js';
+import { inserted, isUniqueViolation, table } from './db.js';
 
 import type { RegistryDb } from './db.js';
 import type { DBSelfHostingInstallation, DBSelfHostingInstallationKey, DBSelfHostingInstallationLicense } from '@nangohq/types';
@@ -33,7 +33,7 @@ export async function createInstallation(
             .returning('*');
         return Ok(inserted(row));
     } catch (err) {
-        return Err(err);
+        return Err(isUniqueViolation(err) ? new Error(`installation ${name} already exists for this customer`) : err);
     }
 }
 
@@ -45,11 +45,14 @@ export async function getInstallationByUuid(db: RegistryDb, { uuid }: { uuid: st
     }
 }
 
-export async function listInstallations(db: RegistryDb, { customerId }: { customerId?: number } = {}): Promise<Result<DBSelfHostingInstallation[]>> {
+export async function listInstallations(
+    db: RegistryDb,
+    { customerId, includeDeleted = false }: { customerId?: number; includeDeleted?: boolean } = {}
+): Promise<Result<DBSelfHostingInstallation[]>> {
     try {
         return Ok(
             await installations(db)
-                .where({ deleted_at: null, ...(customerId !== undefined && { customer_id: customerId }) })
+                .where({ ...(!includeDeleted && { deleted_at: null }), ...(customerId !== undefined && { customer_id: customerId }) })
                 .orderBy('id')
         );
     } catch (err) {

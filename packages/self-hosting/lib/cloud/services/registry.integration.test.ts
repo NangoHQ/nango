@@ -5,9 +5,9 @@ import knexFactory from 'knex';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { migrate } from '../db/migrate.js';
-import { createCustomer, deleteCustomer, getCustomerByName } from './customer.service.js';
+import { createCustomer, deleteCustomer, getCustomerByName, listCustomers } from './customer.service.js';
 import { createInstallationKey, deleteInstallationKey, listInstallationKeys } from './installation-key.service.js';
-import { createInstallationLicense, deactivateLicense, getActiveLicense } from './installation-license.service.js';
+import { createInstallationLicense, deactivateLicense, getActiveLicense, listLicenses } from './installation-license.service.js';
 import { createInstallation, deleteInstallation, getInstallationByUuid, listInstallations, updateInstallation } from './installation.service.js';
 
 import type { RegistryDb } from './db.js';
@@ -62,7 +62,8 @@ describe('customers', () => {
 
     it('returns a duplicate name as an error', async () => {
         await createCustomer(db, { name: 'twice' });
-        expect((await createCustomer(db, { name: 'twice' })).isErr()).toBe(true);
+        const res = await createCustomer(db, { name: 'twice' });
+        expect(res.isErr() && res.error.message).toBe('customer twice already exists');
     });
 });
 
@@ -87,7 +88,8 @@ describe('installations', () => {
     it('returns a duplicate name under the same customer as an error', async () => {
         const customerId = await customer();
         await createInstallation(db, { customerId, name: 'prod', mode: 'byoc', stage: 'production' });
-        expect((await createInstallation(db, { customerId, name: 'prod', mode: 'byoc', stage: 'production' })).isErr()).toBe(true);
+        const res = await createInstallation(db, { customerId, name: 'prod', mode: 'byoc', stage: 'production' });
+        expect(res.isErr() && res.error.message).toBe('installation prod already exists for this customer');
     });
 });
 
@@ -241,5 +243,38 @@ describe('installation updates and deletion', () => {
     it('refuses to update or delete an unknown installation', async () => {
         expect((await updateInstallation(db, { id: 999999, name: 'x' })).isErr()).toBe(true);
         expect((await deleteInstallation(db, { id: 999999 })).isErr()).toBe(true);
+    });
+});
+
+describe('lists', () => {
+    it('hide deleted rows unless asked, and the license history keeps every row', async () => {
+        const kept = (await createCustomer(db, { name: 'kept' })).unwrap();
+        const dropped = (await createCustomer(db, { name: 'dropped' })).unwrap();
+        const installationId = (await createInstallation(db, { customerId: kept.id, name: 'prod', mode: 'byoc', stage: 'production' })).unwrap().id;
+        const { key } = (await createInstallationKey(db, { installationId })).unwrap();
+        const first = (await createInstallationLicense(db, licenseInput(installationId))).unwrap();
+        const second = (await createInstallationLicense(db, licenseInput(installationId))).unwrap();
+        (await deleteInstallationKey(db, { kid: key.kid })).unwrap();
+        (await deleteCustomer(db, { name: 'dropped' })).unwrap();
+
+        const names = (rows: { name: string }[]) => rows.map((r) => r.name);
+        expect(names((await listCustomers(db)).unwrap())).not.toContain('dropped');
+        expect(names((await listCustomers(db, { includeDeleted: true })).unwrap())).toEqual(expect.arrayContaining(['kept', 'dropped']));
+        expect((await listInstallationKeys(db, { installationId })).unwrap()).toStrictEqual([]);
+        expect((await listInstallationKeys(db, { installationId, includeDeleted: true })).unwrap().map((k) => k.kid)).toStrictEqual([key.kid]);
+        expect((await listLicenses(db, { installationId })).unwrap().map((l) => [l.id, l.active])).toStrictEqual([
+            [first.id, false],
+            [second.id, true]
+        ]);
+        expect((await listInstallations(db, { customerId: dropped.id })).unwrap()).toStrictEqual([]);
+    });
+
+    it('list deleted installations with --all', async () => {
+        const customerId = await customer();
+        const gone = (await createInstallation(db, { customerId, name: 'gone', mode: 'byoc', stage: 'production' })).unwrap();
+        (await deleteInstallation(db, { id: gone.id })).unwrap();
+
+        expect((await listInstallations(db, { customerId })).unwrap()).toStrictEqual([]);
+        expect((await listInstallations(db, { customerId, includeDeleted: true })).unwrap().map((i) => i.id)).toStrictEqual([gone.id]);
     });
 });

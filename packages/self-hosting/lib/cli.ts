@@ -2,9 +2,9 @@ import { parseArgs } from 'node:util';
 
 import { cloudDb, destroyCloudDb } from './cloud/db/client.js';
 import { kmsLicenseSigner } from './cloud/licensing/signer.js';
-import { createCustomer, deleteCustomer, getCustomerByName } from './cloud/services/customer.service.js';
+import { createCustomer, deleteCustomer, getCustomerByName, listCustomers } from './cloud/services/customer.service.js';
 import { createInstallationKey, deleteInstallationKey, listInstallationKeys } from './cloud/services/installation-key.service.js';
-import { deactivateLicense, getActiveLicense } from './cloud/services/installation-license.service.js';
+import { deactivateLicense, getActiveLicense, listLicenses } from './cloud/services/installation-license.service.js';
 import { createInstallation, deleteInstallation, getInstallationByUuid, listInstallations, updateInstallation } from './cloud/services/installation.service.js';
 import { issueLicense } from './cloud/services/licensing.service.js';
 
@@ -18,6 +18,7 @@ const usage = `usage: node packages/self-hosting/dist/cli.js <command> [options]
 
 customers
   create-customer      --name <name>
+  list-customers       [--all]
   delete-customer      --name <name> --yes             takes its installations down too
 
 installations
@@ -25,19 +26,21 @@ installations
                        --stage production|staging|development [--no-telemetry] [--alerts off|slack|oncall]
   update-installation  --installation <uuid> [--name <name>] [--telemetry|--no-telemetry] [--alerts off|slack|oncall]
   delete-installation  --installation <uuid> --yes     deactivates its license and deletes its keys
-  list-installations   [--customer <name>]
+  list-installations   [--customer <name>] [--all]
 
 keys
   create-key           --installation <uuid>           prints the private key once, it is never stored
   delete-key           --kid <kid> --yes
-  list-keys            --installation <uuid>
+  list-keys            --installation <uuid> [--all]
 
 licenses
   create-license       --installation <uuid> --expires-at <iso date> --grace-until <iso date>
                        replaces the active license, so it is also how a license is renewed
   disable-license      --installation <uuid> --yes
+  list-licenses        --installation <uuid>             every license ever issued, active or not
 
-Prints one JSON document to stdout. Without --yes a delete or disable only prints what it would touch.`;
+Prints one JSON document to stdout. Without --yes a delete or disable only prints what it would touch.
+Deletes are soft; --all on a list includes the deleted rows.`;
 
 function parse() {
     return parseArgs({
@@ -55,7 +58,8 @@ function parse() {
             'grace-until': { type: 'string' },
             installation: { type: 'string' },
             kid: { type: 'string' },
-            yes: { type: 'boolean' }
+            yes: { type: 'boolean' },
+            all: { type: 'boolean', default: false }
         }
     });
 }
@@ -144,6 +148,7 @@ function describe(err: unknown): string {
 
 const commands: Record<string, (db: RegistryDb) => Promise<Result<unknown>>> = {
     'create-customer': (db) => createCustomer(db, { name: required('name', values.name) }),
+    'list-customers': (db) => listCustomers(db, { includeDeleted: values.all }),
     'delete-customer': async (db) => {
         const row = await customer(db, required('name', values.name));
         const installations = (await listInstallations(db, { customerId: row.id })).unwrap();
@@ -179,7 +184,8 @@ const commands: Record<string, (db: RegistryDb) => Promise<Result<unknown>>> = {
         confirmed(await cascade(db, row));
         return deleteInstallation(db, { id: row.id });
     },
-    'list-installations': async (db) => listInstallations(db, values.customer ? { customerId: (await customer(db, values.customer)).id } : {}),
+    'list-installations': async (db) =>
+        listInstallations(db, { includeDeleted: values.all, ...(values.customer && { customerId: (await customer(db, values.customer)).id }) }),
 
     'create-key': async (db) => createInstallationKey(db, { installationId: (await installation(db)).id }),
     'delete-key': (db) => {
@@ -187,7 +193,7 @@ const commands: Record<string, (db: RegistryDb) => Promise<Result<unknown>>> = {
         confirmed({ kid });
         return deleteInstallationKey(db, { kid });
     },
-    'list-keys': async (db) => listInstallationKeys(db, { installationId: (await installation(db)).id }),
+    'list-keys': async (db) => listInstallationKeys(db, { installationId: (await installation(db)).id, includeDeleted: values.all }),
 
     'create-license': async (db) =>
         issueLicense(db, {
@@ -196,6 +202,7 @@ const commands: Record<string, (db: RegistryDb) => Promise<Result<unknown>>> = {
             graceUntil: date('grace-until', values['grace-until']),
             signer: await kmsLicenseSigner({ keyId: SIGNING_KEY_ID })
         }),
+    'list-licenses': async (db) => listLicenses(db, { installationId: (await installation(db)).id }),
     'disable-license': async (db) => {
         const row = await installation(db);
         confirmed({ installation: row.name, activeLicense: (await getActiveLicense(db, { installationId: row.id })).unwrap()?.expires_at ?? null });

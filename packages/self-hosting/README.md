@@ -26,7 +26,7 @@ nango-registry delete-installation --installation <uuid>
 nothing changed, re-run with --yes to proceed
 ```
 
-For `delete-customer` the preview holds that block for each live installation of the customer. Every delete is soft: customers, installations and keys keep a `deleted_at`, and licenses are never deleted, only deactivated, so the registry keeps the full history and a wrong delete is recoverable by hand.
+For `delete-customer` the preview holds that block for each live installation of the customer. Every delete is soft: customers, installations and keys keep a `deleted_at`, and licenses are never deleted, only deactivated, so the registry keeps the full history and a wrong delete is recoverable by hand. `--all` on `list-customers`, `list-installations` and `list-keys` includes the deleted rows, and `list-licenses` shows every license ever issued for an installation, active or not.
 
 ### Onboarding a new customer
 
@@ -99,16 +99,18 @@ nango-registry delete-customer --name acme --yes
 | Command               | Options                                                                                                                                             |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `create-customer`     | `--name <name>`                                                                                                                                     |
+| `list-customers`      | `[--all]`                                                                                                                                           |
 | `delete-customer`     | `--name <name> [--yes]`                                                                                                                             |
 | `create-installation` | `--customer <name> --name <name> --mode byoc\|self_managed --stage production\|staging\|development [--no-telemetry] [--alerts off\|slack\|oncall]` |
 | `update-installation` | `--installation <uuid> [--name <name>] [--telemetry\|--no-telemetry] [--alerts]`                                                                    |
 | `delete-installation` | `--installation <uuid> [--yes]`                                                                                                                     |
-| `list-installations`  | `[--customer <name>]`                                                                                                                               |
+| `list-installations`  | `[--customer <name>] [--all]`                                                                                                                       |
 | `create-key`          | `--installation <uuid>`                                                                                                                             |
 | `delete-key`          | `--kid <kid> [--yes]`                                                                                                                               |
-| `list-keys`           | `--installation <uuid>`                                                                                                                             |
+| `list-keys`           | `--installation <uuid> [--all]`                                                                                                                     |
 | `create-license`      | `--installation <uuid> --expires-at <iso date> --grace-until <iso date>`                                                                            |
 | `disable-license`     | `--installation <uuid> [--yes]`                                                                                                                     |
+| `list-licenses`       | `--installation <uuid>`                                                                                                                             |
 
 The four commands with `[--yes]` apply the change only with it. Without it they exit 1 and print what they would touch: for `delete-installation` the installation, its live keys and the active license, for `delete-customer` that for each of its live installations, for `delete-key` the key id, for `disable-license` the installation and the active license.
 
