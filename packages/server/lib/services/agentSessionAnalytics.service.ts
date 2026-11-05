@@ -98,7 +98,8 @@ export async function measureAgentSessionToolCall(call: () => Promise<CallToolRe
         result = await pendingToolCallEvents.run(pending, call);
         return result;
     } finally {
-        const measurement: ToolCallMeasurement = { ...(result ? resultSize(result) : {}), call_duration_ms: Date.now() - startedAt };
+        const callDurationMs = Date.now() - startedAt;
+        const measurement: ToolCallMeasurement = { ...(result ? resultSize(result) : {}), call_duration_ms: callDurationMs };
         for (const send of pending) {
             send(measurement);
         }
