@@ -23,8 +23,8 @@ async function getLatestSharedCredentialsRecordByName({
     trx?: Knex.Transaction | Knex;
 }): Promise<DBSharedCredentials | undefined> {
     const latest = await trx.select('*').from<DBSharedCredentials>('providers_shared_credentials').where('name', name).orderBy('created_at', 'desc').first();
-    // Only the latest app counts; a missing `enabled` (not migrated yet) counts as enabled
-    return latest && latest.enabled !== false ? latest : undefined;
+    // Only the latest app counts, so disabling it doesn't fall back to an older one
+    return latest?.enabled ? latest : undefined;
 }
 
 class SharedCredentialsService {
@@ -98,8 +98,9 @@ class SharedCredentialsService {
     async getPreConfiguredProviderScopes(): Promise<Result<Record<string, { scopes: string[]; preConfigured: boolean }>>> {
         try {
             const sharedCredentials = await db.knex
-                .select<{ name: string; enabled?: boolean; scopes: string[] | null }[]>([
-                    '*',
+                .select<{ name: string; enabled: boolean; scopes: string[] | null }[]>([
+                    'name',
+                    'enabled',
                     db.knex.raw(`string_to_array(credentials->>'oauth_scopes', ',') as scopes`)
                 ])
                 .distinctOn('name')
@@ -110,7 +111,7 @@ class SharedCredentialsService {
             const preConfiguredProviders: Record<string, { scopes: string[]; preConfigured: boolean }> = {};
 
             for (const cred of sharedCredentials) {
-                if (cred.enabled === false) {
+                if (!cred.enabled) {
                     continue;
                 }
                 const scopes = cred.scopes ? cred.scopes.map((scope: string) => scope.trim()) : [];
