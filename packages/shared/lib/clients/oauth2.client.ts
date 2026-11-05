@@ -72,8 +72,7 @@ export function getSimpleOAuth2ClientConfig(
         authSection.authorizePath = authorizeUrl.pathname;
     }
 
-    // A public client (token_endpoint_auth_method "none") sends only its client_id. simple-oauth2 always writes a
-    // client_secret param in body mode, so it is pointed at client_id to leave a single client_id in the body.
+    // public clients send no secret. simple-oauth2 always writes one in body mode, so it's written to client_id instead.
     const isPublicClient = authConfig.token_request_auth_method === 'none';
 
     return {
