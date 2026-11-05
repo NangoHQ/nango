@@ -1937,6 +1937,7 @@
               "integrations/all/semrush",
               "api-integrations/sendcloud",
               "integrations/all/sendgrid",
+              "integrations/all/sentfromai",
               "api-integrations/sentinelone",
               "integrations/all/sentry",
               "api-integrations/sentry-mcp",

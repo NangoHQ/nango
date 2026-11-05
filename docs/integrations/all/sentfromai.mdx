@@ -1,0 +1,58 @@
+---
+title: SentFromAI
+sidebarTitle: SentFromAI
+description: Connect to SentFromAI email inboxes for AI agents using an API key.
+---
+
+SentFromAI provides email inboxes for AI agents and applications. Its HTTP API supports creating inboxes, sending and replying to messages, reading messages and attachments, searching email, and registering webhooks.
+
+## Access requirements
+
+| Requirement | Details |
+| --- | --- |
+| Account | A SentFromAI account with an API key |
+| Authentication | API key sent as an HTTP Bearer token |
+| OAuth app or review | Not required for API-key authentication |
+| Plan | Available operations and limits depend on the account's plan and status |
+
+## Setup guide
+
+Follow the [connection guide](/integrations/all/sentfromai/connect) to create an API key and connect an account.
+
+The provider validates credentials with `GET /v1/inboxes`. This reads the inbox list and does not create an inbox or send an email.
+
+## Using the API through Nango
+
+The configured proxy base URL is `https://api.sentfrom.ai/v1`. Use paths relative to it:
+
+| Operation | Method | Path |
+| --- | --- | --- |
+| List inboxes | GET | `/inboxes` |
+| Create an inbox | POST | `/inboxes` |
+| Send a message | POST | `/messages` |
+| Get a message | GET | `/messages/{id}` |
+| Reply in a thread | POST | `/messages/{id}/reply` |
+| Search messages | GET | `/messages?query=example&limit=25` |
+| Register an event webhook | POST | `/webhooks` |
+
+This provider supplies authentication and proxy configuration. It does not add prebuilt Nango syncs or actions, or route SentFromAI webhooks automatically.
+
+## API gotchas
+
+- An API key grants access to its SentFromAI tenant. Treat it as a secret; revoke a key in the console if it is exposed.
+- Send requests use an inbox UUID in `inbox_id` and arrays for `to`, `cc`, and `bcc`. Reply requests use the SentFromAI message UUID, not the RFC email Message-ID header.
+- Search returns at most 100 results and currently has no pagination cursor. Semantic and hybrid search can fall back to keyword search depending on plan and configuration.
+- Use a stable `client_id` for retries of a new-message send. The reply endpoint does not provide that same idempotency parameter, so avoid blind retries after an ambiguous timeout.
+- A `402` or `403` can indicate plan, account, ownership, or sending restrictions. Resolve the reported condition rather than retrying continuously.
+- Signed attachment download URLs expire. Retrieve the message again to obtain current URLs.
+- Webhook consumers must verify `X-SentFromAI-Signature` against the exact raw request bytes. Creating this Nango provider does not perform that verification for an application's webhook receiver.
+
+## Useful links
+
+- [SentFromAI](https://sentfrom.ai)
+- [Console and API keys](https://console.sentfrom.ai)
+- [API documentation](https://docs.sentfrom.ai)
+- [OpenAPI specification](https://api.sentfrom.ai/openapi.json)
+- [Source and SDKs](https://github.com/sentfromai)
+
+For account questions, contact [SentFromAI support](mailto:support@sentfrom.ai).
