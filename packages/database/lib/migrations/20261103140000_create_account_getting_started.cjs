@@ -1,23 +1,19 @@
 exports.config = { transaction: true };
 
-const tableName = 'account_getting_started';
-
 /**
  * @param {import('knex').Knex} knex
  */
 exports.up = async function (knex) {
-    if (await knex.schema.hasTable(tableName)) {
-        return;
-    }
-
-    await knex.schema.createTable(tableName, (table) => {
-        table.integer('account_id').primary().references('id').inTable('_nango_accounts').onDelete('CASCADE');
-        table.timestamp('first_agent_connection_at', { useTz: true }).nullable();
-        table.timestamp('first_tool_call_at', { useTz: true }).nullable();
-        table.timestamp('dismissed_at', { useTz: true }).nullable();
-        table.timestamp('created_at', { useTz: true }).notNullable().defaultTo(knex.fn.now());
-        table.timestamp('updated_at', { useTz: true }).notNullable().defaultTo(knex.fn.now());
-    });
+    await knex.raw(`
+        CREATE TABLE IF NOT EXISTS account_getting_started (
+            account_id                INTEGER PRIMARY KEY REFERENCES _nango_accounts(id) ON DELETE CASCADE,
+            first_agent_connection_at TIMESTAMPTZ,
+            first_tool_call_at        TIMESTAMPTZ,
+            dismissed_at              TIMESTAMPTZ,
+            created_at                TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at                TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+    `);
 };
 
 exports.down = async function () {};
