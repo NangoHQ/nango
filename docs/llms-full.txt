@@ -14327,7 +14327,7 @@ Get details about a specific command by running:
 nango [command] --help
 ```
 
-`nango deploy <environment>` reconciles all functions in the target environment: it deploys functions present locally and removes remote ones that aren't, even when the project no longer contains any. The CLI previews the selected functions, shows one combined plan, and asks for confirmation at most once before deploying.
+`nango deploy <environment>` without selectors reconciles all repo-managed functions in the target environment: it deploys functions present locally and removes remote ones that aren't, even when the project no longer contains any. The CLI previews the selected functions, shows one combined plan, and asks for confirmation at most once before deploying.
 
 - `--integration <id>` limits the deploy to that integration.
 - `--sync <name>` and `--action <name>` select the named sync or action.
