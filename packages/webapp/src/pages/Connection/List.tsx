@@ -320,7 +320,7 @@ export const ConnectionList = () => {
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => {
-                                                    navigate(`/${env}/integrations/create`);
+                                                    navigate(`/${env}/catalog`);
                                                 }}
                                             >
                                                 <Plus className="size-4" /> Add
