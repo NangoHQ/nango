@@ -2,13 +2,15 @@ import { createPublicKey } from 'node:crypto';
 
 import { GetPublicKeyCommand, KMSClient, SignCommand } from '@aws-sdk/client-kms';
 
+import { envs } from '../../env.js';
+
 export interface LicenseSigner {
     publicKeyPem: string;
     sign: (data: Buffer) => Promise<Buffer>;
 }
 
 export async function kmsLicenseSigner({ keyId }: { keyId: string }): Promise<LicenseSigner> {
-    const kms = new KMSClient({});
+    const kms = new KMSClient(envs.AWS_REGION ? { region: envs.AWS_REGION } : {});
     const { PublicKey } = await kms.send(new GetPublicKeyCommand({ KeyId: keyId }));
     if (!PublicKey) {
         throw new Error(`KMS returned no public key for ${keyId}`);

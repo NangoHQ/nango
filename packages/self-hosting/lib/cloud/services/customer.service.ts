@@ -37,7 +37,8 @@ export async function deleteCustomer(db: RegistryDb, { name }: { name: string })
             for (const installation of (await listInstallations(inTrx, { customerId: customer.id })).unwrap()) {
                 (await deleteInstallation(inTrx, { id: installation.id })).unwrap();
             }
-            const [row] = await customers(inTrx).where({ id: customer.id }).update({ deleted_at: new Date() }).returning('*');
+            const now = new Date();
+            const [row] = await customers(inTrx).where({ id: customer.id, deleted_at: null }).update({ deleted_at: now, updated_at: now }).returning('*');
             return row ? Ok(row) : Err(new Error(`no live customer ${name}`));
         });
     } catch (err) {

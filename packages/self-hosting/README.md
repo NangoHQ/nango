@@ -10,7 +10,7 @@ Licenses are signed by the KMS key `alias/nango-license-signing` in the producti
 alias nango-registry='kubectl --context production -n nango exec deploy/nango-self-hosting -- node dist/cli.js'
 ```
 
-The walkthroughs below assume that alias. Dates are ISO 8601; the grace period is the time after expiry during which the installation keeps starting. An installation is named with the `installation_id` of its tfvars in nango-infra, `byoc-<customer>-<stage>` as in [altruist/staging.tfvars](https://github.com/NangoHQ/nango-infra/blob/40e3a3a17741b8847da050feaf3b0ca2c455531a/terraform/customers/byoc/aws/environments/altruist/staging.tfvars#L2), which is also the `env` tag its pods report to Datadog. `--alerts` takes the same value as the `alerts` of those tfvars, defined in [variables.tf](https://github.com/NangoHQ/nango-infra/blob/40e3a3a17741b8847da050feaf3b0ca2c455531a/terraform/customers/byoc/aws/variables.tf#L473): `oncall` pages through BetterStack and posts to Slack, `slack` posts only, `off` does neither and is the default. A self-managed installation is not in our Datadog, so it stays `off`.
+The walkthroughs below assume that alias. Dates are ISO 8601. `grace_until` is the date after which an expired installation stops starting once the boot check enforces; today the check only warns, on every state. An installation is named with the `installation_id` of its tfvars in nango-infra, `byoc-<customer>-<stage>` as in [altruist/staging.tfvars](https://github.com/NangoHQ/nango-infra/blob/40e3a3a17741b8847da050feaf3b0ca2c455531a/terraform/customers/byoc/aws/environments/altruist/staging.tfvars#L2), which is also the `env` tag its pods report to Datadog. `--alerts` takes the same value as the `alerts` of those tfvars, defined in [variables.tf](https://github.com/NangoHQ/nango-infra/blob/40e3a3a17741b8847da050feaf3b0ca2c455531a/terraform/customers/byoc/aws/variables.tf#L473): `oncall` pages through BetterStack and posts to Slack, `slack` posts only, `off` does neither and is the default. A self-managed installation is not in our Datadog, so it stays `off`.
 
 ### Destructive commands: dry run first
 
@@ -37,7 +37,7 @@ nango-registry create-key --installation <uuid from the previous output>
 nango-registry create-license --installation <uuid> --expires-at 2027-11-05T00:00:00Z --grace-until 2028-02-03T00:00:00Z
 ```
 
-Hand over two values, out of band: the `license` from the last output as `NANGO_LICENSE`, and the key's `kid` and `privateKeyPem` from `create-key` (how they travel as `NANGO_INSTALLATION_PRIVATE_KEY` is settled with the installation tokens). Paste both into the customer's 1Password item and delete any local copy; the private key is printed once and never stored on our side.
+Hand over two values, out of band: the `license` from the last output as `NANGO_LICENSE` (the `row` next to it is the registry record), and the key's `kid` and `privateKeyPem` from `create-key` (how they travel as `NANGO_INSTALLATION_PRIVATE_KEY` is settled with the installation tokens). Paste both into the customer's 1Password item and delete any local copy; the private key is printed once and never stored on our side.
 
 ### Adding an installation to an existing customer
 
@@ -96,19 +96,19 @@ nango-registry delete-customer --name acme --yes
 
 ### Command reference
 
-| Command               | Options                                                                                                                               |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `create-customer`     | `--name`                                                                                                                              |
-| `delete-customer`     | `--name [--yes]`                                                                                                                      |
-| `create-installation` | `--customer --name --mode byoc\|self_managed --stage production\|staging\|development [--no-telemetry] [--alerts off\|slack\|oncall]` |
-| `update-installation` | `--installation <uuid> [--name] [--telemetry\|--no-telemetry] [--alerts]`                                                             |
-| `delete-installation` | `--installation <uuid> [--yes]`                                                                                                       |
-| `list-installations`  | `[--customer]`                                                                                                                        |
-| `create-key`          | `--installation <uuid>`                                                                                                               |
-| `delete-key`          | `--kid [--yes]`                                                                                                                       |
-| `list-keys`           | `--installation <uuid>`                                                                                                               |
-| `create-license`      | `--installation <uuid> --expires-at <iso date> --grace-until <iso date>`                                                              |
-| `disable-license`     | `--installation <uuid> [--yes]`                                                                                                       |
+| Command               | Options                                                                                                                                             |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `create-customer`     | `--name <name>`                                                                                                                                     |
+| `delete-customer`     | `--name <name> [--yes]`                                                                                                                             |
+| `create-installation` | `--customer <name> --name <name> --mode byoc\|self_managed --stage production\|staging\|development [--no-telemetry] [--alerts off\|slack\|oncall]` |
+| `update-installation` | `--installation <uuid> [--name <name>] [--telemetry\|--no-telemetry] [--alerts]`                                                                    |
+| `delete-installation` | `--installation <uuid> [--yes]`                                                                                                                     |
+| `list-installations`  | `[--customer <name>]`                                                                                                                               |
+| `create-key`          | `--installation <uuid>`                                                                                                                             |
+| `delete-key`          | `--kid <kid> [--yes]`                                                                                                                               |
+| `list-keys`           | `--installation <uuid>`                                                                                                                             |
+| `create-license`      | `--installation <uuid> --expires-at <iso date> --grace-until <iso date>`                                                                            |
+| `disable-license`     | `--installation <uuid> [--yes]`                                                                                                                     |
 
 The four commands with `[--yes]` apply the change only with it. Without it they exit 1 and print what they would touch: for `delete-installation` the installation, its live keys and the active license, for `delete-customer` that for each of its live installations, for `delete-key` the key id, for `disable-license` the installation and the active license.
 

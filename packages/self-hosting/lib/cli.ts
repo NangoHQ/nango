@@ -39,23 +39,35 @@ licenses
 
 Prints one JSON document to stdout. Without --yes a delete or disable only prints what it would touch.`;
 
-const { positionals, values } = parseArgs({
-    allowPositionals: true,
-    allowNegative: true,
-    options: {
-        customer: { type: 'string' },
-        name: { type: 'string' },
-        mode: { type: 'string' },
-        stage: { type: 'string' },
-        telemetry: { type: 'boolean' },
-        alerts: { type: 'string' },
-        'expires-at': { type: 'string' },
-        'grace-until': { type: 'string' },
-        installation: { type: 'string' },
-        kid: { type: 'string' },
-        yes: { type: 'boolean' }
-    }
-});
+function parse() {
+    return parseArgs({
+        allowPositionals: true,
+        allowNegative: true,
+        strict: true,
+        options: {
+            customer: { type: 'string' },
+            name: { type: 'string' },
+            mode: { type: 'string' },
+            stage: { type: 'string' },
+            telemetry: { type: 'boolean' },
+            alerts: { type: 'string' },
+            'expires-at': { type: 'string' },
+            'grace-until': { type: 'string' },
+            installation: { type: 'string' },
+            kid: { type: 'string' },
+            yes: { type: 'boolean' }
+        }
+    });
+}
+
+let parsed: ReturnType<typeof parse>;
+try {
+    parsed = parse();
+} catch (err) {
+    console.error(`${describe(err)}\n\n${usage}`);
+    process.exit(1);
+}
+const { positionals, values } = parsed;
 
 function required(name: string, value: string | undefined): string {
     if (!value) {
@@ -157,7 +169,7 @@ const commands: Record<string, (db: RegistryDb) => Promise<Result<unknown>>> = {
         const row = await installation(db);
         return updateInstallation(db, {
             id: row.id,
-            ...(values.name && { name: values.name }),
+            ...(values.name !== undefined && { name: required('name', values.name) }),
             ...(values.telemetry !== undefined && { telemetry: values.telemetry }),
             ...alerts(row.mode)
         });
@@ -191,7 +203,7 @@ const commands: Record<string, (db: RegistryDb) => Promise<Result<unknown>>> = {
     }
 };
 
-const command = commands[positionals[0] ?? ''];
+const command = positionals.length === 1 ? commands[positionals[0] ?? ''] : undefined;
 if (!command) {
     console.error(usage);
     process.exitCode = 1;

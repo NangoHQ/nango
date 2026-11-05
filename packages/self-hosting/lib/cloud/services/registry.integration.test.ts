@@ -204,11 +204,13 @@ describe('customer deletion', () => {
 describe('installation updates and deletion', () => {
     it('updates only the given fields and bumps updated_at', async () => {
         const created = (await createInstallation(db, { customerId: await customer(), name: 'before', mode: 'byoc', stage: 'production' })).unwrap();
+        const lastWeek = new Date('2026-10-29T00:00:00Z');
+        await knex.withSchema(schema).table('installations').where({ id: created.id }).update({ updated_at: lastWeek });
 
         const updated = (await updateInstallation(db, { id: created.id, name: 'after', telemetry: false })).unwrap();
 
         expect(updated).toMatchObject({ id: created.id, name: 'after', telemetry: false, alerts: 'off', mode: 'byoc', stage: 'production' });
-        expect(updated.updated_at.getTime()).toBeGreaterThan(created.updated_at.getTime());
+        expect(updated.updated_at.getTime()).toBeGreaterThan(lastWeek.getTime());
     });
 
     it('lists the live installations of a customer in creation order', async () => {

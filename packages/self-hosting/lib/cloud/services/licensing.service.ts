@@ -11,7 +11,7 @@ import type { Result } from '@nangohq/utils';
 export async function issueLicense(
     db: RegistryDb,
     { installation, signer, expiresAt, graceUntil }: { installation: DBSelfHostingInstallation; signer: LicenseSigner; expiresAt: Date; graceUntil: Date }
-): Promise<Result<{ envelope: string; license: DBSelfHostingInstallationLicense }>> {
+): Promise<Result<{ license: string; row: DBSelfHostingInstallationLicense }>> {
     const issuedAt = new Date();
     const payload: License = {
         version: 1,
@@ -41,5 +41,5 @@ export async function issueLicense(
         signature,
         signingKid: kid
     });
-    return stored.isErr() ? Err(stored.error) : Ok({ envelope, license: stored.value });
+    return stored.isErr() ? Err(stored.error) : Ok({ license: envelope, row: stored.value });
 }

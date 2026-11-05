@@ -55,7 +55,7 @@ describe('issueLicense', () => {
     it('signs the installation as it is in the registry and stores the envelope as the active license', async () => {
         const row = await installation('prod', false);
 
-        const { envelope, license } = (await issueLicense(db, { installation: row, signer, expiresAt, graceUntil })).unwrap();
+        const { license: envelope, row: license } = (await issueLicense(db, { installation: row, signer, expiresAt, graceUntil })).unwrap();
 
         expect((await verifyLicense(envelope, signer.publicKeyPem)).unwrap()).toMatchObject({
             version: 1,
@@ -79,10 +79,12 @@ describe('issueLicense', () => {
 
     it('issued again, replaces the active license and keeps the previous row inactive', async () => {
         const row = await installation('renew');
-        const { envelope: first } = (await issueLicense(db, { installation: row, signer, expiresAt, graceUntil })).unwrap();
+        const { license: first } = (await issueLicense(db, { installation: row, signer, expiresAt, graceUntil })).unwrap();
         const later = new Date('2028-11-05T00:00:00Z');
 
-        const { envelope } = (await issueLicense(db, { installation: row, signer, expiresAt: later, graceUntil: new Date('2029-02-03T00:00:00Z') })).unwrap();
+        const { license: envelope } = (
+            await issueLicense(db, { installation: row, signer, expiresAt: later, graceUntil: new Date('2029-02-03T00:00:00Z') })
+        ).unwrap();
 
         expect(envelope).not.toBe(first);
         expect((await verifyLicense(envelope, signer.publicKeyPem)).unwrap().expires_at).toBe(later.toISOString());
