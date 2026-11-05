@@ -52,3 +52,6 @@ export { default as sage200PostConnection } from './providers/sage-200/post-conn
 export { default as vantageApparelCredentialsVerification } from './providers/vantage-apparel/credentials-verification.js';
 export { default as cdwCredentialsVerification } from './providers/cdw/credentials-verification.js';
 export { default as appleCalendarCredentialsVerification } from './providers/apple-calendar/credentials-verification.js';
+export { default as parsioIoCredentialsVerification } from './providers/parsio-io/credentials-verification.js';
+export { default as serpapiCredentialsVerification } from './providers/serpapi/credentials-verification.js';
+export { default as bannerbearCredentialsVerification } from './providers/bannerbear/credentials-verification.js';
