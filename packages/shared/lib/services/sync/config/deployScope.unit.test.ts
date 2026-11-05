@@ -43,7 +43,7 @@ describe('onEventScopeProviderKeys', () => {
     });
 
     it('preserves on-event scripts for function-scoped deployments', () => {
-        expect(onEventScopeProviderKeys({ kind: 'function', integrationId: 'github', name: 'contacts' }, [])).toEqual([]);
+        expect(onEventScopeProviderKeys({ kind: 'function', integrationId: 'github', name: 'contacts' }, payload)).toStrictEqual([]);
     });
 
     it('covers the integration and the deployed providers', () => {

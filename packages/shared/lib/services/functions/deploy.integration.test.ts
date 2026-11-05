@@ -146,7 +146,11 @@ describe('deployBundle instances', () => {
             (await ctx.deploy([], reconciliationScope)).unwrap();
 
             const remaining = (await search(db.knex, { environmentId: ctx.environment.id })).unwrap();
-            expect(remaining.map(({ config, currentVersion }) => ({ name: config.name, source: currentVersion.source }))).toEqual([
+            expect(
+                remaining
+                    .map(({ config, currentVersion }) => ({ name: config.name, source: currentVersion.source }))
+                    .sort((a, b) => a.name.localeCompare(b.name))
+            ).toEqual([
                 { name: 'catalogFunction', source: 'catalog' },
                 { name: 'standaloneFunction', source: 'standalone' }
             ]);
