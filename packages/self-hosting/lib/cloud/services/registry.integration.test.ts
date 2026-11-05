@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { migrate } from '../db/migrate.js';
 import { createCustomer, deleteCustomer, getCustomerByName, listCustomers } from './customer.service.js';
-import { createInstallationKey, deleteInstallationKey, listInstallationKeys } from './installation-key.service.js';
+import { createInstallationKey, deleteInstallationKey, getInstallationKey, listInstallationKeys } from './installation-key.service.js';
 import { createInstallationLicense, deactivateLicense, getActiveLicense, listLicenses } from './installation-license.service.js';
 import { createInstallation, deleteInstallation, getInstallationByUuid, listInstallations, updateInstallation } from './installation.service.js';
 
@@ -115,8 +115,10 @@ describe('installation keys', () => {
 
         expect((await listInstallationKeys(db, { installationId })).unwrap()).toStrictEqual([first, second]);
 
+        expect((await getInstallationKey(db, { kid: first.kid })).unwrap()).toStrictEqual(first);
         const deleted = (await deleteInstallationKey(db, { kid: first.kid })).unwrap();
         expect(deleted.deleted_at).toBeInstanceOf(Date);
+        expect((await getInstallationKey(db, { kid: first.kid })).unwrap()).toBeNull();
         expect((await listInstallationKeys(db, { installationId })).unwrap()).toStrictEqual([second]);
     });
 

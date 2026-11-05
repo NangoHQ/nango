@@ -3,7 +3,7 @@ import { parseArgs } from 'node:util';
 import { cloudDb, destroyCloudDb } from './cloud/db/client.js';
 import { kmsLicenseSigner } from './cloud/licensing/signer.js';
 import { createCustomer, deleteCustomer, getCustomerByName, listCustomers } from './cloud/services/customer.service.js';
-import { createInstallationKey, deleteInstallationKey, listInstallationKeys } from './cloud/services/installation-key.service.js';
+import { createInstallationKey, deleteInstallationKey, getInstallationKey, listInstallationKeys } from './cloud/services/installation-key.service.js';
 import { deactivateLicense, getActiveLicense, listLicenses } from './cloud/services/installation-license.service.js';
 import { createInstallation, deleteInstallation, getInstallationByUuid, listInstallations, updateInstallation } from './cloud/services/installation.service.js';
 import { issueLicense } from './cloud/services/licensing.service.js';
@@ -182,9 +182,13 @@ key delete  --kid <kid> [--yes]
 key list    --installation <uuid> [--all]`,
         verbs: {
             create: async (db) => createInstallationKey(db, { installationId: (await installation(db)).id }),
-            delete: (db) => {
+            delete: async (db) => {
                 const kid = required('kid', values.kid);
-                confirmed({ kid });
+                const key = (await getInstallationKey(db, { kid })).unwrap();
+                if (!key) {
+                    throw new Error(`no live key ${kid}`);
+                }
+                confirmed({ kid, created_at: key.created_at });
                 return deleteInstallationKey(db, { kid });
             },
             list: async (db) =>

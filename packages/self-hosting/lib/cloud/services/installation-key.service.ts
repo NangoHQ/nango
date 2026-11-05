@@ -53,3 +53,11 @@ export async function deleteInstallationKey(db: RegistryDb, { kid }: { kid: stri
         return Err(err);
     }
 }
+
+export async function getInstallationKey(db: RegistryDb, { kid }: { kid: string }): Promise<Result<DBSelfHostingInstallationKey | null>> {
+    try {
+        return Ok((await keys(db).where({ kid, deleted_at: null }).first()) ?? null);
+    } catch (err) {
+        return Err(err);
+    }
+}
