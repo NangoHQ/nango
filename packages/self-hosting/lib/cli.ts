@@ -44,15 +44,6 @@ function parse() {
     });
 }
 
-let parsed: ReturnType<typeof parse>;
-try {
-    parsed = parse();
-} catch (err) {
-    console.error(`${describe(err)}\n\n${overview()}`);
-    process.exit(1);
-}
-const { positionals, values } = parsed;
-
 function required(name: string, value: string | undefined): string {
     if (!value) {
         throw new Error(`--${name} is required`);
@@ -95,11 +86,11 @@ async function customer(db: RegistryDb, name: string): Promise<DBSelfHostingCust
     return found;
 }
 
-async function installation(db: RegistryDb): Promise<DBSelfHostingInstallation> {
+async function installation(db: RegistryDb, { includeDeleted = false }: { includeDeleted?: boolean } = {}): Promise<DBSelfHostingInstallation> {
     const uuid = required('installation', values.installation);
-    const found = (await getInstallationByUuid(db, { uuid })).unwrap();
+    const found = (await getInstallationByUuid(db, { uuid, includeDeleted })).unwrap();
     if (!found) {
-        throw new Error(`no live installation ${uuid}`);
+        throw new Error(`no ${includeDeleted ? '' : 'live '}installation ${uuid}`);
     }
     return found;
 }
@@ -196,7 +187,8 @@ key list    --installation <uuid> [--all]`,
                 confirmed({ kid });
                 return deleteInstallationKey(db, { kid });
             },
-            list: async (db) => listInstallationKeys(db, { installationId: (await installation(db)).id, includeDeleted: values.all })
+            list: async (db) =>
+                listInstallationKeys(db, { installationId: (await installation(db, { includeDeleted: values.all })).id, includeDeleted: values.all })
         }
     },
     license: {
@@ -217,7 +209,7 @@ license list     --installation <uuid>               every license ever issued, 
                 confirmed({ installation: row.name, activeLicense: (await getActiveLicense(db, { installationId: row.id })).unwrap()?.expires_at ?? null });
                 return deactivateLicense(db, { installationId: row.id });
             },
-            list: async (db) => listLicenses(db, { installationId: (await installation(db)).id })
+            list: async (db) => listLicenses(db, { installationId: (await installation(db, { includeDeleted: true })).id })
         }
     }
 };
@@ -232,6 +224,15 @@ ${Object.values(entities)
 Prints one JSON document to stdout. Without --yes a delete or disable only prints what it would touch.
 Deletes are soft; --all on a list includes the deleted rows. <entity> --help prints that entity's verbs.`;
 }
+
+let parsed: ReturnType<typeof parse>;
+try {
+    parsed = parse();
+} catch (err) {
+    console.error(`${describe(err)}\n\n${overview()}`);
+    process.exit(1);
+}
+const { positionals, values } = parsed;
 
 const [entityName = '', verbName = ''] = positionals;
 const entity = entities[entityName];

@@ -242,6 +242,7 @@ describe('installation updates and deletion', () => {
 
         expect(deleted.deleted_at).toBeInstanceOf(Date);
         expect((await getInstallationByUuid(db, { uuid: created.uuid })).unwrap()).toBeNull();
+        expect((await getInstallationByUuid(db, { uuid: created.uuid, includeDeleted: true })).unwrap()?.id).toBe(created.id);
         expect((await getActiveLicense(db, { installationId: created.id })).unwrap()).toBeNull();
         expect((await listInstallationKeys(db, { installationId: created.id })).unwrap()).toStrictEqual([]);
         expect((await deleteInstallationKey(db, { kid: key.kid })).isErr()).toBe(true);

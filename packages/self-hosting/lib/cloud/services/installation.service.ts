@@ -37,9 +37,16 @@ export async function createInstallation(
     }
 }
 
-export async function getInstallationByUuid(db: RegistryDb, { uuid }: { uuid: string }): Promise<Result<DBSelfHostingInstallation | null>> {
+export async function getInstallationByUuid(
+    db: RegistryDb,
+    { uuid, includeDeleted = false }: { uuid: string; includeDeleted?: boolean }
+): Promise<Result<DBSelfHostingInstallation | null>> {
     try {
-        return Ok((await installations(db).where({ uuid, deleted_at: null }).first()) ?? null);
+        return Ok(
+            (await installations(db)
+                .where({ uuid, ...(!includeDeleted && { deleted_at: null }) })
+                .first()) ?? null
+        );
     } catch (err) {
         return Err(err);
     }

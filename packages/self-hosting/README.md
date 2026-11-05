@@ -106,21 +106,21 @@ nango-registry customer delete --name acme --yes
 
 ### Command reference
 
-| Command               | Options                                                                                                                                                 |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `customer create`     | `--name <name>`                                                                                                                                         |
-| `customer list`       | `[--all]`                                                                                                                                               |
-| `customer delete`     | `--name <name> [--yes]`                                                                                                                                 |
-| `installation create` | `--customer <name> --name <name> --mode byoc\|self_managed --stage production\|staging\|development [--no-telemetry] [--alerts off\|slack\|oncall]`     |
-| `installation update` | `--installation <uuid> [--name <name>] [--mode byoc\|self_managed] [--stage production\|staging\|development] [--telemetry\|--no-telemetry] [--alerts]` |
-| `installation delete` | `--installation <uuid> [--yes]`                                                                                                                         |
-| `installation list`   | `[--customer <name>] [--all]`                                                                                                                           |
-| `key create`          | `--installation <uuid>`                                                                                                                                 |
-| `key delete`          | `--kid <kid> [--yes]`                                                                                                                                   |
-| `key list`            | `--installation <uuid> [--all]`                                                                                                                         |
-| `license create`      | `--installation <uuid> --expires-at <iso date> --grace-until <iso date>`                                                                                |
-| `license disable`     | `--installation <uuid> [--yes]`                                                                                                                         |
-| `license list`        | `--installation <uuid>`                                                                                                                                 |
+| Command               | Options                                                                                                                                                                    |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customer create`     | `--name <name>`                                                                                                                                                            |
+| `customer list`       | `[--all]`                                                                                                                                                                  |
+| `customer delete`     | `--name <name> [--yes]`                                                                                                                                                    |
+| `installation create` | `--customer <name> --name <name> --mode byoc\|self_managed --stage production\|staging\|development [--no-telemetry] [--alerts off\|slack\|oncall]`                        |
+| `installation update` | `--installation <uuid> [--name <name>] [--mode byoc\|self_managed] [--stage production\|staging\|development] [--telemetry\|--no-telemetry] [--alerts off\|slack\|oncall]` |
+| `installation delete` | `--installation <uuid> [--yes]`                                                                                                                                            |
+| `installation list`   | `[--customer <name>] [--all]`                                                                                                                                              |
+| `key create`          | `--installation <uuid>`                                                                                                                                                    |
+| `key delete`          | `--kid <kid> [--yes]`                                                                                                                                                      |
+| `key list`            | `--installation <uuid> [--all]`                                                                                                                                            |
+| `license create`      | `--installation <uuid> --expires-at <iso date> --grace-until <iso date>`                                                                                                   |
+| `license disable`     | `--installation <uuid> [--yes]`                                                                                                                                            |
+| `license list`        | `--installation <uuid>`                                                                                                                                                    |
 
 The four commands with `[--yes]` apply the change only with it. Without it they exit 1 and print what they would touch: for `installation delete` the installation, its live keys and the active license, for `customer delete` that for each of its live installations, for `key delete` the key id, for `license disable` the installation and the active license.
 
