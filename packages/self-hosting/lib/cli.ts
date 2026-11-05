@@ -14,34 +14,12 @@ import type { Result } from '@nangohq/utils';
 
 const SIGNING_KEY_ID = 'alias/nango-license-signing';
 
-const usage = `usage: node packages/self-hosting/dist/cli.js <command> [options]
+type Handler = (db: RegistryDb) => Promise<Result<unknown>>;
 
-customers
-  create-customer      --name <name>
-  list-customers       [--all]
-  delete-customer      --name <name> --yes             takes its installations down too
-
-installations
-  create-installation  --customer <name> --name <name> --mode byoc|self_managed
-                       --stage production|staging|development [--no-telemetry] [--alerts off|slack|oncall]
-  update-installation  --installation <uuid> [--name <name>] [--mode byoc|self_managed] [--stage production|staging|development]
-                       [--telemetry|--no-telemetry] [--alerts off|slack|oncall]
-  delete-installation  --installation <uuid> --yes     deactivates its license and deletes its keys
-  list-installations   [--customer <name>] [--all]
-
-keys
-  create-key           --installation <uuid>           prints the private key once, it is never stored
-  delete-key           --kid <kid> --yes
-  list-keys            --installation <uuid> [--all]
-
-licenses
-  create-license       --installation <uuid> --expires-at <iso date> --grace-until <iso date>
-                       replaces the active license, so it is also how a license is renewed
-  disable-license      --installation <uuid> --yes
-  list-licenses        --installation <uuid>             every license ever issued, active or not
-
-Prints one JSON document to stdout. Without --yes a delete or disable only prints what it would touch.
-Deletes are soft; --all on a list includes the deleted rows.`;
+interface Entity {
+    usage: string;
+    verbs: Record<string, Handler>;
+}
 
 function parse() {
     return parseArgs({
@@ -49,6 +27,7 @@ function parse() {
         allowNegative: true,
         strict: true,
         options: {
+            help: { type: 'boolean', default: false },
             customer: { type: 'string' },
             name: { type: 'string' },
             mode: { type: 'string' },
@@ -69,7 +48,7 @@ let parsed: ReturnType<typeof parse>;
 try {
     parsed = parse();
 } catch (err) {
-    console.error(`${describe(err)}\n\n${usage}`);
+    console.error(`${describe(err)}\n\n${overview()}`);
     process.exit(1);
 }
 const { positionals, values } = parsed;
@@ -125,19 +104,19 @@ async function installation(db: RegistryDb): Promise<DBSelfHostingInstallation> 
     return found;
 }
 
-function confirmed(preview: unknown): void {
-    if (!values.yes) {
-        console.log(JSON.stringify(preview, null, 2));
-        throw new Error('nothing changed, re-run with --yes to proceed');
-    }
-}
-
 async function cascade(db: RegistryDb, row: DBSelfHostingInstallation) {
     return {
         installation: { uuid: row.uuid, name: row.name },
         keys: (await listInstallationKeys(db, { installationId: row.id })).unwrap().map((k) => k.kid),
         activeLicense: (await getActiveLicense(db, { installationId: row.id })).unwrap()?.expires_at ?? null
     };
+}
+
+function confirmed(preview: unknown): void {
+    if (!values.yes) {
+        console.log(JSON.stringify(preview, null, 2));
+        throw new Error('nothing changed, re-run with --yes to proceed');
+    }
 }
 
 function describe(err: unknown): string {
@@ -147,80 +126,125 @@ function describe(err: unknown): string {
     return err instanceof Error ? err.message || err.name : String(err);
 }
 
-const commands: Record<string, (db: RegistryDb) => Promise<Result<unknown>>> = {
-    'create-customer': (db) => createCustomer(db, { name: required('name', values.name) }),
-    'list-customers': (db) => listCustomers(db, { includeDeleted: values.all }),
-    'delete-customer': async (db) => {
-        const row = await customer(db, required('name', values.name));
-        const installations = (await listInstallations(db, { customerId: row.id })).unwrap();
-        confirmed({ customer: row.name, installations: await Promise.all(installations.map((i) => cascade(db, i))) });
-        return deleteCustomer(db, { name: row.name });
-    },
-
-    'create-installation': async (db) => {
-        const mode = oneOf('mode', values.mode, ['byoc', 'self_managed']);
-        return createInstallation(db, {
-            customerId: (await customer(db, required('customer', values.customer))).id,
-            name: required('name', values.name),
-            mode,
-            stage: oneOf('stage', values.stage, ['production', 'staging', 'development']),
-            ...(values.telemetry !== undefined && { telemetry: values.telemetry }),
-            ...alerts(mode)
-        });
-    },
-    'update-installation': async (db) => {
-        if ([values.name, values.mode, values.stage, values.telemetry, values.alerts].every((v) => v === undefined)) {
-            throw new Error('nothing to update: pass --name, --mode, --stage, --telemetry, --no-telemetry or --alerts');
+const entities: Record<string, Entity> = {
+    customer: {
+        usage: `customer create  --name <name>
+customer delete  --name <name> [--yes]               takes its installations down too
+customer list    [--all]`,
+        verbs: {
+            create: (db) => createCustomer(db, { name: required('name', values.name) }),
+            delete: async (db) => {
+                const row = await customer(db, required('name', values.name));
+                const installations = (await listInstallations(db, { customerId: row.id })).unwrap();
+                confirmed({ customer: row.name, installations: await Promise.all(installations.map((i) => cascade(db, i))) });
+                return deleteCustomer(db, { name: row.name });
+            },
+            list: (db) => listCustomers(db, { includeDeleted: values.all })
         }
-        const row = await installation(db);
-        const mode = values.mode ? oneOf('mode', values.mode, ['byoc', 'self_managed']) : row.mode;
-        return updateInstallation(db, {
-            id: row.id,
-            ...(values.name !== undefined && { name: required('name', values.name) }),
-            ...(values.mode && { mode }),
-            ...(values.stage && { stage: oneOf('stage', values.stage, ['production', 'staging', 'development']) }),
-            ...(values.telemetry !== undefined && { telemetry: values.telemetry }),
-            ...alerts(mode, row.alerts)
-        });
     },
-    'delete-installation': async (db) => {
-        const row = await installation(db);
-        confirmed(await cascade(db, row));
-        return deleteInstallation(db, { id: row.id });
+    installation: {
+        usage: `installation create  --customer <name> --name <name> --mode byoc|self_managed --stage production|staging|development
+                     [--no-telemetry] [--alerts off|slack|oncall]
+installation update  --installation <uuid> [--name <name>] [--mode byoc|self_managed] [--stage production|staging|development]
+                     [--telemetry|--no-telemetry] [--alerts off|slack|oncall]
+installation delete  --installation <uuid> [--yes]   deactivates its license and deletes its keys
+installation list    [--customer <name>] [--all]`,
+        verbs: {
+            create: async (db) => {
+                const mode = oneOf('mode', values.mode, ['byoc', 'self_managed']);
+                return createInstallation(db, {
+                    customerId: (await customer(db, required('customer', values.customer))).id,
+                    name: required('name', values.name),
+                    mode,
+                    stage: oneOf('stage', values.stage, ['production', 'staging', 'development']),
+                    ...(values.telemetry !== undefined && { telemetry: values.telemetry }),
+                    ...alerts(mode)
+                });
+            },
+            update: async (db) => {
+                if ([values.name, values.mode, values.stage, values.telemetry, values.alerts].every((v) => v === undefined)) {
+                    throw new Error('nothing to update: pass --name, --mode, --stage, --telemetry, --no-telemetry or --alerts');
+                }
+                const row = await installation(db);
+                const mode = values.mode ? oneOf('mode', values.mode, ['byoc', 'self_managed']) : row.mode;
+                return updateInstallation(db, {
+                    id: row.id,
+                    ...(values.name !== undefined && { name: required('name', values.name) }),
+                    ...(values.mode && { mode }),
+                    ...(values.stage && { stage: oneOf('stage', values.stage, ['production', 'staging', 'development']) }),
+                    ...(values.telemetry !== undefined && { telemetry: values.telemetry }),
+                    ...alerts(mode, row.alerts)
+                });
+            },
+            delete: async (db) => {
+                const row = await installation(db);
+                confirmed(await cascade(db, row));
+                return deleteInstallation(db, { id: row.id });
+            },
+            list: async (db) =>
+                listInstallations(db, { includeDeleted: values.all, ...(values.customer && { customerId: (await customer(db, values.customer)).id }) })
+        }
     },
-    'list-installations': async (db) =>
-        listInstallations(db, { includeDeleted: values.all, ...(values.customer && { customerId: (await customer(db, values.customer)).id }) }),
-
-    'create-key': async (db) => createInstallationKey(db, { installationId: (await installation(db)).id }),
-    'delete-key': (db) => {
-        const kid = required('kid', values.kid);
-        confirmed({ kid });
-        return deleteInstallationKey(db, { kid });
+    key: {
+        usage: `key create  --installation <uuid>               prints the private key once, it is never stored
+key delete  --kid <kid> [--yes]
+key list    --installation <uuid> [--all]`,
+        verbs: {
+            create: async (db) => createInstallationKey(db, { installationId: (await installation(db)).id }),
+            delete: (db) => {
+                const kid = required('kid', values.kid);
+                confirmed({ kid });
+                return deleteInstallationKey(db, { kid });
+            },
+            list: async (db) => listInstallationKeys(db, { installationId: (await installation(db)).id, includeDeleted: values.all })
+        }
     },
-    'list-keys': async (db) => listInstallationKeys(db, { installationId: (await installation(db)).id, includeDeleted: values.all }),
-
-    'create-license': async (db) =>
-        issueLicense(db, {
-            installation: await installation(db),
-            expiresAt: date('expires-at', values['expires-at']),
-            graceUntil: date('grace-until', values['grace-until']),
-            signer: await kmsLicenseSigner({ keyId: SIGNING_KEY_ID })
-        }),
-    'list-licenses': async (db) => listLicenses(db, { installationId: (await installation(db)).id }),
-    'disable-license': async (db) => {
-        const row = await installation(db);
-        confirmed({ installation: row.name, activeLicense: (await getActiveLicense(db, { installationId: row.id })).unwrap()?.expires_at ?? null });
-        return deactivateLicense(db, { installationId: row.id });
+    license: {
+        usage: `license create   --installation <uuid> --expires-at <iso date> --grace-until <iso date>
+                 replaces the active license, so it is also how a license is renewed
+license disable  --installation <uuid> [--yes]
+license list     --installation <uuid>               every license ever issued, active or not`,
+        verbs: {
+            create: async (db) =>
+                issueLicense(db, {
+                    installation: await installation(db),
+                    expiresAt: date('expires-at', values['expires-at']),
+                    graceUntil: date('grace-until', values['grace-until']),
+                    signer: await kmsLicenseSigner({ keyId: SIGNING_KEY_ID })
+                }),
+            disable: async (db) => {
+                const row = await installation(db);
+                confirmed({ installation: row.name, activeLicense: (await getActiveLicense(db, { installationId: row.id })).unwrap()?.expires_at ?? null });
+                return deactivateLicense(db, { installationId: row.id });
+            },
+            list: async (db) => listLicenses(db, { installationId: (await installation(db)).id })
+        }
     }
 };
 
-const command = positionals.length === 1 ? commands[positionals[0] ?? ''] : undefined;
-if (!command) {
-    console.error(usage);
+function overview(): string {
+    return `usage: node packages/self-hosting/dist/cli.js <entity> <verb> [options]
+
+${Object.values(entities)
+    .map((e) => e.usage)
+    .join('\n\n')}
+
+Prints one JSON document to stdout. Without --yes a delete or disable only prints what it would touch.
+Deletes are soft; --all on a list includes the deleted rows. <entity> --help prints that entity's verbs.`;
+}
+
+const [entityName = '', verbName = ''] = positionals;
+const entity = entities[entityName];
+const verb = entity?.verbs[verbName];
+if (!entity || positionals.length > 2) {
+    console.error(overview());
     process.exitCode = 1;
+} else if (values.help || !verb) {
+    console.error(entity.usage);
+    process.exitCode = values.help ? 0 : 1;
 } else {
     try {
-        const result = await command({ knex: cloudDb() });
+        const result = await verb({ knex: cloudDb() });
         if (result.isErr()) {
             throw result.error;
         }
