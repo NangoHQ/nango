@@ -486,6 +486,41 @@ describe(`POST ${endpoint}`, () => {
             });
         });
 
+        it.each([
+            { label: 'function scope', options: { reconciliationScope: { kind: 'function', integrationId: 'github', name: 'github-sync' } } },
+            { label: 'legacy deployMode', options: { deployMode: 'single' } },
+            { label: 'legacy singleDeployMode', options: { singleDeployMode: true } }
+        ] as const)('should preview and deploy one script with $label without removing other scripts or on-event hooks', async ({ options }) => {
+            const {
+                deployMode: _deployMode,
+                nangoYamlBody: _nangoYamlBody,
+                ...body
+            } = deployBody({
+                flowConfigs: [flow('github', 'github-sync')]
+            });
+            const before = await remoteState();
+            const confirmation = await api.fetch('/sync/deploy/confirmation', {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { ...body, ...options, reconcile: false }
+            });
+
+            isSuccess(confirmation.json);
+            expect(confirmation.json.deletedSyncs).toEqual([]);
+            expect(confirmation.json.deletedActions).toEqual([]);
+            expect(confirmation.json.deletedOnEventScripts).toEqual([]);
+
+            const result = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { ...body, ...options, nangoYamlBody: '' }
+            });
+
+            isSuccess(result.json);
+            expect(await remoteState()).toEqual(before);
+            expect(result.json).toMatchObject([{ name: 'github-sync', providerConfigKey: 'github' }]);
+        });
+
         it('should keep the on-event scripts of other integrations on an integration deploy', async () => {
             const res = await api.fetch(endpoint, {
                 method: 'POST',

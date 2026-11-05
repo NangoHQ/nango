@@ -156,9 +156,9 @@ const commonValidation = z
         jsonSchema: jsonSchema.optional(),
         reconcile: z.boolean(),
         debug: z.boolean(),
-        // TODO: Support single-script deployments through reconciliationScope and deprecate deployMode, retaining compatibility with older CLIs.
+        // Deprecated in favour of reconciliationScope — kept for older CLI versions.
         deployMode: z.enum(['all', 'single', 'integration']).optional(),
-        // singleDeployMode is deprecated in favour of deployMode — kept for older CLI versions
+        // Deprecated in favour of reconciliationScope — kept for older CLI versions.
         singleDeployMode: z.boolean().optional(),
         reconciliationScope: reconciliationScopeSchema.optional(),
         sdkVersion: z
@@ -169,8 +169,18 @@ const commonValidation = z
     })
     .strict();
 
-function resolveDeployMode(data: Pick<z.infer<typeof commonValidation>, 'deployMode' | 'singleDeployMode'>) {
+function scopeDeployMode(scope: z.infer<typeof reconciliationScopeSchema>): 'all' | 'single' | 'integration' {
+    return scope.kind === 'environment' ? 'all' : scope.kind === 'integration' ? 'integration' : 'single';
+}
+
+function legacyDeployMode(data: Pick<z.infer<typeof commonValidation>, 'deployMode' | 'singleDeployMode'>): 'all' | 'single' | 'integration' {
     return data.deployMode ?? (data.singleDeployMode ? 'single' : 'all');
+}
+
+function resolveDeployMode(
+    data: Pick<z.infer<typeof commonValidation>, 'deployMode' | 'singleDeployMode' | 'reconciliationScope'>
+): 'all' | 'single' | 'integration' {
+    return data.reconciliationScope ? scopeDeployMode(data.reconciliationScope) : legacyDeployMode(data);
 }
 
 function checkReconciliationScope(data: z.infer<typeof commonValidation>, ctx: z.RefinementCtx) {
@@ -178,15 +188,28 @@ function checkReconciliationScope(data: z.infer<typeof commonValidation>, ctx: z
     if (!scope) {
         return;
     }
-    const deployMode = resolveDeployMode(data);
-    const expectedDeployMode = scope.kind === 'environment' ? 'all' : 'integration';
-    if (deployMode !== expectedDeployMode) {
+    const expectedDeployMode = scopeDeployMode(scope);
+    const hasLegacyDeployMode = data.deployMode !== undefined || data.singleDeployMode !== undefined;
+    if (hasLegacyDeployMode && legacyDeployMode(data) !== expectedDeployMode) {
         ctx.addIssue({
             code: 'custom',
             message: `A reconciliation scope of kind "${scope.kind}" requires deployMode "${expectedDeployMode}"`,
             path: ['reconciliationScope']
         });
         return;
+    }
+    if (scope.kind === 'function') {
+        const [flow] = data.flowConfigs;
+        if (data.flowConfigs.length !== 1 || flow?.providerConfigKey !== scope.integrationId || flow.syncName !== scope.name) {
+            ctx.addIssue({
+                code: 'custom',
+                message: 'A function-scoped deployment must contain the scoped sync or action',
+                path: ['flowConfigs']
+            });
+        }
+        if ((data.onEventScriptsByProvider?.length ?? 0) > 0 || (data.postConnectionScriptsByProvider?.length ?? 0) > 0) {
+            ctx.addIssue({ code: 'custom', message: 'A function-scoped deployment cannot contain on-event scripts', path: ['onEventScriptsByProvider'] });
+        }
     }
     if (scope.kind === 'integration') {
         const providerConfigKeys = [

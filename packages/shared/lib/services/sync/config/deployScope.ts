@@ -31,6 +31,9 @@ export function onEventScopeProviderKeys(
     if (scope.kind === 'environment') {
         return 'all';
     }
+    if (scope.kind === 'function') {
+        return [];
+    }
     const payloadKeys = onEventScriptsByProvider.map(({ providerConfigKey }) => providerConfigKey);
     return [...new Set(scope.kind === 'integration' ? [scope.integrationId, ...payloadKeys] : payloadKeys)];
 }

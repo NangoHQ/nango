@@ -36,7 +36,7 @@ import type {
     ScriptFileType
 } from '@nangohq/types';
 
-type LegacyPackage = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'deployMode' | 'reconciliationScope'>;
+type LegacyPackage = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'reconciliationScope'>;
 type FunctionsBundle = PostFunctionDeploymentBundle['Body'];
 type Deployment = { kind: 'legacy'; package: LegacyPackage } | { kind: 'functions'; bundle: FunctionsBundle };
 type DeploymentPlan = Deployment[];
@@ -115,7 +115,9 @@ export async function deploy({
                     console.log(chalk.red(postData.error.message));
                     return Err('no_data');
                 }
-                plan.push({ kind: 'legacy', package: postData.value });
+                for (const legacyPackage of postData.value) {
+                    plan.push({ kind: 'legacy', package: legacyPackage });
+                }
             } else {
                 const bundle = await createFunctionsBundle({
                     fullPath,
@@ -425,14 +427,13 @@ async function createLegacyPackage({
     reconciliationScope: FunctionReconciliationScope;
     optionalSyncName?: string | undefined;
     optionalActionName?: string | undefined;
-}): Promise<Result<LegacyPackage>> {
+}): Promise<Result<LegacyPackage[]>> {
     printDebug('Packaging', debug);
 
     const isSingleScript = Boolean(optionalSyncName || optionalActionName);
     const postData: CLIDeployFlowConfig[] = [];
     const onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined = isSingleScript ? undefined : []; // only load on-event scripts if we're not deploying a single sync or action
     const integrationId = reconciliationScope.kind === 'integration' ? reconciliationScope.integrationId : undefined;
-    const deployMode: 'all' | 'single' | 'integration' = isSingleScript ? 'single' : integrationId ? 'integration' : 'all';
 
     for (const integration of parsed.integrations) {
         const { providerConfigKey, onEventScripts } = integration;
@@ -545,12 +546,16 @@ async function createLegacyPackage({
         return Err(new Error('No syncs or actions to deploy'));
     }
 
-    return Ok({
-        flowConfigs: postData,
-        onEventScriptsByProvider,
-        deployMode,
-        reconciliationScope: isSingleScript ? undefined : reconciliationScope
-    });
+    if (isSingleScript) {
+        return Ok(
+            postData.map((flow) => ({
+                flowConfigs: [flow],
+                reconciliationScope: { kind: 'function', integrationId: flow.providerConfigKey, name: flow.syncName }
+            }))
+        );
+    }
+
+    return Ok([{ flowConfigs: postData, onEventScriptsByProvider, reconciliationScope }]);
 }
 
 /**

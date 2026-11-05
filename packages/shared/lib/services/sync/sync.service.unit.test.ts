@@ -79,8 +79,8 @@ describe('getAndReconcileDifferences', () => {
         vi.restoreAllMocks();
     });
 
-    describe('mode: single', () => {
-        it('should not detect deleted syncs when mode is single', async () => {
+    describe.each([{ kind: 'single' }, { kind: 'function', integrationId: 'github', name: 'new-sync' }] as const)('scope: $kind', (scope) => {
+        it('should not detect deleted syncs', async () => {
             // An existing sync that is NOT in the flows being deployed
             const existingSync = makeSyncConfig({ sync_name: 'old-sync', unique_key: 'github' });
             vi.spyOn(syncConfigService, 'getActiveCustomSyncConfigsByEnvironmentId').mockResolvedValue([existingSync]);
@@ -91,7 +91,7 @@ describe('getAndReconcileDifferences', () => {
                 environmentId: 1,
                 flows,
                 performAction: false,
-                scope: { kind: 'single' },
+                scope,
                 logContextGetter,
                 orchestrator: mockOrchestrator
             });
@@ -100,7 +100,7 @@ describe('getAndReconcileDifferences', () => {
             expect(result!.deletedSyncs).toHaveLength(0);
         });
 
-        it('should not call deleteConfig when mode is single, even with performAction true', async () => {
+        it('should not call deleteConfig, even with performAction true', async () => {
             const existingSync = makeSyncConfig({ sync_name: 'old-sync', unique_key: 'github' });
             vi.spyOn(syncConfigService, 'getActiveCustomSyncConfigsByEnvironmentId').mockResolvedValue([existingSync]);
             const deleteConfigSpy = vi.spyOn(syncManager, 'deleteConfig');
@@ -109,7 +109,7 @@ describe('getAndReconcileDifferences', () => {
                 environmentId: 1,
                 flows: [makeFlow({ syncName: 'new-sync' })],
                 performAction: true,
-                scope: { kind: 'single' },
+                scope,
                 logContextGetter,
                 orchestrator: mockOrchestrator
             });

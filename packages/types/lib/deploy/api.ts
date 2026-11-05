@@ -16,6 +16,7 @@ export type PostDeployConfirmation = ApiEndpoint<{
         onEventScriptsByProvider?: OnEventScriptsByProvider[] | undefined;
         reconcile: boolean;
         debug: boolean;
+        /** @deprecated Use reconciliationScope. */
         deployMode?: 'all' | 'single' | 'integration';
         reconciliationScope?: FunctionReconciliationScope | undefined;
         /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
@@ -35,6 +36,7 @@ export type PostDeploy = ApiEndpoint<{
         nangoYamlBody: string;
         reconcile: boolean;
         debug: boolean;
+        /** @deprecated Use reconciliationScope. */
         deployMode?: 'all' | 'single' | 'integration';
         reconciliationScope?: FunctionReconciliationScope | undefined;
         /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
@@ -58,6 +60,7 @@ export type PostDeployInternal = ApiEndpoint<{
         nangoYamlBody: string;
         reconcile: boolean;
         debug: boolean;
+        /** @deprecated Use reconciliationScope. */
         deployMode?: 'all' | 'single' | 'integration';
         reconciliationScope?: FunctionReconciliationScope | undefined;
         /** @deprecated Use CLIDeployFlowConfig.models_json_schema */

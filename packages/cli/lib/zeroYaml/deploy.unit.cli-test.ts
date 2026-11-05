@@ -191,8 +191,10 @@ describe('deploy', () => {
             '/sync/deploy',
             '/functions/deployments/bundle'
         ]);
-        expect(requestBody(fetchMock, 'legacyPreview')).toMatchObject({ deployMode: 'all', reconciliationScope: { kind: 'environment' } });
-        expect(requestBody(fetchMock, 'legacyDeploy')).toMatchObject({ deployMode: 'all', reconciliationScope: { kind: 'environment' } });
+        expect(requestBody(fetchMock, 'legacyPreview')).toMatchObject({ reconciliationScope: { kind: 'environment' } });
+        expect(requestBody(fetchMock, 'legacyDeploy')).toMatchObject({ reconciliationScope: { kind: 'environment' } });
+        expect(requestBody(fetchMock, 'legacyPreview')).not.toHaveProperty('deployMode');
+        expect(requestBody(fetchMock, 'legacyDeploy')).not.toHaveProperty('deployMode');
         const output = logOutput(logSpy);
         expect(output.match(/Nango will perform this plan:/g)).toHaveLength(1);
         expect(output.match(/Summary/g)).toHaveLength(1);
@@ -227,7 +229,6 @@ describe('deploy', () => {
         const legacyPreviewBody = requestBody(fetchMock, 'legacyPreview');
         const functionsPreviewBody = requestBody(fetchMock, 'functionsPreview');
         expect(legacyPreviewBody).toMatchObject({
-            deployMode: 'integration',
             reconciliationScope: { kind: 'integration', integrationId: 'github' },
             flowConfigs: [{ providerConfigKey: 'github', version: '42' }]
         });
@@ -422,8 +423,8 @@ describe('deploy', () => {
         expect(output).toContain('No destructive changes, proceeding without confirmation');
         expect(output).toContain('--sync and --action are deprecated');
         expect(requestPaths(fetchMock)).toEqual(['/sync/deploy/confirmation', '/sync/deploy']);
-        expect(requestBody(fetchMock, 'legacyPreview')).toMatchObject({ deployMode: 'single' });
-        expect(requestBody(fetchMock, 'legacyPreview')).not.toHaveProperty('reconciliationScope');
+        expect(requestBody(fetchMock, 'legacyPreview')).toMatchObject({ reconciliationScope: { kind: 'function', integrationId: 'github', name: 'legacy' } });
+        expect(requestBody(fetchMock, 'legacyPreview')).not.toHaveProperty('deployMode');
     });
 
     describe('with a file', () => {
@@ -492,7 +493,7 @@ describe('deploy', () => {
             expect(output).not.toContain('--sync and --action are deprecated');
             const confirmationRequest = fetchMock.mock.calls[0]?.[1] as RequestInit;
             const confirmationBody = JSON.parse(confirmationRequest.body as string) as PostDeployConfirmation['Body'];
-            expect(confirmationBody.deployMode).toBe('single');
+            expect(confirmationBody.reconciliationScope).toEqual({ kind: 'function', integrationId: 'github', name: 'legacy' });
             expect(confirmationBody.onEventScriptsByProvider).toBeUndefined();
             expect(confirmationBody.flowConfigs).toEqual([expect.objectContaining({ syncName: 'legacy', providerConfigKey: 'github', type: 'action' })]);
         });
@@ -515,7 +516,7 @@ describe('deploy', () => {
                 expect(logOutput(logSpy)).toContain('✓ Deployed');
                 const confirmationRequest = fetchMock.mock.calls[0]?.[1] as RequestInit;
                 const confirmationBody = JSON.parse(confirmationRequest.body as string) as PostDeployConfirmation['Body'];
-                expect(confirmationBody.deployMode).toBe('single');
+                expect(confirmationBody.reconciliationScope).toEqual({ kind: 'function', integrationId: 'github', name: 'contacts' });
                 expect(confirmationBody.flowConfigs).toEqual([
                     expect.objectContaining({
                         syncName: 'contacts',
@@ -523,6 +524,29 @@ describe('deploy', () => {
                         type: 'sync',
                         fileBody: { js: 'compiled contacts', ts: 'source contacts' }
                     })
+                ]);
+            });
+
+            it('deploys each match of a deprecated action selector in its own function scope', async () => {
+                fetchMock.mockReset();
+                mockApi(fetchMock, { legacyPreview: legacyChangeConfirmation });
+
+                const result = await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions({ action: 'legacy' }) });
+
+                expect(result.isOk()).toBe(true);
+                const scopes = (fetchMock.mock.calls as [URL, RequestInit][]).map(([url, init]) => {
+                    const body = JSON.parse(init.body as string) as PostDeployConfirmation['Body'];
+                    expect(body).not.toHaveProperty('deployMode');
+                    expect(body.flowConfigs).toHaveLength(1);
+                    const [flow] = body.flowConfigs;
+                    expect(body.reconciliationScope).toEqual({ kind: 'function', integrationId: flow?.providerConfigKey, name: 'legacy' });
+                    return { path: url.pathname, integrationId: flow?.providerConfigKey };
+                });
+                expect(scopes).toEqual([
+                    { path: apiRoutes.legacyPreview, integrationId: 'github' },
+                    { path: apiRoutes.legacyPreview, integrationId: 'slack' },
+                    { path: apiRoutes.legacyDeploy, integrationId: 'github' },
+                    { path: apiRoutes.legacyDeploy, integrationId: 'slack' }
                 ]);
             });
 
@@ -661,7 +685,6 @@ describe('deploy', () => {
         expect(requestBody(fetchMock, 'legacyPreview')).toMatchObject({
             flowConfigs: [],
             onEventScriptsByProvider: [],
-            deployMode: 'integration',
             reconciliationScope: { kind: 'integration', integrationId: 'slack' }
         });
         const previewBody = requestBody(fetchMock, 'functionsPreview') as { reconciliationScope: unknown; functions: FunctionConfig[] };
@@ -694,7 +717,6 @@ describe('deploy', () => {
         expect(requestBody(fetchMock, 'legacyPreview')).toMatchObject({
             flowConfigs: [],
             onEventScriptsByProvider: [],
-            deployMode: 'integration',
             reconciliationScope: { kind: 'integration', integrationId: 'slack' }
         });
         expect(requestPaths(fetchMock)).not.toContain(apiRoutes.legacyDeploy);
@@ -742,7 +764,6 @@ describe('deploy', () => {
         expect(requestBody(fetchMock, 'legacyDeploy')).toMatchObject({
             flowConfigs: [],
             onEventScriptsByProvider: [],
-            deployMode: 'all',
             reconciliationScope: { kind: 'environment' }
         });
     });

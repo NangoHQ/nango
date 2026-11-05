@@ -16,6 +16,11 @@ describe('resolveLegacyDeployScope', () => {
         expect(resolveLegacyDeployScope({ deployMode: 'single', flows: [{ providerConfigKey: 'github' }] })).toStrictEqual({ kind: 'single' });
     });
 
+    it('uses a function scope for a scoped single-script deployment', () => {
+        const scope = { kind: 'function', integrationId: 'github', name: 'contacts' } as const;
+        expect(resolveLegacyDeployScope({ deployMode: 'single', reconciliationScope: scope, flows: [{ providerConfigKey: 'github' }] })).toEqual(scope);
+    });
+
     it('returns none for an empty package without an explicit scope', () => {
         expect(resolveLegacyDeployScope({ deployMode: 'all', flows: [] })).toStrictEqual({ kind: 'none' });
         expect(resolveLegacyDeployScope({ deployMode: 'integration', flows: [] })).toStrictEqual({ kind: 'none' });
@@ -35,6 +40,10 @@ describe('onEventScopeProviderKeys', () => {
 
     it('covers every provider of the environment', () => {
         expect(onEventScopeProviderKeys({ kind: 'environment' }, payload)).toBe('all');
+    });
+
+    it('preserves on-event scripts for function-scoped deployments', () => {
+        expect(onEventScopeProviderKeys({ kind: 'function', integrationId: 'github', name: 'contacts' }, [])).toEqual([]);
     });
 
     it('covers the integration and the deployed providers', () => {

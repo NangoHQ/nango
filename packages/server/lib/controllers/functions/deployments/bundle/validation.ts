@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { functionReconciliationScopeSchema, providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
+import { providerConfigKeySchema, reconciliationScopeSchema, scriptNameSchema } from '../../../../helpers/validation.js';
 
 import type { FunctionDeploymentBundleBody, FunctionTags, FunctionTriggerDefinition, RequiredScopes, ToolTags } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
@@ -177,7 +177,7 @@ const functionConfig = z
 
 export const validation = z
     .object({
-        reconciliationScope: functionReconciliationScopeSchema,
+        reconciliationScope: reconciliationScopeSchema,
         functions: z.array(functionConfig)
     })
     .strict()
