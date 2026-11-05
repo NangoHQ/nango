@@ -2586,6 +2586,7 @@ attentive-mcp:
     authorization_url: https://mcp-auth.attentivemobile.com/oauth2/authorize
     token_url: https://mcp-auth.attentivemobile.com/oauth2/token
     registration_url: https://mcp-auth.attentivemobile.com/register
+    token_request_auth_method: none
     default_scopes:
         - mcp
         - offline_access

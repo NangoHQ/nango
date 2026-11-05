@@ -1,7 +1,7 @@
 import type { FunctionType, ListedNangoActionFunction, ListedNangoFunction, ListedNangoSyncFunction } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
-type PullSource = { catalog: true } | { env: string };
+type PullSource = { catalog: true; provider: string } | { env: string };
 
 export type RunnableFunction = Exclude<ListedNangoFunction, { type: 'on-event' }>;
 
@@ -13,21 +13,18 @@ export function isSyncOrAction(fn: ListedNangoFunction): fn is ListedNangoSyncFu
     return fn.type === 'sync' || fn.type === 'action';
 }
 
-/** Path of a function's source file within the integration-templates repo, e.g. `integrations/github/syncs/foo.ts`. */
-export function functionRepoPath({ provider, name, type }: { provider: string; name: string; type: FunctionType }): string {
-    const dir = type === 'action' ? 'actions' : type === 'on-event' ? 'on-events' : 'syncs';
-    return `integrations/${provider}/${dir}/${name}.ts`;
-}
-
 /**
- * Builds the `nango pull` CLI command for a function. Use `{ catalog: true }` to pull an
+ * Builds the `nango pull` CLI command for a function. Use `{ catalog: true, provider }` to pull an
  * un-deployed catalog template (keyed by provider) or `{ env }` to pull a deployed function
  * from an environment.
  */
 export function buildPullCommand({ integration, name, type, source }: { integration: string; name: string; type: FunctionType; source: PullSource }): string {
     const typeFlag = type === 'action' ? '-a' : type === 'on-event' ? '--on-event' : '-s';
-    const sourceFlag = 'catalog' in source ? '--catalog' : `--env ${source.env}`;
-    return `nango pull ${integration} ${name} ${sourceFlag} ${typeFlag}`;
+    if ('catalog' in source) {
+        const targetFlag = integration === source.provider ? '' : ` --target ${integration}`;
+        return `nango pull ${source.provider} ${name} --catalog${targetFlag} ${typeFlag}`;
+    }
+    return `nango pull ${integration} ${name} --env ${source.env} ${typeFlag}`;
 }
 
 export function getSyncResponse(model: JSONSchema7) {

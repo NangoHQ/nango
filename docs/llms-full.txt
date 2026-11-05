@@ -2995,7 +2995,7 @@ Meta tools are Nango's own tools. They are always pinned to the MCP server's too
 
 | Tool | What it does |
 | --- | --- |
-| `nango_tool_search` | Finds tools in the session's toolset from a plain-language description |
+| `nango_tool_search` | Finds tools in the session's toolset from a few keywords and the task's goal |
 | `nango_execute` | Runs one of the session's tools by name |
 | `nango_proxy` | Makes an authenticated request to a provider API, for when no tool fits. Bypasses `allow` and `deny`, [see the warning](#toolsets-%26-tools) |
 | `nango_create_connection` | Returns a connect link for one of the session's integrations that has no connection, or a reconnect link for one that has |
@@ -3008,10 +3008,10 @@ Meta tools are Nango's own tools. They are always pinned to the MCP server's too
 
 ### nango_tool_search
 
-Takes a plain-language `query` describing what the agent wants to do.
+Takes a `query` of a few keywords naming the action, and a `goal` with the task the user asked for, in their words.
 
 ```json
-{ "query": "find emails by subject" }
+{ "query": "find emails by subject", "goal": "find the invoice email from last week and forward it to accounting" }
 ```
 
 The result carries `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status.
@@ -3020,11 +3020,18 @@ Only a best match includes `input`, its argument schema — a weak match is a le
 
 ### nango_execute
 
-Runs one of the session's tools by name, on the connection the session resolved for that integration.
+Runs one of the session's tools by name, on the connection the session resolved for that integration. Along with the tool and its input, it takes the task's `goal` and an `intent`, why this call is made.
 
 ```json
-{ "tool": "notion__read_doc", "input": { "doc_id": "abc" } }
+{
+    "tool": "google-calendar__list-events",
+    "input": { "timeMin": "2026-11-05T00:00:00Z", "timeMax": "2026-11-06T00:00:00Z" },
+    "goal": "move my Thursday 1:1 with my manager to Friday and let them know",
+    "intent": "find the 1:1 to move"
+}
 ```
+
+The goal stays the same on every call made for one task. The intent changes with each call. A later call to the same tool for Friday keeps the goal and sends the intent `check Friday has a free slot`.
 
 Execution is synchronous and goes through the same path as [triggering an action function](/reference/backend/http-api/action/trigger), so it is capped by the synchronous execution limit and appears in Nango logs like any other function run.
 
@@ -3215,7 +3222,7 @@ Local development is the default path for production integrations. Use it when y
     </Note>
 
     <Accordion title="Team setup">
-      Use a shared environment (usually `dev`) for day-to-day collaboration. Create personal test connections with [per-connection webhook URL overrides](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection) pointing at your local webhook endpoint, and deploy functions granularly (`nango deploy --sync` / `--action` / `--integration`) so teammates don't overwrite each other. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
+      Use a shared environment (usually `dev`) for day-to-day collaboration. Create personal test connections with [per-connection webhook URL overrides](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection) pointing at your local webhook endpoint, and deploy functions granularly (`nango deploy <env> <file>` / `--integration`) so teammates don't overwrite each other. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
       Use CI to do full deploys across stable environments (like `staging` or `prod`). See the [CI/CD guide](/guides/functions/ci-cd).
     </Accordion>
 
@@ -3297,14 +3304,12 @@ Local development is the default path for production integrations. Use it when y
     Deploy the function you changed:
 
     ```bash
-    nango deploy --sync <function-name> dev
-    # or
-    nango deploy --action <function-name> dev
+    nango deploy dev <integration-id>/<folder>/<file>.ts
     # or
     nango deploy --integration <integration-id> dev
     ```
 
-    A bare `nango deploy` reconciles each included function family across the environment: it deploys functions present locally and removes remote ones that aren't. This can delete teammates' functions in a shared environment. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
+    A bare `nango deploy` reconciles all functions deployed from a CLI project: it deploys functions present locally and removes remote ones that aren't. This can delete teammates' functions in a shared environment. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
 
     For function-type-specific commands, see the [Sync function guide](/guides/functions/syncs/sync-functions#test-and-deploy), [Action function guide](/guides/functions/action-functions#test-and-deploy), and [Testing](/guides/functions/testing).
   </Step>
@@ -3519,7 +3524,7 @@ nango deploy
 To deploy only this sync function:
 
 ```bash
-nango deploy --sync contacts dev
+nango deploy dev crm/syncs/contacts.ts
 ```
 
 ## Start or trigger runs
@@ -4662,7 +4667,7 @@ nango deploy
 To deploy only this action function:
 
 ```bash
-nango deploy --action create-issue dev
+nango deploy dev github/actions/create-issue.ts
 ```
 
 For broader test coverage, see the [testing guide](/guides/functions/testing). To deploy from CI, see [CI/CD](/guides/functions/ci-cd).
@@ -4898,7 +4903,7 @@ nango deploy
 To deploy only this webhook-backed sync function:
 
 ```bash
-nango deploy --sync contacts dev
+nango deploy dev crm/syncs/contacts.ts
 ```
 
 Then send a test webhook from the provider dashboard, CLI, or webhook testing tool to the Nango webhook URL. Check Nango logs for the incoming webhook, routing result, and function execution.
@@ -6649,10 +6654,11 @@ When the var is set, new connections from that session route webhooks to your ma
 A full `nango deploy` reconciles every function in the environment. On a shared collaborative environment, that can overwrite teammates' deploys. Deploy only what you changed:
 
 ```bash
-nango deploy --sync <name> <env>
-nango deploy --action <name> <env>
-nango deploy --integration <id> <env>   # all functions for one integration, including event functions
+nango deploy <env> <integration>/<folder>/<file>.ts   # one function, e.g. github/tools/get-issue.ts
+nango deploy --integration <id> <env>                 # all functions for one integration, including event functions
 ```
+
+Deploying a single file never deletes other functions. Event functions can only be deployed with their integration or the whole project.
 
 Reserve full deploys for environments where the repo is the sole source of truth (for example staging or prod). See the [CI/CD guide](/guides/functions/ci-cd).
 
@@ -8241,7 +8247,7 @@ Everything below is what you configure directly to run a production instance —
 | Variable | Example | Purpose |
 | --- | --- | --- |
 | `NODE_ENV` | `production` | Runtime mode |
-| `AUTH_ALLOW_SIGNUP` | `false` | Disable open signup |
+| `AUTH_ALLOW_SIGNUP` | `false` | Disable open signup. See [First administrator](#first-administrator) to create your first user |
 | `FLAG_AUTH_ROLES_ENABLED` | `true` | Enable role-based access |
 | `SERVER_PORT` | `8080` | Port the server listens on |
 | `DEFAULT_RATE_LIMIT_PER_MIN` | `200` | Default API rate limit |
@@ -8276,7 +8282,7 @@ Everything below is what you configure directly to run a production instance —
 | `NANGO_ADMIN_UUID` | `3fa85f64-5717-4562-b3fc-2c963f66afa6` | Matches the env var above |
 | `NANGO_DATABASE_URL` | `postgresql://nango:••••@db.internal:5432/nango` | Postgres connection string |
 | `NANGO_REDIS_URL` | `rediss://:••••@redis.internal:6379` | Redis / Valkey connection string |
-| `NANGO_ADMIN_INVITE_TOKEN` | *(generated, single-use token)* | Token for inviting the first admin |
+| `NANGO_ADMIN_INVITE_TOKEN` | `<your-own-uuid>` | A UUID you generate. Creates the first admin — see [First administrator](#first-administrator) |
 | `AWS_INTEGRATIONS_BUCKET_NAME` | `my-company-nango-integrations` | S3 bucket for compiled integration files |
 | `GCS_INTEGRATIONS_BUCKET_NAME` | `my-company-nango-integrations` | GCS bucket for compiled integration files |
 | `AZURE_INTEGRATIONS_ACCOUNT_NAME` | `mycompanynango` | Azure storage account for compiled integration files |
@@ -8293,6 +8299,28 @@ Set one object store. On AWS, set `AWS_INTEGRATIONS_BUCKET_NAME`. On Google Clou
 <Tip>
 This is the *minimum* set to get a production instance running. The sections below cover what each optional subsystem (logs, encryption, audit trail, Redis, hardening) additionally needs.
 </Tip>
+
+### First administrator
+
+Setting `AUTH_ALLOW_SIGNUP=false` closes open signup, so the signup form rejects every attempt. The first administrator is created through an invite URL instead, built from `NANGO_ADMIN_INVITE_TOKEN`.
+
+Nothing generates that token for you, and it must be a valid UUID:
+
+```bash
+uuidgen | tr 'A-Z' 'a-z'
+```
+
+Set it as `NANGO_ADMIN_INVITE_TOKEN` and restart the server, since a running instance keeps the environment it started with. Then open:
+
+```
+https://<your-app-url>/signup/<token>
+```
+
+That is the dashboard URL — `NANGO_PUBLIC_SERVER_URL` — which is the same host as the API when the server serves the dashboard itself. The account is created with the `administrator` role; every other user is invited from inside the dashboard, so you need this URL once.
+
+<Warning>
+Treat the token as a secret, and remove it once it has been used. It is not consumed by the first signup and it does not expire, so for as long as it is set, anyone holding that URL can create another administrator. Unset `NANGO_ADMIN_INVITE_TOKEN` and restart the server once your first administrator exists; set it again only if you ever need to bootstrap another one.
+</Warning>
 
 ### Pre-built integrations catalog
 
@@ -14321,9 +14349,9 @@ Get details about a specific command by running:
 nango [command] --help
 ```
 
-`nango deploy <environment>` reconciles each included function family across the target environment: it deploys functions present locally and removes remote ones that aren't. Projects can contain syncs, actions, on-events, and tools together. The CLI previews the selected functions, shows one combined plan, and asks for confirmation at most once before deploying.
+`nango deploy <environment>` without selectors reconciles all repo-managed functions in the target environment: it deploys functions present locally and removes remote ones that aren't, even when the project no longer contains any. The CLI previews the selected functions, shows one combined plan, and asks for confirmation at most once before deploying.
 
-- `--integration <id>` selects functions for that integration.
+- `--integration <id>` limits the deploy to that integration.
 - `--sync <name>` and `--action <name>` select the named sync or action.
 - `--version <version>` overrides sync/action versions. Tools use automatically generated versions.
 
@@ -16004,7 +16032,7 @@ slack:
 </ResponseField>
 
 <ResponseField name="token_request_auth_method" type="string">
-    The authentication method used for token requests. Must be either "basic" or "custom".
+    The authentication method used for token requests: "basic", "custom", "private_key_jwt", or "none". Use "none" for public clients that send only their client_id, with no client secret.
 </ResponseField>
 
 <ResponseField name="expires_in_unit" type="string">

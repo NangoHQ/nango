@@ -11,7 +11,7 @@ import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from
 import { Spinner } from '@/components/ui/Spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { useDeleteIntegrationFunction, useGetIntegration } from '@/hooks/useIntegration';
+import { useDeleteIntegrationFunction } from '@/hooks/useIntegration';
 import { useGetIntegrationFunctionCode, useGetTemplateFunctionCode } from '@/hooks/useIntegrationFunctions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
@@ -38,11 +38,12 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
     const [activeTab, setActiveTab] = useState<'input' | 'output' | 'code'>('input');
-    const fn = useMemo(() => toFunctionDetails(rawFunction, { env, integration: integration.unique_key }), [rawFunction, env, integration.unique_key]);
+    const fn = useMemo(
+        () => toFunctionDetails(rawFunction, { env, integration: integration.unique_key, provider: integration.provider }),
+        [rawFunction, env, integration.unique_key, integration.provider]
+    );
     const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, integration.unique_key, fn.name, fn.delete?.type);
     const { inputSchema, outputSchemas, delete: deletion } = fn;
-    const { data: integrationDetails } = useGetIntegration(env, integration.unique_key);
-    const repoProvider = integrationDetails?.data.symLinkTargetName ?? integration.provider;
     const codeSource = fn.code;
     const isDeployedCode = codeSource.kind === 'deployed';
     const {
@@ -61,14 +62,15 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
         isPending: templateCodePending,
         error: templateCodeError
     } = useGetTemplateFunctionCode({
-        provider: repoProvider,
+        env,
+        provider: integration.provider,
         name: fn.name,
         type: isDeployedCode ? undefined : codeSource.type,
         enabled: !isDeployedCode && activeTab === 'code'
     });
     const codePending = isDeployedCode ? deployedCodePending : templateCodePending;
     const codeError = isDeployedCode ? deployedCodeError : templateCodeError;
-    const code = isDeployedCode ? codeData?.code : templateCode;
+    const code = isDeployedCode ? codeData?.code : templateCode?.code;
 
     const onDelete = useCallback(async () => {
         try {

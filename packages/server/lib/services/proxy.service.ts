@@ -65,6 +65,8 @@ export interface ProxyServiceRequest {
     activityLogId?: string | undefined;
     /** Stamped on the operation this creates. Ignored when activityLogId points at an existing one. */
     actor?: OperationActor | undefined;
+    /** Set as the meta of the operation this creates. Ignored when activityLogId points at an existing one. */
+    logMeta?: Record<string, unknown> | undefined;
     abortSignal?: AbortSignal | undefined;
     isSync?: boolean | undefined;
     isDryRun?: boolean | undefined;
@@ -158,7 +160,7 @@ export class ProxyService {
                 ? logContextGetter.get({ id: params.activityLogId, accountId: account.id })
                 : await logContextGetter.create(
                       { operation: { type: 'proxy', action: 'call' }, actor: params.actor },
-                      { account, environment },
+                      { account, environment, ...(params.logMeta ? { meta: params.logMeta } : {}) },
                       params.isDryRun !== undefined ? { dryRun: params.isDryRun } : undefined
                   );
 

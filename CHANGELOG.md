@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.72.2] - 2026-11-05
+
+### Added
+
+- *(license)* License schema, signed envelope and verification (#8108) by @pfreixes
+- Add single function deployment (#8158) by @TBonnin
+- *(server)* License check at boot behind NANGO_LICENSE_CHECK (#8110) by @pfreixes
+- *(agent)* Discover MCP tools for connections added mid-session (NAN-7841) (#8068) by @agusayerza
+- *(agent)* Ask agents for their goal and intent on tool calls (NAN-7828) (#8143) by @agusayerza
+- *(cli)* Add single function deploy via path (#8160) by @TBonnin
+
+### Changed
+
+- *(cli)* Combine deployments of legacy and functions (#8130) by @TBonnin
+- Allow growth plans to temporarily have the add-on flag (#8171) by @ErickRDev
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/bbea1a1231d92b7dcb7223a2ce17dddcf1980b13 by Victor Lang'at by @github-actions[bot]
+
+### Fixed
+
+- Azure identity upgrade (#8170) by @rossmcewan
+- More vuln fixes (#8173) by @rossmcewan
+
 ## [v0.72.1] - 2026-11-04
 
 ### Added
@@ -8628,6 +8650,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.72.2]: https://github.com/NangoHQ/nango/compare/v0.72.1..v0.72.2
 [v0.72.1]: https://github.com/NangoHQ/nango/compare/v0.72.0..v0.72.1
 [v0.72.0]: https://github.com/NangoHQ/nango/compare/v0.71.14..v0.72.0
 [v0.71.14]: https://github.com/NangoHQ/nango/compare/v0.71.13..v0.71.14

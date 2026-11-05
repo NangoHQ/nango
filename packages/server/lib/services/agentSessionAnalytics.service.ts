@@ -23,11 +23,14 @@ interface ToolCallParams extends Outcome {
     underlyingErrorCode?: string | undefined;
     /** Set when the tool ran on the integration's MCP server rather than as a deployed action. */
     mcpTool?: boolean | undefined;
+    goal?: string | undefined;
+    intent?: string | undefined;
 }
 
 interface ToolSearchParams extends Outcome {
     session: AgentSession;
     query?: string | undefined;
+    goal?: string | undefined;
     matches: AgentSessionToolSearchHit[];
     related: AgentSessionToolSearchHit[];
 }
@@ -79,6 +82,8 @@ export function trackAgentSessionToolCall({
     pinned,
     underlyingErrorCode,
     mcpTool,
+    goal,
+    intent,
     ...outcome
 }: ToolCallParams): void {
     productTracking.track({
@@ -91,7 +96,9 @@ export function trackAgentSessionToolCall({
             ...(pinned === undefined ? {} : { is_pinned: pinned }),
             ...(integrationId ? { integration_id: integrationId } : {}),
             ...(underlyingErrorCode ? { underlying_error_code: underlyingErrorCode } : {}),
-            ...(mcpTool ? { is_mcp_tool: true } : {})
+            ...(mcpTool ? { is_mcp_tool: true } : {}),
+            ...(goal ? { goal } : {}),
+            ...(intent ? { intent } : {})
         }
     });
 }
@@ -113,17 +120,18 @@ export function trackAgentSessionProxyRequest({ session, integrationId, provider
 }
 
 /**
- * Carries the query as the agent sent it, which is what search quality is measured against. The
+ * Carries the query and the goal as the agent sent them, which is what search quality is measured against. The
  * results ride along so a query can be read next to what it returned, which is the exception the
  * taxonomy grants this event: everywhere else a property is a primitive.
  */
-export function trackAgentSessionToolSearch({ session, query, matches, related, ...outcome }: ToolSearchParams): void {
+export function trackAgentSessionToolSearch({ session, query, goal, matches, related, ...outcome }: ToolSearchParams): void {
     productTracking.track({
         name: 'agents:tool_search_complete',
         eventProperties: {
             ...sessionProperties(session),
             meta_tool: 'nango_tool_search',
             ...(query === undefined ? {} : { query }),
+            ...(goal === undefined ? {} : { goal }),
             match_count: matches.length,
             related_count: related.length,
             ...(matches[0] ? { top_match_confidence: matches[0].confidence } : {}),
