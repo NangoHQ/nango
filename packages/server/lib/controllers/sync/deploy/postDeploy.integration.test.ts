@@ -476,21 +476,8 @@ describe(`POST ${endpoint}`, () => {
         });
 
         it('should deploy scripts for two integrations', async () => {
-            const seed = await seeders.seedAccountEnvAndUser();
-            const { env, apiKey } = seed;
-            await seeders.createConfigSeed(env, 'github', 'github');
-            await seeders.createConfigSeed(env, 'slack', 'slack');
+            const { env } = await seedDeployedScripts();
 
-            const res = await api.fetch(endpoint, {
-                method: 'POST',
-                token: apiKey.secret,
-                body: deployBody({
-                    flowConfigs: [flow('github', 'github-sync'), flow('slack', 'slack-sync')],
-                    onEventScriptsByProvider: [onEvents('github'), onEvents('slack')]
-                })
-            });
-
-            isSuccess(res.json);
             expect(await remoteState(env)).toStrictEqual({
                 syncs: ['github:github-sync', 'slack:slack-sync'],
                 onEvents: ['github:github-on-event', 'slack:slack-on-event']
@@ -582,7 +569,7 @@ describe(`POST ${endpoint}`, () => {
         });
 
         it('should preview and remove every script of the environment on an empty environment deploy', async () => {
-            const { env, apiKey } = await seedDeployedScripts(['github']);
+            const { env, apiKey } = await seedDeployedScripts();
             const body = deployBody({ reconciliationScope: { kind: 'environment' } });
             const { nangoYamlBody: _nangoYamlBody, ...confirmationBody } = body;
             const confirmation = await api.fetch('/sync/deploy/confirmation', {
@@ -592,9 +579,13 @@ describe(`POST ${endpoint}`, () => {
             });
 
             isSuccess(confirmation.json);
-            expect(confirmation.json.deletedSyncs).toMatchObject([{ name: 'github-sync', providerConfigKey: 'github' }]);
-            expect(confirmation.json.deletedOnEventScripts).toStrictEqual([
-                { name: 'github-on-event', providerConfigKey: 'github', event: 'post-connection-creation' }
+            expect(confirmation.json.deletedSyncs.map(({ providerConfigKey, name }) => `${providerConfigKey}:${name}`).sort()).toStrictEqual([
+                'github:github-sync',
+                'slack:slack-sync'
+            ]);
+            expect(confirmation.json.deletedOnEventScripts.map(({ providerConfigKey, name }) => `${providerConfigKey}:${name}`).sort()).toStrictEqual([
+                'github:github-on-event',
+                'slack:slack-on-event'
             ]);
 
             const res = await api.fetch(endpoint, { method: 'POST', token: apiKey.secret, body });

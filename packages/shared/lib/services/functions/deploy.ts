@@ -101,7 +101,13 @@ export async function prepareDeploymentBundle({
             return Err(functionsDeploymentError(deployed.error));
         }
 
-        return reconcile({ functions, deployed: deployed.value }).mapError(functionsDeploymentError);
+        return reconcile({ functions, deployed: deployed.value })
+            .map((reconciliation) => ({
+                ...reconciliation,
+                // only repo functions are removed when missing from the bundle
+                deleted: reconciliation.deleted.filter(({ currentVersion }) => currentVersion.source === 'repo')
+            }))
+            .mapError(functionsDeploymentError);
     } catch (err) {
         return Err(functionsDeploymentError(err));
     }
