@@ -1,6 +1,8 @@
 import http from 'node:http';
 
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { axiosInstance } from '@nangohq/utils';
 
 import providerClient from './provider.client.js';
 
@@ -71,5 +73,52 @@ describe('microsoft-admin client_credentials', () => {
             await providerClient.refreshToken(provider, config, connection);
             expect(new URLSearchParams(bodies[0]).get('scope')).toBe('https://graph.microsoft.com/.default');
         });
+    });
+});
+
+describe('instagram', () => {
+    const instagramConfig = { ...config, unique_key: 'instagram', provider: 'instagram', oauth_scopes: '' } as unknown as ProviderConfig;
+    const instagramProvider = {
+        auth_mode: 'OAUTH2',
+        token_url: 'https://api.instagram.com/oauth/access_token',
+        refresh_url: 'https://graph.instagram.com/refresh_access_token'
+    } as ProviderOAuth2;
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('keeps the granted permissions from the short-lived token when exchanging for a long-lived one', async () => {
+        vi.spyOn(axiosInstance, 'post').mockResolvedValue({
+            status: 200,
+            data: { access_token: 'short-lived', user_id: 123, permissions: 'instagram_business_basic,instagram_business_content_publish' }
+        });
+        vi.spyOn(axiosInstance, 'get').mockResolvedValue({ status: 200, data: { access_token: 'long-lived', token_type: 'bearer', expires_in: 5183944 } });
+
+        const raw = await providerClient.getToken(instagramConfig, instagramProvider, instagramProvider.token_url as string, 'code', 'https://cb', '');
+
+        expect(raw).toEqual({
+            access_token: 'long-lived',
+            token_type: 'bearer',
+            expires_in: 5183944,
+            user_id: 123,
+            permissions: 'instagram_business_basic,instagram_business_content_publish'
+        });
+    });
+
+    it('carries the granted permissions over on refresh', async () => {
+        vi.spyOn(axiosInstance, 'get').mockResolvedValue({ status: 200, data: { access_token: 'refreshed', token_type: 'bearer', expires_in: 5183944 } });
+        const connection = {
+            credentials: {
+                type: 'OAUTH2',
+                access_token: 'long-lived',
+                raw: { access_token: 'long-lived', user_id: 123, permissions: 'instagram_business_basic' }
+            },
+            connection_config: {}
+        } as unknown as DBConnectionDecrypted;
+
+        const raw = await providerClient.refreshToken(instagramProvider, instagramConfig, connection);
+
+        expect(raw).toEqual({ access_token: 'refreshed', token_type: 'bearer', expires_in: 5183944, user_id: 123, permissions: 'instagram_business_basic' });
     });
 });
