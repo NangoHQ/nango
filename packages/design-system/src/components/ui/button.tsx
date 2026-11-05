@@ -1,6 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
 import { cva } from 'class-variance-authority';
-import { Children, forwardRef, Fragment, isValidElement } from 'react';
+import { Children, cloneElement, forwardRef, Fragment, isValidElement } from 'react';
 
 import { cn } from '../../lib/cn';
 import { Spinner } from './spinner';
@@ -156,17 +156,72 @@ const SPINNER_SIZE = { '2xs': 'xs', xs: 'xs', sm: 'sm', md: 'md', lg: 'md' } as 
     SpinnerSize
 >;
 
-// A leading icon is a component element (e.g. a lucide icon) or a raw <svg>. Text labels are strings or
-// plain HTML elements like <span>, so they don't count.
+// An icon is a raw <svg> or a component that takes no children, so `<Trans>Save</Trans>` is a label.
 function isIconElement(node: React.ReactNode): boolean {
-    return isValidElement(node) && node.type !== Fragment && (typeof node.type !== 'string' || node.type === 'svg');
+    if (!isValidElement<{ children?: React.ReactNode }>(node) || node.type === Fragment) {
+        return false;
+    }
+    return node.type === 'svg' || (typeof node.type !== 'string' && node.props.children === undefined);
 }
 
-// Children with any fragments expanded, so `<><Icon />Label</>` is seen as [Icon, 'Label'], not one element.
 function flattenChildren(children: React.ReactNode): React.ReactNode[] {
     return Children.toArray(children).flatMap((child) =>
         isValidElement<{ children?: React.ReactNode }>(child) && child.type === Fragment ? flattenChildren(child.props.children) : [child]
     );
+}
+
+const spinnerOverlayClass = 'absolute inset-0 flex items-center justify-center';
+
+// Returns the same element tree whether or not `loading` is set, so toggling it never remounts the children.
+// Content is faded rather than hidden, which keeps the label as the accessible name and keeps the width.
+function renderLoadingContent(children: React.ReactNode, loading: boolean, spinner: React.ReactNode): React.ReactNode {
+    const [leading, ...rest] = flattenChildren(children);
+    if (isIconElement(leading)) {
+        return (
+            <>
+                <span className={cn('relative inline-flex shrink-0', loading && '[&>:first-child]:opacity-0')}>
+                    {leading}
+                    {loading && <span className={spinnerOverlayClass}>{spinner}</span>}
+                </span>
+                {/* flattened children can repeat keys across fragments */}
+                {rest.map((child, i) => (
+                    <Fragment key={i}>{child}</Fragment>
+                ))}
+            </>
+        );
+    }
+    return (
+        <>
+            <span className={cn('contents', loading && 'text-transparent [&_*]:opacity-0')}>{children}</span>
+            {loading && <span className={spinnerOverlayClass}>{spinner}</span>}
+        </>
+    );
+}
+
+interface SlotChildOptions {
+    isDisabled: boolean;
+    onClickCapture: React.MouseEventHandler<HTMLButtonElement> | undefined;
+    renderChildren: (children: React.ReactNode) => React.ReactNode;
+    props?: Record<string, unknown>;
+}
+
+// Slot merges its handlers after the child's, so the disabled guard has to live on the child itself:
+// pointer-events-none stops the mouse but not Enter on a slotted link.
+function renderSlotChild(child: React.ReactNode, { isDisabled, onClickCapture, renderChildren, props }: SlotChildOptions): React.ReactNode {
+    if (!isValidElement<{ children?: React.ReactNode; onClickCapture?: React.MouseEventHandler<HTMLElement> }>(child)) {
+        return child;
+    }
+    const childOnClickCapture = child.props.onClickCapture;
+    const guardedClickCapture = (event: React.MouseEvent<HTMLElement>) => {
+        if (isDisabled) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+        childOnClickCapture?.(event);
+        onClickCapture?.(event as React.MouseEvent<HTMLButtonElement>);
+    };
+    return cloneElement(child, { ...props, onClickCapture: guardedClickCapture }, renderChildren(child.props.children));
 }
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
@@ -175,54 +230,26 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, disabled, children, ...props }, ref) => {
+    ({ className, variant, size, asChild = false, loading, disabled, children, onClickCapture, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
-        const isDisabled = disabled || loading;
-        // Loading never changes the button's width. Skipped for asChild — Slot needs a single child.
-        //  - With a leading icon: a same-size spinner takes the icon's slot; the label stays visible.
-        //  - Without one: the content stays in the layout but invisible, and the spinner sits centred on top.
-        const showSpinner = loading && !asChild;
+        const isLoading = loading === true;
+        const isDisabled = disabled || isLoading;
         const spinner = <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} />;
-        const [leading, ...rest] = flattenChildren(children);
-        const swapsLeadingIcon = showSpinner && isIconElement(leading);
-
-        let content: React.ReactNode = children;
-        if (swapsLeadingIcon) {
-            content = (
-                <>
-                    {spinner}
-                    {/* flattened children can repeat keys across fragments, so re-key by position */}
-                    {rest.map((child, i) => (
-                        <Fragment key={i}>{child}</Fragment>
-                    ))}
-                </>
-            );
-        } else if (showSpinner) {
-            content = (
-                <>
-                    {/* display:contents keeps the children as flex items (same width); visibility is inherited */}
-                    <span className="contents invisible">{children}</span>
-                    <span className="absolute inset-0 flex items-center justify-center">{spinner}</span>
-                </>
-            );
-        }
+        // `loading` has no default: undefined means the button never loads, so its children stay unwrapped.
+        const renderChildren = (inner: React.ReactNode) => (loading === undefined ? inner : renderLoadingContent(inner, isLoading, spinner));
 
         return (
             <Comp
                 ref={ref}
                 type={asChild ? undefined : 'button'}
-                className={cn(
-                    buttonVariants({ variant, size }),
-                    showSpinner && !swapsLeadingIcon && 'relative',
-                    isDisabled && asChild && 'pointer-events-none',
-                    className
-                )}
+                className={cn(buttonVariants({ variant, size }), isLoading && 'relative', isDisabled && asChild && 'pointer-events-none', className)}
                 disabled={isDisabled}
                 aria-disabled={isDisabled || undefined}
-                aria-busy={loading || undefined}
+                aria-busy={isLoading || undefined}
+                onClickCapture={asChild ? undefined : onClickCapture}
                 {...props}
             >
-                {content}
+                {asChild ? renderSlotChild(children, { isDisabled, onClickCapture, renderChildren }) : renderChildren(children)}
             </Comp>
         );
     }
