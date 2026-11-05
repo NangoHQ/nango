@@ -23,7 +23,10 @@ export interface FunctionDetails {
     code: { kind: 'deployed'; type: FunctionListType } | { kind: 'template'; type: FunctionType };
 }
 
-export function toFunctionDetails(fn: DetailsFunction, { env, integration }: { env: string; integration: string }): FunctionDetails {
+export function toFunctionDetails(
+    fn: DetailsFunction,
+    { env, integration, provider }: { env: string; integration: string; provider: string }
+): FunctionDetails {
     const listed = 'enabled' in fn;
     const deleteType = listed && fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn) ? fn.type : undefined;
     const base = {
@@ -68,7 +71,7 @@ export function toFunctionDetails(fn: DetailsFunction, { env, integration }: { e
                       const output = displaySchema(schema?.definitions?.[name], schema);
                       return output ? [{ name, schema: output }] : [];
                   }),
-        pullCommand: buildPullCommand({ integration, name: fn.name, type: fn.type, source: listed ? { env } : { catalog: true } }),
+        pullCommand: buildPullCommand({ integration, name: fn.name, type: fn.type, source: listed ? { env } : { catalog: true, provider } }),
         code: listed ? { kind: 'deployed', type: fn.type } : { kind: 'template', type: fn.type }
     };
 }

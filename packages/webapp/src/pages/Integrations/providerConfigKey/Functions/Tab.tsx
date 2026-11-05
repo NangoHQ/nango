@@ -273,9 +273,10 @@ function pillCount(deployed: number | undefined, templatesFetched: boolean, unde
 
 interface FunctionsTabProps {
     integration: ApiIntegration;
+    onFunctionOpenChange?: (open: boolean) => void;
 }
 
-export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
+export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunctionOpenChange }) => {
     const env = useStore((state) => state.env);
     const { data: metaData } = useMeta();
     const [templateTail, setTemplateTail] = useState<{ scope: string; keys: string[] }>({ scope: '', keys: [] });
@@ -362,6 +363,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const visibleSyncTemplates = typeFilter === 'sync' && !hasNextPage && !isPlaceholderData ? matchingSyncTemplates : [];
     const selectedFunction =
         listedMatch ?? templateMatch ?? (rawTemplateMatch?.deployed ? listedFromTemplate(rawTemplateMatch) : undefined) ?? linkedFunction?.data ?? null;
+    const functionOpen = selectedFunction !== null;
+
+    useEffect(() => {
+        onFunctionOpenChange?.(functionOpen);
+    }, [functionOpen, onFunctionOpenChange]);
+
+    useEffect(() => () => onFunctionOpenChange?.(false), [onFunctionOpenChange]);
 
     const tailScope = `${integration.unique_key}:${typeFilter}`;
     const templateRows = typeFilter === 'tool' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : [];

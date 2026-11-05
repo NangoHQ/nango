@@ -4904,6 +4904,8 @@ components:
                     enum:
                         - basic
                         - custom
+                        - private_key_jwt
+                        - none
                     type: string
             required:
                 - auth_mode
