@@ -8387,12 +8387,6 @@ Entries are kept for a year by default, and the server removes expired ones for 
 NANGO_AUDIT_POSTGRES_RETENTION_DAYS=365
 ```
 
-### Two-factor authentication
-
-Two-factor authentication is always available, the same as on Nango Cloud. There is nothing to configure.
-
-Each user turns it on from **Profile** in the dashboard's profile menu, by pairing an authenticator app and saving their recovery codes. Nango then asks them for a code at login.
-
 ### Feature flags
 
 Nango gates some behavior behind feature flags. Flags are served by the provider set in `NANGO_FLAG_PROVIDER`, which defaults to `noop`, so every flag uses its built-in default.
