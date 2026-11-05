@@ -119,6 +119,7 @@ export type * from './web/env.js';
 export type * from './fleet/api.js';
 export type * from './fleet/index.js';
 export type * from './internal-auth.js';
+export type * from './license.js';
 
 export type * from './persist/api.js';
 export type * from './jobs/api.js';

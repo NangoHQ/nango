@@ -135,7 +135,7 @@ Local development is the default path for production integrations. Use it when y
     </Note>
 
     <Accordion title="Team setup">
-      Use a shared environment (usually `dev`) for day-to-day collaboration. Create personal test connections with [per-connection webhook URL overrides](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection) pointing at your local webhook endpoint, and deploy functions granularly (`nango deploy --sync` / `--action` / `--integration`) so teammates don't overwrite each other. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
+      Use a shared environment (usually `dev`) for day-to-day collaboration. Create personal test connections with [per-connection webhook URL overrides](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection) pointing at your local webhook endpoint, and deploy functions granularly (`nango deploy <env> <file>` / `--integration`) so teammates don't overwrite each other. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
       Use CI to do full deploys across stable environments (like `staging` or `prod`). See the [CI/CD guide](/guides/functions/ci-cd).
     </Accordion>
 
@@ -217,14 +217,12 @@ Local development is the default path for production integrations. Use it when y
     Deploy the function you changed:
 
     ```bash
-    nango deploy --sync <function-name> dev
-    # or
-    nango deploy --action <function-name> dev
+    nango deploy dev <integration-id>/<folder>/<file>.ts
     # or
     nango deploy --integration <integration-id> dev
     ```
 
-    A bare `nango deploy` reconciles every function in the environment and can overwrite teammates' work on a shared collaborative environment. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
+    A bare `nango deploy` reconciles each included function family across the environment: it deploys functions present locally and removes remote ones that aren't. This can delete teammates' functions in a shared environment. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
 
     For function-type-specific commands, see the [Sync function guide](/guides/functions/syncs/sync-functions#test-and-deploy), [Action function guide](/guides/functions/action-functions#test-and-deploy), and [Testing](/guides/functions/testing).
   </Step>

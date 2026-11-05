@@ -186,7 +186,8 @@ export const validation = z
     .object({
         reconciliationScope: z.discriminatedUnion('kind', [
             z.object({ kind: z.literal('environment') }).strict(),
-            z.object({ kind: z.literal('integration'), integrationId: providerConfigKeySchema }).strict()
+            z.object({ kind: z.literal('integration'), integrationId: providerConfigKeySchema }).strict(),
+            z.object({ kind: z.literal('function'), integrationId: providerConfigKeySchema, name: scriptNameSchema }).strict()
         ]) satisfies z.ZodType<FunctionReconciliationScope>,
         functions: z.array(functionConfig)
     })
@@ -211,6 +212,20 @@ export const validation = z
         },
         {
             message: 'Functions must match the integration reconciliation scope',
+            path: ['functions']
+        }
+    )
+    .refine(
+        (body) => {
+            if (body.reconciliationScope.kind !== 'function') {
+                return true;
+            }
+            const { integrationId, name } = body.reconciliationScope;
+            const [fn] = body.functions;
+            return body.functions.length === 1 && fn?.integrationId === integrationId && fn.name === name;
+        },
+        {
+            message: 'A function-scoped deployment must contain the scoped function',
             path: ['functions']
         }
     ) satisfies z.ZodType<FunctionDeploymentBundleBody>;

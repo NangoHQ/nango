@@ -32,12 +32,15 @@ describe('manageGrowthAddonsCron exec', () => {
         const validPlanConfigs: Partial<DBPlan>[] = [
             { name: 'pay-as-you-go', has_growth_features: true },
             { name: 'pay-as-you-go', has_growth_features: true, orb_future_plan: 'free' },
+            { name: 'growth', has_growth_features: true, orb_future_plan: 'pay-as-you-go' },
             { name: 'growth-v2', has_growth_features: true, orb_future_plan: 'pay-as-you-go' },
             { name: 'startup-deal', has_growth_features: true, orb_future_plan: 'pay-as-you-go' },
             { name: 'scale-legacy', has_growth_features: true, orb_future_plan: 'pay-as-you-go' }
         ];
         const corruptedPlanConfigs: Partial<DBPlan>[] = [
             { name: 'free', has_growth_features: true },
+            { name: 'growth', has_growth_features: true },
+            { name: 'growth', has_growth_features: true, orb_future_plan: 'free' },
             { name: 'growth-v2', has_growth_features: true },
             { name: 'growth-v2', has_growth_features: true, orb_future_plan: 'free' },
             { name: 'startup-deal', has_growth_features: true, orb_future_plan: 'free' },
@@ -59,7 +62,7 @@ describe('manageGrowthAddonsCron exec', () => {
         const transitionAt = new Date('2026-10-01T06:00:00.000Z');
         const paygActivation = await seedPlan({ name: 'pay-as-you-go', has_growth_features: false, growth_features_starts_at: scheduledAt });
         const activations = [paygActivation];
-        for (const name of ['growth-v2', 'startup-deal', 'scale-legacy'] as const) {
+        for (const name of ['growth', 'growth-v2', 'startup-deal', 'scale-legacy'] as const) {
             activations.push(
                 await seedPlan({
                     name,
