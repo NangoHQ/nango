@@ -1,0 +1,182 @@
+import { createPublicKey, sign, verify } from 'node:crypto';
+
+import { calculateJwkThumbprint, exportJWK } from 'jose';
+import knexFactory from 'knex';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+import { migrate } from '../db/migrate.js';
+import { createCustomer, getCustomerByName } from './customer.service.js';
+import { createInstallationKey, deleteInstallationKey, listInstallationKeys } from './installation-key.service.js';
+import { createInstallationLicense, deactivateLicense, getActiveLicense } from './installation-license.service.js';
+import { createInstallation, getInstallationByUuid } from './installation.service.js';
+
+import type { RegistryDb } from './db.js';
+import type { Knex } from 'knex';
+
+const schema = 'self_hosting_registry_test';
+
+let knex: Knex;
+let db: RegistryDb;
+
+async function customer(): Promise<number> {
+    return (await createCustomer(db, { name: `customer-${Date.now()}-${Math.random()}` })).unwrap().id;
+}
+
+async function installation(): Promise<number> {
+    return (await createInstallation(db, { customerId: await customer(), name: 'prod', mode: 'byoc', stage: 'production' })).unwrap().id;
+}
+
+const licenseInput = (installationId: number) => ({
+    installationId,
+    issuedAt: new Date('2026-10-22T13:00:00Z'),
+    expiresAt: new Date('2027-10-22T13:00:00Z'),
+    graceUntil: new Date('2028-01-22T13:00:00Z'),
+    license: '{"version":1}',
+    signature: 'sig',
+    signingKid: 'nango-1'
+});
+
+beforeAll(async () => {
+    const url = `postgres://${process.env['NANGO_DB_USER']}:${process.env['NANGO_DB_PASSWORD']}@${process.env['NANGO_DB_HOST']}:${process.env['NANGO_DB_PORT']}`;
+    knex = knexFactory({ client: 'pg', connection: { connectionString: url } });
+    db = { knex, schema };
+    await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [schema]);
+    (await migrate({ knex, schema })).unwrap();
+});
+
+afterAll(async () => {
+    await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [schema]);
+    await knex.destroy();
+});
+
+describe('customers', () => {
+    it('creates a customer and finds it by name, but not once deleted', async () => {
+        const created = (await createCustomer(db, { name: 'acme' })).unwrap();
+        expect(created).toMatchObject({ name: 'acme', deleted_at: null });
+
+        expect((await getCustomerByName(db, { name: 'acme' })).unwrap()).toStrictEqual(created);
+
+        await knex.withSchema(schema).table('customers').where({ id: created.id }).update({ deleted_at: new Date() });
+        expect((await getCustomerByName(db, { name: 'acme' })).unwrap()).toBeNull();
+    });
+
+    it('returns a duplicate name as an error', async () => {
+        await createCustomer(db, { name: 'twice' });
+        expect((await createCustomer(db, { name: 'twice' })).isErr()).toBe(true);
+    });
+});
+
+describe('installations', () => {
+    it('creates an installation with the defaults and finds it by uuid', async () => {
+        const customerId = await customer();
+
+        const created = (await createInstallation(db, { customerId, name: 'eu-prod', mode: 'self_managed', stage: 'staging' })).unwrap();
+        expect(created).toMatchObject({ customer_id: customerId, name: 'eu-prod', mode: 'self_managed', stage: 'staging', telemetry: true, alerts: 'off' });
+        expect(created.uuid).toBeUUID();
+
+        expect((await getInstallationByUuid(db, { uuid: created.uuid })).unwrap()).toStrictEqual(created);
+    });
+
+    it('stores telemetry and alerts when given', async () => {
+        const created = (
+            await createInstallation(db, { customerId: await customer(), name: 'dev', mode: 'byoc', stage: 'development', telemetry: false, alerts: 'slack' })
+        ).unwrap();
+        expect(created).toMatchObject({ telemetry: false, alerts: 'slack' });
+    });
+
+    it('returns a duplicate name under the same customer as an error', async () => {
+        const customerId = await customer();
+        await createInstallation(db, { customerId, name: 'prod', mode: 'byoc', stage: 'production' });
+        expect((await createInstallation(db, { customerId, name: 'prod', mode: 'byoc', stage: 'production' })).isErr()).toBe(true);
+    });
+});
+
+describe('installation keys', () => {
+    it('generates an Ed25519 keypair, stores the public half under its thumbprint and returns the private half', async () => {
+        const installationId = await installation();
+
+        const { key, privateKeyPem } = (await createInstallationKey(db, { installationId })).unwrap();
+
+        expect(key).toMatchObject({ installation_id: installationId, deleted_at: null });
+        expect(key.public_key).toMatch(/^-----BEGIN PUBLIC KEY-----/);
+        expect(privateKeyPem).toMatch(/^-----BEGIN PRIVATE KEY-----/);
+        expect(key.kid).toBe(await calculateJwkThumbprint(await exportJWK(createPublicKey(key.public_key))));
+
+        const signature = sign(null, Buffer.from('payload'), privateKeyPem);
+        expect(verify(null, Buffer.from('payload'), key.public_key, signature)).toBe(true);
+    });
+
+    it('lists the live keys of an installation in creation order and drops a deleted one', async () => {
+        const installationId = await installation();
+        const first = (await createInstallationKey(db, { installationId })).unwrap().key;
+        const second = (await createInstallationKey(db, { installationId })).unwrap().key;
+
+        expect((await listInstallationKeys(db, { installationId })).unwrap()).toStrictEqual([first, second]);
+
+        const deleted = (await deleteInstallationKey(db, { kid: first.kid })).unwrap();
+        expect(deleted.deleted_at).toBeInstanceOf(Date);
+        expect((await listInstallationKeys(db, { installationId })).unwrap()).toStrictEqual([second]);
+    });
+
+    it('refuses to delete a key that is unknown or already deleted', async () => {
+        const installationId = await installation();
+        const { key } = (await createInstallationKey(db, { installationId })).unwrap();
+
+        expect((await deleteInstallationKey(db, { kid: 'nope' })).isErr()).toBe(true);
+        (await deleteInstallationKey(db, { kid: key.kid })).unwrap();
+        expect((await deleteInstallationKey(db, { kid: key.kid })).isErr()).toBe(true);
+    });
+});
+
+describe('installation licenses', () => {
+    it('creates the active license and returns it as the active one', async () => {
+        const installationId = await installation();
+
+        const created = (await createInstallationLicense(db, licenseInput(installationId))).unwrap();
+
+        expect(created).toMatchObject({
+            installation_id: installationId,
+            issued_at: new Date('2026-10-22T13:00:00Z'),
+            expires_at: new Date('2027-10-22T13:00:00Z'),
+            grace_until: new Date('2028-01-22T13:00:00Z'),
+            license: '{"version":1}',
+            signature: 'sig',
+            signing_kid: 'nango-1',
+            active: true
+        });
+        expect((await getActiveLicense(db, { installationId })).unwrap()).toStrictEqual(created);
+    });
+
+    it('renewing deactivates the previous license and keeps its row', async () => {
+        const installationId = await installation();
+        const first = (await createInstallationLicense(db, licenseInput(installationId))).unwrap();
+
+        const second = (await createInstallationLicense(db, { ...licenseInput(installationId), signature: 'sig-2' })).unwrap();
+
+        expect((await getActiveLicense(db, { installationId })).unwrap()).toStrictEqual(second);
+        const rows = await knex.withSchema(schema).table('installation_licenses').where({ installation_id: installationId }).orderBy('id');
+        expect(rows).toMatchObject([
+            { id: first.id, active: false },
+            { id: second.id, active: true }
+        ]);
+    });
+
+    it('keeps the previous license active when the new one cannot be inserted', async () => {
+        const installationId = await installation();
+        const first = (await createInstallationLicense(db, licenseInput(installationId))).unwrap();
+
+        const res = await createInstallationLicense(db, { ...licenseInput(installationId), license: null as unknown as string });
+
+        expect(res.isErr()).toBe(true);
+        expect((await getActiveLicense(db, { installationId })).unwrap()).toStrictEqual(first);
+    });
+
+    it('deactivates the active license, leaving the installation without one', async () => {
+        const installationId = await installation();
+        await createInstallationLicense(db, licenseInput(installationId));
+
+        (await deactivateLicense(db, { installationId })).unwrap();
+
+        expect((await getActiveLicense(db, { installationId })).unwrap()).toBeNull();
+    });
+});
