@@ -225,6 +225,21 @@ describe('Checkpoint service', () => {
             expect((await getCheckpoint(db.knex, { environmentId, connectionId, key })).unwrap()).toBeNull();
         });
 
+        it('should succeed for concurrent deletes of the same checkpoint', async () => {
+            const key = 'function:24';
+            const created = (await upsertCheckpoint(db.knex, { environmentId, connectionId, key, checkpoint: { test: true } })).unwrap();
+
+            const results = await Promise.all([
+                deleteCheckpoint(db.knex, { environmentId, connectionId, key, expectedVersion: created.version }),
+                deleteCheckpoint(db.knex, { environmentId, connectionId, key, expectedVersion: created.version })
+            ]);
+
+            expect(results.every((result) => result.isOk())).toBe(true);
+            const res = (await getCheckpoint(db.knex, { environmentId, connectionId, key })).unwrap();
+            expect(res?.deleted_at).not.toBeNull();
+            expect(res?.version).toBe(2);
+        });
+
         it('should succeed when deleting already deleted checkpoint', async () => {
             const key = 'function:23';
             const created = (await upsertCheckpoint(db.knex, { environmentId, connectionId, key, checkpoint: { test: true } })).unwrap();

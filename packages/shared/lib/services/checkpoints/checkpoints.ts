@@ -135,29 +135,41 @@ export async function deleteCheckpoint(
     props: { environmentId: number; connectionId: number; key: string } & ({ expectedVersion: number } | { force: true })
 ): Promise<Result<void>> {
     try {
-        const query = db
-            .from<DBCheckpoint>(TABLE)
-            .where({ environment_id: props.environmentId, connection_id: props.connectionId, key: props.key })
-            .whereNull('deleted_at')
-            .update({
-                deleted_at: db.fn.now(),
-                version: db.raw('version + 1')
-            });
-        if ('expectedVersion' in props && props.expectedVersion) {
-            query.where({ version: props.expectedVersion });
-        }
+        const expectedVersion = 'expectedVersion' in props && props.expectedVersion ? props.expectedVersion : null;
+        const row = await db
+            .with('live', (qb) => {
+                qb.select('id', 'version')
+                    .from(TABLE)
+                    .where({ environment_id: props.environmentId, connection_id: props.connectionId, key: props.key })
+                    .whereNull('deleted_at')
+                    .forUpdate();
+            })
+            .with(
+                'deleted',
+                db
+                    .from<DBCheckpoint>(TABLE)
+                    .update({
+                        deleted_at: db.fn.now(),
+                        version: db.raw('version + 1')
+                    })
+                    .whereIn(
+                        'id',
+                        db
+                            .select('id')
+                            .from('live')
+                            .modify((qb) => {
+                                if (expectedVersion) {
+                                    qb.where('version', expectedVersion);
+                                }
+                            })
+                    )
+                    .returning('id')
+            )
+            .select(db.raw('EXISTS (SELECT 1 FROM live) AS live'), db.raw('EXISTS (SELECT 1 FROM deleted) AS deleted'))
+            .first<{ live: boolean; deleted: boolean } | undefined>();
 
-        const count = await query;
-
-        if (count === 0) {
-            const live = await db
-                .from<DBCheckpoint>(TABLE)
-                .where({ environment_id: props.environmentId, connection_id: props.connectionId, key: props.key })
-                .whereNull('deleted_at')
-                .first('id');
-            if (live) {
-                return Err(new Error('checkpoint_conflict'));
-            }
+        if (row?.live && !row.deleted) {
+            return Err(new Error('checkpoint_conflict'));
         }
         return Ok(undefined);
     } catch (err) {
