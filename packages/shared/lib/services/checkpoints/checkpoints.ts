@@ -135,40 +135,27 @@ export async function deleteCheckpoint(
     props: { environmentId: number; connectionId: number; key: string } & ({ expectedVersion: number } | { force: true })
 ): Promise<Result<void>> {
     try {
-        const expectedVersion = 'expectedVersion' in props && props.expectedVersion ? props.expectedVersion : null;
-        const row = await db
-            .with('live', (qb) => {
-                qb.select('id', 'version')
-                    .from(TABLE)
-                    .where({ environment_id: props.environmentId, connection_id: props.connectionId, key: props.key })
-                    .whereNull('deleted_at')
-                    .forUpdate();
-            })
-            .with(
-                'deleted',
-                db
-                    .from<DBCheckpoint>(TABLE)
-                    .update({
-                        deleted_at: db.fn.now(),
-                        version: db.raw('version + 1')
-                    })
-                    .whereIn(
-                        'id',
-                        db
-                            .select('id')
-                            .from('live')
-                            .modify((qb) => {
-                                if (expectedVersion) {
-                                    qb.where('version', expectedVersion);
-                                }
-                            })
-                    )
-                    .returning('id')
+        const expectedVersion = 'expectedVersion' in props ? props.expectedVersion : null;
+        const result = await db.raw<{ rows: { conflict: boolean }[] }>(
+            `
+            WITH live AS (
+                SELECT id, version FROM ${TABLE}
+                WHERE environment_id = ? AND connection_id = ? AND key = ? AND deleted_at IS NULL
+                FOR UPDATE
+            ),
+            deleted AS (
+                UPDATE ${TABLE}
+                SET deleted_at = NOW(), version = ${TABLE}.version + 1
+                FROM live
+                WHERE ${TABLE}.id = live.id AND (?::int IS NULL OR live.version = ?)
+                RETURNING ${TABLE}.id
             )
-            .select(db.raw('EXISTS (SELECT 1 FROM live) AS live'), db.raw('EXISTS (SELECT 1 FROM deleted) AS deleted'))
-            .first<{ live: boolean; deleted: boolean } | undefined>();
+            SELECT EXISTS (SELECT 1 FROM live) AND NOT EXISTS (SELECT 1 FROM deleted) AS conflict
+            `,
+            [props.environmentId, props.connectionId, props.key, expectedVersion, expectedVersion]
+        );
 
-        if (row?.live && !row.deleted) {
+        if (result.rows[0]?.conflict) {
             return Err(new Error('checkpoint_conflict'));
         }
         return Ok(undefined);
