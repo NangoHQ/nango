@@ -1,6 +1,6 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai';
-import { ArrowRight, ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
+import { ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet';
@@ -19,10 +19,10 @@ import {
     InputGroupTextarea
 } from '@nangohq/design-system';
 
-import { GithubLogo } from '@/assets/GithubLogo';
 import { LogoInverted } from '@/assets/LogoInverted';
 import { OpenAIIcon } from '@/assets/OpenAIIcon';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { PromptCard } from '@/components/patterns/PromptCard';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
@@ -632,20 +632,6 @@ const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced
     );
 };
 
-const StarterPromptText: React.FC<{ prompt: string; name: string }> = ({ prompt, name }) => {
-    const start = prompt.indexOf(name);
-    if (start === -1) {
-        return prompt;
-    }
-    return (
-        <>
-            {prompt.slice(0, start)}
-            <span className="type-text-medium-sm">{name}</span>
-            {prompt.slice(start + name.length)}
-        </>
-    );
-};
-
 const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string, provider: string) => void }> = ({ composer, onPick }) => {
     return (
         <div className="flex flex-1 flex-col items-center text-center">
@@ -656,23 +642,7 @@ const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string,
             {composer}
             <div className="grid w-full flex-[4] auto-rows-min grid-cols-2 gap-3 pt-6">
                 {STARTER_PROMPTS.map(({ prompt, provider, name }) => (
-                    <button
-                        key={prompt}
-                        type="button"
-                        onClick={() => onPick(prompt, provider)}
-                        className="group flex items-center gap-3 rounded-ds-xs border-ds-hairline border-border-muted px-3 py-[13px] text-left type-text-regular-sm text-text-default transition-[background-color,border-color,box-shadow] hover:border-border-strong hover:bg-surface-panel hover:shadow-container-panel"
-                    >
-                        {/* Template logos pad their artwork, so a 25px box draws an 18px logo. */}
-                        {provider === 'github' ? (
-                            <GithubLogo className="-m-[3.5px] size-[25px] shrink-0 text-text-strong" />
-                        ) : (
-                            <IntegrationLogo provider={provider} className="-m-[3.5px] size-[25px] shrink-0 border-0 bg-transparent p-0" />
-                        )}
-                        <span className="flex-1">
-                            <StarterPromptText prompt={prompt} name={name} />
-                        </span>
-                        <ArrowRight className="size-3.5 shrink-0 text-text-muted transition-colors group-hover:text-text-default" />
-                    </button>
+                    <PromptCard key={prompt} prompt={prompt} provider={provider} name={name} action="send" onClick={() => onPick(prompt, provider)} />
                 ))}
             </div>
         </div>
