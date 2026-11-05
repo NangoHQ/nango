@@ -63,12 +63,33 @@ export async function listInstallations(
 /** A changed telemetry flag reaches the installation with its next license. */
 export async function updateInstallation(
     db: RegistryDb,
-    { id, name, telemetry, alerts }: { id: number; name?: string; telemetry?: boolean; alerts?: DBSelfHostingInstallation['alerts'] }
+    {
+        id,
+        name,
+        mode,
+        stage,
+        telemetry,
+        alerts
+    }: {
+        id: number;
+        name?: string;
+        mode?: DBSelfHostingInstallation['mode'];
+        stage?: DBSelfHostingInstallation['stage'];
+        telemetry?: boolean;
+        alerts?: DBSelfHostingInstallation['alerts'];
+    }
 ): Promise<Result<DBSelfHostingInstallation>> {
     try {
         const [row] = await installations(db)
             .where({ id, deleted_at: null })
-            .update({ updated_at: new Date(), ...(name && { name }), ...(telemetry !== undefined && { telemetry }), ...(alerts && { alerts }) })
+            .update({
+                updated_at: new Date(),
+                ...(name && { name }),
+                ...(mode && { mode }),
+                ...(stage && { stage }),
+                ...(telemetry !== undefined && { telemetry }),
+                ...(alerts && { alerts })
+            })
             .returning('*');
         return row ? Ok(row) : Err(new Error(`no live installation ${id}`));
     } catch (err) {

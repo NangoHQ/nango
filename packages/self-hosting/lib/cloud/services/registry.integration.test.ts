@@ -215,6 +215,14 @@ describe('installation updates and deletion', () => {
         expect(updated.updated_at.getTime()).toBeGreaterThan(lastWeek.getTime());
     });
 
+    it('changes the mode and the stage in place, keeping the uuid', async () => {
+        const created = (await createInstallation(db, { customerId: await customer(), name: 'moving', mode: 'byoc', stage: 'production' })).unwrap();
+
+        const updated = (await updateInstallation(db, { id: created.id, mode: 'self_managed', stage: 'staging' })).unwrap();
+
+        expect(updated).toMatchObject({ uuid: created.uuid, name: 'moving', mode: 'self_managed', stage: 'staging' });
+    });
+
     it('lists the live installations of a customer in creation order', async () => {
         const customerId = await customer();
         const first = (await createInstallation(db, { customerId, name: 'a', mode: 'byoc', stage: 'production' })).unwrap();

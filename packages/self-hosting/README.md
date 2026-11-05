@@ -60,12 +60,22 @@ nango-registry create-license --installation <uuid> --expires-at 2028-11-05T00:0
 
 ### Changing what an installation is entitled to
 
-`update-installation` edits the registry row; the license still carries the old values until the next `create-license`, so renew right after.
+`update-installation` edits the registry row; the license still carries the old values until the next `create-license`, so renew right after. Mode and stage change in place too, so a customer moving between BYOC and self-managed keeps its uuid, keys and license; moving to self-managed needs `--alerts off` in the same command when alerts were on.
 
 ```bash
 nango-registry update-installation --installation <uuid> --no-telemetry
 nango-registry create-license --installation <uuid> --expires-at 2027-11-05T00:00:00Z --grace-until 2028-02-03T00:00:00Z
 ```
+
+### Moving an installation between BYOC and self-managed
+
+It has happened: a customer left BYOC for a cluster they run themselves. The installation keeps its identity, so the customer keeps `NANGO_LICENSE` and the installation key as they are; only the registry row changes. Alerts go `off` in the same command, since the new cluster is not in our Datadog.
+
+```bash
+nango-registry update-installation --installation <uuid> --mode self_managed --alerts off
+```
+
+The reverse move is `--mode byoc` with the `--alerts` value from the new tfvars. Nothing is re-minted either way, the license carries no mode; the infrastructure teardown or provisioning is handled in nango-infra and nango-environments as usual.
 
 ### Rotating an installation key
 
@@ -96,21 +106,21 @@ nango-registry delete-customer --name acme --yes
 
 ### Command reference
 
-| Command               | Options                                                                                                                                             |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `create-customer`     | `--name <name>`                                                                                                                                     |
-| `list-customers`      | `[--all]`                                                                                                                                           |
-| `delete-customer`     | `--name <name> [--yes]`                                                                                                                             |
-| `create-installation` | `--customer <name> --name <name> --mode byoc\|self_managed --stage production\|staging\|development [--no-telemetry] [--alerts off\|slack\|oncall]` |
-| `update-installation` | `--installation <uuid> [--name <name>] [--telemetry\|--no-telemetry] [--alerts]`                                                                    |
-| `delete-installation` | `--installation <uuid> [--yes]`                                                                                                                     |
-| `list-installations`  | `[--customer <name>] [--all]`                                                                                                                       |
-| `create-key`          | `--installation <uuid>`                                                                                                                             |
-| `delete-key`          | `--kid <kid> [--yes]`                                                                                                                               |
-| `list-keys`           | `--installation <uuid> [--all]`                                                                                                                     |
-| `create-license`      | `--installation <uuid> --expires-at <iso date> --grace-until <iso date>`                                                                            |
-| `disable-license`     | `--installation <uuid> [--yes]`                                                                                                                     |
-| `list-licenses`       | `--installation <uuid>`                                                                                                                             |
+| Command               | Options                                                                                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `create-customer`     | `--name <name>`                                                                                                                                         |
+| `list-customers`      | `[--all]`                                                                                                                                               |
+| `delete-customer`     | `--name <name> [--yes]`                                                                                                                                 |
+| `create-installation` | `--customer <name> --name <name> --mode byoc\|self_managed --stage production\|staging\|development [--no-telemetry] [--alerts off\|slack\|oncall]`     |
+| `update-installation` | `--installation <uuid> [--name <name>] [--mode byoc\|self_managed] [--stage production\|staging\|development] [--telemetry\|--no-telemetry] [--alerts]` |
+| `delete-installation` | `--installation <uuid> [--yes]`                                                                                                                         |
+| `list-installations`  | `[--customer <name>] [--all]`                                                                                                                           |
+| `create-key`          | `--installation <uuid>`                                                                                                                                 |
+| `delete-key`          | `--kid <kid> [--yes]`                                                                                                                                   |
+| `list-keys`           | `--installation <uuid> [--all]`                                                                                                                         |
+| `create-license`      | `--installation <uuid> --expires-at <iso date> --grace-until <iso date>`                                                                                |
+| `disable-license`     | `--installation <uuid> [--yes]`                                                                                                                         |
+| `list-licenses`       | `--installation <uuid>`                                                                                                                                 |
 
 The four commands with `[--yes]` apply the change only with it. Without it they exit 1 and print what they would touch: for `delete-installation` the installation, its live keys and the active license, for `delete-customer` that for each of its live installations, for `delete-key` the key id, for `disable-license` the installation and the active license.
 

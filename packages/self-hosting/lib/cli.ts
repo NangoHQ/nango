@@ -24,7 +24,8 @@ customers
 installations
   create-installation  --customer <name> --name <name> --mode byoc|self_managed
                        --stage production|staging|development [--no-telemetry] [--alerts off|slack|oncall]
-  update-installation  --installation <uuid> [--name <name>] [--telemetry|--no-telemetry] [--alerts off|slack|oncall]
+  update-installation  --installation <uuid> [--name <name>] [--mode byoc|self_managed] [--stage production|staging|development]
+                       [--telemetry|--no-telemetry] [--alerts off|slack|oncall]
   delete-installation  --installation <uuid> --yes     deactivates its license and deletes its keys
   list-installations   [--customer <name>] [--all]
 
@@ -96,15 +97,15 @@ function date(name: string, value: string | undefined): Date {
     return parsed;
 }
 
-function alerts(mode: DBSelfHostingInstallation['mode']): { alerts?: DBSelfHostingInstallation['alerts'] } {
-    if (!values.alerts) {
-        return {};
-    }
-    const chosen = oneOf('alerts', values.alerts, ['off', 'slack', 'oncall']);
-    if (mode === 'self_managed' && chosen !== 'off') {
+function alerts(
+    mode: DBSelfHostingInstallation['mode'],
+    current: DBSelfHostingInstallation['alerts'] = 'off'
+): { alerts?: DBSelfHostingInstallation['alerts'] } {
+    const chosen = values.alerts ? oneOf('alerts', values.alerts, ['off', 'slack', 'oncall']) : undefined;
+    if (mode === 'self_managed' && (chosen ?? current) !== 'off') {
         throw new Error('a self-managed installation is not in our Datadog, --alerts must be off');
     }
-    return { alerts: chosen };
+    return chosen ? { alerts: chosen } : {};
 }
 
 async function customer(db: RegistryDb, name: string): Promise<DBSelfHostingCustomer> {
@@ -168,15 +169,18 @@ const commands: Record<string, (db: RegistryDb) => Promise<Result<unknown>>> = {
         });
     },
     'update-installation': async (db) => {
-        if (values.name === undefined && values.telemetry === undefined && values.alerts === undefined) {
-            throw new Error('nothing to update: pass --name, --telemetry, --no-telemetry or --alerts');
+        if ([values.name, values.mode, values.stage, values.telemetry, values.alerts].every((v) => v === undefined)) {
+            throw new Error('nothing to update: pass --name, --mode, --stage, --telemetry, --no-telemetry or --alerts');
         }
         const row = await installation(db);
+        const mode = values.mode ? oneOf('mode', values.mode, ['byoc', 'self_managed']) : row.mode;
         return updateInstallation(db, {
             id: row.id,
             ...(values.name !== undefined && { name: required('name', values.name) }),
+            ...(values.mode && { mode }),
+            ...(values.stage && { stage: oneOf('stage', values.stage, ['production', 'staging', 'development']) }),
             ...(values.telemetry !== undefined && { telemetry: values.telemetry }),
-            ...alerts(row.mode)
+            ...alerts(mode, row.alerts)
         });
     },
     'delete-installation': async (db) => {
