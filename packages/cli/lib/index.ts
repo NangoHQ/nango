@@ -30,7 +30,7 @@ import { MissingArgumentError } from './utils/errors.js';
 import { checkAndSyncPackageJson } from './zeroYaml/check.js';
 import { compileAllFunctions } from './zeroYaml/compile.js';
 import { parseIntegrationDefinitions } from './zeroYaml/definitions.js';
-import { deploy } from './zeroYaml/deploy.js';
+import { deploy, validateDeployArguments } from './zeroYaml/deploy.js';
 import { dev } from './zeroYaml/dev.js';
 import { initZero } from './zeroYaml/init.js';
 import { ReadableError } from './zeroYaml/utils.js';
@@ -491,13 +491,14 @@ program
     .command('deploy')
     .description('Deploy a Nango integration')
     .argument('[environment]', 'The target environment (e.g., "dev" or "prod")')
+    .argument('[file]', 'Optional: Deploy only this script file (e.g., "github/tools/getIssue.ts").')
     .option('-v, --version [version]', 'Optional: Set the deployment version for syncs/actions. Has no effect on functions.')
-    .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
-    .option('-a, --action [actionName]', 'Optional deploy only this action name.')
+    .option('-s, --sync [syncName]', 'Deprecated, pass the script file instead. Optional deploy only this sync name.')
+    .option('-a, --action [actionName]', 'Deprecated, pass the script file instead. Optional deploy only this action name.')
     .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
     .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation. Requires --auto-confirm.', false)
     .addOption(new Option('--sourcemap <mode>', 'Source map mode for compiled function bundles.').choices(SOURCEMAP_OPTIONS).default('inline'))
-    .action(async function (this: Command, environment?: string) {
+    .action(async function (this: Command, environment?: string, file?: string) {
         const options = this.opts<DeployOptions>();
         const { debug, interactive, dependencyUpdate, sourcemap } = options;
         const fullPath = process.cwd();
@@ -510,6 +511,13 @@ program
             if (err instanceof MissingArgumentError) {
                 this.help();
             }
+            process.exitCode = NangoCliExitCode.DeployError;
+            return;
+        }
+
+        const validArguments = validateDeployArguments({ environment, file, options });
+        if (validArguments.isErr()) {
+            console.error(chalk.red(validArguments.error.message));
             process.exitCode = NangoCliExitCode.DeployError;
             return;
         }
@@ -530,7 +538,7 @@ program
             return;
         }
 
-        const res = await deploy({ fullPath, options, environmentName: environment, interactive });
+        const res = await deploy({ fullPath, options, environmentName: environment, file, interactive });
         if (res.isErr()) {
             process.exitCode = NangoCliExitCode.DeployError;
             return;

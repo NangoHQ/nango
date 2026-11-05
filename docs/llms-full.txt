@@ -3222,7 +3222,7 @@ Local development is the default path for production integrations. Use it when y
     </Note>
 
     <Accordion title="Team setup">
-      Use a shared environment (usually `dev`) for day-to-day collaboration. Create personal test connections with [per-connection webhook URL overrides](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection) pointing at your local webhook endpoint, and deploy functions granularly (`nango deploy --sync` / `--action` / `--integration`) so teammates don't overwrite each other. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
+      Use a shared environment (usually `dev`) for day-to-day collaboration. Create personal test connections with [per-connection webhook URL overrides](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection) pointing at your local webhook endpoint, and deploy functions granularly (`nango deploy <env> <file>` / `--integration`) so teammates don't overwrite each other. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
       Use CI to do full deploys across stable environments (like `staging` or `prod`). See the [CI/CD guide](/guides/functions/ci-cd).
     </Accordion>
 
@@ -3304,9 +3304,7 @@ Local development is the default path for production integrations. Use it when y
     Deploy the function you changed:
 
     ```bash
-    nango deploy --sync <function-name> dev
-    # or
-    nango deploy --action <function-name> dev
+    nango deploy dev <integration-id>/<folder>/<file>.ts
     # or
     nango deploy --integration <integration-id> dev
     ```
@@ -3526,7 +3524,7 @@ nango deploy
 To deploy only this sync function:
 
 ```bash
-nango deploy --sync contacts dev
+nango deploy dev crm/syncs/contacts.ts
 ```
 
 ## Start or trigger runs
@@ -4669,7 +4667,7 @@ nango deploy
 To deploy only this action function:
 
 ```bash
-nango deploy --action create-issue dev
+nango deploy dev github/actions/create-issue.ts
 ```
 
 For broader test coverage, see the [testing guide](/guides/functions/testing). To deploy from CI, see [CI/CD](/guides/functions/ci-cd).
@@ -4905,7 +4903,7 @@ nango deploy
 To deploy only this webhook-backed sync function:
 
 ```bash
-nango deploy --sync contacts dev
+nango deploy dev crm/syncs/contacts.ts
 ```
 
 Then send a test webhook from the provider dashboard, CLI, or webhook testing tool to the Nango webhook URL. Check Nango logs for the incoming webhook, routing result, and function execution.
@@ -6656,10 +6654,11 @@ When the var is set, new connections from that session route webhooks to your ma
 A full `nango deploy` reconciles every function in the environment. On a shared collaborative environment, that can overwrite teammates' deploys. Deploy only what you changed:
 
 ```bash
-nango deploy --sync <name> <env>
-nango deploy --action <name> <env>
-nango deploy --integration <id> <env>   # all functions for one integration, including event functions
+nango deploy <env> <integration>/<folder>/<file>.ts   # one function, e.g. github/tools/get-issue.ts
+nango deploy --integration <id> <env>                 # all functions for one integration, including event functions
 ```
+
+Deploying a single file never deletes other functions. Event functions can only be deployed with their integration or the whole project.
 
 Reserve full deploys for environments where the repo is the sole source of truth (for example staging or prod). See the [CI/CD guide](/guides/functions/ci-cd).
 
