@@ -1,3 +1,5 @@
+import tracer from 'dd-trace';
+
 import db from '@nangohq/database';
 import { report } from '@nangohq/utils';
 
@@ -6,12 +8,13 @@ import { AGENT_SESSION_TAG_KEY } from './agentSessionConnections.service.js';
 
 import type { Knex } from '@nangohq/database';
 import type { AgentSession, ApiAgentGettingStarted, DBAccountGettingStarted, Tags } from '@nangohq/types';
+import type { Span } from 'dd-trace';
 
 const TABLE = 'account_getting_started';
 
 type StampedColumn = 'first_agent_connection_at' | 'first_tool_call_at' | 'dismissed_at';
 
-export async function getProgress(trx: Knex, accountId: number): Promise<ApiAgentGettingStarted> {
+export async function getStatus(trx: Knex, accountId: number): Promise<ApiAgentGettingStarted> {
     const row = await trx<DBAccountGettingStarted>(TABLE).where({ account_id: accountId }).first();
 
     return {
@@ -44,11 +47,15 @@ export async function recordConnectionCreated({ accountId, tags }: { accountId: 
         return;
     }
 
-    try {
-        await stampOnce(db.knex, accountId, 'first_agent_connection_at');
-    } catch (err) {
-        report(new Error('getting_started_record_agent_connection_failed', { cause: err }), { accountId });
-    }
+    await tracer.trace('server.agentGettingStarted.recordConnectionCreated', async (span: Span) => {
+        span.setTag('nango.accountId', accountId);
+        try {
+            await stampOnce(db.knex, accountId, 'first_agent_connection_at');
+        } catch (err) {
+            span.setTag('nango.error', err);
+            report(new Error('getting_started_record_agent_connection_failed', { cause: err }), { accountId });
+        }
+    });
 }
 
 export async function recordToolCall({
@@ -64,11 +71,15 @@ export async function recordToolCall({
         return;
     }
 
-    try {
-        await stampOnce(db.knex, accountId, 'first_tool_call_at');
-    } catch (err) {
-        report(new Error('getting_started_record_agent_tool_call_failed', { cause: err }), { accountId });
-    }
+    await tracer.trace('server.agentGettingStarted.recordToolCall', async (span: Span) => {
+        span.setTag('nango.accountId', accountId);
+        try {
+            await stampOnce(db.knex, accountId, 'first_tool_call_at');
+        } catch (err) {
+            span.setTag('nango.error', err);
+            report(new Error('getting_started_record_agent_tool_call_failed', { cause: err }), { accountId });
+        }
+    });
 }
 
 async function stampOnce(trx: Knex, accountId: number, column: StampedColumn): Promise<void> {

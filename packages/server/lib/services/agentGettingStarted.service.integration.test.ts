@@ -3,7 +3,7 @@ import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
-import { dismiss, getProgress, isDismissed, recordConnectionCreated, recordToolCall, restart } from './agentGettingStarted.service.js';
+import { dismiss, getStatus, isDismissed, recordConnectionCreated, recordToolCall, restart } from './agentGettingStarted.service.js';
 import { PLAYGROUND_USER_TAG_KEY } from './agentPlaygroundTags.js';
 import { AGENT_SESSION_TAG_KEY } from './agentSessionConnections.service.js';
 
@@ -27,7 +27,7 @@ describe('agentGettingStarted service', () => {
     });
 
     it('starts empty for a new account', async () => {
-        expect(await getProgress(db.knex, account.id)).toStrictEqual({
+        expect(await getStatus(db.knex, account.id)).toStrictEqual({
             first_agent_connection_at: null,
             first_tool_call_at: null,
             dismissed_at: null
@@ -39,14 +39,14 @@ describe('agentGettingStarted service', () => {
         it('stamps a connection created by an agent session', async () => {
             await recordConnectionCreated({ accountId: account.id, tags: { [AGENT_SESSION_TAG_KEY]: 'session-id' } });
 
-            const state = await getProgress(db.knex, account.id);
+            const state = await getStatus(db.knex, account.id);
             expect(state.first_agent_connection_at).not.toBeNull();
         });
 
         it('ignores connections not created by an agent session', async () => {
             await recordConnectionCreated({ accountId: account.id, tags: { end_user_id: 'user-1' } });
 
-            expect((await getProgress(db.knex, account.id)).first_agent_connection_at).toBeNull();
+            expect((await getStatus(db.knex, account.id)).first_agent_connection_at).toBeNull();
         });
 
         it('ignores connections created from the Playground', async () => {
@@ -55,16 +55,16 @@ describe('agentGettingStarted service', () => {
                 tags: { [AGENT_SESSION_TAG_KEY]: 'session-id', [PLAYGROUND_USER_TAG_KEY]: 'user-uuid' }
             });
 
-            expect((await getProgress(db.knex, account.id)).first_agent_connection_at).toBeNull();
+            expect((await getStatus(db.knex, account.id)).first_agent_connection_at).toBeNull();
         });
 
         it('keeps the first timestamp', async () => {
             await recordConnectionCreated({ accountId: account.id, tags: { [AGENT_SESSION_TAG_KEY]: 'session-id' } });
-            const first = (await getProgress(db.knex, account.id)).first_agent_connection_at;
+            const first = (await getStatus(db.knex, account.id)).first_agent_connection_at;
 
             await recordConnectionCreated({ accountId: account.id, tags: { [AGENT_SESSION_TAG_KEY]: 'other-session-id' } });
 
-            expect((await getProgress(db.knex, account.id)).first_agent_connection_at).toBe(first);
+            expect((await getStatus(db.knex, account.id)).first_agent_connection_at).toBe(first);
         });
     });
 
@@ -72,19 +72,19 @@ describe('agentGettingStarted service', () => {
         it('stamps a successful tool call', async () => {
             await recordToolCall({ accountId: account.id, session: agentSession, succeeded: true });
 
-            expect((await getProgress(db.knex, account.id)).first_tool_call_at).not.toBeNull();
+            expect((await getStatus(db.knex, account.id)).first_tool_call_at).not.toBeNull();
         });
 
         it('ignores failed tool calls', async () => {
             await recordToolCall({ accountId: account.id, session: agentSession, succeeded: false });
 
-            expect((await getProgress(db.knex, account.id)).first_tool_call_at).toBeNull();
+            expect((await getStatus(db.knex, account.id)).first_tool_call_at).toBeNull();
         });
 
         it('ignores Playground tool calls', async () => {
             await recordToolCall({ accountId: account.id, session: playgroundSession, succeeded: true });
 
-            expect((await getProgress(db.knex, account.id)).first_tool_call_at).toBeNull();
+            expect((await getStatus(db.knex, account.id)).first_tool_call_at).toBeNull();
         });
     });
 
@@ -95,7 +95,7 @@ describe('agentGettingStarted service', () => {
 
         await restart(db.knex, account.id);
 
-        const state = await getProgress(db.knex, account.id);
+        const state = await getStatus(db.knex, account.id);
         expect(state.first_agent_connection_at).toBeNull();
         expect(state.first_tool_call_at).toBeNull();
         expect(state.dismissed_at).not.toBeNull();
@@ -108,6 +108,6 @@ describe('agentGettingStarted service', () => {
 
         await recordToolCall({ accountId: account.id, session: agentSession, succeeded: true });
 
-        expect((await getProgress(db.knex, account.id)).first_tool_call_at).not.toBeNull();
+        expect((await getStatus(db.knex, account.id)).first_tool_call_at).not.toBeNull();
     });
 });

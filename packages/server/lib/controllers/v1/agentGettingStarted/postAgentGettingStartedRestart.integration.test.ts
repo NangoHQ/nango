@@ -27,7 +27,7 @@ describe(`POST ${endpoint}`, () => {
     it('clears the progress for the account', async () => {
         const { account, user } = await seeders.seedAccountEnvAndUser();
         await agentGettingStartedService.recordConnectionCreated({ accountId: account.id, tags: { [AGENT_SESSION_TAG_KEY]: 'session-id' } });
-        expect((await agentGettingStartedService.getProgress(db.knex, account.id)).first_agent_connection_at).not.toBeNull();
+        expect((await agentGettingStartedService.getStatus(db.knex, account.id)).first_agent_connection_at).not.toBeNull();
         const session = await authenticateUser(api, user);
 
         const res = await api.fetch(endpoint, { method: 'POST', session });

@@ -23,5 +23,5 @@ export const postAgentGettingStartedRestart = asyncWrapper<PostAgentGettingStart
 
     await agentGettingStartedService.restart(db.knex, account.id);
 
-    res.status(200).send({ data: await agentGettingStartedService.getProgress(db.knex, account.id) });
+    res.status(200).send({ data: await agentGettingStartedService.getStatus(db.knex, account.id) });
 });
