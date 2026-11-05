@@ -124,7 +124,7 @@ export const buttonVariants = cva(
                     ...LINK_UNDERLINE_STATES,
                     'not-disabled:not-aria-disabled:hover:text-text-link-danger not-disabled:not-aria-disabled:hover:[&_svg]:text-icon-link-danger',
                     'not-disabled:not-aria-disabled:focus-visible:text-text-link-danger not-disabled:not-aria-disabled:focus-visible:[&_svg]:text-icon-link-danger',
-                    'active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active',
+                    'not-disabled:not-aria-disabled:active:text-text-link-danger-active not-disabled:not-aria-disabled:active:[&_svg]:text-icon-link-danger-active',
                     'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
                     'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-danger'
