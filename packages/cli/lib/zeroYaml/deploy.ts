@@ -13,7 +13,7 @@ import { Spinner } from '../utils/spinner.js';
 import { NANGO_VERSION } from '../version.js';
 import { tsToJsPath } from './compile.js';
 import { parseIntegrationDefinitions } from './definitions.js';
-import { normalizeProjectRelativePath, resolveProjectPath } from './project-path.js';
+import { resolveEntryPoint, resolveProjectPath } from './project-path.js';
 import { ReadableError } from './utils.js';
 
 import type { DeployOptions } from '../types.js';
@@ -333,17 +333,12 @@ export function validateDeployArguments({
 }
 
 function planFileDeployment({ fullPath, file, parsed }: { fullPath: string; file: string; parsed: ParsedIntegrationDefinitions }): Result<DeploymentSelection> {
-    const tsFile = file.replace(/\.js$/, '.ts');
-    const resolved = resolveProjectPath({ projectRoot: fullPath, filePath: path.isAbsolute(tsFile) ? path.relative(fullPath, tsFile) : tsFile });
-    if (!resolved) {
-        return Err(new Error(`'${file}' must be inside the project folder.`));
+    const resolved = resolveEntryPoint({ fullPath, file, entryPoints: parsed.entryPoints });
+    if (resolved.isErr()) {
+        return Err(resolved.error);
     }
 
-    const entryPoint = parsed.entryPoints.find((candidate) => normalizeProjectRelativePath(candidate.filePath) === resolved.relative);
-    if (!entryPoint) {
-        return Err(new Error(`'${file}' is not a script. Make sure it is imported from index.ts.`));
-    }
-
+    const entryPoint = resolved.value;
     const { integrationId, name } = entryPoint;
     switch (entryPoint.type) {
         case 'function':
