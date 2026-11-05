@@ -124,14 +124,9 @@ export const buttonVariants = cva(
             size: {
                 // 20px square — smallest icon-only size (use with IconButton); icon sizing comes from the base
                 '2xs': 'size-5 p-1 gap-1 text-ds-xs',
-                // Figma Dharma button spec — height / side padding / label / icon / gap:
-                // xs 24 / 8 / 12 / 12 / 4
                 xs: ['h-6 px-2 gap-1 text-ds-xs', "[&_svg:not([class*='size-'])]:size-3"],
-                // sm 28 / 10 / 12 / 14 / 6
                 sm: ['h-7 px-2.5 gap-1.5 text-ds-xs', "[&_svg:not([class*='size-'])]:size-3.5"],
-                // md 32 / 12 / 13 / 16 / 6 (16px icon from the base)
                 md: 'h-8 px-3 gap-1.5 text-ds-sm',
-                // lg 36 / 14 / 14 / 16 / 8 (16px icon from the base)
                 lg: 'h-9 px-3.5 gap-2 text-ds-md'
             }
         },
@@ -140,9 +135,7 @@ export const buttonVariants = cva(
             // link-danger alone gets 2px horizontal padding that link-accent/link-neutral don't have.
             { variant: ['link-accent', 'link-neutral'], className: 'h-auto w-auto p-0' },
             { variant: 'link-danger', className: 'h-auto w-auto px-0.5 py-0' },
-            // Link variants aren't part of the Dharma button refresh: keep their previous radius (2px, which only
-            // shows on the focus ring), type and gap scale (4px gap at xs/sm, 6px at md/lg; 14px label at md).
-            // Icon sizes come from the size variant.
+            // Link variants deliberately don't take the size scale's radius, gap or label size, only its icon size.
             { variant: ['link-accent', 'link-danger', 'link-neutral'], className: 'rounded-ds-xs' },
             { variant: ['link-accent', 'link-danger', 'link-neutral'], size: 'sm', className: 'gap-1' },
             { variant: ['link-accent', 'link-danger', 'link-neutral'], size: 'md', className: 'text-ds-md' },
