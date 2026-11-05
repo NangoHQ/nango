@@ -13,7 +13,7 @@ export interface WebhookSettings {
 }
 
 export type PatchWebhook = ApiEndpoint<{
-    Audit: AuditPolicy<'environment', 'webhook_urls_changed', 'environment'>;
+    Audit: AuditPolicy<'environment', 'updated', 'environment'>;
     Method: 'PATCH';
     Querystring: {
         env: string;
