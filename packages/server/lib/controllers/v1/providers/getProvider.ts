@@ -6,6 +6,7 @@ import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerListItemToAPI } from '../../../formatters/provider.js';
 import { providerNameSchema } from '../../../helpers/validation.js';
+import providerService from '../../../services/provider.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { GetProvider } from '@nangohq/types';
@@ -45,12 +46,18 @@ export const getProviderItem = asyncWrapper<GetProvider>(async (req, res) => {
         const preConfiguredScopes = preConfiguredInfo ? preConfiguredInfo.scopes : [];
 
         const allScopes = getProviderScopes();
+        const templateCounts = providerService.countTemplatesByProvider();
+        if (templateCounts.isErr()) {
+            report(templateCounts.error);
+        }
+
         const providerListItem = providerListItemToAPI(
             params.providerConfigKey,
             provider,
             isPreConfigured,
             preConfiguredScopes,
-            allScopes?.[params.providerConfigKey]
+            allScopes?.[params.providerConfigKey],
+            templateCounts.isOk() ? templateCounts.value.get(params.providerConfigKey) : undefined
         );
         res.status(200).send({ data: providerListItem });
     } catch (err) {
