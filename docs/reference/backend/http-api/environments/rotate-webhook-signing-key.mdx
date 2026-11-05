@@ -9,9 +9,9 @@ openapi: 'POST /environment/webhook-signing-key/rotate'
 
 Replaces the key Nango uses to [sign webhooks](/guides/platform/webhooks-from-nango#verifying-webhooks-from-nango). The new key is returned in the response, and stays readable under **Environment Settings > Webhooks > Signing key**.
 
-Omit the request body or send `{}` to generate a random key. To import an existing key, pass `webhook_signing_key` in the JSON body. It must be a UUID v4; uppercase characters are normalized to lowercase, matching environment creation.
+To import an existing key, pass `webhook_signing_key` in the body. The value must be a UUID v4; uppercase characters are normalized to lowercase. You should generate it using a cryptographically secure random generator, such as `crypto.randomUUID()`. The security of a supplied key depends on how you generate and protect it; Nango validates its format but cannot verify its randomness.
 
-Generate supplied keys using a cryptographically secure generator such as `crypto.randomUUID()`. Nango validates the format but cannot verify the key's randomness.
+Omit the request body or send `{}` to generate a random key.
 
 ```json
 {
