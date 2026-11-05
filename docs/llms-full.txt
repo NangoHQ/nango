@@ -15979,7 +15979,7 @@ slack:
 </ResponseField>
 
 <ResponseField name="token_request_auth_method" type="string">
-    The authentication method used for token requests. Must be either "basic" or "custom".
+    The authentication method used for token requests: "basic", "custom", "private_key_jwt", or "none". Use "none" for public clients that send only their client_id, with no client secret.
 </ResponseField>
 
 <ResponseField name="expires_in_unit" type="string">
