@@ -10,13 +10,13 @@ Licenses are signed by the KMS key `alias/nango-license-signing` in the producti
 alias nango-registry='kubectl --context production -n nango exec deploy/nango-self-hosting -- node dist/cli.js'
 ```
 
-The walkthroughs below assume that alias. Dates are ISO 8601; the grace period is the time after expiry during which the installation keeps starting.
+The walkthroughs below assume that alias. Dates are ISO 8601; the grace period is the time after expiry during which the installation keeps starting. An installation is named with the `installation_id` of its tfvars in nango-infra, `byoc-<customer>-<stage>` as in [altruist/staging.tfvars](https://github.com/NangoHQ/nango-infra/blob/40e3a3a17741b8847da050feaf3b0ca2c455531a/terraform/customers/byoc/aws/environments/altruist/staging.tfvars#L2), which is also the `env` tag its pods report to Datadog.
 
 ### Onboarding a new customer
 
 ```bash
 nango-registry create-customer --name acme
-nango-registry create-installation --customer acme --name acme/prod --mode byoc --stage production
+nango-registry create-installation --customer acme --name byoc-acme-prod --mode byoc --stage production
 nango-registry create-key --installation <uuid from the previous output>
 nango-registry create-license --installation <uuid> --expires-at 2027-11-05T00:00:00Z --grace-until 2028-02-03T00:00:00Z
 ```
@@ -28,7 +28,7 @@ Hand over two values, out of band: the `license` from the last output as `NANGO_
 Same as above without `create-customer`. Add `--stage staging` or `--stage development` as fits, `--no-telemetry` if the contract excludes telemetry, `--alerts slack` or `--alerts oncall` to match the installation's Datadog tag.
 
 ```bash
-nango-registry create-installation --customer acme --name acme/staging --mode byoc --stage staging --alerts slack
+nango-registry create-installation --customer acme --name byoc-acme-staging --mode byoc --stage staging --alerts slack
 nango-registry create-key --installation <uuid>
 nango-registry create-license --installation <uuid> --expires-at 2027-11-05T00:00:00Z --grace-until 2028-02-03T00:00:00Z
 ```
