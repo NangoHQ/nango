@@ -2,6 +2,7 @@ import tracer from 'dd-trace';
 
 import { Err, metrics } from '@nangohq/utils';
 
+import { measureAgentSessionToolCall } from '../../../services/agentSessionAnalytics.service.js';
 import { formatMcpArgumentsError, InternalMcpError, jsonContent, jsonStructuredContent, mcpToolError, PublicMcpError } from '../../mcp/utils.js';
 
 import type { CallToolResult, ToolAnnotations } from '@modelcontextprotocol/server';
@@ -80,17 +81,18 @@ export function defineAgentSessionMcpTool<TInputSchema extends z.ZodType>(tool: 
     };
 }
 
-export async function callAgentSessionTool({
-    metric,
-    accountId,
-    structured = false,
-    run
-}: {
+interface AgentSessionToolCall {
     metric: string;
     accountId: number;
     structured?: boolean;
     run: () => Promise<Result<unknown>>;
-}): Promise<CallToolResult> {
+}
+
+export async function callAgentSessionTool(call: AgentSessionToolCall): Promise<CallToolResult> {
+    return await measureAgentSessionToolCall(async () => await runAgentSessionTool(call));
+}
+
+async function runAgentSessionTool({ metric, accountId, structured = false, run }: AgentSessionToolCall): Promise<CallToolResult> {
     return await tracer.trace<Promise<CallToolResult>>('server.mcp.agentSession.tool', async (span: Span) => {
         span.setTag('nango.accountId', accountId).setTag('nango.toolName', metric);
 
