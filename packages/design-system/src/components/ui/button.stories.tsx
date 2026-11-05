@@ -13,13 +13,13 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger', 'link-accent', 'link-danger', 'link-neutral'] as const;
+const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger', 'link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'] as const;
 const ICON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const;
 const SIZES = ['xs', 'sm', 'md', 'lg'] as const;
 // IconButton supports 2xs (20px) through lg.
 const ICON_SIZES = ['2xs', 'xs', 'sm', 'md', 'lg'] as const;
 
-const LINK_VARIANTS: (typeof VARIANTS)[number][] = ['link-accent', 'link-danger', 'link-neutral'];
+const LINK_VARIANTS: (typeof VARIANTS)[number][] = ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'];
 // Matches each size's own box height/horizontal padding from button.tsx (h-6/px-1.5 for xs, etc.), so the
 // wrapped link text lines up with where a boxed button's text sits — both horizontally and vertically.
 const SIZE_BOX: Record<(typeof SIZES)[number], string> = {
