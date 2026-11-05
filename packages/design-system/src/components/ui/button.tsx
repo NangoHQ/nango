@@ -71,8 +71,8 @@ export const buttonVariants = cva(
                     // hover/active fill with the ghost tokens and lift the text to text/strong
                     'hover:bg-interactive-ghost-hover active:bg-interactive-ghost-active',
                     'hover:text-text-strong active:text-text-strong',
-                    'disabled:text-text-disabled',
-                    'aria-disabled:text-text-disabled',
+                    'disabled:bg-interactive-ghost disabled:text-text-disabled',
+                    'aria-disabled:bg-interactive-ghost aria-disabled:text-text-disabled',
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 // interactive/danger → --interactive-danger → bg-interactive-danger
