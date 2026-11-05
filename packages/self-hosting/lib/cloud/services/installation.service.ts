@@ -125,3 +125,11 @@ export async function deleteInstallation(db: RegistryDb, { id }: { id: number })
         return Err(err);
     }
 }
+
+export async function getInstallation(db: RegistryDb, { id }: { id: number }): Promise<Result<DBSelfHostingInstallation | null>> {
+    try {
+        return Ok((await installations(db).where({ id, deleted_at: null }).first()) ?? null);
+    } catch (err) {
+        return Err(err);
+    }
+}
