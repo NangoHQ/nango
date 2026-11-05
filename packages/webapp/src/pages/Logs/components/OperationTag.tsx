@@ -76,7 +76,7 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                 </div>
             </TooltipTrigger>
             <TooltipContent align="start">
-                <p>{message}</p>
+                <p>{operation.type === 'action' ? 'Tool called' : message}</p>
             </TooltipContent>
         </Tooltip>
     );

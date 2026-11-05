@@ -76,7 +76,7 @@ export const Homepage: React.FC = () => {
                 {globalEnv.features.scripts && (
                     <InsightChart
                         title="Tool Executions"
-                        type="action"
+                        type="tool"
                         desc=""
                         help={
                             <div>

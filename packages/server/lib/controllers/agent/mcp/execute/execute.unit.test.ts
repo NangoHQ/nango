@@ -384,6 +384,7 @@ describe('executeSessionTool', () => {
             expect.objectContaining({
                 connectionId: 'notion-acme',
                 functionUuid: TOOL.config.uuid,
+                operation: { type: 'tool', action: 'call' },
                 input: { id: '1' },
                 invocationType: 'wait',
                 actor: { kind: 'session', id: 'session-1' }
