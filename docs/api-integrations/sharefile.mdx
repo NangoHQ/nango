@@ -86,9 +86,3 @@ import PreBuiltUseCases from "/snippets/generated/sharefile/PreBuiltUseCases.mdx
 <PreBuiltUseCases />
 
 ---
-
-## API gotchas
-
-- The API base URL is `https://{subdomain}.{apicp}`, both values taken from the OAuth callback. Prefix every endpoint with `/sf/v3/`, for example `/sf/v3/Items(home)`.
-- Access tokens expire after 8 hours. ShareFile issues a refresh token, and the refresh grant returns a new access token.
-- PKCE is disabled for this provider.
