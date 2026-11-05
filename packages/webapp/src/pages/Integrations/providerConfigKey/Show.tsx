@@ -1,4 +1,5 @@
 import { ExternalLink, Play, Plus } from 'lucide-react';
+import { parseAsString, useQueryState } from 'nuqs';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
@@ -30,6 +31,8 @@ export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
     const env = useStore((state) => state.env);
     const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
+    const [selectedFunctionName] = useQueryState('function', parseAsString);
+    const functionDrawerOpen = activeTab === 'functions' && Boolean(selectedFunctionName);
 
     const { data: environmentData, isLoading: loadingEnvironment, error: environmentError } = useEnvironment(env);
     const environmentAndAccount = environmentData?.environmentAndAccount;
@@ -113,7 +116,7 @@ export const ShowIntegration: React.FC = () => {
                             Docs
                             <ExternalLink className="size-3.5" />
                         </Link>
-                        {canRunFunctions && (
+                        {canRunFunctions && !functionDrawerOpen && (
                             <div className="ml-3">
                                 <Button
                                     variant="outline"
