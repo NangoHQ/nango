@@ -8247,7 +8247,7 @@ Everything below is what you configure directly to run a production instance —
 | Variable | Example | Purpose |
 | --- | --- | --- |
 | `NODE_ENV` | `production` | Runtime mode |
-| `AUTH_ALLOW_SIGNUP` | `false` | Disable open signup |
+| `AUTH_ALLOW_SIGNUP` | `false` | Disable open signup. See [First administrator](#first-administrator) to create your first user |
 | `FLAG_AUTH_ROLES_ENABLED` | `true` | Enable role-based access |
 | `SERVER_PORT` | `8080` | Port the server listens on |
 | `DEFAULT_RATE_LIMIT_PER_MIN` | `200` | Default API rate limit |
@@ -8282,7 +8282,7 @@ Everything below is what you configure directly to run a production instance —
 | `NANGO_ADMIN_UUID` | `3fa85f64-5717-4562-b3fc-2c963f66afa6` | Matches the env var above |
 | `NANGO_DATABASE_URL` | `postgresql://nango:••••@db.internal:5432/nango` | Postgres connection string |
 | `NANGO_REDIS_URL` | `rediss://:••••@redis.internal:6379` | Redis / Valkey connection string |
-| `NANGO_ADMIN_INVITE_TOKEN` | *(generated, single-use token)* | Token for inviting the first admin |
+| `NANGO_ADMIN_INVITE_TOKEN` | `9c1f6b2e-0d4a-4f3b-8a77-1e5c2d9b4a10` | A UUID you generate. Creates the first admin — see [First administrator](#first-administrator) |
 | `AWS_INTEGRATIONS_BUCKET_NAME` | `my-company-nango-integrations` | S3 bucket for compiled integration files |
 | `GCS_INTEGRATIONS_BUCKET_NAME` | `my-company-nango-integrations` | GCS bucket for compiled integration files |
 | `AZURE_INTEGRATIONS_ACCOUNT_NAME` | `mycompanynango` | Azure storage account for compiled integration files |
@@ -8299,6 +8299,28 @@ Set one object store. On AWS, set `AWS_INTEGRATIONS_BUCKET_NAME`. On Google Clou
 <Tip>
 This is the *minimum* set to get a production instance running. The sections below cover what each optional subsystem (logs, encryption, audit trail, Redis, hardening) additionally needs.
 </Tip>
+
+### First administrator
+
+Setting `AUTH_ALLOW_SIGNUP=false` closes open signup, so the signup form rejects every attempt. The first administrator is created through an invite URL instead, built from `NANGO_ADMIN_INVITE_TOKEN`.
+
+Nothing generates that token for you, and it must be a valid UUID:
+
+```bash
+uuidgen | tr 'A-Z' 'a-z'
+```
+
+Set it as `NANGO_ADMIN_INVITE_TOKEN`, confirm `NANGO_ENTERPRISE` is `true` — the invite path is only active when it is — and restart the server, since a running instance keeps the environment it started with. Then open:
+
+```
+https://<your-api-url>/signup/<token>
+```
+
+The token is a path segment, not a query parameter. Fill in name, email, and password; the password must be at least 12 characters with an uppercase letter, a digit, and a special character. The account is created with the `administrator` role and its email address is treated as verified, so no confirmation email is sent. Every other user is invited from inside the dashboard, so you need this URL once.
+
+<Warning>
+The token is not consumed by the first signup and it does not expire. Anyone holding that URL can create another administrator at any time. Rotate it once your first user exists: change the value and restart the server.
+</Warning>
 
 ### Pre-built integrations catalog
 
