@@ -4696,12 +4696,12 @@ components:
                         additionalProperties: false
                         required:
                             - name
-                            - version
                         properties:
                             name:
                                 type: string
                             version:
                                 type: string
+                                description: Only set for actions and syncs.
                     description: Functions updated by the deployment.
                 output:
                     type: string
@@ -4719,42 +4719,6 @@ components:
                             type: string
                         payload:
                             description: Optional error payload.
-
-        FunctionDeployResponse:
-            type: object
-            additionalProperties: false
-            required:
-                - integration_id
-                - function_name
-                - function_type
-                - deployed
-                - deployed_functions
-                - output
-            properties:
-                integration_id:
-                    type: string
-                function_name:
-                    type: string
-                function_type:
-                    $ref: '#/components/schemas/RunnableFunctionType'
-                deployed:
-                    type: boolean
-                deployed_functions:
-                    type: array
-                    items:
-                        type: object
-                        additionalProperties: false
-                        required:
-                            - name
-                            - version
-                        properties:
-                            name:
-                                type: string
-                            version:
-                                type: string
-                output:
-                    type: string
-                    description: Deployment command output.
 
         TokenUrlObject:
             properties:
