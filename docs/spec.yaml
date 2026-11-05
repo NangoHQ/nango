@@ -3753,9 +3753,13 @@ paths:
                         application/json:
                             schema:
                                 type: object
+                                required:
+                                    - data
                                 properties:
                                     data:
                                         type: object
+                                        required:
+                                            - webhook_signing_key
                                         properties:
                                             webhook_signing_key:
                                                 type: string
