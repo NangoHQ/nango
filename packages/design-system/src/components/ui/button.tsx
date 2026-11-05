@@ -136,14 +136,9 @@ export const buttonVariants = cva(
             size: {
                 // 20px square — smallest icon-only size (use with IconButton); icon sizing comes from the base
                 '2xs': 'size-5 p-1 gap-1 text-ds-xs',
-                // Figma Dharma button spec — height / side padding / label / icon / gap:
-                // xs 24 / 8 / 12 / 12 / 4
                 xs: ['h-6 px-2 gap-1 text-ds-xs', "[&_svg:not([class*='size-'])]:size-3"],
-                // sm 28 / 10 / 12 / 14 / 6
                 sm: ['h-7 px-2.5 gap-1.5 text-ds-xs', "[&_svg:not([class*='size-'])]:size-3.5"],
-                // md 32 / 12 / 13 / 16 / 6 (16px icon from the base)
                 md: 'h-8 px-3 gap-1.5 text-ds-sm',
-                // lg 36 / 14 / 14 / 16 / 8 (16px icon from the base)
                 lg: 'h-9 px-3.5 gap-2 text-ds-md'
             }
         },
