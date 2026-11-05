@@ -552,6 +552,7 @@ export interface FunctionDeploymentArtifact {
         js: string;
         ts: string;
     };
+    source: Exclude<FunctionSource, 'catalog'>;
 }
 
 export type FunctionReconciliationScope =

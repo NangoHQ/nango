@@ -483,6 +483,22 @@ describe('deploy', () => {
             expect(previewBody.functions).toEqual([expect.objectContaining({ name: 'get_issue', fileBody: { js: 'compiled tool', ts: 'source tool' } })]);
         });
 
+        it.each([
+            { env: undefined, source: 'repo' },
+            { env: 'standalone', source: 'standalone' }
+        ])('sends source $source on every function when NANGO_DEPLOY_SOURCE is $env', async ({ env, source }) => {
+            vi.stubEnv('NANGO_DEPLOY_SOURCE', env);
+            fetchMock.mockResolvedValueOnce(jsonResponse(functionChanges)).mockResolvedValueOnce(jsonResponse(functionChanges));
+
+            await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions(), file: 'github/functions/fetch.ts' });
+
+            const bodies = fetchMock.mock.calls.map(([, init]) => JSON.parse((init as RequestInit).body as string) as { functions: { source: string }[] });
+            expect(bodies).toHaveLength(2);
+            for (const body of bodies) {
+                expect(body.functions.map((fn) => fn.source)).toEqual([source]);
+            }
+        });
+
         it('deploys a legacy action as a single script', async () => {
             fetchMock.mockResolvedValueOnce(jsonResponse(legacyChangeConfirmation)).mockResolvedValueOnce(jsonResponse([]));
 
