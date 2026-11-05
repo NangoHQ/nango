@@ -4,7 +4,7 @@ One image, two modes. At Nango (`NANGO_CLOUD=true`) it is the registry of enterp
 
 ## Licensing operations
 
-Licenses are signed by the KMS key `alias/nango-license-signing` in the production account. The `nango-self-hosting` pod identity is the only workload allowed to sign with it, so every operation runs inside that pod with `kubectl exec`. Cluster access is the gate, nothing secret is passed as an argument, and every command prints one JSON document to stdout.
+Licenses are signed by the KMS key `alias/nango-license-signing` in the production account. The `nango-self-hosting` pod identity is the only workload allowed to sign with it, so every operation runs inside that pod with `kubectl exec`. Cluster access is the gate, nothing secret is passed as an argument, and every command prints one JSON document to stdout. The four destructive commands, `delete-customer`, `delete-installation`, `delete-key` and `disable-license`, need `--yes`; without it they are a dry run that prints everything the cascade would touch and changes nothing. Deletes are soft: the rows keep a `deleted_at`, and licenses are never deleted, only deactivated.
 
 ```bash
 alias nango-registry='kubectl --context production -n nango exec deploy/nango-self-hosting -- node dist/cli.js'
@@ -58,7 +58,7 @@ On the customer's request or a suspected leak. Both keys verify while the custom
 ```bash
 nango-registry create-key --installation <uuid>
 nango-registry list-keys --installation <uuid>
-nango-registry delete-key --kid <old kid>
+nango-registry delete-key --kid <old kid> --yes
 ```
 
 ### Revoking a license
@@ -66,16 +66,16 @@ nango-registry delete-key --kid <old kid>
 Uploads and export files are refused from then on. `create-license` reinstates.
 
 ```bash
-nango-registry disable-license --installation <uuid>
+nango-registry disable-license --installation <uuid> --yes
 ```
 
 ### Decommissioning
 
-Deleting an installation deactivates its license and deletes its keys in the same transaction; its name becomes free again. A customer can only be deleted once it has no live installations.
+Deleting an installation deactivates its license and deletes its keys in the same transaction; its name becomes free again. Deleting a customer does the same for every installation it still has, so offboarding is one command; the preview lists them.
 
 ```bash
-nango-registry delete-installation --installation <uuid>
-nango-registry delete-customer --name acme
+nango-registry delete-installation --installation <uuid> --yes
+nango-registry delete-customer --name acme --yes
 ```
 
 ### Command reference

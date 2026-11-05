@@ -182,16 +182,18 @@ describe('installation licenses', () => {
 });
 
 describe('customer deletion', () => {
-    it('is refused while the customer has a live installation, then succeeds once it is deleted', async () => {
+    it('deletes the customer with its live installations, their keys and licenses', async () => {
         const customerId = (await createCustomer(db, { name: 'leaving' })).unwrap().id;
         const installationId = (await createInstallation(db, { customerId, name: 'prod', mode: 'byoc', stage: 'production' })).unwrap().id;
+        await createInstallationKey(db, { installationId });
+        await createInstallationLicense(db, licenseInput(installationId));
 
-        const refused = await deleteCustomer(db, { name: 'leaving' });
-        expect(refused.isErr() && refused.error.message).toBe('customer leaving still has 1 live installations');
-
-        (await deleteInstallation(db, { id: installationId })).unwrap();
         expect((await deleteCustomer(db, { name: 'leaving' })).unwrap().deleted_at).toBeInstanceOf(Date);
+
         expect((await getCustomerByName(db, { name: 'leaving' })).unwrap()).toBeNull();
+        expect((await listInstallations(db, { customerId })).unwrap()).toStrictEqual([]);
+        expect((await listInstallationKeys(db, { installationId })).unwrap()).toStrictEqual([]);
+        expect((await getActiveLicense(db, { installationId })).unwrap()).toBeNull();
     });
 
     it('returns an unknown customer as an error', async () => {
