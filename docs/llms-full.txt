@@ -8310,13 +8310,13 @@ Nothing generates that token for you, and it must be a valid UUID:
 uuidgen | tr 'A-Z' 'a-z'
 ```
 
-Set it as `NANGO_ADMIN_INVITE_TOKEN`, confirm `NANGO_ENTERPRISE` is `true` — the invite path is only active when it is — and restart the server, since a running instance keeps the environment it started with. Then open:
+Set it as `NANGO_ADMIN_INVITE_TOKEN` and restart the server, since a running instance keeps the environment it started with. Then open:
 
 ```
 https://<your-app-url>/signup/<token>
 ```
 
-That is the dashboard URL — `NANGO_PUBLIC_SERVER_URL` — which is the same host as the API when the server serves the dashboard itself. The token is a path segment, not a query parameter. Fill in name, email, and password; the password must be at least 12 characters with an uppercase letter, a digit, and a special character. The account is created with the `administrator` role and its email address is treated as verified, so no confirmation email is sent. Every other user is invited from inside the dashboard, so you need this URL once.
+That is the dashboard URL — `NANGO_PUBLIC_SERVER_URL` — which is the same host as the API when the server serves the dashboard itself. The account is created with the `administrator` role; every other user is invited from inside the dashboard, so you need this URL once.
 
 <Warning>
 The token is not consumed by the first signup and it does not expire. Anyone holding that URL can create another administrator at any time. Rotate it once your first user exists: change the value and restart the server.
