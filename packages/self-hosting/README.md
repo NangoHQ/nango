@@ -4,13 +4,29 @@ One image, two modes. At Nango (`NANGO_CLOUD=true`) it is the registry of enterp
 
 ## Licensing operations
 
-Licenses are signed by the KMS key `alias/nango-license-signing` in the production account. The `nango-self-hosting` pod identity is the only workload allowed to sign with it, so every operation runs inside that pod with `kubectl exec`. Cluster access is the gate, nothing secret is passed as an argument, and every command prints one JSON document to stdout. The four destructive commands, `delete-customer`, `delete-installation`, `delete-key` and `disable-license`, need `--yes`; without it they are a dry run that prints everything the cascade would touch and changes nothing. Deletes are soft: the rows keep a `deleted_at`, and licenses are never deleted, only deactivated.
+Licenses are signed by the KMS key `alias/nango-license-signing` in the production account. The `nango-self-hosting` pod identity is the only workload allowed to sign with it, so every operation runs inside that pod with `kubectl exec`. Cluster access is the gate, nothing secret is passed as an argument, and every command prints one JSON document to stdout.
 
 ```bash
 alias nango-registry='kubectl --context production -n nango exec deploy/nango-self-hosting -- node dist/cli.js'
 ```
 
-The walkthroughs below assume that alias. Dates are ISO 8601; the grace period is the time after expiry during which the installation keeps starting. An installation is named with the `installation_id` of its tfvars in nango-infra, `byoc-<customer>-<stage>` as in [altruist/staging.tfvars](https://github.com/NangoHQ/nango-infra/blob/40e3a3a17741b8847da050feaf3b0ca2c455531a/terraform/customers/byoc/aws/environments/altruist/staging.tfvars#L2), which is also the `env` tag its pods report to Datadog.
+The walkthroughs below assume that alias. Dates are ISO 8601; the grace period is the time after expiry during which the installation keeps starting. An installation is named with the `installation_id` of its tfvars in nango-infra, `byoc-<customer>-<stage>` as in [altruist/staging.tfvars](https://github.com/NangoHQ/nango-infra/blob/40e3a3a17741b8847da050feaf3b0ca2c455531a/terraform/customers/byoc/aws/environments/altruist/staging.tfvars#L2), which is also the `env` tag its pods report to Datadog. `--alerts` takes the same value as the `alerts` of those tfvars, defined in [variables.tf](https://github.com/NangoHQ/nango-infra/blob/40e3a3a17741b8847da050feaf3b0ca2c455531a/terraform/customers/byoc/aws/variables.tf#L473): `oncall` pages through BetterStack and posts to Slack, `slack` posts only, `off` does neither and is the default. A self-managed installation is not in our Datadog, so it stays `off`.
+
+### Destructive commands: dry run first
+
+`delete-customer`, `delete-installation`, `delete-key` and `disable-license` change nothing unless `--yes` is given. Without it they run in preview mode: they print what the command would soft-delete or deactivate, as JSON on stdout, and exit 1. Run the command without `--yes`, read the preview, then run it again with `--yes`.
+
+```bash
+nango-registry delete-installation --installation <uuid>
+{
+  "installation": { "uuid": "…", "name": "byoc-acme-prod" },
+  "keys": ["<kid>"],
+  "activeLicense": "2027-11-05T00:00:00.000Z"
+}
+nothing changed, re-run with --yes to proceed
+```
+
+For `delete-customer` the preview holds that block for each live installation of the customer. Every delete is soft: customers, installations and keys keep a `deleted_at`, and licenses are never deleted, only deactivated, so the registry keeps the full history and a wrong delete is recoverable by hand.
 
 ### Onboarding a new customer
 
@@ -25,7 +41,7 @@ Hand over two values, out of band: the `license` from the last output as `NANGO_
 
 ### Adding an installation to an existing customer
 
-Same as above without `create-customer`. Add `--stage staging` or `--stage development` as fits, `--no-telemetry` if the contract excludes telemetry, `--alerts slack` or `--alerts oncall` to match the installation's Datadog tag.
+Same as above without `create-customer`. Add `--stage staging` or `--stage development` as fits, `--no-telemetry` if the contract excludes telemetry, `--alerts slack` or `--alerts oncall` to match its tfvars.
 
 ```bash
 nango-registry create-installation --customer acme --name byoc-acme-staging --mode byoc --stage staging --alerts slack
@@ -63,7 +79,7 @@ nango-registry delete-key --kid <old kid> --yes
 
 ### Revoking a license
 
-Uploads and export files are refused from then on. `create-license` reinstates.
+Deactivates the current license: uploads and export files are refused from then on, and the server logs it as unlicensed at its next start. A revoked license never comes back; to license the installation again, issue a new one with `create-license` and have the customer set it.
 
 ```bash
 nango-registry disable-license --installation <uuid> --yes
@@ -83,16 +99,18 @@ nango-registry delete-customer --name acme --yes
 | Command               | Options                                                                                                                               |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `create-customer`     | `--name`                                                                                                                              |
-| `delete-customer`     | `--name`                                                                                                                              |
+| `delete-customer`     | `--name [--yes]`                                                                                                                      |
 | `create-installation` | `--customer --name --mode byoc\|self_managed --stage production\|staging\|development [--no-telemetry] [--alerts off\|slack\|oncall]` |
 | `update-installation` | `--installation <uuid> [--name] [--telemetry\|--no-telemetry] [--alerts]`                                                             |
-| `delete-installation` | `--installation <uuid>`                                                                                                               |
+| `delete-installation` | `--installation <uuid> [--yes]`                                                                                                       |
 | `list-installations`  | `[--customer]`                                                                                                                        |
 | `create-key`          | `--installation <uuid>`                                                                                                               |
-| `delete-key`          | `--kid`                                                                                                                               |
+| `delete-key`          | `--kid [--yes]`                                                                                                                       |
 | `list-keys`           | `--installation <uuid>`                                                                                                               |
 | `create-license`      | `--installation <uuid> --expires-at <iso date> --grace-until <iso date>`                                                              |
-| `disable-license`     | `--installation <uuid>`                                                                                                               |
+| `disable-license`     | `--installation <uuid> [--yes]`                                                                                                       |
+
+The four commands with `[--yes]` apply the change only with it. Without it they exit 1 and print what they would touch: for `delete-installation` the installation, its live keys and the active license, for `delete-customer` that for each of its live installations, for `delete-key` the key id, for `disable-license` the installation and the active license.
 
 ### Locally
 

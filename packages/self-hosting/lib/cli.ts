@@ -80,8 +80,15 @@ function date(name: string, value: string | undefined): Date {
     return parsed;
 }
 
-function alerts(): { alerts?: DBSelfHostingInstallation['alerts'] } {
-    return values.alerts ? { alerts: oneOf('alerts', values.alerts, ['off', 'slack', 'oncall']) } : {};
+function alerts(mode: DBSelfHostingInstallation['mode']): { alerts?: DBSelfHostingInstallation['alerts'] } {
+    if (!values.alerts) {
+        return {};
+    }
+    const chosen = oneOf('alerts', values.alerts, ['off', 'slack', 'oncall']);
+    if (mode === 'self_managed' && chosen !== 'off') {
+        throw new Error('a self-managed installation is not in our Datadog, --alerts must be off');
+    }
+    return { alerts: chosen };
 }
 
 async function customer(db: RegistryDb, name: string): Promise<DBSelfHostingCustomer> {
@@ -132,24 +139,27 @@ const commands: Record<string, (db: RegistryDb) => Promise<Result<unknown>>> = {
         return deleteCustomer(db, { name: row.name });
     },
 
-    'create-installation': async (db) =>
-        createInstallation(db, {
+    'create-installation': async (db) => {
+        const mode = oneOf('mode', values.mode, ['byoc', 'self_managed']);
+        return createInstallation(db, {
             customerId: (await customer(db, required('customer', values.customer))).id,
             name: required('name', values.name),
-            mode: oneOf('mode', values.mode, ['byoc', 'self_managed']),
+            mode,
             stage: oneOf('stage', values.stage, ['production', 'staging', 'development']),
             ...(values.telemetry !== undefined && { telemetry: values.telemetry }),
-            ...alerts()
-        }),
+            ...alerts(mode)
+        });
+    },
     'update-installation': async (db) => {
         if (values.name === undefined && values.telemetry === undefined && values.alerts === undefined) {
             throw new Error('nothing to update: pass --name, --telemetry, --no-telemetry or --alerts');
         }
+        const row = await installation(db);
         return updateInstallation(db, {
-            id: (await installation(db)).id,
+            id: row.id,
             ...(values.name && { name: values.name }),
             ...(values.telemetry !== undefined && { telemetry: values.telemetry }),
-            ...alerts()
+            ...alerts(row.mode)
         });
     },
     'delete-installation': async (db) => {
