@@ -37,6 +37,11 @@ vi.mock('@nangohq/shared', async (importOriginal) => ({
 }));
 vi.mock('../../../../utils/utils.js', () => ({ getOrchestrator: () => ({}) }));
 
+const recordToolCall = vi.fn();
+vi.mock('../../../../services/agentGettingStarted.service.js', () => ({
+    recordToolCall: (...args: unknown[]) => recordToolCall(...args)
+}));
+
 const { executeSessionTool, executeTool } = await import('./execute.js');
 
 const TOOL = {
@@ -123,6 +128,21 @@ describe('executeSessionTool', () => {
 
     beforeEach(() => {
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
+        recordToolCall.mockReset();
+    });
+
+    it('records a successful tool call for getting started', async () => {
+        await execute('read_doc', { input: { id: '1' } });
+
+        expect(recordToolCall).toHaveBeenCalledWith(expect.objectContaining({ accountId: 1, succeeded: true }));
+    });
+
+    it('records a failed tool call as not succeeded', async () => {
+        executeAction.mockResolvedValue({ logCtx: undefined, result: Err(new ActionExecutionError({ code: 'action_failed', message: 'boom' })) });
+
+        await execute('read_doc', { input: { id: '1' } });
+
+        expect(recordToolCall).toHaveBeenCalledWith(expect.objectContaining({ succeeded: false }));
     });
 
     it('runs a pinned tool on the connection the session resolved', async () => {

@@ -44,6 +44,9 @@ import { postForgotPassword } from './controllers/v1/account/postForgotPassword.
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
+import { getAgentGettingStarted } from './controllers/v1/agentGettingStarted/getAgentGettingStarted.js';
+import { postAgentGettingStartedDismiss } from './controllers/v1/agentGettingStarted/postAgentGettingStartedDismiss.js';
+import { postAgentGettingStartedRestart } from './controllers/v1/agentGettingStarted/postAgentGettingStartedRestart.js';
 import { postAgentPlaygroundChat } from './controllers/v1/agentPlayground/postChat.js';
 import { getAuditTrail } from './controllers/v1/audit-trail/getAuditTrail.js';
 import { getAuditTrailExport } from './controllers/v1/audit-trail/getAuditTrailExport.js';
@@ -165,7 +168,7 @@ import {
     auditEnvironmentDeleted,
     auditEnvironmentUpdated,
     auditEnvironmentVariablesChanged,
-    auditEnvironmentWebhookUrlsChanged,
+    auditEnvironmentWebhooksUpdated,
     auditFunctionDeleted,
     auditFunctionUpgraded,
     auditIntegrationCreated,
@@ -314,7 +317,7 @@ web.route('/environments').post(webAuth, auditEnvironmentCreated, can('account:e
 web.route('/environments/').patch(webAuth, auditEnvironmentUpdated, can('environment:settings:update'), patchEnvironment);
 web.route('/environments/').delete(webAuth, auditEnvironmentDeleted, can('environment:delete'), deleteEnvironment);
 web.route('/environments/current').get(webAuth, can('environment:settings:read'), getEnvironment);
-web.route('/environments/webhook').patch(webAuth, auditEnvironmentWebhookUrlsChanged, can('environment:webhooks:update'), patchWebhook);
+web.route('/environments/webhook').patch(webAuth, auditEnvironmentWebhooksUpdated, can('environment:webhooks:update'), patchWebhook);
 web.route('/environments/variables').post(webAuth, auditEnvironmentVariablesChanged, can('environment:variables:update'), postEnvironmentVariables);
 
 // API Key management
@@ -405,6 +408,9 @@ web.route('/functions/invoke').post(webAuth, can('environment:syncs:execute'), p
 // Getting Started
 web.route('/getting-started').get(webAuth, getGettingStarted);
 web.route('/getting-started').patch(webAuth, patchGettingStarted);
+web.route('/agent-getting-started').get(webAuth, getAgentGettingStarted);
+web.route('/agent-getting-started/restart').post(webAuth, postAgentGettingStartedRestart);
+web.route('/agent-getting-started/dismiss').post(webAuth, postAgentGettingStartedDismiss);
 
 // Logs
 web.route('/audit-trail').get(webAuth, auditTrailQueried, can('account:audit_trail:read'), getAuditTrail);

@@ -107,6 +107,8 @@ export interface UserUpdatedMetadata {
 }
 
 export interface EnvironmentUpdatedMetadata {
+    primaryUrl?: string | null;
+    secondaryUrl?: string | null;
     name?: string;
     changedFields?: string[];
 }

@@ -6,10 +6,12 @@ import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/d
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/utils/utils';
+import { ConditionalTooltip } from './ConditionalTooltip';
 
 export interface FilterOption<T extends string = string> {
     label: string;
     value: T;
+    tooltip?: string;
     children?: { label: string; value: T }[];
 }
 
@@ -146,9 +148,8 @@ export function FilterMultiSelect<T extends string = string>({
     const renderOption = (opt: FilterOption<T>, indent = false) => {
         const isSelected = selected.includes(opt.value);
         const disabled = max !== undefined && !isSelected && isMaxed && opt.value !== 'all';
-        return (
+        const option = (
             <div
-                key={opt.value}
                 role="option"
                 aria-selected={isSelected}
                 aria-disabled={disabled || undefined}
@@ -177,6 +178,11 @@ export function FilterMultiSelect<T extends string = string>({
                 </span>
                 <span className="min-w-0 truncate">{opt.label}</span>
             </div>
+        );
+        return (
+            <ConditionalTooltip key={opt.value} condition={!!opt.tooltip} content={opt.tooltip} asChild side="right">
+                {option}
+            </ConditionalTooltip>
         );
     };
 
