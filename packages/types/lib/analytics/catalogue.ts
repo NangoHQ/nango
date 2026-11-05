@@ -550,12 +550,14 @@ export const analyticsEventCatalogue = defineCatalogue({
     'agents:tool_search_complete': {
         surface: 'server',
         insight: 'How often does tool search return a tool the agent then uses, read against the task the agent was searching for',
-        fires: 'When a tool search in an agent session returns',
+        fires: 'Once per query when a tool search in an agent session returns',
         properties: z.object({
             ...agentSession,
             meta_tool: z.literal('nango_tool_search'),
             ...outcome,
             query: z.string().optional(),
+            // A call searches several queries at once. Its events share log_operation_id, so searches per task count distinct ids.
+            query_count: z.number().optional(),
             goal: z.string().optional(),
             match_count: z.number(),
             related_count: z.number(),

@@ -70,4 +70,16 @@ describe('describeTool', () => {
     it('names the app to connect', () => {
         expect(describeTool('nango_create_connection', { integration: 'github-getting-started' }, labels).title).toBe('Connect GitHub');
     });
+
+    it('quotes every query of a search', () => {
+        expect(describeTool('nango_tool_search', { queries: ['list calendar events', 'send an email'], goal: 'invite the team' })).toEqual({
+            kind: 'search',
+            title: 'Searching for the right tools',
+            subtitle: '“list calendar events”, “send an email”'
+        });
+    });
+
+    it('reads a search for one exact tool name as checking how to use it', () => {
+        expect(describeTool('nango_tool_search', { queries: ['github__list-repos'], goal: 'list my repos' }).title).toBe('Checking how to use List Repos');
+    });
 });

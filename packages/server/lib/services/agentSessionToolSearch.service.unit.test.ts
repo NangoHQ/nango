@@ -350,19 +350,22 @@ describe('searchOperationMeta', () => {
         };
     }
 
-    it('logs the query, the goal and the tool names, without their descriptions or input', () => {
+    it('logs each query with the names of the tools it found, without their descriptions or input', () => {
         expect(
             searchOperationMeta({
-                query: 'send an email',
                 goal: 'email the weekly report to the team',
-                matches: [match('gmail__send_email')],
-                related: [match('gmail__list_labels')]
+                results: [
+                    { query: 'send an email', guidance: '', matches: [match('gmail__send_email')], related: [match('gmail__list_labels')] },
+                    { query: 'list calendar events', guidance: '', matches: [], related: [] }
+                ]
             })
         ).toStrictEqual({
-            query: 'send an email',
+            queries: ['send an email', 'list calendar events'],
             goal: 'email the weekly report to the team',
-            matches: ['gmail__send_email'],
-            related: ['gmail__list_labels']
+            results: [
+                { query: 'send an email', matches: ['gmail__send_email'], related: ['gmail__list_labels'] },
+                { query: 'list calendar events', matches: [], related: [] }
+            ]
         });
     });
 });
