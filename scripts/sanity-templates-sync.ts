@@ -1,8 +1,9 @@
 import fs from 'node:fs/promises';
 
 import { createClient } from '@sanity/client';
+import yaml from 'js-yaml';
 
-import type { FlowsZeroJson, ScriptTypeLiteral } from '@nangohq/types';
+import type { FlowsZeroJson, Provider, ScriptTypeLiteral } from '@nangohq/types';
 
 const apiVersion = '2025-02-06';
 
@@ -36,8 +37,10 @@ console.log(`Config: dryRun=${dryRun}`);
 const sanity = createClient({ projectId, dataset, token, apiVersion, useCdn: false });
 
 const flowsPath = 'packages/shared/flows.zero.json';
+const providersPath = 'packages/providers/providers.yaml';
 
 const flows = JSON.parse(await fs.readFile(flowsPath, 'utf8')) as FlowsZeroJson;
+const providers = yaml.load(await fs.readFile(providersPath, 'utf8')) as Record<string, Provider>;
 
 // Map providerConfigKey -> its actual api doc _id. Not always `provider-${slug}`: that's only the
 // ID sanity-api-sync.ts assigns to *new* docs — a pre-existing doc for a slug keeps whatever _id
@@ -53,7 +56,6 @@ interface TemplateEntry {
     type: ScriptTypeLiteral;
     name: string;
     description: string | undefined;
-    sourceFolder: string;
     apiRef: string;
 }
 
@@ -84,14 +86,13 @@ for (const [providerConfigKey, blocks] of entriesByProvider) {
 
     const seen = new Map<string, TemplateEntry>();
     for (const block of sorted) {
-        const sourceFolder = block.symLinkTargetName || providerConfigKey;
         for (const item of [...block.syncs, ...block.actions]) {
             const key = `${item.type}:${item.name}`;
             if (seen.has(key)) {
                 console.warn(`  duplicate ${item.type} "${item.name}" — keeping the one from the non-symlinked entry`);
                 continue;
             }
-            seen.set(key, { providerConfigKey, type: item.type, name: item.name, description: item.description, sourceFolder, apiRef });
+            seen.set(key, { providerConfigKey, type: item.type, name: item.name, description: item.description, apiRef });
         }
     }
 
@@ -100,8 +101,9 @@ for (const [providerConfigKey, blocks] of entriesByProvider) {
 
 console.log(`Found ${templates.length} templates across ${entriesByProvider.size} providers`);
 
-function buildDocsUrl(sourceFolder: string, type: ScriptTypeLiteral, name: string): string {
-    return `https://github.com/NangoHQ/integration-templates/blob/main/integrations/${sourceFolder}/${type}s/${name}.ts`;
+// Templates link to their API's docs page, which lists the pre-built functions. Their source lives in a private repo.
+function buildDocsUrl(providerConfigKey: string): string | undefined {
+    return providers[providerConfigKey]?.docs;
 }
 
 function buildDocument(template: TemplateEntry): SanityTemplateDoc {
@@ -114,7 +116,7 @@ function buildDocument(template: TemplateEntry): SanityTemplateDoc {
         name: template.name,
         description: template.description,
         type: template.type,
-        documentationLink: buildDocsUrl(template.sourceFolder, template.type, template.name)
+        documentationLink: buildDocsUrl(template.providerConfigKey)
     };
 }
 
