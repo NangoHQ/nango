@@ -1,5 +1,5 @@
 import { ExternalLink, Play, Plus } from 'lucide-react';
-import { parseAsString, useQueryState } from 'nuqs';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
@@ -31,8 +31,8 @@ export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
     const env = useStore((state) => state.env);
     const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
-    const [selectedFunctionName] = useQueryState('function', parseAsString);
-    const functionDrawerOpen = activeTab === 'functions' && Boolean(selectedFunctionName);
+    const [functionOpen, setFunctionOpen] = useState(false);
+    const functionDrawerOpen = activeTab === 'functions' && functionOpen;
 
     const { data: environmentData, isLoading: loadingEnvironment, error: environmentError } = useEnvironment(env);
     const environmentAndAccount = environmentData?.environmentAndAccount;
@@ -131,7 +131,7 @@ export const ShowIntegration: React.FC = () => {
                     </div>
                 </div>
                 <TabsContent value="functions">
-                    <FunctionsTab integration={integration.integration} />
+                    <FunctionsTab integration={integration.integration} onFunctionOpenChange={setFunctionOpen} />
                 </TabsContent>
                 <TabsContent value="settings">
                     <SettingsTab
