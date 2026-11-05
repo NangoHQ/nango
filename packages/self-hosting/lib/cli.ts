@@ -14,7 +14,7 @@ import type { Result } from '@nangohq/utils';
 
 const SIGNING_KEY_ID = 'alias/nango-license-signing';
 
-const usage = `usage: cli.js <command> [options]
+const usage = `usage: node packages/self-hosting/dist/cli.js <command> [options]
 
 customers
   create-customer      --name <name>

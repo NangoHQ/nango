@@ -7,7 +7,7 @@ One image, two modes. At Nango (`NANGO_CLOUD=true`) it is the registry of enterp
 Licenses are signed by the KMS key `alias/nango-license-signing` in the production account. The `nango-self-hosting` pod identity is the only workload allowed to sign with it, so every operation runs inside that pod with `kubectl exec`. Cluster access is the gate, nothing secret is passed as an argument, and every command prints one JSON document to stdout.
 
 ```bash
-alias nango-registry='kubectl --context production -n nango exec deploy/nango-self-hosting -- node dist/cli.js'
+alias nango-registry='kubectl --context production -n nango exec deploy/nango-self-hosting -- node packages/self-hosting/dist/cli.js'
 ```
 
 The walkthroughs below assume that alias. Dates are ISO 8601. `grace_until` is the date after which an expired installation stops starting once the boot check enforces; today the check only warns, on every state. An installation is named with the `installation_id` of its tfvars in nango-infra, `byoc-<customer>-<stage>` as in [altruist/staging.tfvars](https://github.com/NangoHQ/nango-infra/blob/40e3a3a17741b8847da050feaf3b0ca2c455531a/terraform/customers/byoc/aws/environments/altruist/staging.tfvars#L2), which is also the `env` tag its pods report to Datadog. `--alerts` takes the same value as the `alerts` of those tfvars, defined in [variables.tf](https://github.com/NangoHQ/nango-infra/blob/40e3a3a17741b8847da050feaf3b0ca2c455531a/terraform/customers/byoc/aws/variables.tf#L473): `oncall` pages through BetterStack and posts to Slack, `slack` posts only, `off` does neither and is the default. A self-managed installation is not in our Datadog, so it stays `off`.
