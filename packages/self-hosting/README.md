@@ -33,11 +33,11 @@ For `customer delete` the preview holds that block for each live installation of
 ```bash
 nango-registry customer create --name acme
 nango-registry installation create --customer acme --name byoc-acme-prod --mode byoc --stage production
-nango-registry key create --installation <uuid from the previous output>
-nango-registry license create --installation <uuid> --expires-at 2027-11-05T00:00:00Z --grace-until 2028-02-03T00:00:00Z
+nango-registry key create --installation <uuid from the previous output> | jq -r .privateKeyPem
+nango-registry license create --installation <uuid> --expires-at 2027-11-05T00:00:00Z --grace-until 2028-02-03T00:00:00Z | jq -r .license
 ```
 
-Hand over two values, out of band: the `license` from the last output as `NANGO_LICENSE` (the `row` next to it is the registry record), and the key's `kid` and `privateKeyPem` from `key create` (how they travel as `NANGO_INSTALLATION_PRIVATE_KEY` is settled with the installation tokens). Paste both into the customer's 1Password item and delete any local copy; the private key is printed once and never stored on our side.
+The two values to hand over, out of band, are exactly what those two `jq` print: the PEM is `NANGO_INSTALLATION_PRIVATE_KEY` and the compact JWS is `NANGO_LICENSE`. The key id is the RFC 7638 thumbprint of the key's public half, derived on both sides and never configured, so the PEM alone is the whole value. Paste both into the customer's 1Password item and delete any local copy; the private key is printed once and never stored on our side. Without the `jq` the commands print the full JSON: `privateKeyPem` next to the stored `key` row, and `license` next to its registry `row`.
 
 ### Adding an installation to an existing customer
 
@@ -45,8 +45,8 @@ Same as above without `customer create`. Add `--stage staging` or `--stage devel
 
 ```bash
 nango-registry installation create --customer acme --name byoc-acme-staging --mode byoc --stage staging --alerts slack
-nango-registry key create --installation <uuid>
-nango-registry license create --installation <uuid> --expires-at 2027-11-05T00:00:00Z --grace-until 2028-02-03T00:00:00Z
+nango-registry key create --installation <uuid> | jq -r .privateKeyPem
+nango-registry license create --installation <uuid> --expires-at 2027-11-05T00:00:00Z --grace-until 2028-02-03T00:00:00Z | jq -r .license
 ```
 
 ### Renewing a license
@@ -54,8 +54,22 @@ nango-registry license create --installation <uuid> --expires-at 2027-11-05T00:0
 One command. It replaces the active license and keeps the previous one in the table, inactive. The customer rolls `NANGO_LICENSE` to the new value and restarts the server; nothing else changes on their side.
 
 ```bash
-nango-registry installation list --customer acme
-nango-registry license create --installation <uuid> --expires-at 2028-11-05T00:00:00Z --grace-until 2029-02-03T00:00:00Z
+nango-registry installation list --customer acme | jq -c '.[] | {uuid, name}'
+nango-registry license create --installation <uuid> --expires-at 2028-11-05T00:00:00Z --grace-until 2029-02-03T00:00:00Z | jq -r .license
+```
+
+### Re-sending the current license
+
+When a customer lost the value, the active license comes back out of the registry as it was issued; nothing is re-minted.
+
+```bash
+nango-registry license list --installation <uuid> | jq -r '.[] | select(.active) | .license'
+```
+
+To read a license, decode its middle segment; the first is the header with the signing key id and the third is the signature:
+
+```bash
+echo "<license>" | cut -d. -f2 | base64 -d
 ```
 
 ### Changing what an installation is entitled to
@@ -82,8 +96,8 @@ The reverse move is `--mode byoc` with the `--alerts` value from the new tfvars.
 On the customer's request or a suspected leak. Both keys verify while the customer rolls the secret; delete the old one once they confirm. On a confirmed compromise delete first, uploads fail until the new key is in place.
 
 ```bash
-nango-registry key create --installation <uuid>
-nango-registry key list --installation <uuid>
+nango-registry key create --installation <uuid> | jq -r .privateKeyPem
+nango-registry key list --installation <uuid> | jq -c 'map({kid, created_at})'
 nango-registry key delete --kid <old kid> --yes
 ```
 
