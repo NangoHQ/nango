@@ -3731,7 +3731,21 @@ paths:
             summary: Rotate the webhook signing key
             description: |
                 Replace the key Nango signs its webhooks with. The previous key stops being used within 5 minutes,
-                so verify against both during that window. Requires the `environment:webhook_signing_key:rotate` scope.
+                so verify against both during that window.
+            requestBody:
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            additionalProperties: false
+                            properties:
+                                webhook_signing_key:
+                                    type: string
+                                    format: uuid
+                                    pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+                                    description: Optional UUID v4 signing key to import. If omitted, Nango generates a random key.
+                                    example: '8a27fe09-327c-43ec-8f75-b1f212904f45'
             responses:
                 '200':
                     description: The new webhook signing key

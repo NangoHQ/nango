@@ -10740,7 +10740,17 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/rotate-we
   Requires an [Environment API key](/reference/backend/http-api/api-keys#environment-api-keys) with the `environment:webhook_signing_key:rotate` scope. It rotates the key of the environment the API key belongs to.
 </Info>
 
-Replaces the key Nango uses to [sign webhooks](/guides/platform/webhooks-from-nango#verifying-webhooks-from-nango). The new key is returned once, and stays readable under **Environment Settings > Webhooks > Signing key**.
+Replaces the key Nango uses to [sign webhooks](/guides/platform/webhooks-from-nango#verifying-webhooks-from-nango). The new key is returned in the response, and stays readable under **Environment Settings > Webhooks > Signing key**.
+
+Omit the request body or send `{}` to generate a random key. To import an existing key, pass `webhook_signing_key` in the JSON body. It must be a UUID v4; uppercase characters are normalized to lowercase, matching environment creation.
+
+Generate supplied keys using a cryptographically secure generator such as `crypto.randomUUID()`. Nango validates the format but cannot verify the key's randomness.
+
+```json
+{
+  "webhook_signing_key": "8a27fe09-327c-43ec-8f75-b1f212904f45"
+}
+```
 
 <Warning>
   For up to 5 minutes after a rotation, webhooks are signed with either the old or the new key. Accept both until then.
