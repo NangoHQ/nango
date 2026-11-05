@@ -28,7 +28,7 @@ import { formatDateToInternationalFormat } from '@/utils/utils';
 import { ConnectionCount } from './components/ConnectionCount';
 
 import type { ComboboxOption } from '@/components/ui/Combobox';
-import type { ApiConnectionSimple, ApiIntegrationList, GetConnections } from '@nangohq/types';
+import type { ApiConnectionSimple, ApiIntegrationList } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
 type ConnectionRow = ApiConnectionSimple & { integration?: ApiIntegrationList };
@@ -272,8 +272,8 @@ export const ConnectionList = () => {
         }));
     }, [listIntegrationData?.data]);
 
-    if (connectionsError) {
-        return <ErrorPageComponent title="Connections" error={connectionsError.json as GetConnections['Errors']} />;
+    if (connectionsError && !connectionsData) {
+        return <ErrorPageComponent title="Connections" error={connectionsError} />;
     }
 
     return (
