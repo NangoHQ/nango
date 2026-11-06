@@ -42,9 +42,9 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
     | --------------------------------------------------------- | -------------------------- |
     | Counts and current state, such as accounts per plan       | Our database. Not an event |
     | Changes over time and funnel steps, such as a plan change | A server event             |
-    | Interaction, such as clicks, views and abandoned flows    | A web event                |
+    | Interaction, such as clicks, views and abandoned flows    | An app event               |
 
-    Never move a web event to the server to get around ad blockers. Analytics is not for monitoring errors:
+    Never move an app event to the server to get around ad blockers. Analytics is not for monitoring errors:
     don't send an event just to report an API error. If an insight will compare this event with another,
     fire both from the same surface.
 
@@ -76,7 +76,7 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
 
     ```ts
     'playground:run_complete': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often Playground runs succeed, and how long they take',
         fires: 'When a Playground run returns a result or an error',
         properties: z.object({ function_type: z.string(), integration: z.string(), is_success: z.boolean(), run_state: z.string(), run_duration_ms: z.number() })
@@ -95,7 +95,7 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
     - Move the type into `@nangohq/types` only when it is small and other services can use it too.
 
 7. **Send it.**
-    - Web: `track()` from `packages/webapp/src/utils/analytics.tsx`.
+    - App: `track()` from `packages/webapp/src/utils/analytics.tsx`.
     - Server: `productTracking.track()` from `@nangohq/shared`. The request's tracking context adds the
       account, the logged-in user when the request has a session, and `is_production` when it knows the
       environment. Requests without a session, such as secret-key calls and webhooks, send as the account.
@@ -132,17 +132,19 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
   stay out of the catalogue, but a property we add to one still follows the property rules.
 - **Most insights count accounts, not people.** Aggregate by the `company` group. CLI events have no
   group, because the telemetry call carries no key.
-- **Don't divide a web count by a server count.** Ad blockers drop web events but never server ones, so a
+- **Don't divide an app count by a server count.** Ad blockers drop app events but never server ones, so a
   ratio across surfaces, such as clicks per server outcome, is skewed. When an insight compares two steps,
-  send both from the same surface. In a funnel, only the first step may be a web event: blocked people
-  then never enter it, but a blocked web step later on counts them as not converting.
+  send both from the same surface. In a funnel, only the first step may be an app event: blocked people
+  then never enter it, but a blocked app step later on counts them as not converting.
+- **App events sent before the surface rename carry `surface: web`.** A query over older data matches
+  both values.
 
 ## Review Checklist
 
 - [ ] The entry names a real insight, and no existing event already answers it
 - [ ] The name uses only values from `taxonomy.ts`, and any new value is the product's own word
 - [ ] Properties follow the naming rules, and `complete` events carry `is_success`
-- [ ] It fires from the right surface: server for business facts, web for interaction
+- [ ] It fires from the right surface: server for business facts, app for interaction
 - [ ] No personal data beyond what the insight needs
 - [ ] For a rename or removal, the PR description names the events, so dashboards and alerts get updated
 - [ ] `npm run ts-build` and the catalogue test pass
