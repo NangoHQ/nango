@@ -4,21 +4,23 @@ import { client } from '../storage/client.js';
 import type { estypes } from '@elastic/elasticsearch';
 import type { ConcatOperationList, InsightsHistogramEntry, OperationList, OperationRow } from '@nangohq/types';
 
-export async function retrieveInsights(opts: { accountId: number; environmentId: number; type: OperationList['type'] | ConcatOperationList }) {
+export async function retrieveInsights(opts: { accountId: number; environmentId: number; types: (OperationList['type'] | ConcatOperationList)[] }) {
+    const should: estypes.QueryDslQueryContainer[] = opts.types.map((type) => {
+        if (type.includes(':')) {
+            const split = type.split(':');
+            return { bool: { must: [{ term: { 'operation.type': split[0] } }, { term: { 'operation.action': split[1] } }] } };
+        }
+        return { term: { 'operation.type': type } };
+    });
+
     const query: estypes.QueryDslQueryContainer = {
         bool: {
             must: [{ term: { accountId: opts.accountId } }, { term: { environmentId: opts.environmentId } }],
             must_not: { exists: { field: 'parentId' } },
-            should: []
+            should,
+            minimum_should_match: 1
         }
     };
-
-    if (opts.type.includes(':')) {
-        const split = opts.type.split(':');
-        (query.bool!.must! as estypes.QueryDslQueryContainer[]).push({ term: { 'operation.type': split[0] } }, { term: { 'operation.action': split[1] } });
-    } else {
-        (query.bool!.must! as estypes.QueryDslQueryContainer[]).push({ term: { 'operation.type': opts.type } });
-    }
 
     const res = await client.search<
         never,

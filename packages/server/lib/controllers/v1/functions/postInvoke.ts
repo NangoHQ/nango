@@ -66,6 +66,7 @@ export const postInvokeFunction = asyncWrapperWithEnvironment<PostInternalInvoke
             return;
         }
         const { result } = await invokeFunction({
+            operation: { type: 'tool', action: 'call' },
             account,
             environment,
             connectionId: connection_id,

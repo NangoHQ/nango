@@ -135,6 +135,7 @@ describe(`POST ${route}`, () => {
         expect(Orchestrator.prototype.invokeFunction).toHaveBeenCalledWith(
             expect.objectContaining({
                 functionUuid: seed.fn.config.uuid,
+                logCtx: expect.objectContaining({ operation: expect.objectContaining({ operation: { type: 'tool', action: 'call' } }) }),
                 connection: expect.objectContaining({ id: seed.connection.id }),
                 async: false,
                 trigger: expect.objectContaining({ kind: 'http', input, request: expect.objectContaining({ body: input }) })
