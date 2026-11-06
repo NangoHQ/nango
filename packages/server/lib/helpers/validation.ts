@@ -265,6 +265,12 @@ export const connectionCredentialsGithubAppSchema = z.strictObject({
     installation_id: z.string().min(1).max(255)
 });
 
+export const connectionCredentialsGithubAppOverrideSchema = z.strictObject({
+    // Trimmed so a PEM with a trailing newline is accepted
+    private_key: z.string().trim().pipe(privateKeySchema).optional(),
+    webhook_secret: z.string().min(1).max(255).optional()
+});
+
 export const connectionEndUserTagsSchema = z
     // Please be careful when changing this:
     // It's a labelling system, if we allow more than string people will store complex data (e.g: nested object) and ask for features around that

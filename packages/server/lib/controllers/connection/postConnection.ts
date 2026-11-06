@@ -1,6 +1,7 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import {
     buildTagsFromEndUser,
@@ -20,6 +21,7 @@ import { connectionFullToPublicApi } from '../../formatters/connection.js';
 import {
     connectionCredentialsApiKeySchema,
     connectionCredentialsBasicSchema,
+    connectionCredentialsGithubAppOverrideSchema,
     connectionCredentialsGithubAppSchema,
     connectionCredentialsOauth1Schema,
     connectionCredentialsOauth2CCSchema,
@@ -34,7 +36,15 @@ import { handleValidateConnectionFailure, validateConnection } from '../../hooks
 import { connectionCreated, connectionRefreshSuccess, testConnectionCredentials } from '../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
-import type { AuthOperationType, ConnectionConfig, ConnectionUpsertResponse, EndUser, PostPublicConnection, ProviderGithubApp } from '@nangohq/types';
+import type {
+    AuthOperationType,
+    ConnectionConfig,
+    ConnectionUpsertResponse,
+    EndUser,
+    GithubAppConfigOverride,
+    PostPublicConnection,
+    ProviderGithubApp
+} from '@nangohq/types';
 import type { Response } from 'express';
 
 const schemaBody = z.strictObject({
@@ -87,7 +97,12 @@ const schemaBody = z.strictObject({
             .strictObject({
                 type: z.literal('APP')
             })
-            .extend(connectionCredentialsGithubAppSchema.shape),
+            .extend(connectionCredentialsGithubAppSchema.shape)
+            .extend(connectionCredentialsGithubAppOverrideSchema.shape)
+            .refine((creds) => (creds.private_key === undefined) === (creds.webhook_secret === undefined), {
+                message: 'private_key and webhook_secret must be provided together',
+                path: ['webhook_secret']
+            }),
         z
             .strictObject({
                 type: z.literal('CUSTOM')
@@ -262,10 +277,25 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
                 installation_id: body.credentials.installation_id
             };
 
+            let configOverride: GithubAppConfigOverride | undefined;
+            if (body.credentials.private_key !== undefined && body.credentials.webhook_secret !== undefined) {
+                if (!(await getFlags().isGithubAppConnectionCredentialsEnabled(account.uuid))) {
+                    res.status(400).send({
+                        error: { code: 'invalid_body', message: 'Connection-level GitHub App credentials are not enabled for this account' }
+                    });
+                    return;
+                }
+                configOverride = {
+                    private_key: Buffer.from(body.credentials.private_key).toString('base64'),
+                    webhook_secret: body.credentials.webhook_secret
+                };
+            }
+
             const credentialsRes = await githubAppClient.createCredentials({
                 provider: provider as ProviderGithubApp,
                 integration,
-                connectionConfig
+                connectionConfig,
+                configOverride
             });
             if (credentialsRes.isErr()) {
                 void logCtx.error('GitHub App credentials creation failed (APP)', {
@@ -283,7 +313,8 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
                     connectionId,
                     providerConfigKey: body.provider_config_key,
                     parsedRawCredentials: credentialsRes.value,
-                    connectionConfig: body.connection_config || {},
+                    // Webhook lookup and dispatch of connection-level apps rely on these
+                    connectionConfig: configOverride ? { ...body.connection_config, ...connectionConfig } : body.connection_config || {},
                     webhookUrlOverride,
                     environmentId: environment.id,
                     metadata: body.metadata || {},
