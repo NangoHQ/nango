@@ -169,9 +169,20 @@ describe('function audit middleware (unit)', () => {
                 { type: 'function', id: 'github:fetchIssues' },
                 { type: 'function', id: 'gitlab:fetchIssues' }
             ],
-            metadata: { type: 'function' }
+            metadata: { type: 'function', source: 'repo' }
         });
         expect(JSON.stringify(event)).not.toContain('secret');
+    });
+
+    it('native function bundle deploy: records the artifact source', async () => {
+        const req = fakeReq({
+            body: {
+                functions: [{ integrationId: 'github', name: 'fetchIssues', fileBody: { js: 'compiled', ts: 'source' }, source: 'standalone' }]
+            }
+        });
+        const event = await runAudit(auditFunctionDeploymentBundle, req, fakeRes(secretKeyLocals));
+
+        expect(event?.metadata).toEqual({ type: 'function', source: 'standalone' });
     });
 
     it('pre-built flow upgrade: the script name is the target, provider + version in metadata', async () => {

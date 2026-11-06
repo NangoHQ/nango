@@ -137,7 +137,7 @@ interface FunctionDefinition {
 
 type CompiledTool = CreateToolProps<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint> & { type: 'function'; _nangoFactory: 'tool' };
 
-export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'> & { filePath: string };
+export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody' | 'source'> & { filePath: string };
 
 export interface ParsedEntryPoint {
     filePath: string;
