@@ -186,7 +186,7 @@ Read more about [integration functions](/guides/functions/functions-guide) to un
 
 ### `createTool`
 
-Import `createTool` from `nango`. It creates a function with an HTTP trigger and connection-scoped outbound API access. See [Tools](/guides/functions/tools) for a complete example.
+Import `createTool` from `nango`. It creates a function for on-demand operations with access to the connected provider's API. See [Tools](/guides/functions/tools) for a complete example.
 
 | Property | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -215,7 +215,7 @@ Tag values can be strings or arrays of strings.
 
 The `nango` argument provides connection access, outbound requests (`get`, `post`, `put`, `patch`, `delete`, `proxy`, `paginate`, `uncontrolledFetch`), logging, environment variables, and [`nango.Error`](#nango-error). Metadata and checkpoint methods are available only when the matching `data` schema is declared. Tools cannot save sync records.
 
-The HTTP trigger also includes `trigger.request` (method, path, headers, query, body) and connection context. `trigger.input` contains the validated input. The tool-call API supplies an HTTP trigger with method `POST`.
+`trigger.input` contains the validated input.
 
 <a id="createaction"></a>
 ### `createAction` (deprecated)

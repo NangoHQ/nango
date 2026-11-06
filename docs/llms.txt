@@ -67,7 +67,6 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Platform: Migrations: Migrate from public key](https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key.md): Guide to migrate from using the public key (and HMAC) to a Connect session.
 - [Platform: Migrations: Migrate from Connection MCP to agent sessions](https://nango.dev/docs/guides/platform/migrations/migrate-from-connection-mcp.md): Replace the Connection MCP with a scoped agent session
 - [Platform: Migrations: Migrate from actions to tools](https://nango.dev/docs/guides/platform/migrations/migrate-from-actions.md): Move on-demand integrations to tools while preserving existing action callers.
-- [Platform: Migrations: Migrating to Zero YAML](https://nango.dev/docs/guides/platform/migrations/migrate-to-zero-yaml.md): Guide on how to migrate to Zero YAML in Nango.
 - [Platform: Contributing to Nango](https://nango.dev/docs/contributing.md): Learn which external contributions Nango reviews
 
 ## Reference

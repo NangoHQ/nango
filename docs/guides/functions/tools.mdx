@@ -4,7 +4,7 @@ sidebarTitle: 'Tools'
 description: 'Build, test, deploy, and call tools from your backend or AI agent.'
 ---
 
-A tool is a function with an HTTP trigger. Use tools for on-demand reads, writes, and provider workflows. Call them from your backend with the [tool-call API](/reference/backend/http-api/tools/call), the [Node SDK](/reference/backend/backend-sdk/node#call-a-tool), or an [agent session](/guides/agent-sessions).
+A tool is a function for on-demand reads, writes, or operations that combine multiple API calls. Call tools from your backend with the [tool-call API](/reference/backend/http-api/tools/call), the [Node SDK](/reference/backend/backend-sdk/node#call-a-tool), or an [agent session](/guides/agent-sessions).
 
 Nango catalog tools are available without deploying code. Build your own when you need custom logic or a stable contract you control.
 
@@ -57,12 +57,6 @@ nango dryrun create-issue '<CONNECTION-ID>' -e dev --input '{"owner":"NangoHQ","
 nango deploy dev github/tools/create-issue.ts
 ```
 
-To simulate an HTTP request, use `--trigger-http` instead of `--input`:
-
-```bash
-nango dryrun create-issue '<CONNECTION-ID>' -e dev --trigger-http '{"method":"POST","path":"/","headers":{},"query":{},"body":{"owner":"NangoHQ","repo":"interactive-demo","title":"Bug report"}}' --validate
-```
-
 A dry run calls real provider APIs and can create or change data. See [Testing](/guides/functions/testing) and [CI/CD](/guides/functions/ci-cd).
 
 ## Call a tool
@@ -75,7 +69,6 @@ Use a Nango Environment API key from **Environment Settings > API Keys**. Scoped
     curl --request POST \
       --url 'https://api.nango.dev/connections/<CONNECTION-ID>/tools/create-issue/calls' \
       --header 'Authorization: Bearer <NANGO-API-KEY>' \
-      --header 'Provider-Config-Key: github' \
       --header 'Content-Type: application/json' \
       --data '{"input":{"owner":"NangoHQ","repo":"interactive-demo","title":"Bug report"}}'
     ```
@@ -87,19 +80,16 @@ Use a Nango Environment API key from **Environment Settings > API Keys**. Scoped
     const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
     const result = await nango.callTool(
         { connectionId: '<CONNECTION-ID>', name: 'create-issue' },
-        { input: { owner: 'NangoHQ', repo: 'interactive-demo', title: 'Bug report' } },
-        { 'provider-config-key': 'github' }
+        { input: { owner: 'NangoHQ', repo: 'interactive-demo', title: 'Bug report' } }
     );
     ```
   </Tab>
 </Tabs>
 
-Calls are synchronous and return the tool's output directly. Omit `input` for tools that take no input, sending `{}` as the request body. The integration header is optional when the connection ID is unique in the environment; supply it when multiple integrations share that ID.
+Calls are synchronous and return the tool's output directly. Omit `input` for tools that take no input, sending `{}` as the request body.
 
 ## Expose tools to an agent
 
 Use [agent sessions](/guides/agent-sessions) to scope tools and connections to a tenant. Tools participate in `toolset`, `allow`, `deny`, and `pinned_tools` policies and can be discovered through `nango_tool_search`.
 
 For coding agents managing Nango, the [Management MCP server](/reference/backend/management-mcp#functions) exposes `tools_call`.
-
-For existing deprecated action implementations, see [Migrate from actions to tools](/guides/platform/migrations/migrate-from-actions).

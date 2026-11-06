@@ -771,7 +771,7 @@ Avoid adding configuration before you need it. Start with a default path, then a
 3. Nango functions read metadata while running for that connection.
 4. The same function code adapts requests and transformations for each customer.
 
-Sync functions and event functions can read connection metadata. For tools, pass the customer's configuration in the tool input.
+Metadata is available to action functions, sync functions, event functions, and tools.
 
 ## Common patterns
 
@@ -2929,7 +2929,7 @@ You can use the following selectors:
 `allow` and `deny` limit which tools the agent can call, not which API endpoints it can reach. With [`nango_proxy`](#nango_proxy) on, the agent can call any endpoint of a connected integration in the toolset, including ones your deny list was meant to keep out. For an MCP server, that includes sending `tools/call` to the server directly, for any of its tools.
 </Warning>
 
-Sessions can expose HTTP-triggered tools, catalog tools, existing deprecated actions, and [MCP server tools](#mcp-server-tools). Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
+Sessions can expose the tools in your integration and [MCP server tools](#mcp-server-tools). Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
 
 ### Pinned tools
 
@@ -3020,7 +3020,7 @@ Takes a `query` of a few keywords naming the action, and a `goal` with the task 
 { "query": "find emails by subject", "goal": "find the invoice email from last week and forward it to accounting" }
 ```
 
-The result carries `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status. The `action` field is the API's tool-name field; it is used for tools as well as deprecated actions.
+The result carries `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status.
 
 Only a best match includes `input`, its argument schema — a weak match is a lead, not something to call yet.
 
@@ -3166,7 +3166,7 @@ nango pull github list-repos --catalog
 nango pull github list-repos --env dev
 ```
 
-`nango pull` writes the function file and adds its import to `index.ts`. Some catalog templates still use deprecated `createAction` definitions. [Convert them to tools](/guides/platform/migrations/migrate-from-actions#migrate-the-implementation) when customizing them. After pulling, review the source and schemas, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
+`nango pull` writes the function file and adds its import to `index.ts`. After pulling, review the source and schemas, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
 
 <Tip>
   Pull a pre-built function when you need custom fields, a smaller output shape, customer-specific filtering, different retry behavior, or a provider workflow that is close to the catalog but not identical.
@@ -3341,10 +3341,6 @@ This is useful for prototypes, onboarding flows, provider operations not covered
     <span className="agent-quickstart-action-description">Copy the command for coding agents using the Functions API workflow.</span>
   </button>
 </div>
-
-<Note>
-  The source-code Functions API currently supports sync functions and deprecated actions. Build and deploy new tools with the [CLI workflow](#build-locally-with-the-cli).
-</Note>
 
 At a high level, the flow is:
 
@@ -4599,7 +4595,7 @@ Keep variants non-overlapping in data scope (unless intentional), store variant-
 Source: https://nango.dev/docs/guides/functions/tools.md
 Description: Build, test, deploy, and call tools from your backend or AI agent.
 
-A tool is a function with an HTTP trigger. Use tools for on-demand reads, writes, and provider workflows. Call them from your backend with the [tool-call API](/reference/backend/http-api/tools/call), the [Node SDK](/reference/backend/backend-sdk/node#call-a-tool), or an [agent session](/guides/agent-sessions).
+A tool is a function for on-demand reads, writes, or operations that combine multiple API calls. Call tools from your backend with the [tool-call API](/reference/backend/http-api/tools/call), the [Node SDK](/reference/backend/backend-sdk/node#call-a-tool), or an [agent session](/guides/agent-sessions).
 
 Nango catalog tools are available without deploying code. Build your own when you need custom logic or a stable contract you control.
 
@@ -4652,12 +4648,6 @@ nango dryrun create-issue '<CONNECTION-ID>' -e dev --input '{"owner":"NangoHQ","
 nango deploy dev github/tools/create-issue.ts
 ```
 
-To simulate an HTTP request, use `--trigger-http` instead of `--input`:
-
-```bash
-nango dryrun create-issue '<CONNECTION-ID>' -e dev --trigger-http '{"method":"POST","path":"/","headers":{},"query":{},"body":{"owner":"NangoHQ","repo":"interactive-demo","title":"Bug report"}}' --validate
-```
-
 A dry run calls real provider APIs and can create or change data. See [Testing](/guides/functions/testing) and [CI/CD](/guides/functions/ci-cd).
 
 ## Call a tool
@@ -4670,7 +4660,6 @@ Use a Nango Environment API key from **Environment Settings > API Keys**. Scoped
     curl --request POST \
       --url 'https://api.nango.dev/connections/<CONNECTION-ID>/tools/create-issue/calls' \
       --header 'Authorization: Bearer <NANGO-API-KEY>' \
-      --header 'Provider-Config-Key: github' \
       --header 'Content-Type: application/json' \
       --data '{"input":{"owner":"NangoHQ","repo":"interactive-demo","title":"Bug report"}}'
     ```
@@ -4682,22 +4671,19 @@ Use a Nango Environment API key from **Environment Settings > API Keys**. Scoped
     const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
     const result = await nango.callTool(
         { connectionId: '<CONNECTION-ID>', name: 'create-issue' },
-        { input: { owner: 'NangoHQ', repo: 'interactive-demo', title: 'Bug report' } },
-        { 'provider-config-key': 'github' }
+        { input: { owner: 'NangoHQ', repo: 'interactive-demo', title: 'Bug report' } }
     );
     ```
   </Tab>
 </Tabs>
 
-Calls are synchronous and return the tool's output directly. Omit `input` for tools that take no input, sending `{}` as the request body. The integration header is optional when the connection ID is unique in the environment; supply it when multiple integrations share that ID.
+Calls are synchronous and return the tool's output directly. Omit `input` for tools that take no input, sending `{}` as the request body.
 
 ## Expose tools to an agent
 
 Use [agent sessions](/guides/agent-sessions) to scope tools and connections to a tenant. Tools participate in `toolset`, `allow`, `deny`, and `pinned_tools` policies and can be discovered through `nango_tool_search`.
 
 For coding agents managing Nango, the [Management MCP server](/reference/backend/management-mcp#functions) exposes `tools_call`.
-
-For existing deprecated action implementations, see [Migrate from actions to tools](/guides/platform/migrations/migrate-from-actions).
 
 ## Webhook functions
 
@@ -5028,7 +5014,7 @@ For the product-level workflow, see [Customize per customer](/getting-started/us
 
 ## Connection metadata
 
-Connection metadata is the default blob storage for Nango Functions. It is a JSON object stored on a Nango connection and available to sync functions, webhook functions, and event functions. Tools do not expose `getMetadata`, `setMetadata`, or `updateMetadata`; pass customer configuration as tool input instead.
+Connection metadata is the default blob storage for Nango Functions. It is a JSON object stored on a Nango connection and available to action functions, sync functions, webhook functions, event functions, and tools.
 
 Use metadata for:
 
@@ -6362,13 +6348,12 @@ Each provider gets a tool with the same input and output contract:
   </Tab>
 </Tabs>
 
-Your app can choose the integration ID at runtime and call the same tool name for each provider:
+Your app can call the same tool name for each provider using the customer's connection ID.
 
 ```ts
 await nango.callTool(
     { connectionId, name: 'create-user' },
-    { input: { name: 'Ada Lovelace', email: 'ada@example.com' } },
-    { 'provider-config-key': integrationId }
+    { input: { name: 'Ada Lovelace', email: 'ada@example.com' } }
 );
 ```
 
@@ -9360,7 +9345,19 @@ See the [agent sessions guide](/guides/agent-sessions) for connection selectors,
 Source: https://nango.dev/docs/guides/platform/migrations/migrate-from-actions.md
 Description: Move on-demand integrations to tools while preserving existing action callers.
 
-Actions are deprecated. Use [Tools](/guides/functions/tools) for new on-demand functions. Existing users can keep using the [deprecated action APIs](/guides/functions/action-functions).
+Actions are deprecated. Use [Tools](/guides/functions/tools) for new on-demand functions. The existing [action APIs](/guides/functions/action-functions) will continue to work but will eventually be deprecated.
+
+## Who is impacted
+
+Migrate existing action functions used for on-demand reads, writes, or operations that combine multiple API calls.
+
+## What is changing
+
+Tools replace actions for on-demand operations. They support typed input and output, connection metadata, checkpoints, authenticated provider requests, and logging. Tools also let you describe how agents should use them and attach custom tags.
+
+## Check compatibility before migrating
+
+Tools do not support asynchronous calls or completion webhooks. If your action relies on these features, contact us before migrating.
 
 ## Migrate callers first
 
@@ -9377,16 +9374,13 @@ With:
 ```typescript
 const result = await nango.callTool(
     { connectionId, name: 'create-issue' },
-    { input },
-    { 'provider-config-key': integrationId }
+    { input }
 );
 ```
 
 For HTTP, replace `POST /action/trigger` with `POST /connections/<CONNECTION-ID>/tools/create-issue/calls`. Move the action name into the URL and send `{ "input": ... }` as the body. Both APIs return the operation's output directly.
 
 Use a Nango Environment API key from **Environment Settings > API Keys** as `Authorization: Bearer <NANGO-API-KEY>`. Scoped keys need `environment:tools:call`, which replaces `environment:actions:execute`. Existing keys with the old scope keep working.
-
-For Management MCP clients, replace `actions_trigger` with `tools_call` and replace the `action_name` argument with `name`. Keep `integration_id`, `connection_id`, and optional `input`.
 
 ## Migrate the implementation
 
@@ -9397,362 +9391,48 @@ For Management MCP clients, replace `actions_trigger` with `tools_call` and repl
 5. Replace `nango.ActionError` with `nango.Error`. The payload is returned as `error.payload` with the `function_runtime_error` code.
 6. Import the tool from `index.ts`, dry run it with realistic input and `--validate`, then deploy. See [Tools](/guides/functions/tools#create-a-tool) for a complete example.
 
-If the action uses SDK methods beyond outbound provider requests and logging, check the [Functions SDK](/reference/functions/functions-sdk) before migrating; tool capabilities differ from legacy actions.
+### Example: Create a GitHub issue
 
-## Migrating to Zero YAML
+This function reads the repository from connection metadata and creates an issue using the caller's title and body. The diff shows how to convert it from an action to a tool:
 
-Source: https://nango.dev/docs/guides/platform/migrations/migrate-to-zero-yaml.md
-Description: Guide on how to migrate to Zero YAML in Nango.
+```diff
+-import { createAction } from 'nango';
++import { createTool } from 'nango';
+ import * as z from 'zod';
 
-<Note>
-  This migration reference preserves legacy action examples for existing projects. Actions are deprecated. For new code, use [Tools](/guides/functions/tools); after completing this migration, follow [Actions to tools](/guides/platform/migrations/migrate-from-actions).
-</Note>
+-export default createAction({
++export default createTool({
+     description: 'Create a GitHub issue',
+     input: z.object({ title: z.string(), body: z.string().optional() }),
+     output: z.object({ id: z.number(), url: z.string() }),
+-    metadata: z.object({ owner: z.string(), repo: z.string() }),
++    data: {
++        metadata: z.object({ owner: z.string(), repo: z.string() })
++    },
+-    exec: async (nango, input) => {
++    exec: async (nango, trigger) => {
++        const input = trigger.input;
+         if (!input.title.trim()) {
+-            throw new nango.ActionError({ message: 'Title must not be blank' });
++            throw new nango.Error({ message: 'Title must not be blank' });
+         }
 
-<div className="agent-quickstart-actions">
-  <button
-    type="button"
-    className="agent-quickstart-action"
-    data-copy-text="npx skills add NangoHQ/skills -s migrating-to-zero-yaml"
-    data-copy-success="Install command copied"
-  >
-    <span className="agent-quickstart-action-title">Install Zero YAML migration skill</span>
-    <span className="agent-quickstart-action-description">
-      Copy the command to install <code>migrating-to-zero-yaml</code> from <code>NangoHQ/skills</code>.
-    </span>
-  </button>
-</div>
-
-The `nango.yaml` configuration file is no longer supported. Since September 15, 2026, Nango rejects deployments that use it. This guide helps you migrate your existing integrations from the YAML-based approach to Zero YAML, which uses pure TypeScript with modern tooling.
-
-## What is Zero YAML?
-
-Zero YAML is Nango's new approach to building integrations that eliminates the need for separate `nango.yaml` configuration files. Instead, everything is defined in TypeScript using a configuration-as-code approach with full type safety.
-
-Key benefits:
-- **Type Safety**: Full TypeScript support with Zod schema validation
-- **Better Developer Experience**: Modern tooling, enhanced CLI output, and better error messages
-- **Portability**: Self-contained files that can be easily shared and version controlled
-- **No Custom Syntax**: Pure TypeScript—no need to learn YAML-specific conventions and our previous custom model syntax
-
-Here's a quick example of the new syntax:
-
-```typescript
-import { createSync } from 'nango';
-import * as z from 'zod';
-
-const issueSchema = z.object({
-    id: z.string(),
-    title: z.string(),
-    state: z.string()
-});
-
-const sync = createSync({
-    description: 'Fetches GitHub issues',
-    frequency: 'every hour',
-    models: { GithubIssue: issueSchema },
-    exec: async (nango) => {
-        await nango.batchSave([{ id: 'foobar' }], 'GithubIssue');
-    }
-});
+         const { owner, repo } = await nango.getMetadata();
+         const response = await nango.post({
+             endpoint: `/repos/${owner}/${repo}/issues`,
+             data: { title: input.title, body: input.body }
+         });
+         return { id: response.data.id, url: response.data.html_url };
+     }
+ });
 ```
 
-## How Zero YAML Works
+Move the file from `github/actions/create-issue.ts` to `github/tools/create-issue.ts` and update its import in `index.ts`:
 
-The new system is built around simplification
-
-### Simplified file Structure
-
-Like a regular TypeScript codebase
-
-```sh
-├── index.ts                     # Declare what's deployed
-├── package.json                 # Dependency management and types
-├── github/                      # An integration
-    ├── syncs/
-    │     └── fetchIssues.ts     # A sync
-    └── actions/
-           └── createIssue.ts     # An action
+```diff
+-import './github/actions/create-issue.js';
++import './github/tools/create-issue.js';
 ```
-
-### Simplified configuration
-
-Three core functions that replace YAML configuration. You'll benefit from IntelliSense and type safety, directly in your IDE. No need to jump between files to find the right configuration.
-
-- **`createSync()`**: Defines data synchronization jobs
-- **`createAction()` (deprecated)**: Defines legacy on-demand jobs; use `createTool()` for new code
-- **`createOnEvent()`**: Defines event-based jobs
-
-----
-
-## Quick Migration Guide
-
-### Automatic Migration
-
-The easiest way to migrate is using our automated migration command:
-
-```bash
-nango migrate-to-zero-yaml
-```
-
-<Warning>This **operation is destructive** and will overwrite your existing files. Make sure to back up your existing files before running the command.</Warning>
-
-This command will:
-1. Analyze your existing `nango.yaml` and TypeScript files
-2. Generate new self-contained TypeScript files
-3. Create the required `package.json` if it doesn't exist
-4. Set up the `index.ts` entry point
-5. Preserve your existing logic and configuration
-
-### Post-Migration Steps
-
-The migration command should automatically transform all your files. However, you should review the changes and make sure everything is correct.
-
-<Note>Because the new format is stricter, some type issues can arise after the migration.</Note>
-
-### Migration Plan
-
-We recommend:
-1. **Back up** your current nango integrations folder
-2. Use your **dev env** to migrate to test the new format
-3. Deploy to **prod env** after you have assessed that everything works properly
-
-## What Has Changed?
-
-### Configuration: YAML → TypeScript Objects
-
-**Before** (nango.yaml + separate .ts file):
-```yaml
-# nango.yaml
-integrations:
-  github:
-    issues:
-      runs: every 1h
-      sync_type: full
-      endpoint: GET /issues
-      description: Fetches GitHub issues
-models:
-  GithubIssue:
-    id: string
-    title: string
-```
-
-**After** (single self-contained file):
-```typescript
-const sync = createSync({
-    description: 'Fetches GitHub issues',
-    frequency: 'every hour',
-    models: { GithubIssue: issueSchema }
-});
-```
-
-### Models: YAML Definitions → Zod Schemas
-
-**Before**:
-```yaml
-models:
-  GithubIssue:
-    id: string
-    title: string
-    state: string
-```
-
-**After**:
-```typescript
-const issueSchema = z.object({
-    id: z.string(),
-    title: z.string(),
-    state: z.string()
-});
-```
-
-## Before and After Examples
-
-### Sync Example
-
-**Before** (issues.ts + nango.yaml excerpt):
-```typescript
-// issues.ts
-import type { NangoSync, GithubIssue } from '../../models';
-
-export default async function fetchData(nango: NangoSync) {
-    // Sync logic here
-}
-```
-
-```yaml
-# nango.yaml excerpt
-integrations:
-  github:
-    issues:
-      runs: every 1h
-      sync_type: full
-      endpoint: GET /issues
-```
-
-**After** (self-contained fetchIssues.ts):
-```typescript
-import { createSync } from 'nango';
-import * as z from 'zod';
-
-const issueSchema = z.object({
-    id: z.string(),
-    title: z.string(),
-    state: z.string()
-});
-
-const sync = createSync({
-    description: 'Fetches GitHub issues',
-    frequency: 'every hour',
-    models: { GithubIssue: issueSchema },
-    exec: async (nango) => {
-        // Your existing sync logic here
-    }
-});
-
-export default sync;
-```
-
-<a id="action-example"></a>
-### Action example (deprecated)
-
-**Before** (separate files):
-```typescript
-// create-issue.ts
-export default async function runAction(nango: NangoAction, input: CreateIssueInput) {
-    // Action logic
-}
-```
-
-**After** (self-contained):
-```typescript
-import { createAction } from 'nango';
-import * as z from 'zod';
-
-const inputSchema = z.object({
-    title: z.string(),
-    body: z.string()
-});
-
-const action = createAction({
-    description: 'Create a GitHub issue',
-    input: inputSchema,
-    output: z.void(),
-    exec: async (nango, input) => {
-        // Your action logic here
-    }
-});
-
-export default action;
-```
-
-### Index File Structure
-
-The new `index.ts` file imports all your integrations:
-
-```typescript
-// index.ts
-import './github/syncs/fetchIssues.js';
-import './github/actions/createIssue.js';
-// Add more imports as needed
-```
-
-## Migration Gotchas & FAQ
-
-### Gotchas
-```typescript
-err - github/syncs/issues.ts:57:43
-  Argument of type '{ id: number; owner: string; repo: string; issue_number: number; title: string; author: string; author_id: string; state: string; date_created: Date; date_last_modified: Date; body: string; }[]' is not assignable to parameter of type 'RawModel[]'.
-  Type '{ id: number; owner: string; repo: string; issue_number: number; title: string; author: string; author_id: string; state: string; date_created: Date; date_last_modified: Date; body: string; }' is not assignable to type 'RawModel'.
-    Types of property 'id' are incompatible.
-      Type 'number' is not assignable to type 'string'.
-```
-Previously you were setting the ID property of a sync to a number when it should always be a string.
-
-------
-
-```typescript
-err - 1password-scim/actions/create-user.ts:26:45
-  Property 'errors' does not exist on type 'ZodError<{ firstName: string; lastName: string; email: string; active?: boolean | undefined; externalId?: string | undefined; phoneNumbers?: { type: "work" | "mobile" | "other"; value: string; }[] | undefined; photos?: { ...; }[] | undefined; addresses?: { ...; }[] | undefined; title?: string | undefined; }>'.
-```
-Previously you were validating an input using Zod in this way
-```typescript
-const parsedInput = scimCreateUserSchema.safeParse(input);
-
-if (!parsedInput.success) {
-  for (const error of parsedInput.error.errors) {
-    await nango.log(
-      `Invalid input provided to create a user: ${error.message} at path ${error.path.join(".")}`,
-      { level: "error" },
-    );
-  }
-
-  throw new nango.ActionError({
-    message: "Invalid input provided to create a user",
-  });
-}
-```
-Instead of this, you can use a Nango helper:
-```typescript
-const parsedInput = await nango.zodValidateInput({ zodSchema: scimCreateUserSchema, input });
-```
-
-### Nango.yaml EOL
-
-**Q: Is nango.yaml still supported?**
-
-**A:** No. Support ended on September 15, 2026. Deployments that use a `nango.yaml` are rejected with an error that points to this guide. Functions deployed before then keep running until you redeploy them, which requires migrating first.
-
-### Package.json Requirement
-
-**Q: Why is package.json now mandatory?**
-
-**A:** The new system uses modern JavaScript tooling that requires proper dependency management. The `package.json` ensures:
-- Consistent dependency versions across environments
-- Proper module resolution
-- Better integration with modern development tools
-
-If you don't have one, the migration command will create it automatically.
-
-<Info>Note: Bundling custom dependencies is not yet possible but is now on our roadmap thanks to this update.</Info>
-
-### Backward Compatibility
-
-**Q: What still works the same?**
-
-**A:** Your core integration logic remains unchanged. No new features or breaking changes. All CLI commands are still available.
-
-### Testing Migrated Integrations
-
-**Q: How do I test after migration?**
-
-**A:** Use the same testing commands:
-
-```bash
-# Test a specific sync
-nango dryrun <scriptName> <connectionId>
-```
-
-### Rollback Process
-
-**Q: Can I rollback if something goes wrong?**
-
-**A:** Not to `nango.yaml`, since deployments that use it are rejected. Validate the migrated integration before it reaches production: run `nango dryrun` against a test connection, then deploy to a development environment with `nango deploy dev`. Keep a copy of your original files as a reference until you have validated the migration.
-
----
-
-The Zero YAML approach represents a significant step forward in Nango's developer experience. By eliminating custom syntax and embracing pure TypeScript, we've made integrations more maintainable, shareable, and enjoyable to work with. Many more features will be possible thanks to this new syntax.
-
-If you encounter any issues during migration, our support team is ready to help. Happy integrating! 🚀
-
-<Tip>
-    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
-</Tip>
-
-## Related guides
-
-- [Functions guide](/guides/functions/functions-guide) - understand the current TypeScript-first project layout.
-- [Functions CLI](/reference/functions/functions-cli) - deploy and dry-run migrated functions.
-- [Testing](/guides/functions/testing) - verify migrated integrations before rollout.
 
 ## Contributing to Nango
 
@@ -13980,7 +13660,7 @@ await nango.getProvider({ provider: <NAME> })
 
 ### Get provider templates
 
-Returns the function templates available for a provider. Catalog tools may currently use the deprecated action definition format (`type: "action"`). For new custom implementations, use [`createTool`](/reference/functions/functions-sdk#createtool).
+Returns the function templates available for a provider.
 
 ```js
 await nango.getProviderTemplates({ provider: <NAME> })
@@ -14295,20 +13975,16 @@ Deleting a sync function with existing connections, removing a sync or tool reco
 
 ## Tools
 
-Create tools with [`createTool`](/reference/functions/functions-sdk#createtool) and import them from `index.ts`. The `nango create --action` scaffold is deprecated; it does not create a tool.
+Create tools with [`createTool`](/reference/functions/functions-sdk#createtool) and import them from `index.ts`.
 
 ```bash
 nango dryrun <tool-name> <connection-id> -e dev --input '{"id":"example"}' --validate
 nango deploy dev <integration-id>/tools/<tool-file>.ts
 ```
 
-Use `--trigger-http '<JSON>'` or `--trigger-http @request.json` to simulate an HTTP request instead of `--input`. The request includes `method`, `path`, `headers`, `query`, and `body`. These flags cannot be combined. See [Tools](/guides/functions/tools#test-and-deploy).
-
 ## Interactive Mode
 
-The Nango CLI includes an interactive mode that prompts you for missing arguments. For example, if you run `nango create` without specifying the function type, integration, or name, the CLI will prompt you for them.
-
-The `action` option in the legacy prompt below is deprecated; use the tools workflow above for new on-demand functions.
+The Nango CLI includes an interactive mode that prompts you for missing arguments. For example, if you run `nango create --sync` without specifying the integration or name, the CLI will prompt you for them.
 
 This mode is enabled by default when you're in an interactive terminal session.
 
@@ -14319,13 +13995,11 @@ This mode is enabled by default when you're in an interactive terminal session.
 If you run a command without all the required arguments, the CLI will prompt you for them.
 
 ```bash
-# Running "nango create" without arguments
-$ nango create
+# Creating a sync in a project with no integrations yet
+$ nango create --sync
 
-? What type of function do you want to create?
-❯   sync
-    action
-    on-event
+? What is the name of the integration? (e.g., "hubspot") my-api
+? What is the name of the new sync? (e.g., "contacts" or "create-ticket") get-contacts
 ```
 
 **Non-Interactive (Explicit) Usage:**
@@ -14620,7 +14294,7 @@ Read more about [integration functions](/guides/functions/functions-guide) to un
 
 ### `createTool`
 
-Import `createTool` from `nango`. It creates a function with an HTTP trigger and connection-scoped outbound API access. See [Tools](/guides/functions/tools) for a complete example.
+Import `createTool` from `nango`. It creates a function for on-demand operations with access to the connected provider's API. See [Tools](/guides/functions/tools) for a complete example.
 
 | Property | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -14649,7 +14323,7 @@ Tag values can be strings or arrays of strings.
 
 The `nango` argument provides connection access, outbound requests (`get`, `post`, `put`, `patch`, `delete`, `proxy`, `paginate`, `uncontrolledFetch`), logging, environment variables, and [`nango.Error`](#nango-error). Metadata and checkpoint methods are available only when the matching `data` schema is declared. Tools cannot save sync records.
 
-The HTTP trigger also includes `trigger.request` (method, path, headers, query, body) and connection context. `trigger.input` contains the validated input. The tool-call API supplies an HTTP trigger with method `POST`.
+`trigger.input` contains the validated input.
 
 <a id="createaction"></a>
 ### `createAction` (deprecated)
