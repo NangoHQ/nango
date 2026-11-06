@@ -3,7 +3,7 @@ import { act, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Button, buttonVariants } from './button';
+import { Button, buttonVariants, IconButton } from './button';
 
 import type { Root } from 'react-dom/client';
 
@@ -40,6 +40,14 @@ function query<T extends Element = Element>(selector: string): T {
 
 const button = () => query<HTMLButtonElement>('button');
 const spinner = () => container.querySelector('[data-spinner]');
+
+function clickLink() {
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+    act(() => {
+        query('a').dispatchEvent(event);
+    });
+    return event;
+}
 
 describe('Button', () => {
     it('renders children untouched when loading is never passed', () => {
@@ -106,14 +114,6 @@ describe('Button', () => {
     });
 
     describe('asChild', () => {
-        function clickLink() {
-            const event = new MouseEvent('click', { bubbles: true, cancelable: true });
-            act(() => {
-                query('a').dispatchEvent(event);
-            });
-            return event;
-        }
-
         it('blocks clicks on a disabled slotted link, including the child and caller capture handlers', () => {
             const onClick = vi.fn();
             const childCapture = vi.fn();
@@ -166,5 +166,95 @@ describe('Button', () => {
         const classes = buttonVariants({ variant: 'ghost' }).split(' ');
         expect(classes).toContain('disabled:bg-interactive-ghost');
         expect(classes).toContain('aria-disabled:bg-interactive-ghost');
+    });
+});
+
+describe('IconButton', () => {
+    it('uses label as the accessible name and default tooltip', () => {
+        render(
+            <IconButton label="Add item">
+                <Icon />
+            </IconButton>
+        );
+        expect(button().getAttribute('aria-label')).toBe('Add item');
+        expect(button().getAttribute('title')).toBe('Add item');
+    });
+
+    it('keeps a caller title as the tooltip', () => {
+        render(
+            <IconButton label="Add item" title="Add (⌘N)">
+                <Icon />
+            </IconButton>
+        );
+        expect(button().getAttribute('aria-label')).toBe('Add item');
+        expect(button().getAttribute('title')).toBe('Add (⌘N)');
+    });
+
+    it('swaps the icon for a spinner while loading', () => {
+        render(
+            <IconButton label="Add item" loading>
+                <Icon />
+            </IconButton>
+        );
+        expect(container.querySelector('[data-testid="icon"]')).toBeNull();
+        expect(spinner()).not.toBeNull();
+        expect(button().disabled).toBe(true);
+    });
+
+    describe('asChild', () => {
+        it('sets label on the slotted child over its own aria-label', () => {
+            render(
+                <IconButton asChild label="Open docs">
+                    <a href="/docs" aria-label="Docs">
+                        <Icon />
+                    </a>
+                </IconButton>
+            );
+            expect(query('a').getAttribute('aria-label')).toBe('Open docs');
+        });
+
+        it('blocks clicks on a disabled slotted link, including the child and caller capture handlers', () => {
+            const onClick = vi.fn();
+            const childCapture = vi.fn();
+            const callerCapture = vi.fn();
+            render(
+                <IconButton asChild disabled label="Open docs" onClickCapture={callerCapture}>
+                    <a href="/docs" onClick={onClick} onClickCapture={childCapture}>
+                        <Icon />
+                    </a>
+                </IconButton>
+            );
+            const event = clickLink();
+            expect(event.defaultPrevented).toBe(true);
+            expect(onClick).not.toHaveBeenCalled();
+            expect(childCapture).not.toHaveBeenCalled();
+            expect(callerCapture).not.toHaveBeenCalled();
+        });
+
+        it('passes the caller capture handler through once when enabled', () => {
+            const callerCapture = vi.fn();
+            render(
+                <IconButton asChild label="Open docs" onClickCapture={callerCapture}>
+                    <a href="/docs" onClick={(event) => event.preventDefault()}>
+                        <Icon />
+                    </a>
+                </IconButton>
+            );
+            clickLink();
+            expect(callerCapture).toHaveBeenCalledTimes(1);
+        });
+
+        it('shows the spinner inside the slotted link while loading', () => {
+            render(
+                <IconButton asChild loading label="Open docs">
+                    <a href="/docs">
+                        <Icon />
+                    </a>
+                </IconButton>
+            );
+            expect(container.firstElementChild).toBe(query('a'));
+            expect(query('a').contains(spinner())).toBe(true);
+            expect(container.querySelector('[data-testid="icon"]')).toBeNull();
+        });
     });
 });

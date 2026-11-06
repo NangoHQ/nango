@@ -268,32 +268,24 @@ Button.displayName = 'Button';
 
 // ─── IconButton ───────────────────────────────────────────────────────────────
 
-/** Square, icon-only button types — the same palette and states as Button's non-link variants. */
-export const ICON_BUTTON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const;
-/** Square sizes from the Figma Dharma spec — box / icon: xs 24/12, sm 28/14, md 32/16, lg 36/16. */
-export const ICON_BUTTON_SIZES = ['xs', 'sm', 'md', 'lg'] as const;
+type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>['variant']>;
+type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>['size']>;
+
+export const ICON_BUTTON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const satisfies readonly ButtonVariant[];
+export const ICON_BUTTON_SIZES = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ButtonSize[];
 
 export type IconButtonVariant = (typeof ICON_BUTTON_VARIANTS)[number];
 export type IconButtonSize = (typeof ICON_BUTTON_SIZES)[number];
-// Accepted so existing screens keep rendering, but outside the IconButton spec — don't use in new code.
-type LegacyIconButtonVariant = 'link-accent' | 'link-danger' | 'link-neutral';
-type LegacyIconButtonSize = '2xs';
 
 // `aria-label` is omitted so `label` is the single, required source of the accessible name.
 export interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label'> {
-    /**
-     * primary | secondary | outline | ghost | danger.
-     * @deprecated values: `link-accent`, `link-danger`, `link-neutral` — kept for existing call sites only.
-     */
-    variant?: IconButtonVariant | LegacyIconButtonVariant | null;
-    /**
-     * xs 24 · sm 28 · md 32 · lg 36 (icon 12 · 14 · 16 · 16).
-     * @deprecated value: `2xs` (20px) — kept for existing call sites only.
-     */
-    size?: IconButtonSize | LegacyIconButtonSize | null;
+    /** The `link-*` variants are outside the IconButton spec and kept for existing call sites only. */
+    variant?: ButtonVariant | null;
+    /** `2xs` is outside the IconButton spec and kept for existing call sites only. */
+    size?: ButtonSize | null;
     asChild?: boolean;
     loading?: boolean;
-    /** Accessible name — required for icon-only buttons. Applied as `aria-label`, and as the `title` tooltip unless one is passed. */
+    /** Accessible name, applied as `aria-label`, and as the `title` tooltip unless one is passed. */
     label: string;
 }
 
@@ -301,39 +293,26 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     ({ className, variant, size, asChild = false, loading = false, disabled, label, title, children, onClickCapture, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
-        // Same rule as Button: Slot needs its single child, so asChild never swaps in a spinner.
-        const showSpinner = loading && !asChild;
-        // Slot lets the child's own props override the ones passed here, so a slotted child's aria-label would
-        // replace `label`. Setting it on the child itself keeps `label` the accessible name.
-        const slotted = asChild && isValidElement<{ 'aria-label'?: string }>(children) ? cloneElement(children, { 'aria-label': label }) : children;
-        // pointer-events-none only stops the mouse: a disabled or loading slotted link can still be activated with
-        // Enter. The capture handler runs before the child's own onClick (e.g. a router Link), so stopping it there
-        // blocks both the browser's navigation and the child's handler.
-        const handleClickCapture = (event: React.MouseEvent<HTMLButtonElement>) => {
-            if (isDisabled && asChild) {
-                event.preventDefault();
-                event.stopPropagation();
-                return;
-            }
-            onClickCapture?.(event);
-        };
+        const renderChildren = (icon: React.ReactNode) => (loading ? <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} /> : icon);
+        // Slot lets the child's own aria-label win, so `label` is set on the child itself.
+        const content = asChild
+            ? renderSlotChild(children, { isDisabled, onClickCapture, renderChildren, props: { 'aria-label': label } })
+            : renderChildren(children);
 
         return (
             <Comp
                 ref={ref}
                 type={asChild ? undefined : 'button'}
-                // aspect-square + px-0 turns each size's height into a square box; the size variant sets the icon size.
                 className={cn(buttonVariants({ variant, size }), 'aspect-square px-0', isDisabled && asChild && 'pointer-events-none', className)}
                 disabled={isDisabled}
                 aria-disabled={isDisabled || undefined}
                 aria-busy={loading || undefined}
                 title={title ?? label}
+                onClickCapture={asChild ? undefined : onClickCapture}
                 {...props}
                 aria-label={label}
-                onClickCapture={handleClickCapture}
             >
-                {/* the spinner matches the icon it replaces, so the box never changes */}
-                {showSpinner ? <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} /> : slotted}
+                {content}
             </Comp>
         );
     }
