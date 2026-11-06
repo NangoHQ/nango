@@ -116,6 +116,18 @@ export const buttonVariants = cva(
                     'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
                     'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-default'
+                ],
+                'link-neutral-danger': [
+                    'bg-transparent text-text-link-neutral border-transparent',
+                    'decoration-from-font decoration-solid [text-underline-position:from-font]',
+                    '[&_svg]:text-icon-link-neutral',
+                    ...LINK_UNDERLINE_STATES,
+                    'not-disabled:not-aria-disabled:hover:text-text-link-danger not-disabled:not-aria-disabled:hover:[&_svg]:text-icon-link-danger',
+                    'not-disabled:not-aria-disabled:focus-visible:text-text-link-danger not-disabled:not-aria-disabled:focus-visible:[&_svg]:text-icon-link-danger',
+                    'not-disabled:not-aria-disabled:active:text-text-link-danger-active not-disabled:not-aria-disabled:active:[&_svg]:text-icon-link-danger-active',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
+                    'focus-visible:shadow-focus-outline-danger'
                 ]
             },
             size: {
@@ -130,14 +142,14 @@ export const buttonVariants = cva(
         compoundVariants: [
             // Link variants are bare inline text in Figma — no fixed size, height comes from the line box.
             // link-danger alone gets 2px horizontal padding that link-accent/link-neutral don't have.
-            { variant: ['link-accent', 'link-neutral'], className: 'h-auto w-auto p-0' },
+            { variant: ['link-accent', 'link-neutral', 'link-neutral-danger'], className: 'h-auto w-auto p-0' },
             { variant: 'link-danger', className: 'h-auto w-auto px-0.5 py-0' },
-            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: ['xs', 'sm'], className: 'gap-1' },
+            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: ['xs', 'sm'], className: 'gap-1' },
             // xs takes the smallest (12px) icon; sm's icon is 14px, between xs and md/lg. No radius override:
             // link variants are bare text with no border or background, so a pill only ever showed up as a
             // capsule-shaped focus ring around a few words.
-            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: 'xs', className: "[&_svg:not([class*='size-'])]:size-3" },
-            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: 'sm', className: "[&_svg:not([class*='size-'])]:size-3.5" }
+            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: 'xs', className: "[&_svg:not([class*='size-'])]:size-3" },
+            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: 'sm', className: "[&_svg:not([class*='size-'])]:size-3.5" }
         ],
         defaultVariants: {
             variant: 'primary',

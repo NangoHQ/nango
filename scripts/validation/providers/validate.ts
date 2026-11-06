@@ -290,6 +290,14 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
         );
         error = true;
     }
+    if (provider.token_request_auth_method === 'none' && 'authorization_method' in provider && provider.authorization_method) {
+        console.error(
+            chalk.red('error'),
+            chalk.blue(providerKey),
+            `cannot contain both "token_request_auth_method: none" and "authorization_method". A public client sends its client_id in the body.`
+        );
+        error = true;
+    }
 
     if (provider.webhook_routing_script) {
         if (!webhookContent.includes(provider.webhook_routing_script)) {

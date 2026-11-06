@@ -1,9 +1,15 @@
 import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
-import { functionRepoPath } from '../utils/scripts';
 
-import type { FunctionType, GetFunctionCode, GetIntegrationFunction, GetIntegrationFunctions, GetIntegrationTemplates } from '@nangohq/types';
+import type {
+    FunctionType,
+    GetFunctionCode,
+    GetIntegrationFunction,
+    GetIntegrationFunctions,
+    GetIntegrationTemplates,
+    GetProviderTemplateCode
+} from '@nangohq/types';
 
 interface UseGetIntegrationFunctionsArgs {
     env: string;
@@ -122,28 +128,35 @@ export function useGetIntegrationFunctionCode({ env, providerConfigKey, name, ty
     });
 }
 
-/** Public source for undeployed templates, the same files the old templates page loaded. */
-const INTEGRATION_TEMPLATES_RAW_URL = 'https://raw.githubusercontent.com/NangoHQ/integration-templates';
-
 interface UseGetTemplateFunctionCodeArgs {
+    env: string;
     provider: string;
     name: string;
     type: FunctionType | undefined;
     enabled?: boolean;
 }
 
-export function useGetTemplateFunctionCode({ provider, name, type, enabled = true }: UseGetTemplateFunctionCodeArgs) {
-    return useQuery<string, Error>({
-        queryKey: ['template-code', provider, type, name],
-        queryFn: async () => {
+export function useGetTemplateFunctionCode({ env, provider, name, type, enabled = true }: UseGetTemplateFunctionCodeArgs) {
+    return useQuery<GetProviderTemplateCode['Success'], Error>({
+        queryKey: ['providers', provider, 'templates', name, 'code', { type }],
+        queryFn: async (): Promise<GetProviderTemplateCode['Success']> => {
             if (!type) throw new Error('Template function type is required');
-            const res = await fetch(`${INTEGRATION_TEMPLATES_RAW_URL}/main/${functionRepoPath({ provider, name, type })}`);
-            if (!res.ok) {
-                throw new Error(`Failed to load template source (${res.status})`);
+            const usp = new URLSearchParams();
+            usp.set('env', env);
+            usp.set('type', type);
+
+            const res = await apiFetch(`/api/v1/providers/${encodeURIComponent(provider)}/templates/${encodeURIComponent(name)}/code?${usp.toString()}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetProviderTemplateCode['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
             }
-            return res.text();
+
+            return json;
         },
-        enabled: enabled && Boolean(provider && name && type),
+        enabled: enabled && Boolean(env && provider && name && type),
         retry: false,
         staleTime: 5 * 60 * 1000
     });

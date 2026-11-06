@@ -78,6 +78,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: Environments: List environments](https://nango.dev/docs/reference/backend/http-api/environments/list.md)
 - [Backend: HTTP API: Environments: Get an environment](https://nango.dev/docs/reference/backend/http-api/environments/get.md)
 - [Backend: HTTP API: Environments: Create an environment](https://nango.dev/docs/reference/backend/http-api/environments/create.md)
+- [Backend: HTTP API: Environments: Update an environment](https://nango.dev/docs/reference/backend/http-api/environments/update.md)
 - [Backend: HTTP API: Environments: Delete an environment](https://nango.dev/docs/reference/backend/http-api/environments/delete.md)
 - [Backend: HTTP API: Environments: List environment API keys](https://nango.dev/docs/reference/backend/http-api/environments/list-api-keys.md)
 - [Backend: HTTP API: Environments: Get an environment API key](https://nango.dev/docs/reference/backend/http-api/environments/get-api-key.md)
@@ -149,7 +150,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## APIs and integrations
 
-- [API catalog](https://nango.dev/docs/api-catalog.txt): 1089 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
+- [API catalog](https://nango.dev/docs/api-catalog.txt): 1137 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
 - Provider-specific pages are intentionally not expanded here so core Nango guides remain easy for agents to find.
 
 ## Resources
