@@ -77,7 +77,7 @@ describe('integration function deletion', () => {
             id: ctx.targetIntegrationId,
             environmentId: ctx.env.id,
             providerConfigKey: ctx.targetKey,
-            orchestrator: { deleteFunctionSchedules, deleteSync: vi.fn() }
+            orchestrator: { deleteFunctionSchedules, deleteSyncs: vi.fn() }
         });
 
         expect(deleted).toBe(true);
@@ -112,7 +112,7 @@ describe('integration function deletion', () => {
                 id: ctx.targetIntegrationId,
                 environmentId: ctx.env.id,
                 providerConfigKey: ctx.targetKey,
-                orchestrator: { deleteFunctionSchedules, deleteSync: vi.fn() }
+                orchestrator: { deleteFunctionSchedules, deleteSyncs: vi.fn() }
             })
         ).rejects.toMatchObject({ message: 'failed_to_delete_functions_for_integration', cause });
 
