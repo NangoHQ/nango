@@ -192,12 +192,18 @@ jobs:
                   VERSION: 0.0.1-${{ github.sha }}
               run: |
                   packages=$(gh api --paginate '/orgs/NangoHQ/packages?package_type=npm&per_page=100' --jq '.[].name')
+                  failed=0
                   for package in $packages; do
-                    id=$(gh api "/orgs/NangoHQ/packages/npm/$package/versions?per_page=100" --jq ".[] | select(.name == \"$VERSION\") | .id")
-                    if [[ -n "$id" ]]; then
-                      gh api -X DELETE "/orgs/NangoHQ/packages/npm/$package/versions/$id"
+                    if ! id=$(gh api "/orgs/NangoHQ/packages/npm/$package/versions?per_page=100" --jq ".[] | select(.name == \"$VERSION\") | .id"); then
+                      echo "::error::Could not list the versions of $package"
+                      failed=1
+                    elif [[ -z "$id" ]]; then
+                      echo "No $VERSION in $package"
+                    elif gh api -X DELETE "/orgs/NangoHQ/packages/npm/$package/versions/$id"; then
                       echo "Deleted $package@$VERSION"
                     else
-                      echo "No $VERSION in $package"
+                      echo "::error::Could not delete $package@$VERSION"
+                      failed=1
                     fi
                   done
+                  exit $failed
