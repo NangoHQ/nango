@@ -2694,6 +2694,34 @@ astro-mcp:
             accept: application/json,text/event-stream
     docs: https://nango.dev/docs/api-integrations/astro-mcp
 
+atlar:
+    display_name: Atlar
+    categories:
+        - banking
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.atlar.com
+    credentials_verification_script: atlarCredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/atlar
+    docs_connect: https://nango.dev/docs/api-integrations/atlar/connect
+    credentials:
+        username:
+            type: string
+            title: Access key
+            description: The access key of your Atlar programmatic access user.
+            secret: true
+            example: Hq4T************bN2w
+            pattern: '^[A-Za-z0-9]{16,}$'
+            doc_section: '#step-3-copy-your-access-key-and-generate-a-secret'
+        password:
+            type: string
+            title: Secret
+            description: The secret of your Atlar programmatic access user.
+            secret: true
+            example: Wd8G************************************************************m-3Z
+            pattern: '^[A-Za-z0-9_-]{20,}$'
+            doc_section: '#step-3-copy-your-access-key-and-generate-a-secret'
+
 atlas-so:
     display_name: Atlas.so
     categories:
@@ -4976,6 +5004,52 @@ braze:
             title: API Key
             description: The API key to your Braze account
             doc_section: '#step-2-finding-your-api-key'
+
+braze-mcp:
+    display_name: Braze (MCP)
+    categories:
+        - marketing
+        - communication
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://dashboard.braze.com/oauth/authorize
+    token_url: https://rest.iad-01.braze.com/oauth/token
+    registration_url: https://rest.iad-01.braze.com/oauth/register
+    token_request_auth_method: none
+    authorization_params:
+        response_type: code
+        resource: https://${connectionConfig.region}/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+        resource: https://${connectionConfig.region}/mcp
+    refresh_params:
+        grant_type: refresh_token
+        resource: https://${connectionConfig.region}/mcp
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://${connectionConfig.region}
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/braze-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/braze-mcp/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The Braze MCP endpoint for your region. Braze recommends the EU endpoint for EU customers.
+            format: hostname
+            enum:
+                - mcp.braze.com
+                - mcp.braze.eu
+            order: 1
+            doc_section: '#step-1-choose-your-region'
 
 breathehr:
     display_name: Breathe HR
@@ -8408,6 +8482,27 @@ cursor-admin:
             description: Password
             default_value: ''
             hidden: true
+
+dash:
+    display_name: Dash
+    categories:
+        - storage
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://login.dash.app/authorize
+    token_url: https://login.dash.app/oauth/token
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+        audience: https://assetplatform.io
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api-v2.dash.app
+    docs: https://nango.dev/docs/api-integrations/dash
 
 databox:
     display_name: Databox
@@ -14959,6 +15054,28 @@ hitpay:
                 - sandbox.hit-pay.com
                 - staging.hit-pay.com
 
+hive:
+    display_name: Hive
+    categories:
+        - marketing
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://app.hive.co/oauth/api/authorize/
+    token_url: https://api.hive.co/oauth/token/
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    scope_separator: ' '
+    proxy:
+        base_url: https://api.hive.co
+        headers:
+            x-partner-id: ${clientId}
+    docs: https://nango.dev/docs/api-integrations/hive
+    setup_guide_url: https://nango.dev/docs/api-integrations/hive/how-to-register-your-own-hive-api-oauth-app
+
 holded:
     display_name: Holded
     categories:
@@ -16957,6 +17074,56 @@ lagrowthmachine:
             example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c
             format: uuid
             doc_section: '#step-1-finding-your-api-key'
+
+langfuse:
+    display_name: Langfuse
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.region}/api/public
+        verification:
+            method: GET
+            endpoints:
+                - /projects
+                - /organizations/apiKeys
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/langfuse
+    docs_connect: https://nango.dev/docs/api-integrations/langfuse/connect
+    connection_config:
+        region:
+            type: string
+            title: Data Region
+            description: The Langfuse Cloud host of your data region.
+            example: cloud.langfuse.com
+            format: hostname
+            enum:
+                - cloud.langfuse.com
+                - us.cloud.langfuse.com
+                - jp.cloud.langfuse.com
+                - hipaa.cloud.langfuse.com
+            order: 1
+            doc_section: '#step-1-find-your-data-region'
+    credentials:
+        username:
+            type: string
+            title: Public Key
+            description: Your Langfuse project or organization public key (pk-lf-...).
+            secret: true
+            example: pk-lf-7f3e****-****-****-****-********a41c
+            pattern: '^pk-lf-.+$'
+            doc_section: '#step-2-create-your-api-keys'
+        password:
+            type: string
+            title: Secret Key
+            description: Your Langfuse project or organization secret key (sk-lf-...).
+            secret: true
+            example: sk-lf-2b9d****-****-****-****-********e5f0
+            pattern: '^sk-lf-.+$'
+            doc_section: '#step-2-create-your-api-keys'
 
 laposta:
     display_name: Laposta
@@ -18990,6 +19157,26 @@ microsoft-business-central:
             pattern: '^[a-zA-Z0-9-_]+$'
             doc_section: '#step-2-finding-your-enrivonment-name'
             order: 2
+
+microsoft-clarity:
+    display_name: Microsoft Clarity
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://www.clarity.ms/export-data/api
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/microsoft-clarity
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-clarity/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Clarity Data Export API token
+            pattern: '^[A-Za-z0-9._-]+$'
+            example: k7Qp********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************9xWm
+            doc_section: '#step-2-generate-an-api-token'
 
 microsoft-dynamics-365-finance-and-operations:
     display_name: Microsoft Dynamics 365 Finance and Operations
@@ -21107,6 +21294,39 @@ odoo-api-key:
             example: 20d6113f****************************2921
             doc_section: '#step-3-generating-an-api-key'
 
+okendo:
+    display_name: Okendo
+    categories:
+        - e-commerce
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.okendo.io/enterprise
+        headers:
+            okendo-api-version: '2025-02-01'
+        verification:
+            method: GET
+            endpoints:
+                - /reviews
+    docs: https://nango.dev/docs/api-integrations/okendo
+    docs_connect: https://nango.dev/docs/api-integrations/okendo/connect
+    credentials:
+        username:
+            type: string
+            title: User ID
+            description: Your Okendo User ID.
+            format: uuid
+            example: 1a2b3c4d-****-****-****-********9f0e
+            doc_section: '#step-1-get-your-user-id-and-api-key'
+        password:
+            type: string
+            title: API Key
+            description: Your 32-character Okendo API key.
+            pattern: '^\S{32}$'
+            example: Ab3d************************9xYz
+            secret: true
+            doc_section: '#step-1-get-your-user-id-and-api-key'
+
 okta:
     display_name: Okta
     auth_mode: OAUTH2
@@ -22862,6 +23082,29 @@ phrase:
             pattern: '^[A-Za-z0-9]{64}$'
             doc_section: '#step-1-generate-an-access-token'
 
+pigment:
+    display_name: Pigment
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://pigment.app/api
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/pigment
+    docs_connect: https://nango.dev/docs/api-integrations/pigment/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: A Pigment API key with the scopes your integration needs (Modeling metadata to list applications).
+            pattern: '^[A-Za-z0-9_+/=-]{20,}$'
+            example: pgmt_7Hq2**************************************9dLw
+            doc_section: '#step-1-create-an-api-key'
+
 piloterr:
     display_name: Piloterr
     categories:
@@ -23003,6 +23246,39 @@ pinterest:
     proxy:
         base_url: https://api.pinterest.com
     docs: https://nango.dev/docs/integrations/all/pinterest
+
+productnow-mcp:
+    display_name: ProductNow (MCP)
+    categories:
+        - productivity
+        - knowledge-base
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://api.descope.com/oauth2/v1/apps/agentic/P3KNapbGbLdA9Jo3xwFwvfAI50yg/MS3KQzkxMVlZC5IsnYRERqt0gP9g2/authorize
+    token_url: https://api.descope.com/oauth2/v1/apps/agentic/P3KNapbGbLdA9Jo3xwFwvfAI50yg/MS3KQzkxMVlZC5IsnYRERqt0gP9g2/token
+    registration_url: https://api.descope.com/v1/mgmt/mcp/client/P3KNapbGbLdA9Jo3xwFwvfAI50yg/MS3KQzkxMVlZC5IsnYRERqt0gP9g2/register
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+        resource: https://api.productnow-prod.com/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://api.productnow-prod.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/productnow-mcp
 
 publora:
     display_name: Publora
@@ -29209,6 +29485,35 @@ supabase-mcp-oauth:
             example: bvzzcafzoysezumrdvif
             pattern: '^[a-z0-9]{20}$'
             doc_section: '#step-1-finding-your-project-reference'
+
+superfiliate:
+    display_name: Superfiliate
+    categories:
+        - e-commerce
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.superfiliate.com
+        headers:
+            authorization: Bearer ${credentials.username}:${credentials.password}
+    docs: https://nango.dev/docs/api-integrations/superfiliate
+    docs_connect: https://nango.dev/docs/api-integrations/superfiliate/connect
+    credentials:
+        username:
+            type: string
+            title: Client ID
+            description: Your Superfiliate API client ID (starts with sfci1_).
+            pattern: '^sfci1_\S+$'
+            example: sfci1_a1b2****************c3d4
+            doc_section: '#step-1-create-an-api-key'
+        password:
+            type: string
+            title: Client Secret
+            description: Your Superfiliate API client secret (starts with sfcs1_).
+            pattern: '^sfcs1_\S+$'
+            example: sfcs1_e5f6****************7a8b
+            secret: true
+            doc_section: '#step-1-create-an-api-key'
 
 superhuman-mcp:
     display_name: Superhuman (MCP)

@@ -1,0 +1,65 @@
+---
+title: 'Atlar - How do I link my account?'
+sidebarTitle: 'Atlar'
+---
+
+## Overview
+
+To authenticate with Atlar, you need the credentials of an Atlar programmatic access user:
+
+1. **Access key** — the access key of the programmatic access user.
+2. **Secret** — the secret of the programmatic access user.
+
+The user's role decides which resources the API can reach, so you first create a role, then the user, then its secret.
+
+### Prerequisites
+
+- An Atlar organization. If you don't have one, register it in the [Atlar Dashboard](https://app.atlar.com/authenticate).
+
+### Step 1: Create a role for the integration
+
+1. Sign in to the [Atlar Dashboard](https://app.atlar.com).
+2. In the sidebar, go to **User management** → **Roles** and click **Create new**.
+
+<img src="/api-integrations/atlar/roles_create_new.png" alt="Atlar Roles page with the Create new button"/>
+
+3. Under **Permissions**, tick **Basic access** and the permissions your app needs (for example, **Read financial data** for read access to transactions, balances and counterparties), then click **Select accounts**.
+
+<Note>Atlar says every role should be assigned **Basic access**, which lets the role view your own entities and accounts. See [Atlar permissions](https://docs.atlar.com/docs/permissions).</Note>
+
+<img src="/api-integrations/atlar/role_permissions.png" alt="Atlar New role page with the Read financial data permission ticked"/>
+
+4. Choose the entities and accounts the role can access, click **See role summary**, enter a role name (for example, `nango-integration`) and click **Create**.
+
+### Step 2: Create a programmatic access user
+
+1. Go to **User management** → **Users**, open **Actions** and choose **New programmatic access**.
+
+<img src="/api-integrations/atlar/new_programmatic_access.png" alt="Atlar Users page with the New programmatic access option"/>
+
+2. Enter a name, select the role you created in Step 1 under **Role**, and click **Create**.
+
+<img src="/api-integrations/atlar/programmatic_access_dialog.png" alt="Atlar New programmatic access dialog with the Name and Role fields"/>
+
+### Step 3: Copy your access key and generate a secret
+
+1. On the new user's details page, click **Generate** next to **Secret**.
+
+<img src="/api-integrations/atlar/generate_secret.png" alt="Atlar user details page with the Generate button next to Secret"/>
+
+2. In the dialog, copy the **Access key** and the **Secret**.
+
+<img src="/api-integrations/atlar/secret_created.png" alt="Atlar dialog showing the new access key and secret"/>
+
+<Warning>Atlar shows the secret only once. Store it securely before you close the dialog.</Warning>
+
+### Step 4: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Atlar.
+2. Enter your access key in the **Access key** field.
+3. Enter your secret in the **Secret** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/atlar/form.png" alt="Atlar Connect UI form with the Access key and Secret fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Atlar.

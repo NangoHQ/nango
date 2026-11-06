@@ -1,0 +1,59 @@
+---
+title: 'Langfuse - How do I link my account?'
+sidebarTitle: 'Langfuse'
+---
+
+## Overview
+
+To authenticate with Langfuse, you need:
+
+1. **Data Region** — the Langfuse Cloud region your project lives in.
+2. **Public Key** — your Langfuse public key, starting with `pk-lf-`.
+3. **Secret Key** — your Langfuse secret key, starting with `sk-lf-`.
+
+This guide will show you how to find your data region and create API keys in Langfuse.
+
+### Prerequisites
+
+- A Langfuse Cloud account. If you don't have one, [sign up for free](https://langfuse.com/cloud).
+
+### Step 1: Find your data region
+
+Your data region is the host in the address bar when you are signed in to Langfuse. Pick the matching value in the **Data Region** field:
+
+| Region | Value |
+| --- | --- |
+| EU | `cloud.langfuse.com` |
+| US | `us.cloud.langfuse.com` |
+| Japan | `jp.cloud.langfuse.com` |
+| HIPAA US | `hipaa.cloud.langfuse.com` |
+
+### Step 2: Create your API keys
+
+Project API keys work for project data. Organization API keys (Enterprise plan, created in **Organization Settings**) work the same way for the organization APIs.
+
+To create project API keys:
+
+1. Sign in to Langfuse in your data region and open your project.
+2. In the left sidebar, click **Settings**, then open the **API Keys** tab and click **Create new API keys**.
+
+<img src="/api-integrations/langfuse/project_api_keys_page.png" alt="Langfuse project settings API Keys tab with the Create new API keys button"/>
+
+3. Enter a name for the key, choose the permissions your app needs, and click **Create API key**.
+
+<img src="/api-integrations/langfuse/create_api_key_dialog.png" alt="Langfuse Create API key dialog with name and permissions"/>
+
+4. Copy the **Secret Key** (`sk-lf-...`) and the **Public Key** (`pk-lf-...`). Langfuse shows the secret key only once, when the key is created.
+
+<img src="/api-integrations/langfuse/api_key_created.png" alt="Langfuse dialog showing the new Secret Key and Public Key"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Langfuse.
+2. Select your region in the **Data Region** field.
+3. Enter your public key (`pk-lf-...`) in the **Public Key** field and your secret key (`sk-lf-...`) in the **Secret Key** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/langfuse/form.png" alt="Langfuse Connect UI form with the Data Region, Public Key and Secret Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Langfuse.
