@@ -221,7 +221,7 @@ const routes: RouteObject[] = [
             {
                 path: '/team/billing',
                 element: <TeamBilling />,
-                handle: { breadcrumb: 'Team billing' } as BreadcrumbHandle
+                handle: { breadcrumb: 'Billing & usage' } as BreadcrumbHandle
             },
             {
                 path: '/team/audit',
@@ -248,7 +248,7 @@ const routes: RouteObject[] = [
                             },
                             {
                                 path: 'create',
-                                handle: { breadcrumb: 'Create Integration' } as BreadcrumbHandle,
+                                handle: { breadcrumb: 'Set up new integration' } as BreadcrumbHandle,
                                 children: [
                                     {
                                         index: true,
@@ -302,7 +302,7 @@ const routes: RouteObject[] = [
                             {
                                 path: 'create',
                                 element: <ConnectionCreate />,
-                                handle: { breadcrumb: 'Create Connection' } as BreadcrumbHandle
+                                handle: { breadcrumb: 'Create test connection' } as BreadcrumbHandle
                             },
                             {
                                 path: 'create-legacy',
@@ -371,12 +371,12 @@ const routes: RouteObject[] = [
                     },
                     {
                         path: 'playground',
-                        handle: { breadcrumb: 'Playground' } as BreadcrumbHandle,
                         children: [
                             { index: true, element: <Navigate to="agent" replace /> },
                             {
                                 path: 'agent',
-                                element: <AgentPlayground />
+                                element: <AgentPlayground />,
+                                handle: { breadcrumb: 'Agent Playground' } as BreadcrumbHandle
                             }
                         ]
                     },
