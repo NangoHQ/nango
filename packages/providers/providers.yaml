@@ -10477,6 +10477,26 @@ fathom-oauth:
     docs: https://nango.dev/docs/api-integrations/fathom-oauth
     setup_guide_url: https://nango.dev/docs/api-integrations/fathom-oauth/how-to-register-your-own-fathom-oauth-app
 
+faxforagents:
+    display_name: Fax for Agents
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.faxforagents.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/capabilities
+    docs: https://nango.dev/docs/integrations/all/faxforagents
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Get your API key from https://app.faxforagents.com/. Test keys starting with ffa_test_ use the free sandbox.
+
 fellow:
     display_name: Fellow
     categories:

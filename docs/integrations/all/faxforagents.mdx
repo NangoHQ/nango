@@ -1,0 +1,68 @@
+---
+title: 'Fax for Agents'
+sidebarTitle: 'Fax for Agents'
+description: 'Connect to the Fax for Agents REST API with an API key'
+---
+
+<Tabs>
+  <Tab title="Quickstart">
+    <Steps>
+      <Step title="Get an API key">
+        Sign in to the [Fax for Agents dashboard](https://app.faxforagents.com/) and create an API key.
+        Choose an `ffa_test_` API key for the free sandbox.
+
+        <Note>
+          Test keys simulate fax delivery without contacting a carrier or spending money.
+          Live keys start with `ffa_live_` and use the same REST base URL.
+        </Note>
+      </Step>
+      <Step title="Create an integration">
+        In Nango, open **Integrations**, select **Configure New Integration**, and choose **Fax for Agents**.
+      </Step>
+      <Step title="Authorize Fax for Agents">
+        Open **Connections**, select **Add Test Connection**, then **Authorize**.
+        Paste your complete API key into **API Key**, without the `Bearer` prefix.
+        Nango verifies it with `GET /v1/capabilities`.
+        This read requires no additional scope and sends no fax.
+      </Step>
+      <Step title="Call the Fax for Agents API">
+        Set the variables below to your Nango Environment API key, integration ID, and connection ID.
+        Find your Environment API key under **Environment Settings > API Keys**.
+        See the [API key reference](/reference/backend/http-api/api-keys) for details.
+
+        ```bash
+        curl "https://api.nango.dev/proxy/v1/capabilities" \
+          -H "Authorization: Bearer $NANGO_ENVIRONMENT_API_KEY" \
+          -H "Provider-Config-Key: $NANGO_INTEGRATION_ID" \
+          -H "Connection-Id: $NANGO_CONNECTION_ID"
+        ```
+
+        Check the response for the current capabilities and pricing.
+        Open Nango's **Logs** tab to inspect the request.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Useful links">
+    | Topic | Links |
+    | --- | --- |
+    | General | [Fax for Agents website](https://faxforagents.com/) |
+    | | [Dashboard](https://app.faxforagents.com/) |
+    | Developer | [Documentation](https://faxforagents.com/docs/) |
+    | | [API reference](https://faxforagents.com/docs/api/) |
+    | | [OpenAPI document](https://github.com/faxforagents/openapi) |
+    | Pricing | [Pricing](https://faxforagents.com/pricing/) |
+    | Privacy | [Privacy policy](https://faxforagents.com/privacy/) |
+    | Support | [hello@faxforagents.com](mailto:hello@faxforagents.com) |
+  </Tab>
+  <Tab title="API gotchas">
+    - REST requests use `https://api.faxforagents.com` with an `Authorization: Bearer` header.
+    - The hosted MCP endpoint is `https://mcp.faxforagents.com/mcp/`. Its trailing slash matters. This provider connects to REST.
+    - Live sends require a quote and either human approval or an allowed delegated policy.
+    - Reuse the same `Idempotency-Key` when retrying a mutation. A repeated request within 24 hours returns the same resource.
+    - Money uses integer USD micro-units. Rate limits return HTTP 429 with `Retry-After`.
+  </Tab>
+</Tabs>
+
+<Info>
+    Get Nango help in the [Slack community](https://nango.dev/slack).
+</Info>
