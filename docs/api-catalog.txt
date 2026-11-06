@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1135
+Provider count: 1136
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -910,6 +910,7 @@ URL patterns:
 | `servicenow-jwt` | ServiceNow (JWT) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/servicenow-jwt.md) | [connect](https://nango.dev/docs/api-integrations/servicenow-jwt/connect.md) |  | productivity, ticketing |
 | `servicenow-oauth2-cc` | ServiceNow (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/servicenow-oauth2-cc.md) | [connect](https://nango.dev/docs/api-integrations/servicenow-oauth2-cc/connect.md) |  | productivity, ticketing |
 | `setmore` | Setmore | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/setmore.md) | [connect](https://nango.dev/docs/integrations/all/setmore/connect.md) |  | productivity |
+| `sharefile` | ShareFile | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/sharefile.md) |  | [setup](https://nango.dev/docs/api-integrations/sharefile/how-to-register-your-own-sharefile-api-oauth-app.md) | storage |
 | `sharepoint-online` | SharePoint Online (v2) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/sharepoint-online.md) |  | [setup](https://nango.dev/docs/api-integrations/sharepoint-online/how-to-register-your-own-sharepoint-online-api-oauth-app.md) | storage, communication, popular |
 | `sharepoint-online-oauth2-cc` | SharePoint Online (Client Credentials V2) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/sharepoint-online-oauth2-cc.md) | [connect](https://nango.dev/docs/integrations/all/sharepoint-online-oauth2-cc/connect.md) |  | storage, communication |
 | `sharepoint-online-v1` | SharePoint Online (v1) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/sharepoint-online-v1.md) | [connect](https://nango.dev/docs/integrations/all/sharepoint-online-v1/connect.md) |  | storage, communication |
