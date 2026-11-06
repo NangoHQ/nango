@@ -25446,13 +25446,13 @@ sentfromai:
         - dev-tools
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.sentfrom.ai/v1
+        base_url: https://api.sentfrom.ai
         headers:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
             endpoints:
-                - /inboxes
+                - /v1/inboxes
     docs: https://nango.dev/docs/integrations/all/sentfromai
     docs_connect: https://nango.dev/docs/integrations/all/sentfromai/connect
     credentials:

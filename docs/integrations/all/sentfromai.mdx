@@ -23,17 +23,17 @@ The provider validates credentials with `GET /v1/inboxes`. This reads the inbox 
 
 ## Using the API through Nango
 
-The configured proxy base URL is `https://api.sentfrom.ai/v1`. Use paths relative to it:
+The configured proxy base URL is `https://api.sentfrom.ai`. Include the `/v1` API version in each request path:
 
 | Operation | Method | Path |
 | --- | --- | --- |
-| List inboxes | GET | `/inboxes` |
-| Create an inbox | POST | `/inboxes` |
-| Send a message | POST | `/messages` |
-| Get a message | GET | `/messages/{id}` |
-| Reply in a thread | POST | `/messages/{id}/reply` |
-| Search messages | GET | `/messages?query=example&limit=25` |
-| Register an event webhook | POST | `/webhooks` |
+| List inboxes | GET | `/v1/inboxes` |
+| Create an inbox | POST | `/v1/inboxes` |
+| Send a message | POST | `/v1/messages` |
+| Get a message | GET | `/v1/messages/{id}` |
+| Reply in a thread | POST | `/v1/messages/{id}/reply` |
+| Search messages | GET | `/v1/messages?query=example&limit=25` |
+| Register an event webhook | POST | `/v1/webhooks` |
 
 This provider supplies authentication and proxy configuration. It does not add prebuilt Nango syncs or actions, or route SentFromAI webhooks automatically.
 
