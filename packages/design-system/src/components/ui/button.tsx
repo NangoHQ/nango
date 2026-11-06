@@ -277,7 +277,6 @@ export const ICON_BUTTON_SIZES = ['xs', 'sm', 'md', 'lg'] as const satisfies rea
 export type IconButtonVariant = (typeof ICON_BUTTON_VARIANTS)[number];
 export type IconButtonSize = (typeof ICON_BUTTON_SIZES)[number];
 
-// `aria-label` is omitted so `label` is the single, required source of the accessible name.
 export interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label'> {
     /** The `link-*` variants are outside the IconButton spec and kept for existing call sites only. */
     variant?: ButtonVariant | null;

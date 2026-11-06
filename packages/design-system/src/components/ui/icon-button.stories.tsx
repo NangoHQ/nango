@@ -13,8 +13,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Hover / Pressed / Focus are frozen with data-story-state, which .storybook/preview.css maps onto the real
-// hover:/active:/focus-visible: variants — so each cell renders the component's own classes, not a copy.
+// .storybook/preview.css maps data-story-state onto the real hover:/active:/focus-visible: variants.
 const STATES = [
     { label: 'Default', props: {} },
     { label: 'Hover', props: { 'data-story-state': 'hover' } },
