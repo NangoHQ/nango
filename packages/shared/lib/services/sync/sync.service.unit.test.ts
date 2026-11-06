@@ -79,8 +79,8 @@ describe('getAndReconcileDifferences', () => {
         vi.restoreAllMocks();
     });
 
-    describe('mode: single', () => {
-        it('should not detect deleted syncs when mode is single', async () => {
+    describe.each([{ kind: 'single' }, { kind: 'function', integrationId: 'github', name: 'new-sync' }] as const)('scope: $kind', (scope) => {
+        it('should not detect deleted syncs', async () => {
             // An existing sync that is NOT in the flows being deployed
             const existingSync = makeSyncConfig({ sync_name: 'old-sync', unique_key: 'github' });
             vi.spyOn(syncConfigService, 'getActiveCustomSyncConfigsByEnvironmentId').mockResolvedValue([existingSync]);
@@ -91,7 +91,7 @@ describe('getAndReconcileDifferences', () => {
                 environmentId: 1,
                 flows,
                 performAction: false,
-                deployMode: 'single',
+                scope,
                 logContextGetter,
                 orchestrator: mockOrchestrator
             });
@@ -100,7 +100,7 @@ describe('getAndReconcileDifferences', () => {
             expect(result!.deletedSyncs).toHaveLength(0);
         });
 
-        it('should not call deleteConfig when mode is single, even with performAction true', async () => {
+        it('should not call deleteConfig, even with performAction true', async () => {
             const existingSync = makeSyncConfig({ sync_name: 'old-sync', unique_key: 'github' });
             vi.spyOn(syncConfigService, 'getActiveCustomSyncConfigsByEnvironmentId').mockResolvedValue([existingSync]);
             const deleteConfigSpy = vi.spyOn(syncManager, 'deleteConfig');
@@ -109,7 +109,7 @@ describe('getAndReconcileDifferences', () => {
                 environmentId: 1,
                 flows: [makeFlow({ syncName: 'new-sync' })],
                 performAction: true,
-                deployMode: 'single',
+                scope,
                 logContextGetter,
                 orchestrator: mockOrchestrator
             });
@@ -134,7 +134,7 @@ describe('getAndReconcileDifferences', () => {
                 environmentId: 1,
                 flows,
                 performAction: false,
-                deployMode: 'all',
+                scope: { kind: 'environment' },
                 logContextGetter,
                 orchestrator: mockOrchestrator
             });
@@ -155,7 +155,7 @@ describe('getAndReconcileDifferences', () => {
                 environmentId: 1,
                 flows,
                 performAction: false,
-                deployMode: 'all',
+                scope: { kind: 'environment' },
                 logContextGetter,
                 orchestrator: mockOrchestrator
             });
@@ -174,7 +174,7 @@ describe('getAndReconcileDifferences', () => {
                 environmentId: 1,
                 flows: [makeFlow({ syncName: 'new-sync', providerConfigKey: 'github' })],
                 performAction: true,
-                deployMode: 'all',
+                scope: { kind: 'environment' },
                 logContextGetter,
                 orchestrator: mockOrchestrator,
                 onFunctionDeleted
@@ -193,7 +193,7 @@ describe('getAndReconcileDifferences', () => {
                 environmentId: 1,
                 flows: [makeFlow({ syncName: 'new-sync', providerConfigKey: 'github' })],
                 performAction: true,
-                deployMode: 'all',
+                scope: { kind: 'environment' },
                 logContextGetter,
                 orchestrator: mockOrchestrator,
                 onFunctionDeleted
@@ -205,7 +205,7 @@ describe('getAndReconcileDifferences', () => {
     });
 
     describe('mode: integration', () => {
-        it('should only detect deleted syncs for the integration scope inferred from flows', async () => {
+        it('should only detect deleted syncs for the integration scope', async () => {
             const existingSyncs = [
                 makeSyncConfig({ id: 1, sync_name: 'old-sync-github', unique_key: 'github' }),
                 makeSyncConfig({ id: 2, sync_name: 'old-sync-slack', unique_key: 'slack' })
@@ -219,13 +219,13 @@ describe('getAndReconcileDifferences', () => {
                 environmentId: 1,
                 flows,
                 performAction: false,
-                deployMode: 'integration',
+                scope: { kind: 'integration', integrationId: 'github' },
                 logContextGetter,
                 orchestrator: mockOrchestrator
             });
 
             expect(result).not.toBeNull();
-            // old-sync-github is deleted (in 'github' scope inferred from flows[0].providerConfigKey and not in flows)
+            // old-sync-github is deleted (in 'github' scope and not in flows)
             expect(result!.deletedSyncs.map((s) => s.name)).toContain('old-sync-github');
             // old-sync-slack should NOT be detected as deleted (outside 'github' scope)
             expect(result!.deletedSyncs.map((s) => s.name)).not.toContain('old-sync-slack');
@@ -246,13 +246,76 @@ describe('getAndReconcileDifferences', () => {
                 environmentId: 1,
                 flows,
                 performAction: false,
-                deployMode: 'integration',
+                scope: { kind: 'integration', integrationId: 'github' },
                 logContextGetter,
                 orchestrator: mockOrchestrator
             });
 
             expect(result).not.toBeNull();
             expect(result!.deletedSyncs.map((s) => s.name)).not.toContain('slack-sync');
+        });
+
+        it('should detect every deletion of the integration when no flows are deployed', async () => {
+            const existingSyncs = [
+                makeSyncConfig({ id: 1, sync_name: 'github-sync', unique_key: 'github' }),
+                makeSyncConfig({ id: 2, sync_name: 'github-action', unique_key: 'github', type: 'action' }),
+                makeSyncConfig({ id: 3, sync_name: 'slack-sync', unique_key: 'slack' })
+            ];
+            vi.spyOn(syncConfigService, 'getActiveCustomSyncConfigsByEnvironmentId').mockResolvedValue(existingSyncs);
+
+            const result = await getAndReconcileDifferences({
+                environmentId: 1,
+                flows: [],
+                performAction: false,
+                scope: { kind: 'integration', integrationId: 'github' },
+                logContextGetter,
+                orchestrator: mockOrchestrator
+            });
+
+            expect(result!.deletedSyncs.map((s) => s.name)).toStrictEqual(['github-sync']);
+            expect(result!.deletedActions.map((a) => a.name)).toStrictEqual(['github-action']);
+        });
+    });
+
+    describe('empty deploys', () => {
+        it('should detect every deletion of the environment when no flows are deployed', async () => {
+            const existingSyncs = [
+                makeSyncConfig({ id: 1, sync_name: 'github-sync', unique_key: 'github' }),
+                makeSyncConfig({ id: 2, sync_name: 'slack-sync', unique_key: 'slack' })
+            ];
+            vi.spyOn(syncConfigService, 'getActiveCustomSyncConfigsByEnvironmentId').mockResolvedValue(existingSyncs);
+            const onFunctionDeleted = vi.fn().mockResolvedValue(Ok(undefined));
+
+            const result = await getAndReconcileDifferences({
+                environmentId: 1,
+                flows: [],
+                performAction: true,
+                scope: { kind: 'environment' },
+                logContextGetter,
+                orchestrator: mockOrchestrator,
+                onFunctionDeleted
+            });
+
+            expect(result!.deletedSyncs.map((s) => s.name)).toStrictEqual(['github-sync', 'slack-sync']);
+            expect(onFunctionDeleted).toHaveBeenCalledTimes(2);
+        });
+
+        it('should not detect deletions when the scope is none', async () => {
+            vi.spyOn(syncConfigService, 'getActiveCustomSyncConfigsByEnvironmentId').mockResolvedValue([makeSyncConfig({ unique_key: 'github' })]);
+            const onFunctionDeleted = vi.fn().mockResolvedValue(Ok(undefined));
+
+            const result = await getAndReconcileDifferences({
+                environmentId: 1,
+                flows: [],
+                performAction: true,
+                scope: { kind: 'none' },
+                logContextGetter,
+                orchestrator: mockOrchestrator,
+                onFunctionDeleted
+            });
+
+            expect(result!.deletedSyncs).toHaveLength(0);
+            expect(onFunctionDeleted).not.toHaveBeenCalled();
         });
     });
 });

@@ -73,7 +73,16 @@ export const actionValues: ActionFilter[] = [ALL, ...new Set(allResources.flatMa
 export function actionOptionsForResources(resources: AuditResource[]): FilterOption<ActionFilter>[] {
     const scope = resources.length ? resources : allResources;
     const actions = new Set(scope.flatMap((resource) => actionsByResource[resource] as readonly AuditAction[]));
-    const options = [...actions].map((action) => ({ value: action, label: formatKeyToLabel(action) })).sort(byLabel);
+    const options = [...actions]
+        .map((action) => ({
+            value: action,
+            label: formatKeyToLabel(action),
+            ...(action === 'webhook_urls_changed' && {
+                tooltip:
+                    'Historical events only. New webhook URL and subscription changes appear under Environment · Updated. Select both actions to include older and newer changes.'
+            })
+        }))
+        .sort(byLabel);
     return [{ value: ALL, label: 'All' }, ...options];
 }
 

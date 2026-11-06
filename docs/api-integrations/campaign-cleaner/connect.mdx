@@ -1,0 +1,49 @@
+---
+title: 'Campaign Cleaner - How do I link my account?'
+sidebarTitle: 'Campaign Cleaner'
+---
+
+## Overview
+
+To authenticate with Campaign Cleaner, you need:
+
+1. **API Key** - A key that lets Nango call the Campaign Cleaner API on behalf of your account.
+
+This guide will show you how to find it.
+
+### Prerequisites
+
+- A Campaign Cleaner account. All paid subscriptions include API credits, which refresh on the subscription's renewal date.
+
+### Step 1: Copy your API key
+
+1. Log in to the [Campaign Cleaner members dashboard](https://members.campaigncleaner.com/login/).
+2. In the left sidebar, under **Management**, click **API Management**.
+
+<img src="/api-integrations/campaign-cleaner/open_api_management.png" alt="Campaign Cleaner dashboard sidebar with API Management highlighted"/>
+
+3. On the API Information page, click **API Management** in the **API Keys** card.
+
+<img src="/api-integrations/campaign-cleaner/open_api_keys.png" alt="API Information page with the API Management link in the API Keys card"/>
+
+4. On **Manage Your API Keys**, use the existing **Account Key**, or click **Create Another API Key** to create a separate key.
+
+<img src="/api-integrations/campaign-cleaner/create_api_key.png" alt="Manage Your API Keys page with the Create Another API Key button"/>
+
+5. Copy the value in the **API Key** column.
+
+<img src="/api-integrations/campaign-cleaner/copy_account_key.png" alt="Account Key row with the API Key column highlighted"/>
+
+<Note>
+The Account Key can't be deleted or modified. Any API key can be regenerated, which replaces the old key, so update your connection if you regenerate the key you used.
+</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Campaign Cleaner.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/campaign-cleaner/form.png" alt="Campaign Cleaner Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Campaign Cleaner.

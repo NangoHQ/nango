@@ -292,3 +292,85 @@ describe('OAuth2 token generation and refresh', () => {
         expect(httpLog?.meta?.['body']).toBe('Client request timeout');
     });
 });
+
+describe('public clients (token_request_auth_method: none)', () => {
+    function captureBody(onBody: (body: URLSearchParams) => void): http.RequestListener {
+        return (req, res) => {
+            let body = '';
+            req.on('data', (chunk) => (body += chunk));
+            req.on('end', () => {
+                onBody(new URLSearchParams(body));
+                res.writeHead(200, { 'content-type': 'application/json' });
+                res.end(JSON.stringify({ access_token: 'new-access-token', token_type: 'bearer', expires_in: 3600 }));
+            });
+        };
+    }
+
+    function staleConnection(): DBConnectionDecrypted {
+        return {
+            id: 1,
+            environment_id: 1,
+            connection_config: {},
+            credentials: { type: 'OAUTH2', access_token: 'stale', refresh_token: 'the-refresh-token', expires_at: new Date(Date.now() - 60_000) }
+        } as unknown as DBConnectionDecrypted;
+    }
+
+    it('sends only client_id when exchanging the authorization code', async () => {
+        let received: URLSearchParams | null = null;
+        await withServer(
+            captureBody((body) => (received = body)),
+            async (baseUrl) => {
+                const provider = makeProvider({ token_url: `${baseUrl}/token`, token_request_auth_method: 'none' });
+                const client = new AuthorizationCode(getSimpleOAuth2ClientConfig(makeConfig({ oauth_client_secret: '' }), provider, {}));
+                await client.getToken({ code: 'the-code', redirect_uri: 'https://cb' });
+
+                expect(received?.getAll('client_id')).toEqual(['client-id']);
+                expect(received?.has('client_secret')).toBe(false);
+                expect(received?.get('code')).toBe('the-code');
+            }
+        );
+    });
+
+    it('sends only client_id when refreshing', async () => {
+        let received: URLSearchParams | null = null;
+        await withServer(
+            captureBody((body) => (received = body)),
+            async (baseUrl) => {
+                const provider = makeProvider({ token_url: `${baseUrl}/token`, token_request_auth_method: 'none' });
+                const result = await getFreshOAuth2Credentials({
+                    connection: staleConnection(),
+                    config: makeConfig({ oauth_client_secret: '' }),
+                    provider,
+                    logCtx: logContextGetter.getBuffer({ accountId: 1 })
+                });
+
+                expect(result.success).toBe(true);
+                expect(received?.getAll('client_id')).toEqual(['client-id']);
+                expect(received?.has('client_secret')).toBe(false);
+                expect(received?.get('refresh_token')).toBe('the-refresh-token');
+            }
+        );
+    });
+
+    it.each([
+        { description: 'a configured secret', clientSecret: 'client-secret' },
+        { description: 'an empty secret', clientSecret: '' }
+    ])('still sends $description as client_secret when the provider does not opt in', async ({ clientSecret }) => {
+        let received: URLSearchParams | null = null;
+        await withServer(
+            captureBody((body) => (received = body)),
+            async (baseUrl) => {
+                const provider = makeProvider({ token_url: `${baseUrl}/token` });
+                await getFreshOAuth2Credentials({
+                    connection: staleConnection(),
+                    config: makeConfig({ oauth_client_secret: clientSecret }),
+                    provider,
+                    logCtx: logContextGetter.getBuffer({ accountId: 1 })
+                });
+
+                expect(received?.get('client_id')).toBe('client-id');
+                expect(received?.get('client_secret')).toBe(clientSecret);
+            }
+        );
+    });
+});

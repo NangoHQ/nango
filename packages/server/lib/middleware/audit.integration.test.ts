@@ -138,6 +138,34 @@ describe('audit middleware — live-stack contract', () => {
                 metadata: { name: 'denied-environment' }
             });
         });
+
+        it('resolves the target environment from the URL for a denied account-key request', async () => {
+            const { account, env } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const key = (
+                await customerKeyService.createAccountApiKey(db.knex, {
+                    accountId: account.id,
+                    displayName: 'Reader',
+                    scopes: ['account:environments:read']
+                })
+            ).unwrap();
+            const { res } = await api.fetch('/environments/:environmentUuid', {
+                method: 'PATCH',
+                token: key.secret,
+                params: { environmentUuid: env.uuid },
+                body: { callback_url: 'https://example.com/callback' }
+            });
+            expect(res.status).toBe(403);
+            await vi.waitFor(() => expect(auditEvent('environment', 'updated')).toBeDefined());
+            expect(auditEvent('environment', 'updated')).toMatchObject({
+                resource: 'environment',
+                action: 'updated',
+                outcome: 'denied',
+                accountId: account.id,
+                environment: { id: env.uuid, display: env.name },
+                actor: { type: 'api_key', id: key.uuid },
+                targets: [{ type: 'environment', id: env.uuid, display: env.name }]
+            });
+        });
     });
 
     describe('resolve-before-next against a real controller', () => {

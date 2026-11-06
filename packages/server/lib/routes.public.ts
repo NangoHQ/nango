@@ -54,6 +54,7 @@ import { getPublicEnvironment } from './controllers/environment/getEnvironment.j
 import { getPublicEnvironments } from './controllers/environment/getEnvironments.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { patchPublicEnvironmentApiKey } from './controllers/environment/patchApiKey.js';
+import { patchPublicEnvironment } from './controllers/environment/patchEnvironment.js';
 import { postPublicEnvironmentApiKey } from './controllers/environment/postApiKey.js';
 import { postPublicEnvironment } from './controllers/environment/postEnvironment.js';
 import { postPublicRotateWebhookSigningKey } from './controllers/environment/postPublicRotateWebhookSigningKey.js';
@@ -119,6 +120,7 @@ import {
     auditPublicConnectionUpdated,
     auditPublicEnvironmentCreated,
     auditPublicEnvironmentDeleted,
+    auditPublicEnvironmentUpdated,
     auditPublicFunctionDeleted,
     auditPublicIntegrationCreated,
     auditPublicIntegrationDeleted,
@@ -284,6 +286,7 @@ publicAPI.use('/environments', jsonContentTypeMiddleware);
 publicAPI.route('/environments').get(apiAuth, can('account:environments:list'), getPublicEnvironments);
 publicAPI.route('/environments/:environmentUuid').get(apiAuth, can('account:environments:read'), getPublicEnvironment);
 publicAPI.route('/environments').post(apiAuth, auditPublicEnvironmentCreated, can('account:environments:create'), postPublicEnvironment);
+publicAPI.route('/environments/:environmentUuid').patch(apiAuth, auditPublicEnvironmentUpdated, can('account:environments:update'), patchPublicEnvironment);
 publicAPI.route('/environments/:environmentUuid').delete(apiAuth, auditPublicEnvironmentDeleted, can('account:environments:delete'), deletePublicEnvironment);
 publicAPI
     .route('/environments/:environmentUuid/api-keys')

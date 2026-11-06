@@ -1,6 +1,8 @@
 import * as z from 'zod';
 
-import { frequencySchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
+import { resolveLegacyDeployScope } from '@nangohq/shared';
+
+import { frequencySchema, providerConfigKeySchema, reconciliationScopeSchema, syncNameSchema } from '../../../helpers/validation.js';
 
 import type { Feature, NangoModelField, OnEventType } from '@nangohq/types';
 
@@ -154,9 +156,11 @@ const commonValidation = z
         jsonSchema: jsonSchema.optional(),
         reconcile: z.boolean(),
         debug: z.boolean(),
+        // Deprecated in favour of reconciliationScope — kept for older CLI versions.
         deployMode: z.enum(['all', 'single', 'integration']).optional(),
-        // singleDeployMode is deprecated in favour of deployMode — kept for older CLI versions
+        // Deprecated in favour of reconciliationScope — kept for older CLI versions.
         singleDeployMode: z.boolean().optional(),
+        reconciliationScope: reconciliationScopeSchema.optional(),
         sdkVersion: z
             .string()
             .regex(/[0-9]+\.[0-9]+\.[0-9]+-(zero|yaml)/)
@@ -165,10 +169,73 @@ const commonValidation = z
     })
     .strict();
 
-export const validation = commonValidation.transform((data) => ({
-    ...data,
-    deployMode: data.deployMode ?? (data.singleDeployMode ? 'single' : 'all')
-}));
+function scopeDeployMode(scope: z.infer<typeof reconciliationScopeSchema>): 'all' | 'single' | 'integration' {
+    return scope.kind === 'environment' ? 'all' : scope.kind === 'integration' ? 'integration' : 'single';
+}
+
+function legacyDeployMode(data: Pick<z.infer<typeof commonValidation>, 'deployMode' | 'singleDeployMode'>): 'all' | 'single' | 'integration' {
+    return data.deployMode ?? (data.singleDeployMode ? 'single' : 'all');
+}
+
+function resolveDeployMode(
+    data: Pick<z.infer<typeof commonValidation>, 'deployMode' | 'singleDeployMode' | 'reconciliationScope'>
+): 'all' | 'single' | 'integration' {
+    return data.reconciliationScope ? scopeDeployMode(data.reconciliationScope) : legacyDeployMode(data);
+}
+
+function checkReconciliationScope(data: z.infer<typeof commonValidation>, ctx: z.RefinementCtx) {
+    const scope = data.reconciliationScope;
+    if (!scope) {
+        return;
+    }
+    const expectedDeployMode = scopeDeployMode(scope);
+    const hasLegacyDeployMode = data.deployMode !== undefined || data.singleDeployMode !== undefined;
+    if (hasLegacyDeployMode && legacyDeployMode(data) !== expectedDeployMode) {
+        ctx.addIssue({
+            code: 'custom',
+            message: `A reconciliation scope of kind "${scope.kind}" requires deployMode "${expectedDeployMode}"`,
+            path: ['reconciliationScope']
+        });
+        return;
+    }
+    if (scope.kind === 'function') {
+        const [flow] = data.flowConfigs;
+        if (data.flowConfigs.length !== 1 || flow?.providerConfigKey !== scope.integrationId || flow.syncName !== scope.name) {
+            ctx.addIssue({
+                code: 'custom',
+                message: 'A function-scoped deployment must contain the scoped sync or action',
+                path: ['flowConfigs']
+            });
+        }
+        if ((data.onEventScriptsByProvider?.length ?? 0) > 0 || (data.postConnectionScriptsByProvider?.length ?? 0) > 0) {
+            ctx.addIssue({ code: 'custom', message: 'A function-scoped deployment cannot contain on-event scripts', path: ['onEventScriptsByProvider'] });
+        }
+    }
+    if (scope.kind === 'integration') {
+        const providerConfigKeys = [
+            ...data.flowConfigs.map((flow) => flow.providerConfigKey),
+            ...(data.onEventScriptsByProvider ?? data.postConnectionScriptsByProvider ?? []).map((provider) => provider.providerConfigKey)
+        ];
+        if (providerConfigKeys.some((providerConfigKey) => providerConfigKey !== scope.integrationId)) {
+            ctx.addIssue({
+                code: 'custom',
+                message: 'Scripts must match the integration reconciliation scope',
+                path: ['reconciliationScope']
+            });
+        }
+    }
+}
+
+function withScope<T extends z.infer<typeof commonValidation>>(data: T) {
+    const deployMode = resolveDeployMode(data);
+    return {
+        ...data,
+        deployMode,
+        scope: resolveLegacyDeployScope({ deployMode, reconciliationScope: data.reconciliationScope, flows: data.flowConfigs })
+    };
+}
+
+export const validation = commonValidation.superRefine(checkReconciliationScope).transform(withScope);
 
 export const validationWithNangoYaml = commonValidation
     .extend({
@@ -179,8 +246,5 @@ export const validationWithNangoYaml = commonValidation
             'The `nango.yaml` configuration file is no longer supported. See the migration guide to Zero YAML: https://nango.dev/docs/guides/platform/migrations/migrate-to-zero-yaml',
         path: ['nangoYamlBody']
     })
-    .transform((data) => ({
-        ...data,
-        deployMode: data.deployMode ?? (data.singleDeployMode ? 'single' : 'all'),
-        onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider
-    }));
+    .superRefine(checkReconciliationScope)
+    .transform((data) => ({ ...withScope(data), onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider }));

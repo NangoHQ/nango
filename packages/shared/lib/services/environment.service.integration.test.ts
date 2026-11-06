@@ -12,6 +12,7 @@ import customerKeyService from './customerKey.service.js';
 import environmentService from './environment.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
+import type { CreateEnvironmentSettings, UpdateEnvironmentSettings } from './environment.service.js';
 import type { DBCustomerKey, DBEnvironment } from '@nangohq/types';
 
 describe('Environment service', () => {
@@ -344,6 +345,115 @@ describe('Environment service', () => {
             hmac_enabled: true,
             slack_notifications: true,
             otlp_settings: { endpoint: 'https://otel.example.com', headers: { Authorization: 'Bearer token' } }
+        });
+    });
+
+    describe('updateEnvironment', () => {
+        async function seedUpdate(settings: Partial<CreateEnvironmentSettings> = {}) {
+            const account = await createAccount();
+            const { environment } = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid(), ...settings })).unwrap();
+            const update = (data: Partial<UpdateEnvironmentSettings>) =>
+                environmentService.updateEnvironment(db.knex, { accountId: account.id, environmentUuid: environment.uuid, ...data });
+            const read = () => environmentService.getByIdWithoutSecrets(environment.id);
+            return { environment, update, read };
+        }
+
+        it('updates supplied fields and returns the persisted environment', async () => {
+            const { environment, update, read } = await seedUpdate({ slackNotifications: true });
+            const updated = (await update({ callbackUrl: 'https://example.com/callback', slackNotifications: false })).unwrap();
+            expect(updated).toMatchObject({ name: environment.name, callback_url: 'https://example.com/callback', slack_notifications: false });
+            expect(await read()).toEqual(updated);
+        });
+
+        it('returns the existing environment when no fields are supplied', async () => {
+            const { update, read } = await seedUpdate();
+            const before = await read();
+            expect((await update({})).unwrap()).toEqual(before);
+            expect(await read()).toEqual(before);
+        });
+
+        const initialOtlp = { endpoint: 'https://example.com/old', headers: { Authorization: 'old-token', Other: 'keep' } };
+        it.each([
+            {
+                name: 'updates the OTLP endpoint and preserves headers',
+                initial: initialOtlp,
+                settings: { otlpSettings: { endpoint: 'https://example.com/new' } },
+                expected: { ...initialOtlp, endpoint: 'https://example.com/new' }
+            },
+            {
+                name: 'replaces OTLP headers and preserves the endpoint',
+                initial: initialOtlp,
+                settings: { otlpSettings: { headers: { Authorization: 'new-token' } } },
+                expected: { ...initialOtlp, headers: { Authorization: 'new-token' } }
+            },
+            { name: 'clears OTLP headers', initial: initialOtlp, settings: { otlpSettings: { headers: {} } }, expected: { ...initialOtlp, headers: {} } },
+            { name: 'preserves omitted OTLP settings', initial: initialOtlp, settings: { slackNotifications: false }, expected: initialOtlp },
+            { name: 'clears OTLP settings with null', initial: initialOtlp, settings: { otlpSettings: null }, expected: null },
+            {
+                name: 'defaults headers when initializing OTLP with an endpoint',
+                initial: null,
+                settings: { otlpSettings: { endpoint: 'https://example.com/new' } },
+                expected: { endpoint: 'https://example.com/new', headers: {} }
+            },
+            {
+                name: 'defaults the endpoint when initializing OTLP with headers',
+                initial: null,
+                settings: { otlpSettings: { headers: {} } },
+                expected: { endpoint: '', headers: {} }
+            },
+            { name: 'clears the OTLP endpoint', initial: initialOtlp, settings: { otlpSettings: { endpoint: '' } }, expected: { ...initialOtlp, endpoint: '' } }
+        ])('$name', async ({ initial, settings, expected }) => {
+            const { update, read } = await seedUpdate({ otlpSettings: initial });
+            (await update(settings)).unwrap();
+            expect((await read())?.otlp_settings).toEqual(expected);
+        });
+
+        it('preserves concurrent endpoint and header updates after both requests read the environment', async () => {
+            const { environment, update, read } = await seedUpdate({
+                otlpSettings: { endpoint: 'https://example.com/old', headers: { Old: 'old-token' } }
+            });
+            // Hold the normal UPDATE lock so both service requests read before either can write.
+            const blocker = await db.knex.transaction();
+            await blocker<DBEnvironment>('_nango_environments').where({ id: environment.id }).update({ slack_notifications: false });
+            let writers = 0;
+            const trackWrite = (query: { sql: string }) => {
+                if (query.sql.startsWith('update "_nango_environments"')) {
+                    writers++;
+                }
+            };
+            db.knex.on('query', trackWrite);
+            const results = Promise.all([
+                update({ otlpSettings: { endpoint: 'https://example.com/new' } }),
+                update({ otlpSettings: { headers: { Authorization: 'new-token' } } })
+            ]);
+            try {
+                // Both reads must finish before either update; no explicit row lock should serialize them.
+                await vi.waitFor(() => expect(writers).toBe(2));
+            } finally {
+                db.knex.off('query', trackWrite);
+                await blocker.rollback();
+                for (const result of await results) {
+                    result.unwrap();
+                }
+            }
+            expect((await read())?.otlp_settings).toEqual({
+                endpoint: 'https://example.com/new',
+                headers: { Authorization: 'new-token' }
+            });
+        });
+
+        it('returns a conflict for a name already in use', async () => {
+            const { environment, update } = await seedUpdate();
+            const other = await createEnvironmentSeed(environment.account_id);
+            const result = await update({ name: other.name });
+            expect(result.isErr() && result.error.code).toBe('conflict');
+        });
+
+        it.each(['another account', 'missing'] as const)('returns not_found for an environment that is %s', async (target) => {
+            const { update } = await seedUpdate();
+            const settings = target === 'missing' ? { environmentUuid: uuid() } : { accountId: (await createAccount()).id };
+            const result = await update({ ...settings, callbackUrl: 'https://example.com/callback' });
+            expect(result.isErr() && result.error.code).toBe('not_found');
         });
     });
 

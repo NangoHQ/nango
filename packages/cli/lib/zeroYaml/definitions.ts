@@ -139,15 +139,30 @@ type CompiledTool = CreateToolProps<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, Zod
 
 export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'> & { filePath: string };
 
+export interface ParsedEntryPoint {
+    filePath: string;
+    integrationId: string;
+    type: 'sync' | 'action' | 'on-event' | 'function';
+    name: string;
+}
+
 export interface ParsedIntegrationDefinitions extends NangoYamlParsed {
     functions: FunctionConfig[];
+    entryPoints: ParsedEntryPoint[];
     hasExperimentalFunctions: boolean;
 }
 
 const allowed = ['action', 'sync', 'onEvent', 'function'];
 
 export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<ParsedIntegrationDefinitions>> {
-    const parsed: ParsedIntegrationDefinitions = { yamlVersion: 'v2', integrations: [], models: new Map(), functions: [], hasExperimentalFunctions: false };
+    const parsed: ParsedIntegrationDefinitions = {
+        yamlVersion: 'v2',
+        integrations: [],
+        models: new Map(),
+        functions: [],
+        entryPoints: [],
+        hasExperimentalFunctions: false
+    };
 
     printDebug('Rebuilding parsed from js files', debug);
 
@@ -222,6 +237,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                     return Err(parsedSyncRes.error);
                 }
                 integration.syncs.push(parsedSyncRes.value);
+                parsed.entryPoints.push({ filePath: realPath, integrationId, type: 'sync', name: basename });
                 break;
             }
             case 'action': {
@@ -237,6 +253,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                     return Err(parsedActionRes.error);
                 }
                 integration.actions.push(parsedActionRes.value);
+                parsed.entryPoints.push({ filePath: realPath, integrationId, type: 'action', name: basename });
                 break;
             }
             case 'onEvent': {
@@ -247,6 +264,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 } else if (script.event === 'validate-connection') {
                     integration.onEventScripts['validate-connection'].push(basename);
                 }
+                parsed.entryPoints.push({ filePath: realPath, integrationId, type: 'on-event', name: basename });
                 break;
             }
             case 'function': {
@@ -287,6 +305,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                     }),
                     filePath: realPath
                 });
+                parsed.entryPoints.push({ filePath: realPath, integrationId, type: 'function', name });
                 break;
             }
         }
