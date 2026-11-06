@@ -220,30 +220,6 @@ export const analyticsEventCatalogue = defineCatalogue({
         })
     },
 
-    'onboarding:connect_button_click': {
-        surface: 'web',
-        insight: 'How many accounts start the Getting Started flow by connecting GitHub',
-        fires: 'When someone clicks to connect GitHub on the Getting Started page',
-        properties: none
-    },
-    'onboarding:connection_create': {
-        surface: 'web',
-        insight: 'How many accounts that start Getting Started get through the GitHub connect flow',
-        fires: 'When the GitHub connection on the Getting Started page is created',
-        properties: none
-    },
-    'onboarding:run_complete': {
-        surface: 'web',
-        insight: 'How many accounts run the Getting Started code snippet, and how often it fails',
-        fires: 'When the Getting Started code snippet returns a result or an error',
-        properties: z.object({ is_success: z.boolean() })
-    },
-    'onboarding:create_button_click': {
-        surface: 'web',
-        insight: 'How many accounts finish Getting Started and go on to set up their own integration',
-        fires: 'When someone clicks to set up their own integration at the end of Getting Started',
-        properties: none
-    },
     'onboarding:copy_prompt_button_click': {
         surface: 'web',
         insight: 'How many accounts start adding Nango to their own agent from Getting Started',

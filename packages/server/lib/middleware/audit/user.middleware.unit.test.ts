@@ -27,21 +27,11 @@ describe('user audit middleware (unit)', () => {
             targets: [{ type: 'user', id: '7', display: 'dev@example.com' }],
             metadata: { name: 'Ada Lovelace' }
         });
-        expect(event?.metadata).not.toHaveProperty('gettingStartedClosed');
-    });
-
-    it('user update: a dismissed banner is distinguishable from a rename', async () => {
-        const req = fakeReq({ body: { gettingStartedClosed: true } });
-        const event = await runAudit(auditUserUpdated, req, fakeRes(locals));
-        expect(event).toMatchObject({ resource: 'user', action: 'updated', accountId: 42, outcome: 'success' });
-        expect(event?.metadata).toEqual({ gettingStartedClosed: true });
-        expect(event?.metadata).not.toHaveProperty('name');
     });
 
     it.each([
         ['a non-string name', { name: 42 }],
-        ['an empty name', { name: '' }],
-        ['a non-boolean flag', { gettingStartedClosed: 'yes' }]
+        ['an empty name', { name: '' }]
     ])('user update: %s cannot reach the row, since nothing has validated the body yet', async (_name, body) => {
         const req = fakeReq({ body });
         const event = await runAudit(auditUserUpdated, req, fakeRes(locals));

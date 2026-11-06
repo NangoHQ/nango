@@ -27,7 +27,6 @@ export type PatchUser = ApiEndpoint<{
     Path: `/api/v1/user`;
     Body: {
         name?: string | undefined;
-        gettingStartedClosed?: boolean | undefined;
     };
     Success: {
         data: ApiUser;
@@ -41,7 +40,6 @@ export interface ApiUser {
     name: string;
     uuid: string;
     role: Role;
-    gettingStartedClosed: boolean;
 }
 
 export type ApiGrant = { can: string[]; where: string[] };
