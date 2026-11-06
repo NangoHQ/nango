@@ -23,14 +23,17 @@ const STATES = [
     { label: 'Loading', props: { loading: true } }
 ] as const;
 
-const SIZE_SPEC: Record<IconButtonSize, string> = {
+type StorySize = IconButtonSize | '2xs';
+
+const SIZE_SPEC: Record<StorySize, string> = {
+    '2xs': '20 · icon 16',
     xs: '24 · icon 12',
     sm: '28 · icon 14',
     md: '32 · icon 16',
     lg: '36 · icon 16'
 };
 
-const StateMatrix = ({ variant }: { variant: IconButtonVariant }) => (
+const StateMatrix = ({ variant, sizes }: { variant: IconButtonVariant; sizes: readonly StorySize[] }) => (
     <div className="grid grid-cols-[max-content_repeat(6,max-content)] items-center gap-x-8 gap-y-6">
         <span />
         {STATES.map((state) => (
@@ -38,7 +41,7 @@ const StateMatrix = ({ variant }: { variant: IconButtonVariant }) => (
                 {state.label}
             </span>
         ))}
-        {ICON_BUTTON_SIZES.map((size) => (
+        {sizes.map((size) => (
             <div key={size} className="contents">
                 <span className="flex flex-col text-ds-xs text-text-secondary pr-4">
                     <span className="text-text-strong font-ds-medium">{size}</span>
@@ -56,13 +59,13 @@ const StateMatrix = ({ variant }: { variant: IconButtonVariant }) => (
     </div>
 );
 
-const matrixStory = (variant: IconButtonVariant): Story => ({
+const matrixStory = (variant: IconButtonVariant, sizes: readonly StorySize[] = ICON_BUTTON_SIZES): Story => ({
     name: `${variant} — sizes × states`,
-    render: () => <StateMatrix variant={variant} />
+    render: () => <StateMatrix variant={variant} sizes={sizes} />
 });
 
 export const Primary = matrixStory('primary');
 export const Secondary = matrixStory('secondary');
 export const Outline = matrixStory('outline');
-export const Ghost = matrixStory('ghost');
+export const Ghost = matrixStory('ghost', ['2xs', ...ICON_BUTTON_SIZES]);
 export const Danger = matrixStory('danger');
