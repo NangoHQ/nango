@@ -41,7 +41,7 @@ export function SlidingPanelLayout<T>({ selected, getKey, renderPanel, children 
                 className={cn(
                     'min-w-0 shrink-0 transition-[width] duration-250 ease-out motion-reduce:transition-none',
                     panelVisible ? 'w-1/2' : 'w-full',
-                    displayed && '**:data-[slot=table-container]:rounded-r-none'
+                    displayed && '**:data-[slot=table-container]:rounded-r-none [&>*]:rounded-r-none'
                 )}
             >
                 {children}

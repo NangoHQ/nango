@@ -14,7 +14,8 @@ interface CatalogLogoProps {
 }
 
 export const CatalogLogo: React.FC<CatalogLogoProps> = ({ provider, displayName, size, configuredInEnv }) => {
-    const [hasNoLogo, setHasNoLogo] = useState(false);
+    const [failedProvider, setFailedProvider] = useState<string | null>(null);
+    const hasNoLogo = failedProvider === provider;
 
     return (
         <div className="relative shrink-0">
@@ -33,7 +34,7 @@ export const CatalogLogo: React.FC<CatalogLogoProps> = ({ provider, displayName,
                         alt=""
                         loading="lazy"
                         className="size-full object-contain"
-                        onError={() => setHasNoLogo(true)}
+                        onError={() => setFailedProvider(provider)}
                     />
                 )}
             </div>
@@ -41,6 +42,7 @@ export const CatalogLogo: React.FC<CatalogLogoProps> = ({ provider, displayName,
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <span
+                            role="img"
                             aria-label={`Configured in ${configuredInEnv}`}
                             className="absolute -right-1 -bottom-1 flex size-4 items-center justify-center rounded-ds-sm bg-icon-success text-icon-on-accent"
                         >
