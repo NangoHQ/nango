@@ -69,20 +69,16 @@ Deleting a sync function with existing connections, removing a sync or tool reco
 
 ## Tools
 
-Create tools with [`createTool`](/reference/functions/functions-sdk#createtool) and import them from `index.ts`. The `nango create --action` scaffold is deprecated; it does not create a tool.
+Create tools with [`createTool`](/reference/functions/functions-sdk#createtool) and import them from `index.ts`.
 
 ```bash
 nango dryrun <tool-name> <connection-id> -e dev --input '{"id":"example"}' --validate
 nango deploy dev <integration-id>/tools/<tool-file>.ts
 ```
 
-Use `--trigger-http '<JSON>'` or `--trigger-http @request.json` to simulate an HTTP request instead of `--input`. The request includes `method`, `path`, `headers`, `query`, and `body`. These flags cannot be combined. See [Tools](/guides/functions/tools#test-and-deploy).
-
 ## Interactive Mode
 
-The Nango CLI includes an interactive mode that prompts you for missing arguments. For example, if you run `nango create` without specifying the function type, integration, or name, the CLI will prompt you for them.
-
-The `action` option in the legacy prompt below is deprecated; use the tools workflow above for new on-demand functions.
+The Nango CLI includes an interactive mode that prompts you for missing arguments. For example, if you run `nango create --sync` without specifying the integration or name, the CLI will prompt you for them.
 
 This mode is enabled by default when you're in an interactive terminal session.
 
@@ -93,13 +89,11 @@ This mode is enabled by default when you're in an interactive terminal session.
 If you run a command without all the required arguments, the CLI will prompt you for them.
 
 ```bash
-# Running "nango create" without arguments
-$ nango create
+# Creating a sync in a project with no integrations yet
+$ nango create --sync
 
-? What type of function do you want to create?
-❯   sync
-    action
-    on-event
+? What is the name of the integration? (e.g., "hubspot") my-api
+? What is the name of the new sync? (e.g., "contacts" or "create-ticket") get-contacts
 ```
 
 **Non-Interactive (Explicit) Usage:**

@@ -475,7 +475,11 @@
     },
     {
       "source": "/implementation-guides/platform/migrations/migrate-to-zero-yaml",
-      "destination": "/guides/platform/migrations/migrate-to-zero-yaml"
+      "destination": "/guides/functions/functions-guide"
+    },
+    {
+      "source": "/guides/platform/migrations/migrate-to-zero-yaml",
+      "destination": "/guides/functions/functions-guide"
     },
     {
       "source": "/reference/sdks/frontend",
@@ -875,8 +879,7 @@
                       "guides/platform/migrations/migrate-from-end-user",
                       "guides/platform/migrations/migrate-from-public-key",
                       "guides/platform/migrations/migrate-from-connection-mcp",
-                      "guides/platform/migrations/migrate-from-actions",
-                      "guides/platform/migrations/migrate-to-zero-yaml"
+                      "guides/platform/migrations/migrate-from-actions"
                     ]
                   },
                   "contributing"

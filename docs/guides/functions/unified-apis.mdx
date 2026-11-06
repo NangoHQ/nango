@@ -132,13 +132,12 @@ Each provider gets a tool with the same input and output contract:
   </Tab>
 </Tabs>
 
-Your app can choose the integration ID at runtime and call the same tool name for each provider:
+Your app can call the same tool name for each provider using the customer's connection ID.
 
 ```ts
 await nango.callTool(
     { connectionId, name: 'create-user' },
-    { input: { name: 'Ada Lovelace', email: 'ada@example.com' } },
-    { 'provider-config-key': integrationId }
+    { input: { name: 'Ada Lovelace', email: 'ada@example.com' } }
 );
 ```
 

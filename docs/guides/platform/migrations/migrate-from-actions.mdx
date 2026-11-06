@@ -4,7 +4,19 @@ sidebarTitle: 'Actions to tools'
 description: 'Move on-demand integrations to tools while preserving existing action callers.'
 ---
 
-Actions are deprecated. Use [Tools](/guides/functions/tools) for new on-demand functions. Existing users can keep using the [deprecated action APIs](/guides/functions/action-functions).
+Actions are deprecated. Use [Tools](/guides/functions/tools) for new on-demand functions. The existing [action APIs](/guides/functions/action-functions) will continue to work but will eventually be deprecated.
+
+## Who is impacted
+
+Migrate existing action functions used for on-demand reads, writes, or operations that combine multiple API calls.
+
+## What is changing
+
+Tools replace actions for on-demand operations. They support typed input and output, connection metadata, checkpoints, authenticated provider requests, and logging. Tools also let you describe how agents should use them and attach custom tags.
+
+## Check compatibility before migrating
+
+Tools do not support asynchronous calls or completion webhooks. If your action relies on these features, contact us before migrating.
 
 ## Migrate callers first
 
@@ -21,16 +33,13 @@ With:
 ```typescript
 const result = await nango.callTool(
     { connectionId, name: 'create-issue' },
-    { input },
-    { 'provider-config-key': integrationId }
+    { input }
 );
 ```
 
 For HTTP, replace `POST /action/trigger` with `POST /connections/<CONNECTION-ID>/tools/create-issue/calls`. Move the action name into the URL and send `{ "input": ... }` as the body. Both APIs return the operation's output directly.
 
 Use a Nango Environment API key from **Environment Settings > API Keys** as `Authorization: Bearer <NANGO-API-KEY>`. Scoped keys need `environment:tools:call`, which replaces `environment:actions:execute`. Existing keys with the old scope keep working.
-
-For Management MCP clients, replace `actions_trigger` with `tools_call` and replace the `action_name` argument with `name`. Keep `integration_id`, `connection_id`, and optional `input`.
 
 ## Migrate the implementation
 
@@ -41,4 +50,45 @@ For Management MCP clients, replace `actions_trigger` with `tools_call` and repl
 5. Replace `nango.ActionError` with `nango.Error`. The payload is returned as `error.payload` with the `function_runtime_error` code.
 6. Import the tool from `index.ts`, dry run it with realistic input and `--validate`, then deploy. See [Tools](/guides/functions/tools#create-a-tool) for a complete example.
 
-If the action uses SDK methods beyond outbound provider requests and logging, check the [Functions SDK](/reference/functions/functions-sdk) before migrating; tool capabilities differ from legacy actions.
+### Example: Create a GitHub issue
+
+This function reads the repository from connection metadata and creates an issue using the caller's title and body. The diff shows how to convert it from an action to a tool:
+
+```diff
+-import { createAction } from 'nango';
++import { createTool } from 'nango';
+ import * as z from 'zod';
+
+-export default createAction({
++export default createTool({
+     description: 'Create a GitHub issue',
+     input: z.object({ title: z.string(), body: z.string().optional() }),
+     output: z.object({ id: z.number(), url: z.string() }),
+-    metadata: z.object({ owner: z.string(), repo: z.string() }),
++    data: {
++        metadata: z.object({ owner: z.string(), repo: z.string() })
++    },
+-    exec: async (nango, input) => {
++    exec: async (nango, trigger) => {
++        const input = trigger.input;
+         if (!input.title.trim()) {
+-            throw new nango.ActionError({ message: 'Title must not be blank' });
++            throw new nango.Error({ message: 'Title must not be blank' });
+         }
+
+         const { owner, repo } = await nango.getMetadata();
+         const response = await nango.post({
+             endpoint: `/repos/${owner}/${repo}/issues`,
+             data: { title: input.title, body: input.body }
+         });
+         return { id: response.data.id, url: response.data.html_url };
+     }
+ });
+```
+
+Move the file from `github/actions/create-issue.ts` to `github/tools/create-issue.ts` and update its import in `index.ts`:
+
+```diff
+-import './github/actions/create-issue.js';
++import './github/tools/create-issue.js';
+```

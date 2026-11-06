@@ -73,7 +73,7 @@ nango pull github list-repos --catalog
 nango pull github list-repos --env dev
 ```
 
-`nango pull` writes the function file and adds its import to `index.ts`. Some catalog templates still use deprecated `createAction` definitions. [Convert them to tools](/guides/platform/migrations/migrate-from-actions#migrate-the-implementation) when customizing them. After pulling, review the source and schemas, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
+`nango pull` writes the function file and adds its import to `index.ts`. After pulling, review the source and schemas, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
 
 <Tip>
   Pull a pre-built function when you need custom fields, a smaller output shape, customer-specific filtering, different retry behavior, or a provider workflow that is close to the catalog but not identical.
@@ -248,10 +248,6 @@ This is useful for prototypes, onboarding flows, provider operations not covered
     <span className="agent-quickstart-action-description">Copy the command for coding agents using the Functions API workflow.</span>
   </button>
 </div>
-
-<Note>
-  The source-code Functions API currently supports sync functions and deprecated actions. Build and deploy new tools with the [CLI workflow](#build-locally-with-the-cli).
-</Note>
 
 At a high level, the flow is:
 
