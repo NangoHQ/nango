@@ -143,7 +143,7 @@ export const AgentGettingStarted: React.FC = () => {
     };
 
     return (
-        <DashboardLayout title="Getting started">
+        <DashboardLayout>
             <Helmet>
                 <title>Getting started - Nango</title>
             </Helmet>

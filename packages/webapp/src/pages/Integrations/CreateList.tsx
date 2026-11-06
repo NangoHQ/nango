@@ -91,7 +91,7 @@ export const CreateIntegrationList = () => {
     };
 
     return (
-        <DashboardLayout fullWidth title="Set up new integration" className="flex flex-col gap-8">
+        <DashboardLayout fullWidth className="flex flex-col gap-8">
             <Helmet>
                 <title>Create integration - Nango</title>
             </Helmet>

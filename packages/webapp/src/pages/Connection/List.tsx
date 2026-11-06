@@ -277,7 +277,7 @@ export const ConnectionList = () => {
     }
 
     return (
-        <DashboardLayout fullWidth title="Connections">
+        <DashboardLayout fullWidth>
             <Helmet>
                 <title>Connections - Nango</title>
             </Helmet>
