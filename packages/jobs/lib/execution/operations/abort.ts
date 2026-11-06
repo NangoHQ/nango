@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
-import { PersistClient } from '@nangohq/nango-runner';
-import { accountService, secretService } from '@nangohq/shared';
+import { PersistClient } from '@nangohq/internal-clients/persist';
+import { accountService, getPersistAPIUrl, secretService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { orchestratorClient } from '../../clients.js';
@@ -77,7 +77,7 @@ export async function setAbortFlag({ taskId, environmentId }: { taskId: string; 
             return Err(new Error(`Error setting abort flag for task: ${taskId}`, { cause: defaultSecret.error }));
         }
 
-        const persistClient = new PersistClient({ secretKey: defaultSecret.value.secret });
+        const persistClient = new PersistClient({ secretKey: defaultSecret.value.secret, baseUrl: getPersistAPIUrl() });
         const result = await persistClient.putTaskAbort({ environmentId, taskId });
         if (result.isErr()) {
             logger.error(`Error setting abort flag for task: ${taskId}`, result.error);

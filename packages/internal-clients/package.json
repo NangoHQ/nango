@@ -1,0 +1,31 @@
+{
+    "name": "@nangohq/internal-clients",
+    "version": "1.0.0",
+    "description": "HTTP clients for Nango internal services",
+    "type": "module",
+    "exports": {
+        "./jobs": {
+            "types": "./dist/jobs.d.ts",
+            "default": "./dist/jobs.js"
+        },
+        "./persist": {
+            "types": "./dist/persist.d.ts",
+            "default": "./dist/persist.js"
+        }
+    },
+    "private": true,
+    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "dependencies": {
+        "@nangohq/internal-auth": "file:../internal-auth",
+        "@nangohq/node": "file:../node-client",
+        "@nangohq/utils": "file:../utils",
+        "zod": "4.6.7"
+    },
+    "devDependencies": {
+        "@nangohq/types": "file:../types",
+        "vitest": "4.1.11"
+    },
+    "files": [
+        "dist/**/*"
+    ]
+}

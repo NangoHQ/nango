@@ -9,11 +9,12 @@ import * as soap from 'soap';
 import * as unzipper from 'unzipper';
 import * as zod from 'zod';
 
+import { PersistClient } from '@nangohq/internal-clients/persist';
 import { ActionError, ExecutionError, SDKError } from '@nangohq/runner-sdk';
+import { getPersistAPIUrl } from '@nangohq/shared';
 import { Err, errorToObject, isEnterprise, Ok, truncateJson } from '@nangohq/utils';
 
 import { botbuilder } from './botbuilder.js';
-import { PersistClient } from './clients/persist.js';
 import { logger } from './logger.js';
 import { MapLocks } from './sdk/locks.js';
 import { createFunctionFacade, instrumentSDK, NangoActionRunner, NangoSyncRunner } from './sdk/sdk.js';
@@ -66,7 +67,7 @@ export async function exec({
     abortController?: AbortController;
     locks?: Locks;
 }): Promise<Result<RunnerOutput, ExecutionError>> {
-    const persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
+    const persistClient = new PersistClient({ secretKey: nangoProps.secretKey, baseUrl: getPersistAPIUrl() });
     const telemetryRecorder = createTelemetryRecorder({
         environmentId: nangoProps.environmentId,
         exportRunnerTelemetry: nangoProps.runnerFlags.exportRunnerTelemetry,

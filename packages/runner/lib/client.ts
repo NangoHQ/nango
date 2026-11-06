@@ -9,6 +9,8 @@ import type { AppRouter } from './server.js';
 import type { CreateTRPCProxyClient } from '@trpc/client';
 import type { RequestInit } from 'undici';
 
+export type { AppRouter } from './server.js';
+
 export type ProxyAppRouter = CreateTRPCProxyClient<AppRouter>;
 
 interface RunnerHttpOpts {

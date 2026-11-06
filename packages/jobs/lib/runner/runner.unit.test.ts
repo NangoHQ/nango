@@ -5,7 +5,7 @@ import { Ok } from '@nangohq/utils';
 import { getDefaultFleet } from '../runtime/runtimes.js';
 import { getRunners } from './runner.js';
 
-vi.mock('@nangohq/nango-runner', () => ({
+vi.mock('@nangohq/nango-runner/client', () => ({
     getRunnerClient: vi.fn(() => ({
         abort: { mutate: vi.fn() },
         start: { mutate: vi.fn() }

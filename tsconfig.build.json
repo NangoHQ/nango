@@ -20,6 +20,9 @@
             "path": "packages/internal-auth"
         },
         {
+            "path": "packages/internal-clients"
+        },
+        {
             "path": "packages/utils"
         },
         {
