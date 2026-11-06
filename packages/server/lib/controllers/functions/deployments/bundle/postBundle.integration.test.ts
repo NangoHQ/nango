@@ -40,7 +40,8 @@ const validFunction = {
     fileBody: {
         js: 'module.exports = async () => ({})',
         ts: 'export default async () => ({})'
-    }
+    },
+    source: 'repo'
 } satisfies FunctionDeploymentArtifact;
 
 const validBody = {
