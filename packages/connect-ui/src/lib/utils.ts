@@ -10,6 +10,18 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
+// A prefix that is exactly a scheme plus `://`. Anything else (`auth.`, `https://rest.`) is a host affix.
+const SCHEME_PREFIX_RE = /^[a-z][a-z0-9+.-]*:\/\/$/i;
+const LEADING_SCHEME_RE = /^[a-z][a-z0-9+.-]*:\/\//i;
+
+/** Reduce a `normalize: hostname` value to the bare host, since the field's `prefix` already carries the scheme. */
+export function normalizeFieldValue(value: string, schema?: SimplifiedJSONSchema): string {
+    if (schema?.normalize !== 'hostname' || !schema.prefix || !SCHEME_PREFIX_RE.test(schema.prefix)) {
+        return value;
+    }
+    return value.trim().replace(LEADING_SCHEME_RE, '').replace(/^\/+/, '').replace(/\/+$/, '');
+}
+
 export function jsonSchemaToZod(schema: SimplifiedJSONSchema): ZodTypeAny {
     if (schema.hidden) {
         return z.string().optional();

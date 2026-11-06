@@ -18,7 +18,7 @@ import { useI18n } from '@/lib/i18n';
 import { useNango } from '@/lib/nango';
 import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
-import { cn, compactErrorDisplay, getAllowedCallbackOrigin, jsonSchemaToZod } from '@/lib/utils';
+import { cn, compactErrorDisplay, getAllowedCallbackOrigin, jsonSchemaToZod, normalizeFieldValue } from '@/lib/utils';
 
 import type { AuthResult } from '@nangohq/frontend';
 import type { AuthModeType, SimplifiedJSONSchema } from '@nangohq/types';
@@ -737,6 +737,7 @@ export const Go: React.FC = () => {
                                                                     prefix={definition?.prefix}
                                                                     suffix={definition?.suffix}
                                                                     {...(field as InputHTMLAttributes<HTMLInputElement>)}
+                                                                    onChange={(e) => field.onChange(normalizeFieldValue(e.target.value, definition))}
                                                                     autoComplete="off"
                                                                     type={definition?.secret || base?.secret ? 'password' : 'text'}
                                                                 />
