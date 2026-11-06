@@ -175,3 +175,27 @@ jobs:
 
                   # Compile the project
                   npx nango compile --debug
+    cleanup:
+        runs-on: ubuntu-latest
+        needs:
+            - should-run
+            - publish
+            - verify
+        if: always() && needs.should-run.outputs.should_skip == 'false'
+        permissions:
+            packages: write
+        steps:
+            - name: Delete this run's versions from the github registry
+              shell: bash
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  VERSION: 0.0.1-${{ github.sha }}
+              run: |
+                  packages=$(gh api --paginate '/orgs/NangoHQ/packages?package_type=npm&per_page=100' --jq '.[].name')
+                  for package in $packages; do
+                    id=$(gh api "/orgs/NangoHQ/packages/npm/$package/versions?per_page=100" --jq ".[] | select(.name == \"$VERSION\") | .id")
+                    if [[ -n "$id" ]]; then
+                      gh api -X DELETE "/orgs/NangoHQ/packages/npm/$package/versions/$id"
+                      echo "Deleted $package@$VERSION"
+                    fi
+                  done
