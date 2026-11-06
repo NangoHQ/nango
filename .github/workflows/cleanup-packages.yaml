@@ -14,9 +14,12 @@ jobs:
             packages: ${{ steps.list.outputs.packages }}
         steps:
             - id: list
+              shell: bash
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: echo "packages=$(gh api --paginate '/orgs/NangoHQ/packages?package_type=npm&per_page=100' --jq '.[].name' | jq -nRc '[inputs]')" >> "$GITHUB_OUTPUT"
+              run: |
+                  packages=$(gh api --paginate '/orgs/NangoHQ/packages?package_type=npm&per_page=100' --jq '.[].name' | jq -nRc '[inputs]')
+                  echo "packages=$packages" >> "$GITHUB_OUTPUT"
 
     delete-old-versions:
         needs: list-packages
