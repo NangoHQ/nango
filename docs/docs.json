@@ -1336,7 +1336,6 @@
               "integrations/all/cursor-admin",
               "api-integrations/customer-io",
               "integrations/all/cyberimpact",
-              "api-integrations/dash",
               "api-integrations/databox",
               "integrations/all/databricks-account",
               "integrations/all/databricks-workspace",

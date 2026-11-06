@@ -2698,22 +2698,24 @@ atlar:
     display_name: Atlar
     categories:
         - banking
-    auth_mode: BASIC
+    auth_mode: OAUTH2_CC
+    token_url: https://api.atlar.com/iam/v2/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
     proxy:
         base_url: https://api.atlar.com
-    credentials_verification_script: atlarCredentialsVerification
     docs: https://nango.dev/docs/api-integrations/atlar
     docs_connect: https://nango.dev/docs/api-integrations/atlar/connect
     credentials:
-        username:
+        client_id:
             type: string
             title: Access key
             description: The access key of your Atlar programmatic access user.
-            secret: true
             example: Hq4T************bN2w
             pattern: '^[A-Za-z0-9]{16,}$'
             doc_section: '#step-3-copy-your-access-key-and-generate-a-secret'
-        password:
+        client_secret:
             type: string
             title: Secret
             description: The secret of your Atlar programmatic access user.
@@ -8482,27 +8484,6 @@ cursor-admin:
             description: Password
             default_value: ''
             hidden: true
-
-dash:
-    display_name: Dash
-    categories:
-        - storage
-        - marketing
-    auth_mode: OAUTH2
-    authorization_url: https://login.dash.app/authorize
-    token_url: https://login.dash.app/oauth/token
-    default_scopes:
-        - offline_access
-    authorization_params:
-        response_type: code
-        audience: https://assetplatform.io
-    token_params:
-        grant_type: authorization_code
-    refresh_params:
-        grant_type: refresh_token
-    proxy:
-        base_url: https://api-v2.dash.app
-    docs: https://nango.dev/docs/api-integrations/dash
 
 databox:
     display_name: Databox
@@ -21303,13 +21284,19 @@ okendo:
     proxy:
         base_url: https://api.okendo.io/enterprise
         headers:
-            okendo-api-version: '2025-02-01'
+            okendo-api-version: ${connectionConfig.version} || 2025-02-01
         verification:
             method: GET
             endpoints:
                 - /reviews
     docs: https://nango.dev/docs/api-integrations/okendo
     docs_connect: https://nango.dev/docs/api-integrations/okendo/connect
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
     credentials:
         username:
             type: string

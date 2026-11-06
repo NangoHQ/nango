@@ -16337,7 +16337,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `astro-mcp` | Astro (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/astro-mcp.md) |  |  | dev-tools, mcp |
 | `athenahealth` | athenahealth | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/athenahealth.md) | [connect](https://nango.dev/docs/api-integrations/athenahealth/connect.md) |  | other |
 | `athenahealth-jwks` | athenahealth (JWKS) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/athenahealth-jwks.md) | [connect](https://nango.dev/docs/api-integrations/athenahealth-jwks/connect.md) | [setup](https://nango.dev/docs/api-integrations/athenahealth-jwks/how-to-register-your-own-athenahealth-jwks-app.md) | other |
-| `atlar` | Atlar | BASIC | [docs](https://nango.dev/docs/api-integrations/atlar.md) | [connect](https://nango.dev/docs/api-integrations/atlar/connect.md) |  | banking |
+| `atlar` | Atlar | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/atlar.md) | [connect](https://nango.dev/docs/api-integrations/atlar/connect.md) |  | banking |
 | `atlas-so` | Atlas.so | API_KEY | [docs](https://nango.dev/docs/integrations/all/atlas-so.md) |  |  | support |
 | `atlassian` | Atlassian | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/atlassian.md) |  |  | dev-tools |
 | `atlassian-admin` | Atlassian Cloud Admin | API_KEY | [docs](https://nango.dev/docs/integrations/all/atlassian-admin.md) | [connect](https://nango.dev/docs/integrations/all/atlassian-admin/connect.md) |  | dev-tools |
@@ -16538,7 +16538,6 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `cursor-admin` | Cursor Admin | BASIC | [docs](https://nango.dev/docs/integrations/all/cursor-admin.md) | [connect](https://nango.dev/docs/integrations/all/cursor-admin/connect.md) |  | dev-tools |
 | `customer-io` | Customer.io | BASIC | [docs](https://nango.dev/docs/api-integrations/customer-io.md) | [connect](https://nango.dev/docs/api-integrations/customer-io/connect.md) |  | marketing, analytics |
 | `cyberimpact` | Cyberimpact | API_KEY | [docs](https://nango.dev/docs/integrations/all/cyberimpact.md) | [connect](https://nango.dev/docs/integrations/all/cyberimpact/connect.md) |  | marketing |
-| `dash` | Dash | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/dash.md) |  | [setup](https://nango.dev/docs/api-integrations/dash/how-to-register-your-own-dash-api-oauth-app.md) | storage, marketing |
 | `databox` | Databox | API_KEY | [docs](https://nango.dev/docs/api-integrations/databox.md) | [connect](https://nango.dev/docs/api-integrations/databox/connect.md) |  | analytics |
 | `databricks-account` | Databricks (Account Level) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/databricks-account.md) |  |  | analytics |
 | `databricks-workspace` | Databricks (Workspace Level) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/databricks-workspace.md) |  |  | analytics |
