@@ -16,7 +16,7 @@ jobs:
             - id: list
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: echo "packages=$(gh api '/orgs/NangoHQ/packages?package_type=npm&per_page=100' --jq '[.[].name]')" >> "$GITHUB_OUTPUT"
+              run: echo "packages=$(gh api --paginate '/orgs/NangoHQ/packages?package_type=npm&per_page=100' --jq '.[].name' | jq -nRc '[inputs]')" >> "$GITHUB_OUTPUT"
 
     delete-old-versions:
         needs: list-packages
@@ -32,6 +32,6 @@ jobs:
               with:
                   package-name: ${{ matrix.package }}
                   package-type: npm
-                  delete-only-pre-release-versions: 'true'
+                  ignore-versions: '^(?!0\.0\.1-)'
                   # About nine days of CI runs, each of which installs the version it just published
                   min-versions-to-keep: 300
