@@ -141,6 +141,20 @@ describe('MFA settings', () => {
             expect(enrollment.json.error.code).toBe('feature_disabled');
         });
 
+        it('rejects activating an enrollment started before MFA was unavailable', async () => {
+            const { user } = await seeders.seedAccountEnvAndUser();
+            const cookie = await authenticateUser(api, user);
+            const enrollment = await api.fetch(`${mfaRoute}/enroll`, { method: 'POST', session: cookie });
+            isSuccess(enrollment.json);
+            const totp = OTPAuth.URI.parse(enrollment.json.data.otpauthUri) as OTPAuth.TOTP;
+            flags.hasMFA = false;
+
+            const activation = await api.fetch(`${mfaRoute}/activate`, { method: 'POST', session: cookie, body: { code: totp.generate() } });
+            expect(activation.res.status).toBe(403);
+            isError(activation.json);
+            expect(activation.json.error.code).toBe('feature_disabled');
+        });
+
         it('still lets a user with MFA disable it', async () => {
             const { user } = await seeders.seedAccountEnvAndUser();
             const cookie = await authenticateUser(api, user);
