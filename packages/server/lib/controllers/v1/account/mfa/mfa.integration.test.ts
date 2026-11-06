@@ -1,7 +1,8 @@
 import * as OTPAuth from 'otpauth';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { seeders } from '@nangohq/shared';
+import { flags } from '@nangohq/utils';
 
 import { authenticateUser, isError, isSuccess, runServer } from '../../../../utils/tests.js';
 
@@ -122,5 +123,36 @@ describe('MFA settings', () => {
         const status = await api.fetch(mfaRoute, { method: 'GET', session: cookie });
         isSuccess(status.json);
         expect(status.json.data.enabled).toBe(true);
+    });
+
+    describe('on free self-hosted', () => {
+        afterEach(() => {
+            flags.hasMFA = true;
+        });
+
+        it('rejects enrollment', async () => {
+            const { user } = await seeders.seedAccountEnvAndUser();
+            const cookie = await authenticateUser(api, user);
+            flags.hasMFA = false;
+
+            const enrollment = await api.fetch(`${mfaRoute}/enroll`, { method: 'POST', session: cookie });
+            expect(enrollment.res.status).toBe(403);
+            isError(enrollment.json);
+            expect(enrollment.json.error.code).toBe('feature_disabled');
+        });
+
+        it('still lets a user with MFA disable it', async () => {
+            const { user } = await seeders.seedAccountEnvAndUser();
+            const cookie = await authenticateUser(api, user);
+            const enrollment = await api.fetch(`${mfaRoute}/enroll`, { method: 'POST', session: cookie });
+            isSuccess(enrollment.json);
+            const totp = OTPAuth.URI.parse(enrollment.json.data.otpauthUri) as OTPAuth.TOTP;
+            await api.fetch(`${mfaRoute}/activate`, { method: 'POST', session: cookie, body: { code: totp.generate() } });
+            flags.hasMFA = false;
+
+            const code = totp.generate({ timestamp: Date.now() + 30_000 });
+            const disable = await api.fetch(mfaRoute, { method: 'DELETE', session: cookie, body: { type: 'code', code } });
+            expect(disable.res.status).toBe(200);
+        });
     });
 });
