@@ -16,6 +16,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useGetIntegrationFunction, useGetIntegrationFunctions, useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
 import { useMeta } from '@/hooks/useMeta';
+import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { isSyncOrAction } from '@/utils/scripts';
@@ -281,7 +282,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
     const { data: metaData } = useMeta();
     const [templateTail, setTemplateTail] = useState<{ scope: string; keys: string[] }>({ scope: '', keys: [] });
 
-    const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
+    const [search, setSearch] = useSearchQueryState();
     const debouncedSearch = useDebouncedValue(search);
 
     const [rawType, setType] = useQueryState('type', parseAsString.withDefault(''));
@@ -519,7 +520,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
                                 value={search || ''}
                                 onChange={(e) => {
                                     void setSelectedFunctionName(null);
-                                    void setSearch(e.target.value || null);
+                                    setSearch(e.target.value);
                                 }}
                             />
                             <InputGroupAddon>
