@@ -92,7 +92,7 @@ export const FunctionSchemaTabs: React.FC<FunctionSchemaTabsProps> = ({ inputSch
 );
 
 export const CompactEmptyState: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <EmptyCard className="h-24">
+    <EmptyCard className="h-24 min-h-0 p-3">
         <span className="type-label-sm text-text-secondary">{children}</span>
     </EmptyCard>
 );
