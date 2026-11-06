@@ -102,7 +102,10 @@ const schemaBody = z.strictObject({
             .refine((creds) => (creds.private_key === undefined) === (creds.webhook_secret === undefined), {
                 message: 'private_key and webhook_secret must be provided together',
                 path: ['webhook_secret']
-            }),
+            })
+            .transform(({ private_key, webhook_secret, ...rest }) =>
+                private_key !== undefined && webhook_secret !== undefined ? { ...rest, private_key, webhook_secret } : rest
+            ),
         z
             .strictObject({
                 type: z.literal('CUSTOM')
@@ -280,6 +283,8 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
             let configOverride: GithubAppConfigOverride | undefined;
             if (body.credentials.private_key !== undefined && body.credentials.webhook_secret !== undefined) {
                 if (!(await getFlags().isGithubAppConnectionCredentialsEnabled(account.uuid))) {
+                    void logCtx.error('Connection-level GitHub App credentials are not enabled', { providerConfigKey: body.provider_config_key });
+                    await logCtx.failed();
                     res.status(400).send({
                         error: { code: 'invalid_body', message: 'Connection-level GitHub App credentials are not enabled for this account' }
                     });

@@ -100,7 +100,8 @@ export type PostPublicConnection = ApiEndpoint<{
             | Omit<ApiKeyCredentials, 'raw'>
             | Omit<BasicApiCredentials, 'raw'>
             | Omit<TbaCredentials, 'raw'>
-            | { type: 'APP'; app_id: string; installation_id: string; private_key?: string | undefined; webhook_secret?: string | undefined }
+            | { type: 'APP'; app_id: string; installation_id: string; private_key?: never; webhook_secret?: never }
+            | { type: 'APP'; app_id: string; installation_id: string; private_key: string; webhook_secret: string }
             | { type: 'CUSTOM'; app_id: string; installation_id: string }
             | { type: 'NONE' };
         end_user?: EndUserInput | undefined;

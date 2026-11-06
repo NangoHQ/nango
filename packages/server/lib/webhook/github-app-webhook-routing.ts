@@ -39,12 +39,14 @@ function validateIntegrationLevelSignature(integration: IntegrationConfig, heade
  */
 async function validateConnectionLevelSignature(
     nango: InternalNango,
+    headers: Record<string, string>,
     headerSignature: string,
     rawBody: string,
     body: { installation?: { id?: number | string } } | null
 ) {
+    const appId = headers['x-github-hook-installation-target-id'];
     const installationId = body?.installation?.id;
-    if (installationId === undefined || installationId === null) {
+    if (!appId || installationId === undefined || installationId === null) {
         return false;
     }
 
@@ -56,7 +58,7 @@ async function validateConnectionLevelSignature(
     );
 
     return (connections ?? []).some((connection) => {
-        if (connection.credentials.type !== 'APP') {
+        if (connection.credentials.type !== 'APP' || connection.connection_config['app_id'] !== appId) {
             return false;
         }
 
@@ -71,7 +73,7 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
     if (signature) {
         const valid =
             !nango.integration.oauth_client_secret && (await getFlags().isGithubAppConnectionCredentialsEnabled(nango.team.uuid))
-                ? await validateConnectionLevelSignature(nango, signature, rawBody, body)
+                ? await validateConnectionLevelSignature(nango, headers, signature, rawBody, body)
                 : validateIntegrationLevelSignature(nango.integration, signature, rawBody);
 
         if (!valid) {

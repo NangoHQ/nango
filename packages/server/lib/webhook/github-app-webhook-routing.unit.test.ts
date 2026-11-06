@@ -150,13 +150,14 @@ describe('github-app-webhook-routing', () => {
 
     describe('connection-level app', () => {
         const WEBHOOK_SECRET = 'connection-webhook-secret';
-        const appHeaders = (signature: string) => ({ 'x-hub-signature-256': signature, 'x-github-hook-installation-target-id': '777' });
+        const APP_HEADER_ID = '777';
+        const appHeaders = (signature: string) => ({ 'x-hub-signature-256': signature, 'x-github-hook-installation-target-id': APP_HEADER_ID });
         const signWith = (secret: string, payload = rawBody) => `sha256=${crypto.createHmac('sha256', secret).update(payload, 'utf8').digest('hex')}`;
 
-        function mockConnections(nango: ReturnType<typeof makeNango>['nango'], overrides: { providerConfigKey?: string; secret?: string | undefined } = {}) {
-            return vi.spyOn(connectionService, 'findConnectionsByMultipleConnectionConfigValues').mockResolvedValue([
+        function mockConnections(overrides: { appId?: string; secret?: string | undefined } = {}) {
+            return vi.spyOn(connectionService, 'findConnectionsByConnectionConfigValue').mockResolvedValue([
                 {
-                    provider_config_key: overrides.providerConfigKey ?? nango.integration.unique_key,
+                    connection_config: { app_id: overrides.appId ?? APP_HEADER_ID, installation_id: '42' },
                     credentials: {
                         type: 'APP',
                         access_token: 'tok',
@@ -172,19 +173,19 @@ describe('github-app-webhook-routing', () => {
         it('routes a webhook signed with the connection webhook secret, matched on app and installation id', async () => {
             flagMocks.isGithubAppConnectionCredentialsEnabled.mockResolvedValue(true);
             const { nango, execute } = makeNango({ emptyIntegration: true });
-            const find = mockConnections(nango);
+            const find = mockConnections();
 
             const result = await GithubAppWebhookRouting.default(nango, appHeaders(signWith(WEBHOOK_SECRET)), body as never, rawBody);
 
             expect(result.isOk()).toBe(true);
-            expect(find).toHaveBeenCalledWith({ app_id: '777', installation_id: '42' }, nango.environment.id);
+            expect(find).toHaveBeenCalledWith('installation_id', '42', nango.environment.id, nango.integration.id);
             expect(execute).toHaveBeenCalledOnce();
         });
 
         it('rejects a wrong connection webhook secret', async () => {
             flagMocks.isGithubAppConnectionCredentialsEnabled.mockResolvedValue(true);
             const { nango, execute } = makeNango({ emptyIntegration: true });
-            mockConnections(nango);
+            mockConnections();
 
             const result = await GithubAppWebhookRouting.default(nango, appHeaders(signWith('other')), body as never, rawBody);
 
@@ -192,10 +193,10 @@ describe('github-app-webhook-routing', () => {
             expect(execute).not.toHaveBeenCalled();
         });
 
-        it('rejects when no connection matches the app and installation id', async () => {
+        it('rejects when no connection matches the installation id', async () => {
             flagMocks.isGithubAppConnectionCredentialsEnabled.mockResolvedValue(true);
             const { nango, execute } = makeNango({ emptyIntegration: true });
-            vi.spyOn(connectionService, 'findConnectionsByMultipleConnectionConfigValues').mockResolvedValue(null);
+            vi.spyOn(connectionService, 'findConnectionsByConnectionConfigValue').mockResolvedValue(null);
 
             const result = await GithubAppWebhookRouting.default(nango, appHeaders(signWith(WEBHOOK_SECRET)), body as never, rawBody);
 
@@ -203,23 +204,32 @@ describe('github-app-webhook-routing', () => {
             expect(execute).not.toHaveBeenCalled();
         });
 
-        it('rejects a connection of another integration and a connection without override', async () => {
+        it('rejects a connection whose app id differs from the app id header', async () => {
             flagMocks.isGithubAppConnectionCredentialsEnabled.mockResolvedValue(true);
-            const { nango } = makeNango({ emptyIntegration: true });
+            const { nango, execute } = makeNango({ emptyIntegration: true });
+            mockConnections({ appId: '999' });
 
-            mockConnections(nango, { providerConfigKey: 'other' });
-            const other = await GithubAppWebhookRouting.default(nango, appHeaders(signWith(WEBHOOK_SECRET)), body as never, rawBody);
-            expect(errType(other)).toBe('webhook_invalid_signature');
+            const result = await GithubAppWebhookRouting.default(nango, appHeaders(signWith(WEBHOOK_SECRET)), body as never, rawBody);
 
-            mockConnections(nango, { secret: undefined });
-            const none = await GithubAppWebhookRouting.default(nango, appHeaders(signWith('undefined')), body as never, rawBody);
-            expect(errType(none)).toBe('webhook_invalid_signature');
+            expect(errType(result)).toBe('webhook_invalid_signature');
+            expect(execute).not.toHaveBeenCalled();
         });
 
-        it('rejects a payload without installation id or app id header', async () => {
+        it('rejects a connection without override', async () => {
+            flagMocks.isGithubAppConnectionCredentialsEnabled.mockResolvedValue(true);
+            const { nango, execute } = makeNango({ emptyIntegration: true });
+            mockConnections({ secret: undefined });
+
+            const result = await GithubAppWebhookRouting.default(nango, appHeaders(signWith('undefined')), body as never, rawBody);
+
+            expect(errType(result)).toBe('webhook_invalid_signature');
+            expect(execute).not.toHaveBeenCalled();
+        });
+
+        it('rejects a payload without installation id or a request without the app id header', async () => {
             flagMocks.isGithubAppConnectionCredentialsEnabled.mockResolvedValue(true);
             const { nango } = makeNango({ emptyIntegration: true });
-            const find = mockConnections(nango);
+            const find = mockConnections();
             const noInstallation = JSON.stringify({ action: 'opened' });
 
             const result = await GithubAppWebhookRouting.default(
@@ -237,7 +247,7 @@ describe('github-app-webhook-routing', () => {
 
         it('ignores connection secrets when the flag is off', async () => {
             const { nango, execute } = makeNango({ emptyIntegration: true });
-            const find = mockConnections(nango);
+            const find = mockConnections();
 
             const result = await GithubAppWebhookRouting.default(nango, appHeaders(signWith(WEBHOOK_SECRET)), body as never, rawBody);
 
@@ -249,7 +259,7 @@ describe('github-app-webhook-routing', () => {
         it('does not look at connections when the integration has an app', async () => {
             flagMocks.isGithubAppConnectionCredentialsEnabled.mockResolvedValue(true);
             const { nango } = makeNango();
-            const find = mockConnections(nango);
+            const find = mockConnections();
 
             const result = await GithubAppWebhookRouting.default(nango, appHeaders(signWith(WEBHOOK_SECRET)), body as never, rawBody);
 
