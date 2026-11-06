@@ -56,11 +56,11 @@ export const SpendAlerts: React.FC = () => {
                 rowActions={
                     <>
                         <SpendAlertDialog thresholdInCents={thresholdInCents} currency={currency} floorInCents={floorInCents}>
-                            <IconButton variant="ghost" size="xs" label="Edit spend alert">
+                            <IconButton variant="ghost" size="md" label="Edit spend alert">
                                 <Pencil />
                             </IconButton>
                         </SpendAlertDialog>
-                        <IconButton variant="ghost" size="xs" label="Remove spend alert" onClick={handleRemove}>
+                        <IconButton variant="ghost" size="md" label="Remove spend alert" onClick={handleRemove}>
                             <Trash2 />
                         </IconButton>
                     </>
