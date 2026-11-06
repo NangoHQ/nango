@@ -6,7 +6,7 @@ import type { FunctionSource } from '../syncConfigs/db.js';
 import type { FunctionListType, FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 import type { JSONSchema7 } from 'json-schema';
 
-export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
+export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'> | 'tool' | 'function';
 
 export type FunctionErrorCode =
     | 'invalid_request'

@@ -66,6 +66,17 @@ describe(`DELETE ${route}`, () => {
         expect(res.json.error.code).toBe('invalid_query_params');
     });
 
+    it.each(['tool', 'function'] as const)('should reject a %s as not supported yet', async (type) => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const res = await api.fetch(route, { method: 'DELETE', token: apiKey.secret, params: { uniqueKey: 'github', name: 'my-tool' }, query: { type } });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json.error).toStrictEqual({ code: 'invalid_request', message: `Deleting a ${type} is not supported yet` });
+    });
+
     it('should reject repo functions (managed by nango deploy)', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
