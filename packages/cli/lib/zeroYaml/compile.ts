@@ -17,6 +17,7 @@ import { badExportCompilerError, CompileError, fileErrorToText, ReadableError, t
 
 // import type { BabelErrorType } from './constants.js';
 import type { SourcemapOption } from '../types.js';
+import type { scopes } from '@nangohq/runner-sdk';
 import type { Feature, Result } from '@nangohq/types';
 
 /**
@@ -532,6 +533,35 @@ function resolveLocalImport(baseDir: string, importSource: string): string | nul
 type AugmentedExport = babel.types.ExportNamedDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
 type AugmentedExportDefault = babel.types.ExportDefaultDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
 
+type ScopesOperator = keyof typeof scopes;
+type ScopesArgument = babel.types.Expression | babel.types.SpreadElement;
+
+const scopesRequirementValue: { [K in ScopesOperator]: (values: ScopesArgument[]) => babel.types.Expression } = {
+    all: (values) => babel.types.arrayExpression(values),
+    any: (values) => babel.types.arrayExpression(values),
+    none: () => babel.types.booleanLiteral(true)
+};
+
+function isScopesOperator(name: string): name is ScopesOperator {
+    return Object.hasOwn(scopesRequirementValue, name);
+}
+
+function resolveScopesCall(reference: babel.NodePath): { call: babel.NodePath<babel.types.CallExpression>; operator: ScopesOperator } | null {
+    const member = reference.parentPath;
+    if (!member?.isMemberExpression() || member.node.object !== reference.node || member.node.computed || !babel.types.isIdentifier(member.node.property)) {
+        return null;
+    }
+    const operator = member.node.property.name;
+    if (!isScopesOperator(operator)) {
+        return null;
+    }
+    const call = member.parentPath;
+    if (!call?.isCallExpression() || call.node.callee !== member.node) {
+        return null;
+    }
+    return { call, operator };
+}
+
 /**
  * This plugin is used to remove the create wrappers from the exports.
  *
@@ -586,9 +616,11 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         'batchDelete',
         'batchSave',
         'batchSend',
+        'clearCheckpoint',
         'delete',
         'deleteRecordsFromPreviousExecutions',
         'get',
+        'getCheckpoint',
         'getConnection',
         'getEnvironmentVariables',
         'getFieldMapping',
@@ -598,12 +630,14 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         'post',
         'proxy',
         'put',
+        'saveCheckpoint',
         'setFieldMapping',
         'setMergingStrategy',
         'setMetadata',
         'trackDeletesEnd',
         'trackDeletesStart',
-        'triggerAction'
+        'triggerAction',
+        'updateMetadata'
     ];
     const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
     const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
@@ -619,6 +653,44 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                         const kind = path.node.importKind;
                         if (typeof source !== 'string') {
                             return;
+                        }
+
+                        if (source === 'nango' && kind !== 'type') {
+                            for (const specifier of path.get('specifiers')) {
+                                if (
+                                    !specifier.isImportSpecifier() ||
+                                    specifier.node.importKind === 'type' ||
+                                    !t.isIdentifier(specifier.node.imported, { name: 'scopes' })
+                                ) {
+                                    continue;
+                                }
+                                const localName = specifier.node.local.name;
+                                for (const reference of path.scope.getBinding(localName)?.referencePaths ?? []) {
+                                    if (reference.findParent((parent) => parent.isTSType())) {
+                                        continue;
+                                    }
+                                    const resolved = resolveScopesCall(reference);
+                                    if (!resolved) {
+                                        throw new CompileError(
+                                            'unsupported_scopes_usage',
+                                            reference.node.loc?.start.line || lineNumber,
+                                            `'${localName}' must be called directly as one of: ${Object.keys(scopesRequirementValue)
+                                                .map((operator) => `${localName}.${operator}()`)
+                                                .join(', ')}`
+                                        );
+                                    }
+                                    const { call, operator } = resolved;
+                                    const values = call.node.arguments.filter(
+                                        (argument): argument is ScopesArgument => t.isExpression(argument) || t.isSpreadElement(argument)
+                                    );
+                                    call.replaceWith(t.objectExpression([t.objectProperty(t.identifier(operator), scopesRequirementValue[operator](values))]));
+                                }
+                                specifier.remove();
+                                if (path.node.specifiers.length === 0) {
+                                    path.remove();
+                                    return;
+                                }
+                            }
                         }
 
                         // Allow relative path imports (./path or ../path)

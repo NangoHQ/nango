@@ -106,7 +106,7 @@ export interface BaseProvider {
     body_format?: OAuthBodyFormatType;
     require_client_certificate?: boolean;
     allow_unverified_https?: boolean;
-    token_request_auth_method?: 'basic' | 'custom' | 'private_key_jwt';
+    token_request_auth_method?: 'basic' | 'custom' | 'private_key_jwt' | 'none';
     available_scopes?: string[];
 }
 

@@ -35,8 +35,10 @@ export * from './services/sync/job.service.js';
 export * from './services/sync/config/config.service.js';
 export * from './services/sync/config/endpoint.service.js';
 export * from './services/sync/config/deploy.service.js';
+export * from './services/sync/config/deployScope.js';
 export * from './services/endUser.service.js';
-export type { CreateEnvironmentError, CreateEnvironmentSettings } from './services/environment.service.js';
+export { CreateEnvironmentError, UpdateEnvironmentError } from './services/environment.service.js';
+export type { CreateEnvironmentSettings, UpdateEnvironmentSettings } from './services/environment.service.js';
 export type { RunSyncCommandErrorCode, RunSyncCommandResult } from './services/sync/manager.service.js';
 export * from './services/tags.service.js';
 export * from './services/tags/schema.js';
@@ -70,6 +72,8 @@ export * as connectUISettingsService from './services/connect-ui-settings.servic
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
 export { listCatalogTools, getCatalogTool, isTemplatesZeroPath } from './services/catalog/actions.js';
 export type { CatalogTool } from './services/catalog/actions.js';
+export { findCatalogFunctions } from './services/catalog/functions.js';
+export type { CatalogFunction } from './services/catalog/functions.js';
 export { resolveRunnableTool } from './services/catalog/resolveTool.js';
 export type { ResolveRunnableToolResult } from './services/catalog/resolveTool.js';
 

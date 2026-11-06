@@ -412438,7 +412438,7 @@
                 "output": ["ActionOutput_google_mail_getmessage"],
                 "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
                 "usedModels": ["ActionInput_google_mail_getmessage", "ActionOutput_google_mail_getmessage"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_google_mail_getmessage": {
@@ -412688,7 +412688,7 @@
                 "output": ["ActionOutput_google_mail_getthread"],
                 "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
                 "usedModels": ["ActionInput_google_mail_getthread", "ActionOutput_google_mail_getthread"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_google_mail_getthread": {
@@ -413194,7 +413194,7 @@
                 "output": ["ActionOutput_google_mail_listmessages"],
                 "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
                 "usedModels": ["ActionInput_google_mail_listmessages", "ActionOutput_google_mail_listmessages"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_google_mail_listmessages": {
@@ -413333,7 +413333,7 @@
                 "output": ["ActionOutput_google_mail_listthreads"],
                 "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
                 "usedModels": ["ActionInput_google_mail_listthreads", "ActionOutput_google_mail_listthreads"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_google_mail_listthreads": {
@@ -413447,7 +413447,7 @@
                 "output": ["ActionOutput_google_mail_listwatchhistory"],
                 "scopes": ["https://www.googleapis.com/auth/gmail.modify"],
                 "usedModels": ["ActionInput_google_mail_listwatchhistory", "ActionOutput_google_mail_listwatchhistory"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_google_mail_listwatchhistory": {
@@ -501853,6 +501853,1689 @@
         },
         "sdkVersion": "0.71.13",
         "symLinkTargetName": "ingenious-build"
+    },
+    {
+        "providerConfigKey": "instagram",
+        "actions": [
+            {
+                "type": "action",
+                "description": "Reply to a comment on Instagram media.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_createcommentreply",
+                "name": "create-comment-reply",
+                "output": ["ActionOutput_instagram_createcommentreply"],
+                "scopes": ["instagram_business_basic", "instagram_business_manage_comments"],
+                "usedModels": ["ActionInput_instagram_createcommentreply", "ActionOutput_instagram_createcommentreply"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_createcommentreply": {
+                            "type": "object",
+                            "properties": {
+                                "comment_id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "The ID of the Instagram comment to reply to. Example: \"17873440459141021\""
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "The text of the reply comment. Example: \"Thanks for sharing!\""
+                                }
+                            },
+                            "required": ["comment_id", "message"],
+                            "additionalProperties": false,
+                            "description": "Input for replying to an Instagram comment."
+                        },
+                        "ActionOutput_instagram_createcommentreply": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "The ID of the newly created reply comment."
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "The newly created reply comment."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Create an Instagram publishing container for an image, video, reel, or carousel item.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_createmediacontainer",
+                "name": "create-media-container",
+                "output": ["ActionOutput_instagram_createmediacontainer"],
+                "scopes": ["instagram_business_basic", "instagram_business_content_publish"],
+                "usedModels": ["ActionInput_instagram_createmediacontainer", "ActionOutput_instagram_createmediacontainer"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_createmediacontainer": {
+                            "type": "object",
+                            "properties": {
+                                "ig_user_id": {
+                                    "description": "Instagram professional account ID (the user_id from get-account) to create the container for. Omit to use the authenticated account (/me). Pass the same value to publish-media-container. Example: \"17841446782016736\"",
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "image_url": {
+                                    "description": "Public URL of a JPEG image to upload. Required for image posts and image carousel items.",
+                                    "type": "string"
+                                },
+                                "video_url": {
+                                    "description": "Public URL of a video to upload. Required for video, reel, and video carousel item containers.",
+                                    "type": "string"
+                                },
+                                "media_type": {
+                                    "description": "Container type. Use REELS or STORIES for those formats, VIDEO for a feed video, and CAROUSEL for a carousel parent. Defaults to IMAGE when image_url is provided.",
+                                    "type": "string",
+                                    "enum": ["IMAGE", "VIDEO", "REELS", "STORIES", "CAROUSEL"]
+                                },
+                                "caption": {
+                                    "description": "Caption for the media. Not supported for carousel child containers or stories.",
+                                    "type": "string"
+                                },
+                                "alt_text": {
+                                    "description": "Alternative text for accessibility on image posts.",
+                                    "type": "string"
+                                },
+                                "is_carousel_item": {
+                                    "description": "Set to true when this container is an item in a carousel; the parent CAROUSEL container references its ID.",
+                                    "type": "boolean"
+                                },
+                                "children": {
+                                    "description": "Ordered container IDs of the carousel items. Required when media_type is CAROUSEL.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "description": "Media container ID of a carousel item. Example: \"18064105307559401\""
+                                    }
+                                },
+                                "location_id": {
+                                    "description": "Instagram location page ID to tag in the media. Example: \"213385402\"",
+                                    "type": "string"
+                                },
+                                "user_tags": {
+                                    "description": "Instagram users to tag in the media, each with a username and normalized x/y position.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "username": {
+                                                "type": "string",
+                                                "description": "Instagram username to tag, without the @ symbol. Example: \"nangodev\""
+                                            },
+                                            "x": {
+                                                "type": "number",
+                                                "description": "Horizontal position of the tag relative to the image width, typically between 0 and 1. Example: 0.5"
+                                            },
+                                            "y": {
+                                                "type": "number",
+                                                "description": "Vertical position of the tag relative to the image height, typically between 0 and 1. Example: 0.5"
+                                            }
+                                        },
+                                        "required": ["username", "x", "y"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "collaborators": {
+                                    "description": "Instagram usernames to invite as collaborators on the post.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "description": "Instagram username of a collaborator. Example: \"nangodev\""
+                                    }
+                                },
+                                "cover_url": {
+                                    "description": "Public URL of an image to use as the reel cover. Applies to reels only.",
+                                    "type": "string"
+                                },
+                                "thumb_offset": {
+                                    "description": "Offset in milliseconds of the video frame to use as the thumbnail. Applies to videos and reels.",
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                },
+                                "share_to_feed": {
+                                    "description": "Whether a reel should also appear in the account feed.",
+                                    "type": "boolean"
+                                },
+                                "audio_name": {
+                                    "description": "Name to display for the audio used in a reel.",
+                                    "type": "string"
+                                },
+                                "is_ai_generated": {
+                                    "description": "Set to true to self-disclose that the media was generated with AI.",
+                                    "type": "boolean"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Parameters for creating an Instagram publishing container for an image, video, reel, story, or carousel."
+                        },
+                        "ActionOutput_instagram_createmediacontainer": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "ID of the created media container. Pass it to the publish-media-container action to publish it. Example: \"18064105307559401\""
+                                },
+                                "uri": {
+                                    "description": "Resumable upload URI returned for resumable video uploads. Example: \"https://rupload.facebook.com/ig-api-upload/v26.0/18064105307559401\"",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "The created Instagram media container ID and optional resumable upload URI."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Delete an Instagram comment by comment ID.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_deletecomment",
+                "name": "delete-comment",
+                "output": ["ActionOutput_instagram_deletecomment"],
+                "scopes": ["instagram_business_basic", "instagram_business_manage_comments"],
+                "usedModels": ["ActionInput_instagram_deletecomment", "ActionOutput_instagram_deletecomment"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_deletecomment": {
+                            "type": "object",
+                            "properties": {
+                                "comment_id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "The Instagram comment ID to delete. Example: \"17895695668004550\""
+                                }
+                            },
+                            "required": ["comment_id"],
+                            "additionalProperties": false,
+                            "description": "Input for deleting an Instagram comment."
+                        },
+                        "ActionOutput_instagram_deletecomment": {
+                            "type": "object",
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "description": "Whether Instagram accepted and processed the comment deletion."
+                                }
+                            },
+                            "required": ["success"],
+                            "additionalProperties": false,
+                            "description": "Result of the Instagram comment deletion."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Attempt to delete a published Instagram media object.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_deletemedia",
+                "name": "delete-media",
+                "output": ["ActionOutput_instagram_deletemedia"],
+                "scopes": ["instagram_business_basic", "instagram_business_content_publish"],
+                "usedModels": ["ActionInput_instagram_deletemedia", "ActionOutput_instagram_deletemedia"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_deletemedia": {
+                            "type": "object",
+                            "properties": {
+                                "mediaId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "The ID of the published Instagram media object to delete."
+                                }
+                            },
+                            "required": ["mediaId"],
+                            "additionalProperties": false,
+                            "description": "Input for deleting an Instagram media object."
+                        },
+                        "ActionOutput_instagram_deletemedia": {
+                            "type": "object",
+                            "properties": {
+                                "mediaId": {
+                                    "type": "string",
+                                    "description": "The ID of the media object targeted by the delete request."
+                                },
+                                "deleted": {
+                                    "type": "boolean",
+                                    "description": "Whether Instagram confirmed the deletion. False when the provider rejects the request."
+                                },
+                                "error": {
+                                    "description": "Provider error details when the deletion was not accepted.",
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Human-readable provider error message."
+                                        },
+                                        "type": {
+                                            "description": "Provider error type, such as \"IGApiException\".",
+                                            "type": "string"
+                                        },
+                                        "code": {
+                                            "description": "Numeric provider error code.",
+                                            "type": "number"
+                                        },
+                                        "subcode": {
+                                            "description": "Numeric provider error subcode.",
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["message"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["mediaId", "deleted"],
+                            "additionalProperties": false,
+                            "description": "Result of an Instagram media deletion attempt."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Retrieve Instagram business or creator account details.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_getaccount",
+                "name": "get-account",
+                "output": ["ActionOutput_instagram_getaccount"],
+                "scopes": ["instagram_business_basic"],
+                "usedModels": ["ActionInput_instagram_getaccount", "ActionOutput_instagram_getaccount"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_getaccount": {
+                            "type": "object",
+                            "properties": {
+                                "ig_user_id": {
+                                    "description": "Instagram professional account ID (user_id) to retrieve. Omit to use the authenticated account. Example: \"17841446782016736\"",
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Optional account selector for the Instagram account lookup."
+                        },
+                        "ActionOutput_instagram_getaccount": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "App-scoped Instagram user ID. Example: \"27136802592672293\""
+                                },
+                                "user_id": {
+                                    "description": "Instagram professional account ID used by webhooks and other Instagram Platform APIs. Example: \"17841446782016736\"",
+                                    "type": "string"
+                                },
+                                "username": {
+                                    "description": "Instagram username. Example: \"nangodev\"",
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "description": "Display name shown on the Instagram profile.",
+                                    "type": "string"
+                                },
+                                "biography": {
+                                    "description": "Profile bio text. Omitted when the account has no bio.",
+                                    "type": "string"
+                                },
+                                "website": {
+                                    "description": "Website URL listed in the profile. Omitted when the account has no website.",
+                                    "type": "string"
+                                },
+                                "profile_picture_url": {
+                                    "description": "URL of the account profile picture. Omitted when the account has no profile picture.",
+                                    "type": "string"
+                                },
+                                "followers_count": {
+                                    "description": "Number of accounts following this Instagram account.",
+                                    "type": "number"
+                                },
+                                "follows_count": {
+                                    "description": "Number of Instagram accounts this account follows.",
+                                    "type": "number"
+                                },
+                                "media_count": {
+                                    "description": "Number of media objects published by this Instagram account.",
+                                    "type": "number"
+                                },
+                                "account_type": {
+                                    "description": "Instagram professional account type, such as \"BUSINESS\" or \"MEDIA_CREATOR\".",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "Instagram business or creator account details."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Retrieve a single Instagram comment.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_getcomment",
+                "name": "get-comment",
+                "output": ["ActionOutput_instagram_getcomment"],
+                "scopes": ["instagram_business_basic", "instagram_business_manage_comments"],
+                "usedModels": ["ActionInput_instagram_getcomment", "ActionOutput_instagram_getcomment"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_getcomment": {
+                            "type": "object",
+                            "properties": {
+                                "comment_id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "The Instagram comment ID to retrieve. Example: \"17881770991003328\""
+                                }
+                            },
+                            "required": ["comment_id"],
+                            "additionalProperties": false,
+                            "description": "Input for retrieving a single Instagram comment."
+                        },
+                        "ActionOutput_instagram_getcomment": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "description": "The Instagram comment ID.",
+                                    "type": "string"
+                                },
+                                "text": {
+                                    "description": "The text content of the comment.",
+                                    "type": "string"
+                                },
+                                "like_count": {
+                                    "description": "The number of likes the comment has received.",
+                                    "type": "number"
+                                },
+                                "timestamp": {
+                                    "description": "The ISO 8601 timestamp when the comment was created. Example: \"2017-05-19T23:27:28+0000\".",
+                                    "type": "string"
+                                },
+                                "parent_id": {
+                                    "description": "The parent comment ID when this comment is a reply. Omitted for top-level comments.",
+                                    "type": "string"
+                                },
+                                "username": {
+                                    "description": "The username of the Instagram account that authored the comment.",
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "A single Instagram comment."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Retrieve insights metrics for an Instagram media object.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_getmediainsights",
+                "name": "get-media-insights",
+                "output": ["ActionOutput_instagram_getmediainsights"],
+                "scopes": ["instagram_business_basic", "instagram_business_manage_insights"],
+                "usedModels": ["ActionInput_instagram_getmediainsights", "ActionOutput_instagram_getmediainsights"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_getmediainsights": {
+                            "type": "object",
+                            "properties": {
+                                "media_id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "The Instagram media object ID to retrieve insights for. Example: \"17917362834521812\""
+                                },
+                                "metrics": {
+                                    "description": "Insight metrics to request. When omitted, a default set appropriate for the media product type is used.",
+                                    "minItems": 1,
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    }
+                                }
+                            },
+                            "required": ["media_id"],
+                            "additionalProperties": false,
+                            "description": "Input for retrieving insights for an Instagram media object."
+                        },
+                        "ActionOutput_instagram_getmediainsights": {
+                            "type": "object",
+                            "properties": {
+                                "media_id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "The Instagram media object ID the insights belong to."
+                                },
+                                "metrics": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "Metric name, such as \"reach\" or \"likes\"."
+                                            },
+                                            "title": {
+                                                "description": "Human-readable metric title.",
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "description": "Human-readable explanation of what the metric measures.",
+                                                "type": "string"
+                                            },
+                                            "period": {
+                                                "type": "string",
+                                                "description": "Time period over which the metric was measured, typically \"lifetime\"."
+                                            },
+                                            "value": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "description": "Numeric value of the metric, or null when the provider returns no value."
+                                            },
+                                            "id": {
+                                                "description": "Provider identifier for the metric result.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["name", "period", "value"],
+                                        "additionalProperties": false
+                                    },
+                                    "description": "Insight metrics returned by the provider."
+                                }
+                            },
+                            "required": ["media_id", "metrics"],
+                            "additionalProperties": false,
+                            "description": "Insight metrics for an Instagram media object."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Retrieve a single Instagram media object.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_getmedia",
+                "name": "get-media",
+                "output": ["ActionOutput_instagram_getmedia"],
+                "scopes": ["instagram_business_basic"],
+                "usedModels": ["ActionInput_instagram_getmedia", "ActionOutput_instagram_getmedia"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_getmedia": {
+                            "type": "object",
+                            "properties": {
+                                "media_id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "The Instagram media ID. Example: \"1234567890\""
+                                }
+                            },
+                            "required": ["media_id"],
+                            "additionalProperties": false,
+                            "description": "Identifies the Instagram media object to retrieve."
+                        },
+                        "ActionOutput_instagram_getmedia": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "The Instagram media ID."
+                                },
+                                "caption": {
+                                    "description": "The media caption, omitted when the media has no caption.",
+                                    "type": "string"
+                                },
+                                "media_type": {
+                                    "type": "string",
+                                    "description": "The media type, such as IMAGE, VIDEO, or CAROUSEL_ALBUM."
+                                },
+                                "media_url": {
+                                    "description": "A signed CDN URL for the media content, omitted when the media has no downloadable URL.",
+                                    "type": "string"
+                                },
+                                "permalink": {
+                                    "description": "The public Instagram permalink for the media.",
+                                    "type": "string"
+                                },
+                                "timestamp": {
+                                    "description": "The media creation time in ISO 8601 format with offset.",
+                                    "type": "string"
+                                },
+                                "like_count": {
+                                    "description": "The number of likes on the media.",
+                                    "type": "number"
+                                },
+                                "comments_count": {
+                                    "description": "The number of comments counted on the media.",
+                                    "type": "number"
+                                }
+                            },
+                            "required": ["id", "media_type"],
+                            "additionalProperties": false,
+                            "description": "A single Instagram media object with its caption, type, URLs, timestamp, and engagement counts."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Retrieve account-level insights for an Instagram business or creator account.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_getuserinsights",
+                "name": "get-user-insights",
+                "output": ["ActionOutput_instagram_getuserinsights"],
+                "scopes": ["instagram_business_basic", "instagram_business_manage_insights"],
+                "usedModels": ["ActionInput_instagram_getuserinsights", "ActionOutput_instagram_getuserinsights"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_getuserinsights": {
+                            "type": "object",
+                            "properties": {
+                                "metric": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Comma-separated metric names to retrieve. Example: \"reach,profile_views\""
+                                },
+                                "period": {
+                                    "type": "string",
+                                    "enum": ["day", "week", "days_28", "month", "lifetime", "total_over_range"],
+                                    "description": "Aggregation period for the metrics. Example: \"day\""
+                                },
+                                "since": {
+                                    "description": "Start of the time range as a Unix timestamp in seconds. Defaults to the last 24 hours.",
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                },
+                                "until": {
+                                    "description": "End of the time range as a Unix timestamp in seconds. Defaults to the current time.",
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                },
+                                "timeframe": {
+                                    "description": "Preset timeframe required by demographic metrics. Overrides since and until for those metrics.",
+                                    "type": "string",
+                                    "enum": ["last_14_days", "last_30_days", "last_90_days", "prev_month", "this_month", "this_week"]
+                                },
+                                "metric_type": {
+                                    "description": "How to aggregate results: \"time_series\" for values per period, or \"total_value\" for a single total with optional breakdowns.",
+                                    "type": "string",
+                                    "enum": ["time_series", "total_value"]
+                                },
+                                "breakdown": {
+                                    "description": "Breakdown dimension for metrics that support it. Example: \"media_product_type\"",
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "breakdowns": {
+                                    "description": "Plural breakdown dimension used by demographic metrics. Example: \"country\"",
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "required": ["metric", "period"],
+                            "additionalProperties": false,
+                            "description": "Input parameters for retrieving account-level insights for an Instagram business or creator account."
+                        },
+                        "ActionOutput_instagram_getuserinsights": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "Metric name. Example: \"reach\""
+                                            },
+                                            "period": {
+                                                "type": "string",
+                                                "description": "Aggregation period returned for the metric. Example: \"day\""
+                                            },
+                                            "title": {
+                                                "description": "Human-readable metric title.",
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "description": "Description of what the metric measures.",
+                                                "type": "string"
+                                            },
+                                            "id": {
+                                                "description": "Provider identifier for the metric query.",
+                                                "type": "string"
+                                            },
+                                            "values": {
+                                                "description": "Values per period when using time-series aggregation.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "value": {
+                                                            "description": "Metric value for the period.",
+                                                            "type": "number"
+                                                        },
+                                                        "end_time": {
+                                                            "description": "End of the period in ISO 8601 format.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "total_value": {
+                                                "description": "Single total value when using total-value aggregation.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "description": "Total aggregated metric value across the requested range.",
+                                                        "type": "number"
+                                                    },
+                                                    "breakdowns": {
+                                                        "description": "Breakdown results for the total value.",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "dimension_keys": {
+                                                                    "description": "Breakdown dimensions included in the results.",
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "results": {
+                                                                    "description": "Results for each breakdown set.",
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "dimension_values": {
+                                                                                "description": "Values for each requested breakdown dimension.",
+                                                                                "type": "array",
+                                                                                "items": {
+                                                                                    "type": "string"
+                                                                                }
+                                                                            },
+                                                                            "value": {
+                                                                                "description": "Metric value for this breakdown set.",
+                                                                                "type": "number"
+                                                                            },
+                                                                            "end_time": {
+                                                                                "description": "End of the period for this breakdown set in ISO 8601 format.",
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "additionalProperties": false
+                                                                    }
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["name", "period"],
+                                        "additionalProperties": false
+                                    },
+                                    "description": "Insights returned for each requested metric."
+                                },
+                                "paging": {
+                                    "description": "Pagination links when the provider returns them.",
+                                    "type": "object",
+                                    "properties": {
+                                        "previous": {
+                                            "description": "URL for the previous page of results.",
+                                            "type": "string"
+                                        },
+                                        "next": {
+                                            "description": "URL for the next page of results.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["data"],
+                            "additionalProperties": false,
+                            "description": "Account-level insights returned for the requested metrics."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "List Instagram Direct conversations for the connected business account.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_listconversations",
+                "name": "list-conversations",
+                "output": ["ActionOutput_instagram_listconversations"],
+                "scopes": ["instagram_business_basic", "instagram_business_manage_messages"],
+                "usedModels": ["ActionInput_instagram_listconversations", "ActionOutput_instagram_listconversations"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_listconversations": {
+                            "type": "object",
+                            "properties": {
+                                "cursor": {
+                                    "description": "Opaque pagination cursor from a previous response (paging.cursors.after). Omit to fetch the first page.",
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "limit": {
+                                    "description": "Maximum number of conversations to return per page (1-100).",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Pagination options for listing Instagram Direct conversations."
+                        },
+                        "ActionOutput_instagram_listconversations": {
+                            "type": "object",
+                            "properties": {
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "description": "Unique identifier of the Instagram Direct conversation."
+                                            },
+                                            "updated_time": {
+                                                "description": "Time the most recent message was added to the conversation, as returned by Instagram.",
+                                                "type": "string"
+                                            },
+                                            "participants": {
+                                                "description": "Participants in the conversation, when Instagram returns them.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string",
+                                                            "description": "Instagram-scoped ID of the conversation participant."
+                                                        },
+                                                        "username": {
+                                                            "description": "Instagram username of the participant, when available.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["id"],
+                                                    "additionalProperties": false
+                                                }
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false
+                                    },
+                                    "description": "Conversations returned for this page, most recent first."
+                                },
+                                "next_cursor": {
+                                    "description": "Cursor to pass as the cursor input to fetch the next page. Absent when there are no more pages.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["items"],
+                            "additionalProperties": false,
+                            "description": "A page of Instagram Direct conversations and the cursor for the next page."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "List child media for an Instagram carousel container.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_listmediachildren",
+                "name": "list-media-children",
+                "output": ["ActionOutput_instagram_listmediachildren"],
+                "scopes": ["instagram_business_basic"],
+                "usedModels": ["ActionInput_instagram_listmediachildren", "ActionOutput_instagram_listmediachildren"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_listmediachildren": {
+                            "type": "object",
+                            "properties": {
+                                "media_id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Instagram media ID of the carousel album. Example: \"17896450804038745\""
+                                }
+                            },
+                            "required": ["media_id"],
+                            "additionalProperties": false,
+                            "description": "Input for listing the child media of an Instagram carousel album."
+                        },
+                        "ActionOutput_instagram_listmediachildren": {
+                            "type": "object",
+                            "properties": {
+                                "children": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "description": "Instagram media ID of the child item."
+                                            },
+                                            "media_type": {
+                                                "description": "Media type of the child item, such as \"IMAGE\" or \"VIDEO\".",
+                                                "type": "string"
+                                            },
+                                            "media_url": {
+                                                "description": "Public URL of the child media. Omitted for some video media.",
+                                                "type": "string"
+                                            },
+                                            "thumbnail_url": {
+                                                "description": "Public URL of the child media thumbnail. Omitted for image media.",
+                                                "type": "string"
+                                            },
+                                            "permalink": {
+                                                "description": "Permanent Instagram URL of the child media, when available.",
+                                                "type": "string"
+                                            },
+                                            "timestamp": {
+                                                "description": "ISO 8601 timestamp of when the child media was created.",
+                                                "type": "string"
+                                            },
+                                            "username": {
+                                                "description": "Instagram username of the account that created the child media.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false
+                                    },
+                                    "description": "Child media items contained in the carousel album."
+                                }
+                            },
+                            "required": ["children"],
+                            "additionalProperties": false,
+                            "description": "Child media items of an Instagram carousel album."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "List comments on an Instagram media object.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_listmediacomments",
+                "name": "list-media-comments",
+                "output": ["ActionOutput_instagram_listmediacomments"],
+                "scopes": ["instagram_business_basic", "instagram_business_manage_comments"],
+                "usedModels": ["ActionInput_instagram_listmediacomments", "ActionOutput_instagram_listmediacomments"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_listmediacomments": {
+                            "type": "object",
+                            "properties": {
+                                "media_id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Instagram media ID whose comments should be listed. Example: \"17895695668004550\""
+                                },
+                                "fields": {
+                                    "description": "Comment fields to return. The comment ID is always requested. Defaults to id, text, username, timestamp, like_count, and parent_id.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": ["id", "text", "username", "timestamp", "like_count", "parent_id"]
+                                    }
+                                },
+                                "limit": {
+                                    "description": "Maximum number of comments to return per page, from 1 to 50.",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 50
+                                },
+                                "cursor": {
+                                    "description": "Opaque pagination cursor from a previous response. Omit it to fetch the first page.",
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "required": ["media_id"],
+                            "additionalProperties": false,
+                            "description": "Filters for listing comments on an Instagram media object."
+                        },
+                        "ActionOutput_instagram_listmediacomments": {
+                            "type": "object",
+                            "properties": {
+                                "comments": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "description": "Unique Instagram comment ID. Example: \"17870913679156914\""
+                                            },
+                                            "text": {
+                                                "description": "Text content of the comment.",
+                                                "type": "string"
+                                            },
+                                            "username": {
+                                                "description": "Username of the account that posted the comment.",
+                                                "type": "string"
+                                            },
+                                            "timestamp": {
+                                                "description": "Time the comment was posted, in ISO 8601 format. Example: \"2026-11-04T14:13:03+0000\"",
+                                                "type": "string"
+                                            },
+                                            "like_count": {
+                                                "description": "Number of likes on the comment.",
+                                                "type": "number"
+                                            },
+                                            "parent_id": {
+                                                "description": "ID of the parent comment when the comment is a reply.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false
+                                    },
+                                    "description": "Comments returned for the requested media object."
+                                },
+                                "next_cursor": {
+                                    "description": "Cursor to pass as cursor on the next request. Omitted when there are no more pages.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["comments"],
+                            "additionalProperties": false,
+                            "description": "A page of comments for an Instagram media object."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "List media published by an Instagram business or creator account.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_listmedia",
+                "name": "list-media",
+                "output": ["ActionOutput_instagram_listmedia"],
+                "scopes": ["instagram_business_basic"],
+                "usedModels": ["ActionInput_instagram_listmedia", "ActionOutput_instagram_listmedia"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_listmedia": {
+                            "type": "object",
+                            "properties": {
+                                "ig_user_id": {
+                                    "description": "Instagram professional account ID (the user_id from get-account) to list media for. Omit to use the connected account. Example: \"17841446782016736\"",
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "limit": {
+                                    "description": "Maximum number of media objects to return per page. Defaults to the provider default when omitted. Example: 25",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100
+                                },
+                                "cursor": {
+                                    "description": "Opaque pagination cursor from a previous response next_cursor. Omit to fetch the first page.",
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 2000
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Parameters for listing media published by an Instagram business or creator account."
+                        },
+                        "ActionOutput_instagram_listmedia": {
+                            "type": "object",
+                            "properties": {
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "description": "Instagram media ID. Example: \"17917362834521812\""
+                                            },
+                                            "caption": {
+                                                "description": "Caption text of the media, when one was set.",
+                                                "type": "string"
+                                            },
+                                            "media_type": {
+                                                "description": "Media type returned by Instagram: IMAGE, VIDEO, or CAROUSEL_ALBUM.",
+                                                "type": "string"
+                                            },
+                                            "media_url": {
+                                                "description": "URL of the media resource. For carousel albums this is the album cover.",
+                                                "type": "string"
+                                            },
+                                            "permalink": {
+                                                "description": "Public Instagram permalink for the media. Example: \"https://www.instagram.com/p/DfUpMAMmzpS/\"",
+                                                "type": "string"
+                                            },
+                                            "thumbnail_url": {
+                                                "description": "Thumbnail URL, typically returned for videos.",
+                                                "type": "string"
+                                            },
+                                            "timestamp": {
+                                                "description": "ISO 8601 creation timestamp. Example: \"2026-11-04T14:13:03+0000\"",
+                                                "type": "string"
+                                            },
+                                            "username": {
+                                                "description": "Username of the account that published the media.",
+                                                "type": "string"
+                                            },
+                                            "like_count": {
+                                                "description": "Number of likes on the media.",
+                                                "type": "number"
+                                            },
+                                            "comments_count": {
+                                                "description": "Number of comments on the media.",
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false
+                                    },
+                                    "description": "Media objects published by the account, newest first."
+                                },
+                                "next_cursor": {
+                                    "description": "Opaque cursor to pass as cursor for the next page. Omitted when there are no more results.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["items"],
+                            "additionalProperties": false,
+                            "description": "A page of media published by an Instagram business or creator account."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "List story media for an Instagram business or creator account.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_liststories",
+                "name": "list-stories",
+                "output": ["ActionOutput_instagram_liststories"],
+                "scopes": ["instagram_business_basic"],
+                "usedModels": ["ActionInput_instagram_liststories", "ActionOutput_instagram_liststories"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_liststories": {
+                            "type": "object",
+                            "properties": {
+                                "user_id": {
+                                    "description": "Instagram professional account user ID. Defaults to the authenticated account (\"me\").",
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "pattern": "^\\S+$"
+                                },
+                                "cursor": {
+                                    "description": "Opaque pagination cursor from a previous response. Omit to fetch the first page.",
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "pattern": "^\\S+$"
+                                },
+                                "limit": {
+                                    "description": "Maximum number of stories to return per page.",
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Filters for listing story media for an Instagram account."
+                        },
+                        "ActionOutput_instagram_liststories": {
+                            "type": "object",
+                            "properties": {
+                                "stories": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "description": "Instagram media ID."
+                                            },
+                                            "media_type": {
+                                                "description": "Type of media, such as IMAGE or VIDEO.",
+                                                "type": "string"
+                                            },
+                                            "media_url": {
+                                                "description": "URL of the story media. May be omitted for some video media.",
+                                                "type": "string"
+                                            },
+                                            "thumbnail_url": {
+                                                "description": "URL of the story thumbnail, only available for video media.",
+                                                "type": "string"
+                                            },
+                                            "permalink": {
+                                                "description": "Permanent URL to the story media.",
+                                                "type": "string"
+                                            },
+                                            "caption": {
+                                                "description": "Caption text for the story, if any.",
+                                                "type": "string"
+                                            },
+                                            "timestamp": {
+                                                "description": "ISO 8601 creation timestamp of the story.",
+                                                "type": "string"
+                                            },
+                                            "username": {
+                                                "description": "Username of the account that created the story.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false
+                                    },
+                                    "description": "Story media objects for the account."
+                                },
+                                "next_cursor": {
+                                    "description": "Cursor to pass as \"cursor\" to fetch the next page of stories.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["stories"],
+                            "additionalProperties": false,
+                            "description": "A page of Instagram stories and the cursor for the next page."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Publish a prepared Instagram media container.",
+                "endpoint": null,
+                "input": "ActionInput_instagram_publishmediacontainer",
+                "name": "publish-media-container",
+                "output": ["ActionOutput_instagram_publishmediacontainer"],
+                "scopes": ["instagram_business_basic", "instagram_business_content_publish"],
+                "usedModels": ["ActionInput_instagram_publishmediacontainer", "ActionOutput_instagram_publishmediacontainer"],
+                "version": "1.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_instagram_publishmediacontainer": {
+                            "type": "object",
+                            "properties": {
+                                "ig_user_id": {
+                                    "description": "Instagram professional account ID (the user_id from get-account) that owns the container. Use the same value passed to create-media-container; omit to use the authenticated account (/me). Example: \"17841446782016736\"",
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "creation_id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "ID of a prepared Instagram media container whose status_code is FINISHED."
+                                }
+                            },
+                            "required": ["creation_id"],
+                            "additionalProperties": false,
+                            "description": "Input for publishing a prepared Instagram media container."
+                        },
+                        "ActionOutput_instagram_publishmediacontainer": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "ID of the published Instagram media object."
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "The published Instagram media object."
+                        }
+                    }
+                },
+                "features": []
+            }
+        ],
+        "syncs": [
+            {
+                "type": "sync",
+                "description": "Sync media published by Instagram business or creator accounts in scope.",
+                "auto_start": true,
+                "endpoints": [],
+                "input": "SyncMetadata_instagram_accountmedia",
+                "name": "account-media",
+                "output": ["Media"],
+                "runs": "every hour",
+                "scopes": ["instagram_business_basic"],
+                "sync_type": "full",
+                "track_deletes": false,
+                "usedModels": ["Media", "SyncMetadata_instagram_accountmedia"],
+                "version": "1.0.0",
+                "webhookSubscriptions": [],
+                "json_schema": {
+                    "definitions": {
+                        "Media": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "Unique Instagram media identifier."
+                                },
+                                "caption": {
+                                    "description": "Caption text attached to the media.",
+                                    "type": "string"
+                                },
+                                "media_type": {
+                                    "description": "Instagram media type, such as IMAGE, VIDEO, or CAROUSEL_ALBUM.",
+                                    "type": "string"
+                                },
+                                "media_url": {
+                                    "description": "Signed URL for the image or video file.",
+                                    "type": "string"
+                                },
+                                "permalink": {
+                                    "description": "Public Instagram permalink for the media.",
+                                    "type": "string"
+                                },
+                                "thumbnail_url": {
+                                    "description": "Signed URL for the video thumbnail image.",
+                                    "type": "string"
+                                },
+                                "timestamp": {
+                                    "description": "Publication timestamp reported by Instagram.",
+                                    "type": "string"
+                                },
+                                "username": {
+                                    "description": "Instagram username that published the media.",
+                                    "type": "string"
+                                },
+                                "comments_count": {
+                                    "description": "Number of comments on the media.",
+                                    "type": "number"
+                                },
+                                "like_count": {
+                                    "description": "Number of likes on the media.",
+                                    "type": "number"
+                                },
+                                "is_comment_enabled": {
+                                    "description": "Whether comments are enabled for the media.",
+                                    "type": "boolean"
+                                },
+                                "children": {
+                                    "description": "Carousel child media when the post is a CAROUSEL_ALBUM.",
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Unique identifier of the carousel child media object."
+                                                    },
+                                                    "media_type": {
+                                                        "description": "Type of the carousel child media, such as IMAGE or VIDEO.",
+                                                        "type": "string"
+                                                    },
+                                                    "media_url": {
+                                                        "description": "Signed URL for the carousel child image or video file.",
+                                                        "type": "string"
+                                                    },
+                                                    "thumbnail_url": {
+                                                        "description": "Signed URL for the carousel child video thumbnail.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id"],
+                                                "additionalProperties": false,
+                                                "description": "A single item within an Instagram carousel album."
+                                            },
+                                            "description": "Carousel child media objects returned by Instagram."
+                                        }
+                                    },
+                                    "required": ["data"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "An Instagram media object published by the connected business or creator account."
+                        },
+                        "SyncMetadata_instagram_accountmedia": {
+                            "type": "object",
+                            "properties": {
+                                "ig_user_id": {
+                                    "description": "Instagram professional account ID to sync when it is stored in connection metadata.",
+                                    "type": "string"
+                                },
+                                "user_id": {
+                                    "description": "Alternate Instagram professional account ID used when ig_user_id is not set.",
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Connection metadata that can pin this sync to a specific Instagram professional account."
+                        }
+                    }
+                },
+                "features": ["checkpoints"]
+            },
+            {
+                "type": "sync",
+                "description": "Sync Instagram Direct conversations for the connected business account.",
+                "auto_start": true,
+                "endpoints": [],
+                "input": null,
+                "name": "conversations",
+                "output": ["Conversation"],
+                "runs": "every hour",
+                "scopes": ["instagram_business_basic", "instagram_business_manage_messages"],
+                "sync_type": "full",
+                "track_deletes": false,
+                "usedModels": ["Conversation"],
+                "version": "1.0.0",
+                "webhookSubscriptions": [],
+                "json_schema": {
+                    "definitions": {
+                        "Conversation": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "Unique identifier of the Instagram Direct conversation"
+                                },
+                                "updated_time": {
+                                    "description": "ISO 8601 timestamp when the conversation was last updated",
+                                    "type": "string"
+                                },
+                                "participants": {
+                                    "description": "Participants in the conversation",
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Instagram-scoped ID (IGSID) of the participant"
+                                                    },
+                                                    "username": {
+                                                        "description": "Instagram username of the participant",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id"],
+                                                "additionalProperties": false,
+                                                "description": "A participant in an Instagram Direct conversation"
+                                            },
+                                            "description": "Participants in the conversation"
+                                        }
+                                    },
+                                    "required": ["data"],
+                                    "additionalProperties": false
+                                },
+                                "messages": {
+                                    "description": "Most recent message preview for the conversation, newest first",
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Unique identifier of the message"
+                                                    },
+                                                    "created_time": {
+                                                        "description": "ISO 8601 timestamp when the message was sent",
+                                                        "type": "string"
+                                                    },
+                                                    "from": {
+                                                        "description": "Sender of the message",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "description": "Instagram-scoped ID (IGSID) of the participant"
+                                                            },
+                                                            "username": {
+                                                                "description": "Instagram username of the participant",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["id"],
+                                                        "additionalProperties": false
+                                                    },
+                                                    "message": {
+                                                        "description": "Text content of the message",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id"],
+                                                "additionalProperties": false,
+                                                "description": "A message in an Instagram Direct conversation"
+                                            },
+                                            "description": "Most recent messages in the conversation"
+                                        }
+                                    },
+                                    "required": ["data"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "An Instagram Direct conversation between the connected business account and one or more participants"
+                        }
+                    }
+                },
+                "features": ["checkpoints"]
+            },
+            {
+                "type": "sync",
+                "description": "Sync comments for Instagram media items in scope.",
+                "auto_start": true,
+                "endpoints": [],
+                "input": null,
+                "name": "media-comments",
+                "output": ["MediaComment"],
+                "runs": "every hour",
+                "scopes": ["instagram_business_basic", "instagram_business_manage_comments"],
+                "sync_type": "full",
+                "track_deletes": false,
+                "usedModels": ["MediaComment"],
+                "version": "1.0.0",
+                "webhookSubscriptions": [],
+                "json_schema": {
+                    "definitions": {
+                        "MediaComment": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "Unique identifier for the Instagram comment."
+                                },
+                                "media_id": {
+                                    "type": "string",
+                                    "description": "Identifier of the Instagram media item the comment belongs to."
+                                },
+                                "parent_id": {
+                                    "description": "Identifier of the parent comment when this comment is a reply. Omitted for top-level comments.",
+                                    "type": "string"
+                                },
+                                "text": {
+                                    "description": "Text content of the comment.",
+                                    "type": "string"
+                                },
+                                "timestamp": {
+                                    "description": "ISO 8601 timestamp indicating when the comment was created.",
+                                    "type": "string"
+                                },
+                                "username": {
+                                    "description": "Username of the Instagram account that authored the comment.",
+                                    "type": "string"
+                                },
+                                "like_count": {
+                                    "description": "Number of likes the comment has received.",
+                                    "type": "number"
+                                },
+                                "hidden": {
+                                    "description": "Whether the comment is currently hidden.",
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": ["id", "media_id"],
+                            "additionalProperties": false,
+                            "description": "An Instagram comment or reply posted on a media item."
+                        }
+                    }
+                },
+                "features": ["checkpoints"]
+            },
+            {
+                "type": "sync",
+                "description": "Sync story media for Instagram business or creator accounts in scope.",
+                "auto_start": true,
+                "endpoints": [],
+                "input": "SyncMetadata_instagram_stories",
+                "name": "stories",
+                "output": ["Story"],
+                "runs": "every hour",
+                "scopes": ["instagram_business_basic"],
+                "sync_type": "full",
+                "track_deletes": false,
+                "usedModels": ["Story", "SyncMetadata_instagram_stories"],
+                "version": "1.0.0",
+                "webhookSubscriptions": [],
+                "json_schema": {
+                    "definitions": {
+                        "Story": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "Instagram media ID of the story."
+                                },
+                                "media_type": {
+                                    "description": "Media type returned by Instagram, such as IMAGE or VIDEO.",
+                                    "type": "string"
+                                },
+                                "media_url": {
+                                    "description": "Direct URL to the story media when Instagram returns one.",
+                                    "type": "string"
+                                },
+                                "permalink": {
+                                    "description": "Permanent Instagram URL for the story.",
+                                    "type": "string"
+                                },
+                                "caption": {
+                                    "description": "Caption attached to the story, when present.",
+                                    "type": "string"
+                                },
+                                "timestamp": {
+                                    "description": "ISO 8601 creation timestamp of the story in UTC.",
+                                    "type": "string"
+                                },
+                                "username": {
+                                    "description": "Instagram username that created the story.",
+                                    "type": "string"
+                                },
+                                "thumbnail_url": {
+                                    "description": "Thumbnail URL for video stories, when provided by Instagram.",
+                                    "type": "string"
+                                },
+                                "like_count": {
+                                    "description": "Number of likes on the story, when returned by Instagram.",
+                                    "type": "number"
+                                },
+                                "comments_count": {
+                                    "description": "Number of comments on the story, when returned by Instagram.",
+                                    "type": "number"
+                                },
+                                "shortcode": {
+                                    "description": "Instagram shortcode for the story media.",
+                                    "type": "string"
+                                },
+                                "owner_id": {
+                                    "description": "Instagram user ID of the story owner, when Instagram returns owner details.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["id"],
+                            "additionalProperties": false,
+                            "description": "An Instagram story media object."
+                        },
+                        "SyncMetadata_instagram_stories": {
+                            "type": "object",
+                            "properties": {
+                                "ig_user_id": {
+                                    "description": "Instagram professional account ID to read stories from. Falls back to the authorized account when omitted.",
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Connection metadata for selecting the Instagram professional account to sync stories from."
+                        }
+                    }
+                },
+                "features": ["checkpoints"]
+            }
+        ],
+        "onEventScripts": {
+            "post-connection-creation": [],
+            "pre-connection-deletion": [],
+            "validate-connection": []
+        },
+        "sdkVersion": "0.71.13",
+        "symLinkTargetName": null
     },
     {
         "providerConfigKey": "instantly",

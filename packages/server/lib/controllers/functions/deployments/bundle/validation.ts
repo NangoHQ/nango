@@ -1,8 +1,8 @@
 import * as z from 'zod';
 
-import { providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
+import { providerConfigKeySchema, reconciliationScopeSchema, scriptNameSchema } from '../../../../helpers/validation.js';
 
-import type { FunctionDeploymentBundleBody, FunctionReconciliationScope, FunctionTags, FunctionTriggerDefinition } from '@nangohq/types';
+import type { FunctionDeploymentBundleBody, FunctionTags, FunctionTriggerDefinition, RequiredScopes, ToolTags } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 const schemaReference = z.string().regex(/^#\/definitions\/[a-zA-Z0-9_-]+$/);
@@ -22,13 +22,30 @@ const tagValue = z.union([tagString, z.array(tagString).max(64)], {
         return `Expected string or string[], received ${got}`;
     }
 });
+const requiredScopesGroup = z
+    .tuple([tagString], tagString)
+    .refine((values) => values.length <= 64, { message: 'Required scopes cannot have more than 64 entries' })
+    .refine((values) => new Set(values).size === values.length, { message: 'Duplicate scopes are not allowed' });
+const requiredScopes = z.union(
+    [z.object({ all: requiredScopesGroup }).strict(), z.object({ any: requiredScopesGroup }).strict(), z.object({ none: z.literal(true) }).strict()],
+    {
+        error: 'Expected { all: string[] }, { any: string[] }, or { none: true }'
+    }
+) satisfies z.ZodType<RequiredScopes>;
 const tags = z
-    .record(tagKey, tagValue, {
-        error: (iss) => (iss.code === 'invalid_key' ? iss.issues[0]?.message : undefined)
+    .object({ required_scopes: requiredScopes.optional() })
+    .catchall(tagValue)
+    .superRefine((tags, ctx) => {
+        for (const key of Object.keys(tags)) {
+            const parsed = tagKey.safeParse(key);
+            if (!parsed.success) {
+                ctx.addIssue({ code: 'custom', message: parsed.error.issues[0]?.message ?? 'Invalid tag key', path: [key] });
+            }
+        }
     })
     .refine((tags) => Object.keys(tags).length <= 32, {
         message: 'Functions cannot have more than 32 tags'
-    }) satisfies z.ZodType<FunctionTags>;
+    }) satisfies z.ZodType<FunctionTags | ToolTags>;
 
 const trigger = z.discriminatedUnion('kind', [
     z.object({ kind: z.literal('none') }).strict(),
@@ -160,10 +177,7 @@ const functionConfig = z
 
 export const validation = z
     .object({
-        reconciliationScope: z.discriminatedUnion('kind', [
-            z.object({ kind: z.literal('environment') }).strict(),
-            z.object({ kind: z.literal('integration'), integrationId: providerConfigKeySchema }).strict()
-        ]) satisfies z.ZodType<FunctionReconciliationScope>,
+        reconciliationScope: reconciliationScopeSchema,
         functions: z.array(functionConfig)
     })
     .strict()
@@ -187,6 +201,20 @@ export const validation = z
         },
         {
             message: 'Functions must match the integration reconciliation scope',
+            path: ['functions']
+        }
+    )
+    .refine(
+        (body) => {
+            if (body.reconciliationScope.kind !== 'function') {
+                return true;
+            }
+            const { integrationId, name } = body.reconciliationScope;
+            const [fn] = body.functions;
+            return body.functions.length === 1 && fn?.integrationId === integrationId && fn.name === name;
+        },
+        {
+            message: 'A function-scoped deployment must contain the scoped function',
             path: ['functions']
         }
     ) satisfies z.ZodType<FunctionDeploymentBundleBody>;

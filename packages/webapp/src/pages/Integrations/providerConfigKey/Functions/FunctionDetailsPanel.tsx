@@ -1,17 +1,17 @@
-import { Ellipsis, ExternalLink, Play, SquareTerminal, Trash2 } from 'lucide-react';
+import { ExternalLink, Play, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
-import { Badge, Button, IconButton } from '@nangohq/design-system';
+import { Badge, Button } from '@nangohq/design-system';
 
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { CopyButton } from '@/components/ui/CopyButton';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
+import { Separator } from '@/components/ui/Separator';
 import { Spinner } from '@/components/ui/Spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { useDeleteIntegrationFunction, useGetIntegration } from '@/hooks/useIntegration';
+import { useDeleteIntegrationFunction } from '@/hooks/useIntegration';
 import { useGetIntegrationFunctionCode, useGetTemplateFunctionCode } from '@/hooks/useIntegrationFunctions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
@@ -23,8 +23,6 @@ import { FunctionSourceLabel } from './FunctionSourceLabel';
 
 import type { DetailsFunction } from './functionDetails.utils';
 import type { ApiIntegration } from '@nangohq/types';
-
-const menuItemClassName = 'text-body-medium-regular';
 
 interface FunctionDetailsPanelProps {
     fn: DetailsFunction;
@@ -38,11 +36,12 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
     const [activeTab, setActiveTab] = useState<'input' | 'output' | 'code'>('input');
-    const fn = useMemo(() => toFunctionDetails(rawFunction, { env, integration: integration.unique_key }), [rawFunction, env, integration.unique_key]);
+    const fn = useMemo(
+        () => toFunctionDetails(rawFunction, { env, integration: integration.unique_key, provider: integration.provider }),
+        [rawFunction, env, integration.unique_key, integration.provider]
+    );
     const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, integration.unique_key, fn.name, fn.delete?.type);
     const { inputSchema, outputSchemas, delete: deletion } = fn;
-    const { data: integrationDetails } = useGetIntegration(env, integration.unique_key);
-    const repoProvider = integrationDetails?.data.symLinkTargetName ?? integration.provider;
     const codeSource = fn.code;
     const isDeployedCode = codeSource.kind === 'deployed';
     const {
@@ -61,14 +60,15 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
         isPending: templateCodePending,
         error: templateCodeError
     } = useGetTemplateFunctionCode({
-        provider: repoProvider,
+        env,
+        provider: integration.provider,
         name: fn.name,
         type: isDeployedCode ? undefined : codeSource.type,
         enabled: !isDeployedCode && activeTab === 'code'
     });
     const codePending = isDeployedCode ? deployedCodePending : templateCodePending;
     const codeError = isDeployedCode ? deployedCodeError : templateCodeError;
-    const code = isDeployedCode ? codeData?.code : templateCode;
+    const code = isDeployedCode ? codeData?.code : templateCode?.code;
 
     const onDelete = useCallback(async () => {
         try {
@@ -86,11 +86,6 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
     }, [deleteFunction, fn.name, onDeleted, toast]);
 
     const { source, pullCommand } = fn;
-    const copyPullCommand = async () => {
-        if (!pullCommand) return;
-        await navigator.clipboard.writeText(pullCommand);
-        toast({ title: 'Pull command copied', variant: 'success' });
-    };
 
     return (
         <aside className="sticky top-0 flex max-h-[calc(100dvh-7rem)] min-h-[min(606px,calc(100dvh-7rem))] w-full flex-col overflow-y-auto overscroll-y-contain bg-surface-panel">
@@ -102,18 +97,14 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                     </div>
                     {fn.description && <p className="type-text-regular-xs text-text-secondary">{fn.description}</p>}
                 </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <IconButton variant="outline" size="sm" label="Function actions" loading={isDeleting}>
-                            <Ellipsis />
-                        </IconButton>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-52">
+                {(canOpenPlayground || deletion) && (
+                    <div className="flex h-5 shrink-0 items-center gap-2">
                         {canOpenPlayground && (
-                            <DropdownMenuItem
-                                className={menuItemClassName}
+                            <Button
+                                variant="link-accent"
+                                size="xs"
                                 disabled={!fn.runType}
-                                onSelect={() => {
+                                onClick={() => {
                                     if (!fn.runType) return;
                                     openPlaygroundWithContext({
                                         source: 'function',
@@ -124,36 +115,31 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                                 }}
                             >
                                 <Play />
-                                Test run
-                            </DropdownMenuItem>
+                                Test run this function
+                            </Button>
                         )}
-                        <DropdownMenuItem className={menuItemClassName} disabled={!pullCommand} onSelect={() => void copyPullCommand()}>
-                            <SquareTerminal />
-                            Copy pull command
-                        </DropdownMenuItem>
+                        {canOpenPlayground && deletion && <Separator orientation="vertical" />}
                         {deletion && (
-                            <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    className={menuItemClassName}
-                                    variant="destructive"
-                                    onSelect={() =>
-                                        void confirm({
-                                            title: 'Delete function?',
-                                            description: deletion.description,
-                                            confirmButtonText: 'Delete function',
-                                            confirmVariant: 'danger',
-                                            onConfirm: onDelete
-                                        })
-                                    }
-                                >
-                                    <Trash2 />
-                                    Delete function
-                                </DropdownMenuItem>
-                            </>
+                            <Button
+                                variant="link-neutral-danger"
+                                size="xs"
+                                loading={isDeleting}
+                                onClick={() =>
+                                    void confirm({
+                                        title: 'Delete function?',
+                                        description: deletion.description,
+                                        confirmButtonText: 'Delete function',
+                                        confirmVariant: 'danger',
+                                        onConfirm: onDelete
+                                    })
+                                }
+                            >
+                                <Trash2 />
+                                Delete
+                            </Button>
                         )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                    </div>
+                )}
             </div>
 
             <div className="pb-6">
@@ -166,7 +152,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                         <FunctionSourceLabel source={source} />
                     </Metadata>
                     {fn.scopes && fn.scopes.length > 0 && (
-                        <Metadata label="Required scopes" className="col-span-2">
+                        <Metadata label={fn.scopesMatch === 'any' ? 'Requires one of these scopes' : 'Required scopes'} className="col-span-2">
                             <div className="flex flex-wrap gap-2">
                                 {fn.scopes.map((scope) => (
                                     <Badge key={scope} variant="secondary">
@@ -190,8 +176,11 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                                 </Button>
                             )}
                         </div>
-                        <div className="rounded-ds-lg bg-surface-panel px-3 py-2.5">
-                            <span className="type-code-medium-xs text-text-secondary">{pullCommand ?? 'Pulling tools is not supported yet.'}</span>
+                        <div className="flex items-center gap-2 rounded-ds-lg bg-surface-panel px-3 py-2.5">
+                            <span className="min-w-0 flex-1 type-code-medium-xs text-text-secondary">
+                                {pullCommand ?? 'Pulling tools is not supported yet.'}
+                            </span>
+                            {pullCommand && <CopyButton text={pullCommand} />}
                         </div>
                     </div>
                 </div>

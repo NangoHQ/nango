@@ -333,6 +333,13 @@ export class IntegrationService {
                         message: 'Nango-provided credentials are unavailable for this provider'
                     })
                 );
+            } else if (provider.integration_config) {
+                return Err(
+                    new IntegrationServiceError({
+                        code: 'invalid_integration_config',
+                        message: "Nango-managed credentials aren't available for providers that use integration_config"
+                    })
+                );
             }
 
             const exists = await configService.getProviderConfig(params.uniqueKey, params.environmentId);

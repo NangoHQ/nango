@@ -115,7 +115,7 @@ Everything below is what you configure directly to run a production instance —
 | Variable | Example | Purpose |
 | --- | --- | --- |
 | `NODE_ENV` | `production` | Runtime mode |
-| `AUTH_ALLOW_SIGNUP` | `false` | Disable open signup |
+| `AUTH_ALLOW_SIGNUP` | `false` | Disable open signup. See [First administrator](#first-administrator) to create your first user |
 | `FLAG_AUTH_ROLES_ENABLED` | `true` | Enable role-based access |
 | `SERVER_PORT` | `8080` | Port the server listens on |
 | `DEFAULT_RATE_LIMIT_PER_MIN` | `200` | Default API rate limit |
@@ -150,7 +150,7 @@ Everything below is what you configure directly to run a production instance —
 | `NANGO_ADMIN_UUID` | `3fa85f64-5717-4562-b3fc-2c963f66afa6` | Matches the env var above |
 | `NANGO_DATABASE_URL` | `postgresql://nango:••••@db.internal:5432/nango` | Postgres connection string |
 | `NANGO_REDIS_URL` | `rediss://:••••@redis.internal:6379` | Redis / Valkey connection string |
-| `NANGO_ADMIN_INVITE_TOKEN` | *(generated, single-use token)* | Token for inviting the first admin |
+| `NANGO_ADMIN_INVITE_TOKEN` | `<your-own-uuid>` | A UUID you generate. Creates the first admin — see [First administrator](#first-administrator) |
 | `AWS_INTEGRATIONS_BUCKET_NAME` | `my-company-nango-integrations` | S3 bucket for compiled integration files |
 | `GCS_INTEGRATIONS_BUCKET_NAME` | `my-company-nango-integrations` | GCS bucket for compiled integration files |
 | `AZURE_INTEGRATIONS_ACCOUNT_NAME` | `mycompanynango` | Azure storage account for compiled integration files |
@@ -167,6 +167,28 @@ Set one object store. On AWS, set `AWS_INTEGRATIONS_BUCKET_NAME`. On Google Clou
 <Tip>
 This is the *minimum* set to get a production instance running. The sections below cover what each optional subsystem (logs, encryption, audit trail, Redis, hardening) additionally needs.
 </Tip>
+
+### First administrator
+
+Setting `AUTH_ALLOW_SIGNUP=false` closes open signup, so the signup form rejects every attempt. The first administrator is created through an invite URL instead, built from `NANGO_ADMIN_INVITE_TOKEN`.
+
+Nothing generates that token for you, and it must be a valid UUID:
+
+```bash
+uuidgen | tr 'A-Z' 'a-z'
+```
+
+Set it as `NANGO_ADMIN_INVITE_TOKEN` and restart the server, since a running instance keeps the environment it started with. Then open:
+
+```
+https://<your-app-url>/signup/<token>
+```
+
+That is the dashboard URL — `NANGO_PUBLIC_SERVER_URL` — which is the same host as the API when the server serves the dashboard itself. The account is created with the `administrator` role; every other user is invited from inside the dashboard, so you need this URL once.
+
+<Warning>
+Treat the token as a secret, and remove it once it has been used. It is not consumed by the first signup and it does not expire, so for as long as it is set, anyone holding that URL can create another administrator. Unset `NANGO_ADMIN_INVITE_TOKEN` and restart the server once your first administrator exists; set it again only if you ever need to bootstrap another one.
+</Warning>
 
 ### Pre-built integrations catalog
 
@@ -238,17 +260,6 @@ NANGO_FEATURE_FLAG_PROXY_FORWARD_ALL_RESPONSE_HEADERS=true
 This serves `true` for the `proxy-forward-all-response-headers` flag on every account on the instance. Flags with no variable set keep their built-in default. Boolean flags accept `true` or `false`. A value that doesn't match the flag's type is ignored, and the flag keeps its default.
 
 The variables apply to the whole process, so there is no per-account targeting or gradual rollout. Set them on every service that evaluates the flag, and note that each service reads them at startup.
-
-#### Two-factor authentication
-
-Two-factor authentication is behind the `mfa` flag, which only the server evaluates. Set these on the server service to enable it:
-
-```bash
-NANGO_FLAG_PROVIDER=env
-NANGO_FEATURE_FLAG_MFA=true
-```
-
-Once the server restarts, users can turn it on from their profile settings by pairing an authenticator app and saving their backup codes. Nango then asks them for a code at login.
 
 #### OAuth state cookie enforcement
 

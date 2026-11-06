@@ -3,11 +3,11 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import db from '@nangohq/database';
 import * as kvstore from '@nangohq/kvstore';
 import { envs } from '@nangohq/logs';
-import { getPlan, getSyncConfigsAsStandardConfig, seeders } from '@nangohq/shared';
+import { getPlan, getSyncConfigsAsStandardConfig, onEventScriptService, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
-import type { DBCustomerKey, DBEnvironment } from '@nangohq/types';
+import type { DBCustomerKey, DBEnvironment, OnEventScriptsByProvider, PostDeploy } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -369,6 +369,229 @@ describe(`POST ${endpoint}`, () => {
             const syncConfigs = await getSyncConfigsAsStandardConfig(env!.id);
             expect(syncConfigs).toHaveLength(1);
             expect(syncConfigs![0]!.syncs[0]!.name).toBe('test2');
+        });
+    });
+
+    describe('reconciliation scope', () => {
+        const flow = (providerConfigKey: string, syncName: string): PostDeploy['Body']['flowConfigs'][number] => ({
+            syncName,
+            fileBody: { js: 'js file', ts: 'ts file' },
+            providerConfigKey,
+            endpoints: [{ method: 'GET', path: `/${syncName}` }],
+            runs: 'every day',
+            type: 'sync',
+            auto_start: false,
+            track_deletes: false,
+            models: [`${syncName}-model`],
+            models_json_schema: { definitions: { [`${syncName}-model`]: { type: 'object' } } }
+        });
+        const onEvents = (providerConfigKey: string): OnEventScriptsByProvider => ({
+            providerConfigKey,
+            scripts: [{ name: `${providerConfigKey}-on-event`, fileBody: { js: 'js file', ts: 'ts file' }, event: 'post-connection-creation' }]
+        });
+        const deployBody = (body: Partial<PostDeploy['Body']>): PostDeploy['Body'] => ({
+            debug: false,
+            flowConfigs: [],
+            nangoYamlBody: '',
+            onEventScriptsByProvider: [],
+            reconcile: true,
+            deployMode: 'all',
+            sdkVersion: '0.61.3-zero',
+            ...body
+        });
+        const remoteState = async (env: DBEnvironment) => {
+            const syncConfigs = await getSyncConfigsAsStandardConfig(env.id);
+            const scripts = await onEventScriptService.getByEnvironmentId(env.id);
+            return {
+                syncs: (syncConfigs ?? []).flatMap((config) => config.syncs.map((sync) => `${config.providerConfigKey}:${sync.name}`)).sort(),
+                onEvents: scripts.map((script) => `${script.providerConfigKey}:${script.name}`).sort()
+            };
+        };
+        const seedDeployedScripts = async (providers = ['github', 'slack']) => {
+            const seed = await seeders.seedAccountEnvAndUser();
+            for (const provider of providers) {
+                await seeders.createConfigSeed(seed.env, provider, provider);
+            }
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.apiKey.secret,
+                body: deployBody({
+                    flowConfigs: providers.map((provider) => flow(provider, `${provider}-sync`)),
+                    onEventScriptsByProvider: providers.map(onEvents)
+                })
+            });
+            isSuccess(res.json);
+            return seed;
+        };
+
+        it('should reject a scope that does not match the deploy mode', async () => {
+            const seed = await seeders.seedAccountEnvAndUser();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.apiKey.secret,
+                body: deployBody({ deployMode: 'integration', reconciliationScope: { kind: 'environment' } })
+            });
+
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error).toMatchObject({
+                code: 'invalid_body',
+                errors: [{ message: 'A reconciliation scope of kind "environment" requires deployMode "all"', path: ['reconciliationScope'] }]
+            });
+        });
+
+        it('should reject scripts outside of the integration scope', async () => {
+            const seed = await seeders.seedAccountEnvAndUser();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.apiKey.secret,
+                body: deployBody({
+                    deployMode: 'integration',
+                    reconciliationScope: { kind: 'integration', integrationId: 'github' },
+                    onEventScriptsByProvider: [onEvents('slack')]
+                })
+            });
+
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error).toMatchObject({
+                code: 'invalid_body',
+                errors: [{ message: 'Scripts must match the integration reconciliation scope', path: ['reconciliationScope'] }]
+            });
+        });
+
+        it('should deploy a package containing only on-event scripts', async () => {
+            const seed = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(seed.env, 'github', 'github');
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.apiKey.secret,
+                body: deployBody({ reconciliationScope: { kind: 'environment' }, onEventScriptsByProvider: [onEvents('github')] })
+            });
+
+            isSuccess(res.json);
+            const scripts = await onEventScriptService.getByEnvironmentId(seed.env.id);
+            expect(scripts.map((script) => `${script.providerConfigKey}:${script.name}`)).toStrictEqual(['github:github-on-event']);
+        });
+
+        it('should deploy scripts for two integrations', async () => {
+            const { env } = await seedDeployedScripts();
+
+            expect(await remoteState(env)).toStrictEqual({
+                syncs: ['github:github-sync', 'slack:slack-sync'],
+                onEvents: ['github:github-on-event', 'slack:slack-on-event']
+            });
+        });
+
+        it.each([
+            { label: 'function scope', options: { reconciliationScope: { kind: 'function', integrationId: 'github', name: 'github-sync' } } },
+            { label: 'legacy deployMode', options: { deployMode: 'single' } },
+            { label: 'legacy singleDeployMode', options: { singleDeployMode: true } }
+        ] as const)('should preview and deploy one script with $label without removing other scripts or on-event hooks', async ({ options }) => {
+            const { env, apiKey } = await seedDeployedScripts();
+            const {
+                deployMode: _deployMode,
+                nangoYamlBody: _nangoYamlBody,
+                ...body
+            } = deployBody({
+                flowConfigs: [flow('github', 'github-sync')]
+            });
+            const before = await remoteState(env);
+            const confirmation = await api.fetch('/sync/deploy/confirmation', {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { ...body, ...options, reconcile: false }
+            });
+
+            isSuccess(confirmation.json);
+            expect(confirmation.json.deletedSyncs).toEqual([]);
+            expect(confirmation.json.deletedActions).toEqual([]);
+            expect(confirmation.json.deletedOnEventScripts).toEqual([]);
+
+            const result = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { ...body, ...options, nangoYamlBody: '' }
+            });
+
+            isSuccess(result.json);
+            expect(await remoteState(env)).toEqual(before);
+            expect(result.json).toMatchObject([{ name: 'github-sync', providerConfigKey: 'github' }]);
+        });
+
+        it('should keep the on-event scripts of other integrations on an integration deploy', async () => {
+            const { env, apiKey } = await seedDeployedScripts();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: deployBody({ deployMode: 'integration', flowConfigs: [flow('github', 'github-sync')], onEventScriptsByProvider: [onEvents('github')] })
+            });
+
+            isSuccess(res.json);
+            expect(await remoteState(env)).toStrictEqual({
+                syncs: ['github:github-sync', 'slack:slack-sync'],
+                onEvents: ['github:github-on-event', 'slack:slack-on-event']
+            });
+        });
+
+        it('should not remove anything on an empty deploy without a scope', async () => {
+            const { env, apiKey } = await seedDeployedScripts();
+            const res = await api.fetch(endpoint, { method: 'POST', token: apiKey.secret, body: deployBody({}) });
+
+            isSuccess(res.json);
+            expect(await remoteState(env)).toStrictEqual({
+                syncs: ['github:github-sync', 'slack:slack-sync'],
+                onEvents: ['github:github-on-event', 'slack:slack-on-event']
+            });
+        });
+
+        it('should preview and remove every script of an integration on an empty integration deploy', async () => {
+            const { env, apiKey } = await seedDeployedScripts();
+            const body = deployBody({ deployMode: 'integration', reconciliationScope: { kind: 'integration', integrationId: 'slack' } });
+            const { nangoYamlBody: _nangoYamlBody, ...confirmationBody } = body;
+            const confirmation = await api.fetch('/sync/deploy/confirmation', {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { ...confirmationBody, reconcile: false }
+            });
+
+            isSuccess(confirmation.json);
+            expect(confirmation.json.deletedSyncs).toMatchObject([{ name: 'slack-sync', providerConfigKey: 'slack' }]);
+            expect(confirmation.json.deletedOnEventScripts).toStrictEqual([
+                { name: 'slack-on-event', providerConfigKey: 'slack', event: 'post-connection-creation' }
+            ]);
+
+            const res = await api.fetch(endpoint, { method: 'POST', token: apiKey.secret, body });
+
+            isSuccess(res.json);
+            expect(await remoteState(env)).toStrictEqual({ syncs: ['github:github-sync'], onEvents: ['github:github-on-event'] });
+        });
+
+        it('should preview and remove every script of the environment on an empty environment deploy', async () => {
+            const { env, apiKey } = await seedDeployedScripts();
+            const body = deployBody({ reconciliationScope: { kind: 'environment' } });
+            const { nangoYamlBody: _nangoYamlBody, ...confirmationBody } = body;
+            const confirmation = await api.fetch('/sync/deploy/confirmation', {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { ...confirmationBody, reconcile: false }
+            });
+
+            isSuccess(confirmation.json);
+            expect(confirmation.json.deletedSyncs.map(({ providerConfigKey, name }) => `${providerConfigKey}:${name}`).sort()).toStrictEqual([
+                'github:github-sync',
+                'slack:slack-sync'
+            ]);
+            expect(confirmation.json.deletedOnEventScripts.map(({ providerConfigKey, name }) => `${providerConfigKey}:${name}`).sort()).toStrictEqual([
+                'github:github-on-event',
+                'slack:slack-on-event'
+            ]);
+
+            const res = await api.fetch(endpoint, { method: 'POST', token: apiKey.secret, body });
+
+            isSuccess(res.json);
+            expect(await remoteState(env)).toStrictEqual({ syncs: [], onEvents: [] });
         });
     });
 

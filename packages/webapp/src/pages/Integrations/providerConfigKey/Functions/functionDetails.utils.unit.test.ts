@@ -8,7 +8,7 @@ import type { JSONSchema7 } from 'json-schema';
 vi.mock('@/features/Playground/input.utils', () => import('../../../../features/Playground/input.utils'));
 vi.mock('@/utils/scripts', () => import('../../../../utils/scripts'));
 
-const context = { env: 'dev', integration: 'github' };
+const context = { env: 'dev', integration: 'github', provider: 'github' };
 const action: ListedNangoActionFunction = {
     name: 'create-issue',
     type: 'action',
@@ -40,7 +40,7 @@ const tool: ListedNangoToolFunction = {
     last_deployed: null,
     input_json_schema: { $ref: '#/definitions/Input', definitions: action.json_schema?.definitions },
     output_json_schema: { $ref: '#/definitions/Output', definitions: action.json_schema?.definitions },
-    meta: { tags: {}, required_scopes: ['issues:write'] }
+    meta: { tags: {}, required_scopes: { all: ['issues:write'] } }
 };
 
 describe('toFunctionDetails', () => {
@@ -93,6 +93,16 @@ describe('toFunctionDetails', () => {
         expect(toFunctionDetails({ ...action, enabled: false }, context).runType).toBeNull();
     });
 
+    it.each([
+        { requiredScopes: { all: ['repo', 'read:org'] as [string, string] }, scopes: ['repo', 'read:org'], scopesMatch: 'all' },
+        { requiredScopes: { any: ['repo', 'public_repo'] as [string, string] }, scopes: ['repo', 'public_repo'], scopesMatch: 'any' },
+        { requiredScopes: { none: true as const }, scopes: [], scopesMatch: 'all' },
+        { requiredScopes: undefined, scopes: [], scopesMatch: 'all' }
+    ])('displays tool scope requirement $requiredScopes', ({ requiredScopes, scopes, scopesMatch }) => {
+        const details = toFunctionDetails({ ...tool, meta: { tags: {}, ...(requiredScopes && { required_scopes: requiredScopes }) } }, context);
+        expect(details).toMatchObject({ scopes, scopesMatch });
+    });
+
     it('keeps templates on catalog source loading with no execution or deletion', () => {
         const template: NangoFunctionTemplate = { name: 'template', type: 'action', input: 'Input', returns: [], json_schema: action.json_schema };
         expect(toFunctionDetails(template, context)).toMatchObject({
@@ -102,5 +112,12 @@ describe('toFunctionDetails', () => {
             delete: undefined,
             pullCommand: 'nango pull github template --catalog -a'
         });
+    });
+
+    it('targets the integration when pulling a template for an integration not named after its provider', () => {
+        const template: NangoFunctionTemplate = { name: 'template', type: 'action', input: 'Input', returns: [], json_schema: action.json_schema };
+        expect(toFunctionDetails(template, { ...context, integration: 'my-github' }).pullCommand).toBe(
+            'nango pull github template --catalog --target my-github -a'
+        );
     });
 });

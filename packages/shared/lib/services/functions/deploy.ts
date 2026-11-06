@@ -53,8 +53,25 @@ export async function prepareDeploymentBundle({
             }
         }
 
+        if (reconciliationScope.kind === 'function') {
+            const [fn] = functions;
+            if (functions.length !== 1 || fn?.integrationId !== reconciliationScope.integrationId || fn.name !== reconciliationScope.name) {
+                return Err(
+                    functionsDeploymentError(
+                        new Error('function_scope_mismatch', {
+                            cause: {
+                                integrationId: reconciliationScope.integrationId,
+                                name: reconciliationScope.name,
+                                functions: functions.map(({ integrationId, name }) => ({ integrationId, name }))
+                            }
+                        })
+                    )
+                );
+            }
+        }
+
         const targetIntegrationIds = new Set(functions.map((fn) => fn.integrationId));
-        if (reconciliationScope.kind === 'integration') {
+        if (reconciliationScope.kind !== 'environment') {
             targetIntegrationIds.add(reconciliationScope.integrationId);
         }
 
@@ -69,13 +86,28 @@ export async function prepareDeploymentBundle({
 
         const deployed = await functionConfigService.search(db.knex, {
             environmentId,
-            filter: reconciliationScope.kind === 'integration' ? { integrationKey: reconciliationScope.integrationId } : undefined
+            filter: (() => {
+                switch (reconciliationScope.kind) {
+                    case 'environment':
+                        return undefined;
+                    case 'function':
+                        return { integrationKey: reconciliationScope.integrationId, name: reconciliationScope.name };
+                    default:
+                        return { integrationKey: reconciliationScope.integrationId };
+                }
+            })()
         });
         if (deployed.isErr()) {
             return Err(functionsDeploymentError(deployed.error));
         }
 
-        return reconcile({ functions, deployed: deployed.value }).mapError(functionsDeploymentError);
+        return reconcile({ functions, deployed: deployed.value })
+            .map((reconciliation) => ({
+                ...reconciliation,
+                // only repo functions are removed when missing from the bundle
+                deleted: reconciliation.deleted.filter(({ currentVersion }) => currentVersion.source === 'repo')
+            }))
+            .mapError(functionsDeploymentError);
     } catch (err) {
         return Err(functionsDeploymentError(err));
     }

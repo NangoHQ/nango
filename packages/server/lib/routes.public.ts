@@ -54,6 +54,7 @@ import { getPublicEnvironment } from './controllers/environment/getEnvironment.j
 import { getPublicEnvironments } from './controllers/environment/getEnvironments.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { patchPublicEnvironmentApiKey } from './controllers/environment/patchApiKey.js';
+import { patchPublicEnvironment } from './controllers/environment/patchEnvironment.js';
 import { postPublicEnvironmentApiKey } from './controllers/environment/postApiKey.js';
 import { postPublicEnvironment } from './controllers/environment/postEnvironment.js';
 import { postPublicRotateWebhookSigningKey } from './controllers/environment/postPublicRotateWebhookSigningKey.js';
@@ -82,6 +83,7 @@ import { getConnectionToolsMcp, postConnectionToolsMcp, requireConnectionMcp } f
 import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
+import { getPublicProviderTemplateCode } from './controllers/providers/provider/templates/getCode.js';
 import { getPublicProviderTemplates } from './controllers/providers/provider/templates/getTemplates.js';
 import { allPublicProxy } from './controllers/proxy/allProxy.js';
 import { getPublicRecords } from './controllers/records/getRecords.js';
@@ -118,6 +120,7 @@ import {
     auditPublicConnectionUpdated,
     auditPublicEnvironmentCreated,
     auditPublicEnvironmentDeleted,
+    auditPublicEnvironmentUpdated,
     auditPublicFunctionDeleted,
     auditPublicIntegrationCreated,
     auditPublicIntegrationDeleted,
@@ -130,6 +133,7 @@ import {
     auditSyncVariantCreated,
     auditSyncVariantDeleted
 } from './middleware/audit/index.js';
+import { catalogCodeRateLimit } from './middleware/catalogCodeRateLimit.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { withEnvironmentTarget } from './middleware/environment-target.middleware.js';
@@ -276,11 +280,13 @@ publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrEnvAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrEnvAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProvider);
 publicAPI.route('/providers/:provider/templates').get(envAuth, withEnvironmentTarget, getPublicProviderTemplates);
+publicAPI.route('/providers/:provider/templates/:name/code').get(envAuth, withEnvironmentTarget, catalogCodeRateLimit, getPublicProviderTemplateCode);
 
 publicAPI.use('/environments', jsonContentTypeMiddleware);
 publicAPI.route('/environments').get(apiAuth, can('account:environments:list'), getPublicEnvironments);
 publicAPI.route('/environments/:environmentUuid').get(apiAuth, can('account:environments:read'), getPublicEnvironment);
 publicAPI.route('/environments').post(apiAuth, auditPublicEnvironmentCreated, can('account:environments:create'), postPublicEnvironment);
+publicAPI.route('/environments/:environmentUuid').patch(apiAuth, auditPublicEnvironmentUpdated, can('account:environments:update'), patchPublicEnvironment);
 publicAPI.route('/environments/:environmentUuid').delete(apiAuth, auditPublicEnvironmentDeleted, can('account:environments:delete'), deletePublicEnvironment);
 publicAPI
     .route('/environments/:environmentUuid/api-keys')
@@ -308,9 +314,16 @@ publicAPI
     .route('/integrations')
     .get(connectSessionOrEnvAuth, can('environment:integrations:list', 'environment:integrations:list_credentials'), getPublicListIntegrations);
 publicAPI.route('/integrations').post(envAuth, auditPublicIntegrationCreated, can('environment:integrations:create'), postPublicIntegration);
+// TODO: remove this deprecated alias of POST /integrations with NANGO_MANAGED credentials (NAN-7880)
 publicAPI
     .route('/integrations/quickstart')
-    .post(envAuth, auditPublicQuickstartIntegrationCreated, can('environment:integrations:create'), postPublicQuickstartIntegration);
+    .post(
+        envAuth,
+        auditPublicQuickstartIntegrationCreated,
+        can('environment:integrations:create'),
+        trackDeprecatedPublicEndpoint('POST /integrations/quickstart'),
+        postPublicQuickstartIntegration
+    );
 publicAPI.route('/integrations/:uniqueKey').patch(envAuth, auditPublicIntegrationUpdated, can('environment:integrations:update'), patchPublicIntegration);
 publicAPI
     .route('/integrations/:uniqueKey')

@@ -13,6 +13,7 @@ export interface FunctionDetails {
     typeLabel: string;
     source: FunctionListSource | 'template';
     scopes: string[];
+    scopesMatch: 'all' | 'any';
     frequency: string | null;
     inputSchema: JSONSchema7 | null;
     outputSchemas: { name: string; schema: JSONSchema7 }[];
@@ -22,7 +23,10 @@ export interface FunctionDetails {
     code: { kind: 'deployed'; type: FunctionListType } | { kind: 'template'; type: FunctionType };
 }
 
-export function toFunctionDetails(fn: DetailsFunction, { env, integration }: { env: string; integration: string }): FunctionDetails {
+export function toFunctionDetails(
+    fn: DetailsFunction,
+    { env, integration, provider }: { env: string; integration: string; provider: string }
+): FunctionDetails {
     const listed = 'enabled' in fn;
     const deleteType = listed && fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn) ? fn.type : undefined;
     const base = {
@@ -42,9 +46,11 @@ export function toFunctionDetails(fn: DetailsFunction, { env, integration }: { e
     };
     if (fn.type === 'tool') {
         const outputSchema = displaySchema(fn.output_json_schema);
+        const requiredScopes = fn.meta.required_scopes;
         return {
             ...base,
-            scopes: fn.meta.required_scopes ?? [],
+            scopes: requiredScopes?.all ?? requiredScopes?.any ?? [],
+            scopesMatch: requiredScopes?.any ? 'any' : 'all',
             inputSchema: displaySchema(fn.input_json_schema),
             outputSchemas: outputSchema ? [{ name: 'Output', schema: outputSchema }] : [],
             pullCommand: null,
@@ -56,6 +62,7 @@ export function toFunctionDetails(fn: DetailsFunction, { env, integration }: { e
     return {
         ...base,
         scopes: fn.scopes ?? [],
+        scopesMatch: 'all',
         inputSchema: displaySchema(input, schema),
         outputSchemas:
             fn.type === 'on-event'
@@ -64,7 +71,7 @@ export function toFunctionDetails(fn: DetailsFunction, { env, integration }: { e
                       const output = displaySchema(schema?.definitions?.[name], schema);
                       return output ? [{ name, schema: output }] : [];
                   }),
-        pullCommand: buildPullCommand({ integration, name: fn.name, type: fn.type, source: listed ? { env } : { catalog: true } }),
+        pullCommand: buildPullCommand({ integration, name: fn.name, type: fn.type, source: listed ? { env } : { catalog: true, provider } }),
         code: listed ? { kind: 'deployed', type: fn.type } : { kind: 'template', type: fn.type }
     };
 }

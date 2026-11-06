@@ -8,12 +8,14 @@ import type { Response } from 'express';
 
 export async function handleRotateWebhookSigningKey({
     res,
-    environmentId
+    environmentId,
+    signingKey
 }: {
     res: Response<PostRotateWebhookSigningKey['Reply'] | PostPublicRotateWebhookSigningKey['Reply'], RequestLocalsWithEnvironment>;
     environmentId: number;
+    signingKey?: string | undefined;
 }): Promise<boolean> {
-    const rotated = await customerKeyService.rotateWebhookSigningKey(db.knex, environmentId);
+    const rotated = await customerKeyService.rotateWebhookSigningKey(db.knex, environmentId, signingKey);
     if (rotated.isErr()) {
         const err = rotated.error;
         if (err instanceof CustomerKeyError && err.code === 'no_webhook_signing_key') {

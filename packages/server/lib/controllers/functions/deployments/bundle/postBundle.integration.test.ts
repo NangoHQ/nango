@@ -297,6 +297,41 @@ describe('function deployment bundle endpoints', () => {
         }
     });
 
+    it('should deploy a single function in a function-scoped bundle without deleting other functions', async () => {
+        const { apiKey, env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const siblingFunction = { ...validFunction, name: 'consumePullRequestWebhook' } satisfies FunctionDeploymentArtifact;
+        const uploadSpy = vi.spyOn(remoteFileService, 'upload').mockImplementation(({ destinationPath }) => Promise.resolve(destinationPath));
+        const deployRequest = async (body: PostFunctionDeploymentBundle['Body']) =>
+            await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body
+            });
+
+        try {
+            const created = await deployRequest({ reconciliationScope: { kind: 'environment' }, functions: [validFunction] });
+            isSuccess(created.json);
+
+            const single = await deployRequest({
+                reconciliationScope: { kind: 'function', integrationId: 'github', name: siblingFunction.name },
+                functions: [siblingFunction]
+            });
+            isSuccess(single.json);
+            expect(single.json).toStrictEqual({
+                created: [{ integrationId: 'github', name: siblingFunction.name }],
+                updated: [],
+                unchanged: [],
+                deleted: []
+            });
+
+            const configs = await db.knex<DBFunctionConfig>('function_configs').where({ environment_id: env.id }).whereNull('deleted_at');
+            expect(configs.map((config) => config.name).sort()).toStrictEqual([siblingFunction.name, validFunction.name].sort());
+        } finally {
+            uploadSpy.mockRestore();
+        }
+    });
+
     it('persists tags', async () => {
         const { apiKey, env } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
