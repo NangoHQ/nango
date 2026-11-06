@@ -4,85 +4,132 @@ import { createRoute, stringifyError } from '@nangohq/utils';
 
 import { applyPersistAuthContext, authenticateSecret, eddsaBearerToken } from './auth.middleware.js';
 import { connectionOwnershipMiddleware } from './connectionOwnership.middleware.js';
+import { syncJobOwnershipMiddleware } from './syncJobOwnership.middleware.js';
 
 import type { AuthLocals } from './auth.middleware.js';
-import type { KeyRegistry, TaskCapabilityScope } from '@nangohq/internal-auth';
+import type { KeyRegistry, TaskCapabilityAuth, TaskCapabilityScope } from '@nangohq/internal-auth';
 import type { Endpoint } from '@nangohq/types';
 import type { RouteHandler } from '@nangohq/utils';
 import type { Express, NextFunction, Request, RequestHandler, Response } from 'express';
 
-/** Set on the capability middleware so server startup can reject a route that skipped `createPersistRoute`. */
-export const PERSIST_CAPABILITY: unique symbol = Symbol('persistCapability');
-
 export interface PersistRouteOptions {
-    /** Sync-conflict routes carry syncId in the body, not the path. */
+    /** Sync-conflict routes carry syncId in the body, not the path. Checked after the body is parsed. */
     syncIdFromBody?: boolean;
-    /** Runs after auth, so a bad secret is rejected before the body is parsed. */
+    /** Runs after authentication, so a bad credential is rejected before the body is parsed. */
     parseJson?: RequestHandler;
 }
 
+type PersistCredential = { kind: 'secret' } | { kind: 'task'; auth: TaskCapabilityAuth };
+
+const credentialByResponse = new WeakMap<Response, PersistCredential>();
+
 /**
- * Returns `createPersistRoute` bound to a jobs key registry. The caller builds that registry once
- * and passes it in; verification never builds one per request.
+ * Returns auth mounting and `createPersistRoute` bound to a jobs key registry. The caller builds
+ * that registry once and passes it in; verification never builds one per request.
+ *
+ * `mountPersistAuth` must run before any `/environment/` route. It checks the credential only.
+ * Scope and resource checks run on the route, after Express has matched the path and parsed the body.
  */
 export function createPersistRoutes(registry: KeyRegistry) {
-    return function createPersistRoute<E extends Endpoint<any>>(
-        app: Express,
-        handler: RouteHandler<E, AuthLocals>,
-        scope: TaskCapabilityScope | null,
-        opts?: PersistRouteOptions
-    ): void {
-        const middleware: RequestHandler[] = [persistCapability(registry, scope, String(handler.path), opts)];
-        if (String(handler.path).includes(':nangoConnectionId')) {
-            middleware.push(connectionOwnershipMiddleware as RequestHandler);
+    let authMounted = false;
+    return {
+        mountPersistAuth(app: Express): void {
+            app.use('/environment/:environmentId', authenticatePersist(registry));
+            authMounted = true;
+        },
+        createPersistRoute<E extends Endpoint<any>>(
+            app: Express,
+            handler: RouteHandler<E, AuthLocals>,
+            scope: TaskCapabilityScope | null,
+            opts?: PersistRouteOptions
+        ): void {
+            if (!authMounted) {
+                throw new Error('mountPersistAuth must be called before createPersistRoute');
+            }
+            const path = String(handler.path);
+            if (scope !== null && !path.startsWith('/environment/')) {
+                throw new Error(`persist route ${path} is outside /environment and cannot be authenticated`);
+            }
+            createRoute(app, handler, { middleware: routeMiddleware(scope, path, opts) });
         }
-        if (opts?.parseJson) {
-            middleware.push(opts.parseJson);
-        }
-        createRoute(app, handler, { middleware });
     };
 }
 
-function persistCapability(registry: KeyRegistry, scope: TaskCapabilityScope | null, path: string, opts: PersistRouteOptions | undefined): RequestHandler {
-    const middleware: RequestHandler = (req, res, next) => {
-        const authRes = res as Response<unknown, AuthLocals>;
+function authenticatePersist(registry: KeyRegistry): RequestHandler {
+    return (req, res, next) => {
         const token = eddsaBearerToken(req.get('authorization'));
         if (token) {
-            void authenticateTask(registry, req, authRes, next, token, scope, path, opts);
+            void authenticateTaskCredential(registry, res, next, token);
             return;
         }
-        if (scope === null) {
-            next();
-            return;
-        }
-        void authenticateSecret(req, authRes, next);
+        void authenticateSecret(req, res as Response<unknown, AuthLocals>, next, () => {
+            credentialByResponse.set(res, { kind: 'secret' });
+        });
     };
-    (middleware as RequestHandler & { [PERSIST_CAPABILITY]?: true })[PERSIST_CAPABILITY] = true;
-    return middleware;
 }
 
-async function authenticateTask(
-    registry: KeyRegistry,
-    req: Request,
-    res: Response<unknown, AuthLocals>,
-    next: NextFunction,
-    token: string,
-    scope: TaskCapabilityScope | null,
-    path: string,
-    opts: PersistRouteOptions | undefined
-): Promise<void> {
-    if (scope === null) {
-        unauthorized(res);
-        return;
-    }
-
+async function authenticateTaskCredential(registry: KeyRegistry, res: Response, next: NextFunction, token: string): Promise<void> {
     try {
         const auth = await verifyTaskCapabilityToken(token, INTERNAL_SERVICE_AUDIENCE_PERSIST, registry);
-        if (!auth || !hasScope(auth, scope)) {
+        if (!auth) {
             unauthorized(res);
             return;
         }
+        credentialByResponse.set(res, { kind: 'task', auth });
+        next();
+    } catch (err) {
+        res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(err)}` } });
+    }
+}
 
+function routeMiddleware(scope: TaskCapabilityScope | null, path: string, opts: PersistRouteOptions | undefined): RequestHandler[] {
+    const middleware: RequestHandler[] = [];
+    if (scope === null) {
+        middleware.push(rejectTaskCredential());
+        return middleware;
+    }
+    if (opts?.parseJson) {
+        middleware.push(opts.parseJson);
+    }
+    middleware.push(authorizePersist(scope, path, opts));
+    if (path.includes(':nangoConnectionId')) {
+        middleware.push(connectionOwnershipMiddleware as RequestHandler);
+    }
+    if (path.includes(':syncJobId')) {
+        middleware.push(syncJobOwnershipMiddleware as RequestHandler);
+    }
+    return middleware;
+}
+
+function authorizePersist(scope: TaskCapabilityScope, path: string, opts: PersistRouteOptions | undefined): RequestHandler {
+    return (req, res, next) => {
+        const credential = credentialByResponse.get(res);
+        if (credential?.kind === 'task') {
+            void authorizeTask(credential.auth, req, scope, path, opts, res as Response<unknown, AuthLocals>, next);
+            return;
+        }
+        if (credential?.kind === 'secret') {
+            next();
+            return;
+        }
+        unauthorized(res);
+    };
+}
+
+async function authorizeTask(
+    auth: TaskCapabilityAuth,
+    req: Request,
+    scope: TaskCapabilityScope,
+    path: string,
+    opts: PersistRouteOptions | undefined,
+    res: Response<unknown, AuthLocals>,
+    next: NextFunction
+): Promise<void> {
+    try {
+        if (!hasScope(auth, scope)) {
+            unauthorized(res);
+            return;
+        }
         const environmentId = positiveInt(routeParam(req, 'environmentId'));
         if (!isResourceBound(auth, 'environmentId', environmentId)) {
             unauthorized(res);
@@ -121,6 +168,16 @@ async function authenticateTask(
     } catch (err) {
         res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(err)}` } });
     }
+}
+
+function rejectTaskCredential(): RequestHandler {
+    return (req, res, next) => {
+        if (eddsaBearerToken(req.get('authorization'))) {
+            unauthorized(res);
+            return;
+        }
+        next();
+    };
 }
 
 function positiveInt(value: string | undefined): number | undefined {

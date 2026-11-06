@@ -1,3 +1,4 @@
+import express from 'express';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -5,6 +6,7 @@ import {
     INTERNAL_SERVICE_AUDIENCE_PERSIST,
     INTERNAL_SERVICE_AUDIENCE_SERVER,
     INTERNAL_SERVICE_ISSUER_JOBS,
+    keyRegistryFromPublicKeys,
     mint,
     taskSubject
 } from '@nangohq/internal-auth';
@@ -12,13 +14,15 @@ import { ed25519TestMaterial, mintTaskCapabilityToken } from '@nangohq/internal-
 import { accountService } from '@nangohq/shared';
 import { createRoute, Ok } from '@nangohq/utils';
 
+import { createPersistRoutes } from './capability.js';
+
 import type { PersistAuthContext } from '@nangohq/types';
 import type { Express } from 'express';
 
 const material = ed25519TestMaterial();
 process.env['NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS'] = JSON.stringify([{ kid: 'jobs-2026-09', publicKey: material.raw }]);
 
-const { server, assertPersistRoutesAuthenticated } = await import('../server.js');
+const { server } = await import('../server.js');
 
 const context: PersistAuthContext = {
     account: { id: 1 },
@@ -128,7 +132,7 @@ describe('persist task capability', () => {
         expect(secretLookup).not.toHaveBeenCalled();
     });
 
-    it('T8: a token gets a 401 on a route registered with null, and a route that skipped createPersistRoute fails startup', async () => {
+    it('T8: a token gets a 401 on a route registered with null, and a route that skipped createPersistRoute still requires a credential', async () => {
         const bearer = await token(['persist:log']);
         const health = await fetch(`${url}/health`, { headers: { Authorization: `Bearer ${bearer}` } });
         expect(health.status).toBe(401);
@@ -136,9 +140,8 @@ describe('persist task capability', () => {
         const open = await fetch(`${url}/health`);
         expect(open.status).toBe(200);
 
-        const path = '/environment/:environmentId/unscoped';
         createRoute(server, {
-            path,
+            path: '/environment/:environmentId/unscoped',
             method: 'GET',
             validate: (_req, _res, next) => {
                 next();
@@ -147,15 +150,18 @@ describe('persist task capability', () => {
                 res.status(204).end();
             }
         });
-        try {
-            expect(() => assertPersistRoutesAuthenticated(server)).toThrow(path);
-        } finally {
-            const stack = (server as Express & { router: { stack: { route?: { path?: string } }[] } }).router.stack;
-            const index = stack.findIndex((layer) => layer.route?.path === path);
-            if (index >= 0) {
-                stack.splice(index, 1);
-            }
-        }
+
+        const unscoped = `${url}/environment/9/unscoped`;
+        const missing = await fetch(unscoped);
+        expect(missing.status).toBe(401);
+
+        const withToken = await fetch(unscoped, { headers: { Authorization: `Bearer ${bearer}` } });
+        expect(withToken.status).toBe(204);
+        expect(secretLookup).not.toHaveBeenCalled();
+
+        const withSecret = await fetch(unscoped, { headers: { Authorization: 'Bearer secret-key' } });
+        expect(withSecret.status).toBe(204);
+        expect(secretLookup).toHaveBeenCalledWith('secret-key');
     });
 
     it('T9: a token for environment 9 gets a 401 on environment 10', async () => {
@@ -248,4 +254,67 @@ describe('persist task capability', () => {
         expect(secretLookup).toHaveBeenCalledWith(jwtLooking);
         expect(environmentLookup).not.toHaveBeenCalled();
     });
+
+    it('rejects a sync-conflict request with a bad credential before parsing the body', async () => {
+        const res = await fetch(`${url}/environment/9/runner/sync-conflict`, {
+            method: 'PUT',
+            headers: { Authorization: 'Bearer wrong-secret', 'Content-Type': 'application/json' },
+            body: '{'
+        });
+        expect(res.status).toBe(401);
+    });
+});
+
+it('returns 401 when the global mount did not record a credential', async () => {
+    const routes = createPersistRoutes(keyRegistryFromPublicKeys([], INTERNAL_SERVICE_ISSUER_JOBS));
+    // The mount runs on an app this request never hits, so no credential is recorded.
+    routes.mountPersistAuth(express());
+
+    const app = express();
+    app.use((_req, res, next) => {
+        res.locals['environment'] = { id: 9, name: 'dev' };
+        next();
+    });
+    routes.createPersistRoute(
+        app,
+        {
+            path: '/environment/:environmentId/log',
+            method: 'POST',
+            validate: (_req, _res, next) => {
+                next();
+            },
+            handler: (_req, res) => {
+                res.status(204).end();
+            }
+        },
+        'persist:log'
+    );
+    const { url, close } = await listen(app);
+    try {
+        const res = await fetch(`${url}/environment/9/log`, { method: 'POST' });
+        expect(res.status).toBe(401);
+        expect(await res.json()).toMatchObject({ error: { code: 'unauthorized' } });
+    } finally {
+        await close();
+    }
+});
+
+it('createPersistRoute throws when called before mountPersistAuth', () => {
+    const routes = createPersistRoutes(keyRegistryFromPublicKeys([], INTERNAL_SERVICE_ISSUER_JOBS));
+    expect(() =>
+        routes.createPersistRoute(
+            express(),
+            {
+                path: '/environment/:environmentId/log',
+                method: 'POST',
+                validate: (_req, _res, next) => {
+                    next();
+                },
+                handler: (_req, res) => {
+                    res.status(204).end();
+                }
+            },
+            'persist:log'
+        )
+    ).toThrow(/mountPersistAuth/);
 });

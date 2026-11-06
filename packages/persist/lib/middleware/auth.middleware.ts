@@ -40,8 +40,9 @@ export function eddsaBearerToken(header: string | undefined): string | undefined
 
 /**
  * Secret-key authentication for a route that declared a scope.
+ * `onSuccess` runs only after the secret is verified, immediately before `next`.
  */
-export async function authenticateSecret(req: Request, res: Response<any, AuthLocals>, next: NextFunction) {
+export async function authenticateSecret(req: Request, res: Response<any, AuthLocals>, next: NextFunction, onSuccess?: () => void) {
     const authorizationHeader = req.get('authorization');
 
     if (!authorizationHeader) {
@@ -86,6 +87,7 @@ export async function authenticateSecret(req: Request, res: Response<any, AuthLo
         if (!applyPersistAuthContext(res, accountContext)) {
             return;
         }
+        onSuccess?.();
         next();
     } catch (err) {
         res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(err)}` } });
