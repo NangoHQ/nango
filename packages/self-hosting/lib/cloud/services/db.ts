@@ -26,7 +26,7 @@ export function orMissing<T>(found: Result<T | null>, missing: string): Result<T
     if (found.isErr()) {
         return Err(found.error);
     }
-    return found.value ? Ok(found.value) : Err(new Error(missing));
+    return found.value !== null ? Ok(found.value) : Err(new Error(missing));
 }
 
 export function isUniqueViolation(err: unknown): boolean {

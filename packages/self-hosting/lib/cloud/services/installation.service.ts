@@ -55,14 +55,6 @@ export async function createInstallation(
     }
 }
 
-export async function getInstallation(db: RegistryDb, { id }: { id: number }): Promise<Result<DBSelfHostingInstallation | null>> {
-    try {
-        return Ok((await installations(db).where({ id, deleted_at: null }).first()) ?? null);
-    } catch (err) {
-        return Err(err);
-    }
-}
-
 export async function getInstallationByUuid(
     db: RegistryDb,
     { uuid, includeDeleted = false }: { uuid: string; includeDeleted?: boolean }
@@ -122,30 +114,35 @@ export async function updateInstallation(
     if ([name, mode, stage, telemetry, alerts].every((v) => v === undefined)) {
         return Err(new Error('nothing to update'));
     }
-    const current = await getInstallation(db, { id });
-    if (current.isErr()) {
-        return Err(current.error);
-    }
-    if (!current.value) {
-        return Err(new Error(`no live installation ${id}`));
-    }
-    const allowed = alertsAllowed(mode ?? current.value.mode, alerts ?? current.value.alerts);
-    if (allowed.isErr()) {
-        return Err(allowed.error);
-    }
     try {
-        const [row] = await installations(db)
-            .where({ id, deleted_at: null })
-            .update({
-                updated_at: new Date(),
-                ...(name && { name }),
-                ...(mode && { mode }),
-                ...(stage && { stage }),
-                ...(telemetry !== undefined && { telemetry }),
-                ...(alerts && { alerts })
+        return Ok(
+            await db.knex.transaction(async (trx) => {
+                const inTrx = { ...db, knex: trx };
+                const [current] = await installations(inTrx)
+                    .where({ id, deleted_at: null })
+                    .forUpdate()
+                    .select<Pick<DBSelfHostingInstallation, 'mode' | 'alerts'>[]>('mode', 'alerts');
+                if (!current) {
+                    throw new Error(`no live installation ${id}`);
+                }
+                alertsAllowed(mode ?? current.mode, alerts ?? current.alerts).unwrap();
+                const [row] = await installations(inTrx)
+                    .where({ id })
+                    .update({
+                        updated_at: new Date(),
+                        ...(name && { name }),
+                        ...(mode && { mode }),
+                        ...(stage && { stage }),
+                        ...(telemetry !== undefined && { telemetry }),
+                        ...(alerts && { alerts })
+                    })
+                    .returning('*');
+                if (!row) {
+                    throw new Error(`no live installation ${id}`);
+                }
+                return row;
             })
-            .returning('*');
-        return row ? Ok(row) : Err(new Error(`no live installation ${id}`));
+        );
     } catch (err) {
         return Err(isUniqueViolation(err) ? new Error(`installation ${name} already exists for this customer`) : err);
     }
