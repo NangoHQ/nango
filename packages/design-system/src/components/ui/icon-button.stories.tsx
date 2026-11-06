@@ -41,7 +41,7 @@ export const Playground: Story = {
 };
 
 const StateMatrix = ({ variant }: { variant: IconButtonVariant }) => (
-    <div className="grid grid-cols-[auto_repeat(6,max-content)] items-center gap-x-8 gap-y-6">
+    <div className="grid grid-cols-[max-content_repeat(6,max-content)] items-center gap-x-8 gap-y-6">
         <span />
         {STATES.map((state) => (
             <span key={state.label} className="story-section-heading">
