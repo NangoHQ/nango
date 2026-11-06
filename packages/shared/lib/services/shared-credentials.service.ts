@@ -97,23 +97,19 @@ class SharedCredentialsService {
 
     async getPreConfiguredProviderScopes(): Promise<Result<Record<string, { scopes: string[]; preConfigured: boolean }>>> {
         try {
-            const sharedCredentials = await db.knex
-                .select<{ name: string; enabled: boolean; scopes: string[] | null }[]>([
-                    'name',
-                    'enabled',
-                    db.knex.raw(`string_to_array(credentials->>'oauth_scopes', ',') as scopes`)
-                ])
+            // Filter on the latest row per name, so a disabled latest row doesn't fall back to an older enabled one
+            const latest = db.knex
+                .select(['name', 'enabled', db.knex.raw(`string_to_array(credentials->>'oauth_scopes', ',') as scopes`)])
                 .distinctOn('name')
                 .from<DBSharedCredentials>('providers_shared_credentials')
                 .whereNotNull('credentials')
-                .orderBy([{ column: 'name' }, { column: 'created_at', order: 'desc' }]);
+                .orderBy([{ column: 'name' }, { column: 'created_at', order: 'desc' }])
+                .as('latest');
+            const sharedCredentials = await db.knex.select<{ name: string; scopes: string[] | null }[]>(['name', 'scopes']).from(latest).where('enabled', true);
 
             const preConfiguredProviders: Record<string, { scopes: string[]; preConfigured: boolean }> = {};
 
             for (const cred of sharedCredentials) {
-                if (!cred.enabled) {
-                    continue;
-                }
                 const scopes = cred.scopes ? cred.scopes.map((scope: string) => scope.trim()) : [];
                 preConfiguredProviders[cred.name] = { scopes, preConfigured: true };
             }
