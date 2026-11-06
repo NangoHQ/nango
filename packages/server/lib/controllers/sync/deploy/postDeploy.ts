@@ -5,7 +5,6 @@ import { cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences, Na
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
-import { getCliContext } from '../../../middleware/cliVersionCheck.js';
 import { startFunctionDeletion } from '../../../tasks/startFunctionDeletion.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
@@ -32,17 +31,7 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
 
     const body: PostDeploy['Body'] = val.data;
     const { environment, account, plan } = res.locals;
-
-    const { cliVersion, deviceId } = getCliContext(req);
-    const trackingProperties: Record<string, string | number | boolean> = {
-        'cli-version': cliVersion || 'unknown',
-        source: body.source ?? 'repo',
-        'flow-count': body.flowConfigs.length
-    };
-
-    if (deviceId) {
-        productTracking.alias({ deviceId, team: account });
-    }
+    const { scope } = val.data;
 
     // Prevent concurrent deploys per environment, fail immediately if another deploy is in flight.
     const locking = await getLocking();
@@ -77,18 +66,17 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
             logContextGetter,
             sdkVersion: body.sdkVersion,
             orchestrator,
-            source: body.source ?? 'repo'
+            source: body.source ?? 'repo',
+            scope
         });
+
+        if (!success || !syncConfigDeployResult) {
+            errorManager.errResFromNangoErr(res, error);
+            return;
+        }
 
         if (plan && !plan.trial_end_at && plan.auto_idle) {
             await startTrial(db.knex, plan);
-            productTracking.track({ name: 'account:trial:started', team: account });
-        }
-
-        if (!success || !syncConfigDeployResult) {
-            productTracking.track({ name: 'deploy:error', team: account, eventProperties: { ...trackingProperties, 'error-code': error?.type || 'unknown' } });
-            errorManager.errResFromNangoErr(res, error);
-            return;
         }
 
         if (body.reconcile) {
@@ -98,14 +86,13 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
                 flows: body.flowConfigs,
                 performAction: body.reconcile,
                 debug: body.debug,
-                deployMode: body.deployMode,
+                scope,
                 logCtx,
                 logContextGetter,
                 orchestrator,
                 onFunctionDeleted: ({ syncConfigId, models }) => startFunctionDeletion({ syncConfigId, environmentId: environment.id, models })
             });
             if (!success) {
-                productTracking.track({ name: 'deploy:error', team: account, eventProperties: { ...trackingProperties, 'error-code': 'reconcile_failed' } });
                 res.status(500).send({
                     error: {
                         code: 'server_error',
@@ -116,8 +103,18 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
             }
         }
 
-        productTracking.track({ name: 'deploy:success', team: account, eventProperties: trackingProperties });
-
+        // A sandbox deploy is already tracked by the API or MCP call that started it.
+        if (!res.locals.sandboxTokenDeploymentId) {
+            productTracking.track({
+                name: 'functions:deploy_create',
+                eventProperties: {
+                    source: 'cli',
+                    is_template: false,
+                    function_count:
+                        body.flowConfigs.length + (body.onEventScriptsByProvider?.reduce((total, provider) => total + provider.scripts.length, 0) ?? 0)
+                }
+            });
+        }
         res.send(syncConfigDeployResult.result);
     } finally {
         if (lock) {

@@ -44,6 +44,9 @@ const ignoreEnvPaths = [
     '/api/v1/account/onboarding/hear-about-us',
     '/api/v1/account/onboarding/account-discovery',
     '/api/v1/account/onboarding/request-invite',
+    '/api/v1/agent-getting-started',
+    '/api/v1/agent-getting-started/restart',
+    '/api/v1/agent-getting-started/dismiss',
     '/api/v1/account/mfa',
     '/api/v1/account/mfa/enroll',
     '/api/v1/account/mfa/activate',
@@ -108,34 +111,32 @@ export class AccessMiddleware {
         }
     }
 
-    async secretKeyAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
+    /**
+     * Resolve and apply API-key authentication without writing an error response. This lets routes
+     * that support another bearer-token scheme decide which authentication challenge to return.
+     */
+    async authenticateSecretKey(req: Request, res: Response<unknown, Partial<RequestLocals>>): Promise<Result<void>> {
         const active = tracer.scope().active();
         const span = tracer.startSpan('secretKeyAuth', {
-            childOf: active!
+            childOf: active
         });
-
         const start = Date.now();
+
         try {
             const authorizationHeader = req.get('authorization');
-
             if (!authorizationHeader) {
-                errorManager.errRes(res, 'missing_auth_header');
-                return;
+                return Err('missing_auth_header');
             }
 
             const secret = authorizationHeader.split('Bearer ').pop();
-
             if (!secret) {
-                errorManager.errRes(res, 'malformed_auth_header');
-                return;
+                return Err('malformed_auth_header');
             }
 
             const isScript = req.get('Nango-Is-Script') === 'true';
-
             const result = await this.validateApiKey(secret, { isScript });
             if (result.isErr()) {
-                errorManager.errRes(res, result.error.message);
-                return;
+                return Err(result.error);
             }
 
             this.setApiKeyLocals(res, result.value);
@@ -144,15 +145,28 @@ export class AccessMiddleware {
                 auth_source: isScript && authSource === 'api_secret' ? 'internal_script' : authSource
             });
             tagTraceUser({ account: result.value.account, environment: result.value.environment, plan: result.value.plan });
-            next();
+            return Ok(undefined);
         } catch (err) {
-            logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
             span.setTag('error', err);
-            res.status(500).send({ error: { code: 'server_error' } });
-            return;
+            throw err;
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start, { accountId: res.locals['account']?.id || 'unknown' });
             span.finish();
+        }
+    }
+
+    async secretKeyAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
+        try {
+            const result = await this.authenticateSecretKey(req, res);
+            if (result.isErr()) {
+                errorManager.errRes(res, result.error.message);
+                return;
+            }
+            next();
+        } catch (err) {
+            logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
+            res.status(500).send({ error: { code: 'server_error' } });
+            return;
         }
     }
 

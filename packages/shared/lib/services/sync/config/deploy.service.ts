@@ -10,11 +10,13 @@ import remoteFileService from '../../file/remote.service.js';
 import { onEventScriptService } from '../../on-event-scripts.service.js';
 import { getSyncsByProviderConfigKey } from '../sync.service.js';
 import { getSyncAndActionConfigByParams, increment } from './config.service.js';
+import { onEventScopeProviderKeys } from './deployScope.js';
 import { scanCompiledDeployScript } from './deployScriptSecurityScan.js';
 
 import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
+import type { LegacyDeployScope } from './deployScope.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
     CleanedIncomingFlowConfig,
@@ -77,7 +79,8 @@ export async function deploy({
     orchestrator,
     debug,
     sdkVersion,
-    source
+    source,
+    scope
 }: {
     environment: DBEnvironment;
     account: DBTeam;
@@ -90,6 +93,7 @@ export async function deploy({
     debug?: boolean;
     sdkVersion: string | undefined;
     source: FunctionSource;
+    scope: LegacyDeployScope;
 }): Promise<ServiceResponse<SyncConfigResult | null>> {
     const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'custom' } }, { account, environment });
 
@@ -163,7 +167,8 @@ export async function deploy({
         }
     }
 
-    if (syncConfigs.length === 0) {
+    const onEventProviderKeys = onEventScriptsByProvider ? onEventScopeProviderKeys(scope, onEventScriptsByProvider) : [];
+    if (syncConfigs.length === 0 && onEventProviderKeys !== 'all' && onEventProviderKeys.length === 0) {
         if (debug) {
             void logCtx.debug('All syncs were deleted');
         }
@@ -180,20 +185,22 @@ export async function deploy({
                 await trx.from<DBSyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInactive);
             }
 
-            const flowIds = await trx.from<DBSyncConfig>(TABLE).insert(syncConfigs).returning('id');
+            if (syncConfigs.length > 0) {
+                const flowIds = await trx.from<DBSyncConfig>(TABLE).insert(syncConfigs).returning('id');
 
-            const endpoints: DBSyncEndpointCreate[] = [];
-            for (const [index, row] of flowIds.entries()) {
-                const flow = flows[index];
-                if (!flow) {
-                    continue;
+                const endpoints: DBSyncEndpointCreate[] = [];
+                for (const [index, row] of flowIds.entries()) {
+                    const flow = flows[index];
+                    if (!flow) {
+                        continue;
+                    }
+
+                    endpoints.push(...endpointToSyncEndpoint(flow, row.id));
                 }
 
-                endpoints.push(...endpointToSyncEndpoint(flow, row.id));
-            }
-
-            if (endpoints.length > 0) {
-                await trx.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+                if (endpoints.length > 0) {
+                    await trx.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+                }
             }
 
             // Use the switchActiveSyncConfig function for each inactive config
@@ -201,9 +208,8 @@ export async function deploy({
                 await switchActiveSyncConfig(id, trx);
             }
 
-            // Update on-event scripts within the same transaction
             if (onEventScriptsByProvider) {
-                const updated = await onEventScriptService.update({ environment, account, onEventScriptsByProvider, sdkVersion });
+                const updated = await onEventScriptService.update(trx, { environment, account, onEventScriptsByProvider, sdkVersion, scope });
                 const result: SyncDeploymentResult[] = updated.map((u) => {
                     return {
                         name: u.name,
@@ -217,9 +223,9 @@ export async function deploy({
             }
         });
 
-        void logCtx.info(`Successfully deployed ${flows.length} script${flows.length > 1 ? 's' : ''}`, {
+        void logCtx.info(`Successfully deployed ${deployResults.length} script${deployResults.length === 1 ? '' : 's'}`, {
             nameOfType,
-            count: flows.length,
+            count: deployResults.length,
             syncNames: flowNames,
             flows: flowsWithoutScript
         });
@@ -230,7 +236,8 @@ export async function deploy({
         void logCtx.error('Failed to deploy scripts', { error: err });
         await logCtx.failed();
 
-        throw new NangoError('error_creating_sync_config');
+        const error = err instanceof NangoError ? err : new NangoError('error_creating_sync_config');
+        return { success: false, error, response: null };
     }
 }
 
@@ -279,7 +286,15 @@ async function compileDeployInfo({
 
     if (previousSyncAndActionConfig) {
         if (!userSpecifiedVersion) {
-            bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
+            const incrementResult = increment(previousSyncAndActionConfig.version as string | number);
+            if (incrementResult.isErr()) {
+                const error = new NangoError('invalid_previous_sync_version', {
+                    syncName,
+                    previousVersion: previousSyncAndActionConfig.version
+                });
+                return { success: false, error, response: null };
+            }
+            bumpedVersion = incrementResult.value;
         }
 
         if (debug) {

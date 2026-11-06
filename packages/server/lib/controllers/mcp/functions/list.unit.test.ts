@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { legacyFunctionService } from '@nangohq/shared';
+import { functionLookupService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { InternalMcpError, PublicMcpError } from '../utils.js';
 import { listFunctionsTool } from './list.js';
+import { listFunctionsOutputSchema } from './schema.js';
 
 import type { ManagementMcpContext } from '../managementTool.js';
 import type { ListedNangoFunction } from '@nangohq/types';
@@ -14,8 +15,8 @@ describe('listFunctionsTool', () => {
         vi.restoreAllMocks();
     });
 
-    it('maps integration filters and pagination to the legacy function service', async () => {
-        const listSpy = vi.spyOn(legacyFunctionService, 'listFunctions').mockResolvedValue(Ok({ rows: [functionFixture], total: 25 }));
+    it('maps integration filters and pagination to the function lookup service', async () => {
+        const listSpy = vi.spyOn(functionLookupService, 'listFunctions').mockResolvedValue(Ok({ rows: [functionFixture], total: 25 }));
 
         const result = await listFunctionsTool.handler(
             {
@@ -45,8 +46,42 @@ describe('listFunctionsTool', () => {
         }
     });
 
+    it('accepts catalog actions with a null id and tools-catalog source', async () => {
+        const catalog = catalogFunctionFixture;
+        vi.spyOn(functionLookupService, 'listFunctions').mockResolvedValue(Ok({ rows: [catalog], total: 1 }));
+
+        const result = await listFunctionsTool.handler({ integration_id: 'github' }, context);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(listFunctionsOutputSchema.parse(result.value).data).toStrictEqual([catalog]);
+        }
+    });
+
+    it('accepts the tool filter and validates tool schemas and metadata in the response', async () => {
+        const tool: ListedNangoFunction = {
+            id: 42,
+            uuid: '11111111-1111-4111-8111-111111111111',
+            type: 'tool',
+            name: 'fetch-users',
+            integration_id: 'github',
+            provider: 'github',
+            description: 'Fetch users',
+            enabled: true,
+            last_deployed: '2026-01-01T00:00:00.000Z',
+            source: 'repo',
+            input_json_schema: { type: 'string' },
+            output_json_schema: null,
+            meta: { instructions: 'Read users', required_scopes: { all: ['read'] }, tags: { category: 'crm' } }
+        };
+        const spy = vi.spyOn(functionLookupService, 'listFunctions').mockResolvedValue(Ok({ rows: [tool], total: 1 }));
+        const result = await listFunctionsTool.handler({ integration_id: 'github', type: 'tool' }, context);
+        expect(spy).toHaveBeenCalledWith(expect.objectContaining({ type: 'tool' }));
+        expect(listFunctionsOutputSchema.parse(result.unwrap()).data).toStrictEqual([tool]);
+    });
+
     it('applies the public endpoint pagination defaults', async () => {
-        const listSpy = vi.spyOn(legacyFunctionService, 'listFunctions').mockResolvedValue(Ok({ rows: [], total: 0 }));
+        const listSpy = vi.spyOn(functionLookupService, 'listFunctions').mockResolvedValue(Ok({ rows: [], total: 0 }));
 
         const result = await listFunctionsTool.handler({ integration_id: 'github' }, context);
 
@@ -74,7 +109,7 @@ describe('listFunctionsTool', () => {
         { name: 'invalid type', args: { integration_id: 'github', type: 'webhook' } },
         { name: 'blank search', args: { integration_id: 'github', search: ' ' } }
     ])('rejects $name before calling the function service', async ({ args }) => {
-        const listSpy = vi.spyOn(legacyFunctionService, 'listFunctions');
+        const listSpy = vi.spyOn(functionLookupService, 'listFunctions');
 
         const result = await listFunctionsTool.handler(args, context);
 
@@ -87,9 +122,9 @@ describe('listFunctionsTool', () => {
     });
 
     it('returns a public error when the integration does not exist', async () => {
-        vi.spyOn(legacyFunctionService, 'listFunctions').mockResolvedValue(
+        vi.spyOn(functionLookupService, 'listFunctions').mockResolvedValue(
             Err(
-                new legacyFunctionService.ListFunctionsError({
+                new functionLookupService.ListFunctionsError({
                     code: 'integration_not_found',
                     message: 'Integration does not exist'
                 })
@@ -106,8 +141,8 @@ describe('listFunctionsTool', () => {
     });
 
     it('maps internal listing failures to an internal MCP error', async () => {
-        const error = new legacyFunctionService.ListFunctionsError({ code: 'list_failed', message: 'Failed to list functions' });
-        vi.spyOn(legacyFunctionService, 'listFunctions').mockResolvedValue(Err(error));
+        const error = new functionLookupService.ListFunctionsError({ code: 'list_failed', message: 'Failed to list functions' });
+        vi.spyOn(functionLookupService, 'listFunctions').mockResolvedValue(Err(error));
 
         const result = await listFunctionsTool.handler({ integration_id: 'github' }, context);
 
@@ -118,8 +153,10 @@ describe('listFunctionsTool', () => {
     });
 });
 
+const accountUuid = '8d49e079-aa61-44ae-b0cf-823662523527';
+
 const context = {
-    account: {},
+    account: { uuid: accountUuid },
     environment: { id: 42 },
     grantedScopes: ['environment:functions:list']
 } as ManagementMcpContext;
@@ -135,4 +172,17 @@ const functionFixture: ListedNangoFunction = {
     enabled: true,
     last_deployed: '2026-01-01T00:00:00.000Z',
     source: 'repo'
+};
+
+const catalogFunctionFixture: ListedNangoFunction = {
+    id: null,
+    name: 'create-issue',
+    type: 'action',
+    description: 'Create an issue',
+    scopes: ['repo'],
+    returns: ['Issue'],
+    json_schema: null,
+    enabled: true,
+    last_deployed: null,
+    source: 'tools-catalog'
 };

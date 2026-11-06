@@ -18,7 +18,7 @@ import type { MockInstance } from 'vitest';
 //
 // What has to stay here:
 //   - wiring ORDER: a denied (403) request must still be recorded, which only holds if the audit
-//     middleware is installed before authorization. Probed once per wiring shape (public withScope,
+//     middleware is installed before authorization. Probed once per wiring shape (public can,
 //     private can).
 //   - resolve-before-next against a REAL controller that mutates the row it audits (a fake can't
 //     honestly reproduce the mutation): pre-change role, removed-member email.
@@ -81,9 +81,9 @@ describe('audit middleware — live-stack contract', () => {
             });
         });
 
-        it('public (apiAuth + withScope): a scope the key does not hold', async () => {
+        it('public (apiAuth + can): a scope the key does not hold', async () => {
             const { account, env, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
-            // Restrict the key so withScope('environment:connections:update') rejects with 403 first.
+            // Restrict the key so can('environment:connections:update') rejects with 403 first.
             (await customerKeyService.updateApiKeyScopes(db.knex, apiKey.id, ['environment:integrations:list'], env.id)).unwrap();
 
             const res = await api.fetch('/connections/:connectionId', {
@@ -136,6 +136,34 @@ describe('audit middleware — live-stack contract', () => {
                 environment: null,
                 actor: { type: 'api_key', id: accountKey.uuid, display: 'Production only' },
                 metadata: { name: 'denied-environment' }
+            });
+        });
+
+        it('resolves the target environment from the URL for a denied account-key request', async () => {
+            const { account, env } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const key = (
+                await customerKeyService.createAccountApiKey(db.knex, {
+                    accountId: account.id,
+                    displayName: 'Reader',
+                    scopes: ['account:environments:read']
+                })
+            ).unwrap();
+            const { res } = await api.fetch('/environments/:environmentUuid', {
+                method: 'PATCH',
+                token: key.secret,
+                params: { environmentUuid: env.uuid },
+                body: { callback_url: 'https://example.com/callback' }
+            });
+            expect(res.status).toBe(403);
+            await vi.waitFor(() => expect(auditEvent('environment', 'updated')).toBeDefined());
+            expect(auditEvent('environment', 'updated')).toMatchObject({
+                resource: 'environment',
+                action: 'updated',
+                outcome: 'denied',
+                accountId: account.id,
+                environment: { id: env.uuid, display: env.name },
+                actor: { type: 'api_key', id: key.uuid },
+                targets: [{ type: 'environment', id: env.uuid, display: env.name }]
             });
         });
     });

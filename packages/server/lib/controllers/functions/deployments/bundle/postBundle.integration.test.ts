@@ -6,7 +6,7 @@ import { configService, functionConfigService, remoteFileService, seeders } from
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
-import type { DBFunctionConfig, DBFunctionConfigVersion, FunctionDeploymentArtifact, PostFunctionDeploymentBundle } from '@nangohq/types';
+import type { DBFunctionConfig, DBFunctionConfigVersion, FunctionDeploymentArtifact, FunctionTags, PostFunctionDeploymentBundle } from '@nangohq/types';
 
 const endpoint = '/functions/deployments/bundle';
 const previewEndpoint = '/functions/deployments/bundle/preview';
@@ -40,7 +40,8 @@ const validFunction = {
     fileBody: {
         js: 'module.exports = async () => ({})',
         ts: 'export default async () => ({})'
-    }
+    },
+    source: 'repo'
 } satisfies FunctionDeploymentArtifact;
 
 const validBody = {
@@ -297,6 +298,88 @@ describe('function deployment bundle endpoints', () => {
         }
     });
 
+    it('should deploy a single function in a function-scoped bundle without deleting other functions', async () => {
+        const { apiKey, env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const siblingFunction = { ...validFunction, name: 'consumePullRequestWebhook' } satisfies FunctionDeploymentArtifact;
+        const uploadSpy = vi.spyOn(remoteFileService, 'upload').mockImplementation(({ destinationPath }) => Promise.resolve(destinationPath));
+        const deployRequest = async (body: PostFunctionDeploymentBundle['Body']) =>
+            await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body
+            });
+
+        try {
+            const created = await deployRequest({ reconciliationScope: { kind: 'environment' }, functions: [validFunction] });
+            isSuccess(created.json);
+
+            const single = await deployRequest({
+                reconciliationScope: { kind: 'function', integrationId: 'github', name: siblingFunction.name },
+                functions: [siblingFunction]
+            });
+            isSuccess(single.json);
+            expect(single.json).toStrictEqual({
+                created: [{ integrationId: 'github', name: siblingFunction.name }],
+                updated: [],
+                unchanged: [],
+                deleted: []
+            });
+
+            const configs = await db.knex<DBFunctionConfig>('function_configs').where({ environment_id: env.id }).whereNull('deleted_at');
+            expect(configs.map((config) => config.name).sort()).toStrictEqual([siblingFunction.name, validFunction.name].sort());
+        } finally {
+            uploadSpy.mockRestore();
+        }
+    });
+
+    it('persists tags', async () => {
+        const { apiKey, env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const uploadSpy = vi.spyOn(remoteFileService, 'upload').mockImplementation(({ destinationPath }) => Promise.resolve(destinationPath));
+        const tags = { category: 'crm', entities: ['contacts', 'companies'] };
+        const changedTags = { ...tags, entities: ['contacts'] };
+        const steps: { artifact: FunctionDeploymentArtifact; expected: 'created' | 'updated' | 'unchanged'; tags: FunctionTags }[] = [
+            { artifact: { ...validFunction, tags }, expected: 'created', tags },
+            { artifact: { ...validFunction, tags: changedTags }, expected: 'updated', tags: changedTags },
+            { artifact: { ...validFunction, tags: { entities: ['contacts'], category: 'crm' } }, expected: 'unchanged', tags: changedTags },
+            { artifact: { ...validFunction, tags: {} }, expected: 'updated', tags: {} },
+            { artifact: validFunction, expected: 'unchanged', tags: {} }
+        ];
+
+        try {
+            for (const step of steps) {
+                const body: PostFunctionDeploymentBundle['Body'] = { reconciliationScope: { kind: 'environment' }, functions: [step.artifact] };
+                const expected = { created: [], updated: [], unchanged: [], deleted: [], [step.expected]: [{ integrationId: 'github', name: 'fetchIssues' }] };
+                const preview = await api.fetch(previewEndpoint, { method: 'POST', token: apiKey.secret, body });
+                expect(preview.res.status).toBe(200);
+                expect(preview.json).toStrictEqual(expected);
+
+                uploadSpy.mockClear();
+                const deployed = await api.fetch(endpoint, { method: 'POST', token: apiKey.secret, body });
+                expect(deployed.res.status).toBe(200);
+                expect(deployed.json).toStrictEqual(expected);
+                expect(uploadSpy).toHaveBeenCalledTimes(step.expected === 'unchanged' ? 0 : 2);
+
+                const [fn] = (await functionConfigService.search(db.knex, { environmentId: env.id })).unwrap();
+                if (!fn) {
+                    throw new Error('Expected deployed function');
+                }
+                expect(fn.currentVersion.tags).toEqual(step.tags);
+                const fetched = await api.fetch('/functions/:uuid', { method: 'GET', token: apiKey.secret, params: { uuid: fn.config.uuid } });
+                expect(fetched.res.status).toBe(200);
+                expect(fetched.json).toMatchObject({ tags: step.tags });
+            }
+
+            const versions = await db
+                .knex<DBFunctionConfigVersion>('function_config_versions')
+                .whereIn('function_config_id', db.knex<DBFunctionConfig>('function_configs').select('id').where({ environment_id: env.id }));
+            expect(versions).toHaveLength(3);
+        } finally {
+            uploadSpy.mockRestore();
+        }
+    });
+
     it('should apply, skip an unchanged bundle, update changed source, and reconcile deletions', async () => {
         const { apiKey, env } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
@@ -338,6 +421,7 @@ describe('function deployment bundle endpoints', () => {
                 throw new Error('Expected function version to be created');
             }
             expect(initialVersion.version).toBeSha256();
+            expect(initialVersion.tags).toEqual({});
 
             uploadSpy.mockClear();
             const unchanged = await deployRequest({ reconciliationScope: { kind: 'environment' }, functions: [validFunction] });

@@ -1,43 +1,69 @@
+import { useEffect, useLayoutEffect, useState } from 'react';
+
+import { useGlobal } from './store';
+
 import type { ConnectUIThemeSettings, Theme } from '@nangohq/types';
+
+const THEME_TIMEOUT_MS = 3000;
 
 export function isValidTheme(theme: string): theme is Theme {
     return ['light', 'dark', 'system'].includes(theme);
 }
 
-export function setTheme(theme: Theme) {
-    document.documentElement.classList.toggle('dark', theme === 'dark' || (theme === 'system' && getSystemTheme() === 'dark'));
+export function useAppliedTheme(): { appliedTheme: 'light' | 'dark'; isPending: boolean } {
+    const theme = useGlobal((state) => state.theme);
+    const settings = useGlobal((state) => state.settings);
+    const systemTheme = useSystemTheme();
+
+    const appliedTheme = !theme || theme === 'system' ? systemTheme : theme;
+
+    useEffect(() => {
+        if (theme) {
+            return;
+        }
+        const timeout = setTimeout(() => useGlobal.getState().setTheme('system'), THEME_TIMEOUT_MS);
+        return () => clearTimeout(timeout);
+    }, [theme]);
+
+    useLayoutEffect(() => {
+        document.documentElement.classList.toggle('dark', appliedTheme === 'dark');
+        if (settings) {
+            setColors(settings.theme, appliedTheme);
+        }
+    }, [appliedTheme, settings]);
+
+    return { appliedTheme, isPending: !theme };
 }
 
-/* Resolves system theme to light or dark, otherwise returns the theme */
-export function getEffectiveTheme(theme: Theme): 'light' | 'dark' {
-    return theme === 'system' ? getSystemTheme() : theme;
+function useSystemTheme(): 'light' | 'dark' {
+    const [systemTheme, setSystemTheme] = useState(getSystemTheme);
+
+    useEffect(() => {
+        const query = window.matchMedia('(prefers-color-scheme: dark)');
+        const onChange = (event: MediaQueryListEvent) => setSystemTheme(event.matches ? 'dark' : 'light');
+        query.addEventListener('change', onChange);
+        return () => query.removeEventListener('change', onChange);
+    }, []);
+
+    return systemTheme;
 }
 
-export function getSystemTheme(): 'light' | 'dark' {
+function getSystemTheme(): 'light' | 'dark' {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-export function setColors(theme: ConnectUIThemeSettings, themeToUse: Theme): void {
+function setColors(theme: ConnectUIThemeSettings, appliedTheme: 'light' | 'dark'): void {
     const root = document.documentElement;
+    const primary = theme[appliedTheme].primary;
 
-    const effectiveTheme = getEffectiveTheme(themeToUse);
-    if (effectiveTheme === 'light') {
-        const lightPrimary = theme.light.primary;
-        if (lightPrimary) {
-            root.style.setProperty('--color-primary', lightPrimary);
-            const lightBrandHex = cssColorToHex(lightPrimary);
-            root.style.setProperty('--color-on-primary', hexColorIsDark(lightBrandHex) ? '#ffffff' : '#000000');
-        }
+    if (!primary) {
+        root.style.removeProperty('--color-primary');
+        root.style.removeProperty('--color-on-primary');
+        return;
     }
 
-    if (effectiveTheme === 'dark') {
-        const darkPrimary = theme.dark.primary;
-        if (darkPrimary) {
-            root.style.setProperty('--color-primary', darkPrimary);
-            const darkBrandHex = cssColorToHex(darkPrimary);
-            root.style.setProperty('--color-on-primary', hexColorIsDark(darkBrandHex) ? '#ffffff' : '#000000');
-        }
-    }
+    root.style.setProperty('--color-primary', primary);
+    root.style.setProperty('--color-on-primary', hexColorIsDark(cssColorToHex(primary)) ? '#ffffff' : '#000000');
 }
 
 /**

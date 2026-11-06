@@ -6,6 +6,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { Orchestrator } from '../../../clients/orchestrator.js';
 import { getTestTeam } from '../../../seeders/account.seeder.js';
 import { getTestEnvironment } from '../../../seeders/environment.seeder.js';
+import { NangoError } from '../../../utils/error.js';
 import accountService from '../../account.service.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
@@ -158,7 +159,8 @@ async function deployTestFlow(flow: CleanedIncomingFlowConfig) {
         logContextGetter,
         orchestrator: mockOrchestrator,
         sdkVersion: '0.0.0',
-        source: 'repo'
+        source: 'repo',
+        scope: { kind: 'environment' }
     });
 }
 
@@ -185,7 +187,8 @@ describe('Sync config create', () => {
             debug,
             sdkVersion: '0.0.0-yaml',
             onEventScriptsByProvider: [],
-            source: 'repo'
+            source: 'repo',
+            scope: { kind: 'none' }
         });
 
         expect(emptyConfig).not.toBe([]);
@@ -223,7 +226,8 @@ describe('Sync config create', () => {
             debug,
             sdkVersion: '0.0.0-yaml',
             onEventScriptsByProvider: [],
-            source: 'repo'
+            source: 'repo',
+            scope: { kind: 'environment' }
         });
         expect(error?.message).toBe(
             `There is no Provider Configuration matching this key. Please make sure this value exists in the Nango dashboard {
@@ -296,7 +300,8 @@ describe('Sync config create', () => {
             debug,
             sdkVersion: '0.0.0-yaml',
             onEventScriptsByProvider: [],
-            source: 'repo'
+            source: 'repo',
+            scope: { kind: 'environment' }
         });
 
         expect(success).toBe(false);
@@ -371,7 +376,8 @@ describe('Sync config create', () => {
             debug,
             sdkVersion: '0.0.0-zero',
             onEventScriptsByProvider: [],
-            source: 'standalone'
+            source: 'standalone',
+            scope: { kind: 'environment' }
         });
 
         expect(success).toBe(true);
@@ -525,19 +531,24 @@ describe('Sync config create', () => {
         } as any);
         vi.spyOn(db.knex, 'transaction').mockRejectedValue(new Error());
 
-        await expect(
-            DeployConfigService.deploy({
-                environment,
-                account,
-                flows: syncs,
-                logContextGetter,
-                orchestrator: mockOrchestrator,
-                debug,
-                sdkVersion: '0.0.0-yaml',
-                onEventScriptsByProvider: [],
-                source: 'repo'
-            })
-        ).rejects.toThrowError('Error creating sync config from a deploy. Please contact support with the sync name and connection details');
+        const { success, error } = await DeployConfigService.deploy({
+            environment,
+            account,
+            flows: syncs,
+            logContextGetter,
+            orchestrator: mockOrchestrator,
+            debug,
+            sdkVersion: '0.0.0-yaml',
+            onEventScriptsByProvider: [],
+            source: 'repo',
+            scope: { kind: 'environment' }
+        });
+
+        expect(success).toBe(false);
+        expect(error).toMatchObject({
+            type: 'error_creating_sync_config',
+            message: 'Error creating sync config from a deploy. Please contact support with the sync name and connection details'
+        });
     });
 });
 
@@ -616,7 +627,8 @@ describe('Sync config models_json_schema handling', () => {
             logContextGetter,
             orchestrator: mockOrchestrator,
             sdkVersion: '0.0.0-yaml',
-            source: 'repo'
+            source: 'repo',
+            scope: { kind: 'environment' }
         });
 
         expect(success).toBe(true);
@@ -644,7 +656,8 @@ describe('Sync config models_json_schema handling', () => {
             logContextGetter,
             orchestrator: mockOrchestrator,
             sdkVersion: '0.0.0-yaml',
-            source: 'repo'
+            source: 'repo',
+            scope: { kind: 'environment' }
         });
 
         expect(success).toBe(true);
@@ -675,7 +688,8 @@ describe('Sync config models_json_schema handling', () => {
             logContextGetter,
             orchestrator: mockOrchestrator,
             sdkVersion: '0.0.0-yaml',
-            source: 'repo'
+            source: 'repo',
+            scope: { kind: 'environment' }
         });
 
         expect(success).toBe(false);
@@ -693,7 +707,8 @@ describe('Sync config models_json_schema handling', () => {
             logContextGetter,
             orchestrator: mockOrchestrator,
             sdkVersion: '0.0.0-yaml',
-            source: 'repo'
+            source: 'repo',
+            scope: { kind: 'environment' }
         });
 
         expect(success).toBe(true);
@@ -823,6 +838,108 @@ describe('Deploy file upload and version resolution', () => {
                 expect(capturedSyncConfigs[0]?.['version']).toBe(expectedVersion);
             }
         );
+
+        it('returns a clean error instead of throwing when the previous version cannot be auto-incremented', async () => {
+            const { uploadSpy } = setupDeployTestMocks({ previousVersion: 'f4a9c21', jsChanged: false });
+            const { success, error } = await deployTestFlow({ ...deployBaseFlow, version: '' });
+            expect(success).toBe(false);
+            expect(error).toMatchObject({ type: 'invalid_previous_sync_version' });
+            expect(uploadSpy).not.toHaveBeenCalled();
+        });
+
+        it('surfaces the specific error from onEventScriptService.update instead of collapsing it into the generic error_creating_sync_config', async () => {
+            setupDeployTestMocks({ jsChanged: false });
+            vi.spyOn(onEventScriptService, 'update').mockRejectedValue(
+                new NangoError('invalid_previous_sync_version', { syncName: 'post-connection', previousVersion: 'f4a9c21' })
+            );
+
+            const { success, error } = await DeployConfigService.deploy({
+                account: getTestTeam(),
+                environment: getTestEnvironment(),
+                flows: [deployBaseFlow],
+                logContextGetter,
+                orchestrator: mockOrchestrator,
+                sdkVersion: '0.0.0',
+                onEventScriptsByProvider: [{ providerConfigKey: 'google', scripts: [] }],
+                source: 'repo',
+                scope: { kind: 'environment' }
+            });
+
+            expect(success).toBe(false);
+            expect(error).toMatchObject({ type: 'invalid_previous_sync_version' });
+            expect(error?.message).toContain('post-connection');
+        });
+    });
+
+    describe('without syncs or actions', () => {
+        it('updates on-event scripts in the deploy scope', async () => {
+            setupDeployTestMocks({ jsChanged: false });
+            const onEventScriptsByProvider = [
+                {
+                    providerConfigKey: 'google',
+                    scripts: [{ name: 'post-connection', event: 'post-connection-creation' as const, fileBody: { js: 'js', ts: 'ts' } }]
+                }
+            ];
+
+            const { success } = await DeployConfigService.deploy({
+                account: getTestTeam(),
+                environment: getTestEnvironment(),
+                flows: [],
+                logContextGetter,
+                orchestrator: mockOrchestrator,
+                sdkVersion: '0.0.0',
+                onEventScriptsByProvider,
+                source: 'repo',
+                scope: { kind: 'integration', integrationId: 'google' }
+            });
+
+            expect(success).toBe(true);
+            expect(onEventScriptService.update).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ onEventScriptsByProvider, scope: { kind: 'integration', integrationId: 'google' } })
+            );
+        });
+
+        it('removes on-event scripts of an empty package when a scope is given', async () => {
+            setupDeployTestMocks({ jsChanged: false });
+
+            const { success } = await DeployConfigService.deploy({
+                account: getTestTeam(),
+                environment: getTestEnvironment(),
+                flows: [],
+                logContextGetter,
+                orchestrator: mockOrchestrator,
+                sdkVersion: '0.0.0',
+                onEventScriptsByProvider: [],
+                source: 'repo',
+                scope: { kind: 'environment' }
+            });
+
+            expect(success).toBe(true);
+            expect(onEventScriptService.update).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ onEventScriptsByProvider: [], scope: { kind: 'environment' } })
+            );
+        });
+
+        it('does not touch on-event scripts of an empty package without a scope', async () => {
+            setupDeployTestMocks({ jsChanged: false });
+
+            const { success } = await DeployConfigService.deploy({
+                account: getTestTeam(),
+                environment: getTestEnvironment(),
+                flows: [],
+                logContextGetter,
+                orchestrator: mockOrchestrator,
+                sdkVersion: '0.0.0',
+                onEventScriptsByProvider: [],
+                source: 'repo',
+                scope: { kind: 'none' }
+            });
+
+            expect(success).toBe(true);
+            expect(onEventScriptService.update).not.toHaveBeenCalled();
+        });
     });
 });
 
@@ -931,7 +1048,8 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
             logContextGetter,
             orchestrator: mockOrchestrator,
             sdkVersion: '0.0.0',
-            source: 'repo'
+            source: 'repo',
+            scope: { kind: 'environment' }
         });
 
         expect(whereInSpy).toHaveBeenCalledWith('id', [99]);
@@ -955,7 +1073,8 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
             logContextGetter,
             orchestrator: mockOrchestrator,
             sdkVersion: '0.0.0',
-            source: 'repo'
+            source: 'repo',
+            scope: { kind: 'environment' }
         });
 
         expect(whereInSpy).not.toHaveBeenCalled();
@@ -980,7 +1099,8 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
             logContextGetter,
             orchestrator: mockOrchestrator,
             sdkVersion: '0.0.0',
-            source: 'repo'
+            source: 'repo',
+            scope: { kind: 'environment' }
         });
 
         expect(success).toBe(true);
@@ -1006,7 +1126,8 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
             logContextGetter,
             orchestrator: mockOrchestrator,
             sdkVersion: '0.0.0',
-            source: 'repo'
+            source: 'repo',
+            scope: { kind: 'environment' }
         });
 
         expect(capturedInserts[0].enabled).toBe(true);

@@ -1,8 +1,18 @@
 import * as z from 'zod/v4';
 
+import { goalSchema } from '../purposeSchema.js';
+
 export const toolSearchInputSchema = z
     .object({
-        query: z.string().trim().min(1).max(255).describe('What the tool should do, in plain language. Describe the operation rather than naming a product.')
+        query: z
+            .string()
+            .trim()
+            .min(1)
+            .max(255)
+            .describe(
+                'A few keywords naming the action and what it acts on, such as "list calendar events". Leave out the app\'s name, because every tool of that app matches it.'
+            ),
+        goal: goalSchema
     })
     .strict();
 

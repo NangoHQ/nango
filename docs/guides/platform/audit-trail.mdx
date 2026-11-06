@@ -48,10 +48,10 @@ The audit trail covers the main control-plane operations related to connections,
 |----------|---------|
 | `connection` | `created`, `updated`, `metadata_updated`, `refreshed`, `deleted` |
 | `integration` | `created`, `updated`, `deleted` |
-| `function` | `deployed`, `upgraded`, `deleted` |
+| `function` | `deployed`, `upgraded`, `updated`, `deleted`, `variant_created`, `variant_deleted`, `variant_updated` |
 | `sync` | `enabled`, `disabled`, `paused`, `started`, `triggered`, `cancelled`, `frequency_changed`, `variant_created`, `variant_deleted` |
 | `api_key` | `created`, `updated`, `deleted` |
-| `environment` | `created`, `updated`, `variables_changed`, `webhook_urls_changed`, `webhook_signing_key_rotated`, `deleted` |
+| `environment` | `created`, `updated`, `variables_changed`, ~~`webhook_urls_changed`~~ *(historical only)*, `webhook_signing_key_rotated`, `deleted` |
 | `member` | `invited`, `invite_accepted`, `invite_declined`, `invite_revoked`, `removed`, `role_changed` |
 | `team` | `updated` |
 | `user` | `updated` |
@@ -60,7 +60,11 @@ The audit trail covers the main control-plane operations related to connections,
 | `billing` | `plan_changed`, `trial_extended`, `details_changed`, `payment_method_added`, `payment_method_removed`, `spend_alert_changed`, `spend_alert_removed` |
 | `audit_trail` | `queried`, `exported` |
 
+`environment.updated` includes changes to environment settings and webhook configuration, including URLs and event subscriptions. Webhook fields appear in `metadata.changedFields` with the `webhooks.*` prefix, such as `webhooks.primary_url`. The former `environment.webhook_urls_changed` event is no longer emitted; existing entries remain available until their retention period ends. To review webhook changes across historical and current records, include both actions in your filters.
+
 `connection.metadata_updated` and `sync.triggered` are recorded for actions taken in the dashboard. The equivalent API endpoints — `POST` / `PATCH /connection/metadata` and `POST /sync/trigger` — are data plane operations and are not recorded; see [Limitations](#limitations).
+
+`function.variant_updated` records the requested `enabled` and `frequency` settings in its metadata. A `frequency` of `null` means the frequency override was reset. Omitted settings are not included.
 
 Secrets, such as API keys and passwords, are stripped from audit log entries.
 

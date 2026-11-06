@@ -89,6 +89,7 @@ export function createOAuthProvider({ knex, config, resource, userExists, intera
                 // no secret, so one application may revoke only its own tokens.
                 allowedPolicy: (_ctx, client, token) => token.clientId === client.clientId
             },
+            rpMetadataChoices: { enabled: true },
             rpInitiatedLogout: { enabled: false },
             userinfo: { enabled: false }
         },

@@ -13,6 +13,7 @@ import syncManager from './manager.service.js';
 
 import type { Orchestrator } from '../../clients/orchestrator.js';
 import type { Sync, SyncStatus, SyncWithConnectionId } from '../../models/Sync.js';
+import type { LegacyDeployScope } from './config/deployScope.js';
 import type { CreateSyncArgs } from './manager.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
@@ -470,7 +471,7 @@ export const getAndReconcileDifferences = async ({
     flows,
     performAction,
     debug = false,
-    deployMode = 'all',
+    scope,
     logCtx,
     logContextGetter,
     orchestrator,
@@ -480,7 +481,7 @@ export const getAndReconcileDifferences = async ({
     flows: CLIDeployFlowConfig[];
     performAction: boolean;
     debug?: boolean | undefined;
-    deployMode?: 'all' | 'single' | 'integration' | undefined;
+    scope: LegacyDeployScope;
     logCtx?: LogContext;
     logContextGetter: LogContextGetter;
     orchestrator: Orchestrator;
@@ -608,8 +609,8 @@ export const getAndReconcileDifferences = async ({
     const deletedActions: SlimAction[] = [];
     const deletedModels: string[] = [];
 
-    if (deployMode !== 'single' && flows.length > 0) {
-        const integrationScopeKey = deployMode === 'integration' ? flows[0]?.providerConfigKey : undefined;
+    if (scope.kind === 'environment' || scope.kind === 'integration') {
+        const integrationScopeKey = scope.kind === 'integration' ? scope.integrationId : undefined;
         for (const existingSync of existingSyncs) {
             if (integrationScopeKey && integrationScopeKey !== existingSync.unique_key) {
                 continue;

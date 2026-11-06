@@ -137,12 +137,15 @@ await nango.getIntegration(<INTEGRATION-ID>);
         "provider": "slack",
         "logo": "http://localhost:3003/images/template-logos/slack.svg",
         "forward_webhooks": true,
+        "missing_fields": [],
         "created_at": "2023-10-16T08:45:26.241Z",
         "updated_at": "2023-10-16T08:45:26.241Z"
     }
 }
 ```
 </Expandable>
+
+`missing_fields` lists the credential fields the integration may need before connections can be created, for example `oauth_client_id`. It is empty once the integration is fully configured, when it uses a Nango-provided developer app, or when the auth mode collects everything at connection time.
 
 ### Create an integration
 
@@ -168,7 +171,9 @@ await nango.createIntegration({ provider: '<PROVIDER-ID>', unique_key: '<UNIQUE_
     </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
-        The credentials to include depend on the specific integration that you want to create.
+        For `OAUTH1`, `OAUTH2`, `TBA`, `APP`, and `CUSTOM` credentials, you can create an integration without credentials or with partial credentials, then provide missing credentials with an update call or as per-connection overrides.
+
+        Pass `{ type: 'NANGO_MANAGED' }` to use a [Nango-managed developer app](/guides/auth/auth-guide#nango-managed-oauth-apps) instead of your own credentials. Only works for `OAUTH1`, `OAUTH2`, and `APP` providers that Nango has a managed app for. Can't be combined with `integration_config`, and the credentials can't be updated later.
     </ResponseField>
 
     <ResponseField name="integration_config" type="Record<string, string>">
@@ -224,7 +229,7 @@ await nango.updateIntegration({ uniqueKey: '<UNIQUE_KEY>' }, { display_name: 'Ne
     </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
-        The credentials to include depend on the specific integration that you want to update.
+        The credentials to include depend on the specific integration that you want to update. Only the fields you pass are updated; the ones you leave out keep their current value.
     </ResponseField>
 
     <ResponseField name="integration_config" type="Record<string, string>">
@@ -869,7 +874,7 @@ This method polls for a connection every 2 seconds for up to 60 seconds (30 atte
 
 ### List functions
 
-Returns the functions deployed to an integration, with pagination.
+Returns the functions available to an integration, with pagination.
 
 ```ts
 await nango.listFunctions({ uniqueKey: 'github' });
@@ -901,6 +906,8 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
     </ResponseField>
 </Expandable>
 
+Catalog actions have `id: null`, `last_deployed: null`, `enabled: true`, and `source: "tools-catalog"`. A deployed action with the same name takes precedence.
+
 **Example Response**
 
 <Expandable>
@@ -930,10 +937,21 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
             "enabled": true,
             "last_deployed": "2024-03-28T14:00:00.000Z",
             "source": "repo"
+        },
+        {
+            "type": "action",
+            "name": "get-repository",
+            "description": "Get a GitHub repository",
+            "returns": ["GithubRepository"],
+            "json_schema": null,
+            "id": null,
+            "enabled": true,
+            "last_deployed": null,
+            "source": "tools-catalog"
         }
     ],
     "pagination": {
-        "total": 2,
+        "total": 3,
         "page": 0,
         "limit": 20
     }
@@ -943,7 +961,7 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
 
 ### Get a function
 
-Retrieves a deployed function of an integration.
+Retrieves a function available to an integration. This can be a deployed function or a Nango catalog action.
 
 ```ts
 await nango.getFunction({ uniqueKey: 'github', name: 'create-issue' });
@@ -965,7 +983,7 @@ await nango.getFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' 
         The function name.
     </ResponseField>
     <ResponseField name="type" type="string">
-        Disambiguates when functions share a name: `sync`, `action`, or `on-event`.
+        The function type: `sync`, `action`, `on-event`, or `tool`. When omitted and several functions share the name, the first one is returned in this order: `tool`, `action`, `on-event`, `sync`.
     </ResponseField>
 </Expandable>
 
@@ -991,7 +1009,7 @@ await nango.getFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' 
 
 ### Get function code
 
-Retrieves the source code of a deployed function.
+Retrieves the source code of a function. For a Nango catalog action, the response contains the current catalog source even though the action has not been deployed.
 
 ```ts
 await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { type: 'action' });
@@ -1007,7 +1025,7 @@ await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { typ
         The function name.
     </ResponseField>
     <ResponseField name="type" type="string">
-        Disambiguates when functions share a name: `sync`, `action`, or `on-event`.
+        The function type: `sync`, `action`, `on-event`, or `tool`. When omitted and several functions share the name, the first one is returned in this order: `tool`, `action`, `on-event`, `sync`.
     </ResponseField>
 </Expandable>
 

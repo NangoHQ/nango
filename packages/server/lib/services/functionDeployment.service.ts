@@ -22,7 +22,7 @@ import type {
     DBPlan,
     DBSyncConfig,
     DBTeam,
-    DBUser,
+    DeployedFunction,
     FunctionDeploymentCodeBody,
     FunctionDeploymentCreateSuccess,
     FunctionDeploymentResultSuccess,
@@ -78,7 +78,6 @@ export interface DeployTemplateParams {
     account: DBTeam;
     environment: DBEnvironment;
     plan: DBPlan | null;
-    user?: Pick<DBUser, 'id' | 'email' | 'name'> | undefined;
     body: FunctionDeploymentTemplateBody;
 }
 
@@ -207,14 +206,12 @@ export async function deployTemplate({
     account,
     environment,
     plan,
-    user,
     body
 }: DeployTemplateParams): Promise<Result<FunctionDeploymentCreateSuccess, DeployTemplateServiceError>> {
     const outcome = await deployIntegrationTemplate({
         environment,
         account,
         plan,
-        user,
         providerConfigKey: body.integration_id,
         name: body.template,
         type: body.function_type
@@ -281,7 +278,7 @@ export async function deployTemplate({
     }
 
     const { result, type } = outcome;
-    const version = result.version ?? '';
+    const deployedFunction: DeployedFunction = result.version ? { name: result.name, version: result.version } : { name: result.name };
     const deployment = await createSucceededFunctionDeployment({
         environmentId: environment.id,
         request: {
@@ -291,8 +288,8 @@ export async function deployTemplate({
             function_name: result.name,
             function_type: type
         },
-        output: `Successfully deployed the functions:\n- ${result.name}@${version}`,
-        deployedFunctions: [{ name: result.name, version }]
+        output: `Successfully deployed:\n- ${result.name}${result.version ? `@v${result.version}` : ''}`,
+        deployedFunctions: [deployedFunction]
     });
     if (deployment.isErr()) {
         return Err(

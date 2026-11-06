@@ -1,14 +1,49 @@
 import db from '@nangohq/database';
-import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider, getProviders, sharedCredentialsService } from '@nangohq/shared';
+import {
+    configService,
+    connectionService,
+    getGlobalWebhookReceiveUrl,
+    getProvider,
+    getProviders,
+    productTracking,
+    sharedCredentialsService
+} from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
+import { normalizeMcpOAuth2Scopes } from '../controllers/v1/integrations/buildIntegrationConfig.js';
 import { getIntegrationCredentials } from '../utils/integrations.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { resolveIntegrationConfig } from './integrationConfig.js';
+import {
+    cleanupMcpClientRegistration,
+    mcpRegistrationCustomFields,
+    mcpRegistrationFromCustom,
+    registerMcpOAuth2Client,
+    resolveCimdUrl
+} from './mcpClientRegistration.js';
 
 import type { IntegrationCredentials } from '../utils/integrations.js';
-import type { DBCreateIntegration, IntegrationConfig, Provider } from '@nangohq/types';
+import type { McpClientRegistration } from './mcpClientRegistration.js';
+import type { AnalyticsEventProperties, DBCreateIntegration, DBEnvironment, DBTeam, IntegrationConfig, Provider, ProviderMcpOAUTH2 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+
+export function trackIntegrationCreate(
+    integration: Pick<IntegrationConfig, 'provider' | 'shared_credentials_id' | 'missing_fields'>,
+    source: Exclude<AnalyticsEventProperties<'integrations:integration_create'>['source'], 'playground'>,
+    environment?: Pick<DBEnvironment, 'is_production'>
+): void {
+    productTracking.track({
+        name: 'integrations:integration_create',
+        environment,
+        eventProperties: {
+            provider: integration.provider,
+            is_playground: false,
+            source,
+            is_shared_credentials: integration.shared_credentials_id !== null,
+            has_missing_fields: integration.missing_fields.length > 0
+        }
+    });
+}
 
 export type GetIntegrationServiceErrorCode = 'get_failed' | 'not_found';
 export type ListIntegrationsServiceErrorCode = 'list_failed';
@@ -29,6 +64,7 @@ export type UpdateIntegrationsServiceErrorCode =
     | 'invalid_integration_config'
     | 'integration_has_connections'
     | 'custom_not_allowed'
+    | 'shared_credentials_not_editable'
     | 'update_failed';
 export type DeleteIntegrationsServiceErrorCode = 'not_found' | 'delete_failed';
 export type IntegrationServiceErrorCode =
@@ -73,24 +109,36 @@ export interface DeletedIntegration {
 export type CreateIntegrationCredentials =
     | {
           type: 'OAUTH1' | 'OAUTH2' | 'TBA';
-          client_id: string;
-          client_secret: string;
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
           scopes?: string | undefined;
           webhook_secret?: string | undefined;
       }
     | {
           type: 'APP';
-          app_id: string;
-          app_link: string;
-          private_key: string;
+          app_id?: string | undefined;
+          app_link?: string | undefined;
+          private_key?: string | undefined;
       }
     | {
           type: 'CUSTOM';
-          client_id: string;
-          client_secret: string;
-          app_id: string;
-          app_link: string;
-          private_key: string;
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
+          app_id?: string | undefined;
+          app_link?: string | undefined;
+          private_key?: string | undefined;
+      }
+    | {
+          type: 'MCP_OAUTH2_GENERIC';
+          client_name?: string | undefined;
+          client_uri?: string | undefined;
+          client_logo_uri?: string | undefined;
+      }
+    | {
+          type: 'MCP_OAUTH2';
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
+          scopes?: string | undefined;
       };
 
 export interface CreateIntegrationParams {
@@ -103,6 +151,8 @@ export interface CreateIntegrationParams {
     credentials?: CreateIntegrationCredentials | undefined;
     integrationConfig?: Record<string, string> | undefined;
     custom?: Record<string, string> | undefined;
+    environment?: DBEnvironment | undefined;
+    team?: DBTeam | undefined;
 }
 
 export interface UpdateIntegrationParams {
@@ -114,10 +164,10 @@ export interface UpdateIntegrationParams {
     forwardWebhooks?: boolean | undefined;
     integrationConfig?: Record<string, string> | undefined;
     custom?: Record<string, string> | undefined;
+    environment?: DBEnvironment | undefined;
 }
 
 const nangoCredentialsAuthModes = new Set(['OAUTH1', 'OAUTH2', 'APP']);
-const credentialsRequiredAuthModes = new Set(['OAUTH1', 'OAUTH2', 'APP', 'CUSTOM']);
 const machineErrorCodePattern = /^(?:E[A-Z0-9_]{2,63}|[0-9A-Z]{5})$/;
 const defaultLogger = getLogger('Server.IntegrationService');
 
@@ -240,8 +290,10 @@ export class IntegrationService {
     }
 
     async create(params: CreateIntegrationParams): Promise<Result<CreatedIntegration, CreateIntegrationServiceError>> {
+        let mcpRegistration: McpClientRegistration | null = null;
+        let provider: Provider | null = null;
         try {
-            const provider = getProvider(params.provider);
+            provider = getProvider(params.provider);
             if (!provider) {
                 return Err(new IntegrationServiceError({ code: 'invalid_provider', message: 'Provider does not exist' }));
             }
@@ -255,14 +307,37 @@ export class IntegrationService {
                         })
                     );
                 }
-                if (!params.credentials && credentialsRequiredAuthModes.has(provider.auth_mode)) {
-                    return Err(new IntegrationServiceError({ code: 'missing_credentials', message: 'Missing credentials' }));
+                if (provider.auth_mode === 'MCP_OAUTH2') {
+                    const clientRegistration = (provider as ProviderMcpOAUTH2).client_registration;
+                    if (clientRegistration === 'static') {
+                        const hasCredentials = params.credentials?.type === 'MCP_OAUTH2' && params.credentials.client_id && params.credentials.client_secret;
+                        if (!hasCredentials) {
+                            return Err(new IntegrationServiceError({ code: 'missing_credentials', message: 'Missing credentials' }));
+                        }
+                    } else if (
+                        params.credentials?.type === 'MCP_OAUTH2' &&
+                        (params.credentials.client_id !== undefined || params.credentials.client_secret !== undefined)
+                    ) {
+                        return Err(
+                            new IntegrationServiceError({
+                                code: 'incompatible_credentials',
+                                message: `Client credentials can't be set for ${clientRegistration} client registration`
+                            })
+                        );
+                    }
                 }
             } else if (!nangoCredentialsAuthModes.has(provider.auth_mode)) {
                 return Err(
                     new IntegrationServiceError({
                         code: 'nango_credentials_unsupported',
                         message: 'Nango-provided credentials are unavailable for this provider'
+                    })
+                );
+            } else if (provider.integration_config) {
+                return Err(
+                    new IntegrationServiceError({
+                        code: 'invalid_integration_config',
+                        message: "Nango-managed credentials aren't available for providers that use integration_config"
                     })
                 );
             }
@@ -307,8 +382,20 @@ export class IntegrationService {
             } else {
                 applyCredentials(integration, params.credentials);
 
-                if (params.integrationConfig && Object.keys(params.integrationConfig).length > 0) {
-                    const resolvedConfig = resolveIntegrationConfig(provider, params.integrationConfig);
+                if (params.custom && Object.keys(params.custom).length > 0) {
+                    if (provider.integration_config) {
+                        return Err(
+                            new IntegrationServiceError({
+                                code: 'invalid_integration_config',
+                                message: 'This provider uses integration_config; set its values there instead of custom'
+                            })
+                        );
+                    }
+                    integration.custom = { ...integration.custom, ...params.custom };
+                }
+
+                if (provider.integration_config || (params.integrationConfig && Object.keys(params.integrationConfig).length > 0)) {
+                    const resolvedConfig = resolveIntegrationConfig(provider, params.integrationConfig ?? {});
                     if (resolvedConfig.isErr()) {
                         return Err(
                             new IntegrationServiceError({
@@ -321,21 +408,36 @@ export class IntegrationService {
                     integration.custom = { ...integration.custom, ...resolvedConfig.value };
                 }
 
-                if (params.custom && Object.keys(params.custom).length > 0) {
-                    if (provider.integration_config) {
+                if (provider.auth_mode === 'MCP_OAUTH2') {
+                    const registration = await registerMcpOAuth2Client({
+                        provider,
+                        uniqueKey: integration.unique_key,
+                        environment: params.environment,
+                        team: params.team
+                    });
+                    if (registration.isErr()) {
                         return Err(
                             new IntegrationServiceError({
-                                code: 'invalid_integration_config',
-                                message: 'This provider uses integration_config; set its values there instead of custom'
+                                code: registration.error.code === 'cimd_url_unavailable' ? 'invalid_integration_config' : 'create_failed',
+                                message: registration.error.message
                             })
                         );
                     }
-                    integration.custom = { ...integration.custom, ...params.custom };
+                    if (registration.value) {
+                        mcpRegistration = registration.value;
+                        integration.oauth_client_id = registration.value.oauth_client_id;
+                        integration.oauth_client_secret = registration.value.oauth_client_secret;
+                        const registrationCustom = mcpRegistrationCustomFields(registration.value);
+                        if (registrationCustom) {
+                            integration.custom = { ...integration.custom, ...registrationCustom };
+                        }
+                    }
                 }
             }
 
             const created = await configService.createProviderConfig(integration, provider);
             if (!created) {
+                await cleanupMcpClientRegistration(mcpRegistration, provider);
                 this.logger.error('Integration creation failed', {
                     failureCode: 'create_failed',
                     errorKind: 'empty_result'
@@ -345,6 +447,7 @@ export class IntegrationService {
 
             return Ok({ integration: created, provider });
         } catch (err) {
+            await cleanupMcpClientRegistration(mcpRegistration, provider);
             this.logCreateFailure('create_failed', err);
             return Err(
                 new IntegrationServiceError({
@@ -378,6 +481,25 @@ export class IntegrationService {
                 );
             }
 
+            if (integration.shared_credentials_id) {
+                if (params.credentials) {
+                    return Err(
+                        new IntegrationServiceError({
+                            code: 'shared_credentials_not_editable',
+                            message: "Can't edit credentials on an integration using Nango-provided credentials"
+                        })
+                    );
+                }
+                if (params.integrationConfig) {
+                    return Err(
+                        new IntegrationServiceError({
+                            code: 'shared_credentials_not_editable',
+                            message: 'integrationConfig is not supported with Nango-provided credentials'
+                        })
+                    );
+                }
+            }
+
             if (params.credentials && params.credentials.type !== provider.auth_mode) {
                 return Err(
                     new IntegrationServiceError({
@@ -385,6 +507,18 @@ export class IntegrationService {
                         message: 'incompatible credentials auth type and provider auth'
                     })
                 );
+            }
+
+            if (params.credentials?.type === 'MCP_OAUTH2') {
+                const clientRegistration = (provider as ProviderMcpOAUTH2).client_registration;
+                if (clientRegistration !== 'static' && (params.credentials.client_id !== undefined || params.credentials.client_secret !== undefined)) {
+                    return Err(
+                        new IntegrationServiceError({
+                            code: 'incompatible_credentials',
+                            message: `Client credentials can't be updated for ${clientRegistration} client registration`
+                        })
+                    );
+                }
             }
 
             if (params.newIntegrationId && params.newIntegrationId !== integration.unique_key) {
@@ -407,6 +541,22 @@ export class IntegrationService {
                 }
 
                 integration.unique_key = params.newIntegrationId;
+
+                if (provider.auth_mode === 'MCP_OAUTH2' && (provider as ProviderMcpOAUTH2).client_registration === 'cimd') {
+                    if (!params.environment) {
+                        return Err(
+                            new IntegrationServiceError({
+                                code: 'update_failed',
+                                message: 'environment is required to rename an MCP_OAUTH2 client ID metadata document integration'
+                            })
+                        );
+                    }
+                    const cimdResult = resolveCimdUrl(params.environment.uuid, integration.unique_key);
+                    if (cimdResult.isErr()) {
+                        return Err(new IntegrationServiceError({ code: 'invalid_integration_config', message: cimdResult.error.message }));
+                    }
+                    integration.oauth_client_id = cimdResult.value;
+                }
             }
 
             if (params.displayName !== undefined) {
@@ -502,6 +652,8 @@ export class IntegrationService {
                 return Err(new IntegrationServiceError({ code: 'delete_failed', message: 'Failed to delete integration' }));
             }
 
+            await cleanupMcpClientRegistration(mcpRegistrationFromCustom(integration.custom), getProvider(integration.provider));
+
             return Ok({ integrationId: integration.unique_key });
         } catch (err) {
             this.logDeleteFailure({
@@ -562,9 +714,15 @@ function applyCredentials(integration: DBCreateIntegration, credentials: CreateI
         case 'OAUTH1':
         case 'OAUTH2':
         case 'TBA': {
-            integration.oauth_client_id = credentials.client_id;
-            integration.oauth_client_secret = credentials.client_secret;
-            integration.oauth_scopes = credentials.scopes;
+            if (credentials.client_id !== undefined) {
+                integration.oauth_client_id = credentials.client_id;
+            }
+            if (credentials.client_secret !== undefined) {
+                integration.oauth_client_secret = credentials.client_secret;
+            }
+            if (credentials.scopes !== undefined) {
+                integration.oauth_scopes = credentials.scopes;
+            }
             if (credentials.webhook_secret) {
                 integration.custom = { ...integration.custom, webhookSecret: credentials.webhook_secret };
             }
@@ -572,21 +730,58 @@ function applyCredentials(integration: DBCreateIntegration, credentials: CreateI
         }
 
         case 'APP': {
-            integration.oauth_client_id = credentials.app_id;
-            integration.oauth_client_secret = Buffer.from(credentials.private_key).toString('base64');
-            integration.app_link = credentials.app_link;
+            if (credentials.app_id !== undefined) {
+                integration.oauth_client_id = credentials.app_id;
+            }
+            if (credentials.private_key !== undefined) {
+                integration.oauth_client_secret = Buffer.from(credentials.private_key).toString('base64');
+            }
+            if (credentials.app_link !== undefined) {
+                integration.app_link = credentials.app_link;
+            }
             break;
         }
 
         case 'CUSTOM': {
-            integration.oauth_client_id = credentials.client_id;
-            integration.oauth_client_secret = credentials.client_secret;
-            integration.app_link = credentials.app_link;
+            if (credentials.client_id !== undefined) {
+                integration.oauth_client_id = credentials.client_id;
+            }
+            if (credentials.client_secret !== undefined) {
+                integration.oauth_client_secret = credentials.client_secret;
+            }
+            if (credentials.app_link !== undefined) {
+                integration.app_link = credentials.app_link;
+            }
+            if (credentials.app_id !== undefined || credentials.private_key !== undefined) {
+                integration.custom = {
+                    ...integration.custom,
+                    ...(credentials.app_id !== undefined && { app_id: credentials.app_id }),
+                    ...(credentials.private_key !== undefined && { private_key: Buffer.from(credentials.private_key).toString('base64') })
+                };
+            }
+            break;
+        }
+
+        case 'MCP_OAUTH2_GENERIC': {
             integration.custom = {
                 ...integration.custom,
-                app_id: credentials.app_id,
-                private_key: Buffer.from(credentials.private_key).toString('base64')
+                ...(credentials.client_name && { oauth_client_name: credentials.client_name }),
+                ...(credentials.client_uri !== undefined && { oauth_client_uri: credentials.client_uri }),
+                ...(credentials.client_logo_uri && { oauth_client_logo_uri: credentials.client_logo_uri })
             };
+            break;
+        }
+
+        case 'MCP_OAUTH2': {
+            if (credentials.client_id !== undefined) {
+                integration.oauth_client_id = credentials.client_id;
+            }
+            if (credentials.client_secret !== undefined) {
+                integration.oauth_client_secret = credentials.client_secret;
+            }
+            if (credentials.scopes !== undefined) {
+                integration.oauth_scopes = normalizeMcpOAuth2Scopes(credentials.scopes);
+            }
             break;
         }
     }

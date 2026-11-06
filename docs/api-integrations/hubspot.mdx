@@ -11,6 +11,10 @@ Connect to Hubspot with Nango and see data flow in 2 minutes.
 <Steps>
     <Step title="Create the integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Hubspot_.
+
+    <Note>
+      Nango has a [Nango-managed OAuth app](/guides/auth/auth-guide#nango-managed-oauth-apps) you can use in development and production. Select it when you create the integration.
+    </Note>
     </Step>
     <Step title="Authorize Hubspot">
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Hubspot. Later, you'll let your users do the same directly from your app.
@@ -51,7 +55,7 @@ Connect to Hubspot with Nango and see data flow in 2 minutes.
 
 
     </Tabs>
-    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
 
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
@@ -59,13 +63,17 @@ Connect to Hubspot with Nango and see data flow in 2 minutes.
     <Step title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
 
-        To obtain your own production credentials, follow the setup guide linked below.
+        To use your own OAuth app instead of the Nango-managed one, follow the setup guide linked below.
     </Step>
 </Steps>
 
 <Warning>
 **HubSpot Marketplace installation flow is not supported.** Nango only supports the standard OAuth flow — all connections must be initiated through Nango (e.g. via the Connect UI or the [Nango Auth API](/guides/primitives/auth)). If your HubSpot app is listed on the HubSpot Marketplace, users must connect through your Nango-powered flow, not via the Marketplace install button.
 </Warning>
+
+<Note>
+**Deleting a connection revokes its HubSpot refresh token by default.** If multiple Nango connections share the same HubSpot refresh token, deleting one of them would revoke that token for all connections using it. To opt out of this for a given connection, set `skipTokenRevocation: true` in that connection's metadata using the [update connection metadata endpoint](/reference/backend/http-api/connections/update-metadata) before deleting it.
+</Note>
 
 ## 📚 Hubspot Integration Guides
 
@@ -78,7 +86,7 @@ Official docs: [Hubspot API docs](https://developers.hubspot.com/docs/reference/
 
 ## 🧩 Pre-built syncs & actions for Hubspot
 
-Enable them in your dashboard. Extend and customize to fit your needs.
+Explore Nango-provided actions in your dashboard. Extend and customize them to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/hubspot/PreBuiltUseCases.mdx"
 

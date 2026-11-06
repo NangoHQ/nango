@@ -12,7 +12,8 @@ import type { ManagementMcpTool } from '../managementTool.js';
 
 export const proxyRequestTool: ManagementMcpTool<ProxyRequestOutput> = defineManagementMcpTool<typeof proxyRequestInputSchema, ProxyRequestOutput>({
     name: 'proxy_request',
-    description: `Make an authenticated HTTP request to a provider API through the Nango proxy. Returns JSON or UTF-8 text responses up to ${MAX_MCP_PROXY_RESPONSE_SIZE_LABEL}; unsafe JSON numbers are strings. Use the HTTP proxy for binary or larger responses.`,
+    title: 'Make Proxy Request',
+    description: `Makes an authenticated HTTP request to a provider API through the Nango proxy. Returns JSON or UTF-8 text responses up to ${MAX_MCP_PROXY_RESPONSE_SIZE_LABEL}; unsafe JSON numbers are strings. Binary or larger responses are available through the HTTP proxy.`,
     inputSchema: proxyRequestInputSchema,
     outputSchema: proxyRequestOutputSchema,
     requiredScopes: { every: ['environment:proxy'] },
@@ -23,11 +24,12 @@ export const proxyRequestTool: ManagementMcpTool<ProxyRequestOutput> = defineMan
         idempotentHint: false,
         openWorldHint: true
     },
-    async handler({ args, account, environment, plan }) {
-        const result = await executeMcpProxyRequest({
+    async handler({ args, account, environment, plan, apiKeyPrincipal }) {
+        const execution = await executeMcpProxyRequest({
             account,
             environment,
             plan,
+            ...(apiKeyPrincipal ? { apiKey: apiKeyPrincipal } : {}),
             integrationId: args.integration_id,
             connectionId: args.connection_id,
             method: args.method,
@@ -41,6 +43,8 @@ export const proxyRequestTool: ManagementMcpTool<ProxyRequestOutput> = defineMan
             retryOn: args.retry_on,
             forwardHeadersOnRedirect: args.forward_headers_on_redirect
         });
+
+        const { result } = execution;
 
         return result.isErr() ? Err(proxyRequestErrorToMcp(result.error)) : Ok(result.value);
     }

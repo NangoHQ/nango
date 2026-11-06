@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { records as recordsService } from '@nangohq/records';
+import { recordModelName, records as recordsService } from '@nangohq/records';
 import { connectionService, listConnectionSyncs } from '@nangohq/shared';
 import { getLogger, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -83,7 +83,7 @@ async function getRecordCountsForPage({
     const models = new Set<string>();
     for (const sync of syncs) {
         for (const model of sync.models) {
-            models.add(toRecordModelName(model, sync.variant));
+            models.add(recordModelName(model, sync.variant));
         }
     }
     if (models.size === 0) {
@@ -99,16 +99,12 @@ async function getRecordCountsForPage({
     return counts.value;
 }
 
-function toRecordModelName(model: string, variant: string): string {
-    return variant === 'base' ? model : `${model}::${variant}`;
-}
-
 function toApi(sync: ListedSync, recordCounts: Record<string, RecordCount> | null): ApiConnectionSync {
     return {
         ...sync,
         record_count:
             recordCounts === null
                 ? null
-                : Object.fromEntries(sync.models.map((model) => [model, recordCounts[toRecordModelName(model, sync.variant)]?.count ?? 0]))
+                : Object.fromEntries(sync.models.map((model) => [model, recordCounts[recordModelName(model, sync.variant)]?.count ?? 0]))
     };
 }

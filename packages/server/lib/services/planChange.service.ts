@@ -1,10 +1,11 @@
 import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { canHaveGrowthAddon, getPlanDefinition, handlePlanChanged, productTracking, setGrowthAddon } from '@nangohq/shared';
-import { Err, getLogger, Ok } from '@nangohq/utils';
+import { canHaveGrowthAddon, getPlanDefinition, handlePlanChanged, productTracking, setGrowthAddon, updatePlanByTeam } from '@nangohq/shared';
+import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { clearSpendAlertOnPlanChange } from './spendAlertNotification.service.js';
 
+import type { AppliedPlanChange } from '@nangohq/shared';
 import type { BillingSubscription, DBPlan, DBTeam, PlanDefinition, Result } from '@nangohq/types';
 import type Stripe from 'stripe';
 
@@ -194,14 +195,33 @@ export async function applyPendingPlanChange({
         return Err(new Error('failed_to_sync_applied_plan_change', { cause: resChanged.error }));
     }
 
-    const planChanged = resChanged.value;
+    const planChange = resChanged.value;
 
-    if (planChanged) {
+    if (planChange) {
         logger.info(`Plan updated for account ${team.id} to ${resApply.value.planExternalId}`);
         await clearSpendAlertOnPlanChange({ accountId: team.id, subscriptionId: resApply.value.id });
+        trackPlanUpdate({ team, planChange, isScheduled: false });
     }
 
     return Ok(undefined);
+}
+
+/** Billing Bot alerts on `plan_submit` and on scheduled non-downgrade updates. Pass `isScheduled: true` for a change applied right after its request and it alerts twice. */
+export function trackPlanUpdate({ team, planChange, isScheduled }: { team: DBTeam; planChange: AppliedPlanChange; isScheduled: boolean }): void {
+    const { previousPlan, updatedPlan, isDowngrade } = planChange;
+    productTracking.track({
+        name: 'billing:plan_update',
+        team,
+        plan: updatedPlan,
+        eventProperties: {
+            previous_plan: previousPlan.name,
+            plan: updatedPlan.name,
+            previous_has_growth_addon: previousPlan.has_growth_features,
+            has_growth_addon: updatedPlan.has_growth_features,
+            is_downgrade: isDowngrade,
+            is_scheduled: isScheduled
+        }
+    });
 }
 
 /**
@@ -258,7 +278,7 @@ export async function upgradePlan(context: PlanChangeContext): Promise<Result<Pl
 
 /** Schedules a downgrade in Orb, which takes effect at the end of the current term. */
 export async function downgradePlan(context: PlanChangeContext): Promise<Result<void, PlanChangeError>> {
-    const { currentPlan, subscriptionId, requested } = context;
+    const { team, currentPlan, subscriptionId, requested } = context;
 
     if (requested.newPlanCode !== 'free' && (!currentPlan.stripe_payment_id || !currentPlan.stripe_customer_id)) {
         return Err(new PlanChangeError('not_linked_to_stripe'));
@@ -269,25 +289,31 @@ export async function downgradePlan(context: PlanChangeContext): Promise<Result<
         return Err(new PlanChangeError('downgrade_failed', { cause: resDowngrade.error }));
     }
 
+    const { changeAt } = resDowngrade.value;
+    if (changeAt) {
+        const updated = await updatePlanByTeam(db.knex, { account_id: team.id, orb_future_plan: requested.newPlanCode, orb_future_plan_at: changeAt });
+        // Orb has scheduled the change, so failing the request here would only invite a second one
+        if (updated.isErr()) {
+            report(new Error('failed_to_record_scheduled_downgrade', { cause: updated.error }), { accountId: team.id });
+        }
+    }
+
     return Ok(undefined);
 }
 
 export function trackPlanChange(context: PlanChangeContext, change: PlanChanges): void {
     const { team, currentPlan, requested } = context;
 
-    if (change.plan !== 'downgrade' && change.addon !== 'disable') {
-        return;
-    }
-
     productTracking.track({
-        name: 'account:billing:downgraded',
+        name: 'billing:plan_submit',
         team,
+        plan: null,
         eventProperties: {
-            previousPlan: currentPlan.name,
-            newPlan: requested.newPlanCode,
-            previousGrowthFeatures: currentPlan.has_growth_features,
-            newGrowthFeatures: requested.withGrowthFeatures,
-            orbCustomerId: currentPlan.orb_customer_id
+            previous_plan: currentPlan.name,
+            plan: requested.newPlanCode,
+            previous_has_growth_addon: currentPlan.has_growth_features,
+            has_growth_addon: requested.withGrowthFeatures,
+            is_downgrade: change.plan === 'downgrade'
         }
     });
 }

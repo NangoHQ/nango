@@ -5,6 +5,8 @@ import { Err, Ok } from './result.js';
 import type { Result } from './result.js';
 import type { StringValue } from 'ms';
 
+export const MIN_SYNC_FREQUENCY_MS = 30_000;
+
 export function getFrequencyMs(intervalStr: string): Result<number> {
     const runsMap = new Map([
         ['every half day', '12h'],

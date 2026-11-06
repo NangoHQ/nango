@@ -1,6 +1,9 @@
-import { environmentService } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
+import { accountGroupProperties, environmentService } from '@nangohq/shared';
 import { baseUrl, NANGO_VERSION, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import * as agentGettingStartedService from '../../../services/agentGettingStarted.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { canViewAuditTrail } from '../../../utils/auditTrail.js';
 
@@ -13,7 +16,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
         return;
     }
 
-    const { user: sessionUser, plan } = res.locals;
+    const { user: sessionUser, account, plan } = res.locals;
 
     const environments = await environmentService.getEnvironmentsByAccountId(sessionUser.account_id);
     if (environments.isErr()) {
@@ -29,7 +32,12 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             baseUrl,
             debugMode: req.session.debugMode === true,
             gettingStartedClosed: sessionUser.getting_started_closed,
-            auditTrail: await canViewAuditTrail(req, plan)
+            gettingStartedDismissed: await agentGettingStartedService.isDismissed(db.knex, account.id),
+            auditTrail: await canViewAuditTrail(req, plan),
+            toolsCatalog: await getFlags().hasCatalogTools(account.uuid),
+            accountGroup: accountGroupProperties(account, plan),
+            agentPlayground: await getFlags().isAgentPlaygroundEnabled(account.uuid),
+            hasBaa: account.has_baa
         }
     });
 });

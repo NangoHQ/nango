@@ -30,6 +30,7 @@ const account: DBTeam = {
     name: 'team',
     uuid: 'uuid',
     found_us: '',
+    has_baa: false,
     created_at: new Date(),
     updated_at: new Date()
 };
@@ -46,6 +47,7 @@ const providerConfig: IntegrationConfig = {
     created_at: new Date(),
     updated_at: new Date(),
     forward_webhooks: true,
+    allow_unverified_webhooks: false,
     shared_credentials_id: null
 };
 

@@ -1,4 +1,4 @@
-import { ChevronsUpDown, CreditCard, KeyRound, LogOut, ScrollText, SlidersHorizontal, Sparkle, UserRoundCog, Users } from 'lucide-react';
+import { ChevronsUpDown, CreditCard, KeyRound, LogOut, ScrollText, SlidersHorizontal, Sprout, UserRoundCog, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -56,15 +56,7 @@ export const ProfileDropdown: React.FC = () => {
                 label: 'Account API keys',
                 icon: KeyRound,
                 href: '/api-keys',
-                onSelect: () => track('web:account_api_keys:opened', { source: 'profile_menu' })
-            });
-        }
-
-        if (meta && meta.gettingStartedClosed && showGettingStarted) {
-            list.push({
-                label: 'Getting Started',
-                icon: Sparkle,
-                href: `/dev/getting-started`
+                onSelect: () => track('auth:api_keys_link_click', {})
             });
         }
 
@@ -81,6 +73,14 @@ export const ProfileDropdown: React.FC = () => {
                 label: 'Audit trail',
                 icon: ScrollText,
                 href: `/team/audit`
+            });
+        }
+
+        if (meta && meta.gettingStartedDismissed && showGettingStarted) {
+            list.push({
+                label: 'Getting Started',
+                icon: Sprout,
+                href: `/dev/getting-started`
             });
         }
 

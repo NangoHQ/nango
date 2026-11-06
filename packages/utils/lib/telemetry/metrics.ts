@@ -7,6 +7,8 @@ export enum Types {
 
     ACTION_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.action.incoming.payloadSizeBytes',
 
+    CATALOG_CODE_RATE_LIMITED = 'nango.catalog.code.rateLimited',
+
     AUTH_SECRET_KEY_HASH_CACHE = 'nango.auth.secretKeyHashCache',
     AUTH_SHADOW_CACHE = 'nango.auth.shadowCache',
     AUTH_CONTEXT_CACHE = 'nango.auth.contextCache',
@@ -111,6 +113,8 @@ export enum Types {
     ORCH_TASKS_EXPIRED = 'nango.orch.tasks.expired',
     ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled',
     ORCH_QUEUE_BACKPRESSURE = 'nango.orch.queue.backpressure',
+    ORCH_CONCURRENCY_ACTIVE = 'nango.orch.concurrency.active',
+    ORCH_CONCURRENCY_SAMPLING_DURATION_MS = 'nango.orch.concurrency.sampling.duration_ms',
     ORCH_TASKS_DEQUEUED = 'nango.orch.tasks.dequeued',
 
     TASKS_ENQUEUED = 'nango.tasks.enqueued',
@@ -128,6 +132,7 @@ export enum Types {
     DEPRECATED_V1_ENDPOINT_USED = 'nango.server.deprecated.v1.used',
 
     DEPRECATED_PUBLIC_ENDPOINT_USED = 'nango.server.deprecated.public.used',
+    DEPRECATED_API_KEY_SCOPE_USED = 'nango.server.deprecated.apiKeyScope.used',
 
     AUTH_SUCCESS = 'nango.server.auth.success',
     AUTH_FAILURE = 'nango.server.auth.failure',
@@ -157,7 +162,7 @@ export enum Types {
     MCP_TOOL_CALLS = 'nango.mcp.tool_calls',
     MCP_CLIENT_ID_METHOD = 'nango.mcp.client_id_method',
 
-    E2B_RUNNING_SANDBOXES = 'nango.server.e2b.sandboxes.running',
+    AGENT_PLAYGROUND_MODEL_ERROR = 'nango.agentPlayground.modelError',
 
     BILLING_USAGE_CACHE = 'nango.billing.usage.cache',
     BILLING_USAGE_ORB_MS = 'nango.billing.usage.orb.ms',

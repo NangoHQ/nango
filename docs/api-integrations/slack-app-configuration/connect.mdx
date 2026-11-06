@@ -1,0 +1,51 @@
+---
+title: Slack (Configuration Token) - How do I link my account?
+sidebarTitle: Slack (Configuration Token)
+---
+
+## Overview
+
+To authenticate with the Slack App Manifest APIs, you will need:
+
+1. **App configuration refresh token** - The refresh token from "Your App Configuration Tokens" at api.slack.com/apps.
+
+This guide walks you through generating an app configuration token in Slack.
+
+<Note>
+An app configuration token is tied to your Slack user account and one workspace — not to a specific app. It can create new apps and manage the configuration of any app your account owns in that workspace. Apps created via the Manifest APIs are homed in this workspace.
+</Note>
+
+### Prerequisites:
+
+- A Slack account that is a member of the workspace where apps will be created and managed.
+
+### Instructions:
+
+#### Step 1: Generate an app configuration token
+
+1. Go to [api.slack.com/apps](https://api.slack.com/apps) and sign in.
+2. Scroll below your list of apps to the **Your App Configuration Tokens** section.
+3. Click **Generate Token**.
+
+<img src="/api-integrations/slack-app-configuration/config-tokens-section.png" alt="Slack api.slack.com/apps page showing the Your App Configuration Tokens section with the Generate Token button" />
+
+4. Select the workspace where apps should be created and managed, then confirm.
+5. In the token list, copy the **Refresh Token** (it starts with `xoxe-1-`) and store it securely.
+
+<img src="/api-integrations/slack-app-configuration/copy-refresh-token.png" alt="Slack app configuration token list with the Refresh Token value ready to copy" />
+
+<Warning>
+The refresh token is single-use: Slack invalidates it each time it is exchanged for a new token pair. After you submit it here, Nango takes over the rotation cycle — do not reuse the same token in another tool, and do not rotate it manually, or the connection will break.
+</Warning>
+
+#### Step 2: Enter the refresh token in the Connect UI
+
+Once you have your **App configuration refresh token**:
+
+1. Open the form where you need to authenticate with the Slack App Manifest APIs.
+2. Enter your **App configuration refresh token**.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/slack-app-configuration/connect-ui.png" alt="Nango Connect UI for Slack (Configuration Token) with the App configuration refresh token field and Connect button" style={{maxWidth: "450px" }} />
+
+You are now connected to the Slack App Manifest APIs.

@@ -61,7 +61,7 @@ const messageSchema: z.ZodType<DispatchMessage> = z.discriminatedUnion('kind', [
         ...commonMessageSchema,
         kind: z.literal('function'),
         idempotencyKey: z.string().min(1),
-        functionName: z.string().min(1),
+        functionUuid: z.uuid(),
         trigger: functionTriggerSchema,
         maxConcurrency: z.number().int().min(0)
     })
@@ -179,7 +179,7 @@ export class DispatchQueueConsumer {
         });
 
         const receivedAt = Date.now();
-        return await tracer.scope().activate(span, async () => {
+        await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -292,13 +292,13 @@ export class DispatchQueueConsumer {
             return {
                 name: message.idempotencyKey,
                 group: {
-                    key: `function:environment:${message.connection.environment_id}:connection:${message.connection.id}:function:${message.functionName}`,
+                    key: `function:environment:${message.connection.environment_id}:connection:${message.connection.id}:function:${message.functionUuid}`,
                     maxConcurrency: message.maxConcurrency
                 },
                 retry: { count: 0, max: 0 },
                 ownerKey: `environment:${message.connection.environment_id}`,
                 args: {
-                    functionName: message.functionName,
+                    functionUuid: message.functionUuid,
                     connection: message.connection,
                     activityLogId: message.activityLogId,
                     trigger: message.trigger,

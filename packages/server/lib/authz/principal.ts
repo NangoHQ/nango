@@ -41,7 +41,6 @@ function subjectForKey(key: ApiKeyPrincipal): PrincipalSubject {
 
 /**
  * The grants behind the current request, or null when nothing authenticated well enough to have any.
- * Roles authorize from this; the key path compares against the legacy answer and counts.
  */
 export function buildPrincipal(locals: Partial<RequestLocals>): Principal | null {
     const account = locals.account;

@@ -63,10 +63,11 @@ When the var is set, new connections from that session route webhooks to your ma
 A full `nango deploy` reconciles every function in the environment. On a shared collaborative environment, that can overwrite teammates' deploys. Deploy only what you changed:
 
 ```bash
-nango deploy --sync <name> <env>
-nango deploy --action <name> <env>
-nango deploy --integration <id> <env>   # all functions for one integration, including event functions
+nango deploy <env> <integration>/<folder>/<file>.ts   # one function, e.g. github/tools/get-issue.ts
+nango deploy --integration <id> <env>                 # all functions for one integration, including event functions
 ```
+
+Deploying a single file never deletes other functions. Event functions can only be deployed with their integration or the whole project.
 
 Reserve full deploys for environments where the repo is the sole source of truth (for example staging or prod). See the [CI/CD guide](/guides/functions/ci-cd).
 
@@ -94,4 +95,3 @@ When you deploy [Functions](/guides/functions/functions-guide), you always targe
 - [Create an environment](/reference/backend/http-api/environments/create) - create environments via API.
 - [CI/CD](/guides/functions/ci-cd) - deploy functions safely across environments.
 - [Webhooks from Nango](/guides/platform/webhooks-from-nango) - environment and per-connection webhook URLs.
-- [Self-host Nango](/guides/platform/self-hosting) - plan environments for self-hosted deployments.

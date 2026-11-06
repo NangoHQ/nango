@@ -64,6 +64,9 @@ function getDefaultWebhookOutbound(): WebhookOutbound {
     return defaultWebhookOutbound;
 }
 
+/** Set by Nango on forwards whose provider signature was not verified, so a caller must never be able to supply it. */
+export const UNVERIFIED_WEBHOOK_HEADER = 'X-Nango-Webhook-Unverified';
+
 export const NON_FORWARDABLE_HEADERS = [
     'host',
     'authorization',
@@ -79,7 +82,9 @@ export const NON_FORWARDABLE_HEADERS = [
     'sec-',
     'proxy-',
     'www-authenticate',
-    'server'
+    'server',
+    UNVERIFIED_WEBHOOK_HEADER.toLowerCase(),
+    'x-nango-webhook-secret'
 ];
 
 const circuitBreaker = await (async () => {
@@ -221,6 +226,7 @@ export const deliver = async ({
     secret,
     endingMessage = '',
     incomingHeaders,
+    extraHeaders,
     onBytes,
     outbound = getDefaultWebhookOutbound()
 }: {
@@ -231,6 +237,8 @@ export const deliver = async ({
     logCtx?: LogContext | undefined;
     endingMessage?: string;
     incomingHeaders?: Record<string, string>;
+    /** Nango's own headers, applied over the forwarded incoming ones. */
+    extraHeaders?: Record<string, string> | undefined;
     onBytes?: (bytes: MeteredBytes) => void;
     outbound?: WebhookOutbound;
 }): Promise<Result<void>> => {
@@ -244,7 +252,7 @@ export const deliver = async ({
             continue;
         }
 
-        const filteredHeaders = filterHeaders(incomingHeaders || {});
+        const filteredHeaders = { ...filterHeaders(incomingHeaders || {}), ...extraHeaders };
 
         // We manually stringify the body to ensure that the order of the keys is consistent
         // and that axios won't modify the payload in any way.

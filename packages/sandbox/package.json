@@ -17,14 +17,13 @@
         "@nangohq/database": "file:../database",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
-        "e2b": "2.18.0",
         "jsonwebtoken": "9.0.3"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "@types/jsonwebtoken": "9.0.9",
         "knex": "3.1.0",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     },
     "files": [
         "dist/**/*"

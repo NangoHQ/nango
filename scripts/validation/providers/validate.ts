@@ -52,8 +52,8 @@ if (validator.errors) {
 const invalidInterpolation = /(?<!(\$|]))\{(?!\s*})/g;
 for (const [providerKey, provider] of Object.entries(providersJson)) {
     // Skip validation for 'sage-intacct' provider, we need this so that we can specify the element attribute
-    // Skip validation for 'semble', its token_params.query is a literal GraphQL mutation string
-    if (providerKey === 'sage-intacct' || providerKey === 'supabase-mcp' || providerKey === 'semble') {
+    // Skip validation for 'semble' and 'monday-api-key', their query/data fields are literal GraphQL bodies
+    if (providerKey === 'sage-intacct' || providerKey === 'supabase-mcp' || providerKey === 'semble' || providerKey === 'monday-api-key') {
         continue;
     }
 
@@ -159,14 +159,16 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
     // Check if referenced connectionConfig keys exist in the connection_config property
     if (connectionConfigReferences.length > 0) {
         for (const reference of connectionConfigReferences) {
-            const defined = provider.connection_config && reference.key in provider.connection_config;
+            const defined =
+                (provider.connection_config && reference.key in provider.connection_config) ||
+                (provider.integration_config && reference.key in provider.integration_config);
             const inTokenResponseMetadata = provider.token_response_metadata?.includes(reference.key);
 
             if (!defined && !inTokenResponseMetadata) {
                 console.error(
                     chalk.red('error'),
                     chalk.blue(providerKey),
-                    `"${reference.path.join('" > "')}" use "connectionConfig.${reference.key}", but it's not defined in "connection_config"`
+                    `"${reference.path.join('" > "')}" use "connectionConfig.${reference.key}", but it's not defined in "connection_config" or "integration_config"`
                 );
                 error = true;
                 continue;
@@ -285,6 +287,14 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
             chalk.red('error'),
             chalk.blue(providerKey),
             `"cannot contain both "proxy.verification" and "credentials_verification_script". Only one should be defined.`
+        );
+        error = true;
+    }
+    if (provider.token_request_auth_method === 'none' && 'authorization_method' in provider && provider.authorization_method) {
+        console.error(
+            chalk.red('error'),
+            chalk.blue(providerKey),
+            `cannot contain both "token_request_auth_method: none" and "authorization_method". A public client sends its client_id in the body.`
         );
         error = true;
     }

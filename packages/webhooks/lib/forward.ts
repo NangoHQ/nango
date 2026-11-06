@@ -1,7 +1,7 @@
 import { OtlpSpan } from '@nangohq/logs';
 import { Err, getLogger, metrics, Ok } from '@nangohq/utils';
 
-import { deliver, resolveWebhookSettings, shouldSend } from './utils.js';
+import { deliver, resolveWebhookSettings, shouldSend, UNVERIFIED_WEBHOOK_HEADER } from './utils.js';
 
 import type { LogContextGetter } from '@nangohq/logs';
 import type { MeteredBytes } from '@nangohq/shared';
@@ -74,8 +74,11 @@ export const forwardWebhook = async ({
         from: integration.provider,
         providerConfigKey: integration.unique_key,
         type: 'forward',
-        payload: payload
+        payload: payload,
+        ...(unverified ? { unverified: true as const } : {})
     };
+
+    const extraHeaders = unverified ? { [UNVERIFIED_WEBHOOK_HEADER]: 'true' } : undefined;
 
     const toWebhooks = (settings: DBExternalWebhook): { url: string; type: string }[] =>
         [
@@ -97,6 +100,7 @@ export const forwardWebhook = async ({
             secret,
             logCtx,
             incomingHeaders: webhookOriginalHeaders,
+            extraHeaders,
             onBytes: (b) => {
                 deliverBytes.sent += b.sent;
                 deliverBytes.received += b.received;
@@ -137,6 +141,7 @@ export const forwardWebhook = async ({
             secret,
             logCtx,
             incomingHeaders: webhookOriginalHeaders,
+            extraHeaders,
             onBytes: (b) => {
                 deliverBytes.sent += b.sent;
                 deliverBytes.received += b.received;

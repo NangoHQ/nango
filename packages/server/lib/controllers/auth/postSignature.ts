@@ -199,6 +199,7 @@ export const postPublicSignatureAuthorization = asyncWrapperWithEnvironment<Post
             connection: updatedConnection.connection,
             config,
             account,
+            environment,
             logCtx
         });
 

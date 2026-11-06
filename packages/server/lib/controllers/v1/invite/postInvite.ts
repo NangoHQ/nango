@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { expirePreviousInvitations, inviteEmail, userService } from '@nangohq/shared';
+import { expirePreviousInvitations, inviteEmail, productTracking, userService } from '@nangohq/shared';
 import { requireEmptyQuery, roles, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -69,6 +69,10 @@ export const postInvite = asyncWrapper<PostInvite>(async (req, res) => {
 
         await sendInviteEmail({ email, account, user, invitation, isExistingUser: !!existingUser });
         invited.push(email);
+    }
+
+    if (invited.length > 0) {
+        productTracking.track({ name: 'team:user_invite', eventProperties: { role: effectiveRole, invite_count: invited.length } });
     }
 
     res.status(200).send({

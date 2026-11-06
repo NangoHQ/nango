@@ -1,6 +1,6 @@
 import * as z from 'zod/v4';
 
-import { functionTypeSchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
+import { functionListTypeSchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
 import { functionIntegrationIdSchema, runnableFunctionTypeSchema } from '../../functions/validation.js';
 
 export const deployFunctionArgumentsSchema = z
@@ -45,7 +45,7 @@ export const getDeploymentStatusOutputSchema = z
         completed_at: z.iso.datetime().optional(),
         duration_ms: z.number().int().nonnegative().optional(),
         deployed: z.boolean().optional(),
-        deployed_functions: z.array(z.object({ name: z.string(), version: z.string() }).strict()).optional(),
+        deployed_functions: z.array(z.object({ name: z.string(), version: z.string().optional() }).strict()).optional(),
         output: z.string().optional(),
         error: z
             .object({
@@ -61,7 +61,7 @@ export const getDeploymentStatusOutputSchema = z
 export const listFunctionsArgumentsSchema = z
     .object({
         integration_id: providerConfigKeySchema.min(1),
-        type: functionTypeSchema.optional(),
+        type: functionListTypeSchema.optional(),
         search: z.string().trim().min(1).max(255).optional(),
         page: z.number().int().min(0).optional().default(0),
         limit: z.number().int().min(1).max(100).optional().default(20)
@@ -69,13 +69,13 @@ export const listFunctionsArgumentsSchema = z
     .strict();
 
 const deployedFunctionBaseSchema = {
-    id: z.number().int(),
+    id: z.number().int().nullable(),
     name: z.string(),
     description: z.string().optional(),
     scopes: z.array(z.string()).optional(),
     enabled: z.boolean(),
-    last_deployed: z.iso.datetime(),
-    source: z.enum(['catalog', 'standalone', 'repo'])
+    last_deployed: z.iso.datetime().nullable(),
+    source: z.enum(['catalog', 'standalone', 'repo', 'tools-catalog'])
 };
 
 const jsonSchemaSchema: z.ZodType<object> = z.looseObject({});
@@ -111,7 +111,38 @@ const deployedOnEventFunctionSchema = z
     })
     .strict();
 
-export const deployedFunctionSchema = z.discriminatedUnion('type', [deployedSyncFunctionSchema, deployedActionFunctionSchema, deployedOnEventFunctionSchema]);
+const deployedToolFunctionSchema = z
+    .object({
+        ...deployedFunctionBaseSchema,
+        type: z.literal('tool'),
+        uuid: z.string().uuid(),
+        integration_id: z.string(),
+        provider: z.string(),
+        description: z.string(),
+        input_json_schema: jsonSchemaSchema.nullable(),
+        output_json_schema: jsonSchemaSchema.nullable(),
+        meta: z
+            .object({
+                instructions: z.string().optional(),
+                required_scopes: z
+                    .union([
+                        z.object({ all: z.tuple([z.string()], z.string()) }).strict(),
+                        z.object({ any: z.tuple([z.string()], z.string()) }).strict(),
+                        z.object({ none: z.literal(true) }).strict()
+                    ])
+                    .optional(),
+                tags: z.record(z.string(), z.union([z.string(), z.array(z.string())]))
+            })
+            .strict()
+    })
+    .strict();
+
+export const deployedFunctionSchema = z.discriminatedUnion('type', [
+    deployedSyncFunctionSchema,
+    deployedActionFunctionSchema,
+    deployedOnEventFunctionSchema,
+    deployedToolFunctionSchema
+]);
 
 export const listFunctionsOutputSchema = z
     .object({

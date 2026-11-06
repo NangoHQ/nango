@@ -63,7 +63,9 @@ describe('createIntegrationsTool', () => {
                 client_secret: 'client-secret',
                 scopes: 'repo'
             },
-            integrationConfig: { region: 'us' }
+            integrationConfig: { region: 'us' },
+            environment: context.environment,
+            team: context.account
         });
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -74,6 +76,7 @@ describe('createIntegrationsTool', () => {
                     display_name: 'GitHub Own',
                     logo: `${basePublicUrl}/images/template-logos/github.svg`,
                     forward_webhooks: false,
+                    missing_fields: [],
                     created_at: createdAt.toISOString(),
                     updated_at: updatedAt.toISOString()
                 }
@@ -99,7 +102,9 @@ describe('createIntegrationsTool', () => {
             uniqueKey: 'github-own',
             credentialSource: 'nango',
             displayName: undefined,
-            forwardWebhooks: undefined
+            forwardWebhooks: undefined,
+            environment: context.environment,
+            team: context.account
         });
     });
 
@@ -123,7 +128,9 @@ describe('createIntegrationsTool', () => {
             credentialSource: 'own',
             displayName: undefined,
             forwardWebhooks: undefined,
-            integrationConfig: { keyLabel: 'Workspace token' }
+            integrationConfig: { keyLabel: 'Workspace token' },
+            environment: context.environment,
+            team: context.account
         });
     });
 
@@ -235,6 +242,7 @@ function integrationFixture(): Config {
         missing_fields: [],
         display_name: 'GitHub Own',
         forward_webhooks: false,
+        allow_unverified_webhooks: false,
         shared_credentials_id: null,
         created_at: createdAt,
         updated_at: updatedAt

@@ -1,15 +1,23 @@
 import type { estypes } from '@elastic/elasticsearch';
 
-export type LogsStorageProvider = 'elasticsearch' | 'opensearch';
+export type LogsStorageProvider = 'elasticsearch' | 'opensearch' | 'ec-serverless';
+
+export type LogsStorageAuth =
+    | {
+          username: string;
+          password: string;
+      }
+    | {
+          apiKey: string;
+      };
 
 export interface LogsStorageClientConfig {
     nodes: string;
     requestTimeout: number;
     maxRetries: number;
-    auth: {
-        username: string;
-        password: string;
-    };
+    auth: LogsStorageAuth;
+    /** Elastic Cloud Serverless. Not forwarded to the Elasticsearch client. */
+    serverless?: boolean;
 }
 
 export interface LogsStoragePolicies {
@@ -96,6 +104,12 @@ export interface LogsPutIndexTemplateParams {
         settings?: Record<string, unknown>;
         mappings?: Record<string, unknown>;
         aliases?: Record<string, Record<string, never>>;
+        lifecycle?: {
+            data_retention?: string;
+        };
+    };
+    data_stream?: {
+        hidden?: boolean;
     };
     create?: boolean;
     cause?: string;

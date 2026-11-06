@@ -1,0 +1,37 @@
+---
+title: 'Crustdata - How do I link my account?'
+sidebarTitle: 'Crustdata'
+---
+
+## Overview
+
+To connect with Crustdata, you need your **API Key**. This guide shows you where to find it.
+
+### Prerequisites
+
+- A Crustdata account. [Sign in or create one](https://app.crustdata.com/auth/login).
+
+### Step 1: Find your API key
+
+1. Log in to Crustdata and go to the [API Keys](https://app.crustdata.com/api-keys) page.
+2. Click **+ New key** to generate a new API key.
+
+<img src="/api-integrations/crustdata/generate_api_key.png" alt="Crustdata API Keys page with the New key button highlighted"/>
+
+3. Copy your API key. It starts with `cd_`.
+
+<Note>
+A key can call every endpoint your account has access to. To restrict it to specific endpoints, click the pencil icon next to the key's **Endpoint access** value, turn on **Restrict endpoints**, select the endpoints the key should access, and click **Save**. If a call returns `403`, check that the key has access to that endpoint.
+</Note>
+
+<img src="/api-integrations/crustdata/endpoints.png" alt="Crustdata Endpoint access dialog with Restrict endpoints turned on and endpoints selected"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Crustdata.
+2. Enter your **API Key**.
+3. Click **Connect**.
+
+<img src="/api-integrations/crustdata/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Crustdata.

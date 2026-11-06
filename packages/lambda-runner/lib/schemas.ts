@@ -25,6 +25,7 @@ export const nangoPropsSchema = z.object({
     lastSyncDate: z.coerce.date().optional(),
     syncId: z.string().uuid().optional(),
     syncVariant: z.string().optional(),
+    variant: z.string().optional(),
     nangoConnectionId: z.number(),
     syncJobId: z.number().max(Number.MAX_SAFE_INTEGER).optional(),
     track_deletes: z.boolean().optional(),
@@ -52,7 +53,7 @@ export const nangoPropsSchema = z.object({
         sync_type: z.enum(['full', 'incremental']).nullable(),
         webhook_subscriptions: z.array(z.string()).nullable(),
         enabled: z.boolean(),
-        models_json_schema: z.any().nullable(), // JSONSchema7
+        models_json_schema: z.any().nullable().default(null), // JSONSchema7
         sdk_version: z.string().nullable(),
         created_at: z.coerce.date(),
         updated_at: z.coerce.date(),

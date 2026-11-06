@@ -3,6 +3,7 @@
 // - move template deployment to its own endpoint `POST /functions/deployments/template`.
 // - move sandbox deployment to its own endpoint alongside the other deployment endpoints.
 
+import { productTracking } from '@nangohq/shared';
 import { getLogger, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import * as functionDeploymentService from '../../../services/functionDeployment.service.js';
@@ -20,12 +21,11 @@ type DeploymentResponse = Response<PostFunctionDeployment['Reply'], RequestLocal
 const logger = getLogger('Server.PostFunctionDeployment');
 
 async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeploymentTemplateBody): Promise<void> {
-    const { environment, account, plan, user } = res.locals;
+    const { environment, account, plan } = res.locals;
     const result = await functionDeploymentService.deployTemplate({
         environment,
         account,
         plan,
-        user,
         body
     });
     if (result.isErr()) {
@@ -33,6 +33,7 @@ async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeplo
         return;
     }
 
+    productTracking.track({ name: 'functions:deploy_create', eventProperties: { source: 'api', is_template: true, function_count: 1 } });
     res.status(202).send(result.value);
 }
 
@@ -48,6 +49,7 @@ async function handleDeployCode(res: DeploymentResponse, body: FunctionDeploymen
         return;
     }
 
+    productTracking.track({ name: 'functions:deploy_create', eventProperties: { source: 'api', is_template: false, function_count: 1 } });
     res.status(202).send(result.value);
 }
 

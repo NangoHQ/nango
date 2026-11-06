@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { webhookUrlSchema } from './validation.js';
+import { integrationCredentialsSchema, webhookUrlSchema } from './validation.js';
 
 const accepts = (url: string | undefined) => webhookUrlSchema.safeParse(url).success;
 
@@ -36,5 +36,80 @@ describe('webhookUrlSchema', () => {
 
     it('rejects denylisted hosts (e.g. localhost)', () => {
         expect(accepts('http://localhost/hook')).toBe(false);
+    });
+});
+
+describe('integrationCredentialsSchema', () => {
+    it.each([{ type: 'OAUTH2' }, { type: 'OAUTH1' }, { type: 'TBA' }, { type: 'APP' }, { type: 'CUSTOM' }])(
+        'accepts $type with no credential fields, so they can be set later or per connection',
+        (credentials) => {
+            const result = integrationCredentialsSchema.safeParse(credentials);
+            expect(result.success).toBe(true);
+        }
+    );
+
+    it('accepts a partial OAUTH2 payload', () => {
+        const result = integrationCredentialsSchema.safeParse({ type: 'OAUTH2', scopes: 'repo' });
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data).toStrictEqual({ type: 'OAUTH2', scopes: 'repo' });
+        }
+    });
+
+    it('still rejects empty strings and nulls for credential fields', () => {
+        expect(integrationCredentialsSchema.safeParse({ type: 'OAUTH2', client_id: '' }).success).toBe(false);
+        expect(integrationCredentialsSchema.safeParse({ type: 'OAUTH2', client_secret: null }).success).toBe(false);
+    });
+});
+
+describe('integrationCredentialsSchema (MCP_OAUTH2)', () => {
+    it('accepts a fully omitted credentials object (dynamic/cimd client registration)', () => {
+        const result = integrationCredentialsSchema.safeParse({ type: 'MCP_OAUTH2' });
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data).toEqual({ type: 'MCP_OAUTH2' });
+        }
+    });
+
+    it('rejects explicit null for client_id/client_secret/scopes, same as every other credentials type', () => {
+        const result = integrationCredentialsSchema.safeParse({
+            type: 'MCP_OAUTH2',
+            client_id: null,
+            client_secret: null,
+            scopes: null
+        });
+        expect(result.success).toBe(false);
+    });
+
+    it('accepts client_id/client_secret/scopes when provided as strings', () => {
+        const result = integrationCredentialsSchema.safeParse({
+            type: 'MCP_OAUTH2',
+            client_id: 'abc',
+            client_secret: 'def',
+            scopes: 'offline_access,read'
+        });
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data).toStrictEqual({ type: 'MCP_OAUTH2', client_id: 'abc', client_secret: 'def', scopes: 'offline_access,read' });
+        }
+    });
+
+    it("accepts space-delimited scopes matching OAuth2's standard scope wire format", () => {
+        const result = integrationCredentialsSchema.safeParse({
+            type: 'MCP_OAUTH2',
+            scopes: 'read write'
+        });
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data).toStrictEqual({ type: 'MCP_OAUTH2', scopes: 'read write' });
+        }
+    });
+
+    it('accepts a mix of commas and spaces in scopes', () => {
+        const result = integrationCredentialsSchema.safeParse({
+            type: 'MCP_OAUTH2',
+            scopes: 'read, write offline_access'
+        });
+        expect(result.success).toBe(true);
     });
 });

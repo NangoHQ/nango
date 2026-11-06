@@ -22,7 +22,7 @@ function createNangoOAuthServer(): OAuthProvider | null {
 
 async function userExists(userId: string): Promise<boolean> {
     const id = Number(userId);
-    if (!Number.isSafeInteger(id) || id <= 0 || userId !== String(id)) return false;
+    if (!Number.isSafeInteger(id) || id < 0 || userId !== String(id)) return false;
     const user = await db
         .knex('_nango_users as users')
         .innerJoin('_nango_accounts as accounts', 'accounts.id', 'users.account_id')

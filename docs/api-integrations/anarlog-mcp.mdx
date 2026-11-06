@@ -1,0 +1,95 @@
+---
+title: 'Anarlog (MCP)'
+sidebarTitle: 'Anarlog (MCP)'
+description: 'Connect your application to read Anarlog meetings through the Model Context Protocol (MCP)'
+---
+
+## Quickstart
+
+Connect to Anarlog's hosted MCP server with Nango and read meeting notes, summaries, transcripts, participants, and action items. Anarlog uses OAuth 2.1 with dynamic client registration, so no app registration is required.
+
+<Steps>
+    <Step id="enable-cloud-access" title="Enable cloud access">
+        In the Anarlog desktop app, open **Settings > Developers > Cloud API & Connectors**, review the disclosure, and enable the feature. An active Anarlog Pro subscription is required.
+    </Step>
+    <Step id="create-integration" title="Create the integration">
+        In Nango, open **Integrations**, select **Configure New Integration**, then choose **Anarlog (MCP)**.
+    </Step>
+    <Step id="authorize-anarlog" title="Authorize Anarlog">
+        Open **Connections**, select **Add Test Connection**, then authorize with the Anarlog account whose uploaded meeting snapshots you want to access.
+    </Step>
+    <Step id="call-mcp" title="Call the Anarlog MCP API">
+        Make an MCP initialization request. Replace the placeholders with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID.
+
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/mcp" \
+                  -X POST \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "initialize",
+                    "params": {
+                        "protocolVersion": "2025-06-18",
+                        "capabilities": {},
+                        "clientInfo": {
+                            "name": "nango-client",
+                            "version": "1.0.0"
+                        }
+                    }
+                }'
+                ```
+
+            </Tab>
+            <Tab title="Node">
+
+                Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+                ```typescript
+                import { Nango } from '@nangohq/node';
+
+                const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+                const response = await nango.post({
+                    endpoint: '/mcp',
+                    providerConfigKey: '<INTEGRATION-ID>',
+                    connectionId: '<CONNECTION-ID>',
+                    body: {
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: 'initialize',
+                        params: {
+                            protocolVersion: '2025-06-18',
+                            capabilities: {},
+                            clientInfo: {
+                                name: 'nango-client',
+                                version: '1.0.0'
+                            }
+                        }
+                    }
+                });
+
+                console.log(response.data);
+                ```
+
+            </Tab>
+        </Tabs>
+
+        Anarlog exposes four read-only tools: `list_meetings`, `get_meeting`, `get_meeting_transcript`, and `get_recurring_meeting_history`.
+    </Step>
+    <Step id="implement-auth" title="Implement Nango in your app">
+        Follow the [Auth implementation guide](/guides/auth/auth-guide) to let your users connect their Anarlog accounts.
+    </Step>
+</Steps>
+
+## Anarlog MCP authorization
+
+Nango dynamically registers an OAuth client and uses PKCE. Anarlog binds access tokens to the `https://api.anarlog.so/mcp` resource and grants access only to server-readable meeting snapshots the user explicitly enabled.
+
+Official resources: [Anarlog Cloud API and connectors](https://docs.anarlog.so/reference/api-cloud#remote-mcp)

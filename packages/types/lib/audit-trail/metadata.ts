@@ -48,6 +48,11 @@ export interface FunctionUpgradedMetadata {
     upgradeVersion?: string;
 }
 
+export interface FunctionUpdatedMetadata {
+    // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
+    state?: string;
+}
+
 export interface FunctionDeletedMetadata {
     // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
     type?: string;
@@ -71,6 +76,16 @@ export interface SyncVariantMetadata extends SyncBaseMetadata {
     variant?: string;
 }
 
+export interface FunctionVariantMetadata {
+    connectionId?: string;
+    variant?: string;
+}
+
+export interface FunctionVariantSettingsMetadata extends FunctionVariantMetadata {
+    enabled?: boolean;
+    frequency?: string | null;
+}
+
 export interface SyncTriggeredMetadata extends SyncBaseMetadata {
     // The options the caller asked for, not what the run did with them.
     reset?: boolean;
@@ -92,6 +107,8 @@ export interface UserUpdatedMetadata {
 }
 
 export interface EnvironmentUpdatedMetadata {
+    primaryUrl?: string | null;
+    secondaryUrl?: string | null;
     name?: string;
     changedFields?: string[];
 }

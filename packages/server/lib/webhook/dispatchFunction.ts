@@ -60,7 +60,7 @@ export async function prepareFunctionDispatchExecution({
             provider_config_key: preparedExecution.connection.provider_config_key,
             environment_id: preparedExecution.connection.environment_id
         },
-        functionName: preparedExecution.config.name,
+        functionUuid: preparedExecution.config.uuid,
         trigger: {
             kind: 'http',
             input: preparedExecution.trigger.input,
@@ -84,7 +84,7 @@ export async function prepareFunctionDispatchExecution({
         executeDirect: () => executeFunctionDirect({ context, execution: preparedExecution }),
         onQueued: async () => {
             await preparedExecution.logCtx.info('The function was successfully queued for execution', {
-                function: message.functionName,
+                function: preparedExecution.config.name,
                 connection: message.connection.connection_id,
                 integration: message.connection.provider_config_key
             });
@@ -193,7 +193,7 @@ async function executeFunctionDirect({ context, execution }: { context: Dispatch
         const result = await getOrchestrator().invokeFunction({
             environment: context.environment,
             connection: execution.connection,
-            functionName: execution.config.name,
+            functionUuid: execution.config.uuid,
             trigger: execution.trigger,
             async: true,
             retryMax: 0,

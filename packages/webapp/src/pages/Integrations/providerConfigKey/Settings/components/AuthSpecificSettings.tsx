@@ -6,17 +6,12 @@ import { McpGenericSettings } from './McpGenericSettings';
 import { McpOAuthSettings } from './McpOAuthSettings';
 import { OAuth2CCSettings } from './OAuth2CCSettings';
 import { OAuthSettings } from './OAuthSettings';
+import { isOAuthCredentials, SettingsSection, showsCredentialsSection } from './SettingsLayout';
 
 import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 
-export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({ data, environment }) => {
-    const authMode = data.template.auth_mode;
-
-    if (data.template.integration_config && Object.keys(data.template.integration_config).length > 0) {
-        return <CustomIntegrationSettings data={data} />;
-    }
-
-    switch (authMode) {
+function AuthModeSettings({ data, environment }: { data: GetIntegration['Success']['data']; environment: ApiEnvironment }) {
+    switch (data.template.auth_mode) {
         case 'OAUTH1':
         case 'OAUTH2':
         case 'TBA':
@@ -43,4 +38,22 @@ export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['d
         default:
             return null;
     }
+}
+
+export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({ data, environment }) => {
+    const hasCustomIntegrationConfig =
+        data.template.integration_config && Object.keys(data.template.integration_config).length > 0 && !data.integration.shared_credentials_id;
+
+    if (!showsCredentialsSection(data)) {
+        return null;
+    }
+
+    const title = isOAuthCredentials(data.template.auth_mode) ? 'OAuth credentials' : 'Credentials';
+
+    return (
+        <SettingsSection title={title}>
+            <AuthModeSettings data={data} environment={environment} />
+            {hasCustomIntegrationConfig && <CustomIntegrationSettings data={data} />}
+        </SettingsSection>
+    );
 };

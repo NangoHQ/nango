@@ -9,12 +9,12 @@ import { createConnectionSeed } from '../../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../../seeders/environment.seeder.js';
 import remoteFileService from '../file/remote.service.js';
 import { deployBundle, prepareDeploymentBundle } from './deploy.js';
-import { upsert } from './models/functions.js';
+import { search, upsert } from './models/functions.js';
 import { CONFIGS_TABLE, INSTANCES_TABLE } from './models/tables.js';
 import { functionVersionHash } from './version.js';
 
 import type { Orchestrator } from '../../clients/orchestrator.js';
-import type { DBFunctionConfigVersion, DBFunctionInstance, FunctionDeploymentArtifact } from '@nangohq/types';
+import type { DBFunctionConfigVersion, DBFunctionInstance, FunctionDeploymentArtifact, FunctionReconciliationScope } from '@nangohq/types';
 
 const githubArtifact = {
     name: 'fetchIssues',
@@ -30,7 +30,8 @@ const githubArtifact = {
     metadata_schema_ref: null,
     checkpoint_schema_ref: null,
     json_schema: { type: 'object' },
-    fileBody: { js: 'export default async function run() {}', ts: 'export default async function run(): Promise<void> {}' }
+    fileBody: { js: 'export default async function run() {}', ts: 'export default async function run(): Promise<void> {}' },
+    source: 'repo'
 } satisfies FunctionDeploymentArtifact;
 
 const gitlabArtifact = {
@@ -44,6 +45,7 @@ function functionVersion(
 ): Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> {
     return {
         description: artifact.description,
+        tags: {},
         file_location: `functions/${artifact.integrationId}/${artifact.name}`,
         version: functionVersionHash(artifact).unwrap(),
         source: 'repo',
@@ -104,10 +106,8 @@ describe('deployBundle instances', () => {
             scheduleFunctions: vi.fn<Orchestrator['scheduleFunctions']>().mockResolvedValue(Ok(undefined)),
             deleteFunctionSchedules: vi.fn<Orchestrator['deleteFunctionSchedules']>().mockResolvedValue(Ok(undefined))
         };
-        const deploy = async (functions: FunctionDeploymentArtifact[]) => {
-            const reconciliation = (
-                await prepareDeploymentBundle({ functions, environmentId: environment.id, reconciliationScope: { kind: 'environment' } })
-            ).unwrap();
+        const deploy = async (functions: FunctionDeploymentArtifact[], reconciliationScope: FunctionReconciliationScope = { kind: 'environment' }) => {
+            const reconciliation = (await prepareDeploymentBundle({ functions, environmentId: environment.id, reconciliationScope })).unwrap();
             return deployBundle({ accountId: account.id, environmentId: environment.id, environmentName: environment.name, reconciliation, orchestrator });
         };
         const instances = () =>
@@ -117,6 +117,81 @@ describe('deployBundle instances', () => {
                 .orderBy('id');
         return { environment, connection, deploy, instances, orchestrator };
     }
+
+    it.each([{ kind: 'environment' }, { kind: 'integration', integrationId: 'github' }] satisfies FunctionReconciliationScope[])(
+        'preserves non-repo functions and their instances in an empty $kind deploy',
+        async (reconciliationScope) => {
+            const ctx = await setup();
+            const functions = [
+                { artifact: scheduled, source: 'repo' },
+                { artifact: { ...scheduled, name: 'catalogFunction' }, source: 'catalog' },
+                { artifact: { ...scheduled, name: 'standaloneFunction' }, source: 'standalone' }
+            ] as const;
+            (await ctx.deploy(functions.map(({ artifact }) => artifact))).unwrap();
+
+            for (const { artifact, source } of functions) {
+                (
+                    await upsert(db.knex, [
+                        {
+                            environmentId: ctx.environment.id,
+                            integrationId: artifact.integrationId,
+                            name: artifact.name,
+                            version: { ...functionVersion(artifact), version: `${source}-version`, source }
+                        }
+                    ])
+                ).unwrap();
+            }
+
+            const reconciliation = (await prepareDeploymentBundle({ functions: [], environmentId: ctx.environment.id, reconciliationScope })).unwrap();
+            expect(reconciliation.deleted.map(({ config }) => config.name)).toEqual([scheduled.name]);
+            (await ctx.deploy([], reconciliationScope)).unwrap();
+
+            const remaining = (await search(db.knex, { environmentId: ctx.environment.id })).unwrap();
+            expect(
+                remaining
+                    .map(({ config, currentVersion }) => ({ name: config.name, source: currentVersion.source }))
+                    .sort((a, b) => a.name.localeCompare(b.name))
+            ).toEqual([
+                { name: 'catalogFunction', source: 'catalog' },
+                { name: 'standaloneFunction', source: 'standalone' }
+            ]);
+            const instances = await db
+                .knex<DBFunctionInstance>(INSTANCES_TABLE)
+                .whereIn('function_config_id', db.knex.from(CONFIGS_TABLE).select('id').where({ environment_id: ctx.environment.id }))
+                .orderBy('id');
+            expect(instances.filter(({ deleted_at }) => deleted_at === null).map(({ name }) => name)).toEqual(['catalogFunction', 'standaloneFunction']);
+            expect(instances.find(({ name }) => name === scheduled.name)?.deleted_at).toBeInstanceOf(Date);
+        }
+    );
+
+    it('stores the artifact source', async () => {
+        const ctx = await setup();
+        (await ctx.deploy([githubArtifact, { ...githubArtifact, name: 'standaloneFunction', source: 'standalone' }])).unwrap();
+
+        const deployed = (await search(db.knex, { environmentId: ctx.environment.id })).unwrap();
+        expect(
+            deployed.map(({ config, currentVersion }) => ({ name: config.name, source: currentVersion.source })).sort((a, b) => a.name.localeCompare(b.name))
+        ).toEqual([
+            { name: githubArtifact.name, source: 'repo' },
+            { name: 'standaloneFunction', source: 'standalone' }
+        ]);
+    });
+
+    it('writes a new version when only the source changes', async () => {
+        const ctx = await setup();
+        (await ctx.deploy([githubArtifact])).unwrap();
+
+        const standalone = { ...githubArtifact, source: 'standalone' } satisfies FunctionDeploymentArtifact;
+        const reconciliation = (
+            await prepareDeploymentBundle({ functions: [standalone], environmentId: ctx.environment.id, reconciliationScope: { kind: 'environment' } })
+        ).unwrap();
+        expect(reconciliation.updated.map(({ after }) => after.name)).toEqual([githubArtifact.name]);
+        expect(reconciliation.unchanged).toEqual([]);
+        (await ctx.deploy([standalone])).unwrap();
+
+        const [deployed] = (await search(db.knex, { environmentId: ctx.environment.id })).unwrap();
+        expect(deployed?.currentVersion).toMatchObject({ source: 'standalone', version: functionVersionHash(standalone).unwrap() });
+    });
 
     it('creates base instances only for active connections in the matching integration and environment', async () => {
         const ctx = await setup();
@@ -141,12 +216,21 @@ describe('deployBundle instances', () => {
             });
         }
         expect(await other.instances()).toEqual([]);
+        const [functionConfig] = (
+            await search(db.knex, { environmentId: ctx.environment.id, filter: { integrationKey: 'github', name: scheduled.name } })
+        ).unwrap();
         expect(ctx.orchestrator.scheduleFunctions).toHaveBeenCalledWith(
             rows.map((instance) => ({
                 environmentId: ctx.environment.id,
                 instance,
-                frequencyFallback: 'every 5 minutes',
-                autoStart: true
+                functionUuid: functionConfig!.config.uuid,
+                connection: {
+                    id: instance.nango_connection_id,
+                    connection_id: [ctx.connection, second].find((connection) => connection.id === instance.nango_connection_id)!.connection_id,
+                    provider_config_key: 'github',
+                    environment_id: ctx.environment.id
+                },
+                frequencyFallback: 'every 5 minutes'
             }))
         );
         expect(other.orchestrator.scheduleFunctions).not.toHaveBeenCalled();
@@ -251,10 +335,27 @@ describe('deployBundle instances', () => {
         expect((await ctx.instances())[0]?.deleted_at).toBeInstanceOf(Date);
     });
 
-    it('respects autoStart when creating schedules', async () => {
+    it('creates disabled instances without schedules when autoStart is false', async () => {
         const ctx = await setup();
         (await ctx.deploy([{ ...scheduled, trigger: { kind: 'schedule', frequency: 'every 5 minutes', autoStart: false } }])).unwrap();
-        expect(ctx.orchestrator.scheduleFunctions.mock.calls[0]?.[0][0]?.autoStart).toBe(false);
+        expect((await ctx.instances()).map((instance) => instance.enabled)).toEqual([false]);
+        expect(ctx.orchestrator.scheduleFunctions).not.toHaveBeenCalled();
+    });
+
+    it('does not create instances or schedules when a disabled function becomes scheduled', async () => {
+        const ctx = await setup();
+        (await ctx.deploy([githubArtifact])).unwrap();
+        await db.knex.from(CONFIGS_TABLE).where({ environment_id: ctx.environment.id, name: githubArtifact.name }).update({ enabled: false });
+
+        (await ctx.deploy([scheduled])).unwrap();
+
+        const [deployed] = (await search(db.knex, { environmentId: ctx.environment.id, filter: { integrationKey: scheduled.integrationId } })).unwrap();
+        expect(deployed).toMatchObject({
+            config: { enabled: false },
+            currentVersion: { trigger: { kind: 'schedule' } }
+        });
+        expect(await ctx.instances()).toEqual([]);
+        expect(ctx.orchestrator.scheduleFunctions).not.toHaveBeenCalled();
     });
 });
 
@@ -334,6 +435,90 @@ describe(prepareDeploymentBundle, () => {
                     }
                 })
             );
+        }
+    });
+
+    it('creates a function without deleting its siblings for a function-scoped deployment', async () => {
+        const environmentId = await seedEnvironmentWithFunctions();
+        const newGithubArtifact = { ...githubArtifact, name: 'fetchPullRequests' } satisfies FunctionDeploymentArtifact;
+
+        const reconciliation = (
+            await prepareDeploymentBundle({
+                functions: [newGithubArtifact],
+                environmentId,
+                reconciliationScope: { kind: 'function', integrationId: newGithubArtifact.integrationId, name: newGithubArtifact.name }
+            })
+        ).unwrap();
+
+        expect(reconciliation).toStrictEqual({ created: [newGithubArtifact], updated: [], unchanged: [], deleted: [] });
+    });
+
+    it('updates only the scoped function for a function-scoped deployment', async () => {
+        const environmentId = await seedEnvironmentWithFunctions();
+        const siblingGithubArtifact = { ...githubArtifact, name: 'fetchPullRequests' } satisfies FunctionDeploymentArtifact;
+        await upsert(db.knex, [
+            {
+                environmentId,
+                integrationId: siblingGithubArtifact.integrationId,
+                name: siblingGithubArtifact.name,
+                version: functionVersion(siblingGithubArtifact)
+            }
+        ]);
+        const changedGithubArtifact = { ...githubArtifact, description: 'Fetch all issues' } satisfies FunctionDeploymentArtifact;
+
+        const reconciliation = (
+            await prepareDeploymentBundle({
+                functions: [changedGithubArtifact],
+                environmentId,
+                reconciliationScope: { kind: 'function', integrationId: githubArtifact.integrationId, name: githubArtifact.name }
+            })
+        ).unwrap();
+
+        expect(reconciliation.created).toStrictEqual([]);
+        expect(reconciliation.unchanged).toStrictEqual([]);
+        expect(reconciliation.deleted).toStrictEqual([]);
+        expect(reconciliation.updated.map(({ before, after }) => ({ before: before.config.name, after }))).toStrictEqual([
+            { before: githubArtifact.name, after: changedGithubArtifact }
+        ]);
+    });
+
+    it.each([
+        { label: 'no function', functions: [] },
+        { label: 'another function', functions: [{ ...githubArtifact, name: 'fetchPullRequests' }] },
+        { label: 'the function from another integration', functions: [{ ...githubArtifact, integrationId: gitlabArtifact.integrationId }] },
+        { label: 'an extra function', functions: [githubArtifact, { ...githubArtifact, name: 'fetchPullRequests' }] }
+    ] satisfies { label: string; functions: FunctionDeploymentArtifact[] }[])(
+        'rejects a function-scoped deployment containing $label',
+        async ({ functions }) => {
+            const environmentId = await seedEnvironmentWithFunctions();
+
+            const result = await prepareDeploymentBundle({
+                functions,
+                environmentId,
+                reconciliationScope: { kind: 'function', integrationId: githubArtifact.integrationId, name: githubArtifact.name }
+            });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.code).toBe('functions_deployment_error');
+                expect(result.error.cause).toEqual(expect.objectContaining({ message: 'function_scope_mismatch' }));
+            }
+        }
+    );
+
+    it('rejects a function-scoped deployment for a missing integration', async () => {
+        const environmentId = await seedEnvironmentWithFunctions();
+        const missingArtifact = { ...githubArtifact, integrationId: 'missing' } satisfies FunctionDeploymentArtifact;
+
+        const result = await prepareDeploymentBundle({
+            functions: [missingArtifact],
+            environmentId,
+            reconciliationScope: { kind: 'function', integrationId: missingArtifact.integrationId, name: missingArtifact.name }
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.code).toBe('integration_not_found');
         }
     });
 

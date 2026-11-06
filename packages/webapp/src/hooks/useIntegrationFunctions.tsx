@@ -2,7 +2,14 @@ import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-qu
 
 import { APIError, apiFetch } from '../utils/api';
 
-import type { GetFunctionCode, GetIntegrationFunction, GetIntegrationFunctions, GetIntegrationTemplates } from '@nangohq/types';
+import type {
+    FunctionType,
+    GetFunctionCode,
+    GetIntegrationFunction,
+    GetIntegrationFunctions,
+    GetIntegrationTemplates,
+    GetProviderTemplateCode
+} from '@nangohq/types';
 
 interface UseGetIntegrationFunctionsArgs {
     env: string;
@@ -58,9 +65,10 @@ interface UseGetIntegrationFunctionArgs {
     providerConfigKey: string;
     name: string;
     type?: GetIntegrationFunction['Querystring']['type'];
+    enabled?: boolean;
 }
 
-export function useGetIntegrationFunction({ env, providerConfigKey, name, type }: UseGetIntegrationFunctionArgs) {
+export function useGetIntegrationFunction({ env, providerConfigKey, name, type, enabled = true }: UseGetIntegrationFunctionArgs) {
     return useQuery<GetIntegrationFunction['Success'], APIError>({
         queryKey: ['integrations', env, providerConfigKey, 'functions', name, { type }],
         queryFn: async (): Promise<GetIntegrationFunction['Success']> => {
@@ -82,7 +90,7 @@ export function useGetIntegrationFunction({ env, providerConfigKey, name, type }
 
             return json;
         },
-        enabled: Boolean(env && providerConfigKey && name)
+        enabled: enabled && Boolean(env && providerConfigKey && name)
     });
 }
 
@@ -117,6 +125,40 @@ export function useGetIntegrationFunctionCode({ env, providerConfigKey, name, ty
             return json;
         },
         enabled: enabled && Boolean(env && providerConfigKey && name)
+    });
+}
+
+interface UseGetTemplateFunctionCodeArgs {
+    env: string;
+    provider: string;
+    name: string;
+    type: FunctionType | undefined;
+    enabled?: boolean;
+}
+
+export function useGetTemplateFunctionCode({ env, provider, name, type, enabled = true }: UseGetTemplateFunctionCodeArgs) {
+    return useQuery<GetProviderTemplateCode['Success'], Error>({
+        queryKey: ['providers', provider, 'templates', name, 'code', { type }],
+        queryFn: async (): Promise<GetProviderTemplateCode['Success']> => {
+            if (!type) throw new Error('Template function type is required');
+            const usp = new URLSearchParams();
+            usp.set('env', env);
+            usp.set('type', type);
+
+            const res = await apiFetch(`/api/v1/providers/${encodeURIComponent(provider)}/templates/${encodeURIComponent(name)}/code?${usp.toString()}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetProviderTemplateCode['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        },
+        enabled: enabled && Boolean(env && provider && name && type),
+        retry: false,
+        staleTime: 5 * 60 * 1000
     });
 }
 

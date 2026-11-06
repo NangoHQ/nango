@@ -3,6 +3,7 @@ import tracer from 'dd-trace';
 import db from '@nangohq/database';
 import {
     configService,
+    connectionService,
     customerKeyService,
     errorNotificationService,
     externalWebhookService,
@@ -19,6 +20,7 @@ import { Err, isHosted, Ok, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 import { envs } from '../env.js';
+import * as agentGettingStartedService from '../services/agentGettingStarted.service.js';
 import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
@@ -101,6 +103,8 @@ export const connectionCreated = async (
 ): Promise<void> => {
     const { connection, environment, auth_mode, endUser, operation } = createdConnectionPayload;
 
+    void agentGettingStartedService.recordConnectionCreated({ accountId: account.id, tags: connection.tags });
+
     try {
         await errorNotificationService.auth.clear({ connection_id: connection.id });
     } catch (err) {
@@ -114,6 +118,11 @@ export const connectionCreated = async (
 
     if (options.initiateSync === true && !isHosted) {
         await syncManager.createSyncForConnection({ connectionId: connection.id, syncVariant: 'base', logContextGetter, orchestrator });
+
+        const result = await connectionService.ensureFunctionInstances({ connection, orchestrator });
+        if (result.isErr()) {
+            report(new Error('connection_scheduled_functions_initialization_failed', { cause: result.error }), { id: connection.id });
+        }
     }
 
     const webhookSettings = await externalWebhookService.get(environment.id);

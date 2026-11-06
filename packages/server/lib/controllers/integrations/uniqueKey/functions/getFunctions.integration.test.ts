@@ -1,7 +1,9 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
-import { seeders } from '@nangohq/shared';
+import { getFlags } from '@nangohq/feature-flags';
+import { functionConfigService, seeders } from '@nangohq/shared';
+import { listCatalogTools } from '@nangohq/shared/lib/services/catalog/actions.js';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
@@ -14,11 +16,22 @@ async function seedWithScopes(scopes: string[]) {
     return seed;
 }
 
+function deployedOnly<T extends { source: string }>(fns: T[]): T[] {
+    return fns.filter((fn) => fn.source !== 'tools-catalog');
+}
+
+function githubCatalogToolsNotDeployed(deployedNames: Iterable<string> = []): number {
+    const deployed = new Set(deployedNames);
+    return listCatalogTools('github').filter((tool) => !deployed.has(tool.name)).length;
+}
+
 describe(`GET ${route}`, () => {
     beforeAll(async () => {
         api = await runServer();
+        vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
     });
     afterAll(() => {
+        vi.restoreAllMocks();
         api.server.close();
     });
 
@@ -84,12 +97,15 @@ describe(`GET ${route}`, () => {
             type: 'action'
         });
 
-        const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, params: { uniqueKey: 'github' }, query: {} });
+        const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, params: { uniqueKey: 'github' }, query: { limit: 100 } });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json.pagination).toStrictEqual({ total: 2, page: 0, limit: 20 });
-        expect(res.json.data.map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
+        expect(res.json.pagination).toStrictEqual({ total: githubCatalogToolsNotDeployed(['my-action']) + 2, page: 0, limit: 100 });
+        expect(res.json.data).toEqual(
+            expect.arrayContaining([expect.objectContaining({ name: 'create-issue', type: 'action', source: 'tools-catalog', id: null, last_deployed: null })])
+        );
+        expect(deployedOnly(res.json.data).map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
             { name: 'my-action', type: 'action' },
             { name: 'my-sync', type: 'sync' }
         ]);
@@ -121,5 +137,57 @@ describe(`GET ${route}`, () => {
         isSuccess(res.json);
         expect(res.json.pagination.total).toBe(1);
         expect(res.json.data[0]?.name).toBe('fetch-issues');
+    });
+
+    it('lists HTTP-triggered tools with schemas and metadata', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const [tool] = (
+            await functionConfigService.upsert(db.knex, [
+                {
+                    environmentId: env.id,
+                    integrationId: 'github',
+                    name: 'fetch-users',
+                    version: {
+                        description: 'Fetch users',
+                        tags: { instructions: 'Read users', required_scopes: { all: ['read'] }, category: 'crm' },
+                        file_location: 'functions/fetch-users',
+                        version: 'test',
+                        source: 'repo',
+                        trigger: { kind: 'http' },
+                        requires: { connection: true, outbound: false, invoke: false },
+                        capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+                        limits: { concurrency: { perConnection: 'max' } },
+                        input_schema_ref: '#/definitions/Input',
+                        output_schema_ref: null,
+                        model_schema_refs: [],
+                        metadata_schema_ref: null,
+                        checkpoint_schema_ref: null,
+                        json_schema: { definitions: { Input: { type: 'string' } } }
+                    }
+                }
+            ])
+        ).unwrap();
+
+        if (!tool) {
+            throw new Error('Expected seeded tool function');
+        }
+        const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, params: { uniqueKey: 'github' }, query: { type: 'tool', search: 'fetch' } });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        expect(res.json.pagination).toEqual({ total: 1, page: 0, limit: 20 });
+        expect(res.json.data).toEqual([
+            expect.objectContaining({
+                type: 'tool',
+                uuid: tool.config.uuid,
+                name: 'fetch-users',
+                integration_id: 'github',
+                provider: 'github',
+                input_json_schema: { $ref: '#/definitions/Input', definitions: { Input: { type: 'string' } } },
+                output_json_schema: null,
+                meta: { instructions: 'Read users', required_scopes: { all: ['read'] }, tags: { category: 'crm' } }
+            })
+        ]);
     });
 });

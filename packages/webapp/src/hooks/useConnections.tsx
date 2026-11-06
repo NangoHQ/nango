@@ -1,9 +1,7 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import useSWR from 'swr';
+import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { APIError, apiFetch, swrFetcher } from '../utils/api';
+import { APIError, apiFetch } from '../utils/api';
 
-import type { SWRError } from '../utils/api';
 import type {
     DeleteConnection,
     GetConnection,
@@ -13,7 +11,6 @@ import type {
     PostConnectionMetadata,
     PostConnectionRefresh
 } from '@nangohq/types';
-import type { Cache, useSWRConfig } from 'swr';
 
 export function useConnections(queries: Omit<GetConnections['Querystring'], 'page'>) {
     return useInfiniteQuery<GetConnections['Success'], APIError>({
@@ -62,25 +59,25 @@ export function useConnections(queries: Omit<GetConnections['Querystring'], 'pag
     });
 }
 
-export function clearConnectionsCache(cache: Cache, mutate: ReturnType<typeof useSWRConfig>['mutate']) {
-    for (const key of cache.keys()) {
-        if (key.includes('/api/v1/connections')) {
-            void mutate(key, undefined);
-            cache.delete(key);
-        }
-    }
-}
-
 export function useConnectionsCount(env: string) {
-    const { data, error, mutate } = useSWR<GetConnectionsCount['Success'], SWRError<GetConnectionsCount['Errors']>>(
-        `/api/v1/connections/count?env=${env}`,
-        swrFetcher,
-        { refreshInterval: 10000, keepPreviousData: true }
-    );
+    const { data, error, isLoading, refetch } = useQuery<GetConnectionsCount['Success'], APIError>({
+        queryKey: ['connections', 'count', env],
+        queryFn: async (): Promise<GetConnectionsCount['Success']> => {
+            const res = await apiFetch(`/api/v1/connections/count?env=${env}`);
 
-    const loading = !data && !error;
+            const json = (await res.json()) as GetConnectionsCount['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
 
-    return { loading, error: error?.json, data, mutate };
+            return json;
+        },
+        enabled: Boolean(env),
+        refetchInterval: 10000,
+        placeholderData: keepPreviousData
+    });
+
+    return { loading: isLoading, error: error?.json, data, refetch };
 }
 
 export function useConnection(queries: GetConnection['Querystring'], params: GetConnection['Params']) {

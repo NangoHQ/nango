@@ -4,6 +4,8 @@ import { Err, Ok } from '@nangohq/utils';
 import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
 import remoteFileService from '../file/remote.service.js';
+import { functionArtifactPaths } from './artifacts.js';
+import { scheduleInstances } from './lifecycle/schedule.js';
 import * as functionConfigService from './models/functions.js';
 import * as functionInstanceService from './models/instances.js';
 import { reconcile } from './reconcile.js';
@@ -13,8 +15,9 @@ import type { Orchestrator } from '../../clients/orchestrator.js';
 import type { CurrentFunctionConfig } from './models/functions.js';
 import type { FunctionInstanceUpsert } from './models/instances.js';
 import type { DeploymentBundleReconciliation } from './reconcile.js';
-import type { FunctionDeploymentArtifact, FunctionReconciliationScope } from '@nangohq/types';
+import type { DBConnection, FunctionDeploymentArtifact, FunctionReconciliationScope } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { Knex } from 'knex';
 
 export type DeploymentBundleError = Error & { code: 'functions_deployment_error' };
 export type DeploymentBundlePreparationError = DeploymentBundleError | (Error & { code: 'integration_not_found'; integrationIds: string[] });
@@ -50,8 +53,25 @@ export async function prepareDeploymentBundle({
             }
         }
 
+        if (reconciliationScope.kind === 'function') {
+            const [fn] = functions;
+            if (functions.length !== 1 || fn?.integrationId !== reconciliationScope.integrationId || fn.name !== reconciliationScope.name) {
+                return Err(
+                    functionsDeploymentError(
+                        new Error('function_scope_mismatch', {
+                            cause: {
+                                integrationId: reconciliationScope.integrationId,
+                                name: reconciliationScope.name,
+                                functions: functions.map(({ integrationId, name }) => ({ integrationId, name }))
+                            }
+                        })
+                    )
+                );
+            }
+        }
+
         const targetIntegrationIds = new Set(functions.map((fn) => fn.integrationId));
-        if (reconciliationScope.kind === 'integration') {
+        if (reconciliationScope.kind !== 'environment') {
             targetIntegrationIds.add(reconciliationScope.integrationId);
         }
 
@@ -66,13 +86,28 @@ export async function prepareDeploymentBundle({
 
         const deployed = await functionConfigService.search(db.knex, {
             environmentId,
-            filter: reconciliationScope.kind === 'integration' ? { integrationKey: reconciliationScope.integrationId } : undefined
+            filter: (() => {
+                switch (reconciliationScope.kind) {
+                    case 'environment':
+                        return undefined;
+                    case 'function':
+                        return { integrationKey: reconciliationScope.integrationId, name: reconciliationScope.name };
+                    default:
+                        return { integrationKey: reconciliationScope.integrationId };
+                }
+            })()
         });
         if (deployed.isErr()) {
             return Err(functionsDeploymentError(deployed.error));
         }
 
-        return reconcile({ functions, deployed: deployed.value }).mapError(functionsDeploymentError);
+        return reconcile({ functions, deployed: deployed.value })
+            .map((reconciliation) => ({
+                ...reconciliation,
+                // only repo functions are removed when missing from the bundle
+                deleted: reconciliation.deleted.filter(({ currentVersion }) => currentVersion.source === 'repo')
+            }))
+            .mapError(functionsDeploymentError);
     } catch (err) {
         return Err(functionsDeploymentError(err));
     }
@@ -91,6 +126,33 @@ export async function deployBundle({
     reconciliation: DeploymentBundleReconciliation;
     orchestrator: Pick<Orchestrator, 'scheduleFunctions' | 'deleteFunctionSchedules'>;
 }): Promise<Result<void, DeploymentBundleError>> {
+    type ConnectionsMap = Map<number, Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>>;
+    const connectionsByIntegration = new Map<number, ConnectionsMap>();
+
+    async function getConnections(trx: Knex, integrationConfigId: number): Promise<ConnectionsMap> {
+        const cached = connectionsByIntegration.get(integrationConfigId);
+        if (cached) {
+            return cached;
+        }
+        const connections = await connectionService.getConnectionsByEnvironmentAndConfigId(trx, { environmentId, configId: integrationConfigId });
+        if (connections.isErr()) {
+            throw connections.error;
+        }
+        const byId = new Map(
+            connections.value.map((connection) => [
+                connection.id,
+                {
+                    id: connection.id,
+                    connection_id: connection.connection_id,
+                    provider_config_key: connection.provider_config_key,
+                    environment_id: connection.environment_id
+                }
+            ])
+        );
+        connectionsByIntegration.set(integrationConfigId, byId);
+        return byId;
+    }
+
     try {
         // Upload the files first and upsert/delete the configs in a single transaction
         // to make sure every config points to a valid file location.
@@ -110,19 +172,17 @@ export async function deployBundle({
                 throw versionHash.error;
             }
             const version = versionHash.value;
-            const destinationBase = `${environmentName}/account/${accountId}/environment/${environmentId}/config/${artifact.integrationId}/functions/${artifact.name}/${version}`;
-            const localBase = `${artifact.integrationId}/functions/${artifact.name}`;
+            const paths = functionArtifactPaths({
+                environmentName,
+                accountId,
+                environmentId,
+                integrationId: artifact.integrationId,
+                name: artifact.name,
+                version
+            });
             const [fileLocation, sourceFileLocation] = await Promise.all([
-                remoteFileService.upload({
-                    content: artifact.fileBody.js,
-                    destinationPath: `${destinationBase}.js`,
-                    destinationLocalFileName: `${localBase}.js`
-                }),
-                remoteFileService.upload({
-                    content: artifact.fileBody.ts,
-                    destinationPath: `${destinationBase}.ts`,
-                    destinationLocalFileName: `${localBase}.ts`
-                })
+                remoteFileService.upload({ content: artifact.fileBody.js, ...paths.js }),
+                remoteFileService.upload({ content: artifact.fileBody.ts, ...paths.ts })
             ]);
 
             if (!fileLocation || !sourceFileLocation) {
@@ -140,9 +200,10 @@ export async function deployBundle({
                 name: artifact.name,
                 version: {
                     description: artifact.description,
+                    tags: artifact.tags ?? {},
                     file_location: fileLocation,
                     version,
-                    source: 'repo' as const,
+                    source: artifact.source,
                     trigger: artifact.trigger,
                     requires: artifact.requires,
                     capabilities: artifact.capabilities,
@@ -172,40 +233,44 @@ export async function deployBundle({
             const instancesToUpsert: FunctionInstanceUpsert[] = [];
             const instancesToDelete: { functionConfigId: number }[] = reconciliation.deleted.map((f) => ({ functionConfigId: f.config.id }));
             for (const { before, artifact } of prepared) {
-                var upsertCandidate: { functionConfigId: number; integrationId: number; artifact: FunctionDeploymentArtifact } | undefined = undefined;
+                var upsertCandidate: { functionConfigId: number; integrationId: number; artifact: FunctionDeploymentArtifact; autoStart: boolean } | undefined =
+                    undefined;
 
                 // If the after trigger is a schedule and there is no before store, create a new instance
                 if (artifact.trigger.kind === 'schedule' && !before) {
                     const functionConfig = upserted.value.find((f) => f.integration.unique_key === artifact.integrationId && f.config.name === artifact.name);
-                    if (functionConfig) {
+                    if (functionConfig?.config.enabled) {
                         upsertCandidate = {
                             functionConfigId: functionConfig.config.id,
                             integrationId: functionConfig.integration.id,
-                            artifact
+                            artifact,
+                            autoStart: artifact.trigger.autoStart ?? true
                         };
                     }
                 }
                 // If the after trigger is a schedule and there is a before state with a non-schedule trigger, create a new instance
-                else if (artifact.trigger.kind === 'schedule' && before && before?.currentVersion.trigger.kind !== 'schedule') {
-                    upsertCandidate = {
-                        functionConfigId: before.config.id,
-                        integrationId: before.integration.id,
-                        artifact
-                    };
+                else if (artifact.trigger.kind === 'schedule' && before && before.currentVersion.trigger.kind !== 'schedule') {
+                    const functionConfig = upserted.value.find((f) => f.config.id === before.config.id);
+                    if (functionConfig?.config.enabled) {
+                        upsertCandidate = {
+                            functionConfigId: functionConfig.config.id,
+                            integrationId: functionConfig.integration.id,
+                            artifact,
+                            autoStart: artifact.trigger.autoStart ?? true
+                        };
+                    }
                 }
 
                 if (upsertCandidate) {
-                    const connections = await connectionService.getConnectionsByEnvironmentAndConfigId(trx, {
-                        environmentId,
-                        configId: upsertCandidate.integrationId
-                    });
-                    for (const connection of connections) {
+                    const connections = await getConnections(trx, upsertCandidate.integrationId);
+                    for (const connection of connections.values()) {
                         instancesToUpsert.push({
                             function_config_id: upsertCandidate.functionConfigId,
                             nango_connection_id: connection.id,
                             name: upsertCandidate.artifact.name,
                             variant: 'base',
-                            frequency: null
+                            frequency: null,
+                            enabled: upsertCandidate.autoStart
                         });
                     }
                 }
@@ -226,10 +291,11 @@ export async function deployBundle({
                 throw instances.error;
             }
 
-            const deletedInstances = await functionInstanceService.softDelete(trx, {
-                environmentId: environmentId,
-                functionConfigIds: instancesToDelete.map((i) => i.functionConfigId)
-            });
+            const deletedInstances = await functionInstanceService.softDelete(
+                trx,
+                { functionConfigIds: instancesToDelete.map((i) => i.functionConfigId) },
+                { environmentId }
+            );
             if (deletedInstances.isErr()) {
                 throw deletedInstances.error;
             }
@@ -258,36 +324,55 @@ export async function deployBundle({
         );
 
         for (const [integrationId, artifacts] of Map.groupBy(desiredSchedules, (artifact) => artifact.integrationId)) {
-            const configs = (await functionConfigService.search(db.knex, { environmentId, filter: { integrationKey: integrationId } })).unwrap();
-            const byName = new Map(configs.map((config) => [config.config.name, config]));
-            for (const artifact of artifacts) {
-                if (artifact.trigger.kind !== 'schedule') {
-                    continue;
+            await db.knex.transaction(async (trx) => {
+                const configs = await functionConfigService.search(
+                    trx,
+                    { environmentId, filter: { integrationKey: integrationId, trigger: { kind: 'schedule' } } },
+                    { forShare: true }
+                );
+                if (configs.isErr()) {
+                    throw configs.error;
                 }
-                const config = byName.get(artifact.name);
-                if (!config) {
-                    throw new Error(`Deployed function '${integrationId}/${artifact.name}' not found`);
+                const byName = new Map(configs.value.map((config) => [config.config.name, config]));
+                for (const artifact of artifacts) {
+                    if (artifact.trigger.kind !== 'schedule') {
+                        continue;
+                    }
+                    const config = byName.get(artifact.name);
+                    if (!config) {
+                        throw new Error(`Deployed function '${integrationId}/${artifact.name}' not found`);
+                    }
+                    if (!config.config.enabled) {
+                        continue;
+                    }
+                    const connections = await getConnections(trx, config.integration.id);
+                    let afterId = 0;
+                    while (true) {
+                        const instances = await functionInstanceService.search(
+                            trx,
+                            { functionConfigIds: [config.config.id] },
+                            { enabled: true, afterId, limit: 1000, forShare: true }
+                        );
+                        if (instances.isErr()) {
+                            throw instances.error;
+                        }
+                        if (instances.value.length === 0) {
+                            break;
+                        }
+                        const scheduled = await scheduleInstances(
+                            orchestrator,
+                            instances.value.flatMap((instance) => {
+                                const connection = connections.get(instance.nango_connection_id);
+                                return connection ? [{ instance, config, connection }] : [];
+                            })
+                        );
+                        if (scheduled.isErr()) {
+                            throw scheduled.error;
+                        }
+                        afterId = instances.value[instances.value.length - 1]!.id;
+                    }
                 }
-                let afterId = 0;
-                while (true) {
-                    const instances = await functionInstanceService.search(db.knex, { functionConfigIds: [config.config.id], afterId, limit: 1000 });
-                    if (instances.isErr()) {
-                        throw instances.error;
-                    }
-                    if (instances.value.length === 0) {
-                        break;
-                    }
-                    const frequencyFallback = artifact.trigger.frequency;
-                    const autoStart = config.config.enabled && (artifact.trigger.autoStart ?? true);
-                    const scheduled = await orchestrator.scheduleFunctions(
-                        instances.value.map((instance) => ({ environmentId, instance, frequencyFallback, autoStart }))
-                    );
-                    if (scheduled.isErr()) {
-                        throw scheduled.error;
-                    }
-                    afterId = instances.value[instances.value.length - 1]!.id;
-                }
-            }
+            });
         }
         return Ok(undefined);
     } catch (err) {

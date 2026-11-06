@@ -1,6 +1,8 @@
+import tracer from 'dd-trace';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { accountService } from '@nangohq/shared';
+import { metrics } from '@nangohq/utils';
 
 import accessMiddleware from './access.middleware.js';
 
@@ -63,6 +65,22 @@ describe('secretKeyAuth', () => {
         expect(locals.account).toStrictEqual(context.account);
         expect(locals.environment).toStrictEqual(context.environment);
         expect(locals.apiKeyPrincipal).toStrictEqual(context.principal);
+    });
+
+    it('records timing when secret-key authentication is called directly', async () => {
+        vi.spyOn(accountService, 'getAccountContextByApiKey').mockResolvedValue(context);
+        const duration = vi.spyOn(metrics, 'duration');
+        const startSpan = vi.spyOn(tracer, 'startSpan');
+        const req = {
+            get: (name: string) => (name.toLowerCase() === 'authorization' ? `Bearer ${secretKey}` : undefined)
+        } as unknown as Request;
+        const res = { locals: {} as Partial<RequestLocals> } as Response<unknown, Partial<RequestLocals>>;
+
+        const result = await accessMiddleware.authenticateSecretKey(req, res);
+
+        expect(result.isOk()).toBe(true);
+        expect(startSpan).toHaveBeenCalledWith('secretKeyAuth', expect.any(Object));
+        expect(duration).toHaveBeenCalledWith(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, expect.any(Number), { accountId: context.account.id });
     });
 
     it('responds 401 when the key matches no account', async () => {

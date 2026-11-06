@@ -1,9 +1,9 @@
 import { isTest } from '@nangohq/utils';
 
-import { indexOperations } from '../es/schema.js';
+import { getLogsIngestPipelineId, indexOperations } from '../es/schema.js';
 import { client } from '../storage/client.js';
 import { throwLogsNotFound } from '../utils.js';
-import { createCursor, getFullIndexName, parseCursor } from './helpers.js';
+import { createCursor, getOperationUpdateIndex, parseCursor } from './helpers.js';
 
 import type { estypes } from '@elastic/elasticsearch';
 import type {
@@ -38,7 +38,7 @@ export async function createOperation(row: OperationRow): Promise<{ index: strin
         id: row.id,
         document: row,
         refresh: isTest,
-        pipeline: `daily.${indexOperations.index}`
+        pipeline: getLogsIngestPipelineId(indexOperations.index)
     });
     return { index: res._index };
 }
@@ -209,7 +209,7 @@ export async function updateOperation({
     data: SetRequired<Partial<Omit<OperationRow, 'id'>>, 'createdAt'>;
 }): Promise<void> {
     await client.update({
-        index: getFullIndexName(indexOperations.index, createdAt),
+        index: getOperationUpdateIndex(createdAt),
         id: id,
         retry_on_conflict: 3,
         refresh: isTest,

@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, enableScriptConfig, getSyncConfigById, productTracking, startTrial, syncManager } from '@nangohq/shared';
+import { configService, enableScriptConfig, getSyncConfigById, startTrial, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
@@ -34,7 +34,7 @@ export const patchFlowEnable = asyncWrapperWithEnvironment<PatchFlowEnable>(asyn
     }
 
     const body: PatchFlowEnable['Body'] = val.data;
-    const { environment, account, plan, user } = res.locals;
+    const { environment, plan } = res.locals;
 
     const syncConfig = await getSyncConfigById(environment.id, valParams.data.id);
     if (!syncConfig) {
@@ -54,7 +54,6 @@ export const patchFlowEnable = asyncWrapperWithEnvironment<PatchFlowEnable>(asyn
     }
     if (plan && !plan.trial_end_at && plan.auto_idle) {
         await startTrial(db.knex, plan);
-        productTracking.track({ name: 'account:trial:started', team: account, user });
     }
 
     const updated = await enableScriptConfig({ id: valParams.data.id, environmentId: environment.id });

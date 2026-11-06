@@ -15,7 +15,7 @@ Use Nango for AI tool calling when:
 - Your agent needs to fetch or change data in external APIs.
 - Tool calls must run with each user's own credentials.
 - You want logs, retries, rate-limit handling, and a deployable runtime.
-- You need template action functions now, with room for custom action functions later.
+- You need a catalog of actions for agentic tool calling now, with room for custom action functions later.
 - You want one MCP server URL for Nango-hosted tools.
 
 For RAG-style workflows where data should be replicated before the agent needs it, use [Sync external API data](/getting-started/use-cases/syncs).
@@ -23,12 +23,12 @@ For RAG-style workflows where data should be replicated before the agent needs i
 ## How Nango fits in
 
 1. Your user authorizes an integration with Nango.
-2. You enable template action functions or deploy custom action functions for allowed operations.
+2. You use catalog action functions directly or deploy custom action functions for allowed operations.
 3. Your agent lists or receives those action functions as tools.
 4. The agent asks Nango to execute an action function for the right connection.
 5. Nango runs the external API call with the user's credentials and logs the execution.
 
-This keeps provider credentials in Nango and gives you a stable tool surface across frameworks.
+This keeps provider credentials in Nango and gives you a common tool surface across frameworks.
 
 ## Technical setup
 
@@ -38,6 +38,6 @@ Nango supports both direct action function execution and MCP-based tool discover
 
 - [Tool calling & MCP](/guides/agent-sessions) - connect Nango action functions to agents, LLM SDKs, and MCP clients.
 - [Action functions](/guides/functions/action-functions) - build the action functions agents can call.
-- [Get integration functions config](/reference/backend/http-api/scripts/config) - list enabled action functions programmatically.
+- [List functions](/reference/backend/http-api/functions/list) - list available functions programmatically.
 - [Functions guide](/guides/functions/functions-guide) - create, test, deploy, and trigger functions.
 - [Auth guide](/guides/auth/auth-guide) - let users authorize external APIs.

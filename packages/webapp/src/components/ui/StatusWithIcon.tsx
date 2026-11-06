@@ -37,8 +37,7 @@ export const StatusWithIcon: React.FC<StatusWithIconProps> = ({ variant, classNa
         return (
             <Tooltip>
                 <TooltipTrigger asChild>{status}</TooltipTrigger>
-                {/* eslint-disable-next-line react/forbid-component-props -- content holding a link must stay hoverable; see NAN-5464 */}
-                <TooltipContent side="bottom" align="center" className="pointer-events-auto">
+                <TooltipContent side="bottom" align="center">
                     {tooltipContent}
                 </TooltipContent>
             </Tooltip>

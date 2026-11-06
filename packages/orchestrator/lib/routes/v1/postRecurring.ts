@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { validateRequest } from '@nangohq/utils';
 
-import { scheduleFunctionArgsSchema, syncArgsSchema } from '../../clients/validate.js';
+import { functionArgsSchema, syncArgsSchema } from '../../clients/validate.js';
 
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
@@ -11,7 +11,13 @@ import type { JsonObject } from 'type-fest';
 
 const path = '/v1/recurring';
 const method = 'POST';
-const recurringArgsSchema = z.discriminatedUnion('type', [syncArgsSchema, scheduleFunctionArgsSchema]);
+const recurringArgsSchema = z.discriminatedUnion('type', [
+    syncArgsSchema,
+    functionArgsSchema.refine(
+        (args) => args.trigger.kind === 'schedule' && args.async,
+        'Recurring functions must use a schedule trigger and run asynchronously'
+    )
+]);
 
 export const MAX_RECURRING_BATCH_SIZE = 1000;
 

@@ -132,6 +132,31 @@ describe(`PATCH ${endpoint}`, () => {
         });
     });
 
+    it('stores allow_unverified_webhooks', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github-app', 'github-app');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'github-app' },
+            body: { allow_unverified_webhooks: true }
+        });
+
+        isSuccess(res.json);
+
+        const resGet = await api.fetch(endpoint, {
+            method: 'GET',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'github-app' }
+        });
+
+        isSuccess(resGet.json);
+        expect(resGet.json.data.integration.allow_unverified_webhooks).toBe(true);
+    });
+
     it('rejects invalid integration_config values', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');
@@ -271,6 +296,23 @@ describe(`PATCH ${endpoint}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({ data: { success: true } });
     });
 
+    it('normalizes MCP_OAUTH2 scopes on update the same way create does', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'amplitude-mcp', 'amplitude-mcp');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'amplitude-mcp' },
+            body: { authType: 'MCP_OAUTH2', scopes: 'read write,admin access' }
+        });
+        isSuccess(res.json);
+
+        const stored = await configService.getProviderConfig('amplitude-mcp', env.id);
+        expect(stored?.oauth_scopes).toBe('read,write,admin,access');
+    });
+
     it('allows client credential updates for MCP integrations with static client registration', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         // asana-mcp uses client_registration: static, users bring their own credentials
@@ -333,5 +375,24 @@ describe(`PATCH ${endpoint}`, () => {
         // The rejected PATCH must not have written through: the shared credential's app_id should be unchanged.
         const stored = await configService.getProviderConfig('github-app-shared', env.id);
         expect(stored?.oauth_client_id).toBe('test');
+    });
+
+    it('rejects integrationConfig updates on an integration using Nango-provided (shared) credentials', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createPreprovisionedProviderConfigSeed(env, 'stripe-app-sandbox-shared', 'stripe-app-sandbox', 'stripe-app-sandbox-shared-patch-test');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'stripe-app-sandbox-shared' },
+            body: { integrationConfig: { appDomain: 'acct_123' } }
+        });
+
+        isError(res.json);
+        expect(res.json.error.code).toBe('invalid_body');
+
+        const stored = await configService.getProviderConfig('stripe-app-sandbox-shared', env.id);
+        expect(stored?.custom).toBeFalsy();
     });
 });

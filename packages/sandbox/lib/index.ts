@@ -12,6 +12,5 @@ export * from './functions/shell.js';
 export * from './functions/timeouts.js';
 export * from './providers/errors.js';
 export * from './providers/factory.js';
-export { getRunningE2BSandboxCount } from './providers/e2b.js';
 export type * from './providers/types.js';
 export * from './sandbox-service.js';

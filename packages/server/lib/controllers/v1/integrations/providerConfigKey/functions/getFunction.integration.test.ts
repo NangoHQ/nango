@@ -204,7 +204,7 @@ describe(`GET ${route}`, () => {
         expect(syncTyped.json.data.type).toBe('sync');
     });
 
-    it('should 404 when type filter eliminates the match', async () => {
+    it.each(['action', 'tool'] as const)('should 404 when type=%s eliminates the match', async (type) => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
@@ -219,7 +219,7 @@ describe(`GET ${route}`, () => {
 
         const res = await api.fetch(route, {
             method: 'GET',
-            query: { env: 'dev', type: 'action' },
+            query: { env: 'dev', type },
             params: { providerConfigKey: 'github', functionName: 'my-sync' },
             token: apiKey.secret
         });

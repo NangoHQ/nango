@@ -13,18 +13,33 @@ export interface UnverifiedWebhook {
     remediation?: string | undefined;
 }
 
+/**
+ * Why an unverified webhook was let through, or that it was not. `unenforced` is a provider that never
+ * requires a signature, `setting` is the integration's allow_unverified_webhooks, `flag` is a
+ * per-provider feature flag kept for accounts not moved to the setting yet.
+ */
+export type UnverifiedOutcome = 'unenforced' | 'setting' | 'flag' | 'rejected';
+
 export function countUnverifiedWebhook({
     accountId,
     environmentId,
     provider,
-    reason
+    reason,
+    outcome
 }: {
-    accountId: number;
+    accountId?: number | undefined;
     environmentId: number;
     provider: string;
     reason: string;
+    outcome: UnverifiedOutcome;
 }): void {
-    metrics.increment(metrics.Types.WEBHOOK_INCOMING_UNVERIFIED, 1, { accountId, environmentId, provider, reason });
+    metrics.increment(metrics.Types.WEBHOOK_INCOMING_UNVERIFIED, 1, {
+        ...(accountId === undefined ? {} : { accountId }),
+        environmentId,
+        provider,
+        reason,
+        outcome
+    });
 }
 
 export function unverifiedWebhookMessage(integration: Integration, unverified: UnverifiedWebhook): string {

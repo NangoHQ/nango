@@ -1,0 +1,49 @@
+---
+title: 'Control D - How do I link my account?'
+sidebarTitle: 'Control D'
+---
+
+## Overview
+
+To authenticate with Control D, you need:
+
+1. **API Token** - A token that lets Nango call the Control D API on behalf of your account.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A Control D account. Control D offers a [free trial](https://controld.com/pricing) with no credit card required.
+- On an Organization account, you must be an admin or owner to manage API tokens.
+
+### Step 1: Create an API token
+
+1. Log in to the [Control D dashboard](https://controld.com/dashboard). In the sidebar, expand **Preferences** and click **API**.
+
+<img src="/api-integrations/control-d/preferences_api_menu.png" alt="Control D dashboard sidebar with Preferences expanded and API selected"/>
+
+2. Click the **+** button to add a token.
+
+<img src="/api-integrations/control-d/api_add_token.png" alt="Control D API page with the add token button"/>
+
+3. Enter a name for the token and choose a **Type**:
+    - **Read** lets the token read data but not change anything.
+    - **Write** gives the token full access, with reads and writes.
+4. Optionally, enter **Allowed IPs** to restrict where the token can be used from.
+5. Click **Create**.
+
+<img src="/api-integrations/control-d/create_api_token_dialog.png" alt="Create API Token dialog with name, type and allowed IPs fields"/>
+
+6. In the token list, click the copy icon next to your new token.
+
+<img src="/api-integrations/control-d/copy_api_token.png" alt="Control D API token list with the copy icon highlighted"/>
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Control D.
+2. Enter your **API Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/control-d/form.png" alt="Nango Connect UI form for Control D" style={{maxWidth: "450px" }}/>
+
+You are now connected to Control D.

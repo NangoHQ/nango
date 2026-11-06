@@ -70,7 +70,7 @@ export const ChangePasswordDialog: React.FC = () => {
 
         try {
             await changePassword({ oldPassword, newPassword, mfa });
-            track('web:password:changed', {});
+            track('auth:password_update', {});
             toast({ title: 'Password updated', variant: 'success' });
             closeChallenge();
             setIsOpen(false);

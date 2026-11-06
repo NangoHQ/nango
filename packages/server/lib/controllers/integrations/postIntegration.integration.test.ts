@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import * as shared from '@nangohq/shared';
 import { seeders } from '@nangohq/shared';
 import { Err, getLogger } from '@nangohq/utils';
 
@@ -114,9 +115,55 @@ describe(`POST ${endpoint}`, () => {
                 provider: 'algolia',
                 unique_key: 'foobar',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true
+                forward_webhooks: true,
+                missing_fields: []
             }
         });
+    });
+
+    it('should create an OAuth integration without credentials', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { provider: 'github', unique_key: 'github' }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.data.unique_key).toBe('github');
+        expect(res.json.data.missing_fields).toStrictEqual(['oauth_client_id', 'oauth_client_secret']);
+
+        const resGet = await api.fetch(getEndpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github' },
+            query: { include: ['credentials'] }
+        });
+
+        isSuccess(resGet.json);
+        expect(resGet.json.data.credentials).toMatchObject({ type: 'OAUTH2', client_id: null, client_secret: null });
+    });
+
+    it('should create an OAuth integration with only some credential fields', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { provider: 'github', unique_key: 'github', credentials: { type: 'OAUTH2', scopes: 'repo' } }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.data.missing_fields).toStrictEqual(['oauth_client_id', 'oauth_client_secret']);
+
+        const resGet = await api.fetch(getEndpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github' },
+            query: { include: ['credentials'] }
+        });
+
+        isSuccess(resGet.json);
+        expect(resGet.json.data.credentials).toMatchObject({ type: 'OAUTH2', client_id: null, client_secret: null, scopes: 'repo' });
     });
 
     it('should add webhookSecret when creds.webhook_secret is present', async () => {
@@ -146,7 +193,8 @@ describe(`POST ${endpoint}`, () => {
                 provider: 'github',
                 unique_key: 'github',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true
+                forward_webhooks: true,
+                missing_fields: []
             }
         });
 
@@ -188,7 +236,8 @@ describe(`POST ${endpoint}`, () => {
                 provider: 'github',
                 unique_key: 'github',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true
+                forward_webhooks: true,
+                missing_fields: []
             }
         });
 
@@ -202,5 +251,291 @@ describe(`POST ${endpoint}`, () => {
         isSuccess(resGet.json);
         const credentials = resGet.json.data.credentials as { webhook_secret: string | null };
         expect(credentials.webhook_secret).toBeNull();
+    });
+
+    describe('NANGO_MANAGED', () => {
+        it('rejects other fields in NANGO_MANAGED credentials', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                // @ts-expect-error on purpose
+                body: { provider: 'github', unique_key: 'github-managed', credentials: { type: 'NANGO_MANAGED', client_id: 'client-id' } }
+            });
+
+            isError(res.json);
+            expect(res.json.error.code).toBe('invalid_body');
+        });
+
+        it('rejects integration_config and custom alongside NANGO_MANAGED credentials', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                // @ts-expect-error on purpose
+                body: {
+                    provider: 'github',
+                    unique_key: 'github-managed',
+                    credentials: { type: 'NANGO_MANAGED' },
+                    integration_config: { foo: 'bar' },
+                    custom: { foo: 'bar' }
+                }
+            });
+
+            isError(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                error: {
+                    code: 'invalid_body',
+                    errors: [
+                        { code: 'custom', message: 'integration_config is not supported with NANGO_MANAGED credentials', path: ['integration_config'] },
+                        { code: 'custom', message: 'custom is not supported with NANGO_MANAGED credentials', path: ['custom'] }
+                    ]
+                }
+            });
+        });
+
+        it('rejects providers that do not require a developer app', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { provider: 'algolia', unique_key: 'algolia-managed', credentials: { type: 'NANGO_MANAGED' } }
+            });
+
+            isError(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                error: { code: 'invalid_body', message: 'Nango-managed credentials are only available for providers that require a developer app' }
+            });
+        });
+
+        it('rejects providers that use integration_config', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            await seeders.createSharedCredentialsSeed('cch-axcess');
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { provider: 'cch-axcess', unique_key: 'cch-axcess-managed', credentials: { type: 'NANGO_MANAGED' } }
+            });
+
+            isError(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                error: { code: 'invalid_body', message: "Nango-managed credentials aren't available for providers that use integration_config" }
+            });
+        });
+
+        it('rejects providers without a Nango-managed developer app', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { provider: 'docusign-sandbox', unique_key: 'docusign-managed', credentials: { type: 'NANGO_MANAGED' } }
+            });
+
+            isError(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                error: { code: 'invalid_body', message: 'No Nango-provided developer app is configured for this provider' }
+            });
+        });
+
+        it('rejects duplicate unique keys', async () => {
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github-managed', 'github');
+            await seeders.createSharedCredentialsSeed('github');
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { provider: 'github', unique_key: 'github-managed', credentials: { type: 'NANGO_MANAGED' } }
+            });
+
+            isError(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                error: { code: 'invalid_body', errors: [{ code: 'invalid_string', message: 'Unique key already exists', path: ['uniqueKey'] }] }
+            });
+        });
+
+        it('creates an integration with a Nango-managed developer app', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            await seeders.createSharedCredentialsSeed('github');
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: {
+                    provider: 'github',
+                    unique_key: 'github-managed',
+                    display_name: 'GitHub Managed',
+                    forward_webhooks: false,
+                    credentials: { type: 'NANGO_MANAGED' }
+                }
+            });
+
+            isSuccess(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                data: {
+                    created_at: expect.toBeIsoDate(),
+                    display_name: 'GitHub Managed',
+                    logo: 'http://localhost:3003/images/template-logos/github.svg',
+                    provider: 'github',
+                    unique_key: 'github-managed',
+                    updated_at: expect.toBeIsoDate(),
+                    forward_webhooks: false,
+                    // Nango supplies the developer app, so nothing is outstanding
+                    missing_fields: []
+                }
+            });
+
+            const resGet = await api.fetch(getEndpoint, {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { uniqueKey: 'github-managed' },
+                query: { include: ['credentials'] }
+            });
+
+            isSuccess(resGet.json);
+            expect(resGet.json.data.credentials).toStrictEqual({
+                type: 'OAUTH2',
+                client_id: '',
+                client_secret: '',
+                scopes: 'test',
+                webhook_secret: null
+            });
+        });
+    });
+
+    describe('MCP_OAUTH2', () => {
+        it('creates a static-registration integration and returns the stored credentials', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: {
+                    provider: 'asana-mcp',
+                    unique_key: 'asana-mcp',
+                    credentials: { type: 'MCP_OAUTH2', client_id: 'my-client-id', client_secret: 'my-client-secret', scopes: 'read write' }
+                }
+            });
+
+            isSuccess(res.json);
+
+            const resGet = await api.fetch(getEndpoint, {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { uniqueKey: 'asana-mcp' },
+                query: { include: ['credentials'] }
+            });
+
+            isSuccess(resGet.json);
+            const credentials = resGet.json.data.credentials as { type: string; client_id: string; client_secret: string; scopes: string | null };
+            expect(credentials).toStrictEqual({
+                type: 'MCP_OAUTH2',
+                client_id: 'my-client-id',
+                client_secret: 'my-client-secret',
+                scopes: 'read,write'
+            });
+        });
+
+        it('rejects a static-registration integration with no client credentials', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { provider: 'asana-mcp', unique_key: 'asana-mcp' }
+            });
+
+            isError(res.json);
+            expect(res.json.error.code).toBe('invalid_body');
+        });
+
+        it('dynamically registers a client and stores the returned credentials, without leaking the registration bearer token', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const registerSpy = vi.spyOn(shared.mcpClient, 'registerClientId').mockResolvedValue({
+                client_id: 'dcr-client-id',
+                client_secret: 'dcr-secret',
+                registration_client_uri: 'https://provider.example.com/register/dcr-client-id',
+                registration_access_token: 'dcr-management-token'
+            });
+
+            try {
+                const res = await api.fetch(endpoint, {
+                    method: 'POST',
+                    token: apiKey.secret,
+                    body: { provider: 'amplitude-mcp', unique_key: 'amplitude-mcp' }
+                });
+
+                isSuccess(res.json);
+
+                const resGet = await api.fetch(getEndpoint, {
+                    method: 'GET',
+                    token: apiKey.secret,
+                    params: { uniqueKey: 'amplitude-mcp' },
+                    query: { include: ['credentials'] }
+                });
+
+                isSuccess(resGet.json);
+                const credentials = resGet.json.data.credentials as { type: string; client_id: string; client_secret: string };
+                expect(credentials.type).toBe('MCP_OAUTH2');
+                expect(credentials.client_id).toBe('dcr-client-id');
+                expect(credentials.client_secret).toBe('dcr-secret');
+
+                expect(JSON.stringify(resGet.json)).not.toContain('dcr-management-token');
+            } finally {
+                registerSpy.mockRestore();
+            }
+        });
+
+        it('builds a CIMD client_id when the Nango instance is reachable at a public HTTPS URL', async () => {
+            const realProvider = shared.getProvider('amplitude-mcp')!;
+            vi.spyOn(shared, 'getProvider').mockReturnValue({ ...realProvider, client_registration: 'cimd' } as typeof realProvider);
+            vi.stubEnv('NANGO_SERVER_URL', 'https://mock.nango.dev');
+
+            try {
+                const { apiKey, env } = await seeders.seedAccountEnvAndUser();
+                const res = await api.fetch(endpoint, {
+                    method: 'POST',
+                    token: apiKey.secret,
+                    body: { provider: 'amplitude-mcp', unique_key: 'amplitude-mcp-cimd' }
+                });
+
+                isSuccess(res.json);
+
+                const resGet = await api.fetch(getEndpoint, {
+                    method: 'GET',
+                    token: apiKey.secret,
+                    params: { uniqueKey: 'amplitude-mcp-cimd' },
+                    query: { include: ['credentials'] }
+                });
+
+                isSuccess(resGet.json);
+                const credentials = resGet.json.data.credentials as { type: string; client_id: string };
+                expect(credentials.type).toBe('MCP_OAUTH2');
+                expect(credentials.client_id).toBe(`https://mock.nango.dev/oauth/client-metadata/${env.uuid}/amplitude-mcp-cimd`);
+            } finally {
+                vi.unstubAllEnvs();
+                vi.restoreAllMocks();
+            }
+        });
+
+        it('rejects creating a CIMD integration when the Nango instance has no public HTTPS URL configured', async () => {
+            const realProvider = shared.getProvider('amplitude-mcp')!;
+            vi.spyOn(shared, 'getProvider').mockReturnValue({ ...realProvider, client_registration: 'cimd' } as typeof realProvider);
+            vi.stubEnv('NANGO_SERVER_URL', '');
+
+            try {
+                const { apiKey } = await seeders.seedAccountEnvAndUser();
+                const res = await api.fetch(endpoint, {
+                    method: 'POST',
+                    token: apiKey.secret,
+                    body: { provider: 'amplitude-mcp', unique_key: 'amplitude-mcp-cimd-no-url' }
+                });
+
+                isError(res.json);
+                expect(res.json.error.code).toBe('invalid_body');
+            } finally {
+                vi.unstubAllEnvs();
+                vi.restoreAllMocks();
+            }
+        });
     });
 });

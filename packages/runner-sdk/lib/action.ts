@@ -1,6 +1,15 @@
+import { isDeepStrictEqual } from 'node:util';
+
 import { getProvider } from '@nangohq/providers';
 
-import { ActionError, ExecutionAbortedSDKError, ExecutionInterruptedSDKError, ExecutionTimeoutSDKError, UnknownProviderSDKError } from './errors.js';
+import {
+    ActionError,
+    ExecutionAbortedSDKError,
+    ExecutionInterruptedSDKError,
+    ExecutionTimeoutSDKError,
+    FunctionError,
+    UnknownProviderSDKError
+} from './errors.js';
 import paginateService from './paginate.service.js';
 
 import type { ZodCheckpoint, ZodMetadata } from './types.js';
@@ -9,6 +18,7 @@ import type { Nango } from '@nangohq/node';
 import type {
     ApiPublicAllAuthCredentials,
     ApiPublicConnectionFull,
+    CheckpointRange,
     EnvironmentVariable,
     GetPublicConnection,
     GetPublicIntegration,
@@ -26,6 +36,8 @@ import type {
 } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 import type * as z from 'zod';
+
+export const BASE_VARIANT = 'base';
 
 const MEMOIZED_CONNECTION_TTL = 60000;
 const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
@@ -67,7 +79,9 @@ export abstract class NangoActionBase<
     public providerConfigKey: string;
     public provider?: string;
     public integrationConfig?: NangoProps['integrationConfig'];
+    private readonly functionVariant: string;
 
+    public Error = FunctionError;
     public ActionError = ActionError;
 
     public telemetryBag: TelemetryBag = {
@@ -89,6 +103,7 @@ export abstract class NangoActionBase<
         this.activityLogId = config.activityLogId;
         this.scriptType = config.scriptType;
         this.isCLI = config.isCLI;
+        this.functionVariant = (config.scriptType === 'sync' ? config.syncVariant : config.variant) ?? BASE_VARIANT;
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -157,8 +172,17 @@ export abstract class NangoActionBase<
         }
         // function exceeded its maximum execution time
         if (this.lifecycle?.killAfter && new Date() > this.lifecycle.killAfter) {
+            const range = this.getCheckpointRange();
+            if (range?.to && !isDeepStrictEqual(range.from, range.to)) {
+                throw new ExecutionInterruptedSDKError();
+            }
+
             throw new ExecutionTimeoutSDKError();
         }
+    }
+
+    protected getCheckpointRange(): CheckpointRange | null {
+        return null;
     }
 
     protected throwIfInterrupted(): void {
@@ -220,6 +244,10 @@ export abstract class NangoActionBase<
     public async getToken(): Promise<string | OAuth1Token | ApiPublicAllAuthCredentials> {
         this.throwIfAbortedOrKilled();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
+    }
+
+    public getVariant(): string {
+        return this.functionVariant;
     }
 
     /**

@@ -1,6 +1,6 @@
-import { ArrowUpRight, BarChart3, Blocks, Cog, List, Plug, Sprout, X } from 'lucide-react';
+import { ArrowUpRight, BarChart3, Blocks, Bot, Cog, List, Plug, Sprout, X } from 'lucide-react';
 import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import {
@@ -16,10 +16,11 @@ import {
     SidebarMenuItem
 } from '@/components/ui/Sidebar';
 import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
+import { useDismissAgentGettingStarted } from '@/hooks/useAgentGettingStarted';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
-import { apiPatchUser } from '@/hooks/useUser';
+import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { EnvironmentDropdown } from './EnvironmentDropdown';
@@ -32,16 +33,22 @@ interface SidebarItem {
     title: string;
     url: string;
     icon: LucideIcon;
+    exact?: boolean;
     onClose?: () => Promise<void>;
 }
 
 export const AppSidebar: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { data: metaData, refetch: refetchMeta } = useMeta();
+    const { pathname } = useLocation();
+    const { data: metaData } = useMeta();
+    const { mutateAsync: dismissGettingStarted } = useDismissAgentGettingStarted();
+    const { toast } = useToast();
     const meta = metaData?.data;
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
+    const { can } = usePermissions();
+    const showPlayground = Boolean(meta?.agentPlayground) && can('environment:agent_sessions:write');
 
     const items = useMemo<SidebarItem[]>(() => {
         const gettingStarted = {
@@ -49,28 +56,31 @@ export const AppSidebar: React.FC = () => {
             url: `/${env}/getting-started`,
             icon: Sprout,
             onClose: async () => {
-                await apiPatchUser({
-                    gettingStartedClosed: true
-                });
-                void refetchMeta();
+                try {
+                    await dismissGettingStarted();
+                } catch {
+                    toast({ title: 'Could not hide Getting started', variant: 'error' });
+                    return;
+                }
+                track('onboarding:dismiss_button_click');
             }
         };
 
         return [
-            meta && showGettingStarted && !meta.gettingStartedClosed ? gettingStarted : null,
+            meta && showGettingStarted && !meta.gettingStartedDismissed ? gettingStarted : null,
+            showPlayground ? { title: 'Playground', url: `/${env}/playground`, icon: Bot } : null,
             { title: 'Integrations', url: `/${env}/integrations`, icon: Blocks },
             { title: 'Connections', url: `/${env}/connections`, icon: Plug },
             { title: 'Logs', url: `/${env}/logs`, icon: List },
-            { title: 'Metrics', url: `/${env}`, icon: BarChart3 },
+            { title: 'Metrics', url: `/${env}`, icon: BarChart3, exact: true },
             { title: 'Environment settings', url: `/${env}/environment-settings`, icon: Cog }
         ].filter((item) => item !== null);
-    }, [env, meta, refetchMeta, showGettingStarted]);
+    }, [env, meta, dismissGettingStarted, toast, showGettingStarted, showPlayground]);
 
     // Only free accounts see the usage-limit alert. Paid accounts have no enforced caps, so it
     // just adds noise and surfaces upgrade/downgrade inconsistencies (NAN-5959).
     const showUsageAlert = plan?.name === 'free';
 
-    const { can } = usePermissions();
     const canManageBilling = can('account:billing:payment_methods:create');
     const { data: overdue } = useApiGetOverdueInvoices(env, plan);
     const showOverdueAlert = Boolean(overdue?.data.hasOverdue);
@@ -88,12 +98,12 @@ export const AppSidebar: React.FC = () => {
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton
                                         asChild
-                                        data-active={item.url === window.location.pathname}
+                                        data-active={pathname === item.url || (!item.exact && pathname.startsWith(`${item.url}/`))}
                                         className="type-text-regular-sm gap-2.5 text-text-secondary [&>svg]:size-4!"
                                     >
                                         <Link to={item.url}>
                                             <item.icon />
-                                            <span data-ph-unmask>{item.title}</span>
+                                            <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
                                     {item.onClose && (
@@ -115,7 +125,7 @@ export const AppSidebar: React.FC = () => {
                 {showOverdueAlert && (
                     <div className="px-2.5 mb-4">
                         <OverdueInvoiceAlert canManageBilling={canManageBilling}>
-                            <AlertButtonLink to="/team/billing" onClick={() => track('web:usage:overdue_alert_clicked', {})}>
+                            <AlertButtonLink to="/team/billing" onClick={() => track('billing:overdue_alert_link_click', {})}>
                                 View billing <ArrowUpRight />
                             </AlertButtonLink>
                         </OverdueInvoiceAlert>

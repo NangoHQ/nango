@@ -1,19 +1,21 @@
-import { ChevronsUpDown, Lock } from 'lucide-react';
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
+import { ArrowUpRight, ChevronsUpDown, TriangleAlert } from 'lucide-react';
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-import { Badge, Button } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertDescription, Badge, Button } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
-import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip.js';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu.js';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar.js';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useCurrentPlan } from '@/hooks/usePlan';
+import { isLegacyPlan } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
-import { isNonEnvPath } from '@/utils/routes';
+import { envSwitchPath } from '@/utils/routes';
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
 import { NavigationItem, navigationItemVariants } from './NavigationItem.js';
 
@@ -33,33 +35,21 @@ export const EnvironmentDropdown: React.FC = () => {
     const navigate = useNavigate();
 
     const isMaxEnvironmentsReached = envs && plan && envs.length >= plan.environments_max;
+    const isLegacy = isLegacyPlan(plan);
 
     const onSelect = (selected: string) => {
         if (selected === env) {
             return;
         }
 
-        setEnv(selected);
-
-        const pathSegments = window.location.pathname.split('/').filter(Boolean);
-
         // Non-environment-specific pages — just update env in store, don't change URL
-        if (isNonEnvPath(window.location.pathname)) {
+        const newPath = envSwitchPath(window.location.pathname, selected);
+        if (!newPath) {
+            setEnv(selected);
             return;
         }
 
-        pathSegments[0] = selected;
-
-        let newPath = `/${pathSegments.join('/')}`;
-
-        // If on 'integration' or 'connections' subpages beyond the second level, redirect to their parent page
-        if (pathSegments[1] === 'integrations' && pathSegments.length > 2) {
-            newPath = `/${selected}/integrations`;
-        } else if (pathSegments[1] === 'connections' && pathSegments.length > 2) {
-            newPath = `/${selected}/connections`;
-        }
-
-        navigate(newPath);
+        void navigate(newPath);
     };
 
     if (!meta) {
@@ -110,41 +100,42 @@ export const EnvironmentDropdown: React.FC = () => {
                                 </PermissionGate>
                             ))}
                         </div>
-                        <div className="border-t-[0.5px] border-border-muted p-2 [&_button]:w-full">
+                        <div className="flex flex-col gap-2 border-t-[0.5px] border-border-muted p-2">
                             <PermissionGate condition={canCreateEnvironment} tooltipSide="right">
                                 {(allowed) => (
-                                    <ConditionalTooltip
-                                        condition={!!isMaxEnvironmentsReached}
-                                        content={
-                                            <>
-                                                Max number of environments reached.{' '}
-                                                {plan?.name.includes('legacy') ? (
-                                                    <>Contact Nango to add more</>
-                                                ) : (
-                                                    <>
-                                                        <Button asChild variant="link-accent" size="sm">
-                                                            <Link to={`/team/billing`}>Upgrade</Link>
-                                                        </Button>{' '}
-                                                        to add more
-                                                    </>
-                                                )}
-                                            </>
-                                        }
-                                    >
+                                    <div className="flex flex-col">
                                         <Button
-                                            disabled={!!isMaxEnvironmentsReached || !allowed}
+                                            disabled={!allowed || !!isMaxEnvironmentsReached}
                                             variant="primary"
                                             onClick={() => {
                                                 // Managed control because Dialogs within DropdownMenus behave weirdly
                                                 setEnvironmentDialogOpen(true);
                                             }}
                                         >
-                                            {!!isMaxEnvironmentsReached && <Lock />}
                                             Create environment
                                         </Button>
-                                    </ConditionalTooltip>
+                                    </div>
                                 )}
                             </PermissionGate>
+                            {canCreateEnvironment && isMaxEnvironmentsReached && (
+                                <Alert variant="warning" size="compact">
+                                    <TriangleAlert />
+                                    <AlertDescription>
+                                        Max number of environments reached. {isLegacy ? 'Contact Nango to add more.' : 'Upgrade for more.'}
+                                    </AlertDescription>
+                                    {!isLegacy && (
+                                        <AlertActions>
+                                            {/* Unwrapped, the link can't be reached by keyboard while the menu is open. */}
+                                            {/* Radix focuses items on hover; preventing it keeps the focus ring keyboard-only. */}
+                                            <DropdownMenuPrimitive.Item asChild onPointerMove={(event) => event.preventDefault()}>
+                                                <AlertButtonLink to="/team/billing#plans">
+                                                    Upgrade <ArrowUpRight />
+                                                </AlertButtonLink>
+                                            </DropdownMenuPrimitive.Item>
+                                        </AlertActions>
+                                    )}
+                                </Alert>
+                            )}
                         </div>
                     </DropdownMenuContent>
                 </DropdownMenu>

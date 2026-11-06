@@ -2,9 +2,9 @@ import * as z from 'zod';
 
 import { zodErrorToHTTP } from '@nangohq/utils';
 
+import { principalCan } from '../../../authz/principal.js';
 import { integrationCredentialsToPublicApi, integrationToPublicApi } from '../../../formatters/integration.js';
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
-import { hasAuthorizedScope } from '../../../middleware/scope.middleware.js';
 import integrationService from '../../../services/integration.service.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
@@ -55,8 +55,7 @@ export const getPublicIntegration = asyncWrapperWithEnvironment<GetPublicIntegra
         environmentUuid: environment.uuid,
         integrationId: params.uniqueKey,
         includeWebhook: queryInclude.has('webhook'),
-        includeCredentials:
-            queryInclude.has('credentials') && hasAuthorizedScope({ locals: res.locals, requiredScope: 'environment:integrations:read_credentials' })
+        includeCredentials: queryInclude.has('credentials') && principalCan(res.locals, 'environment:integrations:read_credentials')
     });
     if (result.isErr()) {
         if (result.error.code === 'not_found') {

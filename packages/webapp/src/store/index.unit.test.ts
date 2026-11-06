@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useStore } from './index';
@@ -6,6 +7,8 @@ import { defaultPlaygroundState, usePlaygroundStore } from './playground';
 const storageState = vi.hoisted(() => {
     const localStore: Record<string, string> = {};
     const sessionStore: Record<string, string> = {};
+
+    vi.stubGlobal('_env', { apiUrl: 'http://localhost:3003', dashboardApiUrl: 'http://localhost:3003' });
 
     vi.stubGlobal('localStorage', {
         getItem: (k: string) => localStore[k] ?? null,
@@ -57,7 +60,6 @@ describe('useStore', () => {
             const abortActiveRun = vi.fn();
 
             usePlaygroundStore.setState({
-                isOpen: true,
                 integration: 'github',
                 connection: 'conn-1',
                 function: 'sync-users',
@@ -73,7 +75,6 @@ describe('useStore', () => {
             expect(useStore.getState().env).toBe('prod');
 
             const playgroundState = usePlaygroundStore.getState();
-            expect(playgroundState.isOpen).toBe(true);
             expect(playgroundState.integration).toBeNull();
             expect(playgroundState.connection).toBeNull();
             expect(playgroundState.function).toBeNull();

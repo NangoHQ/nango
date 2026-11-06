@@ -1,6 +1,6 @@
 import { isTest } from '@nangohq/utils';
 
-import { indexMessages } from '../es/schema.js';
+import { getLogsIngestPipelineId, indexMessages } from '../es/schema.js';
 import { client } from '../storage/client.js';
 import { createCursor, parseCursor } from './helpers.js';
 
@@ -24,7 +24,7 @@ export async function createMessage(row: MessageRow): Promise<{ index: string }>
         index: indexMessages.index,
         document: row,
         refresh: isTest,
-        pipeline: `daily.${indexMessages.index}`
+        pipeline: getLogsIngestPipelineId(indexMessages.index)
     });
     return { index: res._index };
 }

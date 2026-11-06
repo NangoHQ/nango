@@ -8,11 +8,25 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { createConnectSession } from './connectSession.service.js';
 
-import type { DBEnvironment, DBPlan, DBTeam, PrivateKey } from '@nangohq/types';
+import type { DBConnection, DBEnvironment, DBPlan, DBTeam, PrivateKey } from '@nangohq/types';
+import type * as NangoUtils from '@nangohq/utils';
+
+const flags = vi.hoisted(() => ({ hasPlan: true }));
+
+vi.mock('@nangohq/utils', async (importOriginal) => {
+    const actual = await importOriginal<typeof NangoUtils>();
+    return {
+        ...actual,
+        get flagHasPlan() {
+            return flags.hasPlan;
+        }
+    };
+});
 
 describe('createConnectSession', () => {
     afterEach(() => {
         vi.restoreAllMocks();
+        flags.hasPlan = true;
     });
 
     it('validates, inserts, creates a private key, and returns transport-neutral data', async () => {
@@ -105,6 +119,30 @@ describe('createConnectSession', () => {
         expect(transactionSpy).not.toHaveBeenCalled();
     });
 
+    it('rejects preset connection config that is invalid for the provider', async () => {
+        vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([{ unique_key: 'auth0', provider: 'auth0' }] as any);
+        const transactionSpy = vi.spyOn(db.knex, 'transaction');
+
+        const result = await createConnectSession({
+            account: accountFixture(),
+            environment: environmentFixture(),
+            plan: null,
+            endUser: null,
+            tags: {},
+            allowedIntegrations: ['auth0'],
+            integrationsConfigDefaults: { auth0: { connectionConfig: { subdomain: 'Not Valid!' } } }
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toMatchObject({
+                code: 'invalid_connection_config',
+                message: 'Auth0 Domain has an invalid format'
+            });
+        }
+        expect(transactionSpy).not.toHaveBeenCalled();
+    });
+
     it('creates a preview session without enforcing the connection cap', async () => {
         const expiresAt = new Date('2026-01-01T00:30:00.000Z');
         mockTransaction();
@@ -161,6 +199,96 @@ describe('createConnectSession', () => {
         if (result.isErr()) {
             expect(result.error.code).toBe('docs_connect_override_forbidden');
         }
+    });
+
+    it('allows the docs Connect override when plans are disabled', async () => {
+        flags.hasPlan = false;
+        mockTransaction();
+        vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([{ unique_key: 'github' }] as any);
+        vi.spyOn(logs.logContextGetter, 'create').mockResolvedValue({ id: 'operation-id' } as any);
+        vi.spyOn(keystore, 'createPrivateKey').mockResolvedValue(Ok(['session-token', privateKeyFixture(new Date())]));
+
+        const result = await createConnectSession({
+            account: accountFixture(),
+            environment: environmentFixture(),
+            plan: null,
+            endUser: null,
+            tags: { team: 'platform' },
+            overrides: { github: { docs_connect: 'https://example.com/docs' } }
+        });
+
+        expect(result.isOk()).toBe(true);
+    });
+
+    describe('reconnect', () => {
+        it('reauthorises the connection, keeping its end user and tags, without enforcing the connection cap', async () => {
+            const { insert } = mockTransaction();
+            const lookup = vi
+                .spyOn(connectionService, 'checkIfConnectionExists')
+                .mockResolvedValue(connectionFixture({ id: 7, end_user_id: 3, tags: { organization_id: 'acme' } }));
+            const capCheck = vi.spyOn(connectionService, 'enforceCreationCap').mockRejectedValue(new ConnectionCreationCappedError());
+            vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([{ unique_key: 'github' }] as any);
+            vi.spyOn(logs.logContextGetter, 'create').mockResolvedValue({ id: 'operation-id' } as any);
+            vi.spyOn(keystore, 'createPrivateKey').mockResolvedValue(Ok(['session-token', privateKeyFixture(new Date())]));
+
+            const result = await createConnectSession({
+                account: accountFixture(),
+                environment: environmentFixture(),
+                plan: planFixture(),
+                endUser: null,
+                reconnect: { connectionId: 'conn-1', integrationId: 'github' }
+            });
+
+            expect(result.isOk()).toBe(true);
+            expect(lookup).toHaveBeenCalledWith(db.knex, { connectionId: 'conn-1', providerConfigKey: 'github', environmentId: 42 });
+            expect(capCheck).not.toHaveBeenCalled();
+            expect(insert).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    connection_id: 7,
+                    end_user_id: 3,
+                    allowed_integrations: ['github'],
+                    tags: { organization_id: 'acme' }
+                })
+            );
+        });
+
+        it('replaces the connection tags when given some', async () => {
+            const { insert } = mockTransaction();
+            vi.spyOn(connectionService, 'checkIfConnectionExists').mockResolvedValue(connectionFixture({ id: 7, tags: { organization_id: 'acme' } }));
+            vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([{ unique_key: 'github' }] as any);
+            vi.spyOn(logs.logContextGetter, 'create').mockResolvedValue({ id: 'operation-id' } as any);
+            vi.spyOn(keystore, 'createPrivateKey').mockResolvedValue(Ok(['session-token', privateKeyFixture(new Date())]));
+
+            await createConnectSession({
+                account: accountFixture(),
+                environment: environmentFixture(),
+                plan: planFixture(),
+                endUser: null,
+                tags: { team: 'platform' },
+                reconnect: { connectionId: 'conn-1', integrationId: 'github' }
+            });
+
+            expect(insert).toHaveBeenCalledWith(expect.objectContaining({ tags: { team: 'platform' } }));
+        });
+
+        it('fails when the connection does not exist', async () => {
+            vi.spyOn(connectionService, 'checkIfConnectionExists').mockResolvedValue(null);
+            const transactionSpy = vi.spyOn(db.knex, 'transaction');
+
+            const result = await createConnectSession({
+                account: accountFixture(),
+                environment: environmentFixture(),
+                plan: planFixture(),
+                endUser: null,
+                reconnect: { connectionId: 'conn-1', integrationId: 'github' }
+            });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.code).toBe('connection_not_found');
+            }
+            expect(transactionSpy).not.toHaveBeenCalled();
+        });
     });
 
     it('aborts the transaction when private-key creation fails', async () => {
@@ -232,6 +360,10 @@ function environmentFixture(): DBEnvironment {
 
 function planFixture(overrides: Partial<DBPlan> = {}): DBPlan {
     return { connections_max: null, can_override_docs_connect_url: true, ...overrides } as DBPlan;
+}
+
+function connectionFixture(connection: Partial<DBConnection>): DBConnection {
+    return { end_user_id: null, tags: {}, ...connection } as DBConnection;
 }
 
 function privateKeyFixture(expiresAt: Date): PrivateKey {

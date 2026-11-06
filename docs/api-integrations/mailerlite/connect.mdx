@@ -1,0 +1,38 @@
+---
+title: MailerLite - How do I link my account?
+sidebarTitle: MailerLite
+---
+
+## Overview
+
+To authenticate with MailerLite, you need:
+1. **API token** - A token generated from the Integrations page of your MailerLite dashboard.
+
+This guide will walk you through generating your **API token** within MailerLite.
+
+### Prerequisites
+
+- An active MailerLite account.
+
+### Instructions
+
+#### Step 1: Generate your MailerLite API token
+
+1. Log in to your [MailerLite](https://dashboard.mailerlite.com/) account.
+2. Go to **Integrations** and click **Use** next to **MailerLite API**.
+3. Click **Generate new token**, give the token a name, and click **Create token**.
+4. Copy the token.
+
+<Tip>MailerLite shows the token only once. If you lose it, generate a new one. If you restrict the token to an IP allowlist, requests from Nango will be rejected unless Nango's IPs are included.</Tip>
+
+#### Step 2: Enter your API token in the Connect UI
+
+Once you have your **API token**:
+
+1. Open the form where you need to authenticate with MailerLite.
+2. Enter your **API token** in the field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/mailerlite/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to MailerLite.

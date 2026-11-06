@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { Cursor, records as recordsService } from '@nangohq/records';
+import { Cursor, recordModelName, records as recordsService } from '@nangohq/records';
 import { connectionService } from '@nangohq/shared';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -80,7 +80,7 @@ export const getConnectionRecords = asyncWrapperWithEnvironment<GetConnectionRec
         return;
     }
 
-    const modelName = toRecordModelName(query.model, query.variant);
+    const modelName = recordModelName(query.model, query.variant);
     const connectionPkId = connection.value.connection.id;
 
     if (query.record_id) {
@@ -139,11 +139,3 @@ export const getConnectionRecords = asyncWrapperWithEnvironment<GetConnectionRec
         }
     });
 });
-
-function toRecordModelName(model: string, variant?: string | null) {
-    if (!variant || variant === 'base') {
-        return model;
-    }
-
-    return `${model}::${variant}`;
-}

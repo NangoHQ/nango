@@ -37,6 +37,7 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
     }
 
     const body: PostDeployInternal['Body'] = val.data;
+    const { scope } = val.data;
 
     const { account } = res.locals;
 
@@ -58,7 +59,7 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
             });
             return;
         }
-        environment = created.value;
+        environment = created.value.environment;
 
         // since we're making a new environment, we want to make sure the config creds and
         // connections are copied from the dev environment
@@ -77,8 +78,12 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
                         environmentId: devEnvironment.id,
                         configId: copiedFromId
                     });
-                    if (connections.length > 0) {
-                        await connectionService.copyConnections(connections, environment.id, copiedToId);
+                    if (connections.isErr()) {
+                        res.status(500).send({ error: { code: 'server_error', message: 'Failed to retrieve connections for deployment' } });
+                        return;
+                    }
+                    if (connections.value.length > 0) {
+                        await connectionService.copyConnections(connections.value, environment.id, copiedToId);
                     }
                 }
             }
@@ -99,7 +104,8 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
         logContextGetter,
         sdkVersion: body.sdkVersion,
         orchestrator,
-        source: 'catalog'
+        source: 'catalog',
+        scope
     });
 
     if (!success || !syncConfigDeployResult) {
@@ -114,7 +120,7 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
             flows: body.flowConfigs,
             performAction: body.reconcile,
             debug: body.debug,
-            deployMode: body.deployMode,
+            scope,
             logCtx,
             logContextGetter,
             orchestrator,

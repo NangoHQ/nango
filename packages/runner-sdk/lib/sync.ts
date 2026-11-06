@@ -1,12 +1,10 @@
-import { NangoActionBase } from './action.js';
+import { BASE_VARIANT, NangoActionBase } from './action.js';
 import { validateData } from './dataValidation.js';
 
 import type { ValidateDataError } from './dataValidation.js';
 import type { RawModel, ZodCheckpoint, ZodMetadata, ZodModel } from './types.js';
 import type { MaybePromise, NangoProps } from '@nangohq/types';
 import type * as z from 'zod';
-
-export const BASE_VARIANT = 'base';
 
 export abstract class NangoSyncBase<
     TModels extends Record<string, ZodModel> = never,

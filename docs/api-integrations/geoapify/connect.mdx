@@ -1,0 +1,51 @@
+---
+title: 'Geoapify - How do I link my account?'
+sidebarTitle: 'Geoapify'
+---
+
+## Overview
+
+To authenticate with Geoapify, you need:
+
+1. **API Key** — the API key of a Geoapify project.
+2. **Region** — the Geoapify API endpoint to use.
+
+This guide will show you how to get both.
+
+### Prerequisites
+
+- A Geoapify account. The Free plan needs no credit card. If you don't have an account, [sign up](https://myprojects.geoapify.com/).
+
+### Step 1: Create a project
+
+1. Sign in to [Geoapify MyProjects](https://myprojects.geoapify.com/).
+2. On the **Projects** page, click **Create project**, enter a project name and click **OK**.
+
+<img src="/api-integrations/geoapify/create_project.png" alt="Geoapify My Projects page with the Create project button"/>
+
+### Step 2: Copy your API key
+
+1. After you create the project, Geoapify opens its **API keys** page, where an API key has already been created.
+2. Click the **Copy API key** button next to the masked key.
+
+<img src="/api-integrations/geoapify/copy_api_key.png" alt="Geoapify project API keys page with the automatically created API key and its copy button"/>
+
+<Note>You can restrict a key to allowed IP addresses, HTTP referrers and origins by expanding it on the **API keys** page.</Note>
+
+### Step 3: Choose your region
+
+Geoapify accounts have no region setting: the same API key works on both endpoints. Pick the one your application should call:
+
+- `api.geoapify.com` — the default endpoint.
+- `api-eu.geoapify.com` — use it when your application requires Geoapify's EU-focused service-processing configuration.
+
+### Step 4: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Geoapify.
+2. Select your region in the **Region** field.
+3. Enter your API key in the **API Key** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/geoapify/form.png" alt="Geoapify Connect UI form with the Region and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Geoapify.

@@ -1,5 +1,7 @@
 import ms from 'ms';
 
+import { decode as decodeJwt } from '../../auth/jwt.js';
+
 import type { AllAuthCredentials, DBConnection, DBConnectionAsJSONRow } from '@nangohq/types';
 
 export const DEFAULT_EXPIRES_AT_MS = ms('1day');
@@ -33,4 +35,12 @@ export function getExpiresAtFromCredentials(credentials: AllAuthCredentials): Da
 
 export function isConnectionJsonRow(connection: DBConnection | DBConnectionAsJSONRow): connection is DBConnectionAsJSONRow {
     return typeof connection.created_at === 'string';
+}
+
+export function jwtExpiresAt(token: string, marginMs: number): Date | undefined {
+    const decoded = decodeJwt(token);
+    if (decoded && typeof decoded['exp'] === 'number') {
+        return new Date(decoded['exp'] * 1000 - marginMs);
+    }
+    return undefined;
 }

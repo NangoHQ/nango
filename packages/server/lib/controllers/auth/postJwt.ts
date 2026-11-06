@@ -198,6 +198,7 @@ export const postPublicJwtAuthorization = asyncWrapperWithEnvironment<PostPublic
             connection: updatedConnection.connection,
             config,
             account,
+            environment,
             logCtx
         });
 

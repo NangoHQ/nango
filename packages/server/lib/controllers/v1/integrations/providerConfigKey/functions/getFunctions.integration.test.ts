@@ -1,7 +1,9 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
-import { seeders } from '@nangohq/shared';
+import { getFlags } from '@nangohq/feature-flags';
+import { functionConfigService, seeders } from '@nangohq/shared';
+import { listCatalogTools } from '@nangohq/shared/lib/services/catalog/actions.js';
 
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
 
@@ -28,11 +30,42 @@ function toFunctionKey(fn: { type: string; name: string; event?: string }) {
     return `${fn.type}:${fn.name}:${fn.type === 'on-event' ? fn.event : ''}`;
 }
 
+function deployedOnly<T extends { source: string }>(fns: T[]): T[] {
+    return fns.filter((fn) => fn.source !== 'tools-catalog');
+}
+
+function githubCatalogToolsNotDeployed(deployedNames: Iterable<string> = []): number {
+    const deployed = new Set(deployedNames);
+    return listCatalogTools('github').filter((tool) => !deployed.has(tool.name)).length;
+}
+
+function expectedMergedGithubKeys({
+    occupiedActionNames,
+    onEventKeys,
+    syncKeys
+}: {
+    occupiedActionNames: string[];
+    onEventKeys: string[];
+    syncKeys: string[];
+}): string[] {
+    const occupied = new Set(occupiedActionNames);
+    const actionNames = [
+        ...listCatalogTools('github')
+            .filter((action) => !occupied.has(action.name))
+            .map((action) => action.name),
+        ...occupiedActionNames
+    ].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+    const actionKeys = actionNames.map((name) => `action:${name}:`);
+    return [...actionKeys, ...onEventKeys, ...syncKeys];
+}
+
 describe(`GET ${route}`, () => {
     beforeAll(async () => {
         api = await runServer();
+        vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
     });
     afterAll(() => {
+        vi.restoreAllMocks();
         api.server.close();
     });
 
@@ -70,23 +103,24 @@ describe(`GET ${route}`, () => {
         });
     });
 
-    it('should return empty list with pagination metadata when integration has no deployed functions', async () => {
+    it('should return only tools-catalog actions when integration has no deployed functions', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch(route, {
             method: 'GET',
-            query: { env: 'dev' },
+            query: { env: 'dev', limit: 100 },
             params: { providerConfigKey: 'github' },
             token: apiKey.secret
         });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            data: [],
-            pagination: { total: 0, page: 0, limit: 20 }
-        });
+        expect(deployedOnly(res.json.data)).toEqual([]);
+        expect(res.json.pagination.total).toBe(githubCatalogToolsNotDeployed());
+        expect(res.json.data).toHaveLength(githubCatalogToolsNotDeployed());
+        expect(res.json.data.some((fn) => fn.name === 'create-issue' && fn.source === 'tools-catalog')).toBe(true);
+        expect(res.json.data.every((fn) => fn.source === 'tools-catalog')).toBe(true);
     });
 
     it('should aggregate sync, action, and on-event functions', async () => {
@@ -115,15 +149,15 @@ describe(`GET ${route}`, () => {
 
         const res = await api.fetch(route, {
             method: 'GET',
-            query: { env: 'dev' },
+            query: { env: 'dev', limit: 100 },
             params: { providerConfigKey: 'github' },
             token: apiKey.secret
         });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json.pagination).toStrictEqual({ total: 3, page: 0, limit: 20 });
-        expect(res.json.data.map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
+        expect(res.json.pagination).toStrictEqual({ total: githubCatalogToolsNotDeployed(['my-action']) + 3, page: 0, limit: 100 });
+        expect(deployedOnly(res.json.data).map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
             { name: 'my-action', type: 'action' },
             { name: 'my-on-event', type: 'on-event' },
             { name: 'my-sync', type: 'sync' }
@@ -132,6 +166,71 @@ describe(`GET ${route}`, () => {
         const onEventEntry = res.json.data.find((f) => f.type === 'on-event');
         expect(onEventEntry?.type === 'on-event' && onEventEntry.event).toBe('post-connection-creation');
         expect(onEventEntry?.source).toBe('repo');
+
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'my-tool',
+            type: 'action'
+        });
+        const [tool] = (
+            await functionConfigService.upsert(db.knex, [
+                {
+                    environmentId: env.id,
+                    integrationId: 'github',
+                    name: 'my-tool',
+                    version: {
+                        description: 'Native HTTP tool',
+                        tags: {},
+                        file_location: 'github/functions/my-tool.js',
+                        version: 'test',
+                        source: 'repo',
+                        trigger: { kind: 'http' },
+                        requires: { connection: true, outbound: false, invoke: false },
+                        capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+                        limits: { concurrency: { perConnection: 'max' } },
+                        input_schema_ref: null,
+                        output_schema_ref: null,
+                        model_schema_refs: [],
+                        metadata_schema_ref: null,
+                        checkpoint_schema_ref: null,
+                        json_schema: {}
+                    }
+                }
+            ])
+        ).unwrap();
+        await db.knex('function_configs').where({ id: tool!.config.id }).update({ enabled: false });
+
+        const pages = [];
+        for (const page of [0, 1]) {
+            const response = await api.fetch(route, {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { providerConfigKey: 'github' },
+                query: { env: 'dev', type: 'tool', search: 'my-', limit: 1, page }
+            });
+            expect(response.res.status).toBe(200);
+            isSuccess(response.json);
+            expect(response.json.pagination).toEqual({ total: 2, page, limit: 1 });
+            pages.push(...response.json.data);
+        }
+        expect(pages.map(({ name, type }) => ({ name, type }))).toEqual([
+            { name: 'my-tool', type: 'tool' },
+            { name: 'my-action', type: 'action' }
+        ]);
+        expect(pages[0]).toMatchObject({ type: 'tool', enabled: false });
+
+        const actions = await api.fetch(route, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { providerConfigKey: 'github' },
+            query: { env: 'dev', type: 'action', search: 'my-', limit: 100 }
+        });
+        expect(actions.res.status).toBe(200);
+        isSuccess(actions.json);
+        expect(actions.json.pagination.total).toBe(1);
+        expect(actions.json.data.map(({ name, type }) => ({ name, type }))).toEqual([{ name: 'my-action', type: 'action' }]);
     });
 
     it('should filter by type=on-event', async () => {
@@ -293,6 +392,22 @@ describe(`GET ${route}`, () => {
             ]
         });
 
+        const expected = expectedMergedGithubKeys({
+            occupiedActionNames: ['action-a', 'action-b'],
+            onEventKeys: ['on-event:shared-script:post-connection-creation', 'on-event:shared-script:pre-connection-deletion'],
+            syncKeys: ['sync:sync-a:', 'sync:sync-b:']
+        });
+
+        const all = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev', page: 0, limit: 100 },
+            params: { providerConfigKey: 'github' },
+            token: apiKey.secret
+        });
+        isSuccess(all.json);
+        expect(all.json.pagination.total).toBe(expected.length);
+        expect(all.json.data.map(toFunctionKey)).toStrictEqual(expected);
+
         const page0 = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev', page: 0, limit: 3 },
@@ -300,7 +415,7 @@ describe(`GET ${route}`, () => {
             token: apiKey.secret
         });
         isSuccess(page0.json);
-        expect(page0.json.pagination).toStrictEqual({ total: 6, page: 0, limit: 3 });
+        expect(page0.json.pagination).toStrictEqual({ total: expected.length, page: 0, limit: 3 });
 
         const page1 = await api.fetch(route, {
             method: 'GET',
@@ -309,14 +424,22 @@ describe(`GET ${route}`, () => {
             token: apiKey.secret
         });
         isSuccess(page1.json);
-        expect(page1.json.pagination).toStrictEqual({ total: 6, page: 1, limit: 3 });
+        expect(page1.json.pagination).toStrictEqual({ total: expected.length, page: 1, limit: 3 });
 
         const page0Keys = page0.json.data.map(toFunctionKey);
         const page1Keys = page1.json.data.map(toFunctionKey);
 
-        expect(page0Keys).toStrictEqual(['action:action-a:', 'action:action-b:', 'on-event:shared-script:post-connection-creation']);
-        expect(page1Keys).toStrictEqual(['on-event:shared-script:pre-connection-deletion', 'sync:sync-a:', 'sync:sync-b:']);
+        expect(page0Keys).toStrictEqual(expected.slice(0, 3));
+        expect(page1Keys).toStrictEqual(expected.slice(3, 6));
         expect(page0Keys.some((key) => page1Keys.includes(key))).toBe(false);
+        expect(deployedOnly(all.json.data).map(toFunctionKey).sort()).toStrictEqual([
+            'action:action-a:',
+            'action:action-b:',
+            'on-event:shared-script:post-connection-creation',
+            'on-event:shared-script:pre-connection-deletion',
+            'sync:sync-a:',
+            'sync:sync-b:'
+        ]);
     });
 
     it('should return total even when page is out of range', async () => {
@@ -382,16 +505,23 @@ describe(`GET ${route}`, () => {
 
         const res = await api.fetch(route, {
             method: 'GET',
-            query: { env: 'dev', search: 'ISSUE' },
+            query: { env: 'dev', search: 'ISSUE', limit: 100 },
             params: { providerConfigKey: 'github' },
             token: apiKey.secret
         });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json.pagination.total).toBe(3);
-        const keys = res.json.data.map((f) => `${f.type}:${f.name}`).sort();
-        expect(keys).toStrictEqual(['action:create-issue', 'on-event:issue-listener', 'sync:fetch-issues']);
+        const occupied = new Set(['create-issue']);
+        const catalogIssueHits = listCatalogTools('github').filter(
+            (action) => !occupied.has(action.name) && action.name.toLowerCase().includes('issue')
+        ).length;
+        expect(res.json.pagination.total).toBe(catalogIssueHits + 3);
+        expect(
+            deployedOnly(res.json.data)
+                .map((f) => `${f.type}:${f.name}`)
+                .sort()
+        ).toStrictEqual(['action:create-issue', 'on-event:issue-listener', 'sync:fetch-issues']);
     });
 
     it('should match LIKE wildcards literally in search', async () => {

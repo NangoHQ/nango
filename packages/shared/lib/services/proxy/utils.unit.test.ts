@@ -911,6 +911,31 @@ describe('buildProxyHeaders', () => {
         expect(result['authorization']).toMatch(/^Basic [A-Za-z0-9+/=]+$/);
     });
 
+    it('signs the full request URL for the real fiix provider config', () => {
+        const provider = getProvider('fiix');
+        if (!provider) {
+            throw new Error('fiix provider is missing');
+        }
+
+        const config = getDefaultProxy({ method: 'POST', endpoint: '/api/', data: { _maCn: 'FindRequest' }, provider });
+        const connection = getTestConnection({
+            credentials: { type: 'BASIC', username: 'macmmsaakp-access', password: 'secret-key' },
+            connection_config: { subdomain: 'acme', appKey: 'macmmsackp-app' }
+        });
+
+        const url = buildProxyURL({ config, connection });
+        expect(url).toBe(
+            'https://acme.macmms.com/api/?service=cmms&appKey=macmmsackp-app&accessKey=macmmsaakp-access&signatureMethod=HmacSHA256&signatureVersion=1'
+        );
+
+        const result = buildProxyHeaders({ config, url, connection });
+
+        // Fiix signs the URL minus the protocol with HMAC-SHA256 and the secret key, hex encoded
+        const expected = crypto.createHmac('sha256', 'secret-key').update(url.replace('https://', ''), 'utf8').digest('hex');
+        expect(result['authorization']).toBe(expected);
+        expect(result['content-type']).toBe('text/plain');
+    });
+
     it('resolves ${bodyCanonicalParams} for the real streamline-ai provider config end-to-end through buildProxyHeaders', () => {
         const provider = getProvider('streamline-ai');
         if (!provider) {
@@ -1097,6 +1122,17 @@ describe('enforceProxyOutboundUrlPolicy', () => {
 });
 
 describe('buildProxyURL', () => {
+    it.each(['/${missing}||https://attacker.example/collect', '/v1/me?x=${missing}||https://attacker.example/collect'])(
+        'keeps the provider origin when the caller supplies a fallback destination: %s',
+        (endpoint) => {
+            const url = buildProxyURL({
+                config: getDefaultProxy({ provider: { proxy: { base_url: 'https://api.example.com/api' } }, endpoint }),
+                connection: getTestConnection()
+            });
+            expect(new URL(url).origin).toBe('https://api.example.com');
+        }
+    );
+
     it('uses AWS SigV4 per-connection base_url when no explicit override is set', () => {
         const config = getDefaultProxy({
             provider: {
@@ -1457,6 +1493,30 @@ describe('buildProxyURL', () => {
         expect(url).toBe('https://amplitude.com/api/test');
     });
 
+    it.each([
+        ['send', 'https://send.api.mailtrap.io/api/test'],
+        ['sandbox', 'https://sandbox.api.mailtrap.io/api/test']
+    ])('should build the base URL from the selected subdomain %s (e.g. mailtrap)', (subdomain, expected) => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://${connectionConfig.subdomain}.api.mailtrap.io'
+                }
+            }
+        });
+
+        const url = buildProxyURL({
+            config,
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'test-key' },
+                connection_config: { subdomain }
+            })
+        });
+
+        expect(url).toBe(expected);
+    });
+
     it('should fall back to second base URL when first connectionConfig param is absent (e.g. amazon-selling-partner without subdomain)', () => {
         const url = buildProxyURL({
             config: getDefaultProxy({
@@ -1787,6 +1847,25 @@ describe('buildProxyURL', () => {
 });
 
 describe('getAxiosConfiguration', () => {
+    it.each(['PROPFIND', 'REPORT'] as const)('forwards the request body for WebDAV/CalDAV method %s (e.g. Apple Calendar)', (method) => {
+        const config = getDefaultProxy({
+            method,
+            data: '<propfind xmlns="DAV:"><prop><current-user-principal/></prop></propfind>',
+            provider: {
+                auth_mode: 'BASIC',
+                proxy: { base_url: 'https://caldav.icloud.com' }
+            }
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'BASIC', username: 'user@icloud.com', password: 'app-specific-pw' } })
+        });
+
+        expect(axiosConfig.method).toBe(method);
+        expect(axiosConfig.data).toBe('<propfind xmlns="DAV:"><prop><current-user-principal/></prop></propfind>');
+    });
+
     it('should set beforeRedirect by default (headers are forwarded on redirect by default)', () => {
         const config = getDefaultProxy({
             provider: {

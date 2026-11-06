@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { configService, customerKeyService, environmentService, userService } from '@nangohq/shared';
+import { configService, customerKeyService, environmentService, functionConfigService, userService } from '@nangohq/shared';
 
 import { toAuditId as toId } from '../../audit.js';
 import { auditEnrichmentFailed, resolveDisplay } from './auditable.js';
@@ -48,6 +48,19 @@ export function integrationTarget(value: unknown, locals: Partial<RequestLocals>
         }
         const summary = await configService.getIntegrationSummary(locals.environment.id, id);
         return summary?.display_name ?? undefined;
+    });
+}
+
+export function functionTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
+    return dbTarget('function', nonEmptyString(value)?.toLowerCase(), async (id) => {
+        if (!locals.environment || !uuid(id)) {
+            return undefined;
+        }
+        const result = await functionConfigService.search(db.knex, { environmentId: locals.environment.id, filter: { uuid: id } });
+        if (result.isErr()) {
+            throw result.error;
+        }
+        return result.value[0]?.config.name;
     });
 }
 

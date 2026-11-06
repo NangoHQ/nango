@@ -46,12 +46,13 @@ describe('Exec', () => {
             scriptType: 'function' as const,
             syncId: undefined,
             syncJobId: undefined,
+            variant: 'canary',
             syncConfig: { sync_name: 'my-function' } as DBSyncConfig
         };
         const code = `
         exports.default = {
             type: 'function',
-            exec: async (_nango, trigger) => ({ kind: trigger.kind, value: trigger.input.value })
+            exec: async (nango, trigger) => ({ kind: trigger.kind, value: trigger.input.value, variant: nango.getVariant() })
         }
         `;
         const trigger = {
@@ -62,7 +63,54 @@ describe('Exec', () => {
 
         const res = await exec({ nangoProps, code, codeParams: trigger });
 
-        expect(res.unwrap().output).toEqual({ kind: 'invoke', value: 42 });
+        expect(res.unwrap().output).toEqual({ kind: 'invoke', value: 42, variant: 'canary' });
+    });
+
+    it('executes a function that uses botbuilder', async () => {
+        const nangoProps = {
+            ...getNangoProps(),
+            scriptType: 'function' as const,
+            syncId: undefined,
+            syncJobId: undefined,
+            syncConfig: { sync_name: 'teams-function' } as DBSyncConfig
+        };
+        // TeamsActivityHandler parses this payload with Zod 3 `.nonstrict()`. An extra key must not throw.
+        const code = `
+        exports.default = {
+            type: 'function',
+            exec: async () => {
+                const { TeamsActivityHandler, TurnContext } = require('botbuilder').default;
+                let meeting = null;
+                const bot = new TeamsActivityHandler();
+                bot.onTeamsMeetingStartEvent(async (parsed) => {
+                    meeting = { id: parsed.id, title: parsed.title, startTime: parsed.startTime.toISOString() };
+                });
+                const activity = {
+                    type: 'event',
+                    channelId: 'msteams',
+                    name: 'application/vnd.microsoft.meetingStart',
+                    value: {
+                        Id: 'meet-1',
+                        JoinUrl: 'https://teams.example/join',
+                        MeetingType: 'scheduled',
+                        Title: 'Standup',
+                        StartTime: '2026-10-27T09:00:00.000Z',
+                        Unexpected: 'extra'
+                    }
+                };
+                await bot.run(new TurnContext({}, activity));
+                return meeting;
+            }
+        }
+        `;
+
+        const res = await exec({ nangoProps, code });
+
+        expect(res.unwrap().output).toEqual({
+            id: 'meet-1',
+            title: 'Standup',
+            startTime: '2026-10-27T09:00:00.000Z'
+        });
     });
 
     it('execute code', async () => {
@@ -125,6 +173,33 @@ describe('Exec', () => {
         expect(res.error.toJSON()).toMatchObject({
             status: 500,
             type: 'script_internal_error'
+        });
+    });
+
+    it('returns a formatted error when a function throws nango.Error', async () => {
+        const nangoProps = {
+            ...getNangoProps(),
+            scriptType: 'function' as const,
+            syncId: undefined,
+            syncJobId: undefined
+        };
+        const code = `
+        exports.default = {
+            type: 'function',
+            exec: async (nango) => {
+                throw new nango.Error({ code: 'invalid_input', message: 'A value is missing' });
+            }
+        };
+        `;
+        const res = await exec({ nangoProps, code });
+        if (res.isOk()) {
+            throw new Error('Expected an error');
+        }
+        expect(res.error.toJSON()).toEqual({
+            payload: { code: 'invalid_input', message: 'A value is missing' },
+            status: 500,
+            type: 'function_runtime_error',
+            additional_properties: undefined
         });
     });
 

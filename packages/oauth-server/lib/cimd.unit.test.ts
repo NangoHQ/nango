@@ -58,8 +58,10 @@ describe('CIMD validation', () => {
         const client = (overrides: Record<string, unknown> = {}) => ({ ...metadata, ...overrides }) as unknown as Client;
 
         expect(allowPublicCimdClient(client(), new Set(['environment:*']))).toBe(true);
+        expect(allowPublicCimdClient(client({ jwksUri: 'https://client.example.com/oauth/jwks.json' }), new Set(['environment:*']))).toBe(true);
         expect(allowPublicCimdClient(client({ responseModes: ['fragment'] }), new Set(['environment:*']))).toBe(false);
         expect(allowPublicCimdClient(client({ tokenEndpointAuthMethod: 'client_secret_basic' }), new Set(['environment:*']))).toBe(false);
         expect(allowPublicCimdClient(client({ scope: 'openid' }), new Set(['environment:*']))).toBe(false);
+        expect(allowPublicCimdClient(client({ sectorIdentifierUri: 'https://client.example.com/oauth/sector.json' }), new Set(['environment:*']))).toBe(false);
     });
 });

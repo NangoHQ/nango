@@ -85,6 +85,10 @@ export interface NangoForwardWebhookBody extends NangoWebhookBase {
     connectionId?: string;
     providerConfigKey: string;
     payload: unknown;
+    /**
+     * Only present when Nango could not verify the webhook came from the provider
+     */
+    unverified?: true;
 }
 
 // -----

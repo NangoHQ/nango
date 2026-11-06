@@ -2,8 +2,9 @@ import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { Tags } from '../db.js';
 import type { AgentSessionUnknownPinnedConnectionsPayload } from './connections.js';
-import type { AgentSessionEndedReason } from './session.js';
+import type { AgentSessionCreateConnectionConfig, AgentSessionEndedReason } from './session.js';
 import type {
+    AgentSessionMcpServerStatus,
     AgentSessionToolsNotInToolsetPayload,
     AgentSessionUnknownIntegrationsPayload,
     AgentSessionUnknownToolsPayload,
@@ -21,6 +22,15 @@ export type AgentSessionIntegrationPolicyInput =
           deny?: AgentSessionToolListInput | undefined;
       };
 
+export type AgentSessionMetaToolInput = boolean | { enabled: boolean; tags?: Tags | undefined };
+
+export interface AgentSessionMetaToolsInput {
+    nango_tool_search?: boolean | { enabled: boolean } | undefined;
+    nango_execute?: boolean | { enabled: boolean } | undefined;
+    nango_proxy?: boolean | { enabled: boolean } | undefined;
+    nango_create_connection?: boolean | { enabled: boolean; tags?: Tags | undefined } | undefined;
+}
+
 export interface PostAgentSessionsBody {
     tenant: {
         connections: {
@@ -30,7 +40,7 @@ export interface PostAgentSessionsBody {
     };
     toolset?: '*' | Record<string, AgentSessionIntegrationPolicyInput> | undefined;
     pinned_tools?: Record<string, string[]> | undefined;
-    meta_tools?: Record<string, boolean> | undefined;
+    meta_tools?: AgentSessionMetaToolsInput | undefined;
     expires_in?: string | undefined;
 }
 
@@ -38,12 +48,14 @@ export interface AgentSessionToolsetSummary {
     connected: boolean;
     tools_pinned: number;
     tools_searchable: number;
+    mcp_server?: AgentSessionMcpServerStatus;
 }
 
 export interface AgentSessionMetaToolsSummary {
     nango_tool_search: boolean;
     nango_execute: boolean;
     nango_proxy: boolean;
+    nango_create_connection: AgentSessionCreateConnectionConfig;
 }
 
 export interface AgentSessionUnknownMetaToolsPayload {
@@ -103,6 +115,15 @@ export type AgentSessionCreationErrorPayload =
 
 export type PostAgentSessionsCreationError = ApiError<AgentSessionCreationErrorCode, undefined, AgentSessionCreationErrorPayload>;
 
+export interface ApiCreatedAgentSession {
+    session_id: string;
+    session_token: string;
+    mcp_url: string;
+    expires_at: string;
+    toolset: Record<string, AgentSessionToolsetSummary>;
+    meta_tools: AgentSessionMetaToolsSummary;
+}
+
 export type PostAgentSessions = ApiEndpoint<{
     Audit: AuditPolicy<'agent_session', 'created', 'environment'>;
     Method: 'POST';
@@ -110,14 +131,7 @@ export type PostAgentSessions = ApiEndpoint<{
     Body: PostAgentSessionsBody;
     Error: PostAgentSessionsCreationError;
     Success: {
-        data: {
-            session_id: string;
-            session_token: string;
-            mcp_url: string;
-            expires_at: string;
-            toolset: Record<string, AgentSessionToolsetSummary>;
-            meta_tools: AgentSessionMetaToolsSummary;
-        };
+        data: ApiCreatedAgentSession;
     };
 }>;
 

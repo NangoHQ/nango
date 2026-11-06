@@ -38,10 +38,9 @@ import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 import { ENTERPRISE_PLAN_DESCRIPTION, GROWTH_ADDON_COPY, GROWTH_ADDON_PRICE, PLAN_CARD_LIMITS, S26_PLAN_CARDS } from './planCardCopy.js';
 
 import type { PlanTransition } from '../planTransition.js';
-import type { GrowthAddonState } from '../planVisibility.js';
 import type { PlanDefinitionList } from '../types.js';
 import type { S26PlanCard } from './planCardCopy.js';
-import type { PlanDefinition, StripePaymentMethod } from '@nangohq/types';
+import type { GrowthAddonState, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
 export const Plans: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -150,7 +149,7 @@ const PlanCard: React.FC<{
     const [planChangeDialogOpen, setPlanChangeDialogOpen] = useState(false);
 
     const onUpgradeClicked = useCallback(() => {
-        track('web:usage:upgrade_clicked', {});
+        track('billing:upgrade_button_click', {});
         if (!paymentMethod) {
             setPaymentMethodDialogOpen(true);
         } else {
@@ -349,7 +348,7 @@ const PlanChangeDialog: React.FC<{
     children?: React.ReactNode;
 }> = ({ activePlan, selectedPlan, newPricing, open: openProp, onOpenChange, children }) => {
     const env = useStore((state) => state.env);
-    const { submit, reset, loading, longWait, error } = usePlanChangeRequest(env);
+    const { submit, reset, loading, error } = usePlanChangeRequest(env);
 
     const offersAddon = Boolean(newPricing && selectedPlan.isUpgrade && selectedPlan.plan.code === 'pay-as-you-go');
     const [withAddon, setWithAddon] = useState(false);
@@ -378,13 +377,11 @@ const PlanChangeDialog: React.FC<{
             ? await submit({
                   orbId: code,
                   withGrowthFeatures: wantsAddon,
-                  settled: (plan) => plan.name === code && plan.has_growth_features === wantsAddon,
                   successTitle: `Upgraded successfully to ${selectedPlan.plan.title}`
               })
             : await submit({
                   orbId: code,
                   withGrowthFeatures: false,
-                  settled: (plan) => plan.orb_future_plan === code,
                   successTitle: `Downgraded successfully to ${selectedPlan.plan.title}`
               });
 
@@ -428,9 +425,6 @@ const PlanChangeDialog: React.FC<{
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-1 text-text-secondary text-sm">
                             <p>{description}</p>
-                            {longWait && (
-                                <p className="text-s text-text-muted text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>
-                            )}
                         </div>
                         {offersAddon && (
                             <>
@@ -498,7 +492,6 @@ const GrowthAddonDialog: React.FC<{
                 ? await submit({
                       orbId: planCode,
                       withGrowthFeatures: true,
-                      settled: (plan) => plan.has_growth_features,
                       successTitle: `${GROWTH_ADDON_COPY.title} added`
                   })
                 : await submit({

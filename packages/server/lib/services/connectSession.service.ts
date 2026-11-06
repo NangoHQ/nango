@@ -2,13 +2,16 @@ import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import { buildTagsFromEndUser, configService, ConnectionCreationCappedError, connectionService, connectionTagsSchema } from '@nangohq/shared';
-import { buildConnectUiSessionLink, Err, Ok } from '@nangohq/utils';
+import { buildConnectUiSessionLink, Err, flagHasPlan, Ok } from '@nangohq/utils';
+
+import { validateConnectionConfigDefaults } from './connectionConfigDefaults.js';
 
 import type { Knex } from '@nangohq/database';
 import type {
     ConnectSession,
     ConnectSessionIntegrationConfigDefaults,
     ConnectSessionOverrides,
+    DBConnection,
     DBEnvironment,
     DBPlan,
     DBTeam,
@@ -17,6 +20,7 @@ import type {
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { SetOptional } from 'type-fest';
+import type * as z from 'zod';
 
 const CONNECT_SESSIONS_TABLE = 'connect_sessions';
 const CONNECT_SESSION_TTL_MS = 30 * 60 * 1000;
@@ -94,7 +98,7 @@ export interface ConnectSessionAndEndUser {
 }
 
 export async function insertConnectSession(
-    db: Knex,
+    trx: Knex,
     {
         endUserId,
         accountId,
@@ -152,7 +156,7 @@ export async function insertConnectSession(
         tags: normalizedTags
     };
 
-    const [session] = await db.insert<DBConnectSession>(dbSession).into(CONNECT_SESSIONS_TABLE).returning('*');
+    const [session] = await trx.insert<DBConnectSession>(dbSession).into(CONNECT_SESSIONS_TABLE).returning('*');
     if (!session) {
         return Err(
             new ConnectSessionError({
@@ -166,11 +170,23 @@ export async function insertConnectSession(
 }
 
 export type CreateConnectSessionErrorCode =
+    | 'connection_not_found'
     | 'resource_capped'
     | 'integration_not_found'
+    | 'invalid_connection_config'
     | 'docs_connect_override_forbidden'
     | 'session_creation_failed'
     | 'token_creation_failed';
+
+const RETRYABLE_CREATE_CONNECT_SESSION_ERRORS: Record<CreateConnectSessionErrorCode, boolean> = {
+    connection_not_found: false,
+    resource_capped: false,
+    integration_not_found: false,
+    invalid_connection_config: false,
+    docs_connect_override_forbidden: false,
+    session_creation_failed: true,
+    token_creation_failed: true
+};
 
 export type ConnectSessionIntegrationSource = 'allowedIntegrations' | 'integrationsConfigDefaults' | 'overrides';
 
@@ -182,23 +198,29 @@ export interface MissingConnectSessionIntegration {
 
 export class CreateConnectSessionError extends Error {
     public readonly code: CreateConnectSessionErrorCode;
+    public readonly retryable: boolean;
     public readonly missingIntegrations?: MissingConnectSessionIntegration[] | undefined;
+    public readonly issues?: z.core.$ZodIssue[] | undefined;
 
     constructor({
         code,
         message,
         cause,
-        missingIntegrations
+        missingIntegrations,
+        issues
     }: {
         code: CreateConnectSessionErrorCode;
         message: string;
         cause?: unknown;
         missingIntegrations?: MissingConnectSessionIntegration[] | undefined;
+        issues?: z.core.$ZodIssue[] | undefined;
     }) {
         super(message, { cause });
         this.name = 'CreateConnectSessionError';
         this.code = code;
+        this.retryable = RETRYABLE_CREATE_CONNECT_SESSION_ERRORS[code];
         this.missingIntegrations = missingIntegrations;
+        this.issues = issues;
     }
 }
 
@@ -213,6 +235,11 @@ export interface CreateConnectSessionParams {
     integrationsConfigDefaults?: Record<string, ConnectSessionIntegrationConfigDefaults> | undefined;
     overrides?: Record<string, ConnectSessionOverrides> | undefined;
     webhookUrlOverride?: string | undefined;
+    /**
+     * Reauthorises this existing connection instead of creating a new one. The session only allows
+     * its integration, and keeps the connection's tags when it is given none.
+     */
+    reconnect?: { connectionId: string; integrationId: string } | undefined;
 }
 
 export interface CreatedConnectSession {
@@ -229,24 +256,32 @@ class ConnectSessionTransactionError extends Error {
 
 export async function createConnectSession(params: CreateConnectSessionParams): Promise<Result<CreatedConnectSession, CreateConnectSessionError>> {
     try {
-        if (params.plan && !params.isPreview) {
+        let connection: DBConnection | null = null;
+        if (params.reconnect) {
+            connection = await connectionService.checkIfConnectionExists(db.knex, {
+                connectionId: params.reconnect.connectionId,
+                providerConfigKey: params.reconnect.integrationId,
+                environmentId: params.environment.id
+            });
+            if (!connection) {
+                return Err(new CreateConnectSessionError({ code: 'connection_not_found', message: 'ConnectionID or IntegrationId does not exists' }));
+            }
+        } else if (params.plan && !params.isPreview) {
             await connectionService.enforceCreationCap(params.environment.id);
         }
 
-        // Enforce that integrations in `integrationsConfigDefaults` and `overrides` exist
-        const missingIntegrations = await findMissingIntegrations(params);
-        if (missingIntegrations.length > 0) {
-            return Err(
-                new CreateConnectSessionError({
-                    code: 'integration_not_found',
-                    message: 'One or more integrations do not exist',
-                    missingIntegrations
-                })
-            );
+        const allowedIntegrations = params.reconnect ? [params.reconnect.integrationId] : params.allowedIntegrations;
+
+        // Enforce that integrations in `integrationsConfigDefaults` and `overrides` exist, and that the
+        // connection config they preset is valid for the provider
+        const integrationsError = await validateIntegrationReferences({ ...params, allowedIntegrations });
+        if (integrationsError) {
+            return Err(integrationsError);
         }
 
+        const canOverrideDocsConnectUrl = !flagHasPlan || Boolean(params.plan?.can_override_docs_connect_url);
         const isOverridingDocsConnectUrl = Object.values(params.overrides || {}).some((value) => value.docs_connect);
-        if (isOverridingDocsConnectUrl && !params.plan?.can_override_docs_connect_url) {
+        if (isOverridingDocsConnectUrl && !canOverrideDocsConnectUrl) {
             return Err(
                 new CreateConnectSessionError({
                     code: 'docs_connect_override_forbidden',
@@ -256,7 +291,11 @@ export async function createConnectSession(params: CreateConnectSessionParams): 
         }
 
         const generatedTags = buildTagsFromInternalEndUser(params.endUser);
-        const tags = { ...generatedTags, ...params.tags };
+        let tags: Tags = { ...generatedTags, ...params.tags };
+        if (connection && Object.keys(tags).length === 0) {
+            // Authorising writes the session's tags onto the connection, so none would clear them.
+            tags = connection.tags;
+        }
         const logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
@@ -269,10 +308,11 @@ export async function createConnectSession(params: CreateConnectSessionParams): 
         return await db.knex.transaction(async (trx) => {
             // create connect session
             const session = await insertConnectSession(trx, {
-                endUserId: null,
+                endUserId: connection?.end_user_id ?? null,
                 accountId: params.account.id,
                 environmentId: params.environment.id,
-                allowedIntegrations: params.allowedIntegrations?.length ? params.allowedIntegrations : null,
+                connectionId: connection?.id ?? null,
+                allowedIntegrations: allowedIntegrations?.length ? allowedIntegrations : null,
                 integrationsConfigDefaults: params.integrationsConfigDefaults || null,
                 operationId: logCtx.id,
                 overrides: params.overrides || null,
@@ -329,7 +369,7 @@ export async function createConnectSession(params: CreateConnectSessionParams): 
     }
 }
 
-async function findMissingIntegrations(params: CreateConnectSessionParams): Promise<MissingConnectSessionIntegration[]> {
+async function validateIntegrationReferences(params: CreateConnectSessionParams): Promise<CreateConnectSessionError | null> {
     const references: MissingConnectSessionIntegration[] = [
         ...(params.allowedIntegrations || []).map((integrationId, index) => ({
             integrationId,
@@ -343,12 +383,33 @@ async function findMissingIntegrations(params: CreateConnectSessionParams): Prom
         ...Object.keys(params.overrides || {}).map((integrationId) => ({ integrationId, source: 'overrides' as const }))
     ];
     if (references.length === 0) {
-        return [];
+        return null;
     }
 
     const integrations = await configService.listProviderConfigs(db.knex, params.environment.id);
     const integrationIds = new Set(integrations.map((integration) => integration.unique_key));
-    return references.filter(({ integrationId }) => !integrationIds.has(integrationId));
+    const missingIntegrations = references.filter(({ integrationId }) => !integrationIds.has(integrationId));
+    if (missingIntegrations.length > 0) {
+        return new CreateConnectSessionError({
+            code: 'integration_not_found',
+            message: 'One or more integrations do not exist',
+            missingIntegrations
+        });
+    }
+
+    const issues = validateConnectionConfigDefaults(
+        Object.fromEntries(Object.entries(params.integrationsConfigDefaults || {}).map(([integrationId, value]) => [integrationId, value.connectionConfig])),
+        integrations
+    );
+    if (issues.length > 0) {
+        return new CreateConnectSessionError({
+            code: 'invalid_connection_config',
+            message: issues.map(({ message }) => message).join(', '),
+            issues
+        });
+    }
+
+    return null;
 }
 
 function buildTagsFromInternalEndUser(endUser: InternalEndUser | null): Tags {
@@ -371,7 +432,7 @@ function buildTagsFromInternalEndUser(endUser: InternalEndUser | null): Tags {
 }
 
 export async function getConnectSession(
-    db: Knex,
+    trx: Knex,
     {
         id,
         accountId,
@@ -382,9 +443,9 @@ export async function getConnectSession(
         environmentId: number;
     }
 ): Promise<Result<ConnectSessionAndEndUser, ConnectSessionError>> {
-    const session = await db
+    const session = await trx
         .from<DBConnectSession>(CONNECT_SESSIONS_TABLE)
-        .select<{ connect_session: DBConnectSession }>(db.raw(`row_to_json(${CONNECT_SESSIONS_TABLE}.*) as connect_session`))
+        .select<{ connect_session: DBConnectSession }>(trx.raw(`row_to_json(${CONNECT_SESSIONS_TABLE}.*) as connect_session`))
         .where({
             id,
             account_id: accountId,
@@ -397,8 +458,8 @@ export async function getConnectSession(
     return Ok({ connectSession: ConnectSessionMapper.from(session.connect_session) });
 }
 
-export async function getConnectSessionByToken(db: Knex, token: string): Promise<Result<ConnectSessionAndEndUser, ConnectSessionError>> {
-    const getSession = await keystore.getPrivateKey(db, token);
+export async function getConnectSessionByToken(trx: Knex, token: string): Promise<Result<ConnectSessionAndEndUser, ConnectSessionError>> {
+    const getSession = await keystore.getPrivateKey(trx, token);
     if (getSession.isErr()) {
         return Err(new ConnectSessionError({ code: 'not_found', message: `Token not found`, payload: { token: `${token.substring(0, 32)}...` } }));
     }
@@ -408,7 +469,7 @@ export async function getConnectSessionByToken(db: Knex, token: string): Promise
         return Err(new ConnectSessionError({ code: 'not_found', message: `Token not found`, payload: { token: `${token.substring(0, 32)}...` } }));
     }
 
-    const session = await getConnectSession(db, { id: privateKey.entityId, accountId: privateKey.accountId, environmentId: privateKey.environmentId });
+    const session = await getConnectSession(trx, { id: privateKey.entityId, accountId: privateKey.accountId, environmentId: privateKey.environmentId });
     if (session.isErr()) {
         return Err(session.error);
     }
@@ -416,7 +477,7 @@ export async function getConnectSessionByToken(db: Knex, token: string): Promise
 }
 
 export async function deleteConnectSession(
-    db: Knex,
+    trx: Knex,
     {
         id,
         accountId,
@@ -427,18 +488,18 @@ export async function deleteConnectSession(
         environmentId: number;
     }
 ): Promise<Result<void, ConnectSessionError>> {
-    const deleted = await db<DBConnectSession>(CONNECT_SESSIONS_TABLE).where({ id, account_id: accountId, environment_id: environmentId }).delete();
+    const deleted = await trx<DBConnectSession>(CONNECT_SESSIONS_TABLE).where({ id, account_id: accountId, environment_id: environmentId }).delete();
     if (!deleted) {
         return Err(new ConnectSessionError({ code: 'not_found', message: `Connect session '${id}' not found`, payload: { id, accountId, environmentId } }));
     }
     return Ok(undefined);
 }
 
-export async function deleteExpiredConnectSession(db: Knex, { limit, olderThan }: { limit: number; olderThan: number }): Promise<number> {
+export async function deleteExpiredConnectSession(trx: Knex, { limit, olderThan }: { limit: number; olderThan: number }): Promise<number> {
     const dateThreshold = new Date();
     dateThreshold.setDate(dateThreshold.getDate() - olderThan);
 
-    return await db
+    return await trx
         .from<DBConnectSession>(CONNECT_SESSIONS_TABLE)
         .whereIn('id', function (sub) {
             sub.select('id').from<DBConnectSession>(CONNECT_SESSIONS_TABLE).where('created_at', '<=', dateThreshold.toISOString()).limit(limit);

@@ -7,7 +7,7 @@ Clone the repository and install dependencies:
 ```sh
 git clone https://github.com/NangoHQ/nango.git
 cd nango
-npm install
+npm ci
 npm run prepare
 ```
 

@@ -14,6 +14,8 @@ Each session has three parts:
 
 Your backend creates the session and exposes it to the agent as an MCP server. The agent never sees raw credentials, and cannot change the scope of its own session.
 
+The available toolset can include Nango catalog actions, action functions you manage yourself, and the tools of [MCP servers](#mcp-server-tools) your tenant has connected. Catalog actions are available out of the box and update automatically.
+
 Example sessions:
 - A sales agent with a user's personal Gmail & Google Calendar, and a read-only org-wide Salesforce connection
 - A finance agent with a few read-only tools on an org's accounting system, and read & write access to a team's Slack
@@ -357,11 +359,9 @@ You can only use one pin per integration. A pin must be one of the connections t
 
 You can also use `pinned` without any `any` selectors, if you already know the exact connections you want to use.
 
-An integration that matches no connection does not fail creation. It appears in the toolset as `connected: false`, and its tool calls fail with a missing authorization error.
+An integration that matches no connection does not fail session creation. It appears in the toolset as `connected: false`, and its tool calls fail with an error saying it is not connected.
 
-<Note>
-Currently there is no way for the agent to ask the user to connect an unconnected integration. Let us know if you need this and we are happy to prioritize it.
-</Note>
+What that error tells the agent to do next depends on whether [`nango_create_connection`](#nango_create_connection) is enabled. With it off, the agent is told it cannot fix this itself, to pass it to the user and carry on with the tools it has. With it on, the error names the tool so the agent can fetch a connect link and hand that over instead.
 
 ## Toolsets & tools
 
@@ -379,14 +379,18 @@ The toolset is a subset of the Integrations that are enabled in your Nango envir
 ```
 
 You can use the following selectors:
-- `"*"` on an integration means every action function on it
+- `"*"` on an integration means every action function on it, and every tool of its MCP server
 - `allow` makes the integration an allowlist, where `"*"` means every tool
 - `deny` always subtracts from whatever `allow` gave
 - To deny an integration entirely, leave it out of the toolset
 - `toolset: "*"` at the top level means every integration in the environment
 - Leaving `toolset` out entirely means every integration the tenant resolved a connection for, which is narrower than `"*"`
 
-Only action functions can be tools. Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
+<Warning>
+`allow` and `deny` limit which tools the agent can call, not which API endpoints it can reach. With [`nango_proxy`](#nango_proxy) on, the agent can call any endpoint of a connected integration in the toolset, including ones your deny list was meant to keep out. For an MCP server, that includes sending `tools/call` to the server directly, for any of its tools.
+</Warning>
+
+Only action functions and [MCP server tools](#mcp-server-tools) can be tools. Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
 
 ### Pinned tools
 
@@ -403,17 +407,67 @@ By default, everything in the toolset is searchable with the `nango_tool_search`
 
 A pinned tool must be in the toolset, otherwise creation fails with `tool_not_in_toolset`.
 
+### MCP server tools
+
+Integrations for MCP servers, such as [Notion (MCP)](/api-integrations/notion-mcp) or [Linear (MCP)](/api-integrations/linear-mcp), bring the server's own tools into the session. There is nothing to deploy and nothing to turn on. Include the integration in the toolset like any other and give the tenant a connection to it.
+
+When the session is created, Nango lists the tools of each connected MCP server in the toolset and adds them alongside its actions. From then on they work like any other tool:
+
+- `nango_tool_search` finds them, with the input schema the server gave
+- Pinned, they are listed with that input schema and the server's annotations
+- Calling one by its listed name or through `nango_execute` runs it on the server, on the session's connection, and returns the server's result as is
+
+```json
+{
+  "toolset": {
+    "notion-mcp": { "allow": { "tools": ["notion-search", "notion-fetch"] } },
+    "linear-mcp": { "deny": { "tools": ["delete_comment"] } }
+  },
+  "pinned_tools": { "notion-mcp": ["notion-search"] }
+}
+```
+
+`allow`, `deny` and `pinned_tools` name a tool exactly as the server lists it. In the session, the tool gets a name like an action's, such as `notion-mcp__notion-search`. Agents call it by the name the tool list or `nango_tool_search` gives.
+
+The list is taken once, at creation. Tools the server adds or removes afterwards don't change the session, so create a new one to pick them up.
+
+#### When a server can't be listed
+
+A server that fails or does not answer `tools/list` within 10 seconds does not fail session creation. The session is created without that server's tools, and the toolset summary says so with `mcp_server`:
+
+```json
+{
+  "toolset": {
+    "notion-mcp": { "connected": true, "tools_pinned": 0, "tools_searchable": 0, "mcp_server": "unavailable" },
+    "linear-mcp": { "connected": true, "tools_pinned": 1, "tools_searchable": 23, "mcp_server": "available" }
+  }
+}
+```
+
+`mcp_server` is only present for integrations with a connected MCP server.
+
+#### Running MCP server tools
+
+Every call goes through the [Nango proxy](/guides/platform/proxy-requests), so Nango applies and refreshes the connection's credentials, and the call shows up in Nango logs as a proxy operation.
+
+A result the server marks with `isError` reaches the agent unchanged. When the call itself fails, the agent gets an error that says what to do next:
+
+- **Timeout:** a tool has 60 seconds to answer. The agent is told it may still have run, so it checks before calling again.
+- **Too large:** results are capped at 5 MB. The agent is told to narrow its input.
+- **Refused:** a `403` on one tool, for example a missing OAuth scope, fails that tool only. A `401`, or a `403` before any tool runs, means the connection needs reconnecting, see [reconnecting a connection](#reconnecting-a-connection).
+
 ## Meta tools
 
 Meta tools are Nango's own tools. They are always pinned to the MCP server's tool list.
 
 | Tool | What it does |
 | --- | --- |
-| `nango_tool_search` | Finds tools in the session's toolset from a plain-language description |
+| `nango_tool_search` | Finds tools in the session's toolset from a few keywords and the task's goal |
 | `nango_execute` | Runs one of the session's tools by name |
-| `nango_proxy` | Makes an authenticated request to a provider API, for when no tool fits |
+| `nango_proxy` | Makes an authenticated request to a provider API, for when no tool fits. Bypasses `allow` and `deny`, [see the warning](#toolsets-%26-tools) |
+| `nango_create_connection` | Returns a connect link for one of the session's integrations that has no connection, or a reconnect link for one that has |
 
-`nango_tool_search` and `nango_execute` default to `true`, `nango_proxy` to `false`. Set them on session creation with `meta_tools`:
+`nango_tool_search` and `nango_execute` default to `true`, `nango_proxy` and `nango_create_connection` to `false`. Set them on session creation with `meta_tools`:
 
 ```json
 { "meta_tools": { "nango_execute": false, "nango_proxy": true } }
@@ -421,10 +475,10 @@ Meta tools are Nango's own tools. They are always pinned to the MCP server's too
 
 ### nango_tool_search
 
-Takes a plain-language `query` describing what the agent wants to do.
+Takes a `query` of a few keywords naming the action, and a `goal` with the task the user asked for, in their words.
 
 ```json
-{ "query": "find emails by subject" }
+{ "query": "find emails by subject", "goal": "find the invoice email from last week and forward it to accounting" }
 ```
 
 The result carries `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status.
@@ -433,11 +487,18 @@ Only a best match includes `input`, its argument schema — a weak match is a le
 
 ### nango_execute
 
-Runs one of the session's tools by name, on the connection the session resolved for that integration.
+Runs one of the session's tools by name, on the connection the session resolved for that integration. Along with the tool and its input, it takes the task's `goal` and an `intent`, why this call is made.
 
 ```json
-{ "tool": "notion__read_doc", "input": { "doc_id": "abc" } }
+{
+    "tool": "google-calendar__list-events",
+    "input": { "timeMin": "2026-11-05T00:00:00Z", "timeMax": "2026-11-06T00:00:00Z" },
+    "goal": "move my Thursday 1:1 with my manager to Friday and let them know",
+    "intent": "find the 1:1 to move"
+}
 ```
+
+The goal stays the same on every call made for one task. The intent changes with each call. A later call to the same tool for Friday keeps the goal and sends the intent `check Friday has a free slot`.
 
 Execution is synchronous and goes through the same path as [triggering an action function](/reference/backend/http-api/action/trigger), so it is capped by the synchronous execution limit and appears in Nango logs like any other function run.
 
@@ -454,3 +515,40 @@ It also takes `query_params` and `headers`. Nango authenticates the request from
 The integration has to be one in the session's toolset with a resolved connection, but the path is not restricted to what the toolset exposes. That is why `nango_proxy` is off by default: turning it on lets the agent reach any endpoint of a connected integration.
 
 The result is the provider's `status`, `headers` and `body`, for JSON or UTF-8 text responses up to 5 MB. Binary and larger responses are not supported, and neither is file upload. Use the [HTTP proxy](/reference/backend/http-api/proxy) for those.
+
+### nango_create_connection
+
+Lets the agent get the user to connect an integration that has none, instead of dead-ending on it. It takes one of the session's integrations and returns a link for the user to open.
+
+```json
+{ "integration": "notion" }
+```
+
+```json
+{
+  "guidance": "Give this link to the user and wait...",
+  "integration": "notion",
+  "provider": "notion",
+  "connect_url": "https://connect.nango.dev/?session_token=...",
+  "expires_at": "2026-09-21T17:06:41.145Z"
+}
+```
+
+The agent passes the link to the user, who authorizes it the same way as any [connect link](/guides/auth/share-connect-link), and the tools for that integration work for the rest of the session once the connection is created.
+
+Nango tags the new connection with `nango/agent_session` so the session can find it. You can configure the tool to add your own tags, allowing the next session to use tag selectors to include the connection:
+
+```json
+{ "meta_tools": { "nango_create_connection": { "enabled": true, "tags": { "organization_id": "acme" } } } }
+```
+
+#### Reconnecting a connection
+
+A connection can stop working mid-session: its credentials expired and can no longer be refreshed, or a tool needs a scope the connection was not granted. With `nango_create_connection` enabled, the agent can get the user to reconnect it without leaving the session. It needs no extra configuration.
+
+The user gets a [reconnect link](/guides/auth/auth-guide#build-reauthorization) and authorizes the session's existing connection again. A reconnect requests the integration's current scopes, so it fixes a missing scope the user declined the first time, or one you have since added to the integration. The session's tools then run on the new credentials.
+
+- **Same connection:** it keeps its connection ID and its tags. The tags configured on the tool are only added to new connections.
+- **Works for either kind of connection:** one the session resolved from the tenant when it was created, or one the agent created during the session.
+- **Nothing to reconnect:** if the integration has no connection yet, the user gets a link to create one instead.
+- **Deleted connection:** a deleted connection cannot be reconnected, so a new session is needed.

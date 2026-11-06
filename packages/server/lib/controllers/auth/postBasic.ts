@@ -189,6 +189,7 @@ export const postPublicBasicAuthorization = asyncWrapperWithEnvironment<PostPubl
             connection: updatedConnection.connection,
             config,
             account,
+            environment,
             logCtx
         });
 

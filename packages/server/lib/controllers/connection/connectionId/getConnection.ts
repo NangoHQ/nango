@@ -3,10 +3,10 @@ import * as z from 'zod';
 import { connectionService } from '@nangohq/shared';
 import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 
+import { principalCan } from '../../../authz/principal.js';
 import { retrievedConnectionToPublicApi } from '../../../formatters/connection.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../../hooks/hooks.js';
-import { hasAuthorizedScope } from '../../../middleware/scope.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { RetrievedConnection } from '@nangohq/shared';
@@ -57,7 +57,7 @@ export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnecti
 
     metrics.increment(metrics.Types.GET_CONNECTION, 1, { internal: isSync ? 'true' : 'false' });
 
-    const includeCredentials = hasAuthorizedScope({ locals: res.locals, requiredScope: 'environment:connections:read_credentials' });
+    const includeCredentials = principalCan(res.locals, 'environment:connections:read_credentials');
     const requestsCredentialOperation = returnRefreshToken || instantRefresh || refreshGithubAppJwtToken;
     if (!includeCredentials && requestsCredentialOperation) {
         res.status(403).send({

@@ -11,19 +11,39 @@ import type { LogsStorageClientConfig, LogsStoragePolicies, LogsStorageProvider 
 export type { LogsStorageClient } from './logsStorageClient.js';
 export type { LogsStoragePolicies, LogsStorageProvider } from './types.js';
 
-function createClientConfig(): LogsStorageClientConfig {
+export function logsStorageClientConfig(
+    provider: LogsStorageProvider,
+    connection: {
+        nodes: string;
+        requestTimeout: number;
+        maxRetries: number;
+        username: string;
+        password: string;
+        apiKey: string;
+    }
+): LogsStorageClientConfig {
+    const serverless = provider === 'ec-serverless';
     return {
-        nodes: envs.NANGO_LOGS_ES_URL || 'http://localhost:0',
-        requestTimeout: envs.NANGO_LOGS_ES_REQUEST_TIMEOUT_MS,
-        maxRetries: envs.NANGO_LOGS_ES_MAX_RETRIES,
-        auth: {
-            username: envs.NANGO_LOGS_ES_USER!, // ggignore
-            password: envs.NANGO_LOGS_ES_PWD! // ggignore
-        }
+        nodes: connection.nodes,
+        requestTimeout: connection.requestTimeout,
+        maxRetries: connection.maxRetries,
+        auth: serverless ? { apiKey: connection.apiKey } : { username: connection.username, password: connection.password },
+        ...(serverless ? { serverless: true } : {})
     };
 }
 
-export function createLogsStorageBackend(provider: LogsStorageProvider, config: LogsStorageClientConfig = createClientConfig()): LogsStorageBackend {
+function createClientConfig(provider: LogsStorageProvider = envs.NANGO_LOGS_PROVIDER): LogsStorageClientConfig {
+    return logsStorageClientConfig(provider, {
+        nodes: envs.NANGO_LOGS_ES_URL || 'http://localhost:0',
+        requestTimeout: envs.NANGO_LOGS_ES_REQUEST_TIMEOUT_MS,
+        maxRetries: envs.NANGO_LOGS_ES_MAX_RETRIES,
+        username: envs.NANGO_LOGS_ES_USER!, // ggignore
+        password: envs.NANGO_LOGS_ES_PWD!, // ggignore
+        apiKey: envs.NANGO_LOGS_ES_API_KEY! // ggignore
+    });
+}
+
+export function createLogsStorageBackend(provider: LogsStorageProvider, config: LogsStorageClientConfig = createClientConfig(provider)): LogsStorageBackend {
     if (provider === 'opensearch') {
         return new OpenSearchLogsClient(config);
     }
@@ -53,6 +73,13 @@ export class LogsStorage {
 
     async setupPolicies(policies: LogsStoragePolicies): Promise<void> {
         await this.backend.setupRetentionPolicies(policies);
+    }
+
+    async putDataStreamLifecycle(name: string, dataRetention: string): Promise<void> {
+        if (!(this.backend instanceof ElasticsearchLogsClient)) {
+            throw new Error('Data stream lifecycle is only supported for Elasticsearch');
+        }
+        await this.backend.putDataStreamLifecycle({ name, data_retention: dataRetention });
     }
 }
 

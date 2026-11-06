@@ -2,13 +2,13 @@ import type { ApiEndpoint, ApiError, ApiTimestamps } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { AuthModes, AuthModeType } from '../auth/api.js';
 import type { NangoSyncConfig } from '../flow/index.js';
-import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
+import type { FunctionListType } from '../functions/domain.js';
 import type { Provider } from '../providers/provider.js';
 import type { IntegrationConfig } from './db.js';
 import type { Merge } from 'type-fest';
 
 export type ApiPublicIntegration = Merge<
-    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks'>,
+    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks' | 'missing_fields'>,
     ApiTimestamps
 > & {
     logo: string;
@@ -21,6 +21,9 @@ export interface ApiPublicIntegrationInclude {
     // Names of `credentials` fields already set at the integration level (via `integration_config`), so the
     // Connect UI can skip asking end users for them. Presence only — never the underlying value.
     preconfigured_credentials?: string[] | undefined;
+    // Names of `connection_config` fields already set at the integration level (via `integration_config`), so the
+    // Connect UI can skip asking end users for them. Presence only — never the underlying value.
+    preconfigured_connection_config?: string[] | undefined;
     credentials?:
         | {
               type: AuthModes['OAuth2'] | AuthModes['OAuth1'] | AuthModes['TBA'];
@@ -37,6 +40,19 @@ export interface ApiPublicIntegrationInclude {
               app_id: string | null;
               app_link: string | null;
               private_key: string | null;
+          }
+        | {
+              type: AuthModes['MCP_OAUTH2_GENERIC'];
+              client_name: string | null;
+              client_uri: string | null;
+              client_logo_uri: string | null;
+          }
+        | { type: 'INTEGRATION_CONFIG'; auth_mode: AuthModeType; integration_config: Record<string, string> }
+        | {
+              type: AuthModes['MCP_OAUTH2'];
+              client_id: string | null;
+              client_secret: string | null;
+              scopes: string | null;
           }
         | null;
 }
@@ -59,19 +75,28 @@ export type PostPublicIntegration = ApiEndpoint<{
         provider: string;
         unique_key: string;
         display_name?: string | undefined;
-        credentials?: ApiPublicIntegrationCredentials | undefined;
         forward_webhooks?: boolean | undefined;
-        // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
-        // Validated server-side against the provider schema and persisted to the `custom` column.
-        integration_config?: Record<string, string> | undefined;
-        // Free-form custom values, for providers without an `integration_config` schema.
-        custom?: Record<string, string> | undefined;
-    };
+    } & (
+        | {
+              credentials?: ApiPublicIntegrationCredentials | undefined;
+              // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
+              // Validated server-side against the provider schema and persisted to the `custom` column.
+              integration_config?: Record<string, string> | undefined;
+              // Free-form custom values, for providers without an `integration_config` schema.
+              custom?: Record<string, string> | undefined;
+          }
+        | {
+              credentials: { type: 'NANGO_MANAGED' };
+              integration_config?: never;
+              custom?: never;
+          }
+    );
     Success: {
         data: ApiPublicIntegration;
     };
 }>;
 
+// TODO: remove this deprecated alias of POST /integrations with NANGO_MANAGED credentials (NAN-7880)
 export type PostPublicQuickstartIntegration = ApiEndpoint<{
     Audit: AuditPolicy<'integration', 'created', 'environment'>;
     Method: 'POST';
@@ -134,13 +159,13 @@ export type GetPublicFunctionCode = ApiEndpoint<{
         name: string;
     };
     Querystring: {
-        type?: ScriptTypeLiteral | undefined;
+        type?: FunctionListType | undefined;
     };
     Success: {
-        type: ScriptTypeLiteral;
+        type: FunctionListType;
         code: string;
     };
-    Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
+    Error: ApiError<'not_found'>;
 }>;
 
 export type GetFunctionCode = ApiEndpoint<{
@@ -153,13 +178,13 @@ export type GetFunctionCode = ApiEndpoint<{
     };
     Querystring: {
         env: string;
-        type?: ScriptTypeLiteral | undefined;
+        type?: FunctionListType | undefined;
     };
     Success: {
-        type: ScriptTypeLiteral;
+        type: FunctionListType;
         code: string;
     };
-    Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
+    Error: ApiError<'not_found'>;
 }>;
 
 export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;
@@ -303,6 +328,7 @@ export type PatchIntegration = ApiEndpoint<{
               webhookSecret?: string | undefined;
               displayName?: string | undefined;
               forward_webhooks?: boolean | undefined;
+              allow_unverified_webhooks?: boolean | undefined;
               // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic, aws-sigv4).
               integrationConfig?: Record<string, string> | undefined;
           }
@@ -341,22 +367,34 @@ export type GetIntegrationFlows = ApiEndpoint<{
 export type ApiPublicIntegrationCredentials =
     | {
           type: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
-          client_id: string;
-          client_secret: string;
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
           scopes?: string | undefined;
           webhook_secret?: string | undefined;
       }
     | {
           type: Extract<AuthModeType, 'APP'>;
-          app_id: string;
-          app_link: string;
-          private_key: string;
+          app_id?: string | undefined;
+          app_link?: string | undefined;
+          private_key?: string | undefined;
       }
     | {
           type: Extract<AuthModeType, 'CUSTOM'>;
-          client_id: string;
-          client_secret: string;
-          app_id: string;
-          app_link: string;
-          private_key: string;
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
+          app_id?: string | undefined;
+          app_link?: string | undefined;
+          private_key?: string | undefined;
+      }
+    | {
+          type: Extract<AuthModeType, 'MCP_OAUTH2_GENERIC'>;
+          client_name?: string | undefined;
+          client_uri?: string | undefined;
+          client_logo_uri?: string | undefined;
+      }
+    | {
+          type: Extract<AuthModeType, 'MCP_OAUTH2'>;
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
+          scopes?: string | undefined;
       };

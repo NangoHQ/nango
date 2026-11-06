@@ -1,3 +1,69 @@
-_No pre-built syncs or actions available yet._
+### Others
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>
+| Function name | Description | Type |
+| - | - | - |
+| `add-contacts-to-list` | Bulk-add one or more existing contacts, identified by email, to a Brevo contact list. | [Action](/guides/functions/action-functions) |
+| `create-company` | Create a new company (CRM object). | [Action](/guides/functions/action-functions) |
+| `create-contact-attribute` | Define a new custom contact attribute (field) on the account contact schema. | [Action](/guides/functions/action-functions) |
+| `create-contact-folder` | Create a new contact folder to organize contact lists | [Action](/guides/functions/action-functions) |
+| `create-contact-list` | Create a new contact list inside a folder. | [Action](/guides/functions/action-functions) |
+| `create-contact` | Create a new contact | [Action](/guides/functions/action-functions) |
+| `create-deal` | Create a new deal. | [Action](/guides/functions/action-functions) |
+| `create-email-campaign` | Create a draft email (classic) campaign | [Action](/guides/functions/action-functions) |
+| `create-email-template` | Create a new transactional email template | [Action](/guides/functions/action-functions) |
+| `create-sms-campaign` | Create a draft SMS campaign. | [Action](/guides/functions/action-functions) |
+| `delete-company` | Delete a company. | [Action](/guides/functions/action-functions) |
+| `delete-contact-attribute` | Permanently delete a custom contact attribute from the account schema by category and name. | [Action](/guides/functions/action-functions) |
+| `delete-contact-folder` | Delete a contact folder and all contact lists it contains. | [Action](/guides/functions/action-functions) |
+| `delete-contact-list` | Delete a contact list. | [Action](/guides/functions/action-functions) |
+| `delete-contact` | Delete a contact | [Action](/guides/functions/action-functions) |
+| `delete-deal` | Delete a deal | [Action](/guides/functions/action-functions) |
+| `delete-email-campaign` | Delete an email campaign. | [Action](/guides/functions/action-functions) |
+| `delete-email-template` | Permanently delete an inactive transactional email template by its numeric ID. | [Action](/guides/functions/action-functions) |
+| `delete-sms-campaign` | Delete an SMS campaign. | [Action](/guides/functions/action-functions) |
+| `get-company` | Retrieve a single company by ID. | [Action](/guides/functions/action-functions) |
+| `get-contact-folder` | Retrieve a single contact folder's details by ID. | [Action](/guides/functions/action-functions) |
+| `get-contact-full-profile` | Get a 360-degree view of a contact: the contact record, its linked CRM companies and its linked CRM deals in one call. | [Action](/guides/functions/action-functions) |
+| `get-contact-list` | Retrieve the details of a single Brevo contact list by its ID | [Action](/guides/functions/action-functions) |
+| `get-contact` | Retrieve a single contact by email or numeric ID. | [Action](/guides/functions/action-functions) |
+| `get-deal` | Retrieve a single deal by ID | [Action](/guides/functions/action-functions) |
+| `get-email-campaign` | Retrieve a single email campaign's full detail, including delivery statistics | [Action](/guides/functions/action-functions) |
+| `get-email-template` | Retrieve a single transactional email template's detail. | [Action](/guides/functions/action-functions) |
+| `get-sms-campaign` | Retrieve a single SMS campaign by ID, including its content, recipients, status, and delivery statistics. | [Action](/guides/functions/action-functions) |
+| `get-transactional-email-events` | Retrieve the transactional email event log (requests, delivered, opens, clicks, bounces, etc.) for the account. | [Action](/guides/functions/action-functions) |
+| `link-unlink-company-contacts` | Link or unlink contacts and/or deals to a company in a single request. | [Action](/guides/functions/action-functions) |
+| `link-unlink-deal-relations` | Link or unlink contacts and/or companies to a deal. | [Action](/guides/functions/action-functions) |
+| `list-companies` | List companies (Brevo CRM company objects) with pagination, sorting, and optional filters. | [Action](/guides/functions/action-functions) |
+| `list-company-attributes` | List the schema of attributes available on company (CRM) objects. | [Action](/guides/functions/action-functions) |
+| `list-contact-attributes` | List the account's contact attribute schema (built-in and custom fields such as FIRSTNAME/LASTNAME). | [Action](/guides/functions/action-functions) |
+| `list-contact-folders` | List the account's contact folders (the organizational containers for lists) | [Action](/guides/functions/action-functions) |
+| `list-contact-lists` | List the contact lists in the Brevo account | [Action](/guides/functions/action-functions) |
+| `list-contacts-in-list` | List the contacts that belong to a specific contact list | [Action](/guides/functions/action-functions) |
+| `list-contacts` | List contacts in the account. | [Action](/guides/functions/action-functions) |
+| `list-deal-pipelines` | List the account's CRM deal pipelines and their stages. | [Action](/guides/functions/action-functions) |
+| `list-deals` | List deals (Brevo's lightweight CRM deal/opportunity objects). | [Action](/guides/functions/action-functions) |
+| `list-email-campaigns` | List email (classic) campaigns in the account. | [Action](/guides/functions/action-functions) |
+| `list-email-templates` | List the account's transactional email templates. | [Action](/guides/functions/action-functions) |
+| `list-senders` | List the account's verified sender email addresses. | [Action](/guides/functions/action-functions) |
+| `list-sms-campaigns` | List SMS campaigns in the account, with optional status filtering, sorting and pagination. | [Action](/guides/functions/action-functions) |
+| `remove-contacts-from-list` | Remove one or more contacts, identified by email, from a Brevo contact list. | [Action](/guides/functions/action-functions) |
+| `schedule-email-campaign` | Schedule a draft email campaign to send at a future date/time. | [Action](/guides/functions/action-functions) |
+| `send-email-campaign-now` | Send an existing draft email campaign immediately. | [Action](/guides/functions/action-functions) |
+| `send-immediate-campaign` | Create a classic email campaign and send it immediately to the given contact lists in one call. | [Action](/guides/functions/action-functions) |
+| `send-transactional-email` | Send a one-off transactional email, either with inline HTML or by rendering a saved template with params. | [Action](/guides/functions/action-functions) |
+| `subscribe-contact-to-list` | Subscribe an email address to a Brevo contact list, creating the contact if it is new or merging onto the existing contact if it already exists. | [Action](/guides/functions/action-functions) |
+| `unsubscribe-contact-from-list` | Unsubscribe a contact from a list: removes a single contact, identified by email, from a single list while leaving all other list memberships untouched | [Action](/guides/functions/action-functions) |
+| `update-company` | Update a company's attributes. | [Action](/guides/functions/action-functions) |
+| `update-contact-folder` | Rename a contact folder. | [Action](/guides/functions/action-functions) |
+| `update-contact-list` | Rename a contact list or move it to a different folder. | [Action](/guides/functions/action-functions) |
+| `update-contact` | Update a contact's attributes, list memberships, or blacklist status (partial merge). | [Action](/guides/functions/action-functions) |
+| `update-deal` | Update a deal's attributes (name, amount, custom fields). | [Action](/guides/functions/action-functions) |
+| `update-email-campaign` | Update a draft or not-yet-sent email campaign. | [Action](/guides/functions/action-functions) |
+| `update-email-template` | Update a transactional email template in Brevo | [Action](/guides/functions/action-functions) |
+| `update-sms-campaign` | Update a draft SMS campaign's fields. | [Action](/guides/functions/action-functions) |
+| `companies` | Sync Brevo CRM companies, incrementally via the modifiedSince filter with a periodic full refresh to detect deletions. | [Sync](/guides/functions/syncs/sync-functions) |
+| `contact-lists` | Fetches all Brevo contact lists (metadata only, not list membership) via full refresh. | [Sync](/guides/functions/syncs/sync-functions) |
+| `contacts` | Sync Brevo contacts, incrementally via the modifiedSince filter with a periodic full refresh to detect deletions. | [Sync](/guides/functions/syncs/sync-functions) |
+| `deals` | Sync Brevo CRM deals, incrementally via the modifiedSince filter with a periodic full refresh to detect deletions. | [Sync](/guides/functions/syncs/sync-functions) |
+| `email-campaigns` | Full refresh sync of email (classic) campaigns, including their status and delivery statistics. | [Sync](/guides/functions/syncs/sync-functions) |
+| `email-templates` | Sync transactional email templates from Brevo (full refresh with delete detection) | [Sync](/guides/functions/syncs/sync-functions) |

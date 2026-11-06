@@ -5,7 +5,7 @@ import { validateTask } from './validate.js';
 import type { Task } from '@nangohq/scheduler';
 
 describe('validateTask', () => {
-    it('deserializes a dequeued scheduled function task', () => {
+    it.each([undefined, 'custom'])('deserializes a scheduled function with variant %s and no activity log', (variant) => {
         const result = validateTask({
             id: '4a14038c-3a57-4a4d-bb9e-c8a5e85474ae',
             name: 'scheduled-function-task',
@@ -28,18 +28,25 @@ describe('validateTask', () => {
             scheduleId: 'c1952e1f-b385-4db0-b4ef-a7ad52a034c9',
             payload: {
                 type: 'function',
-                instanceId: 123
+                functionUuid: '11111111-1111-4111-8111-111111111111',
+                connection: { id: 1, connection_id: 'C', provider_config_key: 'P', environment_id: 2 },
+                trigger: { kind: 'schedule', input: null, connection: { connectionId: 'C', integrationId: 'P' } },
+                variant,
+                async: true
             }
         } as Task);
 
         const task = result.unwrap();
-        expect(task.isScheduleFunction()).toBe(true);
-        if (task.isScheduleFunction()) {
+        expect(task.isFunction()).toBe(true);
+        if (task.isFunction()) {
             expect(task).toMatchObject({
-                instanceId: 123,
+                functionUuid: '11111111-1111-4111-8111-111111111111',
+                async: true,
                 attempt: 1,
                 attemptMax: 1
             });
+            expect(task.variant).toBe(variant);
+            expect(task.activityLogId).toBeUndefined();
         }
     });
 
@@ -47,7 +54,7 @@ describe('validateTask', () => {
         const result = validateTask({
             id: '4a14038c-3a57-4a4d-bb9e-c8a5e85474ae',
             name: 'function-task',
-            groupKey: 'function:environment:2:connection:1:function:my-function',
+            groupKey: 'function:environment:2:connection:1:function:11111111-1111-4111-8111-111111111111',
             groupMaxConcurrency: 1,
             state: 'STARTED',
             retryKey: 'retry-key',
@@ -66,12 +73,18 @@ describe('validateTask', () => {
             scheduleId: null,
             payload: {
                 type: 'function',
-                functionName: 'my-function',
+                functionUuid: '11111111-1111-4111-8111-111111111111',
                 activityLogId: 'activity-log-id',
                 trigger: {
                     kind: 'http',
                     input: { value: 42 },
-                    request: { method: 'POST', path: '/functions/invocations', headers: {}, query: {}, body: { value: 42 } },
+                    request: {
+                        method: 'POST',
+                        path: '/connections/22222222-2222-4222-8222-222222222222/functions/11111111-1111-4111-8111-111111111111/invocations',
+                        headers: {},
+                        query: {},
+                        body: { value: 42 }
+                    },
                     subscriptions: ['issues'],
                     connection: { connectionId: 'connection-id', integrationId: 'integration-id' }
                 },
@@ -89,7 +102,7 @@ describe('validateTask', () => {
         expect(task.isFunction()).toBe(true);
         if (task.isFunction()) {
             expect(task).toMatchObject({
-                functionName: 'my-function',
+                functionUuid: '11111111-1111-4111-8111-111111111111',
                 trigger: expect.objectContaining({ kind: 'http', input: { value: 42 }, subscriptions: ['issues'] }),
                 async: false,
                 attempt: 1,
@@ -102,7 +115,7 @@ describe('validateTask', () => {
         const result = validateTask({
             id: '4a14038c-3a57-4a4d-bb9e-c8a5e85474ae',
             name: 'function-task',
-            groupKey: 'function:environment:2:connection:1:function:my-function',
+            groupKey: 'function:environment:2:connection:1:function:11111111-1111-4111-8111-111111111111',
             groupMaxConcurrency: 1,
             state: 'STARTED',
             retryKey: 'retry-key',
@@ -121,7 +134,7 @@ describe('validateTask', () => {
             scheduleId: null,
             payload: {
                 type: 'function',
-                functionName: 'my-function',
+                functionUuid: '11111111-1111-4111-8111-111111111111',
                 activityLogId: 'activity-log-id',
                 trigger: {
                     kind: 'http',

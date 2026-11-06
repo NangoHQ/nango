@@ -58,7 +58,10 @@ export function allowPublicCimdClient(client: Client, allowedScopes: ReadonlySet
     if (client.scope && client.scope.split(' ').some((scope) => !allowedScopes.has(scope))) {
         return false;
     }
-    return !client.jwksUri && !client.sectorIdentifierUri;
+    // A client can publish keys for authentication methods that this server did not select.
+    // For example, ChatGPT advertises both `none` and `private_key_jwt`, with a JWKS URI for
+    // the latter. The URI is inert after metadata choice resolution selects `none`.
+    return !client.sectorIdentifierUri;
 }
 
 export function isValidCimdClientId(clientId: string): boolean {

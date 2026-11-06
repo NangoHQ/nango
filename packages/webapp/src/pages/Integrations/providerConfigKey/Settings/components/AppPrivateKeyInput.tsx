@@ -1,7 +1,6 @@
-import { FieldLabel } from '@nangohq/design-system';
-
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { SettingsField } from './SettingsLayout';
 
 interface AppPrivateKeyInputProps {
     initialValue: string;
@@ -10,13 +9,15 @@ interface AppPrivateKeyInputProps {
 
 export const AppPrivateKeyInput: React.FC<AppPrivateKeyInputProps> = ({ initialValue, onSave }) => {
     return (
-        <div className="flex flex-col gap-2">
-            <div className="flex gap-2 items-center">
-                <FieldLabel htmlFor="private_key">App Private Key</FieldLabel>
-                <InfoTooltip>
+        <SettingsField
+            label="App private key"
+            htmlFor="private_key"
+            info={
+                <InfoTooltip size="sm">
                     Obtain the app private key from the app page by downloading the private key and pasting the entirety of its contents here.
                 </InfoTooltip>
-            </div>
+            }
+        >
             <EditableInput
                 secret
                 textArea
@@ -30,6 +31,6 @@ export const AppPrivateKeyInput: React.FC<AppPrivateKeyInputProps> = ({ initialV
                 }}
                 onSave={onSave}
             />
-        </div>
+        </SettingsField>
     );
 };

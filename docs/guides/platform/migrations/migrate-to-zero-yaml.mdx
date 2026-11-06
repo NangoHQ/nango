@@ -18,7 +18,7 @@ description: 'Guide on how to migrate to Zero YAML in Nango.'
   </button>
 </div>
 
-The `nango.yaml` configuration file is deprecated and should not be used for new integrations. If you are still using it, this guide will help you migrate your existing Nango integrations from the YAML-based approach to our new Zero YAML system, which uses pure TypeScript with modern tooling.
+The `nango.yaml` configuration file is no longer supported. Since September 15, 2026, Nango rejects deployments that use it. This guide helps you migrate your existing integrations from the YAML-based approach to Zero YAML, which uses pure TypeScript with modern tooling.
 
 ## What is Zero YAML?
 
@@ -295,9 +295,9 @@ const parsedInput = await nango.zodValidateInput({ zodSchema: scimCreateUserSche
 
 ### Nango.yaml EOL
 
-**Q: When will nango.yaml stop being supported?**
+**Q: Is nango.yaml still supported?**
 
-**A:** nango.yaml integrations will be supported until the end of 2025. Zero YAML will be the only supported way to build integrations after that. An official roadmap will be published soon.
+**A:** No. Support ended on September 15, 2026. Deployments that use a `nango.yaml` are rejected with an error that points to this guide. Functions deployed before then keep running until you redeploy them, which requires migrating first.
 
 ### Package.json Requirement
 
@@ -333,11 +333,7 @@ nango dryrun <scriptName> <connectionId>
 
 **Q: Can I rollback if something goes wrong?**
 
-**A:** Yes, Nango's platform remains compatible with nango.yaml at all times:
-1. Go to your backup folder
-2. `nango deploy dev`
-
-Keep your original files until you've fully validated the migration.
+**A:** Not to `nango.yaml`, since deployments that use it are rejected. Validate the migrated integration before it reaches production: run `nango dryrun` against a test connection, then deploy to a development environment with `nango deploy dev`. Keep a copy of your original files as a reference until you have validated the migration.
 
 ---
 

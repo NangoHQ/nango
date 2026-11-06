@@ -128,7 +128,7 @@ describe('resolveIntegrationConfig', () => {
                 builtinKey: field({ title: 'Builtin key', visible_when: { field: 'mode', equals: 'builtin' } }),
                 endpointUrl: field({ title: 'Endpoint URL', visible_when: { field: 'mode', equals: 'custom' } }),
                 authType: field({ title: 'Auth type', enum: ['none', 'api_key'], default_value: 'none', visible_when: { field: 'mode', equals: 'custom' } }),
-                apiKey: field({ title: 'API key', secret: 'true', visible_when: { field: 'authType', equals: 'api_key' } })
+                apiKey: field({ title: 'API key', secret: true, visible_when: { field: 'authType', equals: 'api_key' } })
             }
         } as unknown as Provider;
 

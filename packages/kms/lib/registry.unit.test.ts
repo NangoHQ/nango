@@ -55,7 +55,7 @@ describe('DekRegistry.create', () => {
 
     it('should throw when the wrapped key is set without a wrapping-key identifier', async () => {
         await expect(DekRegistry.create({ NANGO_ENCRYPTION_KEY_WRAPPED: 'no-arn' })).rejects.toThrow(
-            /one of NANGO_KMS_KEY_ARN or NANGO_GCP_KMS_KEY_NAME is required/
+            /one of NANGO_KMS_KEY_ARN, NANGO_GCP_KMS_KEY_NAME or NANGO_AZURE_KMS_KEY_ID is required/
         );
     });
 
@@ -74,13 +74,31 @@ describe('DekRegistry.create', () => {
         });
     });
 
-    it('should throw when both AWS and GCP wrapping-key identifiers are set', async () => {
-        await expect(
-            DekRegistry.create({
-                NANGO_ENCRYPTION_KEY_WRAPPED: 'wrapped-both-kms',
-                NANGO_KMS_KEY_ARN: 'arn:aws:kms:test',
-                NANGO_GCP_KMS_KEY_NAME: 'projects/test/locations/global/keyRings/nango/cryptoKeys/dek'
-            })
-        ).rejects.toThrow(/NANGO_KMS_KEY_ARN and NANGO_GCP_KMS_KEY_NAME are mutually exclusive/);
+    it('should resolve from the wrapped key via Azure Key Vault', async () => {
+        unwrapDekMock.mockClear();
+        const azureKmsKeyId = 'https://nango-test.vault.azure.net/keys/dek/0123456789abcdef0123456789abcdef';
+        const registry = await DekRegistry.create({
+            NANGO_ENCRYPTION_KEY_WRAPPED: 'wrapped-azure',
+            NANGO_AZURE_KMS_KEY_ID: azureKmsKeyId
+        });
+        expect(registry.get()).toBe(unwrappedDek);
+        expect(unwrapDekMock).toHaveBeenCalledWith({
+            wrapped: 'wrapped-azure',
+            azureKmsKeyId,
+            expectedContext: { purpose: 'global_dek', app: 'nango' }
+        });
+    });
+
+    it.each([
+        { NANGO_KMS_KEY_ARN: 'arn:aws:kms:test', NANGO_GCP_KMS_KEY_NAME: 'projects/test/locations/global/keyRings/nango/cryptoKeys/dek' },
+        { NANGO_KMS_KEY_ARN: 'arn:aws:kms:test', NANGO_AZURE_KMS_KEY_ID: 'https://nango-test.vault.azure.net/keys/dek/v1' },
+        {
+            NANGO_GCP_KMS_KEY_NAME: 'projects/test/locations/global/keyRings/nango/cryptoKeys/dek',
+            NANGO_AZURE_KMS_KEY_ID: 'https://nango-test.vault.azure.net/keys/dek/v1'
+        }
+    ])('should throw when more than one wrapping-key identifier is set: %o', async (wrappingKeys) => {
+        await expect(DekRegistry.create({ NANGO_ENCRYPTION_KEY_WRAPPED: 'wrapped-several-kms', ...wrappingKeys })).rejects.toThrow(
+            /NANGO_KMS_KEY_ARN, NANGO_GCP_KMS_KEY_NAME and NANGO_AZURE_KMS_KEY_ID are mutually exclusive/
+        );
     });
 });

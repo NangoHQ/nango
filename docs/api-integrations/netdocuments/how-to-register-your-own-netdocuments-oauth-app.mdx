@@ -1,0 +1,49 @@
+---
+title: 'How to register your own NetDocuments OAuth app'
+sidebarTitle: 'NetDocuments setup'
+description: 'Register an OAuth app with NetDocuments and connect it to Nango'
+---
+
+This guide shows you how to register your own app with NetDocuments to obtain your OAuth credentials (Client ID & Client Secret). These are required to let your users grant your app access to their NetDocuments repository.
+
+<Note>
+NetDocuments issues credentials per data center. A Client ID registered in the United States isn't valid in Europe, Germany, Australia, or Canada. If your users are spread across data centers, register your app in each one and create a separate Nango integration for each.
+</Note>
+
+<Steps>
+    <Step id="request-developer-portal-account" title="Request a Developer Portal account">
+    NetDocuments' Developer Portal isn't self-serve. Sign in to [NetDocuments support](https://support.netdocuments.com), choose **Submit a Request**, select **API Support** as the category, and use **Request Dev Portal account** as the subject. NetDocuments creates the account and emails you a sign-in link.
+
+    Your Developer Portal sign-in is separate from your everyday NetDocuments sign-in, even if both use the same email address.
+    </Step>
+    <Step id="register-application" title="Register your application">
+    Sign in to the Developer Portal and register a new application:
+    - **Client type** — **Confidential**. Nango keeps your credentials on its servers and exchanges them for tokens, which a public client can't do.
+    - **Name** — something your users' repository administrators will recognize.
+    </Step>
+    <Step id="add-redirect-url" title="Add the redirect URL">
+    In the application's settings, add `https://api.nango.dev/oauth/callback` as the redirect URL.
+
+    NetDocuments matches the redirect URL character for character, including the protocol and any trailing slash. A mismatch fails the connection before the consent screen appears.
+    </Step>
+    <Step id="copy-credentials" title="Copy your credentials">
+    NetDocuments generates a **Client ID** and **Client Secret** when you register the app. Copy both. Treat the Client Secret like a password — if it's ever exposed, generate a new one in the Developer Portal and update it in Nango.
+    </Step>
+    <Step id="add-credentials-to-nango" title="Add your credentials to Nango">
+    In Nango, open your NetDocuments integration's **Settings** tab, enter your **Client ID** and **Client Secret**, and add the scopes your app needs.
+
+    Request every scope your app will use up front — adding one later means each user has to reconnect.
+    </Step>
+    <Step id="authorize-for-repository" title="Have each repository administrator authorize the app">
+    Before your app can reach a repository, a repository administrator must approve it and map your Client ID to the identity it acts as in that repository. Send them your Client ID and app name.
+
+    Until this mapping exists, connections succeed but every API call to that repository is refused.
+    </Step>
+    <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+    </Step>
+</Steps>
+
+For more details, see the [NetDocuments API documentation](https://support.netdocuments.com/s/article/205219850).
+
+---

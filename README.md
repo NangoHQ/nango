@@ -1,26 +1,24 @@
 <div align="center">
 
-<img src="/assets/nango-logo.png?raw=true" width="350">
+<img src="/assets/nango-logo.png?raw=true" width="350" alt="Nango">
 
-# Build product integrations with AI.
+# Integrations for AI agents
 
-Connect your product & AI agents with 1,000+ APIs. Build, run, and maintain integrations with AI in code, on infrastructure built for scale.
+Connect your AI agents to 1,000+ APIs with 10,000+ pre-built tools and Nango managed OAuth apps.
 
-[Website](https://nango.dev) · [Docs](https://nango.dev/docs/) · [1,000+ APIs](https://nango.dev/docs/integrations/overview/) · [Slack Community](https://nango.dev/slack)
+[nango.dev](https://nango.dev) · [1,000+ APIs](https://nango.dev/api-integrations) · [Docs](https://nango.dev/docs/) · [Slack community](https://nango.dev/slack)
 
 [![GitHub Stars](https://img.shields.io/github/stars/NangoHQ/nango?style=social)](https://github.com/NangoHQ/nango/stargazers)
-[![License](https://img.shields.io/badge/license-Elastic-blue.svg)](https://github.com/NangoHQ/nango/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/license-Elastic_2.0-blue.svg)](LICENSE)
 [![NPM Downloads](https://img.shields.io/npm/dm/@nangohq/node)](https://www.npmjs.com/package/@nangohq/node)
 
 </div>
 
-## What is Nango?
+## Nango
 
-Nango is an open-source platform for building product integrations. It supports [**1,000+ APIs**](https://nango.dev/docs/integrations/overview) and works with any backend language, AI coding tool, and agent SDK.
+Nango is an open-source platform for building agent integrations. It provides [10,000+ prebuilt tools across 1,000+ APIs](https://nango.dev/platform/mcp), with managed authentication and execution for tool calls, triggers, syncs, webhooks, and API proxy requests. Customize tools in TypeScript and sync external data into your app when your use case needs more.
 
-You write integration logic as TypeScript functions, or let AI generate them for you, and deploy to Nango's production runtime. Nango handles auth, execution, scaling, and observability.
-
-**Used in production by Replit, Ramp, Mercor, and hundreds more.**
+**Used in production by ServiceNow, Replit, Ramp, Mercor, and hundreds more.**
 
 ## How it works
 
@@ -121,14 +119,14 @@ Nango processes billions of API requests. The runtime provides per-tenant isolat
 OAuth flows, token refresh, credential storage, and multi-tenant support handled for you. Connect to any API without building auth from scratch.
 
 **Open source and self-hostable.** 
-Nango is fully open source. Run it on Nango Cloud or self-host on your own infrastructure. SOC 2 Type II, HIPAA, and GDPR compliant.
+Nango is fully open source. Run it on Nango Cloud, in your own cloud account with [BYOC](https://nango.dev/docs/guides/platform/self-hosting), or self-host it yourself. SOC 2 Type II, HIPAA, and GDPR compliant.
 
 **Fits your workflow.** 
 Fully operable via CLI and API. Compatible with any backend language or framework, AI coding tools (Cursor, Codex, Claude Code), and agent SDKs (MCP, LangChain).
 
 ## Open-source vs. paid
 
-Nango is available under the [Elastic License](https://github.com/NangoHQ/nango/blob/master/LICENSE). The Cloud and Enterprise Self-Hosted versions give you access to all features, based on your [plan](https://www.nango.dev/pricing). You can also [self-host for free](https://nango.dev/docs/guides/platform/self-hosting#free-self-hosting) with a limited feature set.
+Nango is available under the [Elastic License](https://github.com/NangoHQ/nango/blob/master/LICENSE). Nango Cloud and [BYOC](https://nango.dev/docs/guides/platform/self-hosting) give you access to all features, based on your [plan](https://www.nango.dev/pricing). You can also [self-host for free](https://nango.dev/docs/guides/platform/free-self-hosting) with a limited feature set.
 
 ## Contributing
 

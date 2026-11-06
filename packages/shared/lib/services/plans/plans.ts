@@ -2,8 +2,16 @@ import ms from 'ms';
 
 import { Err, flagHasPlan, Ok } from '@nangohq/utils';
 
-import { productTracking } from '../../utils/productTracking.js';
-import { canHaveGrowthAddon, freePlan, GROWTH_FEATURE_FLAGS, isPotentialDowngrade, plansList } from './definitions.js';
+import {
+    API_RATE_LIMIT_SIZES,
+    canHaveGrowthAddon,
+    freePlan,
+    GROWTH_ADDON_ENVIRONMENTS_MAX,
+    GROWTH_ADDON_RATE_LIMIT_SIZE,
+    GROWTH_FEATURE_FLAGS,
+    isPotentialDowngrade,
+    plansList
+} from './definitions.js';
 
 import type { DBEnvironment, DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -15,6 +23,12 @@ const BIGINT_COLUMNS = ['connections_max', 'data_transfer_max'] as const;
 type BigintColumn = (typeof BIGINT_COLUMNS)[number];
 
 type PgPlan = Omit<DBPlan, BigintColumn> & Record<BigintColumn, string | number | null>;
+
+export type AppliedPlanChange = {
+    previousPlan: DBPlan;
+    updatedPlan: DBPlan;
+    isDowngrade: boolean;
+};
 
 const normalizeSafeInteger = (value: string | number | null, field: BigintColumn): number | null => {
     if (value === null) {
@@ -138,13 +152,15 @@ export async function updatePlan(db: Knex, { id, ...data }: Pick<DBPlan, 'id'> &
 export async function updatePlanByTeam(
     db: Knex,
     { account_id, ...data }: Pick<DBPlan, 'account_id'> & Partial<Omit<DBPlan, 'id' | 'account_id'>>
-): Promise<Result<boolean>> {
+): Promise<Result<DBPlan>> {
     try {
-        await db
-            .from<DBPlan>('plans')
+        const res = await db
+            .from<PgPlan>('plans')
             .where('account_id', account_id)
-            .update({ ...data, updated_at: db.fn.now() });
-        return Ok(true);
+            .update({ ...data, updated_at: db.fn.now() })
+            .returning('*');
+        const updatedPlan = res[0];
+        return updatedPlan ? Ok(normalizePlan(updatedPlan)) : Err(new Error('unknown_plan_for_account'));
     } catch (err) {
         return Err(new Error('failed_to_update_plan', { cause: err }));
     }
@@ -200,6 +216,23 @@ export function getGrowthAddonFlags(definition: PlanDefinition, hasGrowthFeature
     return flags;
 }
 
+export function getGrowthAddonEnvironmentsMax(definition: PlanDefinition, hasGrowthFeatures: boolean, currentEnvironmentsMax: number): number {
+    return hasGrowthFeatures ? Math.max(currentEnvironmentsMax, GROWTH_ADDON_ENVIRONMENTS_MAX) : (definition.flags.environments_max as number);
+}
+
+export function getGrowthAddonRateLimitSize(
+    definition: PlanDefinition,
+    hasGrowthFeatures: boolean,
+    currentRateLimitSize: DBPlan['api_rate_limit_size']
+): DBPlan['api_rate_limit_size'] {
+    if (!hasGrowthFeatures) {
+        return definition.flags.api_rate_limit_size as DBPlan['api_rate_limit_size'];
+    }
+    return API_RATE_LIMIT_SIZES.indexOf(currentRateLimitSize) > API_RATE_LIMIT_SIZES.indexOf(GROWTH_ADDON_RATE_LIMIT_SIZE)
+        ? currentRateLimitSize
+        : GROWTH_ADDON_RATE_LIMIT_SIZE;
+}
+
 export async function setGrowthAddon(
     db: Knex,
     team: DBTeam,
@@ -220,7 +253,9 @@ export async function setGrowthAddon(
         has_growth_features: hasGrowthFeatures,
         growth_features_starts_at: null,
         growth_features_ends_at: hasGrowthFeatures ? endsAt : null,
-        ...getGrowthAddonFlags(definition, hasGrowthFeatures)
+        ...getGrowthAddonFlags(definition, hasGrowthFeatures),
+        environments_max: getGrowthAddonEnvironmentsMax(definition, hasGrowthFeatures, plan.value.environments_max),
+        api_rate_limit_size: getGrowthAddonRateLimitSize(definition, hasGrowthFeatures, plan.value.api_rate_limit_size)
     });
     if (updated.isErr()) {
         return Err(new Error('Failed to update growth add-on', { cause: updated.error }));
@@ -229,7 +264,7 @@ export async function setGrowthAddon(
     return Ok(undefined);
 }
 
-/** Resolves to whether the plan actually changed, so callers can react only when it did. */
+/** Returns the persisted before/after state when the plan changed, or null when it was already current. */
 export async function handlePlanChanged(
     db: Knex,
     team: DBTeam,
@@ -242,29 +277,30 @@ export async function handlePlanChanged(
         orbCustomerId?: string | undefined;
         orbSubscriptionId: string;
     }
-): Promise<Result<boolean>> {
+): Promise<Result<AppliedPlanChange | null>> {
     const newPlan = plansList.find((p) => p.code === newPlanCode);
     if (!newPlan) {
         return Err('Received a plan not linked to the plansList');
     }
 
-    const currentPlan = await getPlan(db, { accountId: team.id });
-    if (currentPlan.isErr()) {
-        return Err(new Error('Failed to get current plan', { cause: currentPlan.error }));
+    const getPlanRes = await getPlan(db, { accountId: team.id });
+    if (getPlanRes.isErr()) {
+        return Err(new Error('Failed to get current plan', { cause: getPlanRes.error }));
     }
+    const currentPlan = getPlanRes.value;
 
-    if (isPlanUnchanged(currentPlan.value, newPlan)) {
-        return Ok(false);
+    if (isPlanUnchanged(currentPlan, newPlan)) {
+        return Ok(null);
     }
 
     // Merge current plan flags with new plan defaults
-    const mergedFlags = mergeFlags({ currentPlan: currentPlan.value, newPlanDefinition: newPlan });
+    const mergedFlags = mergeFlags({ currentPlan: currentPlan, newPlanDefinition: newPlan });
 
     // Only update subscription date from free to paid (undefined = no update)
-    const isCurrentFree = currentPlan.value.name === freePlan.code;
+    const isCurrentFree = currentPlan.name === freePlan.code;
     const isNewPaid = newPlan.code !== freePlan.code;
 
-    const isDowngrade = isPotentialDowngrade({ from: currentPlan.value.name, to: newPlan.code });
+    const isDowngrade = isPotentialDowngrade({ from: currentPlan.name, to: newPlan.code });
 
     const updated = await updatePlanByTeam(db, {
         account_id: team.id,
@@ -274,7 +310,7 @@ export async function handlePlanChanged(
         orb_future_plan_at: null,
         ...(orbCustomerId ? { orb_customer_id: orbCustomerId } : {}),
         ...(isCurrentFree && isNewPaid ? { orb_subscribed_at: new Date() } : {}),
-        ...(currentPlan.value.auto_idle && mergedFlags.auto_idle === false
+        ...(currentPlan.auto_idle && mergedFlags.auto_idle === false
             ? {
                   trial_start_at: null,
                   trial_end_at: null,
@@ -283,7 +319,7 @@ export async function handlePlanChanged(
                   trial_expired: null
               }
             : {}),
-        ...(isDowngrade && !isNewPaid ? getTrialStartFields(currentPlan.value) : {}),
+        ...(isDowngrade && !isNewPaid ? getTrialStartFields(currentPlan) : {}),
         ...mergedFlags
     });
 
@@ -291,13 +327,7 @@ export async function handlePlanChanged(
         return Err(new Error('Failed to updated plan', { cause: updated.error }));
     }
 
-    productTracking.track({
-        name: 'account:billing:plan_changed',
-        team,
-        eventProperties: { previousPlan: currentPlan.value.name, newPlan: newPlanCode, isDowngrade, orbCustomerId: currentPlan.value.orb_customer_id }
-    });
-
-    return Ok(true);
+    return Ok({ previousPlan: currentPlan, updatedPlan: updated.value, isDowngrade });
 }
 
 export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPlan; newPlanDefinition: PlanDefinition }): PlanDefinition['flags'] {
@@ -306,7 +336,12 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
 
     if (canHaveGrowthAddon(newPlanDefinition.code)) {
         // Force-update growth feature flags on top of merged plan flags, based on whether the add-on is enabled or not.
-        flags = { ...flags, ...getGrowthAddonFlags(newPlanDefinition, hasGrowthFeatures) };
+        flags = {
+            ...flags,
+            ...getGrowthAddonFlags(newPlanDefinition, hasGrowthFeatures),
+            environments_max: getGrowthAddonEnvironmentsMax(newPlanDefinition, hasGrowthFeatures, flags.environments_max ?? 0),
+            api_rate_limit_size: getGrowthAddonRateLimitSize(newPlanDefinition, hasGrowthFeatures, flags.api_rate_limit_size ?? 's')
+        };
     }
 
     return flags;
@@ -356,6 +391,7 @@ function mergePlanFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPla
                 break;
             // BOOLEAN FLAGS - keep override if false
             case 'has_records_autopruning':
+            case 'has_overdue_invoices_banner':
             case 'auto_idle': {
                 overrides[key] = !currentPlan[key] ? false : newPlanDefinition.flags[key];
                 break;
@@ -429,25 +465,8 @@ function mergePlanFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPla
             }
             // SPECIAL CASES
             case 'api_rate_limit_size': {
-                const sizeIndex: Record<DBPlan['api_rate_limit_size'], number> = {
-                    s: 1,
-                    m: 2,
-                    l: 3,
-                    xl: 4,
-                    '2xl': 5,
-                    '3xl': 6,
-                    '4xl': 7,
-                    '5xl': 8,
-                    '6xl': 9,
-                    '7xl': 10,
-                    '8xl': 11,
-                    '9xl': 12,
-                    '10xl': 13,
-                    '11xl': 14,
-                    '12xl': 15
-                };
-                const currentIndex = sizeIndex[currentPlan[key]];
-                const newIndex = sizeIndex[newPlanDefinition.flags[key]];
+                const currentIndex = API_RATE_LIMIT_SIZES.indexOf(currentPlan[key]);
+                const newIndex = API_RATE_LIMIT_SIZES.indexOf(newPlanDefinition.flags[key]);
                 if (currentIndex > newIndex) {
                     overrides[key] = currentPlan[key];
                 }

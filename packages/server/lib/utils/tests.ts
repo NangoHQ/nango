@@ -45,7 +45,11 @@ export function apiFetch(baseUrl: string) {
             (TEndpoint['Querystring'] extends never ? { query?: never } : { query: TEndpoint['Querystring'] }) &
             (TEndpoint['Body'] extends never ? { body?: never } : { body: TEndpoint['Body'] }) &
             (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] }) &
-            (TEndpoint['Headers'] extends never ? { headers?: Record<string, string> } : { headers: TEndpoint['Headers'] })
+            (TEndpoint['Headers'] extends never
+                ? { headers?: Record<string, string> }
+                : {} extends TEndpoint['Headers']
+                  ? { headers?: TEndpoint['Headers'] }
+                  : { headers: TEndpoint['Headers'] })
     ): Promise<{ res: Response; json: APIEndpointsPicker<TMethod, TPath>['Reply'] }> {
         const url = new URL(`${baseUrl}${path}`);
         if (query) {

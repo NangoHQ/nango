@@ -113,22 +113,26 @@ export function setupAuth(app: express.Router) {
                 const user = await userService.getUserById(0);
 
                 if (!isBasicAuthEnabled) {
-                    return void done(null, user);
+                    done(null, user);
+                    return;
                 }
 
                 if (username !== process.env['NANGO_DASHBOARD_USERNAME']) {
-                    return void done(null, false);
+                    done(null, false);
+                    return;
                 }
 
                 if (password !== process.env['NANGO_DASHBOARD_PASSWORD']) {
-                    return void done(null, false);
+                    done(null, false);
+                    return;
                 }
 
                 if (!user) {
-                    return void done(null, false);
+                    done(null, false);
+                    return;
                 }
 
-                return void done(null, user);
+                done(null, user);
             })
         );
     }
@@ -150,7 +154,7 @@ export function setupAuth(app: express.Router) {
 
     passport.deserializeUser(function (user: Express.User, cb) {
         process.nextTick(function () {
-            return void cb(null, user);
+            cb(null, user);
         });
     });
 }
