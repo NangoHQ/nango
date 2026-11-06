@@ -47,6 +47,7 @@ export function deployFunctionServiceErrorToMcp(error: DeployFunctionServiceErro
 export function deployTemplateServiceErrorToMcp(error: DeployTemplateServiceError): Error {
     const code = error.code;
     switch (code) {
+        case 'invalid_request':
         case 'integration_not_found':
         case 'template_not_found':
         case 'ambiguous_function':

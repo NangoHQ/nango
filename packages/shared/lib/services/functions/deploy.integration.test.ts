@@ -179,18 +179,18 @@ describe('deployBundle instances', () => {
 
     it('writes a new version when only the source changes', async () => {
         const ctx = await setup();
-        (await ctx.deploy([githubArtifact])).unwrap();
-
         const standalone = { ...githubArtifact, source: 'standalone' } satisfies FunctionDeploymentArtifact;
+        (await ctx.deploy([standalone])).unwrap();
+
         const reconciliation = (
-            await prepareDeploymentBundle({ functions: [standalone], environmentId: ctx.environment.id, reconciliationScope: { kind: 'environment' } })
+            await prepareDeploymentBundle({ functions: [githubArtifact], environmentId: ctx.environment.id, reconciliationScope: { kind: 'environment' } })
         ).unwrap();
         expect(reconciliation.updated.map(({ after }) => after.name)).toEqual([githubArtifact.name]);
         expect(reconciliation.unchanged).toEqual([]);
-        (await ctx.deploy([standalone])).unwrap();
+        (await ctx.deploy([githubArtifact])).unwrap();
 
         const [deployed] = (await search(db.knex, { environmentId: ctx.environment.id })).unwrap();
-        expect(deployed?.currentVersion).toMatchObject({ source: 'standalone', version: functionVersionHash(standalone).unwrap() });
+        expect(deployed?.currentVersion).toMatchObject({ source: 'repo', version: functionVersionHash(githubArtifact).unwrap() });
     });
 
     it('creates base instances only for active connections in the matching integration and environment', async () => {
