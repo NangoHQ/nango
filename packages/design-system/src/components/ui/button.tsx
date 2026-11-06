@@ -162,8 +162,8 @@ export const buttonVariants = cva(
 
 // ─── Button ───────────────────────────────────────────────────────────────────
 
-// Spinner matches each size's icon (xs 12, sm 14, md/lg 16) so it can stand in for the leading icon.
-const SPINNER_SIZE = { '2xs': 'xs', xs: 'xs', sm: 'sm', md: 'md', lg: 'md' } as const satisfies Record<
+// Spinner matches each size's icon (xs 12, sm 14, 2xs/md/lg 16) so it can stand in for the leading icon.
+const SPINNER_SIZE = { '2xs': 'md', xs: 'xs', sm: 'sm', md: 'md', lg: 'md' } as const satisfies Record<
     NonNullable<VariantProps<typeof buttonVariants>['size']>,
     SpinnerSize
 >;
