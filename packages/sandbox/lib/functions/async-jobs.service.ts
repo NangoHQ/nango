@@ -111,7 +111,7 @@ export async function createSucceededFunctionDeployment({
     environmentId: number;
     request: FunctionDeploymentStoredRequest;
     output: string;
-    deployedFunctions: { name: string; version: string }[];
+    deployedFunctions: DeployedFunction[];
     durationMs?: number | undefined;
     trx?: Knex;
 }): Promise<Result<FunctionDeploymentCreateSuccess>> {

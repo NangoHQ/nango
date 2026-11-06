@@ -364,7 +364,7 @@ program
                     throw entryPoint.error;
                 }
                 if (integrationId) {
-                    console.warn(chalk.yellow('--integration-id is ignored when a file is passed. The integration comes from the file.'));
+                    throw new Error('--integration-id cannot be used with a file.');
                 }
                 name = entryPoint.value.name;
                 integrationFilter = [entryPoint.value.integrationId];
