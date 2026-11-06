@@ -76,6 +76,6 @@ import PreBuiltUseCases from "/snippets/generated/okendo/PreBuiltUseCases.mdx"
 
 ## API gotchas
 
-- Nango sends `okendo-api-version: 2025-02-01` on every call. To use another API version, set the `version` connection config field; when it is unset, `2025-02-01` applies.
+- Nango sends `okendo-api-version: 2025-02-01` on every call. To use another API version, pass `version` under `integrations_config_defaults.<INTEGRATION-ID>.connection_config` when creating a Connect session; this automated field does not appear in the Connect UI. When it is unset, `2025-02-01` applies.
 
 ---
