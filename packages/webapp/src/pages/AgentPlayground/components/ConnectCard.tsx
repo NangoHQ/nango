@@ -9,14 +9,15 @@ import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
 import { globalEnv } from '@/utils/env';
-import { humanize } from '../toolDisplay';
 
 import type { ConnectUI } from '@nangohq/frontend';
 
 interface ConnectCardProps {
     integrationId: string;
     provider: string;
+    name: string;
     connectUrl: string;
     expiresAt: string | undefined;
     connected: boolean;
@@ -31,6 +32,7 @@ function hasExpired(expiresAt: string | undefined): boolean {
 export const ConnectCard: React.FC<ConnectCardProps> = ({
     integrationId,
     provider,
+    name,
     connectUrl,
     expiresAt,
     connected: alreadyConnected,
@@ -56,8 +58,6 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({
         return () => clearTimeout(timer);
     }, [expired, expiresAt]);
 
-    const name = humanize(integrationId);
-
     const connect = () => {
         if (hasExpired(expiresAt)) {
             setExpired(true);
@@ -76,6 +76,7 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({
 
         setStatus('waiting');
         setFailure(null);
+        track('connections:create_button_click', { provider, is_playground: true });
         connectUI.current = nango.openConnectUI({
             baseURL: globalEnv.connectUrl,
             apiURL: globalEnv.apiUrl,
@@ -84,10 +85,18 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({
             onEvent: (event) => {
                 if (event.type === 'connect') {
                     connected = true;
+                    track('connections:connection_create', { provider, is_legacy_flow: false, is_playground: true, is_success: true });
                     connectUI.current?.close();
                     setStatus('connected');
                     onConnected(integrationId);
                 } else if (event.type === 'error') {
+                    track('connections:connection_create', {
+                        provider,
+                        is_legacy_flow: false,
+                        is_playground: true,
+                        is_success: false,
+                        error_code: event.payload.errorType
+                    });
                     setFailure(event.payload.errorMessage);
                 } else if (event.type === 'close' && !connected) {
                     setStatus('idle');
@@ -98,7 +107,7 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({
 
     return (
         <div className="flex items-center gap-3 rounded-ds-xs border border-border-muted bg-surface-panel px-4 py-3">
-            <IntegrationLogo provider={provider} className="size-8" />
+            <IntegrationLogo provider={provider} className="size-6 shrink-0 border-0 bg-transparent p-0" />
             <div className="flex min-w-0 flex-1 flex-col">
                 <span className="text-body-medium-medium text-text-strong">Connect {name}</span>
                 {expired && status === 'idle' ? (
@@ -133,7 +142,7 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({
                 </Button>
             ) : (
                 <Button size="sm" onClick={connect} loading={status === 'waiting'}>
-                    {failure && status === 'idle' ? 'Try again' : `Connect ${name}`} <ArrowRight />
+                    {failure && status === 'idle' ? 'Try again' : 'Connect'} <ArrowRight />
                 </Button>
             )}
         </div>

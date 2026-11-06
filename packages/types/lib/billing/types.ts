@@ -17,7 +17,7 @@ export interface BillingClient {
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetrics>>;
     upgrade: (opts: PlanChangeRequest) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
-    downgrade: (opts: PlanChangeRequest) => Promise<Result<void>>;
+    downgrade: (opts: PlanChangeRequest) => Promise<Result<{ changeAt: Date | null }>>;
     startGrowthAddon: (opts: { subscriptionId: string }) => Promise<Result<{ priceIntervalId: string | null }>>;
     endGrowthAddon: (opts: { subscriptionId: string; priceIntervalId: string }) => Promise<Result<{ growthFeaturesEndsAt: Date | null }>>;
     applyPendingChanges: (opts: {

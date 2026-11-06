@@ -6,20 +6,30 @@ import db, { multipleMigrations } from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
+import { Err } from '@nangohq/utils';
 
 import {
     createAgentSession,
     createAgentSessionToken,
     endAgentSession,
     expireAgentSessions,
+    fillPendingMcpServers,
     getAgentSession,
     getAgentSessionByToken,
+    insertAgentSession,
     listExpiredAgentSessions,
     terminateAgentSession
 } from './agentSession.service.js';
 
 import type { LogContextOrigin } from '@nangohq/logs';
-import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, DBEnvironment, DBTeam } from '@nangohq/types';
+import type {
+    AgentSession,
+    AgentSessionCompiledIntegration,
+    AgentSessionCompiledToolset,
+    AgentSessionResolvedConnections,
+    DBEnvironment,
+    DBTeam
+} from '@nangohq/types';
 
 const table = 'agent_sessions';
 
@@ -58,7 +68,7 @@ describe('agentSession service', () => {
         } satisfies AgentSessionCompiledToolset;
 
         const created = (
-            await createAgentSession(db.knex, {
+            await insertAgentSession(db.knex, {
                 accountId: account.id,
                 environmentId: environment.id,
                 resolvedConnections,
@@ -120,7 +130,7 @@ describe('agentSession service', () => {
     it('rejects an environment owned by another account', async () => {
         const other = await seeders.seedAccountEnvAndUser();
 
-        const result = await createAgentSession(db.knex, {
+        const result = await insertAgentSession(db.knex, {
             accountId: account.id,
             environmentId: other.env.id,
             resolvedConnections: {},
@@ -138,7 +148,7 @@ describe('agentSession service', () => {
     it('rejects a soft-deleted environment', async () => {
         await db.knex('_nango_environments').where({ id: environment.id }).update({ deleted: true, deleted_at: new Date() });
 
-        const result = await createAgentSession(db.knex, {
+        const result = await insertAgentSession(db.knex, {
             accountId: account.id,
             environmentId: environment.id,
             resolvedConnections: {},
@@ -280,6 +290,34 @@ describe('agentSession service', () => {
         }
     });
 
+    it('leaves no session behind when the token cannot be minted', async () => {
+        vi.spyOn(logContextGetter, 'create').mockResolvedValue({
+            enrichOperation: vi.fn(),
+            info: vi.fn(),
+            error: vi.fn(),
+            success: vi.fn(),
+            failed: vi.fn()
+        } as unknown as LogContextOrigin);
+        vi.spyOn(keystore, 'createPrivateKey').mockResolvedValue(Err(new Error('keystore failed')) as any);
+
+        const result = await createAgentSession({
+            account,
+            environment,
+            plan: null,
+            connections: { any: [], pinned: [] },
+            toolset: undefined,
+            pinnedTools: undefined,
+            metaTools: undefined,
+            expiresInMs: undefined
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.code).toBe('server_error');
+        }
+        expect(await db.knex(table).where({ environment_id: environment.id })).toHaveLength(0);
+    });
+
     it('stops resolving the token once it expires', async () => {
         const session = await createSession({ account, environment, expiresAt: new Date(Date.now() + 300) });
         const minted = (await createAgentSessionToken(db.knex, session)).unwrap();
@@ -338,6 +376,71 @@ describe('agentSession service', () => {
 
         expect(await expireAgentSessions(db.knex, { limit: 10 })).toBe(0);
     });
+    describe('fillPendingMcpServers', () => {
+        const pending = (provider: string): AgentSessionCompiledIntegration => ({
+            provider,
+            pinned: [],
+            searchable: [],
+            mcpServer: { status: 'pending', allow: '*', deny: [], pinnedNames: [] }
+        });
+        const listed = (provider: string, tool: string) => ({
+            provider,
+            pinned: [],
+            searchable: [{ name: tool, description: tool, slug: `${provider}__${tool}` }],
+            mcpServer: 'available' as const
+        });
+
+        async function insertPending() {
+            return (
+                await insertAgentSession(db.knex, {
+                    accountId: account.id,
+                    environmentId: environment.id,
+                    resolvedConnections: {},
+                    compiledToolset: { 'notion-mcp': pending('notion-mcp'), 'linear-mcp': pending('linear-mcp') },
+                    metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: true, tags: {} } },
+                    expiresAt: new Date(Date.now() + 60_000)
+                })
+            ).unwrap();
+        }
+
+        it('stores the listed servers and leaves the others pending', async () => {
+            const session = await insertPending();
+
+            const stored = (
+                await fillPendingMcpServers(db.knex, {
+                    id: session.id,
+                    pending: ['notion-mcp', 'linear-mcp'],
+                    integrations: { 'notion-mcp': listed('notion-mcp', 'search') }
+                })
+            ).unwrap();
+
+            expect(stored).toEqual({ 'notion-mcp': listed('notion-mcp', 'search'), 'linear-mcp': pending('linear-mcp') });
+            const reread = (await getAgentSession(db.knex, { id: session.id, accountId: account.id, environmentId: environment.id })).unwrap();
+            expect(reread.compiledToolset).toEqual(stored);
+        });
+
+        it('returns what another request stored instead of overwriting it', async () => {
+            const session = await insertPending();
+            const first = (
+                await fillPendingMcpServers(db.knex, {
+                    id: session.id,
+                    pending: ['notion-mcp', 'linear-mcp'],
+                    integrations: { 'linear-mcp': listed('linear-mcp', 'list_issues') }
+                })
+            ).unwrap();
+
+            const second = (
+                await fillPendingMcpServers(db.knex, {
+                    id: session.id,
+                    pending: ['notion-mcp', 'linear-mcp'],
+                    integrations: { 'notion-mcp': listed('notion-mcp', 'search') }
+                })
+            ).unwrap();
+
+            expect(second).toEqual(first);
+            expect(second['notion-mcp']).toEqual(pending('notion-mcp'));
+        });
+    });
 });
 
 async function keysFor(sessionId: string): Promise<number> {
@@ -355,7 +458,7 @@ async function createSession({
     expiresAt?: Date;
 }): Promise<AgentSession> {
     return (
-        await createAgentSession(db.knex, {
+        await insertAgentSession(db.knex, {
             accountId: account.id,
             environmentId: environment.id,
             resolvedConnections: {},

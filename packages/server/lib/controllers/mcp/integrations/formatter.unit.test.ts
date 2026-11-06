@@ -49,6 +49,22 @@ describe('integrationToMcp', () => {
         expect(result.webhook_url).toBe('https://example.com/webhook');
     });
 
+    it('surfaces the credential fields an integration is still waiting on', () => {
+        const provider = getProvider('github');
+        if (!provider) {
+            throw new Error('Expected github provider');
+        }
+        const integration = integrationFixture({
+            provider: 'github',
+            custom: null,
+            missing_fields: ['oauth_client_id', 'oauth_client_secret']
+        });
+
+        const result = integrationToMcp({ integration, provider });
+
+        expect(result.missing_fields).toStrictEqual(['oauth_client_id', 'oauth_client_secret']);
+    });
+
     it('never returns mcpRegistrationClientUri/mcpRegistrationAccessToken', () => {
         const provider = getProvider('asana-mcp');
         if (!provider) {
@@ -66,7 +82,15 @@ describe('integrationToMcp', () => {
     });
 });
 
-function integrationFixture({ provider, custom }: { provider: string; custom: IntegrationConfig['custom'] }): IntegrationConfig {
+function integrationFixture({
+    provider,
+    custom,
+    missing_fields = []
+}: {
+    provider: string;
+    custom: IntegrationConfig['custom'];
+    missing_fields?: string[];
+}): IntegrationConfig {
     return {
         unique_key: provider,
         provider,
@@ -74,7 +98,7 @@ function integrationFixture({ provider, custom }: { provider: string; custom: In
         oauth_client_secret: null,
         environment_id: 1,
         custom,
-        missing_fields: [],
+        missing_fields,
         display_name: null,
         forward_webhooks: true,
         allow_unverified_webhooks: false,

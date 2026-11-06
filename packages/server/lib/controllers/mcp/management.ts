@@ -35,6 +35,7 @@ export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res
                       plan,
                       grantedScopes: res.locals['apiKeyPrincipal']?.scopes,
                       customerApiKeyId: getCustomerApiKeyId(res.locals),
+                      apiKeyPrincipal: res.locals.apiKeyPrincipal,
                       audit: resolveAuditAttribution(req, res.locals)
                   }
               } as const);

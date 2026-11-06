@@ -1,0 +1,57 @@
+---
+title: 'Rapid7 - How do I link my account?'
+sidebarTitle: 'Rapid7'
+---
+
+## Overview
+
+To authenticate with Rapid7, you need:
+
+1. **Region** — the region where your Rapid7 data is stored.
+2. **API Key** — a Rapid7 user or organization API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Rapid7 Command Platform account. Platform or organization administrators can create organization keys.
+
+### Step 1: Find your region
+
+Your region code is the first part of the URL you use to open a Rapid7 product. For example, if you use `https://us2.idr.insight.rapid7.com`, your region is `us2`.
+
+| Region code | Region |
+| --- | --- |
+| `us` | United States - 1 |
+| `us2` | United States - 2 |
+| `us3` | United States - 3 |
+| `eu` | Europe |
+| `ca` | Canada |
+| `au` | Australia |
+| `ap` | Japan |
+| `me1` | Middle East (UAE) |
+| `aps2` | India (Hyderabad) |
+
+### Step 2: Generate an API key
+
+1. Sign in to the [Rapid7 Command Platform](https://insight.rapid7.com) and go to **Administration**.
+2. Create a key:
+    - **User key:** open **API Key Management** > **User API Keys** and generate a new key.
+    - **Organization key:** open **Administrator API Keys**, select **Generate New Organization Key**, choose your organization, enter a name, and select **Save**.
+3. Copy the key, then select **Done**.
+
+<Note>
+Rapid7 only shows the key once. Save it somewhere secure before leaving the page.
+</Note>
+
+A user key has the same permissions as your user. An organization key can access every product in your organization, so only use one if your integration needs it.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Rapid7.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/rapid7/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Rapid7.

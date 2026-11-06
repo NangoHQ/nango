@@ -1,0 +1,42 @@
+---
+title: 'UniOne - How do I link my account?'
+sidebarTitle: 'UniOne'
+---
+
+## Overview
+
+To authenticate with UniOne, you need:
+
+1. **Region** — the UniOne host your account was registered at.
+2. **API Key** — your UniOne account API key or a project API key.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A UniOne account. The Free plan needs no credit card. If you don't have an account, [sign up](https://cp.unione.io/en/user/registration/).
+
+### Step 1: Find your region
+
+1. Sign in to the [UniOne control panel](https://cp.unione.io). You are redirected to the host your account was registered at, for example `eu1.unione.io` or `us1.unione.io`.
+2. In the Connect UI, select that host as your **Region**. `api.unione.io` is UniOne's preferred host; if the connection fails with it, select `eu1.unione.io` or `us1.unione.io`, whichever appears in your browser's address bar.
+
+### Step 2: Copy your API key
+
+1. In the control panel, click **API key** in the top bar (or go to **Settings** -> **API key**).
+2. Make sure the **API access** toggle is on.
+3. Copy the account API key from the key field. Only click **Generate API key** if you want to replace the current key.
+
+<img src="/api-integrations/unione/account_api_key.png" alt="UniOne API key page with the API key field, the Generate API key button and the API access toggle"/>
+
+To limit the connection to a single project, use a project API key instead: open the **Projects** page in the control panel and copy the project's API key. Project methods are disabled by default; contact UniOne support to enable them.
+
+### Step 3: Enter your region and API key in the Connect UI
+
+1. Open the form where you need to authenticate with UniOne.
+2. Select your **Region** and enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/unione/form.png" alt="UniOne Connect UI form with the Region and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to UniOne.

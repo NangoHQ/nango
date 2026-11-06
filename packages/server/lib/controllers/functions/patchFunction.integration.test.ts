@@ -18,6 +18,7 @@ function functionVersion(
 ): Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> {
     return {
         description: 'Fetch an issue',
+        tags: {},
         file_location: 'github/functions/fetchIssue.js',
         version: 'test-version',
         source: 'repo',

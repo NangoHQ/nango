@@ -27,10 +27,16 @@
             "path": "../fleet"
         },
         {
+            "path": "../hosted-telemetry"
+        },
+        {
             "path": "../keystore"
         },
         {
             "path": "../kms"
+        },
+        {
+            "path": "../license"
         },
         {
             "path": "../logs"

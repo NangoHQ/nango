@@ -22,6 +22,7 @@ const account: DBTeam = {
     name: 'account',
     uuid: 'uuid',
     found_us: '',
+    has_baa: false,
     created_at: new Date(),
     updated_at: new Date()
 };

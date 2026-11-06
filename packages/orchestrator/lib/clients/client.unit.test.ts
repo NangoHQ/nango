@@ -126,8 +126,7 @@ describe('OrchestratorClient recurring', () => {
             timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
             args: {
                 type: 'function',
-                functionName: 'my-function',
-                functionConfigId: 123,
+                functionUuid: '11111111-1111-4111-8111-111111111111',
                 connection: {
                     id: 123,
                     connection_id: 'connection-1',
@@ -146,8 +145,7 @@ describe('OrchestratorClient recurring', () => {
         expect(url).toBe('http://orchestrator.test/v1/recurring');
         expect(JSON.parse(init.body).args).toEqual({
             type: 'function',
-            functionName: 'my-function',
-            functionConfigId: 123,
+            functionUuid: '11111111-1111-4111-8111-111111111111',
             connection: {
                 id: 123,
                 connection_id: 'connection-1',
@@ -189,11 +187,10 @@ function buildWebhookProps(name: string): ExecuteWebhookProps {
 function buildFunctionProps(async: boolean): ExecuteFunctionProps {
     return {
         name: 'function-task-1',
-        group: { key: 'function:environment:456:connection:123:function:my-function', maxConcurrency: 0 },
+        group: { key: 'function:environment:456:connection:123:function:11111111-1111-4111-8111-111111111111', maxConcurrency: 0 },
         retry: { count: 0, max: 2 },
         args: {
-            functionName: 'my-function',
-            functionConfigId: 123,
+            functionUuid: '11111111-1111-4111-8111-111111111111',
             connection: {
                 id: 123,
                 connection_id: 'connection-1',
@@ -251,7 +248,9 @@ describe('OrchestratorClient executeFunction', () => {
         const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
         expect(url).toBe('http://orchestrator.test/v1/immediate');
         const body = JSON.parse(init.body);
-        expect(body.args).toMatchObject({ type: 'function', functionName: 'my-function', async: false });
+        expect(body.args).toMatchObject({ type: 'function', functionUuid: '11111111-1111-4111-8111-111111111111', async: false });
+        expect(body.args).not.toHaveProperty('functionName');
+        expect(body.args).not.toHaveProperty('functionConfigId');
         expect(body.timeoutSettingsInSecs).toEqual({ createdToStarted: 30, startedToCompleted: 2 * 60, heartbeat: 60 });
     });
 
@@ -275,7 +274,7 @@ describe('OrchestratorClient executeFunction', () => {
         const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
         expect(url).toBe('http://orchestrator.test/v1/immediate');
         const body = JSON.parse(init.body);
-        expect(body.args).toMatchObject({ type: 'function', functionName: 'my-function', async: true });
+        expect(body.args).toMatchObject({ type: 'function', functionUuid: '11111111-1111-4111-8111-111111111111', async: true });
         expect(body.retry).toEqual({ count: 0, max: 2 });
         expect(body.timeoutSettingsInSecs).toEqual({ createdToStarted: 24 * 60 * 60, startedToCompleted: 15 * 60, heartbeat: 2 * 60 });
     });
@@ -313,7 +312,7 @@ describe('OrchestratorClient executeFunctionBatch', () => {
         expect(body.tasks).toHaveLength(2);
         expect(body.tasks[0]).toMatchObject({
             name: 'function-a',
-            args: { type: 'function', functionName: 'my-function', async: true },
+            args: { type: 'function', functionUuid: '11111111-1111-4111-8111-111111111111', async: true },
             retry: { count: 0, max: 2 },
             timeoutSettingsInSecs: { createdToStarted: 24 * 60 * 60, startedToCompleted: 15 * 60, heartbeat: 2 * 60 }
         });

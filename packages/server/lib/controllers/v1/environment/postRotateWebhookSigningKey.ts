@@ -1,3 +1,4 @@
+import { productTracking } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
@@ -12,5 +13,8 @@ export const postRotateWebhookSigningKey = asyncWrapperWithEnvironment<PostRotat
         return;
     }
 
-    await handleRotateWebhookSigningKey({ res, environmentId: res.locals.environment.id });
+    const rotated = await handleRotateWebhookSigningKey({ res, environmentId: res.locals.environment.id });
+    if (rotated) {
+        productTracking.track({ name: 'environments:environment_update', eventProperties: { section: 'webhooks' } });
+    }
 });

@@ -68,6 +68,28 @@ describe('mergeFlags', () => {
         }
     });
 
+    it('should show the overdue invoices banner on every plan but enterprise', () => {
+        const enterprisePlans: PlanDefinition['code'][] = ['enterprise', 'enterprise-cloud-hosted'];
+        for (const plan of plansList) {
+            expect(plan.flags.has_overdue_invoices_banner, plan.code).toBe(!enterprisePlans.includes(plan.code));
+        }
+    });
+
+    it.each([
+        { from: 'growth-v2', to: 'enterprise', override: undefined, expected: false },
+        { from: 'pay-as-you-go', to: 'enterprise-cloud-hosted', override: undefined, expected: false },
+        { from: 'enterprise', to: 'growth-v2', override: undefined, expected: true },
+        { from: 'enterprise-cloud-hosted', to: 'pay-as-you-go', override: undefined, expected: true },
+        { from: 'pay-as-you-go', to: 'growth-v2', override: false, expected: false }
+    ] as { from: PlanDefinition['code']; to: PlanDefinition['code']; override: boolean | undefined; expected: boolean }[])(
+        'should set the overdue invoices banner to $expected when moving from $from to $to with override $override',
+        ({ from, to, override, expected }) => {
+            const currentPlan = makePlan({ code: from, flagOverrides: override === undefined ? {} : { has_overdue_invoices_banner: override } });
+            const newFlags = mergeFlags({ currentPlan, newPlanDefinition: getPlanDefinition(to)! });
+            expect(newFlags.has_overdue_invoices_banner).toBe(expected);
+        }
+    );
+
     it('should not grant the audit trail UI on any plan, since it is enabled per account by hand', () => {
         for (const plan of plansList) {
             expect(plan.flags.has_audit_trail_access, plan.code).toBeUndefined();
@@ -336,6 +358,7 @@ function makePlan({
         can_customize_connect_ui_theme: false,
         can_override_docs_connect_url: false,
         can_disable_connect_ui_watermark: false,
+        has_overdue_invoices_banner: true,
         environments_max: 2,
         connections_max: null,
         records_max: null,

@@ -1,10 +1,6 @@
-import { z } from 'zod';
-
 import db from '@nangohq/database';
-import { connectionService, connectionTagsSchema } from '@nangohq/shared';
+import { connectionService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
-
-import { connectionIdSchema, providerConfigKeySchema } from '../helpers/validation.js';
 
 import type { ConnectionIntegrationMatchRow, ConnectionMatch, ConnectionMatchCandidate } from '@nangohq/shared';
 import type {
@@ -20,7 +16,6 @@ import type {
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-export const MAX_SELECTORS = 10;
 export const CANDIDATE_SAMPLE_SIZE = 10;
 
 /**
@@ -28,40 +23,6 @@ export const CANDIDATE_SAMPLE_SIZE = 10;
  * tying that connection back to the session that asked for it.
  */
 export const AGENT_SESSION_TAG_KEY = 'nango/agent_session';
-
-const selectorSchema = z.strictObject({
-    tags: connectionTagsSchema.refine((tags) => Object.keys(tags).length > 0, {
-        message: 'A connection selector must carry at least one tag'
-    })
-});
-
-export const agentSessionTenantConnectionsSchema = z
-    .strictObject({
-        any: z.array(selectorSchema).max(MAX_SELECTORS).optional(),
-        pinned: z
-            .array(
-                z.strictObject({
-                    integration_id: providerConfigKeySchema,
-                    connection_id: connectionIdSchema
-                })
-            )
-            .refine((pinned) => new Set(pinned.map((pin) => pin.integration_id)).size === pinned.length, {
-                message: 'Only one connection can be pinned per integration'
-            })
-            .optional()
-    })
-    .refine((connections) => (connections.any?.length ?? 0) > 0 || (connections.pinned?.length ?? 0) > 0, {
-        message: 'Provide at least one connection selector in any, or at least one pinned connection'
-    })
-    .transform(
-        (connections): AgentSessionTenantConnections => ({
-            any: (connections.any ?? []).map((selector) => ({ tags: selector.tags })),
-            pinned: (connections.pinned ?? []).map((pin) => ({
-                integrationId: pin.integration_id,
-                connectionId: pin.connection_id
-            }))
-        })
-    );
 
 export class AgentSessionConnectionResolutionError extends Error {
     public readonly code: AgentSessionConnectionResolutionErrorCode;

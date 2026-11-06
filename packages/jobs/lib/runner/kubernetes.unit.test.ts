@@ -1,6 +1,17 @@
+import { generateKeyPairSync } from 'node:crypto';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { exportRunnerPublicKey, INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS, verifyInternalServiceToken } from '@nangohq/internal-auth';
+import {
+    exportRunnerPublicKey,
+    INTERNAL_SERVICE_AUDIENCE_JOBS,
+    INTERNAL_SERVICE_ISSUER_JOBS,
+    INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS,
+    keyRegistryFromPublicKeys,
+    nodeSubject,
+    verifyInternalServiceCredential,
+    verifyInternalServiceToken
+} from '@nangohq/internal-auth';
 
 import { getAuthSecretName, getRunnerAuthEnvVars, getTlsEnvVars, getTlsSecretName, kubernetesNodeProvider } from './kubernetes.js';
 
@@ -33,7 +44,10 @@ const { getInternalTlsEnvMock, k8sMock, mockEnvs, defaultRunnerEnvs } = vi.hoist
         RUNNER_REQUEST_MEMORY_MULTIPLIER: 1.4,
         NANGO_INTERNAL_AUTH_SIGNING_KEY: undefined as string | undefined,
         NANGO_INTERNAL_AUTH_TOKEN: undefined as string | undefined,
-        NANGO_INTERNAL_AUTH_REQUIRED: false
+        NANGO_INTERNAL_AUTH_REQUIRED: false,
+        NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: undefined as string | undefined,
+        NANGO_INTERNAL_AUTH_JOBS_KEY_ID: undefined as string | undefined,
+        NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: undefined as { kid: string; publicKey: string }[] | undefined
     };
     return {
         getInternalTlsEnvMock: vi.fn<() => Record<string, string>>(() => ({})),
@@ -661,5 +675,45 @@ describe('runner internal auth env', () => {
         expect(res.isErr()).toBe(true);
         expect(methodsCalled()).not.toContain('createNamespacedDeployment');
         expect(k8sMock.calls.filter((call) => call.method === 'deleteNamespacedSecret').map((call) => call.name)).toEqual([secretName, authSecretName]);
+    });
+
+    it('injects a workload node token and jobs public keys, never the private key', async () => {
+        const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+        const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
+        const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
+            .subarray(12)
+            .toString('base64url');
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = pem;
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = 'jobs-2026-09';
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+
+        const secret = k8sMock.calls.find((call) => call.method === 'createNamespacedSecret')?.body;
+        expect(secret.stringData).not.toHaveProperty('NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY');
+        expect(secret.stringData).not.toHaveProperty('NANGO_INTERNAL_AUTH_JOBS_KEY_ID');
+        expect(secret.stringData).not.toHaveProperty('NANGO_INTERNAL_AUTH_SIGNING_KEY');
+        expect(secret.stringData.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS).toBe(JSON.stringify([{ kid: 'jobs-2026-09', publicKey: raw }]));
+        expect(secret.stringData.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY).toBe(exportRunnerPublicKey('sign'));
+
+        const registry = keyRegistryFromPublicKeys(
+            JSON.parse(secret.stringData.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS) as { kid: string; publicKey: string }[],
+            INTERNAL_SERVICE_ISSUER_JOBS
+        );
+        const auth = await verifyInternalServiceCredential(secret.stringData.NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN, INTERNAL_SERVICE_AUDIENCE_JOBS, {
+            registry
+        });
+        expect(auth).toMatchObject({ kind: 'jwt', sub: nodeSubject('1'), issuer: INTERNAL_SERVICE_ISSUER_JOBS });
+        expect(JSON.stringify(secret.stringData)).not.toContain('BEGIN PRIVATE KEY');
+
+        const deployment = k8sMock.calls.find((call) => call.method === 'createNamespacedDeployment')?.body;
+        const containerEnv = deployment.spec.template.spec.containers[0].env as { name: string }[];
+        expect(containerEnv.find((env) => env.name === 'NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY')).toBeUndefined();
+        expect(containerEnv.find((env) => env.name === 'NANGO_INTERNAL_AUTH_JOBS_KEY_ID')).toBeUndefined();
+        expect(containerEnv.find((env) => env.name === 'NANGO_INTERNAL_AUTH_SIGNING_KEY')).toBeUndefined();
+        expect(containerEnv.find((env) => env.name === 'NANGO_INTERNAL_AUTH_TOKEN')).toBeUndefined();
+        expect(JSON.stringify(deployment)).not.toContain('BEGIN PRIVATE KEY');
     });
 });

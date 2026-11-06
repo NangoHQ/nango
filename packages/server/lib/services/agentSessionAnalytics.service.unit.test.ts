@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { productTracking, withProductTrackingContext } from '@nangohq/shared';
 
+import { PLAYGROUND_USER_TAG_KEY } from './agentPlaygroundTags.js';
 import {
     trackAgentSessionCreated,
     trackAgentSessionProxyRequest,
@@ -62,12 +63,23 @@ describe('trackAgentSessionCreated', () => {
         expect(event).toBe('agents:session_start');
         expect(properties).toMatchObject({
             agent_session_id: 'session-1',
+            is_playground: false,
             integration_count: 2,
             is_tool_search_enabled: true,
             is_execute_enabled: true,
             is_proxy_enabled: false,
             is_create_connection_enabled: false
         });
+    });
+
+    it('marks a session the Agent Playground created', () => {
+        const playgroundSession: AgentSession = {
+            ...session,
+            metaTools: { ...session.metaTools, nangoCreateConnection: { enabled: true, tags: { [PLAYGROUND_USER_TAG_KEY]: 'user-a' } } }
+        };
+        inRequest(() => trackAgentSessionCreated(playgroundSession));
+
+        expect(onlyEvent().properties).toMatchObject({ agent_session_id: 'session-1', is_playground: true });
     });
 
     it('inherits the account and environment of the request', () => {
@@ -112,6 +124,21 @@ describe('trackAgentSessionToolCall', () => {
             is_success: true
         });
         expect(properties).not.toHaveProperty('error_code');
+    });
+
+    it('carries the goal and the intent the agent gave', () => {
+        inRequest(() =>
+            trackAgentSessionToolCall({
+                metaTool: 'nango_execute',
+                session,
+                integrationId: 'notion',
+                toolName: 'read_doc',
+                goal: 'summarize the roadmap doc',
+                intent: 'read the roadmap doc'
+            })
+        );
+
+        expect(onlyEvent().properties).toMatchObject({ goal: 'summarize the roadmap doc', intent: 'read the roadmap doc' });
     });
 
     // A tool called by the name it is listed under goes through no meta tool of ours.
@@ -163,6 +190,18 @@ describe('trackAgentSessionToolCall', () => {
         inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc', pinned }));
 
         expect(onlyEvent().properties).toMatchObject({ is_pinned: pinned });
+    });
+
+    it('marks a tool that ran on an MCP server', () => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'linear-mcp', toolName: 'list_issues', mcpTool: true }));
+
+        expect(onlyEvent().properties).toMatchObject({ is_mcp_tool: true });
+    });
+
+    it('leaves the MCP marker off a deployed action', () => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc' }));
+
+        expect(onlyEvent().properties).not.toHaveProperty('is_mcp_tool');
     });
 
     it('leaves pinned out when the call site cannot say', () => {
@@ -252,8 +291,17 @@ describe('trackAgentSessionToolSearch', () => {
     ];
     const related = [{ tool_name: 'create_ticket', tool_slug: 'zendesk__create_ticket', integration_id: 'zendesk', confidence: 0.28 }];
 
-    it('carries the query as sent, with both result tiers and their confidence', () => {
-        inRequest(() => trackAgentSessionToolSearch({ session, query: 'email a customer', matches, related, logOperationId: 'op-3' }));
+    it('carries the query and goal as sent, with both result tiers and their confidence', () => {
+        inRequest(() =>
+            trackAgentSessionToolSearch({
+                session,
+                query: 'email a customer',
+                goal: 'reply to the customer about their refund',
+                matches,
+                related,
+                logOperationId: 'op-3'
+            })
+        );
 
         const { event, properties } = onlyEvent();
         expect(event).toBe('agents:tool_search_complete');
@@ -261,6 +309,7 @@ describe('trackAgentSessionToolSearch', () => {
             agent_session_id: 'session-1',
             meta_tool: 'nango_tool_search',
             query: 'email a customer',
+            goal: 'reply to the customer about their refund',
             match_count: 2,
             related_count: 1,
             top_match_confidence: 0.82,

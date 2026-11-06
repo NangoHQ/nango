@@ -60,6 +60,7 @@ export function updateIntegrationsServiceErrorToMcp(error: UpdateIntegrationsSer
         case 'integration_has_connections':
         case 'custom_not_allowed':
         case 'incompatible_credentials':
+        case 'shared_credentials_not_editable':
             return new PublicMcpError(error.message);
         case 'integration_exists':
             return integrationExistsError();

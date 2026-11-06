@@ -20,7 +20,8 @@ const artifact = {
     metadata_schema_ref: null,
     checkpoint_schema_ref: null,
     json_schema: { type: 'object' },
-    fileBody: { js: 'export default async function run() {}', ts: 'export default async function run(): Promise<void> {}' }
+    fileBody: { js: 'export default async function run() {}', ts: 'export default async function run(): Promise<void> {}' },
+    source: 'repo'
 } satisfies FunctionDeploymentArtifact;
 
 function deployedFunction({
@@ -54,6 +55,7 @@ function deployedFunction({
             id: versionId,
             function_config_id: id,
             description: artifact.description,
+            tags: {},
             file_location: `functions/${versionId}`,
             version: version ?? functionVersionHash(artifact).unwrap(),
             source: 'repo',

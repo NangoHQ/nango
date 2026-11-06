@@ -1,8 +1,13 @@
 import { memo } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { Link } from 'react-router-dom';
 import remarkGfm from 'remark-gfm';
 
+import { inAppPath } from '@/utils/routes';
+
 import type { Components } from 'react-markdown';
+
+const linkClassName = 'text-text-link underline underline-offset-2';
 
 const components: Components = {
     p: ({ children }) => <p className="leading-relaxed [&:not(:first-child)]:mt-3">{children}</p>,
@@ -10,11 +15,21 @@ const components: Components = {
     ol: ({ children }) => <ol className="mt-2 list-decimal space-y-1 pl-5">{children}</ol>,
     li: ({ children }) => <li className="leading-relaxed">{children}</li>,
     strong: ({ children }) => <strong className="font-semibold text-text-strong">{children}</strong>,
-    a: ({ children, href }) => (
-        <a href={href} target="_blank" rel="noreferrer" className="text-text-link underline underline-offset-2">
-            {children}
-        </a>
-    ),
+    a: ({ children, href }) => {
+        const path = href?.startsWith('/') ? inAppPath(href) : undefined;
+        if (path) {
+            return (
+                <Link to={path} className={linkClassName}>
+                    {children}
+                </Link>
+            );
+        }
+        return (
+            <a href={href} target="_blank" rel="noreferrer" className={linkClassName}>
+                {children}
+            </a>
+        );
+    },
     h1: ({ children }) => <h3 className="mt-4 font-semibold text-text-strong">{children}</h3>,
     h2: ({ children }) => <h3 className="mt-4 font-semibold text-text-strong">{children}</h3>,
     h3: ({ children }) => <h3 className="mt-4 font-semibold text-text-strong">{children}</h3>,

@@ -1,6 +1,6 @@
 import { fromJsonSchema, inputRequired, inputResponse, McpServer } from '@modelcontextprotocol/server';
 
-import { authorizeIn, PUBLIC_ENVIRONMENT_SCOPES } from '@nangohq/authz';
+import { authorizeIn, expandIssuable, PUBLIC_ENVIRONMENT_SCOPES } from '@nangohq/authz';
 import { environmentService } from '@nangohq/shared';
 import { getLogger, hasApiKeyScope, metrics } from '@nangohq/utils';
 
@@ -28,6 +28,7 @@ import { getProvidersTool } from './providers/get.js';
 import { proxyRequestTool } from './proxy/request.js';
 import { setSyncsStateTool } from './syncs/setState.js';
 import { triggerSyncsTool } from './syncs/trigger.js';
+import { callToolsTool } from './tools/call.js';
 import { handleMcpToolError, jsonStructuredContent, mcpToolError, toJsonSchema202012 } from './utils.js';
 
 import type {
@@ -38,7 +39,7 @@ import type {
     ManagementMcpTool
 } from './managementTool.js';
 import type { ProtocolEra, ServerContext } from '@modelcontextprotocol/server';
-import type { Principal } from '@nangohq/authz';
+import type { Principal, ScopeSelector } from '@nangohq/authz';
 import type { ApiKeyScope, AuditAttribution, AuditPolicy, DBPlan, DBTeam } from '@nangohq/types';
 
 const logger = getLogger('Server.ManagementMcpServer');
@@ -67,6 +68,7 @@ const managementMcpTools: ManagementMcpTool[] = [
     deployFunctionTool,
     deployTemplateTool,
     getDeploymentStatusTool,
+    callToolsTool,
     listLogOperationsTool,
     getLogOperationTool
 ];
@@ -132,7 +134,15 @@ export async function createManagementMcpServer(
     if (authentication.type === 'oauth') {
         return await createOAuthManagementMcpServer(authentication.context, requestBody, protocolEra);
     }
-    return createApiKeyManagementMcpServer(authentication.context, requestBody, protocolEra);
+    const { grantedScopes } = authentication.context;
+    return createApiKeyManagementMcpServer(
+        {
+            ...authentication.context,
+            grantedScopes: grantedScopes && expandIssuable((grantedScopes as ScopeSelector[]).filter((scope) => scope.startsWith('environment:')))
+        },
+        requestBody,
+        protocolEra
+    );
 }
 
 function createApiKeyManagementMcpServer(context: ManagementMcpContext, requestBody: unknown, protocolEra: ProtocolEra): McpServer {

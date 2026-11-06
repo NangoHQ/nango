@@ -9,6 +9,10 @@ openapi: 'GET /scripts/config'
 
 The `/scripts/config` endpoint returns the configuration for all integration functions. There are two variants of this endpoint:
 
+<Note>
+  This endpoint reads deployed function configuration. It does not include Nango catalog actions that are available out of the box. To list both deployed functions and catalog actions, use [List functions](/reference/backend/http-api/functions/list).
+</Note>
+
 1. `/scripts/config?format=nango` - Returns the standard configuration format
 2. `/scripts/config?format=openai` - Returns the configuration in OpenAI's function calling format
 

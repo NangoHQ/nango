@@ -8,7 +8,7 @@ description: 'Access the Ironclad API in 2 minutes 💨'
   <Tab title="🚀 Quickstart">
     <Steps>
       <Step title="Create an integration">
-        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Ironclad_. Nango doesn't provide a test OAuth app for Ironclad yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Ironclad_. Nango doesn't have a Nango-managed OAuth app for Ironclad yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
       </Step>
       <Step title="Authorize Ironclad">
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Ironclad. Later, you'll let your users do the same directly from your app.
@@ -113,6 +113,7 @@ description: 'Access the Ironclad API in 2 minutes 💨'
       - **Production (NA)**: `https://na1.ironcladapp.com`
       - **Production (EU)**: `https://eu1.ironcladapp.com`  
       - **Demo**: `https://demo.ironcladapp.com`
+      - **Preview**: `https://preview.ironcladapp.com`
     - Every Ironclad API endpoint requires specific resource scopes (e.g., `public.workflows.createdWorkflows`). Check the API documentation for each endpoint to identify the necessary scopes.
     - Each Ironclad environment operates independently. OAuth applications created on one environment cannot be used on other environments and must be recreated separately for each environment you need to access.
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ironclad.mdx)</Note>

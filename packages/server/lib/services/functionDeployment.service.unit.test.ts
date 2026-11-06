@@ -329,7 +329,7 @@ describe('functionDeploymentService', () => {
                 function_name: 'tables',
                 function_type: 'sync'
             },
-            output: 'Successfully deployed the functions:\n- tables@1.2.3',
+            output: 'Successfully deployed:\n- tables@v1.2.3',
             deployedFunctions: [{ name: 'tables', version: '1.2.3' }]
         });
     });

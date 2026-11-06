@@ -911,6 +911,31 @@ describe('buildProxyHeaders', () => {
         expect(result['authorization']).toMatch(/^Basic [A-Za-z0-9+/=]+$/);
     });
 
+    it('signs the full request URL for the real fiix provider config', () => {
+        const provider = getProvider('fiix');
+        if (!provider) {
+            throw new Error('fiix provider is missing');
+        }
+
+        const config = getDefaultProxy({ method: 'POST', endpoint: '/api/', data: { _maCn: 'FindRequest' }, provider });
+        const connection = getTestConnection({
+            credentials: { type: 'BASIC', username: 'macmmsaakp-access', password: 'secret-key' },
+            connection_config: { subdomain: 'acme', appKey: 'macmmsackp-app' }
+        });
+
+        const url = buildProxyURL({ config, connection });
+        expect(url).toBe(
+            'https://acme.macmms.com/api/?service=cmms&appKey=macmmsackp-app&accessKey=macmmsaakp-access&signatureMethod=HmacSHA256&signatureVersion=1'
+        );
+
+        const result = buildProxyHeaders({ config, url, connection });
+
+        // Fiix signs the URL minus the protocol with HMAC-SHA256 and the secret key, hex encoded
+        const expected = crypto.createHmac('sha256', 'secret-key').update(url.replace('https://', ''), 'utf8').digest('hex');
+        expect(result['authorization']).toBe(expected);
+        expect(result['content-type']).toBe('text/plain');
+    });
+
     it('resolves ${bodyCanonicalParams} for the real streamline-ai provider config end-to-end through buildProxyHeaders', () => {
         const provider = getProvider('streamline-ai');
         if (!provider) {
@@ -1097,6 +1122,17 @@ describe('enforceProxyOutboundUrlPolicy', () => {
 });
 
 describe('buildProxyURL', () => {
+    it.each(['/${missing}||https://attacker.example/collect', '/v1/me?x=${missing}||https://attacker.example/collect'])(
+        'keeps the provider origin when the caller supplies a fallback destination: %s',
+        (endpoint) => {
+            const url = buildProxyURL({
+                config: getDefaultProxy({ provider: { proxy: { base_url: 'https://api.example.com/api' } }, endpoint }),
+                connection: getTestConnection()
+            });
+            expect(new URL(url).origin).toBe('https://api.example.com');
+        }
+    );
+
     it('uses AWS SigV4 per-connection base_url when no explicit override is set', () => {
         const config = getDefaultProxy({
             provider: {

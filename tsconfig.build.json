@@ -116,10 +116,22 @@
             "path": "packages/usage"
         },
         {
+            "path": "packages/hosted-telemetry"
+        },
+        {
+            "path": "packages/license"
+        },
+        {
+            "path": "packages/self-hosting"
+        },
+        {
             "path": "packages/email"
         },
         {
             "path": "packages/metering"
+        },
+        {
+            "path": "packages/migrations"
         }
     ]
 }

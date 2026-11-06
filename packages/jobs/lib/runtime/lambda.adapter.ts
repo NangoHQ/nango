@@ -141,7 +141,7 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
     }
 
     private async preparePayload(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<Result<string>> {
-        const internalAuthToken = mintTaskAuthToken(params.taskId, params.nangoProps);
+        const internalAuthToken = await mintTaskAuthToken(params.taskId, params.nangoProps);
         const authFields = internalAuthToken ? { internalAuthToken } : {};
         const payload = {
             taskId: params.taskId,

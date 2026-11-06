@@ -16,6 +16,7 @@ export function integrationToMcp({ integration, provider, webhookUrl }: { integr
         ...(preconfiguredCredentials.length > 0 ? { preconfigured_credentials: preconfiguredCredentials } : {}),
         ...(webhookUrl !== undefined ? { webhook_url: webhookUrl } : {}),
         forward_webhooks: integration.forward_webhooks === undefined ? true : integration.forward_webhooks,
+        missing_fields: integration.missing_fields ?? [],
         created_at: integration.created_at.toISOString(),
         updated_at: integration.updated_at.toISOString()
     };

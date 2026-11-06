@@ -13,7 +13,7 @@ export const JsonSchemaTopLevelObject: React.FC<{ schema: JSONSchema7 }> = ({ sc
     if (!isObjectSchema(schema)) {
         return (
             <div className="flex flex-col gap-1.5">
-                <CatalogBadge variant="light">{schema.type}</CatalogBadge>
+                <CatalogBadge variant="light">{typeToString(schema, false)}</CatalogBadge>
                 {schema.description && <p className="text-text-muted text-body-small-medium">{schema.description}</p>}
             </div>
         );

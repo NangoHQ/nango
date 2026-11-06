@@ -19,6 +19,7 @@ function functionVersion(
 ): Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> {
     return {
         description: 'Test function',
+        tags: {},
         file_location: 'functions/github/test-function',
         version: 'test-version',
         source: 'repo',
@@ -254,7 +255,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual({ id: invocationId, statusUrl });
         expect(spy).toHaveBeenCalledWith(
             expect.objectContaining({
-                functionName: 'test-function',
+                functionUuid,
                 trigger: expect.objectContaining({
                     kind: 'http',
                     input: { value: 'test' },

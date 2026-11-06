@@ -1,0 +1,38 @@
+---
+title: 'Beamer - How do I link my account?'
+sidebarTitle: 'Beamer'
+---
+
+## Overview
+
+To authenticate with Beamer, you need:
+
+1. **API Key** — a Beamer API key.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Beamer account. You can [sign up for free](https://app.getbeamer.com/auth/signup), no credit card needed.
+
+### Step 1: Create an API key
+
+1. Log in to [Beamer](https://app.getbeamer.com) and go to **Settings** > [**API**](https://app.getbeamer.com/settings#api).
+2. Under **API keys**, click **Create new API key**. You can also use an existing key, such as the **Default** key a new account comes with.
+
+<img src="/api-integrations/beamer/beamer_api_settings.png" alt="Beamer API settings page with the Create new API key button"/>
+
+3. Click the edit (pencil) icon next to the key. Give it an alias (for example, `nango`) and turn on only the permissions your integration needs, such as **Read posts**. Changes save automatically.
+4. Click the copy icon next to the **Key** field to copy the API key.
+
+<img src="/api-integrations/beamer/beamer_api_key_permissions_copy.png" alt="Beamer API key with its alias, the Read posts permission turned on, and the copy icon"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Beamer.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/beamer/form.png" alt="Nango Connect UI form for Beamer with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Beamer.

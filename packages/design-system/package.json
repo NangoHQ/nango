@@ -34,12 +34,12 @@
         "react-dom": "^18.0.0"
     },
     "devDependencies": {
-        "@storybook/addon-a11y": "10.4.6",
-        "@storybook/addon-docs": "10.4.6",
-        "@storybook/addon-mcp": "0.6.0",
-        "@storybook/addon-themes": "10.4.6",
-        "@storybook/react": "10.4.6",
-        "@storybook/react-vite": "10.4.6",
+        "@storybook/addon-a11y": "10.6.3",
+        "@storybook/addon-docs": "10.6.3",
+        "@storybook/addon-mcp": "10.6.3",
+        "@storybook/addon-themes": "10.6.3",
+        "@storybook/react": "10.6.3",
+        "@storybook/react-vite": "10.6.3",
         "@tailwindcss/vite": "4.3.1",
         "@tokens-studio/sd-transforms": "2.0.3",
         "@types/react": "18.3.4",
@@ -49,10 +49,10 @@
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-hook-form": "7.63.0",
-        "storybook": "10.4.6",
+        "storybook": "10.6.3",
         "style-dictionary": "5.4.4",
         "tailwindcss": "4.3.1",
-        "vite": "8.0.16",
+        "vite": "8.3.5",
         "vitest": "4.1.11"
     }
 }

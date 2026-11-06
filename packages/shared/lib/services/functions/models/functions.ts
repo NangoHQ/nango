@@ -23,6 +23,7 @@ const VERSION_COLUMNS = {
     id: true,
     function_config_id: true,
     description: true,
+    tags: true,
     file_location: true,
     version: true,
     source: true,
@@ -305,7 +306,8 @@ export interface FunctionConfigUpsert {
     environmentId: number;
     integrationId: string;
     name: string;
-    version: Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'>;
+    version: Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at' | 'tags'> &
+        Partial<Pick<DBFunctionConfigVersion, 'tags'>>;
 }
 
 export async function upsert(db: Knex, inputs: FunctionConfigUpsert[]): Promise<Result<CurrentFunctionConfig[]>> {

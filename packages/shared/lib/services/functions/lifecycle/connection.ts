@@ -2,13 +2,13 @@ import { Err, Ok } from '@nangohq/utils';
 
 import * as functionConfigService from '../models/functions.js';
 import * as functionInstanceService from '../models/instances.js';
+import { scheduleInstances } from './schedule.js';
 
 import type { Orchestrator } from '../../../clients/orchestrator.js';
-import type { DBConnection, DBFunctionInstance } from '@nangohq/types';
+import type { CurrentFunctionConfig } from '../models/functions.js';
+import type { DBConnection, DBFunctionInstance, FunctionTriggerDefinition } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
-
-type FunctionConnection = Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
 
 export async function ensureForConnection(
     trx: Knex,
@@ -16,7 +16,7 @@ export async function ensureForConnection(
         connection,
         orchestrator
     }: {
-        connection: FunctionConnection;
+        connection: Pick<DBConnection, 'id' | 'connection_id' | 'environment_id' | 'provider_config_key'>;
         orchestrator: Pick<Orchestrator, 'scheduleFunctions'>;
     }
 ): Promise<Result<void>> {
@@ -30,46 +30,35 @@ export async function ensureForConnection(
             return Err(configs.error);
         }
 
-        const scheduled = configs.value.flatMap((config) => {
-            const trigger = config.currentVersion.trigger;
-            return trigger.kind === 'schedule' ? [{ config: config.config, trigger }] : [];
-        });
+        const scheduled = configs.value.filter(
+            (func): func is CurrentFunctionConfig & { currentVersion: { trigger: Extract<FunctionTriggerDefinition, { kind: 'schedule' }> } } =>
+                func.currentVersion.trigger.kind === 'schedule'
+        );
         if (scheduled.length === 0) {
             return Ok(undefined);
         }
 
         const instances = await functionInstanceService.upsert(
             trx,
-            scheduled.map(({ config }) => ({
+            scheduled.map(({ config, currentVersion }) => ({
                 function_config_id: config.id,
                 nango_connection_id: connection.id,
                 name: config.name,
                 variant: 'base',
-                frequency: null
+                frequency: null,
+                enabled: currentVersion.trigger.autoStart ?? true
             }))
         );
         if (instances.isErr()) {
             return Err(instances.error);
         }
 
-        const triggerByConfigId = new Map(scheduled.map(({ config, trigger }) => [config.id, trigger]));
-        return await orchestrator.scheduleFunctions(
+        const configsById = new Map(scheduled.map((func) => [func.config.id, func]));
+        return await scheduleInstances(
+            orchestrator,
             instances.value.flatMap((instance) => {
-                if (!instance.enabled) {
-                    return [];
-                }
-                const trigger = triggerByConfigId.get(instance.function_config_id);
-                return trigger
-                    ? [
-                          {
-                              environmentId: connection.environment_id,
-                              instance,
-                              connection,
-                              frequencyFallback: trigger.frequency,
-                              autoStart: trigger.autoStart ?? true
-                          }
-                      ]
-                    : [];
+                const config = configsById.get(instance.function_config_id);
+                return config ? [{ instance, config, connection }] : [];
             })
         );
     } catch (err) {
@@ -79,7 +68,7 @@ export async function ensureForConnection(
 
 export async function softDeleteInstancesForConnection(
     trx: Knex,
-    { connection }: { connection: Pick<FunctionConnection, 'id' | 'environment_id'> }
+    { connection }: { connection: Pick<DBConnection, 'id' | 'environment_id'> }
 ): Promise<Result<DBFunctionInstance[]>> {
     try {
         return await functionInstanceService.softDelete(trx, { connectionIds: [connection.id] }, { environmentId: connection.environment_id });

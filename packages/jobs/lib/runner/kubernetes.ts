@@ -144,7 +144,7 @@ class Kubernetes {
         }
 
         // Create Secrets first, otherwise pods that secretKeyRef them cannot start.
-        const authEnv = mintRunnerAuthEnv(node.id);
+        const authEnv = await mintRunnerAuthEnv(node.id);
         const tlsSecretResult = await this.createTlsSecret(name, namespace);
         if (tlsSecretResult.isErr()) {
             return tlsSecretResult;

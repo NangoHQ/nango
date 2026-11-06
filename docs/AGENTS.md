@@ -169,9 +169,11 @@ Prefer canonical function type names over labels based on trigger mechanics.
 
 Keep this glossary current as docs terminology evolves.
 
-- **Template** — the reusable blueprint for a Nango function. A template is code, not a deployed function. Customers can deploy a template to Nango directly or clone it into their local functions repo before customizing it.
-- **Template function** — product-facing term for a Nango-maintained, pre-built function implementation that customers can deploy from the UI, and soon via API. Use this when discussing the implementation or product workflow.
+- **Template** — a pre-built function definition used to pull or deploy a function. Use **catalog action** for a live action served by Nango; use **sync template** for a pre-built sync that must be enabled.
+- **Catalog action** — a Nango-maintained action function available out of the box and updated automatically. Prefer catalog actions for agentic workflows such as MCP, where the agent can discover the current schema. Do not treat them as stable contracts for deterministic application code; pull and deploy the action when you need ownership and stability.
+- **Sync template** — a Nango-maintained sync function that must be enabled before it runs.
 - **Template use case** — marketing-facing term for the business need a template function solves. Use this before readers are familiar with Nango Functions.
+- **Nango-managed OAuth app** — a pre-approved OAuth app that Nango registers with a provider, selectable when creating an integration. Nango-managed OAuth apps are production-ready: never describe them as test-only or as something to replace before going live. Registering your own app is optional; [Nango-managed OAuth apps](/guides/auth/auth-guide#nango-managed-oauth-apps) owns the tradeoffs. Avoid "test OAuth app", "Nango-provided credentials for testing", and "production credentials" (meaning your own app). Which APIs have one is listed in [APIs with a Nango-managed OAuth app](/guides/auth/auth-guide#apis-with-a-nango-managed-oauth-app); update that list and the API's page together.
 
 ## Content style
 

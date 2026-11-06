@@ -4,6 +4,7 @@ import type { Tags } from '../db.js';
 import type { AgentSessionUnknownPinnedConnectionsPayload } from './connections.js';
 import type { AgentSessionCreateConnectionConfig, AgentSessionEndedReason } from './session.js';
 import type {
+    AgentSessionMcpServerStatus,
     AgentSessionToolsNotInToolsetPayload,
     AgentSessionUnknownIntegrationsPayload,
     AgentSessionUnknownToolsPayload,
@@ -47,6 +48,7 @@ export interface AgentSessionToolsetSummary {
     connected: boolean;
     tools_pinned: number;
     tools_searchable: number;
+    mcp_server?: AgentSessionMcpServerStatus;
 }
 
 export interface AgentSessionMetaToolsSummary {
@@ -113,6 +115,15 @@ export type AgentSessionCreationErrorPayload =
 
 export type PostAgentSessionsCreationError = ApiError<AgentSessionCreationErrorCode, undefined, AgentSessionCreationErrorPayload>;
 
+export interface ApiCreatedAgentSession {
+    session_id: string;
+    session_token: string;
+    mcp_url: string;
+    expires_at: string;
+    toolset: Record<string, AgentSessionToolsetSummary>;
+    meta_tools: AgentSessionMetaToolsSummary;
+}
+
 export type PostAgentSessions = ApiEndpoint<{
     Audit: AuditPolicy<'agent_session', 'created', 'environment'>;
     Method: 'POST';
@@ -120,14 +131,7 @@ export type PostAgentSessions = ApiEndpoint<{
     Body: PostAgentSessionsBody;
     Error: PostAgentSessionsCreationError;
     Success: {
-        data: {
-            session_id: string;
-            session_token: string;
-            mcp_url: string;
-            expires_at: string;
-            toolset: Record<string, AgentSessionToolsetSummary>;
-            meta_tools: AgentSessionMetaToolsSummary;
-        };
+        data: ApiCreatedAgentSession;
     };
 }>;
 

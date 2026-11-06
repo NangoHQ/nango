@@ -1,4 +1,5 @@
 import { KnexDatabase } from '@nangohq/database';
+import { destroyHostedTelemetryDb, migrateHostedTelemetryDb } from '@nangohq/hosted-telemetry';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { start as migrateLogs } from '@nangohq/logs';
 import { records } from '@nangohq/records';
@@ -15,5 +16,7 @@ await records.migrate();
 await tasks.migrate();
 await migrateAuditDb();
 await destroyAuditDb();
+await migrateHostedTelemetryDb();
+await destroyHostedTelemetryDb();
 
 process.exit(0);

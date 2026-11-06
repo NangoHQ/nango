@@ -1,11 +1,15 @@
 Use `npm` as the project package manager.
-After running the initial `npm install` or `npm ci`, run `npm run prepare` to install Husky git hooks.
+Install a fresh clone or worktree with `npm ci`, not `npm install`: `npm install` into an empty `node_modules` rewrites `package-lock.json`. After that, run `npm run prepare` to install Husky git hooks.
 
 ## Linting & formatting
 
 Linting uses **oxlint** — `npm run lint` (and `npm run lint:fix`), configured in `.oxlintrc.json`. Type-aware rules run via `oxlint-tsgolint`, which resolves types from source, so no `ts-build`/`dist` is needed first. Formatting is **Prettier** — `npm run format` (CI checks it via `npm run format:check`).
 
 For inline editor diagnostics, install the oxlint extension: VS Code / Cursor → `oxc.oxc-vscode`; JetBrains → the `oxc` plugin; Neovim/Emacs/Helix/Sublime → any LSP client via `oxlint --lsp`. The ESLint extension will no longer show diagnostics.
+
+## Product analytics
+
+Every analytics event the webapp, server or CLI sends is defined in `packages/types/lib/analytics/catalogue.ts`. To add, rename or remove one, use the `managing-analytics-events` skill.
 
 ## Running Nango locally
 

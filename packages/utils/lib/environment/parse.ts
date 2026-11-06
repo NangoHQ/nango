@@ -1,7 +1,11 @@
+import { createPrivateKey, createPublicKey } from 'node:crypto';
+
 import * as z from 'zod';
 
 import { DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST, mergeProxyBaseUrlOverrideDenylist } from '../proxy/baseUrlOverrideDenylist.js';
 import { roles } from '../roles.js';
+
+import type { InternalAuthPublicKey } from '@nangohq/types';
 
 const PUBSUB_SUBJECTS = ['user', 'usage', 'team', 'lambda_keep_warm', 'audit'] as const;
 
@@ -172,6 +176,51 @@ function outboundUrlPolicySchema(varName: string) {
         );
 }
 
+const INTERNAL_AUTH_KID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const INTERNAL_AUTH_RAW_PUBLIC_KEY = /^[A-Za-z0-9_-]{43}$/;
+
+/** JSON array of `{ kid, publicKey }`. Blank or unset is an empty list. */
+function internalAuthPublicKeysSchema(varName: string) {
+    return z
+        .string()
+        .optional()
+        .transform((raw, ctx) => {
+            const value = raw?.trim();
+            if (!value) {
+                return [];
+            }
+            try {
+                return JSON.parse(value) as unknown;
+            } catch {
+                ctx.addIssue(`Invalid JSON in ${varName}`);
+                return z.NEVER;
+            }
+        })
+        .pipe(
+            z
+                .array(
+                    z.object({
+                        kid: z.string().regex(INTERNAL_AUTH_KID),
+                        publicKey: z.string().regex(INTERNAL_AUTH_RAW_PUBLIC_KEY)
+                    })
+                )
+                .check((payload) => {
+                    const seen = new Set<string>();
+                    for (const [index, entry] of payload.value.entries()) {
+                        if (seen.has(entry.kid)) {
+                            payload.issues.push({
+                                code: 'custom',
+                                message: `${varName} repeats kid ${entry.kid}`,
+                                path: [index, 'kid'],
+                                input: entry.kid
+                            });
+                        }
+                        seen.add(entry.kid);
+                    }
+                })
+        );
+}
+
 const ENVS_SHAPE = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
@@ -198,6 +247,11 @@ const ENVS_SHAPE = z.object({
     // necessary — a larger TTL widens that eventual-consistency window. Read once at startup.
     AUTH_PERSIST_CONTEXT_CACHE_TTL_MS: z.coerce.number().int().positive().max(60_000).optional().default(60_000), // 1 minute
 
+    // License configuration options
+    NANGO_LICENSE: z.string().optional(),
+    // Experimental, disabled by default for now
+    NANGO_LICENSE_CHECK: z.stringbool().optional().default(false),
+
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
@@ -212,6 +266,7 @@ const ENVS_SHAPE = z.object({
     NANGO_OAUTH_SERVER_JWKS: z.string().optional(),
     NANGO_SERVER_KEEP_ALIVE_TIMEOUT: z.coerce.number().optional().default(61_000),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional().default(200),
+    NANGO_CATALOG_CODE_RATE_LIMIT_PER_DAY: z.coerce.number().int().min(0).optional().default(500),
     NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
@@ -357,6 +412,12 @@ const ENVS_SHAPE = z.object({
     ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_BACKPRESSURE_MONITORING_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
     ORCHESTRATOR_BACKPRESSURE_MONITORING_TOP_N: z.coerce.number().optional().default(10),
+    ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS: z.coerce
+        .number()
+        .int()
+        .refine((ms) => ms === 0 || ms >= 1000, { message: 'must be 0 (disabled) or at least 1000' })
+        .default(1000),
+    ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS: z.coerce.number().int().min(1000).max(5000).default(1000),
     ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
     ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: z.coerce.number().int().nonnegative().optional().default(0),
@@ -425,6 +486,12 @@ const ENVS_SHAPE = z.object({
     ACTION_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(500),
     WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(500),
     ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
+
+    // Self-hosting
+    NANGO_SELF_HOSTING_PORT: z.coerce.number().optional().default(3010),
+    NANGO_SELF_HOSTING_DATABASE_URL: z.url().optional(),
+    NANGO_SELF_HOSTING_DATABASE_SSL: z.stringbool().optional().default(false),
+    NANGO_SELF_HOSTING_DB_POOL_MAX: z.coerce.number().int().positive().optional().default(5),
 
     // Runner
     RUNNER_SECRET_KEY: z.string().optional(),
@@ -581,6 +648,7 @@ const ENVS_SHAPE = z.object({
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
     FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
+    FLAG_HOSTED_TELEMETRY_ENABLED: z.stringbool().optional().default(true),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog
@@ -685,6 +753,19 @@ const ENVS_SHAPE = z.object({
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
     NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),
 
+    // Optional website-to-signup ad context.
+    SIGNUP_AD_CONTEXT_ENABLED: z.stringbool().optional().default(false),
+    SIGNUP_AD_CONTEXT_COOKIE_NAME: z
+        .string()
+        .optional()
+        .transform(presentEnv)
+        .pipe(
+            z
+                .string()
+                .regex(/^[A-Za-z0-9_]{1,64}$/)
+                .optional()
+        ),
+
     // PostHog
     PUBLIC_POSTHOG_KEY: z.string().optional(),
     PUBLIC_POSTHOG_HOST: z.string().optional(),
@@ -775,6 +856,12 @@ const ENVS_SHAPE = z.object({
         .stringbool({ truthy: ['true'], falsy: ['false'] })
         .optional()
         .default(false),
+    NANGO_INTERNAL_AUTH_JOBS_KEY_ID: z.string().optional(),
+    NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: z.string().optional(),
+    NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: internalAuthPublicKeysSchema('NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS'),
+    NANGO_INTERNAL_AUTH_SERVER_KEY_ID: z.string().optional(),
+    NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY: z.string().optional(),
+    NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS: internalAuthPublicKeysSchema('NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS'),
 
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
@@ -782,6 +869,20 @@ const ENVS_SHAPE = z.object({
     // Deploy
     DEPLOY_BATCH_SIZE: z.coerce.number().int().positive().optional().default(5),
     DEPLOY_LOCK_TTL_MS: z.coerce.number().int().positive().optional().default(600_000),
+
+    // Hosted telemetry
+    // Postgres storage for hosted telemetry on self-hosted and BYOC installations.
+    NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL: z.url().optional(),
+    NANGO_HOSTED_TELEMETRY_POSTGRES_POOL_MAX: z.coerce.number().int().positive().optional().default(5),
+    NANGO_HOSTED_TELEMETRY_POSTGRES_SSL: z.stringbool().optional().default(false),
+    // Floored so a configuration mistake cannot drop the data an invoice depends on: a full quarter.
+    NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS: z.coerce.number().int().min(90).optional().default(90),
+    NANGO_HOSTED_TELEMETRY_POSTGRES_PARTITION_INTERVAL_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .max(6 * 3600 * 1000) // capped so tomorrow's partition is always created before midnight reaches it
+        .default(1 * 3600 * 1000),
 
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
@@ -994,7 +1095,105 @@ const ENVS_SHAPE = z.object({
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
 });
 
+/** SPKI prefix length for an Ed25519 public key (RFC 8410). The raw key is the remaining 32 bytes. */
+const ED25519_SPKI_PREFIX_LEN = 12;
+
+/** Env files often store PEM with escaped newlines. */
+export function normalizePem(value: string): string {
+    const trimmed = value.trim();
+    return trimmed.includes('\\n') ? trimmed.replace(/\\n/g, '\n') : trimmed;
+}
+
+function presentEnv(value: string | undefined): string | undefined {
+    const trimmed = value?.trim();
+    return trimmed ? trimmed : undefined;
+}
+
+function ed25519RawPublicKey(privatePem: string): string | null {
+    try {
+        const privateKey = createPrivateKey(privatePem);
+        if (privateKey.asymmetricKeyType !== 'ed25519') {
+            return null;
+        }
+        const spki = Buffer.from(createPublicKey(privateKey).export({ type: 'spki', format: 'der' }));
+        return spki.subarray(ED25519_SPKI_PREFIX_LEN).toString('base64url');
+    } catch {
+        return null;
+    }
+}
+
+function checkInternalAuthKeyPair(
+    value: object,
+    push: (issue: { code: 'custom'; message: string; path: string[]; input: unknown }) => void,
+    names: { privateName: string; keyIdName: string; publicName: string }
+): void {
+    const record = value as Record<string, unknown>;
+    const privateRaw = record[names.privateName];
+    const keyIdRaw = record[names.keyIdName];
+    const publicRaw = record[names.publicName];
+    const privateKey = presentEnv(typeof privateRaw === 'string' ? privateRaw : undefined);
+    const keyId = presentEnv(typeof keyIdRaw === 'string' ? keyIdRaw : undefined);
+    const publicKeys = Array.isArray(publicRaw) ? (publicRaw as InternalAuthPublicKey[]) : undefined;
+
+    if (!privateKey) {
+        return;
+    }
+
+    if (!privateKey.includes('BEGIN PRIVATE KEY') || !ed25519RawPublicKey(normalizePem(privateKey))) {
+        push({
+            code: 'custom',
+            message: `${names.privateName} must be an unencrypted Ed25519 PKCS8 PEM`,
+            path: [names.privateName],
+            input: privateRaw
+        });
+    }
+
+    if (!keyId) {
+        push({
+            code: 'custom',
+            message: `${names.keyIdName} is required when ${names.privateName} is set`,
+            path: [names.keyIdName],
+            input: keyIdRaw
+        });
+        return;
+    }
+
+    if (!publicKeys) {
+        return;
+    }
+
+    const match = publicKeys.find((entry) => entry.kid === keyId);
+    if (!match) {
+        push({
+            code: 'custom',
+            message: `${names.publicName} must include ${keyId} when ${names.privateName} is set`,
+            path: [names.publicName],
+            input: publicRaw
+        });
+        return;
+    }
+
+    const raw = ed25519RawPublicKey(normalizePem(privateKey));
+    if (raw && match.publicKey !== raw) {
+        push({
+            code: 'custom',
+            message: `${names.publicName} entry ${keyId} does not match ${names.privateName}`,
+            path: [names.publicName],
+            input: publicRaw
+        });
+    }
+}
+
 export const ENVS = ENVS_SHAPE.check((ctx) => {
+    if (ctx.value.SIGNUP_AD_CONTEXT_ENABLED && !ctx.value.SIGNUP_AD_CONTEXT_COOKIE_NAME) {
+        ctx.issues.push({
+            code: 'custom',
+            message: 'SIGNUP_AD_CONTEXT_COOKIE_NAME is required when SIGNUP_AD_CONTEXT_ENABLED is true',
+            path: ['SIGNUP_AD_CONTEXT_COOKIE_NAME'],
+            input: ctx.value.SIGNUP_AD_CONTEXT_COOKIE_NAME
+        });
+    }
+
     // EMAIL_HTTP_URL on its own selects the HTTP email provider, which cannot send without a body
     // template. Fail here so a half-configured provider surfaces at startup instead of on the
     // first email, and keep the error pointed at the var that is actually missing.
@@ -1004,6 +1203,32 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
             message: 'EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set',
             path: ['EMAIL_HTTP_BODY'],
             input: ctx.value.EMAIL_HTTP_BODY
+        });
+    }
+
+    const pushIssue = (issue: { code: 'custom'; message: string; path: string[]; input: unknown }) => {
+        ctx.issues.push(issue);
+    };
+    checkInternalAuthKeyPair(ctx.value, pushIssue, {
+        privateName: 'NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY',
+        keyIdName: 'NANGO_INTERNAL_AUTH_JOBS_KEY_ID',
+        publicName: 'NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS'
+    });
+    checkInternalAuthKeyPair(ctx.value, pushIssue, {
+        privateName: 'NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY',
+        keyIdName: 'NANGO_INTERNAL_AUTH_SERVER_KEY_ID',
+        publicName: 'NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS'
+    });
+
+    const jobsKeys = ctx.value.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS;
+    const serverKeys = ctx.value.NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS;
+    const jobsKids = new Set(jobsKeys.map((entry) => entry.kid));
+    if (serverKeys.some((entry) => jobsKids.has(entry.kid))) {
+        ctx.issues.push({
+            code: 'custom',
+            message: 'NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS reuses a kid from NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS',
+            path: ['NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS'],
+            input: ctx.value.NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS
         });
     }
 });

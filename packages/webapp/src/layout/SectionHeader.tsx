@@ -11,6 +11,8 @@ export const CENTERED_MAX_WIDTH = 'max-w-[1240px]';
 interface SectionHeaderProps {
     /** Section/page title shown on the left. */
     title: string;
+    /** Optional content rendered before the title (e.g. an integration logo). */
+    leading?: React.ReactNode;
     /** Optional content rendered inline right after the title (e.g. an environment badge). */
     badge?: React.ReactNode;
     /** Optional content rendered on the right of the row (e.g. the page's primary action). */
@@ -23,10 +25,11 @@ interface SectionHeaderProps {
  * Section header — Figma node 1:5829. A fixed 56px row below the top bar showing the
  * current section title (with an optional inline badge) and the page's primary action on the right.
  */
-export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, badge, actions, centered = false }) => (
+export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, leading, badge, actions, centered = false }) => (
     <div className="flex h-14 shrink-0 items-center border-b-[0.5px] border-border-default bg-surface-page px-6">
         <div className={cn('flex w-full items-center justify-between', centered && `mx-auto ${CENTERED_MAX_WIDTH}`)}>
-            <div className="flex min-w-0 items-center gap-2.5">
+            <div className={cn('flex min-w-0 items-center', leading ? 'gap-2' : 'gap-2.5')}>
+                {leading}
                 <h1 className="type-heading-sm truncate text-text-strong">{title}</h1>
                 {badge}
             </div>

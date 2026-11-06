@@ -4,17 +4,7 @@ import { PostHog } from 'posthog-node';
 
 import { baseUrl, FixedSizeMap, NANGO_VERSION, report } from '@nangohq/utils';
 
-import type { AccountGroupProperties, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
-
-export type ProductTrackingTypes =
-    | 'functions:command_start'
-    | 'billing:plan_submit'
-    | 'billing:plan_update'
-    | 'agents:session_start'
-    | 'agents:session_end'
-    | 'agents:tool_call_complete'
-    | 'agents:proxy_request_complete'
-    | 'agents:tool_search_complete';
+import type { AccountGroupProperties, AnalyticsEventNameFor, AnalyticsEventPropertiesInput, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 
 const ACCOUNT_GROUP = 'company';
 
@@ -31,6 +21,7 @@ export interface TrackingContext {
     environment?: Pick<DBEnvironment, 'is_production'> | null | undefined;
     user?: Pick<DBUser, 'id'> | null | undefined;
     plan?: TrackedPlan | null | undefined;
+    analyticsSessionId?: string | undefined;
 }
 
 /**
@@ -82,7 +73,8 @@ function resolveContext(explicit: TrackingContextInput): TrackingContext | typeo
         user: explicit.user ?? ambient?.user,
         // Without an explicit plan, an event uses the plan its request loaded during auth.
         // A plan change later in that request makes it stale, so `plan: null` turns the fallback off.
-        plan: explicit.plan === null ? null : (explicit.plan ?? ambient?.plan)
+        plan: explicit.plan === null ? null : (explicit.plan ?? ambient?.plan),
+        analyticsSessionId: explicit.analyticsSessionId ?? ambient?.analyticsSessionId
     };
 }
 
@@ -106,8 +98,11 @@ function commonProperties(surface: 'server' | 'cli'): Record<string, unknown> {
     };
 }
 
-function contextProperties({ environment }: TrackingContext): Record<string, unknown> {
-    return environment ? { is_production: environment.is_production } : {};
+function contextProperties({ environment, analyticsSessionId }: TrackingContext): Record<string, unknown> {
+    return {
+        ...(environment ? { is_production: environment.is_production } : {}),
+        ...(analyticsSessionId ? { $session_id: analyticsSessionId } : {})
+    };
 }
 
 // Keep person processing on for `account-<id>`: PostHog links no personless event to a group.
@@ -163,29 +158,21 @@ class ProductTracking {
         };
     }
 
-    public track({
+    public track<E extends AnalyticsEventNameFor<'server'>>({
         name,
         team,
         environment,
         user,
         plan,
-        eventProperties,
-        structuredProperties
-    }: {
-        name: ProductTrackingTypes;
-        eventProperties?: Record<string, string | number | boolean | null | undefined>;
-        /**
-         * Values the taxonomy's primitives-only rule does not allow, carried by the exception granted
-         * to tool search so a query can be read next to the results it returned.
-         */
-        structuredProperties?: Record<string, ReadonlyArray<Record<string, string | number | boolean>>>;
-    } & TrackingContextInput) {
+        analyticsSessionId,
+        eventProperties
+    }: { name: E } & AnalyticsEventPropertiesInput<E> & TrackingContextInput) {
         try {
             if (this.client == null) {
                 return;
             }
 
-            const resolved = resolveContext({ team, environment, user, plan });
+            const resolved = resolveContext({ team, environment, user, plan, analyticsSessionId });
             if (resolved === IMPERSONATED) {
                 return;
             }
@@ -195,11 +182,7 @@ class ProductTracking {
             }
             const attribution = this.attribute(resolved);
 
-            const properties = {
-                ...eventProperties,
-                ...structuredProperties,
-                ...attribution.properties
-            };
+            const properties: Record<string, unknown> = { ...eventProperties, ...attribution.properties };
 
             this.client.capture({ event: name, distinctId: attribution.distinctId, properties, groups: attribution.groups });
         } catch (err) {
@@ -237,15 +220,14 @@ class ProductTracking {
      * The distinctId is a client-generated device id, and the event keeps the surface it came from
      * rather than the one relaying it.
      */
-    public trackAnonymous({
+    public trackAnonymous<E extends AnalyticsEventNameFor<'cli'>>({
         name,
         distinctId,
         eventProperties
     }: {
-        name: ProductTrackingTypes;
+        name: E;
         distinctId: string;
-        eventProperties?: Record<string, string | number | boolean | null | undefined>;
-    }) {
+    } & AnalyticsEventPropertiesInput<E>) {
         try {
             if (this.client == null) {
                 return;

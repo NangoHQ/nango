@@ -1,6 +1,7 @@
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 import { PrivateRoute } from '@/components/patterns/PrivateRoute';
+import { RouteErrorPage } from '@/components/patterns/RouteErrorPage';
 import { SignedOutRoute } from '@/components/patterns/SignedOutRoute';
 import { EmailVerified } from '@/pages/Account/EmailVerified';
 import ForgotPassword from '@/pages/Account/ForgotPassword';
@@ -12,7 +13,7 @@ import { Signin } from '@/pages/Account/Signin';
 import { Signup } from '@/pages/Account/Signup';
 import { VerifyEmail } from '@/pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from '@/pages/Account/VerifyEmailByExpiredToken';
-import { AgentPlaygroundShow } from '@/pages/AgentPlayground/Show';
+import { AgentPlayground } from '@/pages/AgentPlayground/Show';
 import { AccountApiKeysShow } from '@/pages/ApiKeys/Show';
 import { AuditShow } from '@/pages/Audit/Show';
 import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
@@ -25,14 +26,11 @@ import { ConnectionList } from '@/pages/Connection/List';
 import { ConnectionShow } from '@/pages/Connection/Show';
 import { ShowRecordModel as ConnectionShowRecordModel } from '@/pages/Connection/ShowRecordModel';
 import { EnvironmentSettings } from '@/pages/Environment/Settings/Show';
-import { ClassicGettingStarted } from '@/pages/GettingStarted/ClassicGettingStarted';
-import { GettingStarted } from '@/pages/GettingStarted/Show';
+import { AgentGettingStarted } from '@/pages/GettingStarted/AgentGettingStarted';
 import { Homepage } from '@/pages/Homepage/Show';
 import { CreateIntegration } from '@/pages/Integrations/Create';
 import { CreateIntegrationList } from '@/pages/Integrations/CreateList';
-import { FunctionsOne } from '@/pages/Integrations/providerConfigKey/Functions/One';
 import { ShowIntegration } from '@/pages/Integrations/providerConfigKey/Show';
-import { Templates } from '@/pages/Integrations/providerConfigKey/Templates';
 import { IntegrationsList } from '@/pages/Integrations/Show';
 import { LogsShow } from '@/pages/Logs/Show';
 import { NotFound } from '@/pages/NotFound';
@@ -58,7 +56,7 @@ const GettingStartedRoute = () => {
         return <Navigate to="/" replace />;
     }
 
-    return globalEnv.isCloud ? <GettingStarted /> : <ClassicGettingStarted />;
+    return <AgentGettingStarted />;
 };
 
 const RedirectPreservingLocation = ({ to }: { to: string }) => {
@@ -83,6 +81,23 @@ const legacyConnectionTabByHash = {
     '#records': 'records',
     '#settings': 'settings'
 } as const;
+
+const RedirectLegacyFunctionPage = () => {
+    const { env, providerConfigKey, functionName } = useParams();
+    const location = useLocation();
+    const next = new URLSearchParams();
+    if (functionName) {
+        next.set('function', functionName);
+    }
+    const type = new URLSearchParams(location.search).get('type');
+    const typeFilter = type === 'action' ? 'tool' : type === 'sync' || type === 'on-event' ? type : undefined;
+    if (typeFilter) {
+        next.set('type', typeFilter);
+    }
+
+    const search = next.toString();
+    return <Navigate to={{ pathname: `/${env}/integrations/${providerConfigKey}`, search: search ? `?${search}` : '' }} replace />;
+};
 
 const ConnectionIndexRedirect = () => {
     const location = useLocation();
@@ -153,7 +168,7 @@ const authRoutes = (() => {
     return [{ element: <SignedOutRoute />, children: signedOutOnlyRoutes }, ...alwaysOpenRoutes];
 })();
 
-export const router = sentryCreateBrowserRouter([
+const routes: RouteObject[] = [
     {
         path: '/oauth/consent/:uid/review',
         element: <OAuthConsent />
@@ -258,15 +273,11 @@ export const router = sentryCreateBrowserRouter([
                                     },
                                     {
                                         path: 'functions/:functionName',
-                                        element: <FunctionsOne />,
-                                        handle: {
-                                            breadcrumb: (params) => params.functionName || 'Function'
-                                        } as BreadcrumbHandle
+                                        element: <RedirectLegacyFunctionPage />
                                     },
                                     {
                                         path: 'templates',
-                                        element: <Templates />,
-                                        handle: { breadcrumb: 'Templates' } as BreadcrumbHandle
+                                        element: <Navigate to=".." replace />
                                     },
                                     {
                                         path: '*',
@@ -359,9 +370,15 @@ export const router = sentryCreateBrowserRouter([
                         element: <RedirectWithEnv path="logs" />
                     },
                     {
-                        path: 'agent-playground',
-                        element: <AgentPlaygroundShow />,
-                        handle: { breadcrumb: 'Agent Playground' } as BreadcrumbHandle
+                        path: 'playground',
+                        handle: { breadcrumb: 'Playground' } as BreadcrumbHandle,
+                        children: [
+                            { index: true, element: <Navigate to="agent" replace /> },
+                            {
+                                path: 'agent',
+                                element: <AgentPlayground />
+                            }
+                        ]
                     },
                     {
                         path: 'environment-settings',
@@ -406,4 +423,6 @@ export const router = sentryCreateBrowserRouter([
         path: '*',
         element: <NotFound />
     }
-]);
+];
+
+export const router = sentryCreateBrowserRouter([{ errorElement: <RouteErrorPage />, children: routes }]);

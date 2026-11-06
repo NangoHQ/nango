@@ -1,6 +1,7 @@
-import { CircleAlert, CircleCheck, ExternalLink, Info, TriangleAlert } from 'lucide-react';
+import { CircleAlert, CircleCheck, ExternalLink, Info, TriangleAlert, Zap } from 'lucide-react';
 
 import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from './alert';
+import { Button } from './button';
 
 import type { AlertProps } from './alert';
 import type { Meta, StoryObj } from '@storybook/react';
@@ -97,4 +98,20 @@ export const Compact: Story = {
 
 export const Toast: Story = {
     render: () => <ShapeGroups shapes={TOAST_SHAPES} size="toast" description="This is an alert toast description." className="w-[350px]" />
+};
+
+export const ButtonCta: Story = {
+    name: 'Button CTA',
+    render: () => (
+        <Alert variant="neutral" size="wide" cta="button" onDismiss={onDismiss}>
+            <Zap data-filled />
+            <AlertTitle>This is an alert title</AlertTitle>
+            <AlertDescription>This is an alert description.</AlertDescription>
+            <AlertActions>
+                <Button variant="primary" size="md">
+                    Button
+                </Button>
+            </AlertActions>
+        </Alert>
+    )
 };

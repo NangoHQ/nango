@@ -985,6 +985,18 @@ describe('Persist API', () => {
             expect(response.status).toEqual(409);
             expect(await response.json()).toMatchObject({ error: { code: 'checkpoint_conflict' } });
         });
+
+        it('should return 204 when deleting a non-existent checkpoint', async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint`, {
+                method: 'DELETE',
+                body: JSON.stringify({ key: 'test-checkpoint-delete-missing', expectedVersion: 1 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(response.status).toEqual(204);
+        });
     });
 
     describe('connection ownership', () => {
@@ -1104,7 +1116,7 @@ describe('Persist API', () => {
 const initDb = async () => {
     const now = new Date();
     const account = await seeders.createAccount();
-    const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'testEnv' })).unwrap();
+    const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'testEnv' })).unwrap().environment;
     const secret = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
 
     const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();

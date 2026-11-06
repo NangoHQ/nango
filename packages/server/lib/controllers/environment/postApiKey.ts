@@ -4,13 +4,15 @@ import { environmentService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { apiKeyScopeSchema, renameDeprecatedScopes } from '../shared/environments/apiKeyScopes.js';
 import { handleCreateApiKey } from '../shared/environments/postApiKey.js';
 
 import type { PostPublicApiKey } from '@nangohq/types';
 
 const validationBody = z
     .object({
-        display_name: z.string().min(1).max(255)
+        display_name: z.string().min(1).max(255),
+        scopes: z.array(apiKeyScopeSchema).nonempty('At least one scope is required when scopes are provided').optional()
     })
     .strict();
 
@@ -36,7 +38,7 @@ export const postPublicEnvironmentApiKey = asyncWrapper<PostPublicApiKey>(async 
     }
 
     const { environmentUuid } = valParams.data;
-    const { display_name: displayName } = valBody.data;
+    const { display_name: displayName, scopes } = valBody.data;
 
     const account = res.locals.account;
     if (!account) {
@@ -50,5 +52,11 @@ export const postPublicEnvironmentApiKey = asyncWrapper<PostPublicApiKey>(async 
         return;
     }
 
-    await handleCreateApiKey({ res, accountId: account.id, environmentId: environment.id, displayName, scopes: ['environment:*'] });
+    await handleCreateApiKey({
+        res,
+        accountId: account.id,
+        environmentId: environment.id,
+        displayName,
+        scopes: scopes && renameDeprecatedScopes(scopes, account.id)
+    });
 });

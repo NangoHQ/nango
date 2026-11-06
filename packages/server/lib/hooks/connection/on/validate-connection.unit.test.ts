@@ -54,7 +54,14 @@ describe('validateConnection', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockGetByConfig.mockResolvedValue([]);
-        mockSearch.mockResolvedValue(Ok([{ config: { id: 17, name: 'checkAccount' }, currentVersion: { limits: { concurrency: { perConnection: 1 } } } }]));
+        mockSearch.mockResolvedValue(
+            Ok([
+                {
+                    config: { id: 17, uuid: '11111111-1111-4111-8111-111111111111', name: 'checkAccount' },
+                    currentVersion: { limits: { concurrency: { perConnection: 1 } } }
+                }
+            ])
+        );
     });
 
     it('runs matching functions', async () => {
@@ -68,8 +75,7 @@ describe('validateConnection', () => {
         });
         expect(mockInvoke).toHaveBeenCalledWith(
             expect.objectContaining({
-                functionConfigId: 17,
-                functionName: 'checkAccount',
+                functionUuid: '11111111-1111-4111-8111-111111111111',
                 trigger: {
                     kind: 'event',
                     input: { event: 'validate-connection' },

@@ -44,6 +44,9 @@ import { postForgotPassword } from './controllers/v1/account/postForgotPassword.
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
+import { getAgentGettingStarted } from './controllers/v1/agentGettingStarted/getAgentGettingStarted.js';
+import { postAgentGettingStartedDismiss } from './controllers/v1/agentGettingStarted/postAgentGettingStartedDismiss.js';
+import { postAgentGettingStartedRestart } from './controllers/v1/agentGettingStarted/postAgentGettingStartedRestart.js';
 import { postAgentPlaygroundChat } from './controllers/v1/agentPlayground/postChat.js';
 import { getAuditTrail } from './controllers/v1/audit-trail/getAuditTrail.js';
 import { getAuditTrailExport } from './controllers/v1/audit-trail/getAuditTrailExport.js';
@@ -77,6 +80,7 @@ import { patchFlowEnable } from './controllers/v1/flows/id/patchEnable.js';
 import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js';
 import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.js';
 import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.js';
+import { postInvokeFunction } from './controllers/v1/functions/postInvoke.js';
 import { getGettingStarted } from './controllers/v1/gettingStarted/getGettingStarted.js';
 import { patchGettingStarted } from './controllers/v1/gettingStarted/patchGettingStarted.js';
 import { getIntegrations } from './controllers/v1/integrations/getIntegrations.js';
@@ -120,6 +124,7 @@ import { getBillingUsageTopDimensionValues } from './controllers/v1/plans/usage/
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
 import { getProviderItem } from './controllers/v1/providers/getProvider.js';
 import { getProvidersList } from './controllers/v1/providers/getProviders.js';
+import { getProviderTemplateCode } from './controllers/v1/providers/providerConfigKey/templates/getCode.js';
 import { getProviderTemplates } from './controllers/v1/providers/providerConfigKey/templates/getTemplates.js';
 import { deleteStripePaymentMethod } from './controllers/v1/stripe/payment_methods/deletePaymentMethod.js';
 import { getStripePaymentMethods } from './controllers/v1/stripe/payment_methods/getPaymentMethods.js';
@@ -130,11 +135,11 @@ import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
 import { patchTeamUser } from './controllers/v1/team/users/patchTeamUser.js';
-import { postTriggerFunction } from './controllers/v1/trigger/postTriggerFunction.js';
 import { getUser } from './controllers/v1/user/getUser.js';
 import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
 import authMiddleware from './middleware/access.middleware.js';
+import { agentPlaygroundRateLimit } from './middleware/agentPlaygroundRateLimit.middleware.js';
 import {
     auditAccountApiKeyCreated,
     auditAccountApiKeyDeleted,
@@ -163,7 +168,7 @@ import {
     auditEnvironmentDeleted,
     auditEnvironmentUpdated,
     auditEnvironmentVariablesChanged,
-    auditEnvironmentWebhookUrlsChanged,
+    auditEnvironmentWebhooksUpdated,
     auditFunctionDeleted,
     auditFunctionUpgraded,
     auditIntegrationCreated,
@@ -192,6 +197,7 @@ import {
     auditWebhookSigningKeyRotated
 } from './middleware/audit/index.js';
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
+import { catalogCodeRateLimit } from './middleware/catalogCodeRateLimit.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { isAllowedWebCorsOrigin } from './utils/cors.js';
@@ -215,7 +221,7 @@ setupAuth(web);
 // --- Security
 const webCorsHandler = cors({
     maxAge: 600,
-    allowedHeaders: 'Origin, Content-Type, sentry-trace, baggage',
+    allowedHeaders: 'Origin, Content-Type, sentry-trace, baggage, X-Nango-Analytics-Session-Id',
     exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, Set-Cookie, X-Nango-Audit-Export-Truncated',
     // Allow exact origins and PR preview subdomains (e.g. pr-123.app-development.nango.dev)
     origin: (origin, callback) => {
@@ -311,7 +317,7 @@ web.route('/environments').post(webAuth, auditEnvironmentCreated, can('account:e
 web.route('/environments/').patch(webAuth, auditEnvironmentUpdated, can('environment:settings:update'), patchEnvironment);
 web.route('/environments/').delete(webAuth, auditEnvironmentDeleted, can('environment:delete'), deleteEnvironment);
 web.route('/environments/current').get(webAuth, can('environment:settings:read'), getEnvironment);
-web.route('/environments/webhook').patch(webAuth, auditEnvironmentWebhookUrlsChanged, can('environment:webhooks:update'), patchWebhook);
+web.route('/environments/webhook').patch(webAuth, auditEnvironmentWebhooksUpdated, can('environment:webhooks:update'), patchWebhook);
 web.route('/environments/variables').post(webAuth, auditEnvironmentVariablesChanged, can('environment:variables:update'), postEnvironmentVariables);
 
 // API Key management
@@ -359,6 +365,7 @@ web.route('/integrations/:providerConfigKey/templates').get(webAuth, can('enviro
 web.route('/providers').get(webAuth, getProvidersList);
 web.route('/providers/:providerConfigKey').get(webAuth, getProviderItem);
 web.route('/providers/:providerConfigKey/templates').get(webAuth, getProviderTemplates);
+web.route('/providers/:providerConfigKey/templates/:name/code').get(webAuth, catalogCodeRateLimit, getProviderTemplateCode);
 
 // Connections
 web.route('/connections').get(webAuth, can('environment:connections:list'), getConnections);
@@ -383,7 +390,7 @@ web.route('/user/password').put(webAuth, auditAppAuthPasswordChanged, putUserPas
 
 // Plain (in-app support chat)
 web.route('/plain').get(webAuth, getPlainHmac);
-web.route('/agent-playground/chat').post(webAuth, can('environment:agent_sessions:write'), postAgentPlaygroundChat);
+web.route('/agent-playground/chat').post(webAuth, can('environment:agent_sessions:write'), agentPlaygroundRateLimit, postAgentPlaygroundChat);
 
 // Sync / Flows
 web.route('/sync').get(webAuth, can('environment:syncs:read'), getConnectionSyncs);
@@ -396,11 +403,14 @@ web.route('/flows/:id/frequency').patch(webAuth, auditSyncFrequencyChanged, can(
 web.route('/flows/:id/download').get(webAuth, can('environment:functions:read'), getFlowDownload);
 web.route('/flow/:flowName').get(webAuth, can('environment:functions:read'), flowController.getFlow.bind(syncController));
 
-web.route('/trigger/function').post(webAuth, can('environment:syncs:execute'), postTriggerFunction);
+web.route('/functions/invoke').post(webAuth, can('environment:syncs:execute'), postInvokeFunction);
 
 // Getting Started
 web.route('/getting-started').get(webAuth, getGettingStarted);
 web.route('/getting-started').patch(webAuth, patchGettingStarted);
+web.route('/agent-getting-started').get(webAuth, getAgentGettingStarted);
+web.route('/agent-getting-started/restart').post(webAuth, postAgentGettingStartedRestart);
+web.route('/agent-getting-started/dismiss').post(webAuth, postAgentGettingStartedDismiss);
 
 // Logs
 web.route('/audit-trail').get(webAuth, auditTrailQueried, can('account:audit_trail:read'), getAuditTrail);

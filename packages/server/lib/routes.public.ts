@@ -35,18 +35,26 @@ import connectionController from './controllers/connection.controller.js';
 import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
 import { getFunctionInvocation } from './controllers/connection/connectionId/functions/functionUuid/invocations/id/getInvocation.js';
 import { postFunctionInvocation } from './controllers/connection/connectionId/functions/functionUuid/invocations/postInvocation.js';
+import { patchConnectionFunction } from './controllers/connection/connectionId/functions/functionUuid/patchFunction.js';
+import { deleteFunctionVariant } from './controllers/connection/connectionId/functions/functionUuid/variants/deleteVariant.js';
+import { patchFunctionVariant } from './controllers/connection/connectionId/functions/functionUuid/variants/patchVariant.js';
+import { postFunctionVariant } from './controllers/connection/connectionId/functions/functionUuid/variants/postVariant.js';
 import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
 import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
 import { patchPublicConnection } from './controllers/connection/connectionId/patchConnection.js';
+import { postToolCall } from './controllers/connection/connectionId/tools/postCall.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import { deletePublicEnvironmentApiKey } from './controllers/environment/deleteApiKey.js';
 import { deletePublicEnvironment } from './controllers/environment/deleteEnvironment.js';
 import { getPublicEnvironmentApiKey } from './controllers/environment/getApiKey.js';
 import { getPublicEnvironmentApiKeys } from './controllers/environment/getApiKeys.js';
+import { getPublicEnvironment } from './controllers/environment/getEnvironment.js';
 import { getPublicEnvironments } from './controllers/environment/getEnvironments.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
+import { patchPublicEnvironmentApiKey } from './controllers/environment/patchApiKey.js';
+import { patchPublicEnvironment } from './controllers/environment/patchEnvironment.js';
 import { postPublicEnvironmentApiKey } from './controllers/environment/postApiKey.js';
 import { postPublicEnvironment } from './controllers/environment/postEnvironment.js';
 import { postPublicRotateWebhookSigningKey } from './controllers/environment/postPublicRotateWebhookSigningKey.js';
@@ -71,10 +79,11 @@ import { getPublicIntegrationFunction } from './controllers/integrations/uniqueK
 import { getPublicIntegrationFunctions } from './controllers/integrations/uniqueKey/functions/getFunctions.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
-import { getConnectionToolsMcp, postConnectionToolsMcp } from './controllers/mcp/connectionTools.js';
+import { getConnectionToolsMcp, postConnectionToolsMcp, requireConnectionMcp } from './controllers/mcp/connectionTools.js';
 import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
+import { getPublicProviderTemplateCode } from './controllers/providers/provider/templates/getCode.js';
 import { getPublicProviderTemplates } from './controllers/providers/provider/templates/getTemplates.js';
 import { allPublicProxy } from './controllers/proxy/allProxy.js';
 import { getPublicRecords } from './controllers/records/getRecords.js';
@@ -90,7 +99,7 @@ import { postPublicSyncStart } from './controllers/sync/postSyncStart.js';
 import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
 import { postPublicTrigger } from './controllers/sync/postTrigger.js';
 import { putSyncConnectionFrequency } from './controllers/sync/putSyncConnectionFrequency.js';
-import { allPublicV1 } from './controllers/v1/getV1.js';
+import { allPublicV1, requireV1Passthrough } from './controllers/v1/getV1.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
 import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
@@ -101,12 +110,17 @@ import {
     auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
     auditFunctionUpdated,
+    auditFunctionVariantCreated,
+    auditFunctionVariantDeleted,
+    auditFunctionVariantUpdated,
     auditPublicApiKeyCreated,
     auditPublicApiKeyDeleted,
+    auditPublicApiKeyUpdated,
     auditPublicConnectionDeleted,
     auditPublicConnectionUpdated,
     auditPublicEnvironmentCreated,
     auditPublicEnvironmentDeleted,
+    auditPublicEnvironmentUpdated,
     auditPublicFunctionDeleted,
     auditPublicIntegrationCreated,
     auditPublicIntegrationDeleted,
@@ -119,6 +133,7 @@ import {
     auditSyncVariantCreated,
     auditSyncVariantDeleted
 } from './middleware/audit/index.js';
+import { catalogCodeRateLimit } from './middleware/catalogCodeRateLimit.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { withEnvironmentTarget } from './middleware/environment-target.middleware.js';
@@ -265,10 +280,13 @@ publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrEnvAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrEnvAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProvider);
 publicAPI.route('/providers/:provider/templates').get(envAuth, withEnvironmentTarget, getPublicProviderTemplates);
+publicAPI.route('/providers/:provider/templates/:name/code').get(envAuth, withEnvironmentTarget, catalogCodeRateLimit, getPublicProviderTemplateCode);
 
 publicAPI.use('/environments', jsonContentTypeMiddleware);
 publicAPI.route('/environments').get(apiAuth, can('account:environments:list'), getPublicEnvironments);
+publicAPI.route('/environments/:environmentUuid').get(apiAuth, can('account:environments:read'), getPublicEnvironment);
 publicAPI.route('/environments').post(apiAuth, auditPublicEnvironmentCreated, can('account:environments:create'), postPublicEnvironment);
+publicAPI.route('/environments/:environmentUuid').patch(apiAuth, auditPublicEnvironmentUpdated, can('account:environments:update'), patchPublicEnvironment);
 publicAPI.route('/environments/:environmentUuid').delete(apiAuth, auditPublicEnvironmentDeleted, can('account:environments:delete'), deletePublicEnvironment);
 publicAPI
     .route('/environments/:environmentUuid/api-keys')
@@ -277,6 +295,7 @@ publicAPI
 publicAPI
     .route('/environments/:environmentUuid/api-keys/:keyUuid')
     .get(apiAuth, can('account:environments:api_keys:read'), getPublicEnvironmentApiKey)
+    .patch(apiAuth, auditPublicApiKeyUpdated, can('account:environments:api_keys:update'), patchPublicEnvironmentApiKey)
     .delete(apiAuth, auditPublicApiKeyDeleted, can('account:environments:api_keys:delete'), deletePublicEnvironmentApiKey);
 
 // @deprecated rollbacked for one customer, to delete asap
@@ -295,9 +314,16 @@ publicAPI
     .route('/integrations')
     .get(connectSessionOrEnvAuth, can('environment:integrations:list', 'environment:integrations:list_credentials'), getPublicListIntegrations);
 publicAPI.route('/integrations').post(envAuth, auditPublicIntegrationCreated, can('environment:integrations:create'), postPublicIntegration);
+// TODO: remove this deprecated alias of POST /integrations with NANGO_MANAGED credentials (NAN-7880)
 publicAPI
     .route('/integrations/quickstart')
-    .post(envAuth, auditPublicQuickstartIntegrationCreated, can('environment:integrations:create'), postPublicQuickstartIntegration);
+    .post(
+        envAuth,
+        auditPublicQuickstartIntegrationCreated,
+        can('environment:integrations:create'),
+        trackDeprecatedPublicEndpoint('POST /integrations/quickstart'),
+        postPublicQuickstartIntegration
+    );
 publicAPI.route('/integrations/:uniqueKey').patch(envAuth, auditPublicIntegrationUpdated, can('environment:integrations:update'), patchPublicIntegration);
 publicAPI
     .route('/integrations/:uniqueKey')
@@ -426,8 +452,8 @@ publicAPI.route('/sync/:name/variant/:variant').delete(envAuth, auditSyncVariant
 
 // MCP
 publicAPI.use('/mcp', jsonContentTypeMiddleware);
-publicAPI.route('/mcp').post(envAuth, can('environment:mcp'), postConnectionToolsMcp);
-publicAPI.route('/mcp').get(envAuth, can('environment:mcp'), getConnectionToolsMcp);
+publicAPI.route('/mcp').post(envAuth, requireConnectionMcp, can('environment:mcp'), postConnectionToolsMcp);
+publicAPI.route('/mcp').get(envAuth, requireConnectionMcp, can('environment:mcp'), getConnectionToolsMcp);
 
 // Scripts config
 publicAPI.use('/scripts', jsonContentTypeMiddleware);
@@ -452,6 +478,17 @@ publicAPI.route('/functions/deployments/bundle').post(envAuth, auditFunctionDepl
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid/invocations')
     .post(envAuth, can('environment:functions:invocations'), postFunctionInvocation);
+publicAPI.route('/connections/:connectionId/tools/:name/calls').post(envAuth, can('environment:tools:call'), postToolCall);
+publicAPI
+    .route('/connections/:connectionId/functions/:functionUuid')
+    .patch(envAuth, auditFunctionVariantUpdated, can('environment:functions:update'), patchConnectionFunction);
+publicAPI
+    .route('/connections/:connectionId/functions/:functionUuid/variants')
+    .post(envAuth, auditFunctionVariantCreated, can('environment:functions:update'), postFunctionVariant);
+publicAPI
+    .route('/connections/:connectionId/functions/:functionUuid/variants/:variant')
+    .delete(envAuth, auditFunctionVariantDeleted, can('environment:functions:update'), deleteFunctionVariant)
+    .patch(envAuth, auditFunctionVariantUpdated, can('environment:functions:update'), patchFunctionVariant);
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid/invocations/:id')
     .get(envAuth, can('environment:functions:invocations'), getFunctionInvocation);
@@ -462,8 +499,8 @@ publicAPI
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);
-publicAPI.route('/action/trigger').post(envAuth, can('environment:actions:execute'), postPublicTriggerAction); //TODO: to deprecate
-publicAPI.route('/action/:id').get(envAuth, can('environment:actions:execute'), getAsyncActionResult);
+publicAPI.route('/action/trigger').post(envAuth, can('environment:tools:call'), postPublicTriggerAction); //TODO: to deprecate
+publicAPI.route('/action/:id').get(envAuth, can('environment:tools:call'), getAsyncActionResult);
 
 // Connect sessions
 publicAPI.use('/connect', jsonContentTypeMiddleware);
@@ -483,7 +520,7 @@ publicAPI.route('/session/:sessionId/mcp').get(agentSessionAuth, getAgentSession
 
 // V1 passthrough (deprecated) — scope checks are inline in allPublicV1 after action/model resolution
 publicAPI.use('/v1', jsonContentTypeMiddleware);
-publicAPI.route('/v1/*splat').all(envAuth, withEnvironmentTarget, allPublicV1);
+publicAPI.route('/v1/*splat').all(envAuth, requireV1Passthrough, withEnvironmentTarget, allPublicV1);
 
 // Proxy
 publicAPI.route('/proxy{/*splat}').all(envAuth, can('environment:proxy'), upload.any(), allPublicProxy);

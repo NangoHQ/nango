@@ -1,0 +1,47 @@
+---
+title: 'Breathe HR - How do I link my account?'
+sidebarTitle: 'Breathe HR'
+---
+
+## Overview
+
+To authenticate with Breathe HR, you need:
+
+1. **Environment** — whether you're connecting to production or the sandbox.
+2. **API Key** — a key that grants Nango access to the Breathe HR API on your behalf.
+
+This guide will show you how to find these values.
+
+### Prerequisites
+
+- A Breathe HR account with access to its API settings.
+
+### Step 1: Choose your environment
+
+Breathe HR has separate production and sandbox environments, each with its own API key:
+
+| Environment | Host | API keys start with |
+| - | - | - |
+| Production | `api.breathehr.com` | `prod-` |
+| Sandbox | `api.sandbox.breathehr.info` | `sandbox-` |
+
+Pick the environment that matches the key you'll use.
+
+### Step 2: Find your API key
+
+1. Log in to Breathe HR and go to `/account/api_setup` (the API setup page in your account settings).
+2. If the API isn't enabled yet, enable it.
+3. Copy the API key for the environment you chose in Step 1.
+
+<img src="/api-integrations/breathehr/generate_api_key.png"/>
+
+
+### Step 3: Enter your details in the Connect UI
+
+1. Open the form where you need to authenticate with Breathe HR.
+2. Select your **Environment** and enter your **API Key**.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/breathehr/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Breathe HR.

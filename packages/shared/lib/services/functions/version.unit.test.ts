@@ -18,10 +18,32 @@ const artifact = {
     metadata_schema_ref: null,
     checkpoint_schema_ref: null,
     json_schema: { type: 'object', properties: { issue: { type: 'string', description: 'Issue' } } },
-    fileBody: { js: 'export default async function run() {}', ts: 'export default async function run(): Promise<void> {}' }
+    fileBody: { js: 'export default async function run() {}', ts: 'export default async function run(): Promise<void> {}' },
+    source: 'repo'
 } satisfies FunctionDeploymentArtifact;
 
 describe(functionVersionHash, () => {
+    it('treats omitted and empty tags as the same version', () => {
+        expect(functionVersionHash({ ...artifact, tags: {} }).unwrap()).toBe(functionVersionHash(artifact).unwrap());
+        expect(functionVersionHash({ ...artifact, tags: undefined }).unwrap()).toBe(functionVersionHash(artifact).unwrap());
+    });
+
+    it('changes when tags are added, changed or removed', () => {
+        const tagged = { ...artifact, tags: { category: 'crm', entities: ['contacts', 'companies'] } };
+        const hash = functionVersionHash(tagged).unwrap();
+
+        expect(hash).not.toBe(functionVersionHash(artifact).unwrap());
+        expect(hash).not.toBe(functionVersionHash({ ...tagged, tags: { ...tagged.tags, category: 'sales' } }).unwrap());
+        expect(hash).not.toBe(functionVersionHash({ ...tagged, tags: { ...tagged.tags, entities: ['contacts'] } }).unwrap());
+        expect(hash).not.toBe(functionVersionHash({ ...tagged, tags: {} }).unwrap());
+    });
+
+    it('is stable across tag key order', () => {
+        expect(functionVersionHash({ ...artifact, tags: { category: 'crm', entities: ['contacts', 'companies'] } }).unwrap()).toBe(
+            functionVersionHash({ ...artifact, tags: { entities: ['contacts', 'companies'], category: 'crm' } }).unwrap()
+        );
+    });
+
     it('is stable across object key order', () => {
         const reordered = {
             ...artifact,
@@ -41,6 +63,10 @@ describe(functionVersionHash, () => {
         expect(functionVersionHash({ ...artifact, fileBody: { ...artifact.fileBody, ts: `${artifact.fileBody.ts}\n// changed` } }).unwrap()).not.toBe(
             functionVersionHash(artifact).unwrap()
         );
+    });
+
+    it('changes when the source changes', () => {
+        expect(functionVersionHash({ ...artifact, source: 'standalone' }).unwrap()).not.toBe(functionVersionHash(artifact).unwrap());
     });
 
     it('changes when the trigger changes', () => {

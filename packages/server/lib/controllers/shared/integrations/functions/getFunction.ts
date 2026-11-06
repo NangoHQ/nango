@@ -1,8 +1,8 @@
-import { configService, legacyFunctionService } from '@nangohq/shared';
+import { configService, functionLookupService } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
 import type { RequestLocalsWithEnvironment } from '../../../../utils/express.js';
-import type { DBEnvironment, FunctionType, GetIntegrationFunction } from '@nangohq/types';
+import type { DBEnvironment, FunctionListType, GetIntegrationFunction } from '@nangohq/types';
 import type { Response } from 'express';
 
 export async function handleGetIntegrationFunction({
@@ -16,7 +16,7 @@ export async function handleGetIntegrationFunction({
     environment: DBEnvironment;
     providerConfigKey: string;
     name: string;
-    type: FunctionType | undefined;
+    type: FunctionListType | undefined;
 }): Promise<void> {
     const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
     if (!integration) {
@@ -24,7 +24,7 @@ export async function handleGetIntegrationFunction({
         return;
     }
 
-    const fnResult = await legacyFunctionService.getFunction({
+    const fnResult = await functionLookupService.getFunction({
         environmentId: environment.id,
         providerConfigKey,
         name,

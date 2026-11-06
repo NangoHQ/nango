@@ -14,7 +14,7 @@ export async function handleDeleteApiKey({
     res: Response<DeleteApiKey['Reply'] | DeletePublicApiKey['Reply'], RequestLocals>;
     environmentId: number;
     keyId: number;
-}): Promise<void> {
+}): Promise<boolean> {
     const result = await customerKeyService.deleteCustomerKey(db.knex, keyId, environmentId);
     if (result.isErr()) {
         if (result.error instanceof CustomerKeyError && result.error.code === 'no_such_api_secret') {
@@ -23,8 +23,9 @@ export async function handleDeleteApiKey({
             report(result.error);
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to delete API key' } });
         }
-        return;
+        return false;
     }
 
     res.status(200).send({ success: true });
+    return true;
 }

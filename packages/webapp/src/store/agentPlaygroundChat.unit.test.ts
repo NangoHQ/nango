@@ -1,20 +1,44 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { clearAgentPlaygroundChat, INTERRUPTED_CALL, loadAgentPlaygroundChat, saveAgentPlaygroundChat } from './agentPlaygroundChat';
+import {
+    AGENT_PLAYGROUND_CHAT_IDLE_MS,
+    clearAgentPlaygroundChats,
+    deleteAgentPlaygroundChat,
+    INTERRUPTED_CALL,
+    openAgentPlaygroundChat,
+    removeIdleAgentPlaygroundChats,
+    saveAgentPlaygroundChat
+} from './agentPlaygroundChat';
 
-const store = new Map<string, string>();
-vi.stubGlobal('sessionStorage', {
-    getItem: (key: string) => store.get(key) ?? null,
-    setItem: (key: string, value: string) => store.set(key, value),
-    removeItem: (key: string) => store.delete(key)
-});
+import type { PlaygroundMessage } from './agentPlaygroundChat';
+
+function fakeStorage() {
+    const store = new Map<string, string>();
+    return {
+        store,
+        storage: {
+            get length() {
+                return store.size;
+            },
+            key: (index: number) => [...store.keys()][index] ?? null,
+            getItem: (key: string) => store.get(key) ?? null,
+            setItem: (key: string, value: string) => store.set(key, value),
+            removeItem: (key: string) => store.delete(key)
+        }
+    };
+}
+const local = fakeStorage();
+const tab = fakeStorage();
+vi.stubGlobal('localStorage', local.storage);
+vi.stubGlobal('sessionStorage', tab.storage);
 
 const now = Date.parse('2026-10-01T12:00:00Z');
-const message = (sessionExpiresAt?: string) => ({
+const hour = 60 * 60 * 1000;
+const message = () => ({
     id: crypto.randomUUID(),
     role: 'assistant' as const,
     parts: [{ type: 'text' as const, text: 'Hi' }],
-    ...(sessionExpiresAt ? { metadata: { sessionId: 'session', sessionExpiresAt } } : {})
+    metadata: { sessionId: 'session' }
 });
 const answeredApproval = (approved: boolean) => ({
     type: 'dynamic-tool' as const,
@@ -24,54 +48,109 @@ const answeredApproval = (approved: boolean) => ({
     input: {},
     approval: { id: 'approval', approved }
 });
+const save = (chatId: string, messages: PlaygroundMessage[], at = now, env = 'dev', userId = 'user') =>
+    saveAgentPlaygroundChat({ chatId, env, userId, messages, now: at });
 
 describe('agent playground chat storage', () => {
-    beforeEach(() => store.clear());
-
-    it('restores a chat in the same environment while its session lasts', () => {
-        const messages = [message('2026-10-01T12:30:00Z')];
-        saveAgentPlaygroundChat('dev', 'user', messages);
-
-        expect(loadAgentPlaygroundChat('dev', 'user', now)).toEqual(messages);
+    beforeEach(() => {
+        local.store.clear();
+        tab.store.clear();
     });
 
-    it('drops a chat whose session has expired, or that belongs to another environment or user', () => {
-        saveAgentPlaygroundChat('dev', 'user', [message('2026-10-01T11:59:00Z')]);
-        expect(loadAgentPlaygroundChat('dev', 'user', now)).toBeUndefined();
-        expect(store.size).toBe(0);
+    it('reopens the last chat in the environment until it has gone a day without a message', () => {
+        const messages = [message()];
+        save('a', messages);
 
-        saveAgentPlaygroundChat('dev', 'user', [message('2026-10-01T12:30:00Z')]);
-        expect(loadAgentPlaygroundChat('prod', 'user', now)).toBeUndefined();
+        expect(openAgentPlaygroundChat('dev', 'user', now + AGENT_PLAYGROUND_CHAT_IDLE_MS - 1)).toEqual({ chatId: 'a', messages });
+        expect(openAgentPlaygroundChat('dev', 'user', now + AGENT_PLAYGROUND_CHAT_IDLE_MS).chatId).not.toBe('a');
+        expect(local.store.has('nango_agent_playground_chat:a')).toBe(false);
+    });
 
-        saveAgentPlaygroundChat('dev', 'user', [message('2026-10-01T12:30:00Z')]);
-        expect(loadAgentPlaygroundChat('dev', 'someone-else', now)).toBeUndefined();
+    it('drops idle chats in every environment without opening one', () => {
+        save('a', [message()], now, 'dev');
+        save('b', [message()], now + 2 * hour, 'prod');
+
+        removeIdleAgentPlaygroundChats(now + AGENT_PLAYGROUND_CHAT_IDLE_MS + hour);
+
+        expect([...local.store.keys()].filter((key) => key.startsWith('nango_agent_playground_chat:'))).toEqual(['nango_agent_playground_chat:b']);
+    });
+
+    it("prefers this tab's chat, and falls back to the environment's last chat in a new tab", () => {
+        save('a', [message()]);
+        save('b', [message()]);
+        tab.store.set('nango_agent_playground_last_chat:dev', 'a');
+
+        expect(openAgentPlaygroundChat('dev', 'user', now).chatId).toBe('a');
+        tab.store.clear();
+        expect(openAgentPlaygroundChat('dev', 'user', now).chatId).toBe('b');
+    });
+
+    it('starts empty in a tab whose chat was deleted, even when the environment has a newer one', () => {
+        save('a', [message()]);
+        save('b', [message()]);
+        tab.store.set('nango_agent_playground_last_chat:dev', 'a');
+        deleteAgentPlaygroundChat('a');
+
+        const opened = openAgentPlaygroundChat('dev', 'user', now);
+        expect(opened.messages).toBeUndefined();
+        expect(opened.chatId).not.toBe('b');
+    });
+
+    it("keeps each environment's chat apart", () => {
+        save('a', [message()], now, 'dev');
+        save('b', [message()], now, 'prod');
+
+        expect(openAgentPlaygroundChat('dev', 'user', now).chatId).toBe('a');
+        expect(openAgentPlaygroundChat('prod', 'user', now).chatId).toBe('b');
+    });
+
+    it("never opens another user's chat", () => {
+        save('a', [message()]);
+
+        expect(openAgentPlaygroundChat('dev', 'someone-else', now).chatId).not.toBe('a');
+    });
+
+    it('restarts the idle clock on a new message or an extended reply, but not on a save of the same chat', () => {
+        const first = message();
+        save('a', [first]);
+        save('a', [{ ...first, metadata: { sessionId: 'session', hidden: true } }], now + 20 * hour);
+        expect(openAgentPlaygroundChat('dev', 'user', now + 25 * hour).messages).toBeUndefined();
+
+        save('a', [first]);
+        save('a', [first, message()], now + 20 * hour);
+        expect(openAgentPlaygroundChat('dev', 'user', now + 25 * hour).messages).toHaveLength(2);
+
+        save('a', [first]);
+        save('a', [{ ...first, parts: [...first.parts, answeredApproval(true)] }], now + 20 * hour);
+        expect(openAgentPlaygroundChat('dev', 'user', now + 25 * hour).messages).toHaveLength(1);
     });
 
     it('marks an approved call that never finished as interrupted, and a denied one as denied', () => {
-        saveAgentPlaygroundChat('dev', 'user', [{ ...message('2026-10-01T12:30:00Z'), parts: [answeredApproval(true)] }]);
-        expect(loadAgentPlaygroundChat('dev', 'user', now)?.[0]?.parts[0]).toMatchObject({
+        save('a', [{ ...message(), parts: [answeredApproval(true)] }]);
+        expect(openAgentPlaygroundChat('dev', 'user', now).messages?.[0]?.parts[0]).toMatchObject({
             state: 'output-error',
             toolCallId: 'call',
             errorText: INTERRUPTED_CALL
         });
 
-        saveAgentPlaygroundChat('dev', 'user', [{ ...message('2026-10-01T12:30:00Z'), parts: [answeredApproval(false)] }]);
-        expect(loadAgentPlaygroundChat('dev', 'user', now)?.[0]?.parts[0]).toMatchObject({ state: 'output-denied' });
+        save('a', [{ ...message(), parts: [answeredApproval(false)] }]);
+        expect(openAgentPlaygroundChat('dev', 'user', now).messages?.[0]?.parts[0]).toMatchObject({ state: 'output-denied' });
     });
 
-    it('drops a chat with no session yet', () => {
-        saveAgentPlaygroundChat('dev', 'user', [message()]);
+    it('forgets a chat when it is emptied or deleted, and every chat on sign-out', () => {
+        save('a', [message()]);
+        save('a', []);
+        expect(local.store.has('nango_agent_playground_chat:a')).toBe(false);
 
-        expect(loadAgentPlaygroundChat('dev', 'user', now)).toBeUndefined();
-    });
+        save('a', [message()]);
+        deleteAgentPlaygroundChat('a');
+        expect(local.store.has('nango_agent_playground_chat:a')).toBe(false);
 
-    it('forgets the chat when it is emptied or cleared', () => {
-        saveAgentPlaygroundChat('dev', 'user', [message('2026-10-01T12:30:00Z')]);
-        saveAgentPlaygroundChat('dev', 'user', []);
-        expect(store.size).toBe(0);
-
-        saveAgentPlaygroundChat('dev', 'user', [message('2026-10-01T12:30:00Z')]);
-        clearAgentPlaygroundChat();
-        expect(store.size).toBe(0);
+        save('a', [message()], now, 'dev');
+        save('b', [message()], now, 'prod');
+        tab.store.set('nango_agent_playground_chat', '{}');
+        clearAgentPlaygroundChats();
+        expect(local.store.size).toBe(0);
+        expect(tab.store.size).toBe(0);
     });
 });

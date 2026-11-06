@@ -1,8 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { productTracking, userService } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { inviteEmail, productTracking, seeders, userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
+import { envs } from '../../../env.js';
 import { isSuccess, runServer } from '../../../utils/tests.js';
 
 const route = '/api/v1/account/signup';
@@ -88,5 +90,123 @@ describe('POST /api/v1/account/signup', () => {
         const user = await userService.getUserByEmail(email);
         await vi.waitFor(() => expect(identifyAccountGroup).toHaveBeenCalledWith(user!.account_id, { is_internal: isInternal }));
         identifyAccountGroup.mockRestore();
+    });
+
+    it('tracks a new account and user', async () => {
+        const track = vi.spyOn(productTracking, 'track');
+        const email = `${nanoid()}@example.com`;
+
+        const res = await api.fetch(route, { method: 'POST', body: { email, name: 'Foobar', password: 'aZ1-foobar!!' } });
+        expect(res.res.status).toBe(200);
+
+        const user = await userService.getUserByEmail(email);
+        const names = track.mock.calls.map(([event]) => event.name);
+        expect(names).toStrictEqual(['auth:account_create', 'auth:user_create']);
+        expect(track).toHaveBeenCalledWith(expect.objectContaining({ name: 'auth:user_create', user: expect.objectContaining({ id: user!.id }) }));
+        track.mockRestore();
+    });
+
+    it('tracks only the user for an invite signup even when acquisition is sent', async () => {
+        const { account, user: inviter } = await seeders.seedAccountEnvAndUser();
+        const email = `${nanoid()}@example.com`;
+        const invitation = await inviteEmail({ email, name: email, accountId: account.id, invitedByUserId: inviter.id, role: 'administrator', trx: db.knex });
+        const track = vi.spyOn(productTracking, 'track');
+
+        const res = await api.fetch(route, {
+            method: 'POST',
+            body: { email, name: 'Foobar', password: 'aZ1-foobar!!', token: invitation!.token, acquisition: { acquisition_utm_source: 'facebook' } }
+        });
+        expect(res.res.status).toBe(200);
+
+        const names = track.mock.calls.map(([event]) => event.name);
+        expect(names).toStrictEqual(['auth:user_create']);
+        track.mockRestore();
+    });
+    it.each(['denied', 'withdrawn', 'gpc'] as const)('allows signup without advertising fields when consent is %s', async (scenario) => {
+        const previous = envs.SIGNUP_AD_CONTEXT_ENABLED;
+        const previousCookieName = envs.SIGNUP_AD_CONTEXT_COOKIE_NAME;
+        envs.SIGNUP_AD_CONTEXT_ENABLED = true;
+        envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_test';
+        const track = vi.spyOn(productTracking, 'track');
+        const now = Date.now();
+        const context = {
+            version: 1,
+            marketing: scenario !== 'denied',
+            gpc: false,
+            method: 'explicit',
+            gdpr: true,
+            lgpd: false,
+            ccpa: false,
+            observedAt: now,
+            fbclidAt: now,
+            fbclid: 'synthetic_meta',
+            opprefAt: now,
+            oppref: 'synthetic_openai'
+        };
+        const headers: Record<string, string> = {};
+        if (scenario !== 'withdrawn') headers['Cookie'] = `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}`;
+        if (scenario === 'gpc') headers['sec-gpc'] = '1';
+        try {
+            const res = await api.fetch(route, {
+                method: 'POST',
+                body: { email: `${nanoid()}@example.com`, name: 'Consent fixture', password: 'aZ1-foobar!!' },
+                headers
+            });
+            expect(res.res.status).toBe(200);
+            const accountEvents = track.mock.calls.filter(([event]) => event.name === 'auth:account_create');
+            expect(accountEvents).toHaveLength(1);
+            const fields = Object.keys(accountEvents[0]?.[0].eventProperties ?? {});
+            expect(fields.filter((key) => key.startsWith('advertising_') || key.startsWith('is_advertising_'))).toEqual([]);
+        } finally {
+            envs.SIGNUP_AD_CONTEXT_ENABLED = previous;
+            envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previousCookieName;
+            track.mockRestore();
+        }
+    });
+
+    it('passes permitted cookie context on one account event, without creating another conversion on retry', async () => {
+        const previous = envs.SIGNUP_AD_CONTEXT_ENABLED;
+        const previousCookieName = envs.SIGNUP_AD_CONTEXT_COOKIE_NAME;
+        envs.SIGNUP_AD_CONTEXT_ENABLED = true;
+        envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = 'nango_signup_ads_test';
+        const track = vi.spyOn(productTracking, 'track');
+        const now = Date.now();
+        const context = {
+            version: 1,
+            marketing: true,
+            gpc: false,
+            method: 'explicit',
+            gdpr: true,
+            lgpd: false,
+            ccpa: false,
+            observedAt: now,
+            fbclidAt: now - 60_000,
+            fbclid: 'synthetic_meta',
+            opprefAt: now - 30_000,
+            oppref: 'synthetic_openai'
+        };
+        const body = { email: `${nanoid()}@example.com`, name: 'Consent fixture', password: 'aZ1-foobar!!' };
+        const headers = { Cookie: `${envs.SIGNUP_AD_CONTEXT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(context))}` };
+        try {
+            const first = await api.fetch(route, { method: 'POST', body, headers });
+            expect(first.res.status).toBe(200);
+            expect(track.mock.calls.filter(([e]) => e.name === 'auth:account_create')).toHaveLength(1);
+            expect(track).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    name: 'auth:account_create',
+                    eventProperties: expect.objectContaining({
+                        advertising_fbc: `fb.1.${now - 60_000}.synthetic_meta`,
+                        advertising_oppref: 'synthetic_openai'
+                    })
+                })
+            );
+            const second = await api.fetch(route, { method: 'POST', body, headers });
+            expect(second.res.status).toBe(400);
+            expect(track.mock.calls.filter(([e]) => e.name === 'auth:account_create')).toHaveLength(1);
+        } finally {
+            envs.SIGNUP_AD_CONTEXT_ENABLED = previous;
+            envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previousCookieName;
+            track.mockRestore();
+        }
     });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { currencySymbol, MAX_THRESHOLD_IN_CENTS, parseThreshold, thresholdToInput } from './spendAlert.js';
+import { currencySymbol, floorError, MAX_THRESHOLD_IN_CENTS, parseThreshold, thresholdToInput } from './spendAlert.js';
 
 describe('parseThreshold', () => {
     it('parses whole and fractional amounts', () => {
@@ -59,6 +59,28 @@ describe('parseThreshold', () => {
     it('accepts the ceiling and rejects a slipped decimal point above it', () => {
         expect(parseThreshold('10000000')).toEqual({ ok: true, thresholdInCents: MAX_THRESHOLD_IN_CENTS });
         expect(parseThreshold('10000000.01')).toEqual({ ok: false, error: 'Enter an amount of at most 10,000,000' });
+    });
+});
+
+describe('floorError', () => {
+    it('rejects a threshold at or below the floor, naming the floor', () => {
+        const error = 'Your bill starts at $50.00 each month, so an alert at or below that would go off right away. Enter an amount above $50.00.';
+        expect(floorError(5000, 5000, 'USD')).toBe(error);
+        expect(floorError(2500, 5000, 'USD')).toBe(error);
+    });
+
+    it('accepts a threshold above the floor', () => {
+        expect(floorError(5001, 5000, 'USD')).toBeNull();
+    });
+
+    it('accepts anything when there is no floor to check against', () => {
+        expect(floorError(1, null, 'USD')).toBeNull();
+    });
+
+    it('names the floor without a symbol when the currency is unknown', () => {
+        expect(floorError(5000, 5000, null)).toBe(
+            'Your bill starts at 50.00 each month, so an alert at or below that would go off right away. Enter an amount above 50.00.'
+        );
     });
 });
 

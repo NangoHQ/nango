@@ -6,7 +6,8 @@ export {
     auditApiKeyDeleted,
     auditApiKeyUpdated,
     auditPublicApiKeyCreated,
-    auditPublicApiKeyDeleted
+    auditPublicApiKeyDeleted,
+    auditPublicApiKeyUpdated
 } from './apiKey.middleware.js';
 export {
     auditAppAuthPasswordChanged,
@@ -41,8 +42,9 @@ export {
     auditEnvironmentCreated,
     auditEnvironmentDeleted,
     auditEnvironmentUpdated,
+    auditEnvironmentWebhooksUpdated,
+    auditPublicEnvironmentUpdated,
     auditEnvironmentVariablesChanged,
-    auditEnvironmentWebhookUrlsChanged,
     auditPublicEnvironmentCreated,
     auditPublicEnvironmentDeleted,
     auditPublicWebhookSigningKeyRotated,
@@ -54,6 +56,9 @@ export {
     auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
     auditFunctionUpdated,
+    auditFunctionVariantCreated,
+    auditFunctionVariantDeleted,
+    auditFunctionVariantUpdated,
     auditFunctionUpgraded,
     auditPreBuiltDeployed,
     auditPublicFunctionDeleted

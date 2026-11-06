@@ -1,18 +1,25 @@
 import { makeAuditTarget as makeTarget } from '../../audit.js';
 import { Audit, auditable, maybeAuditable } from './auditable.js';
-import { nonEmptyString, omitUndefined } from './input.js';
+import { bodyField, nonEmptyString, omitUndefined, param } from './input.js';
+import { functionTarget } from './lookups.js';
 
 import type { AuditTarget } from '@nangohq/audit';
 import type {
+    DeleteFunctionVariant,
     DeleteIntegrationFunction,
     DeletePublicIntegrationFunction,
     FunctionDeployedMetadata,
     FunctionSource,
     FunctionUpdatedMetadata,
+    FunctionVariantMetadata,
+    FunctionVariantSettingsMetadata,
+    PatchConnectionFunction,
     PatchFunction,
+    PatchFunctionVariant,
     PostDeploy,
     PostFunctionDeployment,
     PostFunctionDeploymentBundle,
+    PostFunctionVariant,
     PostPreBuiltDeploy,
     PutUpgradePreBuiltFlow
 } from '@nangohq/types';
@@ -42,7 +49,7 @@ export const auditFunctionDeployedCli = auditable<PostDeploy>({
 export const auditFunctionDeploymentBundle = auditable<PostFunctionDeploymentBundle>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
     target: (req) => functionBundleTargets(req.body.functions),
-    metadata: () => ({ type: 'function' })
+    metadata: (req) => ({ type: 'function', source: functionSource(functionBundleSource(req.body.functions)) })
 });
 
 export const auditPreBuiltDeployed = auditable<PostPreBuiltDeploy>({
@@ -75,6 +82,41 @@ export const auditPublicFunctionDeleted = auditable<DeletePublicIntegrationFunct
     metadata: (req) => functionDeletedMeta(req.query.type)
 });
 
+export const auditFunctionVariantCreated = auditable<PostFunctionVariant>({
+    policy: Audit.auditable({ resource: 'function', action: 'variant_created', scope: 'environment' }),
+    target: (req, locals) => functionTarget(param(req, 'functionUuid'), locals),
+    metadata: (req) =>
+        omitUndefined<FunctionVariantMetadata>({
+            connectionId: nonEmptyString(param(req, 'connectionId')),
+            variant: nonEmptyString(bodyField(req, 'variant'))
+        })
+});
+
+export const auditFunctionVariantDeleted = auditable<DeleteFunctionVariant>({
+    policy: Audit.auditable({ resource: 'function', action: 'variant_deleted', scope: 'environment' }),
+    target: (req, locals) => functionTarget(param(req, 'functionUuid'), locals),
+    metadata: (req) =>
+        omitUndefined<FunctionVariantMetadata>({
+            connectionId: nonEmptyString(param(req, 'connectionId')),
+            variant: nonEmptyString(param(req, 'variant'))
+        })
+});
+
+export const auditFunctionVariantUpdated = auditable<PatchFunctionVariant | PatchConnectionFunction>({
+    policy: Audit.auditable({ resource: 'function', action: 'variant_updated', scope: 'environment' }),
+    target: (req, locals) => functionTarget(param(req, 'functionUuid'), locals),
+    metadata: (req) => {
+        const enabled = bodyField(req, 'enabled');
+        const frequency = bodyField(req, 'frequency');
+        return omitUndefined<FunctionVariantSettingsMetadata>({
+            connectionId: nonEmptyString(param(req, 'connectionId')),
+            variant: nonEmptyString(param(req, 'variant')) ?? 'base',
+            enabled: typeof enabled === 'boolean' ? enabled : undefined,
+            frequency: frequency === null ? null : nonEmptyString(frequency)
+        });
+    }
+});
+
 function functionDeletedMeta(type: unknown): Record<string, unknown> | undefined {
     // A sync and an action can share a name; `type` disambiguates which function was deleted.
     return omitUndefined({ type: nonEmptyString(type) });
@@ -103,6 +145,11 @@ function functionBundleTargets(value: unknown): AuditTarget[] | undefined {
             return makeTarget('function', functionTargetId(integrationId, name));
         })
         .filter((target): target is AuditTarget => Boolean(target));
+}
+
+function functionBundleSource(value: unknown): unknown {
+    const first: unknown = Array.isArray(value) ? value[0] : undefined;
+    return typeof first === 'object' && first !== null && 'source' in first ? first.source : undefined;
 }
 
 // The contract promises one of the known sources, so an unrecognised value records as a repo deploy

@@ -1,3 +1,4 @@
+import type { ApiKeyPrincipal } from '../api-keys/auth.js';
 import type { AllAuthCredentials } from '../auth/api.js';
 import type { DBConnectionDecrypted } from '../connection/db.js';
 import type { DBIntegrationDecrypted } from '../integration/db.js';
@@ -58,7 +59,7 @@ export type ConnectionForProxy = Pick<DBConnectionDecrypted, 'connection_id' | '
 };
 export type IntegrationConfigForProxy = Pick<DBIntegrationDecrypted, 'oauth_client_id' | 'oauth_client_secret' | 'custom'>;
 
-export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
+export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration, InternalProxyConfiguration {
     decompress: boolean;
     method: HTTP_METHOD;
     providerName: string;
@@ -69,6 +70,13 @@ export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text'
 
 export interface InternalProxyConfiguration {
     providerName: string;
+    /** Only set for customer API/MCP proxy requests or calls from deployed code. */
+    monitoringContext?: {
+        accountId: number;
+        environmentId: number;
+        apiKey?: ApiKeyPrincipal | undefined;
+        callsite: 'proxy' | 'sdk';
+    };
 }
 
 export interface RetryHeaderConfig {

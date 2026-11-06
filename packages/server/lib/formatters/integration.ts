@@ -86,6 +86,7 @@ export function integrationToPublicApi({
         ...(preconfiguredConnectionConfig.length > 0 ? { preconfigured_connection_config: preconfiguredConnectionConfig } : {}),
         ...include,
         forward_webhooks: integration.forward_webhooks === undefined ? true : integration.forward_webhooks,
+        missing_fields: integration.missing_fields ?? [],
         created_at: integration.created_at.toISOString(),
         updated_at: integration.updated_at.toISOString()
     };
