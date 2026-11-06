@@ -33,8 +33,6 @@ export {
     type IconButtonProps,
     type IconButtonSize,
     type IconButtonVariant,
-    ICON_BUTTON_SIZES,
-    ICON_BUTTON_VARIANTS,
     buttonVariants
 } from './components/ui/button';
 export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './components/ui/card';
