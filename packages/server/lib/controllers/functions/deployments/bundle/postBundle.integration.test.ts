@@ -364,7 +364,14 @@ describe('function deployment bundle endpoints', () => {
             if (ok) {
                 isSuccess(preview.json);
                 isSuccess(deployed.json);
+                expect(deployed.json).toStrictEqual({
+                    created: [],
+                    updated: [{ integrationId: 'github', name: validFunction.name }],
+                    unchanged: [],
+                    deleted: []
+                });
                 expect(fn?.currentVersion.source).toBe(incoming);
+                expect(fn?.currentVersion.description).toBe(changed.description);
             } else {
                 const error = { code: 'invalid_request', message: 'Cannot overwrite functions that are not standalone: github/fetchIssues' };
                 expect(preview.res.status).toBe(400);
