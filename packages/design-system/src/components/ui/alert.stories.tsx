@@ -1,4 +1,4 @@
-import { CircleAlert, CircleCheck, ExternalLink, Info, Key, TriangleAlert, Zap } from 'lucide-react';
+import { CircleAlert, CircleCheck, ExternalLink, Info, TriangleAlert, Zap } from 'lucide-react';
 
 import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from './alert';
 import { Button } from './button';
@@ -100,25 +100,18 @@ export const Toast: Story = {
     render: () => <ShapeGroups shapes={TOAST_SHAPES} size="toast" description="This is an alert toast description." className="w-[350px]" />
 };
 
-const ButtonCtaAlert = ({ icon }: { icon: React.ReactNode }) => (
-    <Alert variant="neutral" size="wide" cta="button" onDismiss={onDismiss}>
-        {icon}
-        <AlertTitle>This is an alert title</AlertTitle>
-        <AlertDescription>This is an alert description.</AlertDescription>
-        <AlertActions>
-            <Button variant="primary" size="md">
-                Button
-            </Button>
-        </AlertActions>
-    </Alert>
-);
-
-export const NeutralWideButtonCta: Story = {
-    name: 'Neutral / Wide / Button CTA',
-    render: () => <ButtonCtaAlert icon={<Zap data-filled />} />
-};
-
-export const NeutralWideButtonCtaOutlineIcon: Story = {
-    name: 'Neutral / Wide / Button CTA, outline icon',
-    render: () => <ButtonCtaAlert icon={<Key />} />
+export const ButtonCta: Story = {
+    name: 'Button CTA',
+    render: () => (
+        <Alert variant="neutral" size="wide" cta="button" onDismiss={onDismiss}>
+            <Zap data-filled />
+            <AlertTitle>This is an alert title</AlertTitle>
+            <AlertDescription>This is an alert description.</AlertDescription>
+            <AlertActions>
+                <Button variant="primary" size="md">
+                    Button
+                </Button>
+            </AlertActions>
+        </Alert>
+    )
 };
