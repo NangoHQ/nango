@@ -172,7 +172,8 @@ class SharedCredentialsService {
             result = await db.knex
                 .insert({
                     name: config.name,
-                    credentials: configToInsert
+                    credentials: configToInsert,
+                    ...(config.enabled === undefined ? {} : { enabled: config.enabled })
                 })
                 .into<DBSharedCredentials>('providers_shared_credentials')
                 .returning('*');
@@ -232,6 +233,7 @@ class SharedCredentialsService {
                     .update({
                         name: config.name,
                         credentials: configToUpdate,
+                        ...(config.enabled === undefined ? {} : { enabled: config.enabled }),
                         updated_at: new Date()
                     })
                     .returning('*');
