@@ -23,14 +23,13 @@ export async function issueLicense(
         telemetry: installation.telemetry
     };
 
-    let envelope: string;
+    let signed: Awaited<ReturnType<typeof signLicense>>;
     try {
-        envelope = await signLicense(payload, signer);
+        signed = await signLicense(payload, signer);
     } catch (err) {
         return Err(err);
     }
-    const [header = '', , signature = ''] = envelope.split('.');
-    const { kid } = JSON.parse(Buffer.from(header, 'base64url').toString()) as { kid: string };
+    const { envelope, kid, signature } = signed;
 
     const stored = await createInstallationLicense(db, {
         installationId: installation.id,

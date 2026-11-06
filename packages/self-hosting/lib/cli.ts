@@ -201,16 +201,26 @@ key list    --installation <uuid> [--all]`,
 license disable  --installation <uuid> [--yes]
 license list     --installation <uuid>               every license ever issued, active or not`,
         verbs: {
-            create: async (db) =>
-                issueLicense(db, {
+            create: async (db) => {
+                const expiresAt = date('expires-at', values['expires-at']);
+                const graceUntil = date('grace-until', values['grace-until']);
+                if (graceUntil <= expiresAt) {
+                    throw new Error('--grace-until must be after --expires-at');
+                }
+                return issueLicense(db, {
                     installation: await installation(db),
-                    expiresAt: date('expires-at', values['expires-at']),
-                    graceUntil: date('grace-until', values['grace-until']),
+                    expiresAt,
+                    graceUntil,
                     signer: await kmsLicenseSigner({ keyId: SIGNING_KEY_ID })
-                }),
+                });
+            },
             disable: async (db) => {
                 const row = await installation(db);
-                confirmed({ installation: row.name, activeLicense: (await getActiveLicense(db, { installationId: row.id })).unwrap()?.expires_at ?? null });
+                const active = (await getActiveLicense(db, { installationId: row.id })).unwrap();
+                if (!active) {
+                    throw new Error(`installation ${row.name} has no active license`);
+                }
+                confirmed({ installation: row.name, activeLicense: active.expires_at });
                 return deactivateLicense(db, { installationId: row.id });
             },
             list: async (db) => listLicenses(db, { installationId: (await installation(db, { includeDeleted: true })).id })
@@ -241,12 +251,14 @@ const { positionals, values } = parsed;
 const [entityName = '', verbName = ''] = positionals;
 const entity = entities[entityName];
 const verb = entity?.verbs[verbName];
-if (!entity || positionals.length > 2) {
+if (values.help) {
+    console.log(entity?.usage ?? overview());
+} else if (!entity || positionals.length > 2) {
     console.error(overview());
     process.exitCode = 1;
-} else if (values.help || !verb) {
+} else if (!verb) {
     console.error(entity.usage);
-    process.exitCode = values.help ? 0 : 1;
+    process.exitCode = 1;
 } else {
     try {
         const result = await verb({ knex: cloudDb() });

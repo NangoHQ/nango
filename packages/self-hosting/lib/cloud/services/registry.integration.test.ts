@@ -175,13 +175,15 @@ describe('installation licenses', () => {
         expect((await getActiveLicense(db, { installationId })).unwrap()).toStrictEqual(first);
     });
 
-    it('deactivates the active license, leaving the installation without one', async () => {
+    it('deactivates the active license and returns it, then refuses a second time', async () => {
         const installationId = await installation();
-        await createInstallationLicense(db, licenseInput(installationId));
+        const created = (await createInstallationLicense(db, licenseInput(installationId))).unwrap();
 
-        (await deactivateLicense(db, { installationId })).unwrap();
+        expect((await deactivateLicense(db, { installationId })).unwrap()).toMatchObject({ id: created.id, active: false });
 
         expect((await getActiveLicense(db, { installationId })).unwrap()).toBeNull();
+        const again = await deactivateLicense(db, { installationId });
+        expect(again.isErr() && again.error.message).toBe(`installation ${installationId} has no active license`);
     });
 });
 
@@ -215,6 +217,15 @@ describe('installation updates and deletion', () => {
 
         expect(updated).toMatchObject({ id: created.id, name: 'after', telemetry: false, alerts: 'off', mode: 'byoc', stage: 'production' });
         expect(updated.updated_at.getTime()).toBeGreaterThan(lastWeek.getTime());
+    });
+
+    it('refuses a rename to a name the customer already uses', async () => {
+        const customerId = await customer();
+        await createInstallation(db, { customerId, name: 'taken', mode: 'byoc', stage: 'production' });
+        const other = (await createInstallation(db, { customerId, name: 'free', mode: 'byoc', stage: 'production' })).unwrap();
+
+        const res = await updateInstallation(db, { id: other.id, name: 'taken' });
+        expect(res.isErr() && res.error.message).toBe('installation taken already exists for this customer');
     });
 
     it('changes the mode and the stage in place, keeping the uuid', async () => {
