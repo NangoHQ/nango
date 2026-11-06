@@ -1,7 +1,7 @@
 import { generateKeyPairSync, sign } from 'node:crypto';
 
 import knexFactory from 'knex';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { verifyLicense } from '@nangohq/license';
 
@@ -107,6 +107,22 @@ describe('issueLicense', () => {
         });
 
         expect(res.isErr() && res.error.message).toBe('kms down');
+        expect((await getActiveLicense(db, { installationId: row.id })).unwrap()).toBeNull();
+    });
+
+    it('refuses a grace period that does not outlast the license, before signing', async () => {
+        const row = await installation('impatient');
+        const sign = vi.fn(signer.sign);
+
+        const res = await issueLicense(db, {
+            installation: row,
+            signer: { ...signer, sign },
+            expiresAt,
+            graceUntil: expiresAt
+        });
+
+        expect(res.isErr() && res.error.message).toBe('the grace period must end after the license expires');
+        expect(sign).not.toHaveBeenCalled();
         expect((await getActiveLicense(db, { installationId: row.id })).unwrap()).toBeNull();
     });
 });

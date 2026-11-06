@@ -5,7 +5,7 @@ import { calculateJwkThumbprint, exportJWK } from 'jose';
 import { Err, Ok } from '@nangohq/utils';
 
 import { INSTALLATION_KEYS_TABLE } from '../db/schema.js';
-import { inserted, table } from './db.js';
+import { inserted, orMissing, table } from './db.js';
 
 import type { RegistryDb } from './db.js';
 import type { DBSelfHostingInstallationKey } from '@nangohq/types';
@@ -60,4 +60,8 @@ export async function getInstallationKey(db: RegistryDb, { kid }: { kid: string 
     } catch (err) {
         return Err(err);
     }
+}
+
+export async function requireInstallationKey(db: RegistryDb, { kid }: { kid: string }): Promise<Result<DBSelfHostingInstallationKey>> {
+    return orMissing(await getInstallationKey(db, { kid }), `no live key ${kid}`);
 }

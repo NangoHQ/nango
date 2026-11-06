@@ -5,10 +5,18 @@ import knexFactory from 'knex';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { migrate } from '../db/migrate.js';
-import { createCustomer, deleteCustomer, getCustomerByName, listCustomers } from './customer.service.js';
-import { createInstallationKey, deleteInstallationKey, getInstallationKey, listInstallationKeys } from './installation-key.service.js';
+import { createCustomer, deleteCustomer, deleteCustomerPreview, getCustomerByName, listCustomers, requireCustomer } from './customer.service.js';
+import { createInstallationKey, deleteInstallationKey, getInstallationKey, listInstallationKeys, requireInstallationKey } from './installation-key.service.js';
 import { createInstallationLicense, deactivateLicense, getActiveLicense, listLicenses } from './installation-license.service.js';
-import { createInstallation, deleteInstallation, getInstallationByUuid, listInstallations, updateInstallation } from './installation.service.js';
+import {
+    createInstallation,
+    deleteInstallation,
+    deleteInstallationPreview,
+    getInstallationByUuid,
+    listInstallations,
+    requireInstallation,
+    updateInstallation
+} from './installation.service.js';
 
 import type { RegistryDb } from './db.js';
 import type { Knex } from 'knex';
@@ -65,6 +73,15 @@ describe('customers', () => {
         const res = await createCustomer(db, { name: 'twice' });
         expect(res.isErr() && res.error.message).toBe('customer twice already exists');
     });
+
+    it('requires a live customer by name', async () => {
+        const created = (await createCustomer(db, { name: 'required' })).unwrap();
+        expect((await requireCustomer(db, { name: 'required' })).unwrap()).toStrictEqual(created);
+
+        (await deleteCustomer(db, { name: 'required' })).unwrap();
+        const res = await requireCustomer(db, { name: 'required' });
+        expect(res.isErr() && res.error.message).toBe('no live customer required');
+    });
 });
 
 describe('installations', () => {
@@ -90,6 +107,23 @@ describe('installations', () => {
         await createInstallation(db, { customerId, name: 'prod', mode: 'byoc', stage: 'production' });
         const res = await createInstallation(db, { customerId, name: 'prod', mode: 'byoc', stage: 'production' });
         expect(res.isErr() && res.error.message).toBe('installation prod already exists for this customer');
+    });
+
+    it('refuses alerts on a self-managed installation', async () => {
+        const res = await createInstallation(db, { customerId: await customer(), name: 'quiet', mode: 'self_managed', stage: 'production', alerts: 'slack' });
+        expect(res.isErr() && res.error.message).toBe('a self-managed installation is not in our Datadog, alerts must be off');
+    });
+
+    it('requires a live installation by uuid unless deleted ones are included', async () => {
+        const created = (await createInstallation(db, { customerId: await customer(), name: 'required', mode: 'byoc', stage: 'production' })).unwrap();
+        expect((await requireInstallation(db, { uuid: created.uuid })).unwrap()).toStrictEqual(created);
+
+        (await deleteInstallation(db, { id: created.id })).unwrap();
+        const res = await requireInstallation(db, { uuid: created.uuid });
+        expect(res.isErr() && res.error.message).toBe(`no live installation ${created.uuid}`);
+        expect((await requireInstallation(db, { uuid: created.uuid, includeDeleted: true })).unwrap().id).toBe(created.id);
+        const unknown = await requireInstallation(db, { uuid: '00000000-0000-0000-0000-000000000000', includeDeleted: true });
+        expect(unknown.isErr() && unknown.error.message).toBe('no installation 00000000-0000-0000-0000-000000000000');
     });
 });
 
@@ -129,6 +163,15 @@ describe('installation keys', () => {
         expect((await deleteInstallationKey(db, { kid: 'nope' })).isErr()).toBe(true);
         (await deleteInstallationKey(db, { kid: key.kid })).unwrap();
         expect((await deleteInstallationKey(db, { kid: key.kid })).isErr()).toBe(true);
+    });
+
+    it('requires a live key by kid', async () => {
+        const { key } = (await createInstallationKey(db, { installationId: await installation() })).unwrap();
+        expect((await requireInstallationKey(db, { kid: key.kid })).unwrap()).toStrictEqual(key);
+
+        (await deleteInstallationKey(db, { kid: key.kid })).unwrap();
+        const res = await requireInstallationKey(db, { kid: key.kid });
+        expect(res.isErr() && res.error.message).toBe(`no live key ${key.kid}`);
     });
 });
 
@@ -205,6 +248,21 @@ describe('customer deletion', () => {
     it('returns an unknown customer as an error', async () => {
         expect((await deleteCustomer(db, { name: 'nobody' })).isErr()).toBe(true);
     });
+
+    it('previews every live installation that would go with the customer', async () => {
+        const created = (await createCustomer(db, { name: 'previewed' })).unwrap();
+        const kept = (await createInstallation(db, { customerId: created.id, name: 'kept', mode: 'byoc', stage: 'production' })).unwrap();
+        const gone = (await createInstallation(db, { customerId: created.id, name: 'gone', mode: 'byoc', stage: 'staging' })).unwrap();
+        const { key } = (await createInstallationKey(db, { installationId: kept.id })).unwrap();
+        await createInstallationLicense(db, licenseInput(kept.id));
+        (await deleteInstallation(db, { id: gone.id })).unwrap();
+
+        expect((await deleteCustomerPreview(db, { customer: created })).unwrap()).toStrictEqual({
+            customer: 'previewed',
+            installations: [{ installation: { uuid: kept.uuid, name: 'kept' }, keys: [key.kid], activeLicense: licenseInput(kept.id).expiresAt }]
+        });
+        expect((await listCustomers(db)).unwrap().map((c) => c.name)).toContain('previewed');
+    });
 });
 
 describe('installation updates and deletion', () => {
@@ -265,6 +323,44 @@ describe('installation updates and deletion', () => {
     it('refuses to update or delete an unknown installation', async () => {
         expect((await updateInstallation(db, { id: 999999, name: 'x' })).isErr()).toBe(true);
         expect((await deleteInstallation(db, { id: 999999 })).isErr()).toBe(true);
+    });
+
+    it('refuses an update with nothing to change', async () => {
+        const res = await updateInstallation(db, { id: await installation() });
+        expect(res.isErr() && res.error.message).toBe('nothing to update');
+    });
+
+    it('refuses alerts on a self-managed installation, whichever side of the rule the update moves', async () => {
+        const alerting = (
+            await createInstallation(db, { customerId: await customer(), name: 'alerting', mode: 'byoc', stage: 'production', alerts: 'slack' })
+        ).unwrap();
+        const toSelfManaged = await updateInstallation(db, { id: alerting.id, mode: 'self_managed' });
+        expect(toSelfManaged.isErr() && toSelfManaged.error.message).toBe('a self-managed installation is not in our Datadog, alerts must be off');
+
+        const quiet = (await createInstallation(db, { customerId: await customer(), name: 'quiet', mode: 'self_managed', stage: 'production' })).unwrap();
+        expect((await updateInstallation(db, { id: quiet.id, alerts: 'oncall' })).isErr()).toBe(true);
+        expect((await updateInstallation(db, { id: quiet.id, mode: 'byoc', alerts: 'oncall' })).unwrap()).toMatchObject({ mode: 'byoc', alerts: 'oncall' });
+        expect((await updateInstallation(db, { id: alerting.id, mode: 'self_managed', alerts: 'off' })).unwrap()).toMatchObject({
+            mode: 'self_managed',
+            alerts: 'off'
+        });
+    });
+
+    it('previews the keys and the active license an installation deletion takes down', async () => {
+        const created = (await createInstallation(db, { customerId: await customer(), name: 'previewed', mode: 'byoc', stage: 'production' })).unwrap();
+        expect((await deleteInstallationPreview(db, { installation: created })).unwrap()).toStrictEqual({
+            installation: { uuid: created.uuid, name: 'previewed' },
+            keys: [],
+            activeLicense: null
+        });
+
+        const { key } = (await createInstallationKey(db, { installationId: created.id })).unwrap();
+        await createInstallationLicense(db, licenseInput(created.id));
+        expect((await deleteInstallationPreview(db, { installation: created })).unwrap()).toMatchObject({
+            keys: [key.kid],
+            activeLicense: licenseInput(created.id).expiresAt
+        });
+        expect((await getInstallationByUuid(db, { uuid: created.uuid })).unwrap()).not.toBeNull();
     });
 });
 
