@@ -119,6 +119,13 @@ describe('installation tokens', () => {
         expect(code(res)).toBe('unknown_key');
     });
 
+    it('reports a registry that cannot be read apart from a bad token', async () => {
+        const { privateKeyPem } = await licensedInstallation('unreachable');
+
+        const res = await verifyInstallationToken({ knex, schema: 'self_hosting_token_test_nowhere' }, await mintInstallationToken(privateKeyPem));
+        expect(code(res)).toBe('registry_unavailable');
+    });
+
     it('rejects what is not a token', async () => {
         expect(code(await verifyInstallationToken(db, ''))).toBe('malformed');
         expect(code(await verifyInstallationToken(db, 'a.b.c'))).toBe('malformed');
