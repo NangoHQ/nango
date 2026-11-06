@@ -6,14 +6,27 @@ on:
     workflow_dispatch:
 
 jobs:
+    list-packages:
+        runs-on: ubuntu-latest
+        permissions:
+            packages: read
+        outputs:
+            packages: ${{ steps.list.outputs.packages }}
+        steps:
+            - id: list
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: echo "packages=$(gh api '/orgs/NangoHQ/packages?package_type=npm&per_page=100' --jq '[.[].name]')" >> "$GITHUB_OUTPUT"
+
     delete-old-versions:
+        needs: list-packages
         runs-on: ubuntu-latest
         permissions:
             packages: write
         strategy:
             fail-fast: false
             matrix:
-                package: [cli, types, node, nango-yaml, providers, runner-sdk, frontend, egress]
+                package: ${{ fromJSON(needs.list-packages.outputs.packages) }}
         steps:
             - uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5.0.0
               with:
