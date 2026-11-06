@@ -83,19 +83,22 @@ describe('User service - tracking', () => {
     });
 
     it.each([
-        { hashed_password: 'hash', method: 'password' },
-        { hashed_password: '', method: 'google' }
-    ])('tracks a $method user', async ({ hashed_password, method }) => {
+        { hashed_password: 'hash', method: 'password', email_verified: false },
+        { hashed_password: 'hash', method: 'password', email_verified: true },
+        { hashed_password: '', method: 'google', email_verified: true }
+    ])('tracks and identifies a $method user (email_verified=$email_verified)', async ({ hashed_password, method, email_verified }) => {
         const track = vi.spyOn(productTracking, 'track');
+        const identifyUser = vi.spyOn(productTracking, 'identifyUser');
 
         const user = await userService.createUser({
             email: `${uuid()}@example.com`,
             name: 'Test',
             hashed_password,
             account_id: account.id,
-            email_verified: true
+            email_verified
         });
 
         expect(track).toHaveBeenCalledWith({ name: 'auth:user_create', team: { id: account.id }, user, eventProperties: { method } });
+        expect(identifyUser).toHaveBeenCalledExactlyOnceWith(user);
     });
 });
