@@ -21,7 +21,7 @@ describe('function_type validation', () => {
         expect(functionDeploymentBodySchema.safeParse({ ...templateDeploy, function_type }).success).toBe(true);
     });
 
-    it('accepts version and allow_destructive for tools and functions', () => {
-        expect(functionDeploymentBodySchema.safeParse({ ...codeDeploy, function_type: 'tool', version: '1.0.0', allow_destructive: true }).success).toBe(true);
+    it.each(['tool', 'function'])('accepts version and allow_destructive for %s', (function_type) => {
+        expect(functionDeploymentBodySchema.safeParse({ ...codeDeploy, function_type, version: '1.0.0', allow_destructive: true }).success).toBe(true);
     });
 });

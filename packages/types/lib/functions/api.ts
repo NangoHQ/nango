@@ -582,7 +582,7 @@ export type PostFunctionDeploymentBundlePreview = ApiEndpoint<{
     Method: 'POST';
     Path: '/functions/deployments/bundle/preview';
     Body: FunctionDeploymentBundleBody;
-    Error: ApiError<'functions_deployment_error' | 'integration_not_found'>;
+    Error: ApiError<'functions_deployment_error' | 'integration_not_found' | 'invalid_request'>;
     Success: FunctionDeploymentBundleSuccess;
 }>;
 
@@ -591,6 +591,6 @@ export type PostFunctionDeploymentBundle = ApiEndpoint<{
     Method: 'POST';
     Path: '/functions/deployments/bundle';
     Body: FunctionDeploymentBundleBody;
-    Error: ApiError<'functions_deployment_error' | 'concurrent_deployment' | 'integration_not_found'>;
+    Error: ApiError<'functions_deployment_error' | 'concurrent_deployment' | 'integration_not_found' | 'invalid_request'>;
     Success: FunctionDeploymentBundleSuccess;
 }>;
