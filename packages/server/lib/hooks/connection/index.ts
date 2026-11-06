@@ -54,3 +54,6 @@ export { default as cdwCredentialsVerification } from './providers/cdw/credentia
 export { default as appleCalendarCredentialsVerification } from './providers/apple-calendar/credentials-verification.js';
 export { default as campaignCleanerCredentialsVerification } from './providers/campaign-cleaner/credentials-verification.js';
 export { default as cohereCredentialsVerification } from './providers/cohere/credentials-verification.js';
+export { default as parsioIoCredentialsVerification } from './providers/parsio-io/credentials-verification.js';
+export { default as serpapiCredentialsVerification } from './providers/serpapi/credentials-verification.js';
+export { default as bannerbearCredentialsVerification } from './providers/bannerbear/credentials-verification.js';
