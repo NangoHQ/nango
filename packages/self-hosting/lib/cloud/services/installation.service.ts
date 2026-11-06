@@ -100,27 +100,29 @@ export async function updateInstallation(
             .returning('*');
         return row ? Ok(row) : Err(new Error(`no live installation ${id}`));
     } catch (err) {
-        return Err(err);
+        return Err(isUniqueViolation(err) ? new Error(`installation ${name} already exists for this customer`) : err);
     }
 }
 
 export async function deleteInstallation(db: RegistryDb, { id }: { id: number }): Promise<Result<DBSelfHostingInstallation>> {
     try {
-        return await db.knex.transaction(async (trx) => {
-            const inTrx = { ...db, knex: trx };
-            const now = new Date();
-            const [row] = await installations(inTrx).where({ id, deleted_at: null }).update({ deleted_at: now, updated_at: now }).returning('*');
-            if (!row) {
-                return Err(new Error(`no live installation ${id}`));
-            }
-            await table<DBSelfHostingInstallationLicense>(inTrx, INSTALLATION_LICENSES_TABLE)
-                .where({ installation_id: id, active: true })
-                .update({ active: false });
-            await table<DBSelfHostingInstallationKey>(inTrx, INSTALLATION_KEYS_TABLE)
-                .where({ installation_id: id, deleted_at: null })
-                .update({ deleted_at: now });
-            return Ok(row);
-        });
+        return Ok(
+            await db.knex.transaction(async (trx) => {
+                const inTrx = { ...db, knex: trx };
+                const now = new Date();
+                const [row] = await installations(inTrx).where({ id, deleted_at: null }).update({ deleted_at: now, updated_at: now }).returning('*');
+                if (!row) {
+                    throw new Error(`no live installation ${id}`);
+                }
+                await table<DBSelfHostingInstallationLicense>(inTrx, INSTALLATION_LICENSES_TABLE)
+                    .where({ installation_id: id, active: true })
+                    .update({ active: false });
+                await table<DBSelfHostingInstallationKey>(inTrx, INSTALLATION_KEYS_TABLE)
+                    .where({ installation_id: id, deleted_at: null })
+                    .update({ deleted_at: now });
+                return row;
+            })
+        );
     } catch (err) {
         return Err(err);
     }

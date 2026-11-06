@@ -49,17 +49,18 @@ function licenseKeyId(publicKeyPem: string): Promise<string> {
 export async function signLicense(
     license: License,
     { publicKeyPem, sign }: { publicKeyPem: string; sign: (data: Buffer) => Promise<Buffer> }
-): Promise<string> {
-    const header = base64url.encode(JSON.stringify({ alg: ALGORITHM, kid: await licenseKeyId(publicKeyPem) }));
+): Promise<{ envelope: string; kid: string; signature: string }> {
+    const kid = await licenseKeyId(publicKeyPem);
+    const header = base64url.encode(JSON.stringify({ alg: ALGORITHM, kid }));
     const payload = base64url.encode(JSON.stringify(license));
-    const signature = await sign(Buffer.from(`${header}.${payload}`));
-    const envelope = `${header}.${payload}.${derToJose(signature, ALGORITHM)}`;
+    const signature = derToJose(await sign(Buffer.from(`${header}.${payload}`)), ALGORITHM);
+    const envelope = `${header}.${payload}.${signature}`;
 
     const verified = await verifyLicense(envelope, publicKeyPem);
     if (verified.isErr()) {
         throw new LicenseError(verified.error.code, `signed license does not verify with the given public key: ${verified.error.message}`);
     }
-    return envelope;
+    return { envelope, kid, signature };
 }
 
 /** Checks that a license was signed by us. Expiry is not checked here. */

@@ -65,10 +65,10 @@ export async function getActiveLicense(
     }
 }
 
-export async function deactivateLicense(db: RegistryDb, { installationId }: { installationId: number }): Promise<Result<void>> {
+export async function deactivateLicense(db: RegistryDb, { installationId }: { installationId: number }): Promise<Result<DBSelfHostingInstallationLicense>> {
     try {
-        await licenses(db).where({ installation_id: installationId, active: true }).update({ active: false });
-        return Ok();
+        const [row] = await licenses(db).where({ installation_id: installationId, active: true }).update({ active: false }).returning('*');
+        return row ? Ok(row) : Err(new Error(`installation ${installationId} has no active license`));
     } catch (err) {
         return Err(err);
     }

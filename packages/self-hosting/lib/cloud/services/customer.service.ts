@@ -28,19 +28,24 @@ export async function getCustomerByName(db: RegistryDb, { name }: { name: string
 
 export async function deleteCustomer(db: RegistryDb, { name }: { name: string }): Promise<Result<DBSelfHostingCustomer>> {
     try {
-        return await db.knex.transaction(async (trx) => {
-            const inTrx = { ...db, knex: trx };
-            const customer = (await getCustomerByName(inTrx, { name })).unwrap();
-            if (!customer) {
-                return Err(new Error(`no live customer ${name}`));
-            }
-            for (const installation of (await listInstallations(inTrx, { customerId: customer.id })).unwrap()) {
-                (await deleteInstallation(inTrx, { id: installation.id })).unwrap();
-            }
-            const now = new Date();
-            const [row] = await customers(inTrx).where({ id: customer.id, deleted_at: null }).update({ deleted_at: now, updated_at: now }).returning('*');
-            return row ? Ok(row) : Err(new Error(`no live customer ${name}`));
-        });
+        return Ok(
+            await db.knex.transaction(async (trx) => {
+                const inTrx = { ...db, knex: trx };
+                const customer = (await getCustomerByName(inTrx, { name })).unwrap();
+                if (!customer) {
+                    throw new Error(`no live customer ${name}`);
+                }
+                for (const installation of (await listInstallations(inTrx, { customerId: customer.id })).unwrap()) {
+                    (await deleteInstallation(inTrx, { id: installation.id })).unwrap();
+                }
+                const now = new Date();
+                const [row] = await customers(inTrx).where({ id: customer.id, deleted_at: null }).update({ deleted_at: now, updated_at: now }).returning('*');
+                if (!row) {
+                    throw new Error(`no live customer ${name}`);
+                }
+                return row;
+            })
+        );
     } catch (err) {
         return Err(err);
     }
