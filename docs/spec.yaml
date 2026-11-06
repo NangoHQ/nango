@@ -507,8 +507,8 @@ paths:
                   required: true
                   schema:
                       type: string
-                      enum: [sync, action]
-                  description: Required to disambiguate a sync and an action that share a name. On-event functions are not yet supported.
+                      enum: [action, sync]
+                  description: Required to disambiguate a sync and an action that share a name.
             responses:
                 '200':
                     description: Successfully enqueued the function deletion
@@ -4071,7 +4071,7 @@ components:
 
         RunnableFunctionType:
             type: string
-            enum: [action, sync]
+            enum: [action, sync, tool, function]
 
         FunctionAvailability:
             type: object
@@ -4466,7 +4466,7 @@ components:
                     description: The TypeScript source code for the function.
                 version:
                     type: string
-                    description: Optional version tag for this deployment.
+                    description: Optional version tag for this deployment. Ignored for tools and functions.
                 allow_destructive:
                     type: boolean
                     description: Allow overwriting an existing standalone function with the same name.
@@ -4490,7 +4490,8 @@ components:
                     type: string
                     description: The template name to deploy, as listed by `GET /providers/{provider}/templates`.
                 function_type:
-                    $ref: '#/components/schemas/RunnableFunctionType'
+                    type: string
+                    enum: [action, sync]
 
         FunctionDeploymentResponse:
             type: object
