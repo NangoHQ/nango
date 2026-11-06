@@ -4591,7 +4591,7 @@ components:
                     description: The integration ID (unique_key) that you created in Nango.
                 function_name:
                     type: string
-                    description: The sync or action function name.
+                    description: The function name.
                 function_type:
                     $ref: '#/components/schemas/RunnableFunctionType'
                 code:
@@ -4669,7 +4669,7 @@ components:
                     description: The integration ID (unique_key) that you created in Nango.
                 function_name:
                     type: string
-                    description: The sync or action function name.
+                    description: The function name.
                 function_type:
                     $ref: '#/components/schemas/RunnableFunctionType'
                 created_at:
