@@ -98,41 +98,40 @@ export const alertVariants = cva(
                     'has-[>[data-slot=alert-actions]]:[&>svg]:translate-y-0.5 has-[>[data-slot=alert-actions]]:[&>[data-slot=alert-close]]:translate-y-0.5'
                 ]
             },
-            // Figma "CTA". `link` is the borderless AlertButton every status uses. `button` is the Neutral/Wide
-            // "CTA=Button" banner: a primary <Button size="md"> in AlertActions, on a panel surface rather than the
-            // tinted status one. The look is only defined for neutral, so the classes live in compoundVariants.
+            // Renders no Button itself: the call site passes a primary <Button size="md"> in AlertActions.
             cta: {
-                link: '',
                 button: ''
             }
         },
         compoundVariants: [
             {
                 variant: 'neutral',
+                size: 'wide',
                 cta: 'button',
                 className: [
                     'rounded-ds-md bg-surface-panel border-border-default',
-                    // The variant's default icon is Lucide Zap, drawn filled in the link colour. Any other icon
-                    // keeps the outline status-neutral-icon treatment from the base. Keyed off the class lucide adds
-                    // to every icon, so call sites swap the icon as a plain child like on every other alert.
-                    '[&>svg.lucide-zap]:fill-current [&>svg.lucide-zap]:stroke-none [&>svg.lucide-zap]:text-icon-link'
+                    '[&>svg[data-filled]]:fill-current [&>svg[data-filled]]:stroke-none [&>svg[data-filled]]:text-icon-link'
                 ]
             }
         ],
         defaultVariants: {
             variant: 'success',
-            size: 'wide',
-            cta: 'link'
+            size: 'wide'
         }
     }
 );
 
-export interface AlertProps extends React.ComponentProps<'div'>, VariantProps<typeof alertVariants> {
-    /** Renders the dismiss affordance. Omit for an alert that can't be dismissed. */
-    onDismiss?: () => void;
-    /** Accessible label for the dismiss button. */
-    dismissLabel?: string;
-}
+type AlertVariantProps = VariantProps<typeof alertVariants>;
+
+type AlertStyleProps = (Omit<AlertVariantProps, 'cta'> & { cta?: never }) | { variant: 'neutral'; size?: 'wide'; cta: 'button' };
+
+export type AlertProps = React.ComponentProps<'div'> &
+    AlertStyleProps & {
+        /** Renders the dismiss affordance. Omit for an alert that can't be dismissed. */
+        onDismiss?: () => void;
+        /** Accessible label for the dismiss button. */
+        dismissLabel?: string;
+    };
 
 export const Alert = forwardRef<HTMLDivElement, AlertProps>(
     ({ className, variant, size, cta, onDismiss, dismissLabel = 'Dismiss', children, ...props }, ref) => (
