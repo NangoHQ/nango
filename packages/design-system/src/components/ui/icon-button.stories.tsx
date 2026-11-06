@@ -1,18 +1,13 @@
 import { Plus } from 'lucide-react';
 
-import { ICON_BUTTON_SIZES, ICON_BUTTON_VARIANTS, IconButton } from './button';
+import { ICON_BUTTON_SIZES, IconButton } from './button';
 
 import type { IconButtonSize, IconButtonVariant } from './button';
 import type { Meta, StoryObj } from '@storybook/react';
 
-const meta: Meta<typeof IconButton> = {
+const meta: Meta = {
     title: 'Design System/Components/IconButton',
-    component: IconButton,
-    parameters: { layout: 'padded' },
-    argTypes: {
-        variant: { control: 'select', options: ICON_BUTTON_VARIANTS },
-        size: { control: 'select', options: ICON_BUTTON_SIZES }
-    }
+    parameters: { layout: 'padded' }
 };
 
 export default meta;
@@ -34,10 +29,6 @@ const SIZE_SPEC: Record<IconButtonSize, string> = {
     sm: '28 · icon 14',
     md: '32 · icon 16',
     lg: '36 · icon 16'
-};
-
-export const Playground: Story = {
-    args: { variant: 'primary', size: 'md', label: 'Add item', children: <Plus /> }
 };
 
 const StateMatrix = ({ variant }: { variant: IconButtonVariant }) => (
@@ -66,21 +57,13 @@ const StateMatrix = ({ variant }: { variant: IconButtonVariant }) => (
     </div>
 );
 
-// One story per type × theme. `globals.theme` pins the Themes toolbar, so light and dark are both captured
-// without toggling.
-const matrixStory = (variant: IconButtonVariant, theme: 'light' | 'dark'): Story => ({
-    name: `${variant} — ${theme}`,
-    globals: { theme },
+const matrixStory = (variant: IconButtonVariant): Story => ({
+    name: `${variant} — sizes × states`,
     render: () => <StateMatrix variant={variant} />
 });
 
-export const PrimaryLight = matrixStory('primary', 'light');
-export const PrimaryDark = matrixStory('primary', 'dark');
-export const SecondaryLight = matrixStory('secondary', 'light');
-export const SecondaryDark = matrixStory('secondary', 'dark');
-export const OutlineLight = matrixStory('outline', 'light');
-export const OutlineDark = matrixStory('outline', 'dark');
-export const GhostLight = matrixStory('ghost', 'light');
-export const GhostDark = matrixStory('ghost', 'dark');
-export const DangerLight = matrixStory('danger', 'light');
-export const DangerDark = matrixStory('danger', 'dark');
+export const Primary = matrixStory('primary');
+export const Secondary = matrixStory('secondary');
+export const Outline = matrixStory('outline');
+export const Ghost = matrixStory('ghost');
+export const Danger = matrixStory('danger');
