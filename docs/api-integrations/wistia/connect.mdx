@@ -1,0 +1,44 @@
+---
+title: 'Wistia - How do I link my account?'
+sidebarTitle: 'Wistia'
+---
+
+## Overview
+
+To authenticate with Wistia, you need:
+
+1. **API Token** — a Wistia API token, or an expiring access token created from one.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Wistia account. You can [sign up for free](https://app.wistia.com/auth/wistia_auth_register_pre_auth?plan_type=developer).
+- Account Owner access. Only the Account Owner can open the API tokens page.
+
+### Step 1: Create an API token
+
+1. Log in to [Wistia](https://app.wistia.com/) as the Account Owner.
+2. Open **Settings** from the account menu and select **API Home** in the left sidebar, or go to [Account Settings > API](https://account.wistia.com/account/api). Click **New token**.
+
+<img src="/api-integrations/wistia/api_tokens_page.png" alt="Wistia API Tokens page in Account Settings with the New token button"/>
+
+3. Enter a **Token nickname** and select the permissions you need. **Read all data** is enough for read-only access. Click **Create token**.
+
+<img src="/api-integrations/wistia/new_api_token_dialog.png" alt="New API token dialog in Wistia with a nickname, Read all data selected and the Create token button"/>
+
+4. Click the copy button next to the token and store it securely. You can't copy it again after you leave or refresh the page.
+
+<img src="/api-integrations/wistia/api_token_created.png" alt="New API token dialog in Wistia showing the created token with its copy button"/>
+
+You can also use an [expiring access token](https://docs.wistia.com/reference/post_expiring-token). Create one by calling `POST /modern/expiring_token` with an API token that has **Read, update & delete anything**, and grant it the `all:delegate_to_contact_permissions` scope so it works for REST API requests. It expires two days after creation by default, so use a permanent API token for a lasting connection.
+
+### Step 2: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Wistia.
+2. Enter your **API Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/wistia/form.png" alt="Wistia connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Wistia.
