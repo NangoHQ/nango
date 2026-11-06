@@ -78,6 +78,7 @@ import type {
     PatchApiKey,
     PatchEnvironment,
     PatchPublicApiKey,
+    PatchPublicEnvironment,
     PostEnvironment,
     PostPublicApiKey,
     PostPublicEnvironment,
@@ -119,7 +120,13 @@ import type {
     PostFunctionVariant,
     PostToolCall
 } from './functions/api.js';
-import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
+import type {
+    GetAgentGettingStarted,
+    GetGettingStarted,
+    PatchGettingStarted,
+    PostAgentGettingStartedDismiss,
+    PostAgentGettingStartedRestart
+} from './gettingStarted/api.js';
 import type {
     DeleteIntegration,
     DeletePublicIntegration,
@@ -260,6 +267,7 @@ export type PublicApiEndpoints =
     | PostPublicRotateWebhookSigningKey
     | AllPublicProxy
     | PostPublicEnvironment
+    | PatchPublicEnvironment
     | DeletePublicEnvironment
     | GetPublicEnvironment
     | GetPublicEnvironments
@@ -362,6 +370,9 @@ export type PrivateApiEndpoints =
     | PostSharedCredentialsProvider
     | PatchSharedCredentialsProvider
     | GetGettingStarted
+    | GetAgentGettingStarted
+    | PostAgentGettingStartedRestart
+    | PostAgentGettingStartedDismiss
     | PatchGettingStarted
     | GetConnectUISettings
     | PutConnectUISettings

@@ -38,6 +38,24 @@ describe('rotateWebhookSigningKey cache', () => {
         await multipleMigrations();
     });
 
+    it('persists an imported key and replaces the cached key', async () => {
+        const { env } = await seedAccountEnvAndUser();
+        const before = (await customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id)).unwrap();
+        const supplied = uuid.v4();
+        expect((await customerKeyService.rotateWebhookSigningKey(db.knex, env.id, supplied)).unwrap()).toBe(supplied);
+        expect(await storedKey(env.id)).toBe(supplied);
+        expect((await customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id)).unwrap()).toBe(supplied);
+        expect(supplied).not.toBe(before);
+    });
+
+    it.each(['', '   '])('rejects a blank imported key %j without modifying storage or cache', async (supplied) => {
+        const { env } = await seedAccountEnvAndUser();
+        const before = (await customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id)).unwrap();
+        expect((await customerKeyService.rotateWebhookSigningKey(db.knex, env.id, supplied)).isErr()).toBe(true);
+        expect(await storedKey(env.id)).toBe(before);
+        expect((await customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id)).unwrap()).toBe(before);
+    });
+
     it('serves the last committed key when rotations overlap', async () => {
         const { env } = await seedAccountEnvAndUser();
 

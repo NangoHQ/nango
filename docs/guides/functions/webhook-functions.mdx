@@ -116,7 +116,7 @@ nango deploy
 To deploy only this webhook-backed sync function:
 
 ```bash
-nango deploy --sync contacts dev
+nango deploy dev crm/syncs/contacts.ts
 ```
 
 Then send a test webhook from the provider dashboard, CLI, or webhook testing tool to the Nango webhook URL. Check Nango logs for the incoming webhook, routing result, and function execution.

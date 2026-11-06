@@ -6,7 +6,10 @@ import { resolveLocalFileName } from '../utils/utils.js';
 import configService from './config.service.js';
 import remoteFileService from './file/remote.service.js';
 import { increment } from './sync/config/config.service.js';
+import { onEventScopeProviderKeys } from './sync/config/deployScope.js';
 
+import type { LegacyDeployScope } from './sync/config/deployScope.js';
+import type { Knex } from '@nangohq/database';
 import type { DBEnvironment, DBOnEventScript, DBTeam, OnEventScript, OnEventScriptsByProvider, OnEventType } from '@nangohq/types';
 
 const TABLE = 'on_event_scripts';
@@ -65,31 +68,36 @@ const dbMapper = {
 };
 
 export const onEventScriptService = {
-    async update({
-        environment,
-        account,
-        onEventScriptsByProvider,
-        sdkVersion
-    }: {
-        environment: DBEnvironment;
-        account: DBTeam;
-        onEventScriptsByProvider: OnEventScriptsByProvider[];
-        sdkVersion: string | undefined;
-    }): Promise<OnEventScript[]> {
-        return db.knex.transaction(async (trx) => {
+    async update(
+        trx: Knex,
+        {
+            environment,
+            account,
+            onEventScriptsByProvider,
+            sdkVersion,
+            scope
+        }: {
+            environment: DBEnvironment;
+            account: DBTeam;
+            onEventScriptsByProvider: OnEventScriptsByProvider[];
+            sdkVersion: string | undefined;
+            scope: LegacyDeployScope;
+        }
+    ): Promise<OnEventScript[]> {
+        return trx.transaction(async (trx) => {
             const onEventInserts: Omit<DBOnEventScript, 'id' | 'created_at' | 'updated_at'>[] = [];
 
-            // Deactivate all previous scripts for the environment
-            // This is done to ensure that we don't have any orphaned scripts when they are removed from nango.yaml
+            const providerKeys = onEventScopeProviderKeys(scope, onEventScriptsByProvider);
             const previousScriptVersions = await trx
                 .from<DBOnEventScript>(TABLE)
-                .whereRaw(`config_id IN (SELECT id FROM _nango_configs WHERE environment_id = ?)`, [environment.id])
-                .where({
-                    active: true
+                .whereIn('config_id', (configs) => {
+                    configs.select('id').from('_nango_configs').where({ environment_id: environment.id });
+                    if (providerKeys !== 'all') {
+                        configs.whereIn('unique_key', providerKeys);
+                    }
                 })
-                .update({
-                    active: false
-                })
+                .where({ active: true })
+                .update({ active: false })
                 .returning('*');
 
             for (const onEventScriptByProvider of onEventScriptsByProvider) {
@@ -190,12 +198,12 @@ export const onEventScriptService = {
     diffChanges: async ({
         environmentId,
         onEventScriptsByProvider,
-        deployMode = 'all',
+        scope,
         sdkVersion
     }: {
         environmentId: number;
         onEventScriptsByProvider: OnEventScriptsByProvider[];
-        deployMode?: 'all' | 'single' | 'integration';
+        scope: LegacyDeployScope;
         sdkVersion: string | undefined;
     }): Promise<{
         added: Omit<OnEventScript, 'id' | 'fileLocation' | 'createdAt' | 'updatedAt'>[];
@@ -208,20 +216,10 @@ export const onEventScriptService = {
             updated: []
         };
 
-        const deployingProviders = onEventScriptsByProvider.map((p) => p.providerConfigKey);
-
         const existingScripts = await onEventScriptService.getByEnvironmentId(environmentId);
 
-        // Filter existing scripts to only include those from providers being deployed when not in all-providers deploy mode.
-        // For 'integration' mode, infer the scoped provider from the incoming scripts (or fall back to deployingProviders[0])
-        // so stale scripts are detected even when no scripts are incoming.
-        const integrationScopeKey = onEventScriptsByProvider[0]?.providerConfigKey ?? deployingProviders[0];
-        const filters: Record<'integration' | 'single' | 'all', (s: OnEventScript) => boolean> = {
-            integration: (s) => s.providerConfigKey === integrationScopeKey,
-            single: (s) => deployingProviders.includes(s.providerConfigKey),
-            all: () => true
-        };
-        const relevantExistingScripts = existingScripts.filter(filters[deployMode]);
+        const providerKeys = onEventScopeProviderKeys(scope, onEventScriptsByProvider);
+        const relevantExistingScripts = providerKeys === 'all' ? existingScripts : existingScripts.filter((s) => providerKeys.includes(s.providerConfigKey));
 
         // Create a map of existing scripts for easier lookup
         const previousMap = new Map(relevantExistingScripts.map((script) => [`${script.configId}:${script.name}:${script.event}`, script]));
