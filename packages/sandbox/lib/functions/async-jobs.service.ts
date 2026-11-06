@@ -4,6 +4,7 @@ import { Err, Ok } from '@nangohq/utils';
 import { deploySandboxTimeoutMs, dryrunSandboxTimeoutMs } from './timeouts.js';
 
 import type {
+    DeployedFunction,
     FunctionAsyncJobStatus,
     FunctionDeploymentCodeBody,
     FunctionDeploymentCreateSuccess,
@@ -110,7 +111,7 @@ export async function createSucceededFunctionDeployment({
     environmentId: number;
     request: FunctionDeploymentStoredRequest;
     output: string;
-    deployedFunctions: { name: string; version: string }[];
+    deployedFunctions: DeployedFunction[];
     durationMs?: number | undefined;
     trx?: Knex;
 }): Promise<Result<FunctionDeploymentCreateSuccess>> {
@@ -350,7 +351,7 @@ export async function markFunctionDeploymentSuccess({
     id: string;
     output: string;
     deployed: boolean;
-    deployedFunctions: { name: string; version: string }[];
+    deployedFunctions: DeployedFunction[];
     durationMs?: number | undefined;
     trx?: Knex;
 }): Promise<DBFunctionDeployment | null> {
@@ -620,7 +621,7 @@ export function toFunctionDeploymentResult(row: DBFunctionDeployment): FunctionD
     };
 }
 
-function parseDeploymentResult(value: unknown): { deployed: boolean; deployed_functions: { name: string; version: string }[] } | null {
+function parseDeploymentResult(value: unknown): { deployed: boolean; deployed_functions: DeployedFunction[] } | null {
     if (!value || typeof value !== 'object') {
         return null;
     }
@@ -632,13 +633,12 @@ function parseDeploymentResult(value: unknown): { deployed: boolean; deployed_fu
 
     const deployedFunctions = result['deployed_functions'];
     if (
-        !deployedFunctions.every((deployedFunction): deployedFunction is { name: string; version: string } => {
-            return (
-                Boolean(deployedFunction) &&
-                typeof deployedFunction === 'object' &&
-                typeof (deployedFunction as Record<string, unknown>)['name'] === 'string' &&
-                typeof (deployedFunction as Record<string, unknown>)['version'] === 'string'
-            );
+        !deployedFunctions.every((deployedFunction): deployedFunction is DeployedFunction => {
+            if (!deployedFunction || typeof deployedFunction !== 'object') {
+                return false;
+            }
+            const { name, version } = deployedFunction as Record<string, unknown>;
+            return typeof name === 'string' && (version === undefined || typeof version === 'string');
         })
     ) {
         return null;

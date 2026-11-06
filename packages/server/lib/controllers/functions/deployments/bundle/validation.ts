@@ -136,7 +136,8 @@ const functionConfig = z
                 js: z.string().min(1),
                 ts: z.string().min(1)
             })
-            .strict()
+            .strict(),
+        source: z.enum(['standalone', 'repo'])
     })
     .strict()
     .refine((fn) => fn.capabilities.usesOutbound === (fn.requires.connection !== false && fn.requires.outbound !== false), {

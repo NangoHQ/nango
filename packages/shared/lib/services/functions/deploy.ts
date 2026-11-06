@@ -203,7 +203,7 @@ export async function deployBundle({
                     tags: artifact.tags ?? {},
                     file_location: fileLocation,
                     version,
-                    source: 'repo' as const,
+                    source: artifact.source,
                     trigger: artifact.trigger,
                     requires: artifact.requires,
                     capabilities: artifact.capabilities,
