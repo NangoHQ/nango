@@ -1,23 +1,32 @@
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { ArrowUpRight, ChevronsUpDown, TriangleAlert } from 'lucide-react';
+import { ArrowUpRight, ChevronsUpDown, Cog, Plus, TriangleAlert } from 'lucide-react';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { Alert, AlertActions, AlertDescription, Badge, Button } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu.js';
-import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar.js';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from '@/components/ui/DropdownMenu.js';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useCurrentPlan } from '@/hooks/usePlan';
 import { isLegacyPlan } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
 import { envSwitchPath } from '@/utils/routes';
+import { cn } from '@/utils/utils';
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
-import { NavigationItem, navigationItemVariants } from './NavigationItem.js';
+import { navigationMenuContentClassName, navigationMenuItemClassName } from './navigationMenu.js';
 
 export const EnvironmentDropdown: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -36,6 +45,7 @@ export const EnvironmentDropdown: React.FC = () => {
 
     const isMaxEnvironmentsReached = envs && plan && envs.length >= plan.environments_max;
     const isLegacy = isLegacyPlan(plan);
+    const isProduction = Boolean(meta?.environments.find((environment) => environment.name === env)?.is_production);
 
     const onSelect = (selected: string) => {
         if (selected === env) {
@@ -57,90 +67,92 @@ export const EnvironmentDropdown: React.FC = () => {
     }
 
     return (
-        <SidebarMenu>
-            <SidebarMenuItem>
-                <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger className="focus-inset flex h-14 w-full cursor-pointer flex-row items-center justify-between border-b-[0.5px] border-border-default px-4 outline-none transition-colors hover:bg-state-hover data-[state=open]:bg-surface-overlay">
-                        <div className="flex min-w-0 items-center gap-3">
-                            <div className="flex size-8 shrink-0 items-center justify-center rounded-[2px] border-[0.5px] border-border-default bg-surface-overlay">
-                                <LogoInverted className="size-5 text-text-strong" />
-                            </div>
-                            <div className="flex min-w-0 flex-col items-start">
-                                <span className="type-text-regular-xs text-text-muted">Environment</span>
-                                <span className="type-text-medium-sm max-w-28 truncate text-text-default">{env}</span>
-                            </div>
-                        </div>
-                        <ChevronsUpDown className="size-4 shrink-0 text-icon-secondary" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        side="bottom"
-                        sideOffset={0}
-                        className="flex max-h-96 w-(--radix-dropdown-menu-trigger-width) flex-col rounded-none border-0 border-b-[0.5px] border-border-default p-0"
-                    >
-                        <div className="flex flex-col px-1 pt-1">
-                            {meta?.environments.map((environment) => (
-                                <PermissionGate
-                                    key={environment.name}
-                                    condition={can('environment:settings:read', environment)}
-                                    message="Your role does not have access to this environment."
-                                    tooltipSide="right"
-                                >
-                                    {(allowed) => (
-                                        <DropdownMenuItem
-                                            disabled={!allowed}
-                                            onSelect={() => onSelect(environment.name)}
-                                            className={navigationItemVariants({ selected: env === environment.name })}
-                                        >
-                                            <NavigationItem trailing={environment.is_production && <Badge variant="brand">Prod</Badge>}>
-                                                {environment.name}
-                                            </NavigationItem>
-                                        </DropdownMenuItem>
-                                    )}
-                                </PermissionGate>
-                            ))}
-                        </div>
-                        <div className="flex flex-col gap-2 border-t-[0.5px] border-border-muted p-2">
-                            <PermissionGate condition={canCreateEnvironment} tooltipSide="right">
+        <>
+            <DropdownMenu modal={false}>
+                <DropdownMenuTrigger
+                    className={cn(
+                        'group/env flex w-full cursor-pointer items-center justify-between gap-2 rounded-ds-sm border-ds-hairline border-border-default bg-surface-canvas p-2 outline-none transition-colors focus-inset',
+                        'hover:bg-surface-raised active:border-border-strong active:bg-surface-raised data-[state=open]:border-border-strong data-[state=open]:bg-surface-raised'
+                    )}
+                >
+                    <span className="flex min-w-0 items-center gap-3">
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-ds-xs border-ds-hairline border-border-default bg-surface-overlay">
+                            <LogoInverted className="size-5 text-text-strong" />
+                        </span>
+                        <span className="type-text-medium-sm truncate text-text-default">{env}</span>
+                        {isProduction && <Badge variant="warning">Prod</Badge>}
+                    </span>
+                    <ChevronsUpDown className="size-4 shrink-0 text-icon-secondary group-hover/env:text-icon-default group-data-[state=open]/env:text-icon-default" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" side="bottom" sideOffset={4} className={cn(navigationMenuContentClassName, 'max-h-96 w-61')}>
+                    <DropdownMenuLabel>Environments</DropdownMenuLabel>
+                    <DropdownMenuRadioGroup value={env} onValueChange={onSelect}>
+                        {meta.environments.map((environment) => (
+                            <PermissionGate
+                                key={environment.name}
+                                condition={can('environment:settings:read', environment)}
+                                message="Your role does not have access to this environment."
+                                tooltipSide="right"
+                            >
                                 {(allowed) => (
-                                    <div className="flex flex-col">
-                                        <Button
-                                            disabled={!allowed || !!isMaxEnvironmentsReached}
-                                            variant="primary"
-                                            onClick={() => {
-                                                // Managed control because Dialogs within DropdownMenus behave weirdly
-                                                setEnvironmentDialogOpen(true);
-                                            }}
-                                        >
-                                            Create environment
-                                        </Button>
-                                    </div>
+                                    <DropdownMenuRadioItem value={environment.name} disabled={!allowed}>
+                                        <span className="flex min-w-0 items-center gap-1.5">
+                                            <span className="type-code-regular-sm truncate">{environment.name}</span>
+                                            {environment.is_production && <Badge variant="warning">Prod</Badge>}
+                                        </span>
+                                    </DropdownMenuRadioItem>
                                 )}
                             </PermissionGate>
-                            {canCreateEnvironment && isMaxEnvironmentsReached && (
-                                <Alert variant="warning" size="compact">
-                                    <TriangleAlert />
-                                    <AlertDescription>
-                                        Max number of environments reached. {isLegacy ? 'Contact Nango to add more.' : 'Upgrade for more.'}
-                                    </AlertDescription>
-                                    {!isLegacy && (
-                                        <AlertActions>
-                                            {/* Unwrapped, the link can't be reached by keyboard while the menu is open. */}
-                                            {/* Radix focuses items on hover; preventing it keeps the focus ring keyboard-only. */}
-                                            <DropdownMenuPrimitive.Item asChild onPointerMove={(event) => event.preventDefault()}>
-                                                <AlertButtonLink to="/team/billing#plans">
-                                                    Upgrade <ArrowUpRight />
-                                                </AlertButtonLink>
-                                            </DropdownMenuPrimitive.Item>
-                                        </AlertActions>
-                                    )}
-                                </Alert>
+                        ))}
+                    </DropdownMenuRadioGroup>
+                    <DropdownMenuSeparator className="mx-0 h-[0.5px] bg-border-default" />
+                    <DropdownMenuItem asChild className={navigationMenuItemClassName}>
+                        <Link to={`/${env}/environment-settings`}>
+                            <Cog />
+                            <span>Environment settings</span>
+                        </Link>
+                    </DropdownMenuItem>
+                    <div className="flex flex-col gap-2 px-1 pt-2 pb-1">
+                        <PermissionGate condition={canCreateEnvironment} tooltipSide="right">
+                            {(allowed) => (
+                                <div className="flex flex-col">
+                                    <Button
+                                        disabled={!allowed || !!isMaxEnvironmentsReached}
+                                        variant="primary"
+                                        onClick={() => {
+                                            // Managed control because Dialogs within DropdownMenus behave weirdly
+                                            setEnvironmentDialogOpen(true);
+                                        }}
+                                    >
+                                        <Plus />
+                                        Create environment
+                                    </Button>
+                                </div>
                             )}
-                        </div>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                <CreateEnvironmentDialog open={environmentDialogOpen} onOpenChange={setEnvironmentDialogOpen} />
-            </SidebarMenuItem>
-        </SidebarMenu>
+                        </PermissionGate>
+                        {canCreateEnvironment && isMaxEnvironmentsReached && (
+                            <Alert variant="warning" size="compact">
+                                <TriangleAlert />
+                                <AlertDescription>
+                                    Max number of environments reached. {isLegacy ? 'Contact Nango to add more.' : 'Upgrade for more.'}
+                                </AlertDescription>
+                                {!isLegacy && (
+                                    <AlertActions>
+                                        {/* Unwrapped, the link can't be reached by keyboard while the menu is open. */}
+                                        {/* Radix focuses items on hover; preventing it keeps the focus ring keyboard-only. */}
+                                        <DropdownMenuPrimitive.Item asChild onPointerMove={(event) => event.preventDefault()}>
+                                            <AlertButtonLink to="/team/billing#plans">
+                                                Upgrade <ArrowUpRight />
+                                            </AlertButtonLink>
+                                        </DropdownMenuPrimitive.Item>
+                                    </AlertActions>
+                                )}
+                            </Alert>
+                        )}
+                    </div>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <CreateEnvironmentDialog open={environmentDialogOpen} onOpenChange={setEnvironmentDialogOpen} />
+        </>
     );
 };
