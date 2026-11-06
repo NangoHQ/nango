@@ -87,7 +87,7 @@ Connect to the ProductNow MCP server with Nango and call MCP tools in minutes. P
 
 ## 📚 ProductNow (MCP) guides
 
-Nango uses **dynamic client registration** with ProductNow's MCP OAuth server. You do not need to register an MCP application — just create the integration in Nango and authorize with your ProductNow account. Tool calls run as the ProductNow user who authorized the connection.
+Nango discovers ProductNow's OAuth server from the MCP server itself and registers a client automatically, so you do not need to register an MCP application — just create the integration in Nango and authorize with your ProductNow account. Nango requests the `offline_access` scope ProductNow advertises, which returns a refresh token; access tokens are short-lived, so Nango refreshes them for you. Tool calls run as the ProductNow user who authorized the connection.
 
 Official resources: [ProductNow MCP server](https://github.com/ProductNowAI/productnow-mcp)
 
