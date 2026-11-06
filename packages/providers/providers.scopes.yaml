@@ -4997,6 +4997,18 @@ hitpay:
     - payments:read
     - payments:refund
 
+# source: https://developers.hive.co/docs/auth
+hive:
+    - campaigns:read
+    - contacts:read
+    - contacts:write
+    - events:read
+    - events:write
+    - orders:read
+    - orders:write
+    - segments:read
+    - segments:write
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 hover: []
 
