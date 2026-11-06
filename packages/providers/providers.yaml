@@ -2448,6 +2448,8 @@ astalty:
             type: string
             title: API Key
             description: Your Astalty API key.
+            example: 12345|aB3d****************************9f1e
+            pattern: '^[0-9]+\|[A-Za-z0-9]+$'
             doc_section: '#step-1-create-an-api-key'
 
 astro-mcp:
