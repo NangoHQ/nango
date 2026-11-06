@@ -2,7 +2,7 @@ import { Plus } from 'lucide-react';
 
 import { ICON_BUTTON_SIZES, ICON_BUTTON_VARIANTS, IconButton } from './button';
 
-import type { IconButtonVariant } from './button';
+import type { IconButtonSize, IconButtonVariant } from './button';
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta<typeof IconButton> = {
@@ -29,7 +29,7 @@ const STATES = [
     { label: 'Loading', props: { loading: true } }
 ] as const;
 
-const SIZE_SPEC: Record<(typeof ICON_BUTTON_SIZES)[number], string> = {
+const SIZE_SPEC: Record<IconButtonSize, string> = {
     xs: '24 · icon 12',
     sm: '28 · icon 14',
     md: '32 · icon 16',
@@ -40,7 +40,6 @@ export const Playground: Story = {
     args: { variant: 'primary', size: 'md', label: 'Add item', children: <Plus /> }
 };
 
-// Rows = sizes, columns = states.
 const StateMatrix = ({ variant }: { variant: IconButtonVariant }) => (
     <div className="grid grid-cols-[auto_repeat(6,max-content)] items-center gap-x-8 gap-y-6">
         <span />
