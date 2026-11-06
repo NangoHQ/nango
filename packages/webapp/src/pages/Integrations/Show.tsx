@@ -1,8 +1,7 @@
 import Fuse from 'fuse.js';
 import debounce from 'lodash/debounce';
 import { Search } from 'lucide-react';
-import { parseAsString, useQueryState } from 'nuqs';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
@@ -31,13 +31,8 @@ export const IntegrationsList = () => {
 
     const env = useStore((state) => state.env);
     const { data, isPending, error } = useListIntegrations(env);
-    const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
-    const [searchInput, setSearchInput] = useState(search);
-    const debouncedSearch = useDebouncedValue(searchInput);
-
-    useEffect(() => {
-        void setSearch(debouncedSearch || null);
-    }, [debouncedSearch, setSearch]);
+    const [search, setSearch] = useSearchQueryState();
+    const debouncedSearch = useDebouncedValue(search);
 
     const { can } = usePermissions();
     const canWriteIntegration = can('environment:integrations:update');
@@ -91,7 +86,7 @@ export const IntegrationsList = () => {
     }, [trackSearch]);
 
     const onSearchChange = (value: string) => {
-        setSearchInput(value);
+        setSearch(value);
         if (value.trim()) {
             trackSearch();
         } else {
@@ -113,7 +108,7 @@ export const IntegrationsList = () => {
                     <InputGroupInput
                         type="text"
                         placeholder="Search integration"
-                        value={searchInput}
+                        value={search}
                         onChange={(event) => onSearchChange(event.currentTarget.value)}
                     />
                     <InputGroupAddon>
