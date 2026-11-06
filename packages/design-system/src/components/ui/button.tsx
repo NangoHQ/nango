@@ -19,7 +19,6 @@ const LINK_UNDERLINE_STATES = [
 
 export const buttonVariants = cva(
     [
-        // gap and font size come from the size variant (Figma's per-size spec)
         'inline-flex items-center justify-center whitespace-nowrap',
         'rounded-ds-sm border-ds-hairline font-ds-medium',
         'leading-ds-normal',
@@ -55,7 +54,6 @@ export const buttonVariants = cva(
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 // interactive/outline → --interactive-outline → bg-interactive-outline
-                // border/strong → --border-strong → border-border-strong, darkening to border/stronger on hover
                 outline: [
                     'bg-interactive-outline text-text-strong border-border-strong',
                     'hover:bg-interactive-outline-hover hover:border-border-stronger',
@@ -68,7 +66,6 @@ export const buttonVariants = cva(
                 // text/secondary → --text-secondary → text-text-secondary
                 ghost: [
                     'bg-interactive-ghost text-text-secondary border-transparent',
-                    // hover/active fill with the ghost tokens and lift the text to text/strong
                     'hover:bg-interactive-ghost-hover active:bg-interactive-ghost-active',
                     'hover:text-text-strong active:text-text-strong',
                     'disabled:bg-interactive-ghost disabled:text-text-disabled',
@@ -162,7 +159,7 @@ export const buttonVariants = cva(
 
 // ─── Button ───────────────────────────────────────────────────────────────────
 
-// Spinner matches each size's icon (xs 12, sm 14, 2xs/md/lg 16) so it can stand in for the leading icon.
+// Spinner matches each size's icon so it can stand in for the leading icon.
 const SPINNER_SIZE = { '2xs': 'md', xs: 'xs', sm: 'sm', md: 'md', lg: 'md' } as const satisfies Record<
     NonNullable<VariantProps<typeof buttonVariants>['size']>,
     SpinnerSize

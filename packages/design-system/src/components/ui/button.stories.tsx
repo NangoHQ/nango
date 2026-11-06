@@ -20,8 +20,7 @@ const ICON_SIZES = ['2xs', 'xs', 'sm', 'md', 'lg'] as const;
 
 type Variant = (typeof VARIANTS)[number];
 
-// Hover / Pressed / Focus are frozen with data-story-state, which .storybook/preview.css maps onto the real
-// hover:/active:/focus-visible: variants — so each cell renders the component's own classes, not a copy.
+// .storybook/preview.css maps data-story-state onto the real hover:/active:/focus-visible: variants.
 const STATES = [
     { label: 'Default', props: {} },
     { label: 'Hover', props: { 'data-story-state': 'hover' } },
@@ -38,7 +37,6 @@ const SIZE_SPEC: Record<(typeof SIZES)[number], string> = {
     lg: '36 · px 14 · 14/16 · gap 8'
 };
 
-// Rows = sizes, columns = states. Each cell is a leading-icon button, the most common shape.
 const StateMatrix = ({ variant }: { variant: Variant }) => (
     <div className="grid grid-cols-[max-content_repeat(6,max-content)] items-center gap-x-8 gap-y-6">
         <span />
