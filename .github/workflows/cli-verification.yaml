@@ -181,7 +181,7 @@ jobs:
             - should-run
             - publish
             - verify
-        if: always() && needs.should-run.outputs.should_skip == 'false'
+        if: always() && needs.should-run.outputs.should_skip == 'false' && needs.verify.result != 'failure'
         permissions:
             packages: write
         steps:
