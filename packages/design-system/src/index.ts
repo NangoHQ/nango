@@ -14,17 +14,7 @@ export {
     AlertDialogTitle,
     AlertDialogTrigger
 } from './components/ui/alert-dialog';
-export {
-    Alert,
-    AlertActions,
-    AlertButton,
-    type AlertButtonProps,
-    alertButtonVariants,
-    AlertDescription,
-    type AlertProps,
-    AlertTitle,
-    alertVariants
-} from './components/ui/alert';
+export { Alert, AlertActions, AlertButton, type AlertButtonProps, AlertDescription, type AlertProps, AlertTitle, alertVariants } from './components/ui/alert';
 export { Badge, type BadgeProps, badgeVariants } from './components/ui/badge';
 export { Button, type ButtonProps, IconButton, type IconButtonProps, buttonVariants } from './components/ui/button';
 export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './components/ui/card';
@@ -43,6 +33,7 @@ export {
     DialogTrigger
 } from './components/ui/dialog';
 export { Input, type InputProps, inputVariants } from './components/ui/input';
+export { LinkButton, type LinkButtonProps, linkButtonVariants } from './components/ui/link-button';
 export { Textarea, type TextareaProps } from './components/ui/textarea';
 export {
     InputGroup,
