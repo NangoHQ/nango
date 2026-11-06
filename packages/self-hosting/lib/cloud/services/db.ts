@@ -1,5 +1,8 @@
+import { Err, Ok } from '@nangohq/utils';
+
 import { SELF_HOSTING_SCHEMA } from '../db/schema.js';
 
+import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
 export interface RegistryDb {
@@ -17,6 +20,13 @@ export function inserted<T>(rows: T[]): T {
         throw new Error('insert returned no row');
     }
     return row;
+}
+
+export function orMissing<T>(found: Result<T | null>, missing: string): Result<T> {
+    if (found.isErr()) {
+        return Err(found.error);
+    }
+    return found.value ? Ok(found.value) : Err(new Error(missing));
 }
 
 export function isUniqueViolation(err: unknown): boolean {

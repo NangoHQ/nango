@@ -1,10 +1,11 @@
 import { Err, Ok } from '@nangohq/utils';
 
 import { CUSTOMERS_TABLE } from '../db/schema.js';
-import { inserted, isUniqueViolation, table } from './db.js';
-import { deleteInstallation, listInstallations } from './installation.service.js';
+import { inserted, isUniqueViolation, orMissing, table } from './db.js';
+import { deleteInstallation, deleteInstallationPreview, listInstallations } from './installation.service.js';
 
 import type { RegistryDb } from './db.js';
+import type { DeleteInstallationPreview } from './installation.service.js';
 import type { DBSelfHostingCustomer } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -26,15 +27,35 @@ export async function getCustomerByName(db: RegistryDb, { name }: { name: string
     }
 }
 
+export async function requireCustomer(db: RegistryDb, { name }: { name: string }): Promise<Result<DBSelfHostingCustomer>> {
+    return orMissing(await getCustomerByName(db, { name }), `no live customer ${name}`);
+}
+
+export async function deleteCustomerPreview(
+    db: RegistryDb,
+    { customer }: { customer: DBSelfHostingCustomer }
+): Promise<Result<{ customer: string; installations: DeleteInstallationPreview[] }>> {
+    const rows = await listInstallations(db, { customerId: customer.id });
+    if (rows.isErr()) {
+        return Err(rows.error);
+    }
+    const installations: DeleteInstallationPreview[] = [];
+    for (const installation of rows.value) {
+        const preview = await deleteInstallationPreview(db, { installation });
+        if (preview.isErr()) {
+            return Err(preview.error);
+        }
+        installations.push(preview.value);
+    }
+    return Ok({ customer: customer.name, installations });
+}
+
 export async function deleteCustomer(db: RegistryDb, { name }: { name: string }): Promise<Result<DBSelfHostingCustomer>> {
     try {
         return Ok(
             await db.knex.transaction(async (trx) => {
                 const inTrx = { ...db, knex: trx };
-                const customer = (await getCustomerByName(inTrx, { name })).unwrap();
-                if (!customer) {
-                    throw new Error(`no live customer ${name}`);
-                }
+                const customer = (await requireCustomer(inTrx, { name })).unwrap();
                 for (const installation of (await listInstallations(inTrx, { customerId: customer.id })).unwrap()) {
                     (await deleteInstallation(inTrx, { id: installation.id })).unwrap();
                 }

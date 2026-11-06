@@ -2,14 +2,20 @@ import { parseArgs } from 'node:util';
 
 import { cloudDb, destroyCloudDb } from './cloud/db/client.js';
 import { kmsLicenseSigner } from './cloud/licensing/signer.js';
-import { createCustomer, deleteCustomer, getCustomerByName, listCustomers } from './cloud/services/customer.service.js';
-import { createInstallationKey, deleteInstallationKey, getInstallationKey, listInstallationKeys } from './cloud/services/installation-key.service.js';
+import { createCustomer, deleteCustomer, deleteCustomerPreview, listCustomers, requireCustomer } from './cloud/services/customer.service.js';
+import { createInstallationKey, deleteInstallationKey, listInstallationKeys, requireInstallationKey } from './cloud/services/installation-key.service.js';
 import { deactivateLicense, getActiveLicense, listLicenses } from './cloud/services/installation-license.service.js';
-import { createInstallation, deleteInstallation, getInstallationByUuid, listInstallations, updateInstallation } from './cloud/services/installation.service.js';
+import {
+    createInstallation,
+    deleteInstallation,
+    deleteInstallationPreview,
+    listInstallations,
+    requireInstallation,
+    updateInstallation
+} from './cloud/services/installation.service.js';
 import { issueLicense } from './cloud/services/licensing.service.js';
 
 import type { RegistryDb } from './cloud/services/db.js';
-import type { DBSelfHostingCustomer, DBSelfHostingInstallation } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const SIGNING_KEY_ID = 'alias/nango-license-signing';
@@ -67,41 +73,12 @@ function date(name: string, value: string | undefined): Date {
     return parsed;
 }
 
-function alerts(
-    mode: DBSelfHostingInstallation['mode'],
-    current: DBSelfHostingInstallation['alerts'] = 'off'
-): { alerts?: DBSelfHostingInstallation['alerts'] } {
-    const chosen = values.alerts ? oneOf('alerts', values.alerts, ['off', 'slack', 'oncall']) : undefined;
-    if (mode === 'self_managed' && (chosen ?? current) !== 'off') {
-        throw new Error('a self-managed installation is not in our Datadog, --alerts must be off');
-    }
-    return chosen ? { alerts: chosen } : {};
-}
+const MODES = ['byoc', 'self_managed'] as const;
+const STAGES = ['production', 'staging', 'development'] as const;
+const ALERTS = ['off', 'slack', 'oncall'] as const;
 
-async function customer(db: RegistryDb, name: string): Promise<DBSelfHostingCustomer> {
-    const found = (await getCustomerByName(db, { name })).unwrap();
-    if (!found) {
-        throw new Error(`no live customer ${name}`);
-    }
-    return found;
-}
-
-async function installation(db: RegistryDb, { includeDeleted = false }: { includeDeleted?: boolean } = {}): Promise<DBSelfHostingInstallation> {
-    const uuid = required('installation', values.installation);
-    const found = (await getInstallationByUuid(db, { uuid, includeDeleted })).unwrap();
-    if (!found) {
-        throw new Error(`no ${includeDeleted ? '' : 'live '}installation ${uuid}`);
-    }
-    return found;
-}
-
-async function cascade(db: RegistryDb, row: DBSelfHostingInstallation) {
-    return {
-        installation: { uuid: row.uuid, name: row.name },
-        keys: (await listInstallationKeys(db, { installationId: row.id })).unwrap().map((k) => k.kid),
-        activeLicense: (await getActiveLicense(db, { installationId: row.id })).unwrap()?.expires_at ?? null
-    };
-}
+const installation = (db: RegistryDb, { includeDeleted = false }: { includeDeleted?: boolean } = {}) =>
+    requireInstallation(db, { uuid: required('installation', values.installation), includeDeleted });
 
 function confirmed(preview: unknown): void {
     if (!values.yes) {
@@ -125,10 +102,9 @@ customer list    [--all]`,
         verbs: {
             create: (db) => createCustomer(db, { name: required('name', values.name) }),
             delete: async (db) => {
-                const row = await customer(db, required('name', values.name));
-                const installations = (await listInstallations(db, { customerId: row.id })).unwrap();
-                confirmed({ customer: row.name, installations: await Promise.all(installations.map((i) => cascade(db, i))) });
-                return deleteCustomer(db, { name: row.name });
+                const customer = (await requireCustomer(db, { name: required('name', values.name) })).unwrap();
+                confirmed((await deleteCustomerPreview(db, { customer })).unwrap());
+                return deleteCustomer(db, { name: customer.name });
             },
             list: (db) => listCustomers(db, { includeDeleted: values.all })
         }
@@ -141,39 +117,34 @@ installation update  --installation <uuid> [--name <name>] [--mode byoc|self_man
 installation delete  --installation <uuid> [--yes]   deactivates its license and deletes its keys
 installation list    [--customer <name>] [--all]`,
         verbs: {
-            create: async (db) => {
-                const mode = oneOf('mode', values.mode, ['byoc', 'self_managed']);
-                return createInstallation(db, {
-                    customerId: (await customer(db, required('customer', values.customer))).id,
+            create: async (db) =>
+                createInstallation(db, {
+                    customerId: (await requireCustomer(db, { name: required('customer', values.customer) })).unwrap().id,
                     name: required('name', values.name),
-                    mode,
-                    stage: oneOf('stage', values.stage, ['production', 'staging', 'development']),
+                    mode: oneOf('mode', values.mode, MODES),
+                    stage: oneOf('stage', values.stage, STAGES),
                     ...(values.telemetry !== undefined && { telemetry: values.telemetry }),
-                    ...alerts(mode)
-                });
-            },
-            update: async (db) => {
-                if ([values.name, values.mode, values.stage, values.telemetry, values.alerts].every((v) => v === undefined)) {
-                    throw new Error('nothing to update: pass --name, --mode, --stage, --telemetry, --no-telemetry or --alerts');
-                }
-                const row = await installation(db);
-                const mode = values.mode ? oneOf('mode', values.mode, ['byoc', 'self_managed']) : row.mode;
-                return updateInstallation(db, {
-                    id: row.id,
+                    ...(values.alerts && { alerts: oneOf('alerts', values.alerts, ALERTS) })
+                }),
+            update: async (db) =>
+                updateInstallation(db, {
+                    id: (await installation(db)).unwrap().id,
                     ...(values.name !== undefined && { name: required('name', values.name) }),
-                    ...(values.mode && { mode }),
-                    ...(values.stage && { stage: oneOf('stage', values.stage, ['production', 'staging', 'development']) }),
+                    ...(values.mode && { mode: oneOf('mode', values.mode, MODES) }),
+                    ...(values.stage && { stage: oneOf('stage', values.stage, STAGES) }),
                     ...(values.telemetry !== undefined && { telemetry: values.telemetry }),
-                    ...alerts(mode, row.alerts)
-                });
-            },
+                    ...(values.alerts && { alerts: oneOf('alerts', values.alerts, ALERTS) })
+                }),
             delete: async (db) => {
-                const row = await installation(db);
-                confirmed(await cascade(db, row));
+                const row = (await installation(db)).unwrap();
+                confirmed((await deleteInstallationPreview(db, { installation: row })).unwrap());
                 return deleteInstallation(db, { id: row.id });
             },
             list: async (db) =>
-                listInstallations(db, { includeDeleted: values.all, ...(values.customer && { customerId: (await customer(db, values.customer)).id }) })
+                listInstallations(db, {
+                    includeDeleted: values.all,
+                    ...(values.customer && { customerId: (await requireCustomer(db, { name: values.customer })).unwrap().id })
+                })
         }
     },
     key: {
@@ -181,18 +152,14 @@ installation list    [--customer <name>] [--all]`,
 key delete  --kid <kid> [--yes]
 key list    --installation <uuid> [--all]`,
         verbs: {
-            create: async (db) => createInstallationKey(db, { installationId: (await installation(db)).id }),
+            create: async (db) => createInstallationKey(db, { installationId: (await installation(db)).unwrap().id }),
             delete: async (db) => {
-                const kid = required('kid', values.kid);
-                const key = (await getInstallationKey(db, { kid })).unwrap();
-                if (!key) {
-                    throw new Error(`no live key ${kid}`);
-                }
-                confirmed({ kid, created_at: key.created_at });
-                return deleteInstallationKey(db, { kid });
+                const key = (await requireInstallationKey(db, { kid: required('kid', values.kid) })).unwrap();
+                confirmed({ kid: key.kid, created_at: key.created_at });
+                return deleteInstallationKey(db, { kid: key.kid });
             },
             list: async (db) =>
-                listInstallationKeys(db, { installationId: (await installation(db, { includeDeleted: values.all })).id, includeDeleted: values.all })
+                listInstallationKeys(db, { installationId: (await installation(db, { includeDeleted: values.all })).unwrap().id, includeDeleted: values.all })
         }
     },
     license: {
@@ -201,21 +168,15 @@ key list    --installation <uuid> [--all]`,
 license disable  --installation <uuid> [--yes]
 license list     --installation <uuid>               every license ever issued, active or not`,
         verbs: {
-            create: async (db) => {
-                const expiresAt = date('expires-at', values['expires-at']);
-                const graceUntil = date('grace-until', values['grace-until']);
-                if (graceUntil <= expiresAt) {
-                    throw new Error('--grace-until must be after --expires-at');
-                }
-                return issueLicense(db, {
-                    installation: await installation(db),
-                    expiresAt,
-                    graceUntil,
+            create: async (db) =>
+                issueLicense(db, {
+                    installation: (await installation(db)).unwrap(),
+                    expiresAt: date('expires-at', values['expires-at']),
+                    graceUntil: date('grace-until', values['grace-until']),
                     signer: await kmsLicenseSigner({ keyId: SIGNING_KEY_ID })
-                });
-            },
+                }),
             disable: async (db) => {
-                const row = await installation(db);
+                const row = (await installation(db)).unwrap();
                 const active = (await getActiveLicense(db, { installationId: row.id })).unwrap();
                 if (!active) {
                     throw new Error(`installation ${row.name} has no active license`);
@@ -223,7 +184,7 @@ license list     --installation <uuid>               every license ever issued, 
                 confirmed({ installation: row.name, activeLicense: active.expires_at });
                 return deactivateLicense(db, { installationId: row.id });
             },
-            list: async (db) => listLicenses(db, { installationId: (await installation(db, { includeDeleted: true })).id })
+            list: async (db) => listLicenses(db, { installationId: (await installation(db, { includeDeleted: true })).unwrap().id })
         }
     }
 };

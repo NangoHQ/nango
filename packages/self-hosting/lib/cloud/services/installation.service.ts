@@ -1,13 +1,27 @@
 import { Err, Ok } from '@nangohq/utils';
 
 import { INSTALLATION_KEYS_TABLE, INSTALLATION_LICENSES_TABLE, INSTALLATIONS_TABLE } from '../db/schema.js';
-import { inserted, isUniqueViolation, table } from './db.js';
+import { inserted, isUniqueViolation, orMissing, table } from './db.js';
+import { listInstallationKeys } from './installation-key.service.js';
+import { getActiveLicense } from './installation-license.service.js';
 
 import type { RegistryDb } from './db.js';
 import type { DBSelfHostingInstallation, DBSelfHostingInstallationKey, DBSelfHostingInstallationLicense } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const installations = (db: RegistryDb) => table<DBSelfHostingInstallation>(db, INSTALLATIONS_TABLE);
+
+export interface DeleteInstallationPreview {
+    installation: { uuid: string; name: string };
+    keys: string[];
+    activeLicense: Date | null;
+}
+
+function alertsAllowed(mode: DBSelfHostingInstallation['mode'], alerts: DBSelfHostingInstallation['alerts']): Result<void> {
+    return mode === 'self_managed' && alerts !== 'off'
+        ? Err(new Error('a self-managed installation is not in our Datadog, alerts must be off'))
+        : Ok(undefined);
+}
 
 export async function createInstallation(
     db: RegistryDb,
@@ -27,6 +41,10 @@ export async function createInstallation(
         alerts?: DBSelfHostingInstallation['alerts'];
     }
 ): Promise<Result<DBSelfHostingInstallation>> {
+    const allowed = alertsAllowed(mode, alerts ?? 'off');
+    if (allowed.isErr()) {
+        return Err(allowed.error);
+    }
     try {
         const row = await installations(db)
             .insert({ customer_id: customerId, name, mode, stage, ...(telemetry !== undefined && { telemetry }), ...(alerts && { alerts }) })
@@ -34,6 +52,14 @@ export async function createInstallation(
         return Ok(inserted(row));
     } catch (err) {
         return Err(isUniqueViolation(err) ? new Error(`installation ${name} already exists for this customer`) : err);
+    }
+}
+
+export async function getInstallation(db: RegistryDb, { id }: { id: number }): Promise<Result<DBSelfHostingInstallation | null>> {
+    try {
+        return Ok((await installations(db).where({ id, deleted_at: null }).first()) ?? null);
+    } catch (err) {
+        return Err(err);
     }
 }
 
@@ -50,6 +76,13 @@ export async function getInstallationByUuid(
     } catch (err) {
         return Err(err);
     }
+}
+
+export async function requireInstallation(
+    db: RegistryDb,
+    { uuid, includeDeleted = false }: { uuid: string; includeDeleted?: boolean }
+): Promise<Result<DBSelfHostingInstallation>> {
+    return orMissing(await getInstallationByUuid(db, { uuid, includeDeleted }), `no ${includeDeleted ? '' : 'live '}installation ${uuid}`);
 }
 
 export async function listInstallations(
@@ -86,6 +119,20 @@ export async function updateInstallation(
         alerts?: DBSelfHostingInstallation['alerts'];
     }
 ): Promise<Result<DBSelfHostingInstallation>> {
+    if ([name, mode, stage, telemetry, alerts].every((v) => v === undefined)) {
+        return Err(new Error('nothing to update'));
+    }
+    const current = await getInstallation(db, { id });
+    if (current.isErr()) {
+        return Err(current.error);
+    }
+    if (!current.value) {
+        return Err(new Error(`no live installation ${id}`));
+    }
+    const allowed = alertsAllowed(mode ?? current.value.mode, alerts ?? current.value.alerts);
+    if (allowed.isErr()) {
+        return Err(allowed.error);
+    }
     try {
         const [row] = await installations(db)
             .where({ id, deleted_at: null })
@@ -102,6 +149,25 @@ export async function updateInstallation(
     } catch (err) {
         return Err(isUniqueViolation(err) ? new Error(`installation ${name} already exists for this customer`) : err);
     }
+}
+
+export async function deleteInstallationPreview(
+    db: RegistryDb,
+    { installation }: { installation: DBSelfHostingInstallation }
+): Promise<Result<DeleteInstallationPreview>> {
+    const keys = await listInstallationKeys(db, { installationId: installation.id });
+    if (keys.isErr()) {
+        return Err(keys.error);
+    }
+    const license = await getActiveLicense(db, { installationId: installation.id });
+    if (license.isErr()) {
+        return Err(license.error);
+    }
+    return Ok({
+        installation: { uuid: installation.uuid, name: installation.name },
+        keys: keys.value.map((k) => k.kid),
+        activeLicense: license.value?.expires_at ?? null
+    });
 }
 
 export async function deleteInstallation(db: RegistryDb, { id }: { id: number }): Promise<Result<DBSelfHostingInstallation>> {

@@ -12,6 +12,9 @@ export async function issueLicense(
     db: RegistryDb,
     { installation, signer, expiresAt, graceUntil }: { installation: DBSelfHostingInstallation; signer: LicenseSigner; expiresAt: Date; graceUntil: Date }
 ): Promise<Result<{ license: string; row: DBSelfHostingInstallationLicense }>> {
+    if (graceUntil <= expiresAt) {
+        return Err(new Error('the grace period must end after the license expires'));
+    }
     const issuedAt = new Date();
     const payload: License = {
         version: 1,
