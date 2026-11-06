@@ -268,19 +268,35 @@ Button.displayName = 'Button';
 
 // ─── IconButton ───────────────────────────────────────────────────────────────
 
-export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>['variant']>;
+type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>['size']>;
+
+export const ICON_BUTTON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const satisfies readonly ButtonVariant[];
+export const ICON_BUTTON_SIZES = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ButtonSize[];
+
+export type IconButtonVariant = (typeof ICON_BUTTON_VARIANTS)[number];
+export type IconButtonSize = (typeof ICON_BUTTON_SIZES)[number];
+
+export interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label'> {
+    /** The `link-*` variants are outside the IconButton spec and kept for existing call sites only. */
+    variant?: ButtonVariant | null;
+    /** `2xs` is outside the IconButton spec and kept for existing call sites only. */
+    size?: ButtonSize | null;
     asChild?: boolean;
     loading?: boolean;
-    /** Accessible label — applied as aria-label and title. Required for icon-only buttons. */
+    /** Accessible name, applied as `aria-label`, and as the `title` tooltip unless one is passed. */
     label: string;
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, disabled, label, children, ...props }, ref) => {
+    ({ className, variant, size, asChild = false, loading = false, disabled, label, title, children, onClickCapture, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
-        // Spinner has no 2xs size; clamp to xs for the loading indicator
-        const iconSize = size === '2xs' ? 'xs' : (size ?? 'md');
+        const renderChildren = (icon: React.ReactNode) => (loading ? <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} /> : icon);
+        // Slot lets the child's own aria-label win, so `label` is set on the child itself.
+        const content = asChild
+            ? renderSlotChild(children, { isDisabled, onClickCapture, renderChildren, props: { 'aria-label': label } })
+            : renderChildren(children);
 
         return (
             <Comp
@@ -290,11 +306,12 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
                 disabled={isDisabled}
                 aria-disabled={isDisabled || undefined}
                 aria-busy={loading || undefined}
-                aria-label={label}
-                title={label}
+                title={title ?? label}
+                onClickCapture={asChild ? undefined : onClickCapture}
                 {...props}
+                aria-label={label}
             >
-                {loading ? <Spinner size={iconSize} /> : children}
+                {content}
             </Comp>
         );
     }
