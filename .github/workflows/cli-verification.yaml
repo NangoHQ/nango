@@ -197,5 +197,7 @@ jobs:
                     if [[ -n "$id" ]]; then
                       gh api -X DELETE "/orgs/NangoHQ/packages/npm/$package/versions/$id"
                       echo "Deleted $package@$VERSION"
+                    else
+                      echo "No $VERSION in $package"
                     fi
                   done
