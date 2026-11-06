@@ -1968,6 +1968,7 @@
               "api-integrations/servicenow-jwt",
               "api-integrations/servicenow-oauth2-cc",
               "integrations/all/setmore",
+              "api-integrations/sharefile",
               "api-integrations/sharepoint-online",
               "integrations/all/sharepoint-online-oauth2-cc",
               "integrations/all/sharepoint-online-v1",

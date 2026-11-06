@@ -8402,17 +8402,6 @@ This serves `true` for the `proxy-forward-all-response-headers` flag on every ac
 
 The variables apply to the whole process, so there is no per-account targeting or gradual rollout. Set them on every service that evaluates the flag, and note that each service reads them at startup.
 
-#### Two-factor authentication
-
-Two-factor authentication is behind the `mfa` flag, which only the server evaluates. Set these on the server service to enable it:
-
-```bash
-NANGO_FLAG_PROVIDER=env
-NANGO_FEATURE_FLAG_MFA=true
-```
-
-Once the server restarts, users can turn it on from their profile settings by pairing an authenticator app and saving their backup codes. Nango then asks them for a code at login.
-
 #### OAuth state cookie enforcement
 
 When an OAuth flow starts, Nango sets a cookie in the user's browser that is tied to that flow. By default, a callback that arrives without this cookie is still accepted. To reject it instead, so the flow can only be completed by the browser that started it, set these on the server service:
@@ -10744,9 +10733,9 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/rotate-we
 
 Replaces the key Nango uses to [sign webhooks](/guides/platform/webhooks-from-nango#verifying-webhooks-from-nango). The new key is returned in the response, and stays readable under **Environment Settings > Webhooks > Signing key**.
 
-Omit the request body or send `{}` to generate a random key. To import an existing key, pass `webhook_signing_key` in the JSON body. It must be a UUID v4; uppercase characters are normalized to lowercase, matching environment creation.
+To import an existing key, pass `webhook_signing_key` in the body. The value must be a UUID v4; uppercase characters are normalized to lowercase. You should generate it using a cryptographically secure random generator, such as `crypto.randomUUID()`. The security of a supplied key depends on how you generate and protect it; Nango validates its format but cannot verify its randomness.
 
-Generate supplied keys using a cryptographically secure generator such as `crypto.randomUUID()`. Nango validates the format but cannot verify the key's randomness.
+Omit the request body or send `{}` to generate a random key.
 
 ```json
 {
@@ -17181,6 +17170,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `servicenow-jwt` | ServiceNow (JWT) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/servicenow-jwt.md) | [connect](https://nango.dev/docs/api-integrations/servicenow-jwt/connect.md) |  | productivity, ticketing |
 | `servicenow-oauth2-cc` | ServiceNow (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/servicenow-oauth2-cc.md) | [connect](https://nango.dev/docs/api-integrations/servicenow-oauth2-cc/connect.md) |  | productivity, ticketing |
 | `setmore` | Setmore | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/setmore.md) | [connect](https://nango.dev/docs/integrations/all/setmore/connect.md) |  | productivity |
+| `sharefile` | ShareFile | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/sharefile.md) |  | [setup](https://nango.dev/docs/api-integrations/sharefile/how-to-register-your-own-sharefile-api-oauth-app.md) | storage |
 | `sharepoint-online` | SharePoint Online (v2) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/sharepoint-online.md) |  | [setup](https://nango.dev/docs/api-integrations/sharepoint-online/how-to-register-your-own-sharepoint-online-api-oauth-app.md) | storage, communication, popular |
 | `sharepoint-online-oauth2-cc` | SharePoint Online (Client Credentials V2) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/sharepoint-online-oauth2-cc.md) | [connect](https://nango.dev/docs/integrations/all/sharepoint-online-oauth2-cc/connect.md) |  | storage, communication |
 | `sharepoint-online-v1` | SharePoint Online (v1) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/sharepoint-online-v1.md) | [connect](https://nango.dev/docs/integrations/all/sharepoint-online-v1/connect.md) |  | storage, communication |
