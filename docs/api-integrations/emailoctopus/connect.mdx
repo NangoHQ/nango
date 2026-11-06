@@ -1,0 +1,43 @@
+---
+title: 'EmailOctopus - How do I link my account?'
+sidebarTitle: 'EmailOctopus'
+---
+
+## Overview
+
+To authenticate with EmailOctopus, you need:
+
+1. **API Key** — an EmailOctopus API key.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- An EmailOctopus account. The API is available on every plan, the free one included. You can [sign up](https://dashboard.emailoctopus.com/account/sign-up) if you don't have one.
+
+### Step 1: Create an API key
+
+1. Sign in to the [EmailOctopus dashboard](https://dashboard.emailoctopus.com).
+2. Go to **Account** -> **Integrations & API** -> **API keys** ([direct link](https://dashboard.emailoctopus.com/developer/api-keys)), then click **Add a key**.
+
+<img src="/api-integrations/emailoctopus/api_keys_page.png" alt="EmailOctopus API page with the Add a key button next to Your keys"/>
+
+3. Enter a name for the key in the **Key name** field, then click **Create**.
+
+<img src="/api-integrations/emailoctopus/create_api_key.png" alt="EmailOctopus Create API key page with the Key name field and the Create button"/>
+
+4. In the **Your API key** dialog, click **Copy** (or **Download** to save it as a CSV file). The key is shown only once.
+
+<img src="/api-integrations/emailoctopus/api_key_created.png" alt="EmailOctopus Your API key dialog with the Download and Copy buttons"/>
+
+<Note>If your existing key is labelled **legacy**, it was created before API v2. Create a new key instead.</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with EmailOctopus.
+2. Enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/emailoctopus/form.png" alt="EmailOctopus Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to EmailOctopus.

@@ -1,0 +1,54 @@
+---
+title: 'Dock Certs - How do I link my account?'
+sidebarTitle: 'Dock Certs'
+---
+
+## Overview
+
+To authenticate with Dock Certs (now Truvera), you need:
+
+1. **Environment** — the Truvera API host that matches the mode your API key was created in.
+2. **API Key** — a key from your Truvera Workspace.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A Truvera Workspace account. If you don't have one, [start a free trial](https://truvera.io/).
+
+### Step 1: Find your environment
+
+1. Sign in to [Truvera Workspace](https://truvera.io/).
+2. Check the **Test mode** toggle at the top right, next to your avatar. Truvera has one API host per mode, and you use the host of the mode your API key was created in:
+
+| Mode       | Environment (select in Nango) |
+|------------|-------------------------------|
+| Production | `api.truvera.io`              |
+| Test mode  | `api-testnet.truvera.io`      |
+
+Trial accounts only have test mode, so they use `api-testnet.truvera.io`.
+
+### Step 2: Create your API key
+
+1. In the left sidebar, open the **Developer** menu and click **API Keys**.
+
+<img src="/api-integrations/dock-certs/developer_menu_api_keys.png" alt="Truvera Workspace sidebar with the Developer menu open and API Keys highlighted"/>
+
+2. Click **Create API key**.
+
+<img src="/api-integrations/dock-certs/create_api_key.png" alt="Truvera API Keys page with the Create API key button"/>
+
+3. In the **API key created** dialog, click **Copy** to copy the API key. It is shown only once. The dialog also shows the API endpoint of the key, which tells you which environment to select.
+4. Optionally enter an alias and whitelisted IPs, then click **Continue**.
+
+<img src="/api-integrations/dock-certs/api_key_created.png" alt="Truvera API key created dialog with the Copy button and the API endpoint"/>
+
+### Step 3: Enter your environment and API key in the Connect UI
+
+1. Open the form where you need to authenticate with Dock Certs.
+2. Select your **Environment** and enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/dock-certs/form.png" alt="Dock Certs Connect UI form with the Environment and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Dock Certs.
