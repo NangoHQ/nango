@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/Switch';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { useProviders } from '@/hooks/useProviders';
+import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { trackCatalogFilter } from './analytics';
@@ -35,16 +36,12 @@ export const CatalogShow: React.FC = () => {
     const { data: providersData, isPending, error } = useProviders(env);
     const { data: integrationsData } = useListIntegrations(env);
 
-    const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
+    const [search, setSearch] = useSearchQueryState();
     const [category, setCategory] = useQueryState('category', parseAsString);
     const [instantOnly, setInstantOnly] = useQueryState('instant', parseAsBoolean.withDefault(false));
     const [sort, setSort] = useQueryState('sort', parseAsStringLiteral(['popular', 'alphabetical'] as const).withDefault('popular'));
 
-    const [searchInput, setSearchInput] = useState(search);
-    const debouncedSearch = useDebouncedValue(searchInput);
-    useEffect(() => {
-        void setSearch(debouncedSearch || null);
-    }, [debouncedSearch, setSearch]);
+    const debouncedSearch = useDebouncedValue(search);
 
     const providers = useMemo(() => providersData?.data ?? [], [providersData]);
     const integrationCounts = useMemo(() => countIntegrationsByProvider(integrationsData?.data ?? []), [integrationsData]);
@@ -106,10 +103,10 @@ export const CatalogShow: React.FC = () => {
                 />
                 <div className="flex min-w-0 flex-1 flex-col gap-6 px-6 pt-6 pb-16">
                     <SearchField
-                        value={searchInput}
+                        value={search}
                         placeholder={`Search ${providers.length.toLocaleString('en-US')} APIs, like GitHub or Salesforce`}
                         onChange={(value) => {
-                            setSearchInput(value);
+                            setSearch(value);
                             if (value.trim()) {
                                 trackFilter('search');
                             }
