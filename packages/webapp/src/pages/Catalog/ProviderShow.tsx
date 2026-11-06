@@ -6,10 +6,12 @@ import { useParams } from 'react-router-dom';
 import { Alert, AlertDescription, Badge, Button } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { useGetProviderTemplates } from '@/hooks/useIntegrationFunctions';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useProviders } from '@/hooks/useProviders';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
@@ -29,11 +31,16 @@ export const CatalogProviderShow: React.FC = () => {
     const env = useStore((state) => state.env);
     const { provider: providerName = '' } = useParams();
     const { data: providersData, isPending, error } = useProviders(env);
-    const { data: integrationsData } = useListIntegrations(env);
+    const { data: integrationsData, isSuccess: integrationsLoaded } = useListIntegrations(env);
+    const { can } = usePermissions();
+    const canSetUp = can('environment:integrations:update');
     const { data: templatesData, isPending: templatesPending, error: templatesError } = useGetProviderTemplates({ env, provider: providerName });
 
     const provider = providersData?.data.find((item) => item.name === providerName);
-    const configuredCount = useMemo(() => countIntegrationsByProvider(integrationsData?.data ?? []).get(providerName) ?? 0, [integrationsData, providerName]);
+    const configuredCount = useMemo(
+        () => (integrationsLoaded ? (countIntegrationsByProvider(integrationsData?.data ?? []).get(providerName) ?? 0) : null),
+        [integrationsLoaded, integrationsData, providerName]
+    );
 
     if (error) {
         return <ErrorPageComponent title="Catalog" error={error.json as GetProviders['Errors']} />;
@@ -52,14 +59,19 @@ export const CatalogProviderShow: React.FC = () => {
     const calloutState = getCalloutState(provider, configuredCount);
     const isSetupInCallout = calloutState.kind.startsWith('instant');
     const renderSetupButton = (source: SetupButtonSource, size: 'sm' | 'md') => (
-        <ButtonLink
-            to={`/${env}/integrations/create/${provider.name}`}
-            variant="primary"
-            size={size}
-            onClick={() => trackSetupButtonClick(provider.name, source)}
-        >
-            Set up {provider.displayName}
-        </ButtonLink>
+        <PermissionGate asChild condition={canSetUp}>
+            {(allowed) => (
+                <ButtonLink
+                    to={`/${env}/integrations/create/${provider.name}`}
+                    variant="primary"
+                    size={size}
+                    disabled={!allowed}
+                    onClick={() => trackSetupButtonClick(provider.name, source)}
+                >
+                    Set up {provider.displayName}
+                </ButtonLink>
+            )}
+        </PermissionGate>
     );
     const instantSetup = getInstantSetup(provider);
     const categories = getVisibleCategories(provider);
@@ -122,7 +134,10 @@ export const CatalogProviderShow: React.FC = () => {
     );
 };
 
-function getCalloutState(provider: ApiProviderListItem, configuredCount: number): ProviderCalloutState {
+function getCalloutState(provider: ApiProviderListItem, configuredCount: number | null): ProviderCalloutState {
+    if (configuredCount === null) {
+        return { kind: 'none' };
+    }
     if (configuredCount > 0) {
         return { kind: 'configured', count: configuredCount };
     }

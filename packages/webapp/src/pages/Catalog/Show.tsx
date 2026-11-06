@@ -42,6 +42,7 @@ export const CatalogShow: React.FC = () => {
     const [sort, setSort] = useQueryState('sort', parseAsStringLiteral(['popular', 'alphabetical'] as const).withDefault('popular'));
 
     const debouncedSearch = useDebouncedValue(search);
+    const isSearching = debouncedSearch.trim() !== '';
 
     const providers = useMemo(() => providersData?.data ?? [], [providersData]);
     const integrationCounts = useMemo(() => countIntegrationsByProvider(integrationsData?.data ?? []), [integrationsData]);
@@ -109,6 +110,8 @@ export const CatalogShow: React.FC = () => {
                             setSearch(value);
                             if (value.trim()) {
                                 trackFilter('search');
+                            } else {
+                                trackFilter.cancel();
                             }
                         }}
                     />
@@ -120,30 +123,34 @@ export const CatalogShow: React.FC = () => {
                                 {!isPending && <CountBadge count={results.length} />}
                             </div>
                             <div className="flex items-center gap-4">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="sm">
-                                            <span className="text-text-muted">Sort</span>
-                                            {SORT_LABELS[sort]}
-                                            <ChevronDown />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuRadioGroup
-                                            value={sort}
-                                            onValueChange={(value) => {
-                                                void setSort(value === 'alphabetical' ? 'alphabetical' : null);
-                                                trackFilter('sort');
-                                            }}
-                                        >
-                                            {(Object.keys(SORT_LABELS) as CatalogSort[]).map((option) => (
-                                                <DropdownMenuRadioItem key={option} value={option}>
-                                                    {SORT_LABELS[option]}
-                                                </DropdownMenuRadioItem>
-                                            ))}
-                                        </DropdownMenuRadioGroup>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                {isSearching ? (
+                                    <span className="type-text-regular-sm text-text-muted">Sorted by best match</span>
+                                ) : (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="sm">
+                                                <span className="text-text-muted">Sort</span>
+                                                {SORT_LABELS[sort]}
+                                                <ChevronDown />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuRadioGroup
+                                                value={sort}
+                                                onValueChange={(value) => {
+                                                    void setSort(value === 'alphabetical' ? 'alphabetical' : null);
+                                                    trackFilter('sort');
+                                                }}
+                                            >
+                                                {(Object.keys(SORT_LABELS) as CatalogSort[]).map((option) => (
+                                                    <DropdownMenuRadioItem key={option} value={option}>
+                                                        {SORT_LABELS[option]}
+                                                    </DropdownMenuRadioItem>
+                                                ))}
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                )}
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <label className="flex cursor-pointer items-center gap-2 type-text-regular-sm text-text-default">

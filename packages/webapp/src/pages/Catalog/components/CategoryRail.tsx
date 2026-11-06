@@ -36,7 +36,7 @@ export const CategoryRail: React.FC<CategoryRailProps> = ({ categories, totalCou
 const RailItem: React.FC<{ label: string; count: number; isSelected: boolean; onClick: () => void }> = ({ label, count, isSelected, onClick }) => (
     <button
         type="button"
-        aria-current={isSelected ? 'page' : undefined}
+        aria-pressed={isSelected}
         onClick={onClick}
         className={cn(
             'group flex h-7 w-full cursor-pointer items-center justify-between gap-2 rounded-ds-sm px-2 text-left type-text-regular-sm transition-colors focus-default',
