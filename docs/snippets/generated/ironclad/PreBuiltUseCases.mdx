@@ -2,52 +2,52 @@
 
 | Function name | Description | Type |
 | - | - | - |
-| `cancel-workflow` | Cancel an in-progress workflow. | [Action](/guides/functions/action-functions) |
-| `create-entity` | Create a new entity (e.g. a counterparty company, customer, vendor, or partner record). | [Action](/guides/functions/action-functions) |
-| `create-record` | Create a new standalone record | [Action](/guides/functions/action-functions) |
-| `create-webhook` | Register a webhook subscription for one or more Ironclad event types. | [Action](/guides/functions/action-functions) |
-| `create-workflow-async` | Launch a new contract workflow asynchronously and poll until completion. | [Action](/guides/functions/action-functions) |
-| `create-workflow-comment` | Post a comment on a workflow | [Action](/guides/functions/action-functions) |
-| `create-workflow` | Launch a new contract workflow synchronously from a workflow schema/template. | [Action](/guides/functions/action-functions) |
-| `delete-entity` | Delete an entity. | [Action](/guides/functions/action-functions) |
-| `delete-record` | Delete a record. | [Action](/guides/functions/action-functions) |
-| `delete-webhook` | Delete a webhook | [Action](/guides/functions/action-functions) |
-| `download-workflow-document` | Download the binary content of a specific workflow document. | [Action](/guides/functions/action-functions) |
-| `export-records-xlsx` | Download an XLSX export of records for a given record type and set of properties | [Action](/guides/functions/action-functions) |
-| `get-entity` | Get a single entity by id. | [Action](/guides/functions/action-functions) |
-| `get-record` | Get a single record by id. | [Action](/guides/functions/action-functions) |
-| `get-sign-status` | Get the signature status of a workflow that has reached its Sign step. | [Action](/guides/functions/action-functions) |
-| `get-webhook-verification-key` | Get the public key used to verify incoming webhook payload signatures. | [Action](/guides/functions/action-functions) |
-| `get-webhook` | Get a single webhook by id. | [Action](/guides/functions/action-functions) |
-| `get-workflow-async-job-status` | Check the status of an asynchronous workflow-creation job and retrieve the created workflow once done. | [Action](/guides/functions/action-functions) |
-| `get-workflow-schema` | Get the full field schema for a single workflow template. | [Action](/guides/functions/action-functions) |
-| `get-workflow` | Get full details of a single workflow, including its current schema and attribute values. | [Action](/guides/functions/action-functions) |
-| `list-approval-requests` | List the individual approval request events for a workflow | [Action](/guides/functions/action-functions) |
-| `list-eligible-assignees` | List users eligible to be assigned to a given workflow role. | [Action](/guides/functions/action-functions) |
-| `list-entities` | List entities. | [Action](/guides/functions/action-functions) |
-| `list-entity-relationship-types` | List the entity type schemas configured in this tenant with their property definitions. | [Action](/guides/functions/action-functions) |
-| `list-records-metadata` | Get the full schema of record types and properties configured in this tenant. | [Action](/guides/functions/action-functions) |
-| `list-records` | List contract records | [Action](/guides/functions/action-functions) |
-| `list-webhooks` | List registered webhooks. | [Action](/guides/functions/action-functions) |
-| `list-workflow-approvals` | Get the approval-group/role structure and current approval state for a workflow. | [Action](/guides/functions/action-functions) |
-| `list-workflow-comments` | List comments on a workflow. | [Action](/guides/functions/action-functions) |
-| `list-workflow-documents` | List documents attached to a workflow (draft, signature packet, signed copy, etc.). | [Action](/guides/functions/action-functions) |
-| `list-workflow-participants` | List internal users participating in a workflow. | [Action](/guides/functions/action-functions) |
-| `list-workflow-schemas` | List the workflow templates/schemas available to launch new workflows from. | [Action](/guides/functions/action-functions) |
-| `list-workflow-signatures` | List the signers and their per-signer signature status on a workflow's signature packet. | [Action](/guides/functions/action-functions) |
-| `list-workflow-turn-history` | List the turn-by-turn history of a workflow. | [Action](/guides/functions/action-functions) |
-| `list-workflows` | List contract workflows. | [Action](/guides/functions/action-functions) |
-| `pause-workflow` | Pause an in-progress workflow | [Action](/guides/functions/action-functions) |
-| `replace-record` | Replace a record's full properties object. | [Action](/guides/functions/action-functions) |
-| `resume-workflow` | Resume a paused workflow. | [Action](/guides/functions/action-functions) |
-| `revert-to-review-workflow` | Send a workflow at its Sign step back to the Review step. | [Action](/guides/functions/action-functions) |
-| `run-record-action` | Execute a tenant-configured contract action against a record | [Action](/guides/functions/action-functions) |
-| `send-signature-request` | Send the signature packet to signers for a workflow at its Sign step. | [Action](/guides/functions/action-functions) |
-| `update-approval-status` | Set the approval status (approved or pending) of an approval role on a workflow. | [Action](/guides/functions/action-functions) |
-| `update-entity` | Update an entity's name or properties. | [Action](/guides/functions/action-functions) |
-| `update-record-name` | Rename a record without touching its property values. | [Action](/guides/functions/action-functions) |
-| `update-webhook` | Update a webhook's target URL or subscribed events. | [Action](/guides/functions/action-functions) |
-| `update-workflow-attributes` | Set or clear attribute values on a workflow that is still at its Review step | [Action](/guides/functions/action-functions) |
+| `cancel-workflow` | Cancel an in-progress workflow. | [Tool](/guides/functions/tools) |
+| `create-entity` | Create a new entity (e.g. a counterparty company, customer, vendor, or partner record). | [Tool](/guides/functions/tools) |
+| `create-record` | Create a new standalone record | [Tool](/guides/functions/tools) |
+| `create-webhook` | Register a webhook subscription for one or more Ironclad event types. | [Tool](/guides/functions/tools) |
+| `create-workflow-async` | Launch a new contract workflow asynchronously and poll until completion. | [Tool](/guides/functions/tools) |
+| `create-workflow-comment` | Post a comment on a workflow | [Tool](/guides/functions/tools) |
+| `create-workflow` | Launch a new contract workflow synchronously from a workflow schema/template. | [Tool](/guides/functions/tools) |
+| `delete-entity` | Delete an entity. | [Tool](/guides/functions/tools) |
+| `delete-record` | Delete a record. | [Tool](/guides/functions/tools) |
+| `delete-webhook` | Delete a webhook | [Tool](/guides/functions/tools) |
+| `download-workflow-document` | Download the binary content of a specific workflow document. | [Tool](/guides/functions/tools) |
+| `export-records-xlsx` | Download an XLSX export of records for a given record type and set of properties | [Tool](/guides/functions/tools) |
+| `get-entity` | Get a single entity by id. | [Tool](/guides/functions/tools) |
+| `get-record` | Get a single record by id. | [Tool](/guides/functions/tools) |
+| `get-sign-status` | Get the signature status of a workflow that has reached its Sign step. | [Tool](/guides/functions/tools) |
+| `get-webhook-verification-key` | Get the public key used to verify incoming webhook payload signatures. | [Tool](/guides/functions/tools) |
+| `get-webhook` | Get a single webhook by id. | [Tool](/guides/functions/tools) |
+| `get-workflow-async-job-status` | Check the status of an asynchronous workflow-creation job and retrieve the created workflow once done. | [Tool](/guides/functions/tools) |
+| `get-workflow-schema` | Get the full field schema for a single workflow template. | [Tool](/guides/functions/tools) |
+| `get-workflow` | Get full details of a single workflow, including its current schema and attribute values. | [Tool](/guides/functions/tools) |
+| `list-approval-requests` | List the individual approval request events for a workflow | [Tool](/guides/functions/tools) |
+| `list-eligible-assignees` | List users eligible to be assigned to a given workflow role. | [Tool](/guides/functions/tools) |
+| `list-entities` | List entities. | [Tool](/guides/functions/tools) |
+| `list-entity-relationship-types` | List the entity type schemas configured in this tenant with their property definitions. | [Tool](/guides/functions/tools) |
+| `list-records-metadata` | Get the full schema of record types and properties configured in this tenant. | [Tool](/guides/functions/tools) |
+| `list-records` | List contract records | [Tool](/guides/functions/tools) |
+| `list-webhooks` | List registered webhooks. | [Tool](/guides/functions/tools) |
+| `list-workflow-approvals` | Get the approval-group/role structure and current approval state for a workflow. | [Tool](/guides/functions/tools) |
+| `list-workflow-comments` | List comments on a workflow. | [Tool](/guides/functions/tools) |
+| `list-workflow-documents` | List documents attached to a workflow (draft, signature packet, signed copy, etc.). | [Tool](/guides/functions/tools) |
+| `list-workflow-participants` | List internal users participating in a workflow. | [Tool](/guides/functions/tools) |
+| `list-workflow-schemas` | List the workflow templates/schemas available to launch new workflows from. | [Tool](/guides/functions/tools) |
+| `list-workflow-signatures` | List the signers and their per-signer signature status on a workflow's signature packet. | [Tool](/guides/functions/tools) |
+| `list-workflow-turn-history` | List the turn-by-turn history of a workflow. | [Tool](/guides/functions/tools) |
+| `list-workflows` | List contract workflows. | [Tool](/guides/functions/tools) |
+| `pause-workflow` | Pause an in-progress workflow | [Tool](/guides/functions/tools) |
+| `replace-record` | Replace a record's full properties object. | [Tool](/guides/functions/tools) |
+| `resume-workflow` | Resume a paused workflow. | [Tool](/guides/functions/tools) |
+| `revert-to-review-workflow` | Send a workflow at its Sign step back to the Review step. | [Tool](/guides/functions/tools) |
+| `run-record-action` | Execute a tenant-configured contract action against a record | [Tool](/guides/functions/tools) |
+| `send-signature-request` | Send the signature packet to signers for a workflow at its Sign step. | [Tool](/guides/functions/tools) |
+| `update-approval-status` | Set the approval status (approved or pending) of an approval role on a workflow. | [Tool](/guides/functions/tools) |
+| `update-entity` | Update an entity's name or properties. | [Tool](/guides/functions/tools) |
+| `update-record-name` | Rename a record without touching its property values. | [Tool](/guides/functions/tools) |
+| `update-webhook` | Update a webhook's target URL or subscribed events. | [Tool](/guides/functions/tools) |
+| `update-workflow-attributes` | Set or clear attribute values on a workflow that is still at its Review step | [Tool](/guides/functions/tools) |
 | `entities` | Sync entities (counterparty companies, customers, vendors, partners, etc.). | [Sync](/guides/functions/syncs/sync-functions) |
 | `records` | Sync contract records (structured metadata objects, independent of any workflow). | [Sync](/guides/functions/syncs/sync-functions) |
 | `workflows` | Sync contract workflows. | [Sync](/guides/functions/syncs/sync-functions) |
