@@ -462,7 +462,7 @@ Meta tools are Nango's own tools. They are always pinned to the MCP server's too
 
 | Tool | What it does |
 | --- | --- |
-| `nango_tool_search` | Finds tools in the session's toolset from a few keywords and the task's goal |
+| `nango_tool_search` | Finds tools in the session's toolset from a few keywords per tool and the task's goal |
 | `nango_execute` | Runs one of the session's tools by name |
 | `nango_proxy` | Makes an authenticated request to a provider API, for when no tool fits. Bypasses `allow` and `deny`, [see the warning](#toolsets-%26-tools) |
 | `nango_create_connection` | Returns a connect link for one of the session's integrations that has no connection, or a reconnect link for one that has |
@@ -475,13 +475,16 @@ Meta tools are Nango's own tools. They are always pinned to the MCP server's too
 
 ### nango_tool_search
 
-Takes a `query` of a few keywords naming the action, and a `goal` with the task the user asked for, in their words.
+Takes up to five `queries`, each a few keywords naming one action, and a `goal` with the task the user asked for, in their words. An agent that needs several tools searches for all of them in one call.
 
 ```json
-{ "query": "find emails by subject", "goal": "find the invoice email from last week and forward it to accounting" }
+{
+    "queries": ["find emails by subject", "forward an email"],
+    "goal": "find the invoice email from last week and forward it to accounting"
+}
 ```
 
-The result carries `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status.
+The result holds one entry in `results` per query, in the order sent. Each entry carries its `query`, `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status.
 
 Only a best match includes `input`, its argument schema — a weak match is a lead, not something to call yet.
 

@@ -15,6 +15,7 @@ import type {
     AgentSessionToolInput,
     AgentSessionToolMatch,
     AgentSessionToolSearchHit,
+    AgentSessionToolSearchQueryResult,
     AgentSessionToolSearchResult,
     DBEnvironment,
     DBTeam
@@ -115,20 +116,20 @@ export async function searchSessionTools({
     account,
     environment,
     session,
-    query,
+    queries,
     goal,
     slugOf
 }: {
     account: DBTeam;
     environment: DBEnvironment;
     session: AgentSession;
-    query: string;
+    queries: string[];
     goal: string;
     slugOf: ToolSlugLookup;
 }): Promise<AgentSessionToolSearchResult> {
     const logCtx = await logContextGetter.create(
         { operation: { type: 'agent_session', action: 'tool_search' } },
-        { account, environment, meta: { query, goal } }
+        { account, environment, meta: { queries, goal } }
     );
     await logCtx.enrichOperation({ actor: { kind: 'session', id: session.id } });
 
@@ -138,34 +139,54 @@ export async function searchSessionTools({
             void logCtx.warn('Could not look up connections created in this session', { error: err });
             return session;
         });
-        const ranked = rankSessionTools({ session: current, query, slugOf });
-        const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
+        const ranked = queries.map((query) => ({ query, ...rankSessionTools({ session: current, query, slugOf }) }));
+        const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.flatMap(({ best }) => best) });
 
-        // It's possible a tool was removed after the session compiled, so we set input as unavailable.
-        const matches = ranked.best.map((candidate) =>
-            toMatch(candidate, candidate.input ?? inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' })
-        );
-        const related = ranked.related.map((candidate) => toMatch(candidate, undefined));
+        const results = ranked.map(({ query, best, related: weaker }): AgentSessionToolSearchQueryResult => {
+            // It's possible a tool was removed after the session compiled, so we set input as unavailable.
+            const matches = best.map((candidate) =>
+                toMatch(candidate, candidate.input ?? inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' })
+            );
+            const related = weaker.map((candidate) => toMatch(candidate, undefined));
 
-        await logCtx.enrichOperation({ meta: searchOperationMeta({ query, goal, matches, related }) });
-        void logCtx.info(`Tool search for '${query}' returned ${matches.length} ${matches.length === 1 ? 'match' : 'matches'}`);
-        await logCtx.success();
-
-        trackAgentSessionToolSearch({
-            session,
-            query,
-            goal,
-            matches: searchHits(ranked.best),
-            related: searchHits(ranked.related),
-            logOperationId: logCtx.id
+            return { query, guidance: guidanceFor({ session, query, matches, related }), matches, related };
         });
 
-        return { guidance: guidanceFor({ session, query, matches, related }), matches, related };
+        await logCtx.enrichOperation({ meta: searchOperationMeta({ goal, results }) });
+        for (const { query, matches } of results) {
+            void logCtx.info(`Tool search for '${query}' returned ${matches.length} ${matches.length === 1 ? 'match' : 'matches'}`);
+        }
+        await logCtx.success();
+
+        for (const { query, best, related } of ranked) {
+            trackAgentSessionToolSearch({
+                session,
+                query,
+                queryCount: queries.length,
+                goal,
+                matches: searchHits(best),
+                related: searchHits(related),
+                logOperationId: logCtx.id
+            });
+        }
+
+        return { results };
     } catch (err) {
         void logCtx.error('Failed to search the session tools', { error: err });
         await logCtx.failed();
 
-        trackAgentSessionToolSearch({ session, query, goal, matches: [], related: [], logOperationId: logCtx.id, errorCode: 'search_failed' });
+        for (const query of queries) {
+            trackAgentSessionToolSearch({
+                session,
+                query,
+                queryCount: queries.length,
+                goal,
+                matches: [],
+                related: [],
+                logOperationId: logCtx.id,
+                errorCode: 'search_failed'
+            });
+        }
 
         throw err;
     }
@@ -361,23 +382,20 @@ export function objectRootedToolInputSchema(schema: JSONSchema7): JSONSchema7 | 
 }
 
 /** Only what identifies a tool, since a full match carries a description and an input schema. */
-export function searchOperationMeta({
-    query,
-    goal,
-    matches,
-    related
-}: {
-    query: string;
+export function searchOperationMeta({ goal, results }: { goal: string; results: AgentSessionToolSearchQueryResult[] }): {
+    queries: string[];
     goal: string;
-    matches: AgentSessionToolMatch[];
-    related: AgentSessionToolMatch[];
-}): {
-    query: string;
-    goal: string;
-    matches: string[];
-    related: string[];
+    results: { query: string; matches: string[]; related: string[] }[];
 } {
-    return { query, goal, matches: matches.map((match) => match.tool), related: related.map((match) => match.tool) };
+    return {
+        queries: results.map(({ query }) => query),
+        goal,
+        results: results.map(({ query, matches, related }) => ({
+            query,
+            matches: matches.map((match) => match.tool),
+            related: related.map((match) => match.tool)
+        }))
+    };
 }
 
 function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | undefined): AgentSessionToolMatch {

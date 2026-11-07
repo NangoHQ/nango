@@ -27,8 +27,9 @@ export function buildSessionInstructions(session: AgentSession): string {
         sections.push(`## Finding a tool
 - When no listed tool fits the task, use nango_tool_search to find one.
 - Search with a few keywords naming the action and what it acts on, such as "list calendar events", not a full sentence.
-- Leave the app's name out of the query, because every tool of that app matches it.
-- If a search finds nothing that fits, try again with other words for the action or the object, such as "create" instead of "add", before deciding no tool covers the task.
+- When the task needs several tools, search for all of them in one call, one query per tool, such as ["list calendar events", "send an email"]. Results come back grouped by query.
+- Leave the app's name out of each query, because every tool of that app matches it.
+- If a query finds nothing that fits, try again with other words for the action or the object, such as "create" instead of "add", before deciding no tool covers the task.
 - Matches usually come with their input schema. When a match's input.kind is unavailable, the input has to be guessed, so if the call fails, read the error and adjust the input.
 - Related results are weaker leads: when one of them fits, search again with its exact tool name to get its input.
 - If you already have a tool's input schema from earlier in this conversation, reuse it instead of searching again.`);

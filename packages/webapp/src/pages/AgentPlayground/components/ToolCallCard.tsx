@@ -12,11 +12,11 @@ import { Spinner } from '@/components/ui/Spinner';
 import { INTERRUPTED_CALL } from '@/store/agentPlaygroundChat';
 import { cn } from '@/utils/utils';
 import { isUnfinished } from '../replyOutcome';
-import { describeTool, labelFor, toolArguments } from '../toolDisplay';
+import { describeTool, labelFor, searchSummary, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
 
 import type { PendingApproval } from '../approvalTracking';
-import type { IntegrationLabels, ToolDisplay } from '../toolDisplay';
+import type { IntegrationLabels, SearchOutput, ToolDisplay } from '../toolDisplay';
 import type { BadgeProps } from '@nangohq/design-system';
 import type { DynamicToolUIPart } from 'ai';
 
@@ -58,16 +58,6 @@ function useRunDuration(running: boolean, awaitingApproval: boolean, done: boole
 
 function formatDuration(ms: number): string {
     return ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(1)}s`;
-}
-
-function searchSummary(matches: number, related: number): string {
-    if (matches > 0) {
-        return matches === 1 ? '1 match' : `${matches} matches`;
-    }
-    if (related > 0) {
-        return related === 1 ? '1 related tool' : `${related} related tools`;
-    }
-    return 'No tool found';
 }
 
 const METHOD_VARIANT: Record<string, BadgeProps['variant']> = {
@@ -165,8 +155,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
         return <ApprovalCard part={part} display={display} onApprove={onApprove} />;
     }
 
-    const searchOutput =
-        display.kind === 'search' && part.state === 'output-available' ? (part.output as { matches?: unknown[]; related?: unknown[] }) : undefined;
+    const searchOutput = display.kind === 'search' && part.state === 'output-available' ? (part.output as SearchOutput) : undefined;
 
     const payload = (
         <Payload
@@ -202,7 +191,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
                         <span className={cn('shrink-0', running && 'animate-pulse')}>{display.title}</span>
                         {display.subtitle && <span className="min-w-0 truncate text-text-muted">{display.subtitle}</span>}
                         <span className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-body-small-regular">
-                            {searchOutput && <span>{searchSummary(searchOutput.matches?.length ?? 0, searchOutput.related?.length ?? 0)}</span>}
+                            {searchOutput && <span>{searchSummary(searchOutput)}</span>}
                             {meta}
                         </span>
                     </CollapsibleTrigger>
