@@ -1,0 +1,55 @@
+---
+title: 'Browserless - How do I link my account?'
+sidebarTitle: 'Browserless'
+---
+
+## Overview
+
+To authenticate with Browserless, you need:
+
+1. **Region** — the Browserless regional endpoint to send requests to.
+2. **API Key** — a Browserless API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Browserless account. You can sign up for free at [browserless.io](https://www.browserless.io/signup/email?plan=free).
+
+### Step 1: Choose your region
+
+Your account has no assigned region: any region works with any account. Pick the one closest to you or to the sites you automate:
+
+| Region | Value to select |
+|--------|-----------------|
+| US West (San Francisco) | `production-sfo.browserless.io` |
+| Europe (London) | `production-lon.browserless.io` |
+| Europe (Amsterdam) | `production-ams.browserless.io` |
+
+See [Connection URL patterns](https://docs.browserless.io/baas/connection-url-patterns) for details.
+
+### Step 2: Create an API key
+
+1. Log in to your [Browserless account](https://browserless.io/account/). On the account home page, find the **API Key** section and click **Manage API keys** (or open **API Keys** in the sidebar).
+
+<img src="/api-integrations/browserless/account_home_manage_api_keys.png" alt="Browserless account home page with the Manage API keys link in the API Key section"/>
+
+2. Click **Create API Key**, enter a name for the key, and click **Create Key**.
+
+<img src="/api-integrations/browserless/create_api_key_dialog.png" alt="Create API Key dialog in Browserless with the Name field and the Create Key button"/>
+
+3. In the **API key created** dialog, copy the key right away. It is shown only once.
+
+<img src="/api-integrations/browserless/api_key_created.png" alt="API key created dialog in Browserless with the copy button"/>
+
+Only account owners and admins can manage API keys.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Browserless.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/browserless/form.png" alt="Browserless connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Browserless.

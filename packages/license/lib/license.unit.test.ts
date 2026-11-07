@@ -45,26 +45,28 @@ describe('verifyLicense', () => {
     const other = keyPair();
 
     it('accepts a license signed by the trusted key', async () => {
-        const envelope = await signLicense(license, key);
-        const [header = ''] = envelope.split('.');
+        const { envelope, kid, signature } = await signLicense(license, key);
+        const [header = '', , lastSegment] = envelope.split('.');
         expect(JSON.parse(Buffer.from(header, 'base64url').toString())).toStrictEqual({ alg: 'ES256', kid: await keyIdOf(key.publicKeyPem) });
+        expect(kid).toBe(await keyIdOf(key.publicKeyPem));
+        expect(signature).toBe(lastSegment);
 
         expect((await verifyLicense(envelope, key.publicKeyPem)).unwrap()).toStrictEqual(license);
     });
 
     it('ignores fields the build does not know', async () => {
-        const envelope = await signLicense({ ...license, limits: { concurrency: 10 } } as License, key);
+        const { envelope } = await signLicense({ ...license, limits: { concurrency: 10 } } as License, key);
         expect((await verifyLicense(envelope, key.publicKeyPem)).unwrap()).toStrictEqual(license);
     });
 
     it('rejects a tampered payload', async () => {
-        const [header, , signature] = (await signLicense(license, key)).split('.');
+        const [header, , signature] = (await signLicense(license, key)).envelope.split('.');
         const tampered = `${header}.${encode({ ...license, name: 'acme/prod-2' })}.${signature}`;
         expect(errorCode(await verifyLicense(tampered, key.publicKeyPem))).toBe('invalid_signature');
     });
 
     it('rejects a signature from another key under the trusted key id', async () => {
-        const [header, payload] = (await signLicense(license, key)).split('.');
+        const [header, payload] = (await signLicense(license, key)).envelope.split('.');
         const forged = Buffer.from(sign('sha256', Buffer.from(`${header}.${payload}`), { key: other.privateKey, dsaEncoding: 'ieee-p1363' })).toString(
             'base64url'
         );
@@ -72,7 +74,7 @@ describe('verifyLicense', () => {
     });
 
     it('refuses a license signed by a key this build does not trust, naming both', async () => {
-        const res = await verifyLicense(await signLicense(license, other), key.publicKeyPem);
+        const res = await verifyLicense((await signLicense(license, other)).envelope, key.publicKeyPem);
         expect(errorCode(res)).toBe('unknown_key_id');
         expect(res.isErr() && res.error.message).toBe(
             `license signed by key ${await keyIdOf(other.publicKeyPem)}, this build trusts ${await keyIdOf(key.publicKeyPem)}`
@@ -80,7 +82,7 @@ describe('verifyLicense', () => {
     });
 
     it('rejects an algorithm other than ES256', async () => {
-        const [, payload, signature] = (await signLicense(license, key)).split('.');
+        const [, payload, signature] = (await signLicense(license, key)).envelope.split('.');
         const header = encode({ alg: 'RS256', kid: await keyIdOf(key.publicKeyPem) });
         expect(errorCode(await verifyLicense(`${header}.${payload}.${signature}`, key.publicKeyPem))).toBe('unsupported_algorithm');
     });
@@ -93,7 +95,7 @@ describe('verifyLicense', () => {
     });
 
     it('rejects a signed payload that is not a license', async () => {
-        const [header] = (await signLicense(license, key)).split('.');
+        const [header] = (await signLicense(license, key)).envelope.split('.');
         const payload = encode({ ...license, version: 2 });
         const signature = Buffer.from(sign('sha256', Buffer.from(`${header}.${payload}`), { key: key.privateKey, dsaEncoding: 'ieee-p1363' })).toString(
             'base64url'
@@ -114,7 +116,7 @@ describe('signLicense', () => {
     });
 
     it('writes the signature as the 64-byte r || s form', async () => {
-        const [header, payload, signature = ''] = (await signLicense(license, key)).split('.');
+        const [header, payload, signature = ''] = (await signLicense(license, key)).envelope.split('.');
         const raw = Buffer.from(signature, 'base64url');
         expect(raw).toHaveLength(64);
         expect(verify('sha256', Buffer.from(`${header}.${payload}`), { key: key.publicKeyPem, dsaEncoding: 'ieee-p1363' }, raw)).toBe(true);

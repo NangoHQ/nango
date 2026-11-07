@@ -134,6 +134,11 @@ export interface FunctionDeploymentCreateSuccess {
     created_at: string;
 }
 
+export interface DeployedFunction {
+    name: string;
+    version?: string | undefined;
+}
+
 export interface FunctionDeploymentResultSuccess {
     id: string;
     status: FunctionDeploymentStatus;
@@ -146,7 +151,7 @@ export interface FunctionDeploymentResultSuccess {
     completed_at?: string | undefined;
     duration_ms?: number | undefined;
     deployed?: boolean | undefined;
-    deployed_functions?: { name: string; version: string }[] | undefined;
+    deployed_functions?: DeployedFunction[] | undefined;
     output?: string | undefined;
     error?: ApiError<FunctionErrorCode>['error'] | undefined;
 }
@@ -552,6 +557,7 @@ export interface FunctionDeploymentArtifact {
         js: string;
         ts: string;
     };
+    source: Exclude<FunctionSource, 'catalog'>;
 }
 
 export type FunctionReconciliationScope =

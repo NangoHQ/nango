@@ -13,7 +13,7 @@ import { Spinner } from '../utils/spinner.js';
 import { NANGO_VERSION } from '../version.js';
 import { tsToJsPath } from './compile.js';
 import { parseIntegrationDefinitions } from './definitions.js';
-import { normalizeProjectRelativePath, resolveProjectPath } from './project-path.js';
+import { resolveEntryPoint, resolveProjectPath } from './project-path.js';
 import { ReadableError } from './utils.js';
 
 import type { DeployOptions } from '../types.js';
@@ -81,6 +81,7 @@ export async function deploy({
         console.log(chalk.yellow('--sync and --action are deprecated. Use `nango deploy <environment> <file>` to deploy a single script.'));
     }
 
+    const deploySource = resolveDeploySource();
     const plan: DeploymentPlan = [];
     const spinnerPackage = spinnerFactory.start('Packaging');
     try {
@@ -122,7 +123,8 @@ export async function deploy({
                 const bundle = await createFunctionsBundle({
                     fullPath,
                     functionConfigs: def.value.functions,
-                    reconciliationScope: selection.reconciliationScope
+                    reconciliationScope: selection.reconciliationScope,
+                    source: deploySource
                 });
                 if (bundle.isErr()) {
                     spinnerPackage.fail();
@@ -171,7 +173,6 @@ export async function deploy({
         return Err('failed');
     }
 
-    const deploySource = resolveDeploySource();
     const autoconfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] === 'true' || options.autoConfirm;
     const confirmed = await handleConfirmation({
         autoconfirm,
@@ -332,17 +333,12 @@ export function validateDeployArguments({
 }
 
 function planFileDeployment({ fullPath, file, parsed }: { fullPath: string; file: string; parsed: ParsedIntegrationDefinitions }): Result<DeploymentSelection> {
-    const tsFile = file.replace(/\.js$/, '.ts');
-    const resolved = resolveProjectPath({ projectRoot: fullPath, filePath: path.isAbsolute(tsFile) ? path.relative(fullPath, tsFile) : tsFile });
-    if (!resolved) {
-        return Err(new Error(`'${file}' must be inside the project folder.`));
+    const resolved = resolveEntryPoint({ fullPath, file, entryPoints: parsed.entryPoints });
+    if (resolved.isErr()) {
+        return Err(resolved.error);
     }
 
-    const entryPoint = parsed.entryPoints.find((candidate) => normalizeProjectRelativePath(candidate.filePath) === resolved.relative);
-    if (!entryPoint) {
-        return Err(new Error(`'${file}' is not a script. Make sure it is imported from index.ts.`));
-    }
-
+    const entryPoint = resolved.value;
     const { integrationId, name } = entryPoint;
     switch (entryPoint.type) {
         case 'function':
@@ -363,11 +359,13 @@ function planFileDeployment({ fullPath, file, parsed }: { fullPath: string; file
 async function createFunctionsBundle({
     fullPath,
     functionConfigs,
-    reconciliationScope
+    reconciliationScope,
+    source
 }: {
     fullPath: string;
     functionConfigs: FunctionConfig[];
     reconciliationScope: FunctionReconciliationScope;
+    source: 'standalone' | 'repo';
 }): Promise<Result<FunctionsBundle>> {
     const selectedConfigs = functionConfigs.filter((config) => {
         switch (reconciliationScope.kind) {
@@ -400,7 +398,7 @@ async function createFunctionsBundle({
         if (!fileBody) {
             return Err(new Error(`No function files found for "${config.name}"`));
         }
-        functions.push({ ...artifact, fileBody });
+        functions.push({ ...artifact, fileBody, source });
     }
 
     return Ok({ reconciliationScope, functions });

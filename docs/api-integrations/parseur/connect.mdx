@@ -1,0 +1,49 @@
+---
+title: 'Parseur - How do I link my account?'
+sidebarTitle: 'Parseur'
+---
+
+## Overview
+
+To authenticate with Parseur, you need:
+
+1. **API Key** — an API key of your Parseur account.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A Parseur account. API access is available on the Free plan. If you don't have an account, [sign up](https://app.parseur.com/signup).
+
+### Step 1: Create an API key
+
+1. Log in to [Parseur](https://app.parseur.com).
+2. Click **Account** in the left sidebar, then **API keys** ([direct link](https://app.parseur.com/account/api-keys)).
+
+<img src="/api-integrations/parseur/account_api_keys_nav.png" alt="Parseur Account section with API keys selected in the sidebar"/>
+
+3. Click **Create new API key**.
+4. Enter a **Key name**, for example `Nango integration`.
+5. Optionally set **Expiration in months**. Leave it empty for a key that never expires. The expiration cannot be changed later.
+6. Under **Access scope**, keep **All mailboxes** selected, or pick **Only selected mailboxes** to create a restricted key (Pro plan and higher).
+7. Click **Create**.
+
+<img src="/api-integrations/parseur/create_api_key_dialog.png" alt="Parseur Create a new API key dialog with Key name, Expiration in months and Access scope fields"/>
+
+8. In the **Save your key** dialog, click **Copy**. The secret key is shown only once.
+
+<img src="/api-integrations/parseur/api_key_created.png" alt="Parseur Save your key dialog with the Copy button next to the secret key"/>
+
+<Note>
+Accounts created before August 18, 2025 also have a **Legacy** API key on the **API keys** page. It works too, but Parseur recommends creating a new key.
+</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Parseur.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/parseur/form.png" alt="Parseur Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Parseur.
