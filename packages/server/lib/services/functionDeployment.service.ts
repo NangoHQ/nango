@@ -22,6 +22,7 @@ import type {
     DBPlan,
     DBSyncConfig,
     DBTeam,
+    DeployedFunction,
     FunctionDeploymentCodeBody,
     FunctionDeploymentCreateSuccess,
     FunctionDeploymentResultSuccess,
@@ -277,7 +278,7 @@ export async function deployTemplate({
     }
 
     const { result, type } = outcome;
-    const version = result.version ?? '';
+    const deployedFunction: DeployedFunction = result.version ? { name: result.name, version: result.version } : { name: result.name };
     const deployment = await createSucceededFunctionDeployment({
         environmentId: environment.id,
         request: {
@@ -287,8 +288,8 @@ export async function deployTemplate({
             function_name: result.name,
             function_type: type
         },
-        output: `Successfully deployed the functions:\n- ${result.name}@${version}`,
-        deployedFunctions: [{ name: result.name, version }]
+        output: `Successfully deployed:\n- ${result.name}${result.version ? `@v${result.version}` : ''}`,
+        deployedFunctions: [deployedFunction]
     });
     if (deployment.isErr()) {
         return Err(

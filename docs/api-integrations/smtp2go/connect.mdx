@@ -1,0 +1,55 @@
+---
+title: 'SMTP2GO - How do I link my account?'
+sidebarTitle: 'SMTP2GO'
+---
+
+## Overview
+
+To authenticate with SMTP2GO, you need:
+
+1. **Region** — the SMTP2GO API host to connect to.
+2. **API Key** — an SMTP2GO API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An SMTP2GO account. You can [start a free account](https://www.smtp2go.com/pricing/).
+
+### Step 1: Choose your region
+
+SMTP2GO has a global API host and one host per region:
+
+| Region | Value to select |
+|--------|-----------------|
+| Global | `api.smtp2go.com` |
+| US (United States) | `us-api.smtp2go.com` |
+| EU (European Union) | `eu-api.smtp2go.com` |
+| AU (Oceania) | `au-api.smtp2go.com` |
+
+The **API Keys** page of the SMTP2GO app shows your **API Base URL** under **Connection information**. SMTP2GO recommends a region-specific host where possible, to connect to the region closest to you. See [Endpoints](https://developers.smtp2go.com/docs/endpoints) for details.
+
+### Step 2: Create an API key
+
+1. Log in to the [SMTP2GO app](https://app.smtp2go.com).
+2. In the left-side menu, go to **Sending** > **API Keys**, then click **Add API Key**.
+
+<img src="/api-integrations/smtp2go/api_keys_page.png" alt="API Keys page in the SMTP2GO app with the Add API Key button and the API Base URL under Connection information"/>
+
+3. On the **Details** tab, copy the generated API key (it starts with `api-`) and enter a description.
+
+<img src="/api-integrations/smtp2go/api_key_details.png" alt="Details tab of the Add API Key page in the SMTP2GO app with the API Key and Description fields"/>
+
+4. On the **Permissions** tab, select the endpoints your integration needs, then click **Add API Key** to save the key.
+
+<img src="/api-integrations/smtp2go/api_key_permissions.png" alt="Permissions tab of the Add API Key page in the SMTP2GO app with endpoint checkboxes and the Add API Key button"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with SMTP2GO.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/smtp2go/form.png" alt="SMTP2GO connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to SMTP2GO.

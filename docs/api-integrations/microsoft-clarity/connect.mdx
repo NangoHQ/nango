@@ -1,0 +1,47 @@
+---
+title: 'Microsoft Clarity - How do I link my account?'
+sidebarTitle: 'Microsoft Clarity'
+---
+
+## Overview
+
+To authenticate with Microsoft Clarity, you need:
+
+1. **API Token** — a Data Export API token for your Clarity project.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- Admin access to the Clarity project you want to connect. Only project admins can manage API tokens, and each token belongs to one project.
+
+### Step 1: Open your project settings
+
+1. Sign in to [Microsoft Clarity](https://clarity.microsoft.com/) and open your project.
+2. Click the **Settings** tab.
+
+<img src="/api-integrations/microsoft-clarity/project_settings_tab.png" alt="Clarity project with the Settings tab highlighted"/>
+
+### Step 2: Generate an API token
+
+1. In the Settings sidebar, select **Data export**, then click **Generate new API token**.
+
+<img src="/api-integrations/microsoft-clarity/data_export_generate_token.png" alt="Clarity Data export settings with the Generate new API token button highlighted"/>
+
+2. Enter a token name (4 to 32 characters: letters, digits, hyphens, underscores and periods, no spaces), then click **Add**.
+
+<img src="/api-integrations/microsoft-clarity/name_api_token.png" alt="Clarity dialog for naming the new API token with the Add button"/>
+
+3. Click **Copy token** to copy the generated token. It is shown only once, so store it securely.
+
+<img src="/api-integrations/microsoft-clarity/copy_api_token.png" alt="Clarity Token generated dialog with the Copy token button highlighted"/>
+
+### Step 3: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Microsoft Clarity.
+2. Enter your token in the **API Token** field.
+3. Submit the form. The connection is saved without checking the token: if the token is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/microsoft-clarity/form.png" alt="Microsoft Clarity Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Microsoft Clarity.
