@@ -193,7 +193,8 @@ export const sharedCredentialsSchema = z
         client_id: z.string().min(1).max(255),
         client_secret: z.string().min(1),
         scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.*-]+(,[0-9a-zA-Z:/_.*-]+)*$/), z.string().max(0)]).optional(),
-        app_link: z.url().max(2048).optional()
+        app_link: z.url().max(2048).optional(),
+        enabled: z.boolean().optional()
     })
     .strict()
     .check((ctx) => {
