@@ -25,6 +25,9 @@ export function toErrorResponse(error: DeploymentBundlePreparationError): {
             }
         };
     }
+    if (error.code === 'invalid_request') {
+        return { status: 400, error: { error: { code: 'invalid_request', message: error.message } } };
+    }
 
     return {
         status: 500,

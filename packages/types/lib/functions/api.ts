@@ -6,7 +6,7 @@ import type { FunctionSource } from '../syncConfigs/db.js';
 import type { FunctionListType, FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 import type { JSONSchema7 } from 'json-schema';
 
-export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
+export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'> | 'tool' | 'function';
 
 export type FunctionErrorCode =
     | 'invalid_request'
@@ -582,7 +582,7 @@ export type PostFunctionDeploymentBundlePreview = ApiEndpoint<{
     Method: 'POST';
     Path: '/functions/deployments/bundle/preview';
     Body: FunctionDeploymentBundleBody;
-    Error: ApiError<'functions_deployment_error' | 'integration_not_found'>;
+    Error: ApiError<'functions_deployment_error' | 'integration_not_found' | 'invalid_request'>;
     Success: FunctionDeploymentBundleSuccess;
 }>;
 
@@ -591,6 +591,6 @@ export type PostFunctionDeploymentBundle = ApiEndpoint<{
     Method: 'POST';
     Path: '/functions/deployments/bundle';
     Body: FunctionDeploymentBundleBody;
-    Error: ApiError<'functions_deployment_error' | 'concurrent_deployment' | 'integration_not_found'>;
+    Error: ApiError<'functions_deployment_error' | 'concurrent_deployment' | 'integration_not_found' | 'invalid_request'>;
     Success: FunctionDeploymentBundleSuccess;
 }>;
