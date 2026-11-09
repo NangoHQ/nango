@@ -1,0 +1,83 @@
+---
+title: 'Laylo'
+sidebarTitle: 'Laylo'
+description: 'Integrate your application with the Laylo API'
+---
+
+## 🚀 Quickstart
+
+Connect to Laylo with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Laylo_.
+    </Step>
+    <Step id="authorize-laylo" title="Authorize Laylo">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Laylo API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-laylo-api" title="Call the Laylo API">
+    Let's make your first request to the Laylo GraphQL API to subscribe a fan to your account. Every successful call creates a real signup, so use an email address you own. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/graphql" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"query": "mutation($email: String) { subscribeToUser(email: $email) }", "variables": {"email": "<FAN-EMAIL>"}}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/graphql',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                query: 'mutation($email: String) { subscribeToUser(email: $email) }',
+                variables: { email: '<FAN-EMAIL>' }
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Laylo integration guides
+
+- [How do I link my account?](/api-integrations/laylo/connect)  
+Create an API Keyring key to connect your Laylo account.
+
+Official docs: [Laylo API](https://docs.laylo.com/en/articles/6520155-laylo-api)
+
+## 🧩 Pre-built syncs & actions for Laylo
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/laylo/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -16097,6 +16097,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `cursor-admin` | Cursor Admin | BASIC | [docs](https://nango.dev/docs/integrations/all/cursor-admin.md) | [connect](https://nango.dev/docs/integrations/all/cursor-admin/connect.md) |  | dev-tools |
 | `customer-io` | Customer.io | BASIC | [docs](https://nango.dev/docs/api-integrations/customer-io.md) | [connect](https://nango.dev/docs/api-integrations/customer-io/connect.md) |  | marketing, analytics |
 | `cyberimpact` | Cyberimpact | API_KEY | [docs](https://nango.dev/docs/integrations/all/cyberimpact.md) | [connect](https://nango.dev/docs/integrations/all/cyberimpact/connect.md) |  | marketing |
+| `dash` | Dash | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/dash.md) | [connect](https://nango.dev/docs/api-integrations/dash/connect.md) | [setup](https://nango.dev/docs/api-integrations/dash/how-to-register-your-own-dash-api-oauth-app.md) | storage, marketing |
 | `databox` | Databox | API_KEY | [docs](https://nango.dev/docs/api-integrations/databox.md) | [connect](https://nango.dev/docs/api-integrations/databox/connect.md) |  | analytics |
 | `databricks-account` | Databricks (Account Level) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/databricks-account.md) |  |  | analytics |
 | `databricks-workspace` | Databricks (Workspace Level) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/databricks-workspace.md) |  |  | analytics |
@@ -16343,6 +16344,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `hunter` | Hunter | API_KEY | [docs](https://nango.dev/docs/api-integrations/hunter.md) | [connect](https://nango.dev/docs/api-integrations/hunter/connect.md) |  | marketing, crm |
 | `huntress` | Huntress | BASIC | [docs](https://nango.dev/docs/api-integrations/huntress.md) | [connect](https://nango.dev/docs/api-integrations/huntress/connect.md) |  | other |
 | `hydradb` | HydraDB | API_KEY | [docs](https://nango.dev/docs/api-integrations/hydradb.md) | [connect](https://nango.dev/docs/api-integrations/hydradb/connect.md) |  | knowledge-base |
+| `hyperline` | Hyperline | API_KEY | [docs](https://nango.dev/docs/api-integrations/hyperline.md) | [connect](https://nango.dev/docs/api-integrations/hyperline/connect.md) |  | invoicing, payment |
 | `icypeas` | Icypeas | API_KEY | [docs](https://nango.dev/docs/integrations/all/icypeas.md) | [connect](https://nango.dev/docs/integrations/all/icypeas/connect.md) |  | marketing, crm |
 | `ids-fulfillment` | IDS Fulfillment | API_KEY | [docs](https://nango.dev/docs/api-integrations/ids-fulfillment.md) | [connect](https://nango.dev/docs/api-integrations/ids-fulfillment/connect.md) |  | e-commerce |
 | `imanage` | iManage Work | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/imanage.md) | [connect](https://nango.dev/docs/api-integrations/imanage/connect.md) | [setup](https://nango.dev/docs/api-integrations/imanage/how-to-register-your-own-imanage-oauth-app.md) | legal, storage |
@@ -16402,6 +16404,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `laposta` | Laposta | BASIC | [docs](https://nango.dev/docs/api-integrations/laposta.md) | [connect](https://nango.dev/docs/api-integrations/laposta/connect.md) |  | marketing |
 | `lastpass` | LastPass | BASIC | [docs](https://nango.dev/docs/integrations/all/lastpass.md) | [connect](https://nango.dev/docs/integrations/all/lastpass/connect.md) |  | productivity |
 | `lattice` | Lattice | API_KEY | [docs](https://nango.dev/docs/api-integrations/lattice.md) | [connect](https://nango.dev/docs/api-integrations/lattice/connect.md) |  | hr |
+| `laylo` | Laylo | API_KEY | [docs](https://nango.dev/docs/api-integrations/laylo.md) | [connect](https://nango.dev/docs/api-integrations/laylo/connect.md) |  | marketing |
 | `leadfeeder` | Leadfeeder | API_KEY | [docs](https://nango.dev/docs/api-integrations/leadfeeder.md) | [connect](https://nango.dev/docs/api-integrations/leadfeeder/connect.md) |  | marketing, crm |
 | `leadmagic` | LeadMagic | API_KEY | [docs](https://nango.dev/docs/integrations/all/leadmagic.md) | [connect](https://nango.dev/docs/integrations/all/leadmagic/connect.md) |  | marketing, crm |
 | `leapsome` | Leapsome | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/leapsome.md) | [connect](https://nango.dev/docs/api-integrations/leapsome/connect.md) |  | hr |
@@ -16954,6 +16957,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `wildix-pbx` | Wildix PBX | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wildix-pbx.md) |  |  | communication |
 | `wise-api-key` | Wise (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/wise-api-key.md) | [connect](https://nango.dev/docs/api-integrations/wise-api-key/connect.md) |  | banking, payment |
 | `wiseagent` | Wiseagent | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/wiseagent.md) |  | [setup](https://nango.dev/docs/api-integrations/wiseagent/how-to-register-your-own-wiseagent-oauth-app.md) | crm |
+| `wispr-flow-mcp` | Wispr Flow (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/wispr-flow-mcp.md) |  |  | productivity, mcp |
 | `wistia` | Wistia | API_KEY | [docs](https://nango.dev/docs/api-integrations/wistia.md) | [connect](https://nango.dev/docs/api-integrations/wistia/connect.md) |  | video |
 | `wiza` | Wiza | API_KEY | [docs](https://nango.dev/docs/integrations/all/wiza.md) | [connect](https://nango.dev/docs/integrations/all/wiza/connect.md) |  | crm, marketing |
 | `woocommerce` | WooCommerce | BASIC | [docs](https://nango.dev/docs/integrations/all/woocommerce.md) | [connect](https://nango.dev/docs/integrations/all/woocommerce/connect.md) |  | e-commerce, dev-tools, design |
