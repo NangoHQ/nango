@@ -37,7 +37,8 @@ export type ResDefaultErrors =
     | ApiError<'invalid_cli_version'>
     | ApiError<'invalid_permissions'>
     | ApiError<'invalid_connect_session_token_format'>
-    | ApiError<'request_too_large'>;
+    | ApiError<'request_too_large'>
+    | ApiError<'invalid_uri'>;
 
 export type EndpointMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'PROPFIND' | 'REPORT';
 /**
