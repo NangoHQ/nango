@@ -1082,7 +1082,7 @@ describe('Persist API', () => {
                 }
             );
             expect(response.status).toEqual(404);
-            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+            expect(await response.json()).toMatchObject({ error: { code: 'sync_job_not_found' } });
         });
 
         it("rejects a permanent hard-delete of another tenant's records (deleteHardRecords)", async () => {
@@ -1092,7 +1092,7 @@ describe('Persist API', () => {
                 headers: authHeaders
             });
             expect(response.status).toEqual(404);
-            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+            expect(await response.json()).toMatchObject({ error: { code: 'sync_job_not_found' } });
         });
 
         it("rejects a write of records onto another tenant's connection (postRecords, the shared recordsPath route)", async () => {
@@ -1109,7 +1109,7 @@ describe('Persist API', () => {
                 headers: authHeaders
             });
             expect(response.status).toEqual(404);
-            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+            expect(await response.json()).toMatchObject({ error: { code: 'sync_job_not_found' } });
         });
 
         it('rejects a nonexistent connection id with the same 404, not a different error', async () => {
@@ -1140,6 +1140,23 @@ describe('Persist API', () => {
                 headers: authHeaders
             });
             expect(response.status).toEqual(200);
+        });
+
+        it('rejects every connection route when the connection belongs to another environment', async () => {
+            const routes = connectionRoutes();
+            expect(routes).toHaveLength(10);
+            for (const route of routes) {
+                const path = route.path
+                    .replace(':environmentId', String(seed.env.id))
+                    .replace(':nangoConnectionId', String(otherTenantSeed.connection.id))
+                    .replace(':syncId', otherTenantSeed.sync.id)
+                    .replace(':syncJobId', String(otherTenantSeed.syncJob.id));
+                const response = await fetch(`${serverUrl}${path}`, { method: route.method, headers: authHeaders });
+                expect(response.status).toEqual(404);
+                expect(await response.json()).toMatchObject({
+                    error: { code: route.path.includes(':syncJobId') ? 'sync_job_not_found' : 'connection_not_found' }
+                });
+            }
         });
 
         it("also rejects the other tenant reaching into this seed's connection, using its own valid credentials", async () => {
@@ -1298,6 +1315,19 @@ describe('Persist API', () => {
         });
     });
 });
+
+function connectionRoutes(): { method: string; path: string }[] {
+    const stack = (server as unknown as { router: { stack: { route?: { path: string; methods: Record<string, boolean> } }[] } }).router.stack;
+    return stack.flatMap((layer) => {
+        const route = layer.route;
+        if (!route?.path.includes(':nangoConnectionId')) {
+            return [];
+        }
+        return Object.entries(route.methods)
+            .filter(([, enabled]) => enabled)
+            .map(([method]) => ({ method: method.toUpperCase(), path: route.path }));
+    });
+}
 
 const initDb = async () => {
     const now = new Date();

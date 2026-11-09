@@ -1,157 +1,48 @@
 import { hasScope, INTERNAL_SERVICE_AUDIENCE_PERSIST, isResourceBound, isTaskBoundAuth, routeParam, verifyTaskCapabilityToken } from '@nangohq/internal-auth';
 import { accountService } from '@nangohq/shared';
-import { createRoute, stringifyError } from '@nangohq/utils';
+import { stringifyError } from '@nangohq/utils';
 
 import { applyPersistAuthContext, authenticateSecret, eddsaBearerToken } from './auth.middleware.js';
-import { connectionOwnershipMiddleware } from './connectionOwnership.middleware.js';
-import { syncJobOwnershipMiddleware } from './syncJobOwnership.middleware.js';
 
 import type { AuthLocals } from './auth.middleware.js';
 import type { KeyRegistry, TaskCapabilityAuth, TaskCapabilityScope } from '@nangohq/internal-auth';
-import type { Endpoint } from '@nangohq/types';
-import type { RouteHandler } from '@nangohq/utils';
-import type { Express, NextFunction, Request, RequestHandler, Response } from 'express';
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
-export interface PersistRouteOptions {
-    /** Sync-conflict routes carry syncId in the body, not the path. Checked after the body is parsed. */
-    syncIdFromBody?: boolean;
-    /** Runs after authentication, so a bad credential is rejected before the body is parsed. */
-    parseJson?: RequestHandler;
-}
+export type PersistCredential = { kind: 'secret' } | { kind: 'task'; auth: TaskCapabilityAuth };
 
-type PersistCredential = { kind: 'secret' } | { kind: 'task'; auth: TaskCapabilityAuth };
+/** `credential` is absent until `authenticate` has accepted the caller. */
+export type PersistLocals = AuthLocals & { credential?: PersistCredential };
 
-const credentialByResponse = new WeakMap<Response, PersistCredential>();
+const KNOWN_PARAMS = new Set(['environmentId', 'nangoConnectionId', 'syncId', 'syncJobId', 'taskId']);
 
 /**
- * Returns auth mounting and `createPersistRoute` bound to a jobs key registry. The caller builds
- * that registry once and passes it in; verification never builds one per request.
- *
- * `mountPersistAuth` must run before any `/environment/` route. It checks the credential only.
- * Scope and resource checks run on the route, after Express has matched the path and parsed the body.
+ * Credential check for every `/environment/:environmentId` route. Mount before any JSON parser.
+ * Scope and the other resource bindings run in `authorize`, after Express has matched the route.
  */
-export function createPersistRoutes(registry: KeyRegistry) {
-    let authMounted = false;
-    return {
-        mountPersistAuth(app: Express): void {
-            app.use('/environment/:environmentId', authenticatePersist(registry));
-            authMounted = true;
-        },
-        createPersistRoute<E extends Endpoint<any>>(
-            app: Express,
-            handler: RouteHandler<E, AuthLocals>,
-            scope: TaskCapabilityScope | null,
-            opts?: PersistRouteOptions
-        ): void {
-            if (!authMounted) {
-                throw new Error('mountPersistAuth must be called before createPersistRoute');
-            }
-            const path = String(handler.path);
-            if (scope !== null && !path.startsWith('/environment/')) {
-                throw new Error(`persist route ${path} is outside /environment and cannot be authenticated`);
-            }
-            createRoute(app, handler, { middleware: routeMiddleware(scope, path, opts) });
-        }
-    };
-}
-
-function authenticatePersist(registry: KeyRegistry): RequestHandler {
+export function authenticate(registry: KeyRegistry): RequestHandler {
     return (req, res, next) => {
         const token = eddsaBearerToken(req.get('authorization'));
         if (token) {
-            void authenticateTaskCredential(registry, res, next, token);
+            void authenticateTask(registry, req, res as Response<unknown, PersistLocals>, next, token);
             return;
         }
         void authenticateSecret(req, res as Response<unknown, AuthLocals>, next, () => {
-            credentialByResponse.set(res, { kind: 'secret' });
+            (res as Response<unknown, PersistLocals>).locals.credential = { kind: 'secret' };
         });
     };
 }
 
-async function authenticateTaskCredential(registry: KeyRegistry, res: Response, next: NextFunction, token: string): Promise<void> {
+async function authenticateTask(registry: KeyRegistry, req: Request, res: Response<unknown, PersistLocals>, next: NextFunction, token: string): Promise<void> {
     try {
         const auth = await verifyTaskCapabilityToken(token, INTERNAL_SERVICE_AUDIENCE_PERSIST, registry);
         if (!auth) {
             unauthorized(res);
             return;
         }
-        credentialByResponse.set(res, { kind: 'task', auth });
-        next();
-    } catch (err) {
-        res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(err)}` } });
-    }
-}
-
-function routeMiddleware(scope: TaskCapabilityScope | null, path: string, opts: PersistRouteOptions | undefined): RequestHandler[] {
-    const middleware: RequestHandler[] = [];
-    if (scope === null) {
-        middleware.push(rejectTaskCredential());
-        return middleware;
-    }
-    if (opts?.parseJson) {
-        middleware.push(opts.parseJson);
-    }
-    middleware.push(authorizePersist(scope, path, opts));
-    if (path.includes(':nangoConnectionId')) {
-        middleware.push(connectionOwnershipMiddleware as RequestHandler);
-    }
-    if (path.includes(':syncJobId')) {
-        middleware.push(syncJobOwnershipMiddleware as RequestHandler);
-    }
-    return middleware;
-}
-
-function authorizePersist(scope: TaskCapabilityScope, path: string, opts: PersistRouteOptions | undefined): RequestHandler {
-    return (req, res, next) => {
-        const credential = credentialByResponse.get(res);
-        if (credential?.kind === 'task') {
-            void authorizeTask(credential.auth, req, scope, path, opts, res as Response<unknown, AuthLocals>, next);
-            return;
-        }
-        if (credential?.kind === 'secret') {
-            next();
-            return;
-        }
-        unauthorized(res);
-    };
-}
-
-async function authorizeTask(
-    auth: TaskCapabilityAuth,
-    req: Request,
-    scope: TaskCapabilityScope,
-    path: string,
-    opts: PersistRouteOptions | undefined,
-    res: Response<unknown, AuthLocals>,
-    next: NextFunction
-): Promise<void> {
-    try {
-        if (!hasScope(auth, scope)) {
+        if (!isResourceBound(auth, 'environmentId', positiveInt(routeParam(req, 'environmentId')))) {
             unauthorized(res);
             return;
         }
-        const environmentId = positiveInt(routeParam(req, 'environmentId'));
-        if (!isResourceBound(auth, 'environmentId', environmentId)) {
-            unauthorized(res);
-            return;
-        }
-        if (path.includes(':nangoConnectionId') && !isResourceBound(auth, 'connectionId', positiveInt(routeParam(req, 'nangoConnectionId')))) {
-            unauthorized(res);
-            return;
-        }
-        if (path.includes(':syncId') && !isResourceBound(auth, 'syncId', routeParam(req, 'syncId'))) {
-            unauthorized(res);
-            return;
-        }
-        if (path.includes(':taskId') && !isTaskBoundAuth(auth, routeParam(req, 'taskId'))) {
-            unauthorized(res);
-            return;
-        }
-        if (opts?.syncIdFromBody && !isResourceBound(auth, 'syncId', bodySyncId(req.body))) {
-            unauthorized(res);
-            return;
-        }
-
         const result = await accountService.getPersistAuthContextByEnvironmentId(auth.res.environmentId);
         if (result.isErr()) {
             res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(result.error)}` } });
@@ -164,20 +55,85 @@ async function authorizeTask(
         if (!applyPersistAuthContext(res, result.value)) {
             return;
         }
+        res.locals.credential = { kind: 'task', auth };
         next();
     } catch (err) {
         res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(err)}` } });
     }
 }
 
-function rejectTaskCredential(): RequestHandler {
+/** Scope and path-param bindings. Runs before the route's JSON parser, so it does not read the body. */
+export function authorize(scope: TaskCapabilityScope): RequestHandler {
     return (req, res, next) => {
-        if (eddsaBearerToken(req.get('authorization'))) {
+        if (unknownParam(req)) {
+            invalidRouteParam(res);
+            return;
+        }
+        const credential = (res as Response<unknown, PersistLocals>).locals.credential;
+        if (!credential) {
             unauthorized(res);
             return;
         }
-        next();
+        if (credential.kind === 'secret') {
+            next();
+            return;
+        }
+        authorizeTask(credential.auth, req, scope, res, next);
     };
+}
+
+function authorizeTask(auth: TaskCapabilityAuth, req: Request, scope: TaskCapabilityScope, res: Response, next: NextFunction): void {
+    if (!hasScope(auth, scope)) {
+        unauthorized(res);
+        return;
+    }
+    const connectionId = routeParam(req, 'nangoConnectionId');
+    if (connectionId !== undefined && !isResourceBound(auth, 'connectionId', positiveInt(connectionId))) {
+        unauthorized(res);
+        return;
+    }
+    const syncId = routeParam(req, 'syncId');
+    if (syncId !== undefined && !isResourceBound(auth, 'syncId', syncId)) {
+        unauthorized(res);
+        return;
+    }
+    const taskId = routeParam(req, 'taskId');
+    if (taskId !== undefined && !isTaskBoundAuth(auth, taskId)) {
+        unauthorized(res);
+        return;
+    }
+    next();
+}
+
+/** Sync-conflict routes carry syncId in the body. Run this after the JSON parser. */
+export const authorizeBodySyncId: RequestHandler = (req, res, next) => {
+    const credential = (res as Response<unknown, PersistLocals>).locals.credential;
+    if (!credential) {
+        unauthorized(res);
+        return;
+    }
+    if (credential.kind === 'secret') {
+        next();
+        return;
+    }
+    if (!isResourceBound(credential.auth, 'syncId', bodySyncId(req.body))) {
+        unauthorized(res);
+        return;
+    }
+    next();
+};
+
+/** Routes that never accept a task token, such as `/health`. */
+export const rejectTaskCredential: RequestHandler = (req, res, next) => {
+    if (eddsaBearerToken(req.get('authorization'))) {
+        unauthorized(res);
+        return;
+    }
+    next();
+};
+
+function unknownParam(req: Request): boolean {
+    return Object.keys(req.params).some((key) => !KNOWN_PARAMS.has(key));
 }
 
 function positiveInt(value: string | undefined): number | undefined {
@@ -201,4 +157,8 @@ function bodySyncId(body: unknown): string | undefined {
 
 function unauthorized(res: Response): void {
     res.status(401).json({ error: { code: 'unauthorized', message: 'Unauthorized' } });
+}
+
+function invalidRouteParam(res: Response): void {
+    res.status(400).json({ error: { code: 'invalid_route_param', message: 'Invalid route parameter' } });
 }

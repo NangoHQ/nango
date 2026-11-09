@@ -2,9 +2,12 @@ import express from 'express';
 import qs from 'qs';
 
 import { INTERNAL_SERVICE_ISSUER_JOBS, keyRegistryFromPublicKeys } from '@nangohq/internal-auth';
+import { createRoute } from '@nangohq/utils';
 
 import { envs } from './env.js';
-import { createPersistRoutes } from './middleware/capability.js';
+import { authenticate, authorize, authorizeBodySyncId, rejectTaskCredential } from './middleware/capability.js';
+import { connectionOwnershipMiddleware } from './middleware/connectionOwnership.middleware.js';
+import { syncJobOwnershipMiddleware } from './middleware/syncJobOwnership.middleware.js';
 import { routeHandler as deleteCheckpointHandler } from './routes/environment/environmentId/connection/connectionId/checkpoint/deleteCheckpoint.js';
 import { routeHandler as getCheckpointHandler } from './routes/environment/environmentId/connection/connectionId/checkpoint/getCheckpoint.js';
 import { routeHandler as putCheckpointHandler } from './routes/environment/environmentId/connection/connectionId/checkpoint/putCheckpoint.js';
@@ -28,7 +31,7 @@ import { routeHandler as getHealthHandler } from './routes/getHealth.js';
 import { routeHandler as postRunnerTelemetryHandler } from './routes/runner/telemetry/postTelemetry.js';
 
 import type { ApiError } from '@nangohq/types';
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
 const maxSizeJsonLog = '100kb';
 const maxSizeJsonRecords = '100mb';
@@ -47,32 +50,32 @@ const jsonDefault = express.json();
 const jsonTelemetry = express.json({ limit: maxSizeJsonRunnerTelemetry });
 const jsonCoordination = express.json({ limit: maxSizeJsonRunnerCoordination });
 
-// Authentication is mounted before every /environment route, and before any JSON parser.
-// createPersistRoute checks scope and resource bindings after the body is parsed.
-const persistRoutes = createPersistRoutes(keyRegistryFromPublicKeys(envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS, INTERNAL_SERVICE_ISSUER_JOBS));
-persistRoutes.mountPersistAuth(server);
+// Authentication runs before every /environment route, and before any JSON parser.
+// authorize checks scope and path bindings. The body is parsed after that.
+const registry = keyRegistryFromPublicKeys(envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS, INTERNAL_SERVICE_ISSUER_JOBS);
+server.use('/environment/:environmentId', authenticate(registry));
 
-persistRoutes.createPersistRoute(server, getHealthHandler, null);
-persistRoutes.createPersistRoute(server, postLogHandler, 'persist:log', { parseJson: jsonLog });
-persistRoutes.createPersistRoute(server, postRecordsHandler, 'persist:records', { parseJson: jsonRecords });
-persistRoutes.createPersistRoute(server, deleteRecordsHandler, 'persist:records', { parseJson: jsonRecords });
-persistRoutes.createPersistRoute(server, deleteOutdatedRecordsHandler, 'persist:records', { parseJson: jsonDefault });
-persistRoutes.createPersistRoute(server, deleteHardRecordsHandler, 'persist:records', { parseJson: jsonDefault });
-persistRoutes.createPersistRoute(server, putRecordsHandler, 'persist:records', { parseJson: jsonRecords });
-persistRoutes.createPersistRoute(server, getCursorHandler, 'persist:cursor', { parseJson: jsonDefault });
-persistRoutes.createPersistRoute(server, getRecordsHandler, 'persist:records', { parseJson: jsonDefault });
-persistRoutes.createPersistRoute(server, getCheckpointHandler, 'persist:checkpoint', { parseJson: jsonDefault });
-persistRoutes.createPersistRoute(server, putCheckpointHandler, 'persist:checkpoint', { parseJson: jsonDefault });
-persistRoutes.createPersistRoute(server, deleteCheckpointHandler, 'persist:checkpoint', { parseJson: jsonDefault });
-persistRoutes.createPersistRoute(server, postRunnerTelemetryHandler, 'persist:telemetry', { parseJson: jsonTelemetry });
-persistRoutes.createPersistRoute(server, putTaskAbortHandler, 'persist:abort');
-persistRoutes.createPersistRoute(server, getTaskAbortHandler, 'persist:abort');
-persistRoutes.createPersistRoute(server, putSyncConflictHandler, 'persist:sync-conflict', { syncIdFromBody: true, parseJson: jsonCoordination });
-persistRoutes.createPersistRoute(server, deleteSyncConflictHandler, 'persist:sync-conflict', { syncIdFromBody: true, parseJson: jsonCoordination });
-persistRoutes.createPersistRoute(server, postRunnerLockTryAcquireHandler, 'persist:locks', { parseJson: jsonCoordination });
-persistRoutes.createPersistRoute(server, postRunnerLockReleaseHandler, 'persist:locks', { parseJson: jsonCoordination });
-persistRoutes.createPersistRoute(server, postRunnerLockReleaseAllHandler, 'persist:locks', { parseJson: jsonCoordination });
-persistRoutes.createPersistRoute(server, getRunnerLockHandler, 'persist:locks', { parseJson: jsonCoordination });
+createRoute(server, getHealthHandler, { middleware: [rejectTaskCredential] });
+createRoute(server, postLogHandler, { middleware: [authorize('persist:log'), jsonLog] });
+createRoute(server, postRecordsHandler, { middleware: [authorize('persist:records'), syncJobOwnershipMiddleware as RequestHandler, jsonRecords] });
+createRoute(server, putRecordsHandler, { middleware: [authorize('persist:records'), syncJobOwnershipMiddleware as RequestHandler, jsonRecords] });
+createRoute(server, deleteRecordsHandler, { middleware: [authorize('persist:records'), syncJobOwnershipMiddleware as RequestHandler, jsonRecords] });
+createRoute(server, deleteOutdatedRecordsHandler, { middleware: [authorize('persist:records'), syncJobOwnershipMiddleware as RequestHandler, jsonDefault] });
+createRoute(server, deleteHardRecordsHandler, { middleware: [authorize('persist:records'), syncJobOwnershipMiddleware as RequestHandler, jsonDefault] });
+createRoute(server, getRecordsHandler, { middleware: [authorize('persist:records'), connectionOwnershipMiddleware as RequestHandler, jsonDefault] });
+createRoute(server, getCursorHandler, { middleware: [authorize('persist:cursor'), connectionOwnershipMiddleware as RequestHandler, jsonDefault] });
+createRoute(server, getCheckpointHandler, { middleware: [authorize('persist:checkpoint'), connectionOwnershipMiddleware as RequestHandler, jsonDefault] });
+createRoute(server, putCheckpointHandler, { middleware: [authorize('persist:checkpoint'), connectionOwnershipMiddleware as RequestHandler, jsonDefault] });
+createRoute(server, deleteCheckpointHandler, { middleware: [authorize('persist:checkpoint'), connectionOwnershipMiddleware as RequestHandler, jsonDefault] });
+createRoute(server, postRunnerTelemetryHandler, { middleware: [authorize('persist:telemetry'), jsonTelemetry] });
+createRoute(server, putTaskAbortHandler, { middleware: [authorize('persist:abort')] });
+createRoute(server, getTaskAbortHandler, { middleware: [authorize('persist:abort')] });
+createRoute(server, putSyncConflictHandler, { middleware: [authorize('persist:sync-conflict'), jsonCoordination, authorizeBodySyncId] });
+createRoute(server, deleteSyncConflictHandler, { middleware: [authorize('persist:sync-conflict'), jsonCoordination, authorizeBodySyncId] });
+createRoute(server, postRunnerLockTryAcquireHandler, { middleware: [authorize('persist:locks'), jsonCoordination] });
+createRoute(server, postRunnerLockReleaseHandler, { middleware: [authorize('persist:locks'), jsonCoordination] });
+createRoute(server, postRunnerLockReleaseAllHandler, { middleware: [authorize('persist:locks'), jsonCoordination] });
+createRoute(server, getRunnerLockHandler, { middleware: [authorize('persist:locks'), jsonCoordination] });
 
 server.use((_req: Request, res: Response, next: NextFunction) => {
     res.status(404);
