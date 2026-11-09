@@ -72,7 +72,7 @@ describe('toFunctionDetails', () => {
             });
         }
         expect(native.typeLabel).toBe('tool');
-        expect(legacy.typeLabel).toBe('action');
+        expect(legacy.typeLabel).toBe('tool');
     });
 
     it('keeps native execution and source loading separate from unsupported legacy management operations', () => {
@@ -88,7 +88,7 @@ describe('toFunctionDetails', () => {
             delete: { type: 'action' },
             pullCommand: 'nango pull github create-issue --env dev -a'
         });
-        expect(toFunctionDetails(action, context).delete?.description).toContain('delete the action "create-issue"');
+        expect(toFunctionDetails(action, context).delete?.description).toContain('delete the tool "create-issue"');
         expect(toFunctionDetails({ ...tool, enabled: false }, context).runType).toBeNull();
         expect(toFunctionDetails({ ...action, enabled: false }, context).runType).toBeNull();
     });

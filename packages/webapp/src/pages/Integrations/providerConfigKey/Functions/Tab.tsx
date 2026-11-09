@@ -30,7 +30,7 @@ const TYPE_FILTER_VALUES = ['tool', 'sync', 'on-event'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
 
 const TYPE_PILLS: { value: TypeFilterValue; label: string; emptyLabel: string }[] = [
-    { value: 'tool', label: 'Actions', emptyLabel: 'No actions' },
+    { value: 'tool', label: 'Tools', emptyLabel: 'No tools' },
     { value: 'sync', label: 'Syncs', emptyLabel: 'No syncs' },
     { value: 'on-event', label: 'Triggers', emptyLabel: 'No triggers' }
 ];
@@ -581,7 +581,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
                                 <TableFooter className="bg-transparent font-ds-regular">
                                     <TableRow className="h-8 hover:bg-transparent">
                                         <TableCell colSpan={2 + (showStatus ? 1 : 0)} className="px-3 type-label-xs text-text-disabled">
-                                            Showing {functions.length + visibleActionTemplates.length} of {total + visibleActionTemplates.length} actions
+                                            Showing {functions.length + visibleActionTemplates.length} of {total + visibleActionTemplates.length} tools
                                         </TableCell>
                                     </TableRow>
                                 </TableFooter>
