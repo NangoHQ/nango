@@ -3342,6 +3342,10 @@ This is useful for prototypes, onboarding flows, provider operations not covered
   </button>
 </div>
 
+<Note>
+  The source-code Functions API supports sync functions, tools, and deprecated actions.
+</Note>
+
 At a high level, the flow is:
 
 1. Give the agent the integration ID, a connection ID for validation, the intended behavior, input and output shape, and any provider API context.
