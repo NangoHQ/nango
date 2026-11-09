@@ -1,3 +1,4 @@
+import tracer from 'dd-trace';
 import * as z from 'zod';
 
 import { getProviderScopes } from '@nangohq/providers';
@@ -48,7 +49,7 @@ export const getProviderItem = asyncWrapper<GetProvider>(async (req, res) => {
         const allScopes = getProviderScopes();
         const templateCounts = providerService.countTemplatesByProvider();
         if (templateCounts.isErr()) {
-            report(templateCounts.error);
+            tracer.scope().active()?.setTag('error', templateCounts.error);
         }
 
         const providerListItem = providerListItemToAPI(

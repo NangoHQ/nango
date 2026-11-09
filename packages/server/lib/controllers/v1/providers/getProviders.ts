@@ -1,3 +1,5 @@
+import tracer from 'dd-trace';
+
 import { getProviderScopes } from '@nangohq/providers';
 import { getProviders, sharedCredentialsService } from '@nangohq/shared';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
@@ -26,7 +28,7 @@ export const getProvidersList = asyncWrapper<GetProviders>(async (req, res) => {
         const allScopes = getProviderScopes();
         const templateCounts = providerService.countTemplatesByProvider();
         if (templateCounts.isErr()) {
-            report(templateCounts.error);
+            tracer.scope().active()?.setTag('error', templateCounts.error);
         }
 
         const list = Object.entries(providers).map(([provider, properties]) => {
