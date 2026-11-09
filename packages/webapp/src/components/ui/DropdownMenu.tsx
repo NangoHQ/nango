@@ -1,5 +1,5 @@
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { CheckIcon, ChevronRightIcon } from 'lucide-react';
+import { CheckIcon, ChevronRightIcon, CircleIcon } from 'lucide-react';
 import * as React from 'react';
 
 import { cn } from '@/utils/utils';
@@ -89,17 +89,17 @@ function DropdownMenuRadioItem({ className, children, ...props }: React.Componen
         <DropdownMenuPrimitive.RadioItem
             data-slot="dropdown-menu-radio-item"
             className={cn(
-                'flex w-full cursor-pointer items-center gap-2 rounded-ds-xs px-2 py-1 text-text-strong outline-hidden select-none transition-colors',
-                'focus:not-data-[state=checked]:bg-state-hover data-[state=checked]:bg-state-selected',
-                'data-[disabled]:pointer-events-none data-[disabled]:text-text-disabled [&_svg]:pointer-events-none [&_svg]:shrink-0',
+                "focus:bg-state-hover focus:text-text-strong relative flex cursor-pointer items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-body-medium-medium outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
                 className
             )}
             {...props}
         >
+            <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
+                <DropdownMenuPrimitive.ItemIndicator>
+                    <CircleIcon className="size-2 fill-current" />
+                </DropdownMenuPrimitive.ItemIndicator>
+            </span>
             {children}
-            <DropdownMenuPrimitive.ItemIndicator className="ml-auto flex">
-                <CheckIcon className="size-3.5 text-icon-default" />
-            </DropdownMenuPrimitive.ItemIndicator>
         </DropdownMenuPrimitive.RadioItem>
     );
 }
@@ -115,7 +115,7 @@ function DropdownMenuLabel({
         <DropdownMenuPrimitive.Label
             data-slot="dropdown-menu-label"
             data-inset={inset}
-            className={cn('type-label-xs px-2 pt-1.5 pb-1 uppercase text-text-muted data-[inset]:pl-8', className)}
+            className={cn('px-2 py-1.5 text-body-medium-medium transition-colors data-[inset]:pl-8', className)}
             {...props}
         />
     );

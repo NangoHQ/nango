@@ -1,5 +1,5 @@
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { ArrowUpRight, ChevronsUpDown, Cog, Plus, TriangleAlert } from 'lucide-react';
+import { ArrowUpRight, Check, ChevronsUpDown, Cog, Plus, TriangleAlert } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -12,9 +12,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuRadioGroup,
-    DropdownMenuRadioItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from '@/components/ui/DropdownMenu.js';
@@ -26,7 +24,7 @@ import { useStore } from '@/store';
 import { envSwitchPath } from '@/utils/routes';
 import { cn } from '@/utils/utils';
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
-import { navigationMenuContentClassName, navigationMenuItemClassName } from './navigationMenu.js';
+import { navigationMenuContentClassName, navigationMenuItemClassName, navigationMenuSeparatorClassName } from './navigationMenu.js';
 
 export const EnvironmentDropdown: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -85,7 +83,7 @@ export const EnvironmentDropdown: React.FC = () => {
                     <ChevronsUpDown className="size-4 shrink-0 text-icon-secondary group-hover/env:text-icon-default group-data-[state=open]/env:text-icon-default" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" side="bottom" sideOffset={4} className={cn(navigationMenuContentClassName, 'max-h-96 w-61')}>
-                    <DropdownMenuLabel>Environments</DropdownMenuLabel>
+                    <DropdownMenuPrimitive.Label className="type-label-xs px-2 pt-1.5 pb-1 uppercase text-text-muted">Environments</DropdownMenuPrimitive.Label>
                     <DropdownMenuRadioGroup value={env} onValueChange={onSelect}>
                         {meta.environments.map((environment) => (
                             <PermissionGate
@@ -95,17 +93,28 @@ export const EnvironmentDropdown: React.FC = () => {
                                 tooltipSide="right"
                             >
                                 {(allowed) => (
-                                    <DropdownMenuRadioItem value={environment.name} disabled={!allowed}>
+                                    <DropdownMenuPrimitive.RadioItem
+                                        value={environment.name}
+                                        disabled={!allowed}
+                                        className={cn(
+                                            'flex w-full cursor-pointer items-center gap-2 rounded-ds-xs px-2 py-1 text-text-strong outline-hidden select-none transition-colors',
+                                            'focus:not-data-[state=checked]:bg-state-hover data-[state=checked]:bg-state-selected focus:data-[state=checked]:bg-state-selected-hover',
+                                            'data-[disabled]:pointer-events-none data-[disabled]:text-text-disabled'
+                                        )}
+                                    >
                                         <span className="flex min-w-0 items-center gap-1.5">
                                             <span className="type-code-regular-sm truncate">{environment.name}</span>
                                             {environment.is_production && <Badge variant="warning">Prod</Badge>}
                                         </span>
-                                    </DropdownMenuRadioItem>
+                                        <DropdownMenuPrimitive.ItemIndicator className="ml-auto flex">
+                                            <Check className="size-3.5 text-icon-default" />
+                                        </DropdownMenuPrimitive.ItemIndicator>
+                                    </DropdownMenuPrimitive.RadioItem>
                                 )}
                             </PermissionGate>
                         ))}
                     </DropdownMenuRadioGroup>
-                    <DropdownMenuSeparator className="mx-0 h-[0.5px] bg-border-default" />
+                    <DropdownMenuSeparator className={navigationMenuSeparatorClassName} />
                     <DropdownMenuItem asChild className={navigationMenuItemClassName}>
                         <Link to={`/${env}/environment-settings`}>
                             <Cog />

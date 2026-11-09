@@ -16,7 +16,7 @@ const options: { value: Theme; label: string; Icon: LucideIcon }[] = [
 
 /**
  * Figma "ThemeToggle". Renders as menu radio items, so it must live inside a DropdownMenu. Uses the
- * Radix radio item directly: `DropdownMenuRadioItem` is a full-width list row with a trailing check.
+ * Radix radio item directly: `DropdownMenuRadioItem` is a full-width list row.
  */
 export const ThemeToggle: React.FC = () => {
     const theme = useThemeStore((s) => s.theme);
@@ -39,7 +39,7 @@ export const ThemeToggle: React.FC = () => {
                     onSelect={(event) => event.preventDefault()}
                     className={cn(
                         'flex h-5.5 w-6.5 cursor-pointer items-center justify-center rounded-ds-xs text-icon-secondary outline-none transition-colors',
-                        'focus:text-icon-default focus:not-data-[state=checked]:bg-state-hover data-[state=checked]:bg-state-selected data-[state=checked]:text-icon-default'
+                        'focus:text-icon-default focus:not-data-[state=checked]:bg-state-hover data-[state=checked]:bg-state-selected focus:data-[state=checked]:bg-state-selected-hover data-[state=checked]:text-icon-default'
                     )}
                 >
                     <Icon className="size-3.5" />

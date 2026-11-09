@@ -13,7 +13,7 @@ import { toAcronym } from '@/utils/avatar';
 import { globalEnv } from '@/utils/env';
 import { useSignout } from '@/utils/user';
 import { cn } from '@/utils/utils';
-import { navigationMenuContentClassName, navigationMenuItemClassName } from './navigationMenu';
+import { navigationMenuContentClassName, navigationMenuItemClassName, navigationMenuSeparatorClassName } from './navigationMenu';
 import { ThemeToggle } from './ThemeToggle';
 
 import type { LucideIcon } from 'lucide-react';
@@ -112,7 +112,7 @@ export const ProfileDropdown: React.FC = () => {
                     <span className="type-text-medium-sm truncate text-text-strong">{user.name}</span>
                     <span className="type-text-regular-xs truncate text-text-muted">{user.email}</span>
                 </div>
-                <DropdownMenuSeparator className="mx-0 h-[0.5px] bg-border-default" />
+                <DropdownMenuSeparator className={navigationMenuSeparatorClassName} />
                 {items.map((item) => (
                     <DropdownMenuItem key={item.href} asChild className={navigationMenuItemClassName}>
                         <Link to={item.href} onClick={item.onSelect}>
@@ -127,13 +127,13 @@ export const ProfileDropdown: React.FC = () => {
                         <span>Dev Tools</span>
                     </DropdownMenuItem>
                 )}
-                <DropdownMenuSeparator className="mx-0 h-[0.5px] bg-border-default" />
+                <DropdownMenuSeparator className={navigationMenuSeparatorClassName} />
                 <div className="flex h-9 items-center gap-2 pr-1 pl-2">
                     <Contrast className="size-4 shrink-0 text-icon-secondary" />
                     <span className="type-text-regular-sm flex-1 text-text-default">Theme</span>
                     <ThemeToggle />
                 </div>
-                <DropdownMenuSeparator className="mx-0 h-[0.5px] bg-border-default" />
+                <DropdownMenuSeparator className={navigationMenuSeparatorClassName} />
                 <DropdownMenuItem onSelect={() => void signout()} className={navigationMenuItemClassName}>
                     <LogOut />
                     <span>Log out</span>
