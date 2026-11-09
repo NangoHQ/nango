@@ -56,6 +56,6 @@ export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, display
 const INSTANT_SETUP_COPY: Record<'instant-managed' | 'instant-api-key' | 'instant-mcp' | 'instant-other', (displayName: string) => string> = {
     'instant-managed': (displayName) => `Use Nango's OAuth app and skip ${displayName}'s developer app review. You can switch to your own app any time.`,
     'instant-api-key': () => 'Your users will add their own API key when they connect. Nango provides a step-by-step guide for them.',
-    'instant-mcp': (displayName) => `Your users will sign in to ${displayName.replace(/ \(MCP\)$/, '')} when they connect. No developer app needed.`,
+    'instant-mcp': (displayName) => `Your users will sign in to ${displayName} when they connect. No developer app needed.`,
     'instant-other': () => 'Your users will add their own credentials when they connect. Nango provides a step-by-step guide for them.'
 };

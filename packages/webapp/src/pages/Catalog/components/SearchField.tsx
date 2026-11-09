@@ -23,7 +23,7 @@ export const SearchField: React.FC<SearchFieldProps> = ({ value, placeholder, on
             <InputGroupInput ref={inputRef} type="text" placeholder={placeholder} value={value} onChange={(event) => onChange(event.currentTarget.value)} />
             <InputGroupAddon align="inline-end">
                 <span>
-                    <kbd className="border-ds-hairline border-border-default px-1.5 type-code-regular-xs text-text-muted">/</kbd>
+                    <kbd className="rounded-ds-xs border-ds-hairline border-border-default px-1.5 type-code-regular-xs text-text-muted">/</kbd>
                 </span>
             </InputGroupAddon>
         </InputGroup>
