@@ -4,6 +4,7 @@ import { decodeProtectedHeader, errors, jwtVerify } from 'jose';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import { INSTALLATION_TOKEN_CLOCK_TOLERANCE, INSTALLATION_TOKEN_LIFETIME } from '../../installation/token.js';
 import { INSTALLATION_KEYS_TABLE, INSTALLATIONS_TABLE } from '../db/schema.js';
 import { table } from './db.js';
 import { getInstallationKey } from './installation-key.service.js';
@@ -18,7 +19,7 @@ export type InstallationTokenErrorCode =
     | 'malformed'
     | 'unknown_key'
     | 'invalid_signature'
-    | 'expired'
+    | 'clock_skew'
     | 'no_installation'
     | 'no_license'
     | 'registry_unavailable';
@@ -56,10 +57,17 @@ export async function verifyInstallationToken(db: RegistryDb, token: string): Pr
     }
 
     try {
-        await jwtVerify(token, createPublicKey(key.value.public_key), { algorithms: [ALGORITHM] });
+        await jwtVerify(token, createPublicKey(key.value.public_key), {
+            algorithms: [ALGORITHM],
+            maxTokenAge: INSTALLATION_TOKEN_LIFETIME,
+            clockTolerance: INSTALLATION_TOKEN_CLOCK_TOLERANCE
+        });
     } catch (err) {
         if (err instanceof errors.JWTExpired) {
-            return Err(new InstallationTokenError('expired', 'token has expired'));
+            return Err(new InstallationTokenError('clock_skew', "token expired by our clock, check the installation's clock"));
+        }
+        if (err instanceof errors.JWTClaimValidationFailed && err.claim === 'iat') {
+            return Err(new InstallationTokenError('clock_skew', "token issued in the future by our clock, check the installation's clock"));
         }
         if (err instanceof errors.JWSSignatureVerificationFailed) {
             return Err(new InstallationTokenError('invalid_signature', `token signature does not verify with key ${kid}`));

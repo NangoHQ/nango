@@ -96,13 +96,29 @@ describe('installation tokens', () => {
         expect(code(res)).toBe('invalid_signature');
     });
 
-    it('rejects a token older than a minute', async () => {
-        const { privateKeyPem } = await licensedInstallation('expired');
-        vi.useFakeTimers({ now: Date.now() - 61_000, toFake: ['Date'] });
-        const token = await mintInstallationToken(privateKeyPem);
-        vi.useRealTimers();
+    it('tolerates an installation clock fifteen minutes ahead or twenty behind, and no more', async () => {
+        const { privateKeyPem } = await licensedInstallation('skewed');
+        const mintedAt = async (offsetMinutes: number) => {
+            vi.useFakeTimers({ now: Date.now() + offsetMinutes * 60_000, toFake: ['Date'] });
+            try {
+                return await mintInstallationToken(privateKeyPem);
+            } finally {
+                vi.useRealTimers();
+            }
+        };
 
-        expect(code(await verifyInstallationToken(db, token))).toBe('expired');
+        expect(code(await verifyInstallationToken(db, await mintedAt(-19)))).toBe('ok');
+        expect(code(await verifyInstallationToken(db, await mintedAt(14)))).toBe('ok');
+        const behind = await verifyInstallationToken(db, await mintedAt(-21));
+        expect(behind.isErr() && [behind.error.code, behind.error.message]).toStrictEqual([
+            'clock_skew',
+            "token expired by our clock, check the installation's clock"
+        ]);
+        const ahead = await verifyInstallationToken(db, await mintedAt(16));
+        expect(ahead.isErr() && [ahead.error.code, ahead.error.message]).toStrictEqual([
+            'clock_skew',
+            "token issued in the future by our clock, check the installation's clock"
+        ]);
     });
 
     it('rejects an installation without an active license', async () => {
