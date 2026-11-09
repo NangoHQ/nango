@@ -206,15 +206,15 @@ The consumer loop is: receive a sync webhook from Nango, look up the last cursor
 
 ## Two-way syncs
 
-You can implement two-way syncs by combining sync functions with [action functions](/guides/functions/action-functions):
+You can implement two-way syncs by combining sync functions with [tools](/guides/functions/tools):
 
 - Use a sync function to replicate external data into your app and keep your local state fresh.
-- Use action functions for writes back to the external API, such as creating, updating, or deleting records.
-- After a write action succeeds, update your local state optimistically or trigger the relevant sync so the records cache catches up with the external source of truth.
+- Use tools for writes back to the external API, such as creating, updating, or deleting records.
+- After a write tool succeeds, update your local state optimistically or trigger the relevant sync so the records cache catches up with the external source of truth.
 
-This keeps the read path and write path explicit. The sync owns ongoing data freshness, checkpoints, record storage, and change delivery. Actions own user-initiated writes and provider-specific validation or side effects.
+This keeps the read path and write path explicit. The sync owns ongoing data freshness, checkpoints, record storage, and change delivery. Tools own user-initiated writes and provider-specific validation or side effects.
 
-For unified models, use the same schema for synced records and write action input where possible. This keeps your app from branching on each provider while still letting each provider implementation handle API-specific fields and edge cases.
+For unified models, use the same schema for synced records and write tool input where possible. This keeps your app from branching on each provider while still letting each provider implementation handle API-specific fields and edge cases.
 
 ## Deep dives
 

@@ -2,57 +2,57 @@
 
 | Function name | Description | Type |
 | - | - | - |
-| `create-mural-from-template` | Create a new mural pre-populated with a template layout/content. | [Action](/guides/functions/action-functions) |
-| `create-mural-tag` | Create a new tag on a mural. | [Action](/guides/functions/action-functions) |
-| `create-mural` | Create a new, empty mural inside a room. | [Action](/guides/functions/action-functions) |
-| `create-room-folder` | Create a folder inside a room, to further organize murals. | [Action](/guides/functions/action-functions) |
-| `create-room` | Create a room in a workspace. | [Action](/guides/functions/action-functions) |
-| `create-shapes` | Create one or more shape widgets on a mural canvas. | [Action](/guides/functions/action-functions) |
-| `create-sticky-notes` | Create one or more sticky notes on a mural's canvas. Requires x/y position and a shape; everything else has sensible defaults. | [Action](/guides/functions/action-functions) |
-| `create-text-boxes` | Create one or more text box widgets on a mural. | [Action](/guides/functions/action-functions) |
-| `delete-mural-tag` | Permanently delete a tag from a mural. | [Action](/guides/functions/action-functions) |
-| `delete-mural-widget` | Permanently delete a single widget from a mural, regardless of its type. | [Action](/guides/functions/action-functions) |
-| `delete-mural` | Permanently delete a mural. HARD delete - no recycle bin, no restore. | [Action](/guides/functions/action-functions) |
-| `delete-room-folder` | Delete a folder inside a room. | [Action](/guides/functions/action-functions) |
-| `delete-room-safely` | Safely delete a room, refusing to cascade-delete its murals unless explicitly confirmed. | [Action](/guides/functions/action-functions) |
-| `delete-room` | Permanently delete a room and every mural it currently contains. | [Action](/guides/functions/action-functions) |
-| `duplicate-mural-into-room` | Composite: duplicate an existing mural into a target room identified by name, creating that room first if it does not exist. | [Action](/guides/functions/action-functions) |
-| `duplicate-mural` | Duplicate an existing mural, including its widgets, into a target room with a new title. | [Action](/guides/functions/action-functions) |
-| `export-mural` | Start an export of a mural to a downloadable file and return the export job id. | [Action](/guides/functions/action-functions) |
-| `find-or-create-room-and-create-mural` | Find a room by exact name in a workspace (creating it if missing), then create a mural inside it. | [Action](/guides/functions/action-functions) |
-| `get-current-user` | Get the profile of the user this connection authenticates as. | [Action](/guides/functions/action-functions) |
-| `get-mural-export` | Check the status of a previously-started mural export and get its (time-limited) download URL once ready. | [Action](/guides/functions/action-functions) |
-| `get-mural-full-content` | COMPOSITE: get a mural full picture in one call - its own metadata, every widget on its canvas, its tags, and its member list. | [Action](/guides/functions/action-functions) |
-| `get-mural-tag` | Retrieve a single tag from a mural by ID. | [Action](/guides/functions/action-functions) |
-| `get-mural-widget` | Retrieve a single widget by ID. | [Action](/guides/functions/action-functions) |
-| `get-mural` | Retrieve a single mural's full details by ID. | [Action](/guides/functions/action-functions) |
-| `get-room` | Retrieve a single room by ID. | [Action](/guides/functions/action-functions) |
-| `get-workspace` | Retrieve a single workspace by ID, including who created it. | [Action](/guides/functions/action-functions) |
-| `invite-mural-members` | Invite one or more people (by email) to a specific mural with a view or edit permission level. | [Action](/guides/functions/action-functions) |
-| `invite-room-members` | Invite one or more people (by email) to join a room. | [Action](/guides/functions/action-functions) |
-| `list-mural-members` | List the members and guests who have access to a specific mural, including facilitator and owner permission flags. | [Action](/guides/functions/action-functions) |
-| `list-mural-tags` | List the tags defined on a mural. | [Action](/guides/functions/action-functions) |
-| `list-mural-widgets` | List every widget (sticky note, text, shape, image, etc.) on a mural canvas. | [Action](/guides/functions/action-functions) |
-| `list-open-rooms` | List only the open rooms in a workspace (rooms any workspace member can join, as opposed to invitation-only private rooms). | [Action](/guides/functions/action-functions) |
-| `list-recent-murals` | List the murals most recently opened by the authenticated user in a workspace. | [Action](/guides/functions/action-functions) |
-| `list-recent-templates` | List templates this connection's user has recently used in a workspace. | [Action](/guides/functions/action-functions) |
-| `list-room-folders` | List the folders that exist inside a room. | [Action](/guides/functions/action-functions) |
-| `list-room-members` | List the members who have access to a room. | [Action](/guides/functions/action-functions) |
-| `list-room-murals` | List the murals that live directly inside a specific room. | [Action](/guides/functions/action-functions) |
-| `list-workspace-murals` | List every mural across an entire workspace (all rooms). | [Action](/guides/functions/action-functions) |
-| `list-workspace-rooms` | List every room (folder/container) in a workspace. | [Action](/guides/functions/action-functions) |
-| `list-workspace-templates` | List the mural templates available to a workspace, including Mural's default/shared library. | [Action](/guides/functions/action-functions) |
-| `list-workspaces` | List the workspaces this connection can access (top-level org units in Mural's object model). | [Action](/guides/functions/action-functions) |
-| `search-murals` | Search murals in a workspace by title, optionally scoped to a room. | [Action](/guides/functions/action-functions) |
-| `search-rooms` | Search rooms in a workspace by name. | [Action](/guides/functions/action-functions) |
-| `search-templates` | Full-text search for templates by name, scoped to a workspace. | [Action](/guides/functions/action-functions) |
-| `update-mural-member-permissions` | Update a mural member's facilitator permission flag. | [Action](/guides/functions/action-functions) |
-| `update-mural-tag` | Update a tag's text or color. | [Action](/guides/functions/action-functions) |
-| `update-mural` | Update a mural's title, background color, or dimensions. Partial merge. | [Action](/guides/functions/action-functions) |
-| `update-room` | Update a room name or description (partial merge). | [Action](/guides/functions/action-functions) |
-| `update-shape` | Update an existing shape widget's position, size, text, or style. | [Action](/guides/functions/action-functions) |
-| `update-sticky-note` | Update an existing sticky note in a mural. | [Action](/guides/functions/action-functions) |
-| `update-text-box` | Update an existing text widget on a mural. | [Action](/guides/functions/action-functions) |
+| `create-mural-from-template` | Create a new mural pre-populated with a template layout/content. | [Tool](/guides/functions/tools) |
+| `create-mural-tag` | Create a new tag on a mural. | [Tool](/guides/functions/tools) |
+| `create-mural` | Create a new, empty mural inside a room. | [Tool](/guides/functions/tools) |
+| `create-room-folder` | Create a folder inside a room, to further organize murals. | [Tool](/guides/functions/tools) |
+| `create-room` | Create a room in a workspace. | [Tool](/guides/functions/tools) |
+| `create-shapes` | Create one or more shape widgets on a mural canvas. | [Tool](/guides/functions/tools) |
+| `create-sticky-notes` | Create one or more sticky notes on a mural's canvas. Requires x/y position and a shape; everything else has sensible defaults. | [Tool](/guides/functions/tools) |
+| `create-text-boxes` | Create one or more text box widgets on a mural. | [Tool](/guides/functions/tools) |
+| `delete-mural-tag` | Permanently delete a tag from a mural. | [Tool](/guides/functions/tools) |
+| `delete-mural-widget` | Permanently delete a single widget from a mural, regardless of its type. | [Tool](/guides/functions/tools) |
+| `delete-mural` | Permanently delete a mural. HARD delete - no recycle bin, no restore. | [Tool](/guides/functions/tools) |
+| `delete-room-folder` | Delete a folder inside a room. | [Tool](/guides/functions/tools) |
+| `delete-room-safely` | Safely delete a room, refusing to cascade-delete its murals unless explicitly confirmed. | [Tool](/guides/functions/tools) |
+| `delete-room` | Permanently delete a room and every mural it currently contains. | [Tool](/guides/functions/tools) |
+| `duplicate-mural-into-room` | Composite: duplicate an existing mural into a target room identified by name, creating that room first if it does not exist. | [Tool](/guides/functions/tools) |
+| `duplicate-mural` | Duplicate an existing mural, including its widgets, into a target room with a new title. | [Tool](/guides/functions/tools) |
+| `export-mural` | Start an export of a mural to a downloadable file and return the export job id. | [Tool](/guides/functions/tools) |
+| `find-or-create-room-and-create-mural` | Find a room by exact name in a workspace (creating it if missing), then create a mural inside it. | [Tool](/guides/functions/tools) |
+| `get-current-user` | Get the profile of the user this connection authenticates as. | [Tool](/guides/functions/tools) |
+| `get-mural-export` | Check the status of a previously-started mural export and get its (time-limited) download URL once ready. | [Tool](/guides/functions/tools) |
+| `get-mural-full-content` | COMPOSITE: get a mural full picture in one call - its own metadata, every widget on its canvas, its tags, and its member list. | [Tool](/guides/functions/tools) |
+| `get-mural-tag` | Retrieve a single tag from a mural by ID. | [Tool](/guides/functions/tools) |
+| `get-mural-widget` | Retrieve a single widget by ID. | [Tool](/guides/functions/tools) |
+| `get-mural` | Retrieve a single mural's full details by ID. | [Tool](/guides/functions/tools) |
+| `get-room` | Retrieve a single room by ID. | [Tool](/guides/functions/tools) |
+| `get-workspace` | Retrieve a single workspace by ID, including who created it. | [Tool](/guides/functions/tools) |
+| `invite-mural-members` | Invite one or more people (by email) to a specific mural with a view or edit permission level. | [Tool](/guides/functions/tools) |
+| `invite-room-members` | Invite one or more people (by email) to join a room. | [Tool](/guides/functions/tools) |
+| `list-mural-members` | List the members and guests who have access to a specific mural, including facilitator and owner permission flags. | [Tool](/guides/functions/tools) |
+| `list-mural-tags` | List the tags defined on a mural. | [Tool](/guides/functions/tools) |
+| `list-mural-widgets` | List every widget (sticky note, text, shape, image, etc.) on a mural canvas. | [Tool](/guides/functions/tools) |
+| `list-open-rooms` | List only the open rooms in a workspace (rooms any workspace member can join, as opposed to invitation-only private rooms). | [Tool](/guides/functions/tools) |
+| `list-recent-murals` | List the murals most recently opened by the authenticated user in a workspace. | [Tool](/guides/functions/tools) |
+| `list-recent-templates` | List templates this connection's user has recently used in a workspace. | [Tool](/guides/functions/tools) |
+| `list-room-folders` | List the folders that exist inside a room. | [Tool](/guides/functions/tools) |
+| `list-room-members` | List the members who have access to a room. | [Tool](/guides/functions/tools) |
+| `list-room-murals` | List the murals that live directly inside a specific room. | [Tool](/guides/functions/tools) |
+| `list-workspace-murals` | List every mural across an entire workspace (all rooms). | [Tool](/guides/functions/tools) |
+| `list-workspace-rooms` | List every room (folder/container) in a workspace. | [Tool](/guides/functions/tools) |
+| `list-workspace-templates` | List the mural templates available to a workspace, including Mural's default/shared library. | [Tool](/guides/functions/tools) |
+| `list-workspaces` | List the workspaces this connection can access (top-level org units in Mural's object model). | [Tool](/guides/functions/tools) |
+| `search-murals` | Search murals in a workspace by title, optionally scoped to a room. | [Tool](/guides/functions/tools) |
+| `search-rooms` | Search rooms in a workspace by name. | [Tool](/guides/functions/tools) |
+| `search-templates` | Full-text search for templates by name, scoped to a workspace. | [Tool](/guides/functions/tools) |
+| `update-mural-member-permissions` | Update a mural member's facilitator permission flag. | [Tool](/guides/functions/tools) |
+| `update-mural-tag` | Update a tag's text or color. | [Tool](/guides/functions/tools) |
+| `update-mural` | Update a mural's title, background color, or dimensions. Partial merge. | [Tool](/guides/functions/tools) |
+| `update-room` | Update a room name or description (partial merge). | [Tool](/guides/functions/tools) |
+| `update-shape` | Update an existing shape widget's position, size, text, or style. | [Tool](/guides/functions/tools) |
+| `update-sticky-note` | Update an existing sticky note in a mural. | [Tool](/guides/functions/tools) |
+| `update-text-box` | Update an existing text widget on a mural. | [Tool](/guides/functions/tools) |
 | `mural-widgets` | Sync every widget across every mural in the workspace. | [Sync](/guides/functions/syncs/sync-functions) |
 | `murals` | Sync every mural in the workspace (title, room, status, sharing/visitor settings, timestamps). | [Sync](/guides/functions/syncs/sync-functions) |
 | `rooms` | Sync every room in every accessible Mural workspace. | [Sync](/guides/functions/syncs/sync-functions) |
