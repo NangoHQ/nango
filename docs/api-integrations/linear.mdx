@@ -74,6 +74,10 @@ Connect to Linear with Nango and see data flow in 2 minutes.
     </Step>
 </Steps>
 
+<Note>
+**Deleting a connection revokes its Linear access token by default.** If multiple Nango connections share the same Linear authorization, deleting one of them would revoke it for all connections using it. To opt out of this for a given connection, set `skipTokenRevocation: true` in that connection's metadata using the [update connection metadata endpoint](/reference/backend/http-api/connections/update-metadata) before deleting it.
+</Note>
+
 ## 📚 Linear Integration Guides
 
 Nango maintained guides for common use cases.
