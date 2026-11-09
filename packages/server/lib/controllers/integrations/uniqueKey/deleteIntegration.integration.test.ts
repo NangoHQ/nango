@@ -1,7 +1,6 @@
-import { afterAll, assert, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import db from '@nangohq/database';
-import { gettingStartedService, seeders } from '@nangohq/shared';
+import { seeders } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
@@ -34,28 +33,5 @@ describe(`DELETE ${endpoint}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({
             success: true
         });
-    });
-
-    it('should delete getting started meta', async () => {
-        const { env, account, apiKey } = await seeders.seedAccountEnvAndUser();
-
-        // Getting started meta expects a preprovisioned provider config
-        await seeders.createPreprovisionedProviderConfigSeed(env, 'github-getting-started', 'github', 'github-getting-started', {
-            rest: {
-                oauth_client_id: 'foo',
-                oauth_client_secret: 'bar',
-                oauth_scopes: 'hello, world'
-            }
-        });
-
-        const metaResult = await gettingStartedService.getOrCreateMeta(db.knex, account.id, env.id);
-        expect(metaResult.isOk()).toBe(true);
-
-        const res = await api.fetch(endpoint, { method: 'DELETE', token: apiKey.secret, params: { uniqueKey: 'github-getting-started' } });
-        isSuccess(res.json);
-
-        const metaAfter = await gettingStartedService.getMetaByAccountId(db.knex, account.id);
-        assert(!metaAfter.isErr(), 'Meta should be deleted');
-        expect(metaAfter.value).toBeNull();
     });
 });

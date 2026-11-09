@@ -42,7 +42,6 @@ export type { CreateEnvironmentSettings, UpdateEnvironmentSettings } from './ser
 export type { RunSyncCommandErrorCode, RunSyncCommandResult } from './services/sync/manager.service.js';
 export * from './services/tags.service.js';
 export * from './services/tags/schema.js';
-export * as gettingStartedService from './services/getting-started.service.js';
 export { MFAError, recordMFALoginRefused, recordMFAVerifyFailure, recordMFAVerifySuccess } from './services/mfa.service.js';
 export { CustomerKeyError, MAX_API_KEYS_PER_ACCOUNT } from './services/customerKey.service.js';
 export type { ApiKeyRef, CustomerKeySearch } from './services/customerKey.service.js';

@@ -1,7 +1,6 @@
 import db from '@nangohq/database';
 import { Err, isCloud, nanoid, Ok } from '@nangohq/utils';
 
-import { gettingStartedService } from '../index.js';
 import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfig } from '../services/sync/config/config.service.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
@@ -244,8 +243,6 @@ class ConfigService {
 
         // TODO: might be useless since we are dropping the data after a while
         await deleteSyncConfigByConfigId(id);
-
-        await gettingStartedService.deleteMetaByIntegrationId(db.knex, id);
 
         const updated = await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
         if (updated <= 0) {

@@ -8,7 +8,6 @@ export type * from './analytics/catalogue.js';
 export type * from './analytics/taxonomy.js';
 
 export type * from './gettingStarted/db.js';
-export type * from './gettingStarted/dto.js';
 export type * from './gettingStarted/api.js';
 export type * from './record/api.js';
 export type * from './logs/api.js';
