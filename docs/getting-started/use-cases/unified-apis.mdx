@@ -30,7 +30,7 @@ Design the unified model around your product's needs, not around an abstract low
 1. You define the model your product wants to use.
 2. Each provider gets functions that translate between the provider API and that model.
 3. Sync functions read external data into your model.
-4. Action functions write changes back through provider-specific logic.
+4. Tools write changes back through provider-specific logic.
 5. Your app calls the stable Nango function interface instead of branching across providers.
 
 Use [data validation](/guides/functions/data-validation) to keep provider mappings honest and catch drift close to the external API.
@@ -38,7 +38,7 @@ Use [data validation](/guides/functions/data-validation) to keep provider mappin
 ## What to read next
 
 - [Unified APIs with functions](/guides/functions/unified-apis) - technical implementation guide for building unified models and functions.
-- [Action functions](/guides/functions/action-functions) - implement unified write operations and on-demand reads.
+- [Tools](/guides/functions/tools) - implement unified write operations and on-demand reads.
 - [Sync functions](/guides/functions/syncs/sync-functions) - read provider data into your unified model.
 - [Data validation](/guides/functions/data-validation) - validate models and generate schemas.
 - [Storage](/guides/functions/storage#customer-configuration-pattern) - handle custom fields and per-customer mapping.

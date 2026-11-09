@@ -1,5 +1,6 @@
 import { Err, Ok } from '@nangohq/utils';
 
+import { whereHttpTrigger } from './filters.js';
 import { CONFIGS_TABLE, INTEGRATIONS_TABLE, VERSIONS_TABLE } from './tables.js';
 
 import type { DBFunctionConfig, DBFunctionConfigVersion, DBIntegrationDecrypted, OnEventType } from '@nangohq/types';
@@ -182,7 +183,7 @@ type FunctionSearchFilter = {
     provider?: string | undefined;
     name?: string | undefined;
     enabled?: boolean | undefined;
-    trigger?: { kind: 'http'; hasSubscriptions?: boolean } | { kind: 'event'; event?: OnEventType } | { kind: 'schedule' } | { kind: 'none' };
+    trigger?: { kind: 'http'; subscriptions?: 'some' | 'none' | 'any' } | { kind: 'event'; event?: OnEventType } | { kind: 'schedule' } | { kind: 'none' };
 } & FunctionIdentity;
 
 export interface FunctionSearchOptions {
@@ -240,15 +241,7 @@ export async function search(
         if (filter?.trigger) {
             switch (filter.trigger.kind) {
                 case 'http': {
-                    query.whereRaw("version.trigger->>'kind' = 'http'");
-                    if (filter.trigger.hasSubscriptions !== undefined) {
-                        const subscriptionCount = `CASE
-                            WHEN jsonb_typeof(version.trigger->'subscriptions') = 'array'
-                            THEN jsonb_array_length(version.trigger->'subscriptions')
-                            ELSE 0
-                        END`;
-                        query.whereRaw(`${subscriptionCount} ${filter.trigger.hasSubscriptions ? '>' : '='} 0`);
-                    }
+                    whereHttpTrigger(query, { column: 'version.trigger', subscriptions: filter.trigger.subscriptions ?? 'any' });
                     break;
                 }
                 case 'event':

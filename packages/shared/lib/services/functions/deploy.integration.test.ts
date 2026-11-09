@@ -14,7 +14,7 @@ import { CONFIGS_TABLE, INSTANCES_TABLE } from './models/tables.js';
 import { functionVersionHash } from './version.js';
 
 import type { Orchestrator } from '../../clients/orchestrator.js';
-import type { DBFunctionConfigVersion, DBFunctionInstance, FunctionDeploymentArtifact } from '@nangohq/types';
+import type { DBFunctionConfigVersion, DBFunctionInstance, FunctionDeploymentArtifact, FunctionReconciliationScope } from '@nangohq/types';
 
 const githubArtifact = {
     name: 'fetchIssues',
@@ -30,7 +30,8 @@ const githubArtifact = {
     metadata_schema_ref: null,
     checkpoint_schema_ref: null,
     json_schema: { type: 'object' },
-    fileBody: { js: 'export default async function run() {}', ts: 'export default async function run(): Promise<void> {}' }
+    fileBody: { js: 'export default async function run() {}', ts: 'export default async function run(): Promise<void> {}' },
+    source: 'repo'
 } satisfies FunctionDeploymentArtifact;
 
 const gitlabArtifact = {
@@ -105,10 +106,8 @@ describe('deployBundle instances', () => {
             scheduleFunctions: vi.fn<Orchestrator['scheduleFunctions']>().mockResolvedValue(Ok(undefined)),
             deleteFunctionSchedules: vi.fn<Orchestrator['deleteFunctionSchedules']>().mockResolvedValue(Ok(undefined))
         };
-        const deploy = async (functions: FunctionDeploymentArtifact[]) => {
-            const reconciliation = (
-                await prepareDeploymentBundle({ functions, environmentId: environment.id, reconciliationScope: { kind: 'environment' } })
-            ).unwrap();
+        const deploy = async (functions: FunctionDeploymentArtifact[], reconciliationScope: FunctionReconciliationScope = { kind: 'environment' }) => {
+            const reconciliation = (await prepareDeploymentBundle({ functions, environmentId: environment.id, reconciliationScope })).unwrap();
             return deployBundle({ accountId: account.id, environmentId: environment.id, environmentName: environment.name, reconciliation, orchestrator });
         };
         const instances = () =>
@@ -118,6 +117,81 @@ describe('deployBundle instances', () => {
                 .orderBy('id');
         return { environment, connection, deploy, instances, orchestrator };
     }
+
+    it.each([{ kind: 'environment' }, { kind: 'integration', integrationId: 'github' }] satisfies FunctionReconciliationScope[])(
+        'preserves non-repo functions and their instances in an empty $kind deploy',
+        async (reconciliationScope) => {
+            const ctx = await setup();
+            const functions = [
+                { artifact: scheduled, source: 'repo' },
+                { artifact: { ...scheduled, name: 'catalogFunction' }, source: 'catalog' },
+                { artifact: { ...scheduled, name: 'standaloneFunction' }, source: 'standalone' }
+            ] as const;
+            (await ctx.deploy(functions.map(({ artifact }) => artifact))).unwrap();
+
+            for (const { artifact, source } of functions) {
+                (
+                    await upsert(db.knex, [
+                        {
+                            environmentId: ctx.environment.id,
+                            integrationId: artifact.integrationId,
+                            name: artifact.name,
+                            version: { ...functionVersion(artifact), version: `${source}-version`, source }
+                        }
+                    ])
+                ).unwrap();
+            }
+
+            const reconciliation = (await prepareDeploymentBundle({ functions: [], environmentId: ctx.environment.id, reconciliationScope })).unwrap();
+            expect(reconciliation.deleted.map(({ config }) => config.name)).toEqual([scheduled.name]);
+            (await ctx.deploy([], reconciliationScope)).unwrap();
+
+            const remaining = (await search(db.knex, { environmentId: ctx.environment.id })).unwrap();
+            expect(
+                remaining
+                    .map(({ config, currentVersion }) => ({ name: config.name, source: currentVersion.source }))
+                    .sort((a, b) => a.name.localeCompare(b.name))
+            ).toEqual([
+                { name: 'catalogFunction', source: 'catalog' },
+                { name: 'standaloneFunction', source: 'standalone' }
+            ]);
+            const instances = await db
+                .knex<DBFunctionInstance>(INSTANCES_TABLE)
+                .whereIn('function_config_id', db.knex.from(CONFIGS_TABLE).select('id').where({ environment_id: ctx.environment.id }))
+                .orderBy('id');
+            expect(instances.filter(({ deleted_at }) => deleted_at === null).map(({ name }) => name)).toEqual(['catalogFunction', 'standaloneFunction']);
+            expect(instances.find(({ name }) => name === scheduled.name)?.deleted_at).toBeInstanceOf(Date);
+        }
+    );
+
+    it('stores the artifact source', async () => {
+        const ctx = await setup();
+        (await ctx.deploy([githubArtifact, { ...githubArtifact, name: 'standaloneFunction', source: 'standalone' }])).unwrap();
+
+        const deployed = (await search(db.knex, { environmentId: ctx.environment.id })).unwrap();
+        expect(
+            deployed.map(({ config, currentVersion }) => ({ name: config.name, source: currentVersion.source })).sort((a, b) => a.name.localeCompare(b.name))
+        ).toEqual([
+            { name: githubArtifact.name, source: 'repo' },
+            { name: 'standaloneFunction', source: 'standalone' }
+        ]);
+    });
+
+    it('writes a new version when only the source changes', async () => {
+        const ctx = await setup();
+        const standalone = { ...githubArtifact, source: 'standalone' } satisfies FunctionDeploymentArtifact;
+        (await ctx.deploy([standalone])).unwrap();
+
+        const reconciliation = (
+            await prepareDeploymentBundle({ functions: [githubArtifact], environmentId: ctx.environment.id, reconciliationScope: { kind: 'environment' } })
+        ).unwrap();
+        expect(reconciliation.updated.map(({ after }) => after.name)).toEqual([githubArtifact.name]);
+        expect(reconciliation.unchanged).toEqual([]);
+        (await ctx.deploy([githubArtifact])).unwrap();
+
+        const [deployed] = (await search(db.knex, { environmentId: ctx.environment.id })).unwrap();
+        expect(deployed?.currentVersion).toMatchObject({ source: 'repo', version: functionVersionHash(githubArtifact).unwrap() });
+    });
 
     it('creates base instances only for active connections in the matching integration and environment', async () => {
         const ctx = await setup();

@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { sharedCredentialsService } from '@nangohq/shared';
+
 import { envs } from '../../env.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
@@ -38,6 +40,25 @@ describe(`POST ${endpoint}`, () => {
 
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({ success: true });
+    });
+
+    it('should create shared credentials enabled by default, or disabled when requested', async () => {
+        const enabledRes = await api.fetch(endpoint, {
+            method: 'POST',
+            token: internalKey,
+            body: { name: 'github', client_id: 'id', client_secret: 'secret' }
+        });
+        isSuccess(enabledRes.json);
+        expect((await sharedCredentialsService.getLatestSharedCredentialsByName('github')).unwrap()?.enabled).toBe(true);
+
+        const disabledRes = await api.fetch(endpoint, {
+            method: 'POST',
+            token: internalKey,
+            body: { name: 'github', client_id: 'id', client_secret: 'secret', enabled: false }
+        });
+        isSuccess(disabledRes.json);
+        // A disabled latest app isn't returned by name
+        expect((await sharedCredentialsService.getLatestSharedCredentialsByName('github')).unwrap()).toBeNull();
     });
 
     it('should reject a missing app_link for an APP-mode provider', async () => {

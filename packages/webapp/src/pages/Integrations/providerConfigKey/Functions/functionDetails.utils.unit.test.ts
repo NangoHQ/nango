@@ -8,7 +8,7 @@ import type { JSONSchema7 } from 'json-schema';
 vi.mock('@/features/Playground/input.utils', () => import('../../../../features/Playground/input.utils'));
 vi.mock('@/utils/scripts', () => import('../../../../utils/scripts'));
 
-const context = { env: 'dev', integration: 'github' };
+const context = { env: 'dev', integration: 'github', provider: 'github' };
 const action: ListedNangoActionFunction = {
     name: 'create-issue',
     type: 'action',
@@ -72,7 +72,7 @@ describe('toFunctionDetails', () => {
             });
         }
         expect(native.typeLabel).toBe('tool');
-        expect(legacy.typeLabel).toBe('action');
+        expect(legacy.typeLabel).toBe('tool');
     });
 
     it('keeps native execution and source loading separate from unsupported legacy management operations', () => {
@@ -88,7 +88,7 @@ describe('toFunctionDetails', () => {
             delete: { type: 'action' },
             pullCommand: 'nango pull github create-issue --env dev -a'
         });
-        expect(toFunctionDetails(action, context).delete?.description).toContain('delete the action "create-issue"');
+        expect(toFunctionDetails(action, context).delete?.description).toContain('delete the tool "create-issue"');
         expect(toFunctionDetails({ ...tool, enabled: false }, context).runType).toBeNull();
         expect(toFunctionDetails({ ...action, enabled: false }, context).runType).toBeNull();
     });
@@ -112,5 +112,12 @@ describe('toFunctionDetails', () => {
             delete: undefined,
             pullCommand: 'nango pull github template --catalog -a'
         });
+    });
+
+    it('targets the integration when pulling a template for an integration not named after its provider', () => {
+        const template: NangoFunctionTemplate = { name: 'template', type: 'action', input: 'Input', returns: [], json_schema: action.json_schema };
+        expect(toFunctionDetails(template, { ...context, integration: 'my-github' }).pullCommand).toBe(
+            'nango pull github template --catalog --target my-github -a'
+        );
     });
 });

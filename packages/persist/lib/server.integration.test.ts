@@ -985,6 +985,18 @@ describe('Persist API', () => {
             expect(response.status).toEqual(409);
             expect(await response.json()).toMatchObject({ error: { code: 'checkpoint_conflict' } });
         });
+
+        it('should return 204 when deleting a non-existent checkpoint', async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint`, {
+                method: 'DELETE',
+                body: JSON.stringify({ key: 'test-checkpoint-delete-missing', expectedVersion: 1 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(response.status).toEqual(204);
+        });
     });
 
     describe('connection ownership', () => {

@@ -1,0 +1,31 @@
+---
+title: 'How to register your own Hive OAuth app'
+sidebarTitle: 'Hive Setup'
+description: 'Get your Hive API partner credentials and connect them to Nango'
+---
+
+This guide shows you how to get the OAuth credentials (client ID & secret) for your Hive API partner account. These are required to let Hive brands grant your app access to their data.
+
+<Steps>
+  <Step title="Become a Hive API partner">
+    Contact your Hive representative to become an API partner. You'll receive a welcome email once your [Partner Portal](https://developers.hive.co/docs/partner-portal) access is set up.
+  </Step>
+  <Step title="Get your client ID and secret">
+    In the Partner Portal, copy your **Client ID** under **API Credentials**, then click **Generate new secret** and copy the **Client Secret**.
+  </Step>
+  <Step title="Add Nango's redirect URI">
+    Under **Redirect URIs**, add `https://api.nango.dev/oauth/callback` (or your own [custom callback URL](/guides/auth/auth-guide#custom-oauth-callback-url-optional)). Hive only accepts registered callback URLs.
+  </Step>
+  <Step title="Add the credentials in Nango">
+    In your Hive integration in Nango, paste the client ID and secret, then add the scopes you need (for example `contacts:read contacts:write segments:read segments:write`). Hive issues tokens with no API access when no scopes are requested, and recommends requesting all of them: `events:read`, `events:write`, `orders:read`, `orders:write`, `contacts:read`, `contacts:write`, `segments:read`, `segments:write` and `campaigns:read`. Nango sends your client ID in the `X-Partner-Id` header that every Hive API request needs.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+<Note>Each Hive connection is scoped to one brand, chosen on Hive's consent screen. To connect several brands, create one connection per brand.</Note>
+
+For more details, see the [Hive authentication docs](https://developers.hive.co/docs/auth).
+
+---

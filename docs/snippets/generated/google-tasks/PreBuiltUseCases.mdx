@@ -2,22 +2,22 @@
 
 | Function name | Description | Type |
 | - | - | - |
-| `complete-task-and-verify` | Complete a task, verify its final state, and report any subtasks that were auto-completed as a side effect. | [Action](/guides/functions/action-functions) |
-| `complete-task` | Mark a task as completed. NOTE: if this task has subtasks, they are auto-completed too - see comments. | [Action](/guides/functions/action-functions) |
-| `create-task` | Create a new task in a list, optionally as a subtask of an existing task and/or positioned after a specific sibling. | [Action](/guides/functions/action-functions) |
-| `create-tasklist` | Create a new, empty task list. | [Action](/guides/functions/action-functions) |
-| `delete-task` | Permanently delete a task from a task list. | [Action](/guides/functions/action-functions) |
-| `delete-tasklist` | Permanently delete a task list and every task inside it. | [Action](/guides/functions/action-functions) |
-| `find-or-create-task-in-tasklist` | Find a task by title in the task list with a given name, creating the list and/or the task only when they do not exist yet. | [Action](/guides/functions/action-functions) |
-| `get-task` | Retrieve a single task by its list ID and task ID - including a deleted task, which is returned as a tombstone rather than a 404. | [Action](/guides/functions/action-functions) |
-| `get-tasklist-full-tree` | Fetch a task list with all of its tasks, with the subtask hierarchy reconstructed into a nested tree. | [Action](/guides/functions/action-functions) |
-| `get-tasklist` | Retrieve a single task list by its ID (or the literal alias `@default` for the user's default list). | [Action](/guides/functions/action-functions) |
-| `list-tasklists` | List all of the user's task lists. | [Action](/guides/functions/action-functions) |
-| `list-tasks` | List tasks in a given task list, with optional filters for completed, hidden, and deleted tasks and date or update ranges. | [Action](/guides/functions/action-functions) |
-| `move-task` | Move a task to a new parent and/or sibling position within the same list, or to a different task list entirely. | [Action](/guides/functions/action-functions) |
-| `patch-task` | Partially update a task (PATCH): only the fields you pass change and everything else is left untouched. Use update-task to replace the whole task. | [Action](/guides/functions/action-functions) |
-| `reopen-task` | Mark a completed task as not done again, undoing its completion and un-hiding it if it was hidden. | [Action](/guides/functions/action-functions) |
-| `update-task` | Replace a task (full PUT): notes, status, and due are cleared or reset when omitted. Use patch-task to change only some fields. | [Action](/guides/functions/action-functions) |
-| `update-tasklist` | Rename a task list. The title is the only writable task list field, so this full PUT update only changes the title. | [Action](/guides/functions/action-functions) |
+| `complete-task-and-verify` | Complete a task, verify its final state, and report any subtasks that were auto-completed as a side effect. | [Tool](/guides/functions/tools) |
+| `complete-task` | Mark a task as completed. NOTE: if this task has subtasks, they are auto-completed too - see comments. | [Tool](/guides/functions/tools) |
+| `create-task` | Create a new task in a list, optionally as a subtask of an existing task and/or positioned after a specific sibling. | [Tool](/guides/functions/tools) |
+| `create-tasklist` | Create a new, empty task list. | [Tool](/guides/functions/tools) |
+| `delete-task` | Permanently delete a task from a task list. | [Tool](/guides/functions/tools) |
+| `delete-tasklist` | Permanently delete a task list and every task inside it. | [Tool](/guides/functions/tools) |
+| `find-or-create-task-in-tasklist` | Find a task by title in the task list with a given name, creating the list and/or the task only when they do not exist yet. | [Tool](/guides/functions/tools) |
+| `get-task` | Retrieve a single task by its list ID and task ID - including a deleted task, which is returned as a tombstone rather than a 404. | [Tool](/guides/functions/tools) |
+| `get-tasklist-full-tree` | Fetch a task list with all of its tasks, with the subtask hierarchy reconstructed into a nested tree. | [Tool](/guides/functions/tools) |
+| `get-tasklist` | Retrieve a single task list by its ID (or the literal alias `@default` for the user's default list). | [Tool](/guides/functions/tools) |
+| `list-tasklists` | List all of the user's task lists. | [Tool](/guides/functions/tools) |
+| `list-tasks` | List tasks in a given task list, with optional filters for completed, hidden, and deleted tasks and date or update ranges. | [Tool](/guides/functions/tools) |
+| `move-task` | Move a task to a new parent and/or sibling position within the same list, or to a different task list entirely. | [Tool](/guides/functions/tools) |
+| `patch-task` | Partially update a task (PATCH): only the fields you pass change and everything else is left untouched. Use update-task to replace the whole task. | [Tool](/guides/functions/tools) |
+| `reopen-task` | Mark a completed task as not done again, undoing its completion and un-hiding it if it was hidden. | [Tool](/guides/functions/tools) |
+| `update-task` | Replace a task (full PUT): notes, status, and due are cleared or reset when omitted. Use patch-task to change only some fields. | [Tool](/guides/functions/tools) |
+| `update-tasklist` | Rename a task list. The title is the only writable task list field, so this full PUT update only changes the title. | [Tool](/guides/functions/tools) |
 | `task-lists` | Sync metadata (title, updated timestamp) for every task list in the account. | [Sync](/guides/functions/syncs/sync-functions) |
 | `tasks` | Sync every task across every task list in the account, incrementally, including completed, hidden, and assigned tasks; deleted tasks and tasks of deleted lists are removed. | [Sync](/guides/functions/syncs/sync-functions) |

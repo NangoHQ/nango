@@ -105,6 +105,16 @@ describe('compileAll', () => {
             filePath: './github.js/functions/fetchIssues.ts'
         });
         expect(fs.existsSync(path.join(dir, 'build', 'github.js_functions_fetchIssues.cjs'))).toBe(true);
+
+        const parsed = (await parseIntegrationDefinitions({ fullPath: dir, debug: false })).unwrap();
+        expect(parsed.entryPoints).toStrictEqual([
+            { filePath: './github/syncs/fetchIssues.ts', integrationId: 'github', type: 'sync', name: 'fetchIssues' },
+            { filePath: './github/actions/createIssue.ts', integrationId: 'github', type: 'action', name: 'createIssue' },
+            { filePath: './github/on-events/pre-connection-deletion.ts', integrationId: 'github', type: 'on-event', name: 'pre-connection-deletion' },
+            { filePath: './github/functions/fetchIssues.ts', integrationId: 'github', type: 'function', name: 'fetchIssues' },
+            { filePath: './github/tools/getIssue.ts', integrationId: 'github', type: 'function', name: 'get_issue' },
+            { filePath: './github.js/functions/fetchIssues.ts', integrationId: 'github.js', type: 'function', name: 'fetchIssues' }
+        ]);
     });
 });
 

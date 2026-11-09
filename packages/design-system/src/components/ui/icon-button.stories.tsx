@@ -1,25 +1,19 @@
 import { Plus } from 'lucide-react';
 
-import { ICON_BUTTON_SIZES, ICON_BUTTON_VARIANTS, IconButton } from './button';
+import { ICON_BUTTON_SIZES, IconButton } from './button';
 
-import type { IconButtonVariant } from './button';
+import type { IconButtonSize, IconButtonVariant } from './button';
 import type { Meta, StoryObj } from '@storybook/react';
 
-const meta: Meta<typeof IconButton> = {
+const meta: Meta = {
     title: 'Design System/Components/IconButton',
-    component: IconButton,
-    parameters: { layout: 'padded' },
-    argTypes: {
-        variant: { control: 'select', options: ICON_BUTTON_VARIANTS },
-        size: { control: 'select', options: ICON_BUTTON_SIZES }
-    }
+    parameters: { layout: 'padded' }
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Hover / Pressed / Focus are frozen with data-story-state, which .storybook/preview.css maps onto the real
-// hover:/active:/focus-visible: variants — so each cell renders the component's own classes, not a copy.
+// .storybook/preview.css maps data-story-state onto the real hover:/active:/focus-visible: variants.
 const STATES = [
     { label: 'Default', props: {} },
     { label: 'Hover', props: { 'data-story-state': 'hover' } },
@@ -29,27 +23,25 @@ const STATES = [
     { label: 'Loading', props: { loading: true } }
 ] as const;
 
-const SIZE_SPEC: Record<(typeof ICON_BUTTON_SIZES)[number], string> = {
+type StorySize = IconButtonSize | '2xs';
+
+const SIZE_SPEC: Record<StorySize, string> = {
+    '2xs': '20 · icon 16',
     xs: '24 · icon 12',
     sm: '28 · icon 14',
     md: '32 · icon 16',
     lg: '36 · icon 16'
 };
 
-export const Playground: Story = {
-    args: { variant: 'primary', size: 'md', label: 'Add item', children: <Plus /> }
-};
-
-// Rows = sizes, columns = states.
-const StateMatrix = ({ variant }: { variant: IconButtonVariant }) => (
-    <div className="grid grid-cols-[auto_repeat(6,max-content)] items-center gap-x-8 gap-y-6">
+const StateMatrix = ({ variant, sizes }: { variant: IconButtonVariant; sizes: readonly StorySize[] }) => (
+    <div className="grid grid-cols-[max-content_repeat(6,max-content)] items-center gap-x-8 gap-y-6">
         <span />
         {STATES.map((state) => (
             <span key={state.label} className="story-section-heading">
                 {state.label}
             </span>
         ))}
-        {ICON_BUTTON_SIZES.map((size) => (
+        {sizes.map((size) => (
             <div key={size} className="contents">
                 <span className="flex flex-col text-ds-xs text-text-secondary pr-4">
                     <span className="text-text-strong font-ds-medium">{size}</span>
@@ -67,21 +59,13 @@ const StateMatrix = ({ variant }: { variant: IconButtonVariant }) => (
     </div>
 );
 
-// One story per type × theme. `globals.theme` pins the Themes toolbar, so light and dark are both captured
-// without toggling.
-const matrixStory = (variant: IconButtonVariant, theme: 'light' | 'dark'): Story => ({
-    name: `${variant} — ${theme}`,
-    globals: { theme },
-    render: () => <StateMatrix variant={variant} />
+const matrixStory = (variant: IconButtonVariant, sizes: readonly StorySize[] = ICON_BUTTON_SIZES): Story => ({
+    name: `${variant} — sizes × states`,
+    render: () => <StateMatrix variant={variant} sizes={sizes} />
 });
 
-export const PrimaryLight = matrixStory('primary', 'light');
-export const PrimaryDark = matrixStory('primary', 'dark');
-export const SecondaryLight = matrixStory('secondary', 'light');
-export const SecondaryDark = matrixStory('secondary', 'dark');
-export const OutlineLight = matrixStory('outline', 'light');
-export const OutlineDark = matrixStory('outline', 'dark');
-export const GhostLight = matrixStory('ghost', 'light');
-export const GhostDark = matrixStory('ghost', 'dark');
-export const DangerLight = matrixStory('danger', 'light');
-export const DangerDark = matrixStory('danger', 'dark');
+export const Primary = matrixStory('primary');
+export const Secondary = matrixStory('secondary');
+export const Outline = matrixStory('outline');
+export const Ghost = matrixStory('ghost', ['2xs', ...ICON_BUTTON_SIZES]);
+export const Danger = matrixStory('danger');

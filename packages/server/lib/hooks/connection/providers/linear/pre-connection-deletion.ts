@@ -6,6 +6,13 @@ import type { LinearTokenRevokeResponse } from './types.js';
 export default async function execute(nango: InternalNango) {
     try {
         const connection = await nango.getConnection();
+
+        // Revoking the token would also break any other Nango connection that shares the same Linear
+        // authorization (e.g. a replacement connection), so allow opting out via metadata.
+        if (connection.metadata?.['skipTokenRevocation'] === true) {
+            return;
+        }
+
         await nango.proxy<LinearTokenRevokeResponse>({
             method: 'POST',
             // https://linear.app/developers/oauth-2-0-authentication#revoke-an-access-token

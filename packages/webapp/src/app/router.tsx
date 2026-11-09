@@ -26,8 +26,7 @@ import { ConnectionList } from '@/pages/Connection/List';
 import { ConnectionShow } from '@/pages/Connection/Show';
 import { ShowRecordModel as ConnectionShowRecordModel } from '@/pages/Connection/ShowRecordModel';
 import { EnvironmentSettings } from '@/pages/Environment/Settings/Show';
-import { ClassicGettingStarted } from '@/pages/GettingStarted/ClassicGettingStarted';
-import { GettingStarted } from '@/pages/GettingStarted/Show';
+import { AgentGettingStarted } from '@/pages/GettingStarted/AgentGettingStarted';
 import { Homepage } from '@/pages/Homepage/Show';
 import { CreateIntegration } from '@/pages/Integrations/Create';
 import { CreateIntegrationList } from '@/pages/Integrations/CreateList';
@@ -57,7 +56,7 @@ const GettingStartedRoute = () => {
         return <Navigate to="/" replace />;
     }
 
-    return globalEnv.isCloud ? <GettingStarted /> : <ClassicGettingStarted />;
+    return <AgentGettingStarted />;
 };
 
 const RedirectPreservingLocation = ({ to }: { to: string }) => {

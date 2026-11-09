@@ -184,19 +184,19 @@ describe(search, () => {
         const subscribed = (
             await search(db.knex, {
                 environmentId: environment.id,
-                filter: { integrationKey: github.unique_key, enabled: true, trigger: { kind: 'http', hasSubscriptions: true } }
+                filter: { integrationKey: github.unique_key, enabled: true, trigger: { kind: 'http', subscriptions: 'some' } }
             })
         ).unwrap();
         const withoutSubscriptions = (
             await search(db.knex, {
                 environmentId: environment.id,
-                filter: { integrationKey: github.unique_key, enabled: true, trigger: { kind: 'http', hasSubscriptions: false } }
+                filter: { integrationKey: github.unique_key, enabled: true, trigger: { kind: 'http', subscriptions: 'none' } }
             })
         ).unwrap();
         const disabledSubscribed = (
             await search(db.knex, {
                 environmentId: environment.id,
-                filter: { integrationKey: github.unique_key, enabled: false, trigger: { kind: 'http', hasSubscriptions: true } }
+                filter: { integrationKey: github.unique_key, enabled: false, trigger: { kind: 'http', subscriptions: 'some' } }
             })
         ).unwrap();
 
