@@ -1,7 +1,6 @@
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { Monitor, Moon, SunMedium } from 'lucide-react';
 
-import { DropdownMenuRadioGroup } from '@/components/ui/DropdownMenu';
 import { useThemeStore } from '@/lib/theme';
 import { cn } from '@/utils/utils';
 
@@ -23,7 +22,7 @@ export const ThemeToggle: React.FC = () => {
     const setTheme = useThemeStore((s) => s.setTheme);
 
     return (
-        <DropdownMenuRadioGroup
+        <DropdownMenuPrimitive.RadioGroup
             value={theme}
             onValueChange={(value) => setTheme(value as Theme)}
             aria-label="Theme"
@@ -45,6 +44,6 @@ export const ThemeToggle: React.FC = () => {
                     <Icon className="size-3.5" />
                 </DropdownMenuPrimitive.RadioItem>
             ))}
-        </DropdownMenuRadioGroup>
+        </DropdownMenuPrimitive.RadioGroup>
     );
 };

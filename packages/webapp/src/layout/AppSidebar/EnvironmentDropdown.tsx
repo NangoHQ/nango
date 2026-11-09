@@ -8,14 +8,7 @@ import { Alert, AlertActions, AlertDescription, Badge, Button } from '@nangohq/d
 import { LogoInverted } from '@/assets/LogoInverted';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuRadioGroup,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger
-} from '@/components/ui/DropdownMenu.js';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/DropdownMenu.js';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useCurrentPlan } from '@/hooks/usePlan';
@@ -84,7 +77,7 @@ export const EnvironmentDropdown: React.FC = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" side="bottom" sideOffset={4} className={cn(navigationMenuContentClassName, 'max-h-96 w-61')}>
                     <DropdownMenuPrimitive.Label className="type-label-xs px-2 pt-1.5 pb-1 uppercase text-text-muted">Environments</DropdownMenuPrimitive.Label>
-                    <DropdownMenuRadioGroup value={env} onValueChange={onSelect}>
+                    <DropdownMenuPrimitive.RadioGroup value={env} onValueChange={onSelect}>
                         {meta.environments.map((environment) => (
                             <PermissionGate
                                 key={environment.name}
@@ -113,7 +106,7 @@ export const EnvironmentDropdown: React.FC = () => {
                                 )}
                             </PermissionGate>
                         ))}
-                    </DropdownMenuRadioGroup>
+                    </DropdownMenuPrimitive.RadioGroup>
                     <DropdownMenuSeparator className={navigationMenuSeparatorClassName} />
                     <DropdownMenuItem asChild className={navigationMenuItemClassName}>
                         <Link to={`/${env}/environment-settings`}>
