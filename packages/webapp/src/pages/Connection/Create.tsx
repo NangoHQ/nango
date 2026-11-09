@@ -160,7 +160,7 @@ export const ConnectionCreate: React.FC = () => {
                 </div>
                 <div className="border-l border-l-border-strong pl-10">
                     <div className="flex flex-col gap-10">
-                        <h1 className="text-2xl">Embed in your app</h1>
+                        <h2 className="text-2xl">Embed in your app</h2>
                         <a
                             className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong focus:border-border-strong focus:outline-0"
                             href="https://nango.dev/docs/guides/auth/auth-guide"

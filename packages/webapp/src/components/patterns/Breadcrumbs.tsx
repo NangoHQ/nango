@@ -20,7 +20,7 @@ export const Breadcrumbs = () => {
                 <Fragment key={breadcrumb.path}>
                     <Link
                         to={breadcrumb.path}
-                        className="shrink-0 type-text-regular-md text-text-secondary transition-colors hover:text-text-default focus-default"
+                        className="min-w-0 truncate type-text-regular-md text-text-secondary transition-colors hover:text-text-default focus-default"
                     >
                         {breadcrumb.label}
                     </Link>
