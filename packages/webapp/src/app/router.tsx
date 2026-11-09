@@ -320,17 +320,16 @@ const routes: RouteObject[] = [
                                     },
                                     {
                                         path: 'auth',
-                                        element: <ConnectionAuthTab />,
-                                        handle: { breadcrumb: 'Auth' } as BreadcrumbHandle
+                                        element: <ConnectionAuthTab />
                                     },
                                     {
                                         path: 'syncs',
-                                        element: <ConnectionSyncsTab />,
-                                        handle: { breadcrumb: 'Syncs' } as BreadcrumbHandle
+                                        element: <ConnectionSyncsTab />
                                     },
                                     {
                                         path: 'records',
-                                        handle: { breadcrumb: 'Records' } as BreadcrumbHandle,
+                                        // Only a crumb when a model is open, so it links back to the records list
+                                        handle: { breadcrumb: (params) => (params.model ? 'Records' : undefined) } as BreadcrumbHandle,
                                         children: [
                                             {
                                                 index: true,
@@ -353,8 +352,7 @@ const routes: RouteObject[] = [
                                     },
                                     {
                                         path: 'settings',
-                                        element: <ConnectionSettingsTab />,
-                                        handle: { breadcrumb: 'Settings' } as BreadcrumbHandle
+                                        element: <ConnectionSettingsTab />
                                     }
                                 ]
                             }

@@ -13,19 +13,21 @@ interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
     fullWidth?: boolean;
     /** The page's actions, shown on the right of the top bar. */
     actions?: React.ReactNode;
-    /** A `PageHeader` row under the top bar, for pages about a single entity. */
+    /** A `PageHeader` row under the top bar, for pages about a single entity. Its title becomes the page's `h1`. */
     pageHeader?: React.ReactNode;
+    /** The page renders its own `h1`, so the breadcrumb shouldn't. Implied by `pageHeader`. */
+    hasPageHeading?: boolean;
     /** Caps and centers the page content. Use on `fullWidth` pages whose content doesn't read well edge-to-edge on a wide screen. */
     centered?: boolean;
 }
 
 const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(
-    ({ children, className, fullWidth = false, actions, pageHeader, centered = false, ...props }, ref) => {
+    ({ children, className, fullWidth = false, actions, pageHeader, hasPageHeading = false, centered = false, ...props }, ref) => {
         return (
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset className="max-h-screen overflow-hidden">
-                    <AppHeader actions={actions} />
+                    <AppHeader actions={actions} breadcrumbIsHeading={!pageHeader && !hasPageHeading} />
                     {pageHeader}
                     <div
                         ref={ref}

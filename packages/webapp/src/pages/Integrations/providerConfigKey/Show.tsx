@@ -58,8 +58,12 @@ export const ShowIntegration: React.FC = () => {
                 className="flex flex-col gap-4"
                 pageHeader={
                     <PageHeader
-                        title={<Skeleton className="h-6 w-40" />}
-                        leading={<Skeleton className="size-6" />}
+                        leading={
+                            <>
+                                <Skeleton className="size-6" />
+                                <Skeleton className="h-6 w-40" />
+                            </>
+                        }
                         actions={<Skeleton className="h-8 w-44" />}
                     />
                 }
