@@ -1,28 +1,43 @@
 import db from '@nangohq/database';
-import { deleteSyncConfig } from '@nangohq/shared';
+import { deleteSyncConfig, functionConfigService } from '@nangohq/shared';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { tasks } from './index.js';
 
 import type { Result } from '@nangohq/utils';
 
-export interface FunctionDeletionParams {
-    syncConfigId: number;
-    environmentId: number;
-    /** Models the function produces (record deletion is per model). Empty for actions. */
-    models: string[];
-}
+export type FunctionDeletionParams =
+    | {
+          syncConfigId: number;
+          environmentId: number;
+          /** Models the function produces (record deletion is per model). Empty for actions. */
+          models: string[];
+      }
+    | {
+          functionConfigId: number;
+          environmentId: number;
+      };
 
 /**
  * Soft-deletes the config and enqueues the durable `deleteFunction` task.
  * The delete task is a no-op if the config is not soft-deleted (by eg. a transaction rollback).
  **/
-export async function startFunctionDeletion({ syncConfigId, environmentId, models }: FunctionDeletionParams): Promise<Result<void>> {
+export async function startFunctionDeletion(params: FunctionDeletionParams): Promise<Result<void>> {
     try {
         await db.knex.transaction(async (trx) => {
-            await deleteSyncConfig(syncConfigId, trx);
+            if ('syncConfigId' in params) {
+                await deleteSyncConfig(params.syncConfigId, trx);
+            } else {
+                const deleted = await functionConfigService.softDelete(trx, {
+                    environmentId: params.environmentId,
+                    ids: [params.functionConfigId]
+                });
+                if (deleted.isErr()) {
+                    throw deleted.error;
+                }
+            }
 
-            const res = await tasks.enqueue('deleteFunction', { syncConfigId, environmentId, models });
+            const res = await tasks.enqueue('deleteFunction', params);
             if (res.isErr()) {
                 throw res.error; // roll back the soft-delete
             }
