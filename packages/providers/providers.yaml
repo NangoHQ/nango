@@ -8485,6 +8485,42 @@ cursor-admin:
             default_value: ''
             hidden: true
 
+dash:
+    display_name: Dash
+    categories:
+        - storage
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://login.dash.app/authorize
+    token_url: https://login.dash.app/oauth/token
+    authorization_params:
+        response_type: code
+        audience: https://assetplatform.io
+        scope: offline_access subdomain:${connectionConfig.subdomain}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+        scope: offline_access subdomain:${connectionConfig.subdomain}
+    proxy:
+        base_url: https://api-v2.dash.app
+        retry:
+            after:
+                - retry-after
+    docs: https://nango.dev/docs/api-integrations/dash
+    docs_connect: https://nango.dev/docs/api-integrations/dash/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/dash/how-to-register-your-own-dash-api-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: Dash Subdomain
+            description: The subdomain of your Dash account (my-account in https://my-account.dash.app).
+            pattern: '^[a-z0-9][a-z0-9-]*$'
+            example: my-account
+            prefix: https://
+            suffix: .dash.app
+            order: 1
+
 databox:
     display_name: Databox
     categories:
@@ -15350,6 +15386,46 @@ hydradb:
             pattern: '^sk_(live|test)_[A-Za-z0-9]+\.[A-Za-z0-9]+$'
             example: sk_live_RwnXtfVW23BO.****************************
 
+hyperline:
+    display_name: Hyperline
+    categories:
+        - invoicing
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.environment}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/companies
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+            remaining: 'x-ratelimit-remaining'
+    docs: https://nango.dev/docs/api-integrations/hyperline
+    docs_connect: https://nango.dev/docs/api-integrations/hyperline/connect
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The Hyperline API host for production or sandbox (test mode).
+            format: hostname
+            enum:
+                - api.hyperline.co
+                - sandbox.api.hyperline.co
+            order: 1
+            doc_section: '#step-1-choose-your-environment'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Hyperline API key (prod_ for production, test_ for sandbox).
+            example: prod_7fe2****************80f9
+            pattern: '^(prod|test)_.+$'
+            doc_section: '#step-2-create-an-api-key'
+
 imanage:
     display_name: iManage Work
     categories:
@@ -17194,6 +17270,34 @@ lattice:
             title: API Key
             description: The API key for your Lattice account
             doc_section: '#step-1-how-to-generate-lattice-api-keys-for-public-and-scim-apis'
+
+laylo:
+    display_name: Laylo
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://laylo.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: POST
+            endpoints:
+                - /graphql
+            headers:
+                content-type: application/json
+            data:
+                query: '{ __typename }'
+    docs: https://nango.dev/docs/api-integrations/laylo
+    docs_connect: https://nango.dev/docs/api-integrations/laylo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Laylo API Keyring key.
+            pattern: '^[A-Za-z0-9._-]{20,}$'
+            example: eyJh*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************k3Rd
+            doc_section: '#step-1-create-an-api-key'
 
 leadmagic:
     display_name: LeadMagic
@@ -32947,6 +33051,39 @@ wildix-pbx:
             example: domain
             suffix: .wildixin.com
             prefix: https://
+
+wispr-flow-mcp:
+    display_name: Wispr Flow (MCP)
+    categories:
+        - productivity
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp-auth.wisprflow.com/oauth2/authorize
+    token_url: https://mcp-auth.wisprflow.com/oauth2/token
+    registration_url: https://mcp-auth.wisprflow.com/oauth2/register
+    default_scopes:
+        - openid
+        - offline_access
+    authorization_params:
+        response_type: code
+        resource: https://api.wisprflow.ai/connect/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /connect/mcp
+    proxy:
+        base_url: https://api.wisprflow.ai
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/wispr-flow-mcp
 
 wistia:
     display_name: Wistia
