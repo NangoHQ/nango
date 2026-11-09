@@ -1,7 +1,7 @@
 import { generateKeyPairSync } from 'node:crypto';
 
 import knexFactory from 'knex';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { mintInstallationToken } from '../../installation/token.js';
 import { migrate } from '../db/migrate.js';
@@ -96,11 +96,13 @@ describe('installation tokens', () => {
         expect(code(res)).toBe('invalid_signature');
     });
 
-    it('rejects an expired token', async () => {
+    it('rejects a token older than a minute', async () => {
         const { privateKeyPem } = await licensedInstallation('expired');
+        vi.useFakeTimers({ now: Date.now() - 61_000, toFake: ['Date'] });
+        const token = await mintInstallationToken(privateKeyPem);
+        vi.useRealTimers();
 
-        const res = await verifyInstallationToken(db, await mintInstallationToken(privateKeyPem, { ttlSeconds: -10 }));
-        expect(code(res)).toBe('expired');
+        expect(code(await verifyInstallationToken(db, token))).toBe('expired');
     });
 
     it('rejects an installation without an active license', async () => {
