@@ -66,7 +66,7 @@ export async function verifyInstallationToken(db: RegistryDb, token: string): Pr
         if (err instanceof errors.JWTExpired) {
             return Err(new InstallationTokenError('clock_skew', "token expired by our clock, check the installation's clock"));
         }
-        if (err instanceof errors.JWTClaimValidationFailed && err.claim === 'iat') {
+        if (err instanceof errors.JWTClaimValidationFailed && err.claim === 'iat' && err.reason === 'check_failed') {
             return Err(new InstallationTokenError('clock_skew', "token issued in the future by our clock, check the installation's clock"));
         }
         if (err instanceof errors.JWSSignatureVerificationFailed) {

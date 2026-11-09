@@ -1,5 +1,6 @@
-import { generateKeyPairSync } from 'node:crypto';
+import { createPrivateKey, generateKeyPairSync } from 'node:crypto';
 
+import { SignJWT } from 'jose';
 import knexFactory from 'knex';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -148,5 +149,12 @@ describe('installation tokens', () => {
         expect(code(await verifyInstallationToken(db, ''))).toBe('malformed');
         expect(code(await verifyInstallationToken(db, 'a.b.c'))).toBe('malformed');
         expect(code(await verifyInstallationToken(db, `${Buffer.from('{"alg":"EdDSA"}').toString('base64url')}.e30.sig`))).toBe('malformed');
+    });
+
+    it('rejects a signed token without an issue time as malformed, not as clock skew', async () => {
+        const { kid, privateKeyPem } = await licensedInstallation('no-iat');
+        const token = await new SignJWT({}).setProtectedHeader({ alg: 'EdDSA', kid }).setExpirationTime('5m').sign(createPrivateKey(privateKeyPem));
+
+        expect(code(await verifyInstallationToken(db, token))).toBe('malformed');
     });
 });
