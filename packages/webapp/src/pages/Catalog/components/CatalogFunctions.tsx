@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react';
+import { Braces, ExternalLink } from 'lucide-react';
 import { parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs';
 import { useState } from 'react';
 
@@ -141,6 +141,9 @@ const NoResultsState: React.FC<{ query: string; noun: string; displayName: strin
 
 const NoFunctionsState: React.FC<{ displayName: string }> = ({ displayName }) => (
     <div className="flex flex-col items-center gap-2 rounded-ds-md border-ds-hairline border-border-default bg-surface-panel px-6 py-12 text-center">
+        <span className="mb-1 flex size-10 items-center justify-center rounded-ds-md border-ds-hairline border-border-default bg-surface-panel-inset">
+            <Braces className="size-5 text-icon-secondary" />
+        </span>
         <span className="type-text-medium-sm text-text-strong">No pre-built functions for {displayName} yet</span>
         <span className="type-text-regular-xs text-text-secondary">
             You can write your own, or call {displayName}&apos;s API directly through the Nango proxy.

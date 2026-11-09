@@ -46,58 +46,69 @@ interface FunctionSchemaTabsProps extends FunctionSchemas {
     showFieldCounts?: boolean;
 }
 
-export const FunctionSchemaTabs: React.FC<FunctionSchemaTabsProps> = ({ inputSchema, outputSchemas, extraTabs = [], showFieldCounts = false }) => (
-    <Tabs defaultValue="input" className="gap-3 px-3 pt-3">
-        <TabsList className="w-fit gap-3">
-            <TabsTrigger value="input" className="px-2 py-1.5">
-                Input
-                {showFieldCounts && <CountBadge count={countFields(inputSchema)} />}
-            </TabsTrigger>
-            <TabsTrigger value="output" className="px-2 py-1.5">
-                Output
-                {showFieldCounts && <CountBadge count={outputSchemas.reduce((total, output) => total + countFields(output.schema), 0)} />}
-            </TabsTrigger>
-            {extraTabs.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value} className="px-2 py-1.5">
-                    {tab.label}
+export const FunctionSchemaTabs: React.FC<FunctionSchemaTabsProps> = ({ inputSchema, outputSchemas, extraTabs = [], showFieldCounts = false }) => {
+    const inputCount = showFieldCounts ? countFields(inputSchema ? [inputSchema] : []) : null;
+    const outputCount = showFieldCounts ? countFields(outputSchemas.map((output) => output.schema)) : null;
+    return (
+        <Tabs defaultValue="input" className="gap-3 px-3 pt-3">
+            <TabsList className="w-fit gap-3">
+                <TabsTrigger value="input" className="px-2 py-1.5">
+                    Input
+                    {inputCount != null && <CountBadge count={inputCount} />}
                 </TabsTrigger>
-            ))}
-        </TabsList>
-        <TabsContent value="input">
-            {inputSchema ? <JsonSchemaTopLevelObject schema={inputSchema} /> : <CompactEmptyState>No inputs.</CompactEmptyState>}
-        </TabsContent>
-        <TabsContent value="output">
-            {outputSchemas.length > 0 ? (
-                <Navigation defaultValue={outputSchemas[0]?.name ?? ''} orientation="horizontal">
-                    {outputSchemas.length > 1 && (
-                        <NavigationList>
-                            {outputSchemas.map((outputSchema) => (
-                                <NavigationTrigger key={outputSchema.name} value={outputSchema.name}>
-                                    {outputSchema.name}
-                                </NavigationTrigger>
-                            ))}
-                        </NavigationList>
-                    )}
-                    {outputSchemas.map((outputSchema) => (
-                        <NavigationContent key={outputSchema.name} value={outputSchema.name}>
-                            <JsonSchemaTopLevelObject schema={outputSchema.schema} />
-                        </NavigationContent>
-                    ))}
-                </Navigation>
-            ) : (
-                <CompactEmptyState>No outputs.</CompactEmptyState>
-            )}
-        </TabsContent>
-        {extraTabs.map((tab) => (
-            <TabsContent key={tab.value} value={tab.value}>
-                {tab.content}
+                <TabsTrigger value="output" className="px-2 py-1.5">
+                    Output
+                    {outputCount != null && <CountBadge count={outputCount} />}
+                </TabsTrigger>
+                {extraTabs.map((tab) => (
+                    <TabsTrigger key={tab.value} value={tab.value} className="px-2 py-1.5">
+                        {tab.label}
+                    </TabsTrigger>
+                ))}
+            </TabsList>
+            <TabsContent value="input">
+                {inputSchema ? <JsonSchemaTopLevelObject schema={inputSchema} /> : <CompactEmptyState>No inputs.</CompactEmptyState>}
             </TabsContent>
-        ))}
-    </Tabs>
-);
+            <TabsContent value="output">
+                {outputSchemas.length > 0 ? (
+                    <Navigation defaultValue={outputSchemas[0]?.name ?? ''} orientation="horizontal">
+                        {outputSchemas.length > 1 && (
+                            <NavigationList>
+                                {outputSchemas.map((outputSchema) => (
+                                    <NavigationTrigger key={outputSchema.name} value={outputSchema.name}>
+                                        {outputSchema.name}
+                                    </NavigationTrigger>
+                                ))}
+                            </NavigationList>
+                        )}
+                        {outputSchemas.map((outputSchema) => (
+                            <NavigationContent key={outputSchema.name} value={outputSchema.name}>
+                                <JsonSchemaTopLevelObject schema={outputSchema.schema} />
+                            </NavigationContent>
+                        ))}
+                    </Navigation>
+                ) : (
+                    <CompactEmptyState>No outputs.</CompactEmptyState>
+                )}
+            </TabsContent>
+            {extraTabs.map((tab) => (
+                <TabsContent key={tab.value} value={tab.value}>
+                    {tab.content}
+                </TabsContent>
+            ))}
+        </Tabs>
+    );
+};
 
-function countFields(schema: JSONSchema7 | null): number {
-    return Object.keys(schema?.properties ?? {}).length;
+function countFields(schemas: JSONSchema7[]): number | null {
+    let total = 0;
+    for (const schema of schemas) {
+        if (!schema.properties) {
+            return null;
+        }
+        total += Object.keys(schema.properties).length;
+    }
+    return total;
 }
 
 export const CompactEmptyState: React.FC<{ children: React.ReactNode }> = ({ children }) => (

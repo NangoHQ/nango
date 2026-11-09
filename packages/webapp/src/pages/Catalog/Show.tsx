@@ -1,6 +1,6 @@
 import Fuse from 'fuse.js';
 import debounce from 'lodash/debounce';
-import { ChevronDown } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import { parseAsBoolean, parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
@@ -9,7 +9,7 @@ import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { CountBadge } from '@/components/ui/CountBadge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Switch } from '@/components/ui/Switch';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
@@ -27,9 +27,18 @@ import { SearchField } from './components/SearchField';
 import type { CatalogFilter } from './analytics';
 import type { CatalogSort } from './catalog.utils';
 import type { GetProviders } from '@nangohq/types';
+import type { DebouncedFunc } from 'lodash';
 
 const SORT_LABELS: Record<CatalogSort, string> = { popular: 'Popular first', alphabetical: 'A–Z' };
 const GRID_CLASSES = 'grid grid-cols-2 gap-2 xl:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5';
+const FILTERS: CatalogFilter[] = ['search', 'category', 'instant_setup', 'sort'];
+
+function createFilterTrackers(getResultCount: () => number) {
+    return Object.fromEntries(FILTERS.map((filter) => [filter, debounce(() => trackCatalogFilter(filter, getResultCount()), 1000)])) as Record<
+        CatalogFilter,
+        DebouncedFunc<() => void>
+    >;
+}
 
 export const CatalogShow: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -77,8 +86,15 @@ export const CatalogShow: React.FC = () => {
     useEffect(() => {
         resultCountRef.current = results.length;
     }, [results]);
-    const trackFilter = useMemo(() => debounce((filter: CatalogFilter) => trackCatalogFilter(filter, resultCountRef.current), 1000), []);
-    useEffect(() => () => trackFilter.flush(), [trackFilter]);
+    const trackFilter = useMemo(() => createFilterTrackers(() => resultCountRef.current), []);
+    useEffect(
+        () => () => {
+            for (const tracker of Object.values(trackFilter)) {
+                tracker.flush();
+            }
+        },
+        [trackFilter]
+    );
 
     if (error) {
         return <ErrorPageComponent title="Catalog" error={error.json as GetProviders['Errors']} />;
@@ -99,7 +115,7 @@ export const CatalogShow: React.FC = () => {
                     selected={category}
                     onSelect={(next) => {
                         void setCategory(next);
-                        trackFilter('category');
+                        trackFilter.category();
                     }}
                 />
                 <div className="flex min-w-0 flex-1 flex-col gap-6 px-6 pt-6 pb-16">
@@ -109,9 +125,9 @@ export const CatalogShow: React.FC = () => {
                         onChange={(value) => {
                             setSearch(value);
                             if (value.trim()) {
-                                trackFilter('search');
+                                trackFilter.search();
                             } else {
-                                trackFilter.cancel();
+                                trackFilter.search.cancel();
                             }
                         }}
                     />
@@ -128,26 +144,29 @@ export const CatalogShow: React.FC = () => {
                                 ) : (
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="sm">
+                                            <Button variant="ghost" size="md">
                                                 <span className="text-text-muted">Sort</span>
                                                 {SORT_LABELS[sort]}
                                                 <ChevronDown />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuRadioGroup
-                                                value={sort}
-                                                onValueChange={(value) => {
-                                                    void setSort(value === 'alphabetical' ? 'alphabetical' : null);
-                                                    trackFilter('sort');
-                                                }}
-                                            >
-                                                {(Object.keys(SORT_LABELS) as CatalogSort[]).map((option) => (
-                                                    <DropdownMenuRadioItem key={option} value={option}>
-                                                        {SORT_LABELS[option]}
-                                                    </DropdownMenuRadioItem>
-                                                ))}
-                                            </DropdownMenuRadioGroup>
+                                        <DropdownMenuContent align="end" className="w-40">
+                                            {(Object.keys(SORT_LABELS) as CatalogSort[]).map((option) => (
+                                                <DropdownMenuItem
+                                                    key={option}
+                                                    className="h-7 gap-2 text-body-medium-regular text-text-secondary"
+                                                    onSelect={() => {
+                                                        if (option === sort) {
+                                                            return;
+                                                        }
+                                                        void setSort(option === 'alphabetical' ? 'alphabetical' : null);
+                                                        trackFilter.sort();
+                                                    }}
+                                                >
+                                                    {SORT_LABELS[option]}
+                                                    {option === sort && <Check className="ml-auto size-3.5 text-text-muted" />}
+                                                </DropdownMenuItem>
+                                            ))}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 )}
@@ -158,7 +177,7 @@ export const CatalogShow: React.FC = () => {
                                                 checked={instantOnly}
                                                 onCheckedChange={(checked) => {
                                                     void setInstantOnly(checked || null);
-                                                    trackFilter('instant_setup');
+                                                    trackFilter.instant_setup();
                                                 }}
                                             />
                                             Instant setup only

@@ -146,6 +146,9 @@ function getCalloutState(provider: ApiProviderListItem, configuredCount: number 
         return { kind: 'instant-managed' };
     }
     if (instantSetup === 'no-dev-app') {
+        if (provider.authMode === 'MCP_OAUTH2') {
+            return { kind: 'instant-mcp' };
+        }
         return provider.authMode === 'API_KEY' ? { kind: 'instant-api-key' } : { kind: 'instant-other' };
     }
     return { kind: 'none' };

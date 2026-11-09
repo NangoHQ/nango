@@ -1,11 +1,12 @@
 import Fuse from 'fuse.js';
 import debounce from 'lodash/debounce';
 import { Search } from 'lucide-react';
+import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
@@ -33,13 +34,17 @@ export const IntegrationsList = () => {
     const { data, isPending, error } = useListIntegrations(env);
     const [search, setSearch] = useSearchQueryState();
     const debouncedSearch = useDebouncedValue(search);
+    const [providerFilter, setProviderFilter] = useQueryState('provider', parseAsString);
 
     const { can } = usePermissions();
     const canWriteIntegration = can('environment:integrations:update');
 
     const initialIntegrations = useMemo(() => {
-        return data?.data ?? null;
-    }, [data?.data]);
+        if (!data?.data || !providerFilter) {
+            return data?.data ?? null;
+        }
+        return data.data.filter((integration) => integration.provider === providerFilter);
+    }, [data?.data, providerFilter]);
     const integrationsCount = initialIntegrations?.length ?? 0;
 
     const fuse = useMemo(() => {
@@ -125,7 +130,17 @@ export const IntegrationsList = () => {
             </header>
 
             {!isPending && data?.data && data.data.length > 0 && (
-                <div className="flex items-center justify-end">
+                <div className="flex items-center justify-between gap-3">
+                    {providerFilter ? (
+                        <div className="flex items-center gap-2 text-text-secondary text-body-small-regular">
+                            <span>Showing {initialIntegrations?.[0]?.meta.displayName ?? providerFilter} integrations</span>
+                            <Button variant="link-accent" size="sm" onClick={() => void setProviderFilter(null)}>
+                                Show all
+                            </Button>
+                        </div>
+                    ) : (
+                        <span />
+                    )}
                     <span className="text-text-muted text-body-small-regular">
                         {integrationsCount} {integrationsCount === 1 ? 'integration' : 'integrations'}
                     </span>
