@@ -1,12 +1,14 @@
 import { changedFields, makeAuditTarget as makeTarget } from '../../audit.js';
 import { Audit, auditable } from './auditable.js';
 import { nonEmptyString, omitUndefined } from './input.js';
-import { accountEnvironmentTarget } from './lookups.js';
+import { accountEnvironmentTarget, environmentFromUuid } from './lookups.js';
 
 import type {
     DeleteEnvironment,
     DeletePublicEnvironment,
+    EnvironmentUpdatedMetadata,
     PatchEnvironment,
+    PatchPublicEnvironment,
     PatchWebhook,
     PostEnvironment,
     PostEnvironmentVariables,
@@ -37,6 +39,34 @@ export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
         })
 });
 
+export const auditEnvironmentWebhooksUpdated = auditable<PatchWebhook>({
+    policy: Audit.auditable({ resource: 'environment', action: 'updated', scope: 'environment' }),
+    target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
+    metadata: (req) =>
+        omitUndefined<EnvironmentUpdatedMetadata>({
+            changedFields: changedFields(req.body)?.map((field) => `webhooks.${field}`),
+            ...webhookMetadata(req.body)
+        })
+});
+
+export const auditPublicEnvironmentUpdated = auditable<PatchPublicEnvironment>({
+    policy: Audit.auditable({ resource: 'environment', action: 'updated', scope: 'environment' }),
+    environment: (req, locals) => environmentFromUuid(req.params.environmentUuid, locals),
+    target: (req, locals) => accountEnvironmentTarget(req.params.environmentUuid, locals),
+    metadata: (req) => {
+        const body = req.body;
+        const webhooks = body && typeof body.webhooks === 'object' && !Array.isArray(body.webhooks) ? body.webhooks : undefined;
+        const fields = changedFields(body)?.flatMap((field) =>
+            field === 'webhooks' && webhooks ? (changedFields(webhooks)?.map((key) => `webhooks.${key}`) ?? []) : [field]
+        );
+        return omitUndefined<EnvironmentUpdatedMetadata>({
+            name: nonEmptyString(body?.name),
+            changedFields: fields?.length ? fields : undefined,
+            ...webhookMetadata(webhooks)
+        });
+    }
+});
+
 export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariables>({
     policy: Audit.auditable({ resource: 'environment', action: 'variables_changed', scope: 'environment' }),
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
@@ -50,17 +80,6 @@ export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariabl
             .filter((n): n is string => n !== undefined);
         return omitUndefined({ variableCount: variables.length, variableNames: variableNames.length > 0 ? variableNames : undefined });
     }
-});
-
-export const auditEnvironmentWebhookUrlsChanged = auditable<PatchWebhook>({
-    policy: Audit.auditable({ resource: 'environment', action: 'webhook_urls_changed', scope: 'environment' }),
-    target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
-    metadata: (req) =>
-        omitUndefined({
-            changedFields: changedFields(req.body),
-            primaryUrl: safeUrl(req.body.primary_url),
-            secondaryUrl: safeUrl(req.body.secondary_url)
-        })
 });
 
 export const auditWebhookSigningKeyRotated = auditable<PostRotateWebhookSigningKey>({
@@ -95,4 +114,15 @@ function safeUrl(value: unknown): string | undefined {
     } catch {
         return undefined;
     }
+}
+
+function webhookMetadata(value: unknown): Pick<EnvironmentUpdatedMetadata, 'primaryUrl' | 'secondaryUrl'> | undefined {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return {};
+    }
+    const fields = value as Record<string, unknown>;
+    return omitUndefined({
+        primaryUrl: fields['primary_url'] === null || fields['primary_url'] === '' ? null : safeUrl(fields['primary_url']),
+        secondaryUrl: fields['secondary_url'] === null || fields['secondary_url'] === '' ? null : safeUrl(fields['secondary_url'])
+    });
 }

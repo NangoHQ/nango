@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { queryClient, useStore } from '../../../store';
 import { track } from '../../../utils/analytics';
 import { APIError, apiFetch } from '../../../utils/api';
-import { last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
+import { expandLogsTypes, last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
 import { formatQuantity } from '../../../utils/utils';
 import { computeLogsColumnSizing, getLogsColumnStyle } from '../column-sizing';
 import { columns, defaultLimit, refreshInterval, statusOptions, typesList, typesOptions } from '../constants';
@@ -110,7 +110,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                 method: 'POST',
                 body: JSON.stringify({
                     states,
-                    types,
+                    types: expandLogsTypes(types),
                     integrations,
                     connections,
                     syncs,

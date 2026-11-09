@@ -1,0 +1,52 @@
+---
+title: 'Formcarry - How do I link my account?'
+sidebarTitle: 'Formcarry'
+---
+
+## Overview
+
+To authenticate with Formcarry, you need:
+
+1. **API Key** — a Formcarry API key that starts with `fc_live_`. Your team's original (legacy) key from before the **API Keys** page existed also works.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A Formcarry account. The free plan can create API keys; [sign up here](https://app.formcarry.com/register).
+- The account owner must have verified their email address. Until then, every key is refused.
+
+### Step 1: Create an API key
+
+1. Sign in to [Formcarry](https://app.formcarry.com) and click **API Keys** in the top navigation.
+
+<img src="/api-integrations/formcarry/dashboard_api_keys_nav.png" alt="Formcarry dashboard with API Keys highlighted in the top navigation"/>
+
+2. Click **Create key**.
+
+<img src="/api-integrations/formcarry/api_keys_create_button.png" alt="Formcarry API Keys page with the Create key button highlighted"/>
+
+3. Enter a **Name** for the key.
+4. Under **Scopes**, keep **Full access (every scope)**, or uncheck it and select only the scopes your integration needs: **Read forms**, **Write forms**, **Read submissions** or **Write submissions**.
+5. Under **Form access**, choose **All forms, including ones created later**, or **Only these forms** to limit the key to some forms.
+6. Click **Create key**.
+
+<Note>
+Scopes and form access cannot be changed after the key is created. To change them, create a new key.
+</Note>
+
+<img src="/api-integrations/formcarry/create_api_key_dialog.png" alt="Formcarry Create API key dialog with a name, the Read forms scope, All forms access and the Create key button highlighted"/>
+
+7. Click **Copy** to copy the key. It starts with `fc_live_` and is shown only once.
+
+<img src="/api-integrations/formcarry/api_key_created.png" alt="Formcarry dialog showing the new API key with its Copy button"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Formcarry.
+2. Enter your **API Key** in the designated field.
+3. Click **Connect**.
+
+<img src="/api-integrations/formcarry/form.png" alt="Nango Connect UI form for entering the Formcarry API key" style={{maxWidth: "450px" }}/>
+
+You are now connected to Formcarry.

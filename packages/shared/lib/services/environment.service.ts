@@ -23,6 +23,14 @@ const TABLE = '_nango_environments';
 export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
 
 export type CreateEnvironmentErrorCode = 'invalid_is_prod_flag' | 'conflict' | 'resource_capped' | 'creation_failed';
+export class CreateEnvironmentError extends Error {
+    constructor(
+        public readonly code: CreateEnvironmentErrorCode,
+        options?: { cause?: unknown }
+    ) {
+        super(code, options);
+    }
+}
 
 export type CreateEnvironmentSettings = {
     accountId: number;
@@ -38,6 +46,28 @@ export type CreateEnvironmentSettings = {
     plan?: DBPlan | null;
 };
 
+export type UpdateEnvironmentErrorCode = 'not_found' | 'conflict' | 'cannot_change_prod_environment_name' | 'cannot_toggle_prod_environment' | 'update_failed';
+export class UpdateEnvironmentError extends Error {
+    constructor(
+        public readonly code: UpdateEnvironmentErrorCode,
+        options?: { cause?: unknown }
+    ) {
+        super(code, options);
+    }
+}
+
+export type UpdateEnvironmentSettings = {
+    accountId: number;
+    environmentUuid: string;
+    name?: string;
+    isProduction?: boolean;
+    callbackUrl?: string;
+    hmacKey?: string;
+    hmacEnabled?: boolean;
+    slackNotifications?: boolean;
+    otlpSettings?: Partial<NonNullable<DBEnvironment['otlp_settings']>> | null;
+};
+
 type EnvironmentWithSettings = {
     environment: DBEnvironment;
     webhooks: DBExternalWebhook;
@@ -45,15 +75,6 @@ type EnvironmentWithSettings = {
 };
 
 type EnvironmentIdentifier = { type: 'id'; id: number } | { type: 'uuid'; uuid: string };
-
-export class CreateEnvironmentError extends Error {
-    constructor(
-        public readonly code: CreateEnvironmentErrorCode,
-        options?: { cause?: unknown }
-    ) {
-        super(code, options);
-    }
-}
 
 /** After an environment row exists (outer transaction may still be open). Publishes keep-warm when Lambda + plan tenant isolation are enabled. */
 async function onNewEnvironment(
@@ -291,6 +312,64 @@ class EnvironmentService {
         }
     }
 
+    async updateEnvironment(
+        trx = db.knex,
+        { accountId, environmentUuid, name, isProduction, callbackUrl, hmacKey, hmacEnabled, slackNotifications, otlpSettings }: UpdateEnvironmentSettings
+    ): Promise<Result<DBEnvironment, UpdateEnvironmentError>> {
+        try {
+            const environment = await trx<DBEnvironment>(TABLE).where({ uuid: environmentUuid, account_id: accountId, deleted: false }).first();
+            if (!environment) {
+                return Err(new UpdateEnvironmentError('not_found'));
+            }
+
+            if (name !== undefined && name !== environment.name) {
+                if (environment.name === PROD_ENVIRONMENT_NAME) {
+                    return Err(new UpdateEnvironmentError('cannot_change_prod_environment_name'));
+                }
+
+                const existing = await trx<DBEnvironment>(TABLE).where({ account_id: accountId, name, deleted: false }).whereNot('id', environment.id).first();
+                if (existing) {
+                    return Err(new UpdateEnvironmentError('conflict'));
+                }
+            }
+
+            if (isProduction !== undefined && environment.name === PROD_ENVIRONMENT_NAME) {
+                return Err(new UpdateEnvironmentError('cannot_toggle_prod_environment'));
+            }
+
+            const data = {
+                ...(name !== undefined && { name }),
+                ...(isProduction !== undefined && { is_production: isProduction }),
+                ...(callbackUrl !== undefined && { callback_url: callbackUrl }),
+                ...(hmacKey !== undefined && { hmac_key: hmacKey }),
+                ...(hmacEnabled !== undefined && { hmac_enabled: hmacEnabled }),
+                ...(slackNotifications !== undefined && { slack_notifications: slackNotifications }),
+                ...(otlpSettings !== undefined && {
+                    // Merge existing and supplied otlp settings; supplied headers replace the whole set.
+                    otlp_settings:
+                        otlpSettings === null
+                            ? null
+                            : trx.raw(`COALESCE(otlp_settings, '{"endpoint":"","headers":{}}'::jsonb) || ?::jsonb`, [JSON.stringify(otlpSettings)])
+                })
+            };
+            let updatedEnvironment = environment;
+            if (Object.keys(data).length > 0) {
+                const [updated] = await trx<DBEnvironment>(TABLE)
+                    .where({ account_id: accountId, id: environment.id, deleted: false })
+                    .update(data)
+                    .returning('*');
+                if (!updated) {
+                    return Err(new UpdateEnvironmentError('update_failed'));
+                }
+                updatedEnvironment = updated;
+            }
+
+            return Ok(updatedEnvironment);
+        } catch (err) {
+            return Err(new UpdateEnvironmentError('update_failed', { cause: err }));
+        }
+    }
+
     async createDefaultEnvironments(trx: Knex, { accountId }: { accountId: number }): Promise<Result<void, CreateEnvironmentError>> {
         for (const environment of defaultEnvironments) {
             const createdEnv = await this.createEnvironment(trx, { accountId, name: environment });
@@ -338,29 +417,6 @@ class EnvironmentService {
         }
 
         return result[0].slack_notifications;
-    }
-
-    async update({
-        accountId,
-        environmentId,
-        data
-    }: {
-        accountId: number;
-        environmentId: number;
-        data: Omit<Partial<DBEnvironment>, 'account_id' | 'id' | 'created_at' | 'updated_at'>;
-    }): Promise<DBEnvironment | null> {
-        return await db.knex.transaction(async (trx) => {
-            const [environment] = await trx<DBEnvironment>(TABLE)
-                .where({ account_id: accountId, id: environmentId, deleted: false })
-                .update(data)
-                .returning('*');
-            if (!environment) {
-                trx.rollback();
-                return null;
-            }
-            await this.setSecretsOnEnv(trx, environment);
-            return environment;
-        });
     }
 
     async getEnvironmentVariables(environment_id: number): Promise<DBEnvironmentVariable[]> {

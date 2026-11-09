@@ -242,8 +242,8 @@ describe(`POST ${endpoint}`, () => {
             );
         });
 
-        it('invokes an HTTP function synchronously and returns its output', async () => {
-            const seed = await seedTool();
+        it.each([undefined, []])('invokes an HTTP function without subscriptions as a tool (subscriptions: %j)', async (subscriptions) => {
+            const seed = await seedTool({ kind: 'http', ...(subscriptions !== undefined && { subscriptions }) });
             const invoke = vi.spyOn(Orchestrator.prototype, 'invokeFunction').mockResolvedValue(Ok({ data: { result: 'hello' } }));
             const res = await api.fetch(endpoint, { method: 'POST', query: { env: 'dev' }, body: seed.body, session: seed.session });
             expect(res.res.status).toBe(200);
@@ -260,6 +260,16 @@ describe(`POST ${endpoint}`, () => {
                     })
                 })
             );
+        });
+
+        it('HTTP functions with subscriptions cannot be invoked as tools', async () => {
+            const seed = await seedTool({ kind: 'http', subscriptions: ['issues.opened'] });
+            const invoke = vi.spyOn(Orchestrator.prototype, 'invokeFunction');
+            const res = await api.fetch(endpoint, { method: 'POST', query: { env: 'dev' }, body: seed.body, session: seed.session });
+            expect(res.res.status).toBe(404);
+            isError(res.json);
+            expect(res.json.error.code).toBe('function_not_found');
+            expect(invoke).not.toHaveBeenCalled();
         });
 
         it.each([

@@ -148,7 +148,7 @@ export async function findWebhookFunctions(context: DispatchContext): Promise<We
         filter: {
             integrationKey: context.integration.unique_key,
             enabled: true,
-            trigger: { kind: 'http', hasSubscriptions: true }
+            trigger: { kind: 'http', subscriptions: 'some' }
         }
     });
     if (result.isErr()) {

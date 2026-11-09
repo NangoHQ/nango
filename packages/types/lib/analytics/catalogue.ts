@@ -244,6 +244,48 @@ export const analyticsEventCatalogue = defineCatalogue({
         fires: 'When someone clicks to set up their own integration at the end of Getting Started',
         properties: none
     },
+    'onboarding:copy_prompt_button_click': {
+        surface: 'web',
+        insight: 'How many accounts start adding Nango to their own agent from Getting Started',
+        fires: 'When someone copies the install prompt for their agent on the Getting Started page',
+        properties: z.object({ has_api_key: z.boolean() })
+    },
+    'onboarding:copy_api_key_button_click': {
+        surface: 'web',
+        insight: 'How often people need the API key on its own while installing Nango in their agent',
+        fires: 'When someone copies the API key on the Getting Started page',
+        properties: none
+    },
+    'onboarding:playground_link_click': {
+        surface: 'web',
+        insight: 'How many accounts try the Agent Playground before installing Nango in their own agent',
+        fires: 'When someone follows the Agent Playground link on the Getting Started page',
+        properties: none
+    },
+    'onboarding:try_prompt_button_click': {
+        surface: 'web',
+        insight: 'Which integrations people try first with their own agent',
+        fires: 'When someone copies an example prompt for their agent on the Getting Started page',
+        properties: z.object({ integration: z.string() })
+    },
+    'onboarding:go_further_link_click': {
+        surface: 'web',
+        insight: 'Where accounts go after finishing Getting Started',
+        fires: 'When someone opens a Go further link on the Getting Started page',
+        properties: z.object({ destination: z.enum(['integrations', 'logs', 'catalog', 'syncs_docs']) })
+    },
+    'onboarding:restart_button_click': {
+        surface: 'web',
+        insight: 'How often accounts start Getting Started over',
+        fires: 'When someone confirms restarting Getting Started',
+        properties: none
+    },
+    'onboarding:dismiss_button_click': {
+        surface: 'web',
+        insight: 'How many accounts hide Getting Started',
+        fires: 'When someone hides Getting Started from the sidebar',
+        properties: none
+    },
 
     'connections:create_button_click': {
         surface: 'web',

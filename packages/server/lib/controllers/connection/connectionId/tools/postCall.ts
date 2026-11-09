@@ -91,6 +91,7 @@ export const postToolCall = asyncWrapperWithEnvironment<PostToolCall>(async (req
     }
     if (tool.kind === 'function') {
         const { result } = await invokeFunction({
+            operation: { type: 'tool', action: 'call' },
             account,
             environment,
             connectionId,

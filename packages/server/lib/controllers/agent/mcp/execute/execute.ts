@@ -4,6 +4,7 @@ import { invokeFunction, NangoError, toolService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { executeAction } from '../../../../services/action.service.js';
+import * as agentGettingStartedService from '../../../../services/agentGettingStarted.service.js';
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
 import { callRemoteTool, withRemoteMcpSession } from '../../../../services/remoteMcp.service.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
@@ -99,6 +100,7 @@ export async function executeSessionTool({
 
     const track = (properties: ToolCallOutcome) => {
         trackAgentSessionToolCall({ metaTool, session, integrationId, toolName, pinned, ...purpose, ...properties });
+        void agentGettingStartedService.recordToolCall({ accountId: account.id, session, succeeded: !properties.errorCode });
     };
 
     const integration = Object.hasOwn(session.compiledToolset, integrationId) ? session.compiledToolset[integrationId] : undefined;
@@ -172,6 +174,7 @@ export async function executeSessionTool({
 
         if (tool.value) {
             const { logCtx, result } = await invokeFunction({
+                operation: { type: 'tool', action: 'call' },
                 account,
                 environment,
                 connectionId: connection.connectionId,

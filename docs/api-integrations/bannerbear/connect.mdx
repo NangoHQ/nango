@@ -1,0 +1,45 @@
+---
+title: 'Bannerbear - How do I link my account?'
+sidebarTitle: 'Bannerbear'
+---
+
+## Overview
+
+To authenticate with Bannerbear, you need:
+
+1. **API Key** — a V5 API key of your Bannerbear workspace.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A Bannerbear account. The free trial includes API access. If you don't have an account, [start a free trial](https://www.bannerbear.com/pricing/).
+
+### Step 1: Create a V5 API key
+
+1. Sign in to the [Bannerbear dashboard](https://app.bannerbear.com/).
+2. In the sidebar, under **Developers**, click **API Keys**.
+
+<img src="/api-integrations/bannerbear/dashboard_api_keys_nav.png" alt="Bannerbear dashboard sidebar with API Keys under Developers"/>
+
+3. On the **API Keys** page, click **Create API Key**.
+
+<img src="/api-integrations/bannerbear/api_keys_page_create.png" alt="Bannerbear API Keys page with the Create API Key button"/>
+
+4. Enter a name (for example, `nango-integration`). Under **Permissions**, tick the **Read** and **Write** boxes for the resources your app needs, or leave every box unticked to give the key full access. Leave **Allowed Origins** blank, then click **Create API Key**.
+
+<img src="/api-integrations/bannerbear/create_api_key_form.png" alt="Bannerbear Create API Key form with the name, permissions and allowed origins fields"/>
+
+5. In the **API Keys** list, click **Copy** next to the new key.
+
+<img src="/api-integrations/bannerbear/api_key_created.png" alt="Bannerbear API Keys list showing the new key with its Copy button"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Bannerbear.
+2. Enter your V5 API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/bannerbear/form.png" alt="Bannerbear Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Bannerbear.

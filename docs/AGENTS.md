@@ -130,7 +130,7 @@ Guides are the home for practical technical content and customer-orientation con
 Use these ownership rules:
 
 - **Auth** — technical guides specific to Nango Auth, connection flows, auth configuration, credentials, provider setup, and auth-specific behavior.
-- **Functions** — technical guides specific to Nango Functions. This includes building, testing, deploying, CI/CD, sync functions, action functions, webhook functions, event functions, tool calling, data validation, checkpoints, records cache, and other function-only concerns.
+- **Functions** — technical guides specific to Nango Functions. This includes building, testing, deploying, CI/CD, sync functions, tools, webhook functions, event functions, tool calling, data validation, checkpoints, records cache, and other function-only concerns.
 - **Platform** — technical guides for concepts common to Auth and Functions. This includes environments, observability, limits, security, self-hosting, webhook forwarding, and webhooks received from Nango.
 - **Use cases** — orientation and routing pages only. Start from the customer's problem or investigation context, explain when Nango is useful, and point to the right primitives, guides, and references. Use cases can lightly pitch the value, but they should not contain step-by-step implementation details or become the technical source of truth.
 
@@ -141,7 +141,7 @@ Examples:
 - Webhook forwarding belongs under Platform.
 - Webhook functions belong under Functions.
 - Webhooks received from Nango belong under Platform.
-- Sync functions, action functions, event functions, CI/CD, testing, and data validation belong under Functions.
+- Sync functions, tools, event functions, CI/CD, testing, and data validation belong under Functions.
 
 General functions guides may mention a concept (e.g. checkpoints) but should link to the dedicated page rather than duplicating the explanation.
 
@@ -153,24 +153,28 @@ Reference should be precise and easy to scan. Guides should link to Reference fo
 
 ## Terminology: use function type names
 
-Use `function` / `functions` as the main term throughout the docs. Nango Functions are the core primitive; avoid positioning actions and syncs as separate top-level primitives.
+Use `function` / `functions` as the main term throughout the docs. Nango Functions are the core primitive; avoid positioning deprecated actions and syncs as separate top-level primitives.
 
-Use specific function type names only when the distinction matters for implementation, navigation, or exact API/SDK fields. For example, a quickstart can say "call the function" while the HTTP request still uses the literal `action_name` field required by the API.
+Use specific function type names only when the distinction matters for implementation, navigation, or exact API/SDK fields. For example, a quickstart can say "call the function" while a deprecated action reference still uses the literal `action_name` field required by its API.
 
 Use these names for function types:
 - **Sync functions** — functions that keep external API data fresh and typically persist records.
-- **Action functions** — functions your app, backend job, or agent calls on demand.
+- **Tools** — HTTP-triggered functions your app, backend job, or agent calls on demand. Define them with `createTool` and call them with `callTool` or the tool-call API.
 - **Webhook functions** — functions that process external API webhooks inside Nango.
 - **Event functions** — functions that run on Nango connection lifecycle events.
 
 Prefer canonical function type names over labels based on trigger mechanics.
 
+Actions are deprecated. Keep only a compact legacy compatibility reference for existing users, clearly marked deprecated and linked to tools and migration guidance. Use tools in all new guides and examples. Preserve exact legacy API fields, scope names, and historical examples where necessary for compatibility.
+
+Changelog entries are immutable. Do not rewrite them or add deprecation notices to historical entries.
+
 ## Glossary
 
 Keep this glossary current as docs terminology evolves.
 
-- **Template** — a pre-built function definition used to pull or deploy a function. Use **catalog action** for a live action served by Nango; use **sync template** for a pre-built sync that must be enabled.
-- **Catalog action** — a Nango-maintained action function available out of the box and updated automatically. Prefer catalog actions for agentic workflows such as MCP, where the agent can discover the current schema. Do not treat them as stable contracts for deterministic application code; pull and deploy the action when you need ownership and stability.
+- **Template** — a pre-built function definition used to pull or deploy a function. Use **catalog tool** for a live tool served by Nango; use **sync template** for a pre-built sync that must be enabled.
+- **Catalog tool** — a Nango-maintained tool available out of the box and updated automatically. Prefer catalog tools for agentic workflows such as MCP, where the agent can discover the current schema. Do not treat them as stable contracts for deterministic application code; pull and deploy the tool when you need ownership and stability.
 - **Sync template** — a Nango-maintained sync function that must be enabled before it runs.
 - **Template use case** — marketing-facing term for the business need a template function solves. Use this before readers are familiar with Nango Functions.
 - **Nango-managed OAuth app** — a pre-approved OAuth app that Nango registers with a provider, selectable when creating an integration. Nango-managed OAuth apps are production-ready: never describe them as test-only or as something to replace before going live. Registering your own app is optional; [Nango-managed OAuth apps](/guides/auth/auth-guide#nango-managed-oauth-apps) owns the tradeoffs. Avoid "test OAuth app", "Nango-provided credentials for testing", and "production credentials" (meaning your own app). Which APIs have one is listed in [APIs with a Nango-managed OAuth app](/guides/auth/auth-guide#apis-with-a-nango-managed-oauth-app); update that list and the API's page together.

@@ -1,7 +1,7 @@
 import * as z from 'zod/v4';
 
-import { functionListTypeSchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
-import { functionIntegrationIdSchema, runnableFunctionTypeSchema } from '../../functions/validation.js';
+import { functionListTypeSchema, providerConfigKeySchema, runnableFunctionTypeSchema, syncNameSchema } from '../../../helpers/validation.js';
+import { functionIntegrationIdSchema } from '../../functions/validation.js';
 
 export const deployFunctionArgumentsSchema = z
     .object({
@@ -45,7 +45,7 @@ export const getDeploymentStatusOutputSchema = z
         completed_at: z.iso.datetime().optional(),
         duration_ms: z.number().int().nonnegative().optional(),
         deployed: z.boolean().optional(),
-        deployed_functions: z.array(z.object({ name: z.string(), version: z.string() }).strict()).optional(),
+        deployed_functions: z.array(z.object({ name: z.string(), version: z.string().optional() }).strict()).optional(),
         output: z.string().optional(),
         error: z
             .object({

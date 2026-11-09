@@ -440,13 +440,15 @@ class CustomerKeyService {
     }
 
     /**
-     * Replaces the environment's webhook signing key with a fresh one and returns it in plain text.
+     * Replaces the environment's webhook signing key with the supplied key or a generated one and returns it in plain text.
      * Callers in other processes keep signing with the previous key until their cache entry expires.
      */
-    public async rotateWebhookSigningKey(trx: Knex, envId: number): Promise<Result<string>> {
-        try {
-            const plainText = uuid.v4();
+    public async rotateWebhookSigningKey(trx: Knex, envId: number, plainText = uuid.v4()): Promise<Result<string>> {
+        if (plainText.trim().length === 0) {
+            return Err(new Error('Webhook signing key cannot be blank'));
+        }
 
+        try {
             const hashed = await this.hashSecret(plainText);
             if (hashed.isErr()) {
                 throw hashed.error;

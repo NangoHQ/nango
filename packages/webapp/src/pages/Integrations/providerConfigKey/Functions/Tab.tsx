@@ -30,7 +30,7 @@ const TYPE_FILTER_VALUES = ['tool', 'sync', 'on-event'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
 
 const TYPE_PILLS: { value: TypeFilterValue; label: string; emptyLabel: string }[] = [
-    { value: 'tool', label: 'Actions', emptyLabel: 'No actions' },
+    { value: 'tool', label: 'Tools', emptyLabel: 'No tools' },
     { value: 'sync', label: 'Syncs', emptyLabel: 'No syncs' },
     { value: 'on-event', label: 'Triggers', emptyLabel: 'No triggers' }
 ];
@@ -273,9 +273,10 @@ function pillCount(deployed: number | undefined, templatesFetched: boolean, unde
 
 interface FunctionsTabProps {
     integration: ApiIntegration;
+    onFunctionOpenChange?: (open: boolean) => void;
 }
 
-export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
+export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunctionOpenChange }) => {
     const env = useStore((state) => state.env);
     const { data: metaData } = useMeta();
     const [templateTail, setTemplateTail] = useState<{ scope: string; keys: string[] }>({ scope: '', keys: [] });
@@ -362,6 +363,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const visibleSyncTemplates = typeFilter === 'sync' && !hasNextPage && !isPlaceholderData ? matchingSyncTemplates : [];
     const selectedFunction =
         listedMatch ?? templateMatch ?? (rawTemplateMatch?.deployed ? listedFromTemplate(rawTemplateMatch) : undefined) ?? linkedFunction?.data ?? null;
+    const functionOpen = selectedFunction !== null;
+
+    useEffect(() => {
+        onFunctionOpenChange?.(functionOpen);
+    }, [functionOpen, onFunctionOpenChange]);
+
+    useEffect(() => () => onFunctionOpenChange?.(false), [onFunctionOpenChange]);
 
     const tailScope = `${integration.unique_key}:${typeFilter}`;
     const templateRows = typeFilter === 'tool' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : [];
@@ -573,7 +581,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                 <TableFooter className="bg-transparent font-ds-regular">
                                     <TableRow className="h-8 hover:bg-transparent">
                                         <TableCell colSpan={2 + (showStatus ? 1 : 0)} className="px-3 type-label-xs text-text-disabled">
-                                            Showing {functions.length + visibleActionTemplates.length} of {total + visibleActionTemplates.length} actions
+                                            Showing {functions.length + visibleActionTemplates.length} of {total + visibleActionTemplates.length} tools
                                         </TableCell>
                                     </TableRow>
                                 </TableFooter>
