@@ -19,6 +19,8 @@ const logger = getLogger('cron.uploadTelemetry');
 const LOCK_KEY = 'lock:cron:uploadTelemetry';
 // Cron fires hourly; lock should expire well before the next tick.
 const lockTtlMs = 30 * 60 * 1000;
+// A run stops itself well before its lock expires, so two never overlap. The next one resumes from the cursor.
+const RUN_BUDGET_MS = 20 * 60 * 1000;
 
 // A day's last rows are written within a minute of midnight UTC, so past the quarter hour the day before is complete.
 const FIRST_MINUTE = 15;
@@ -81,13 +83,14 @@ export async function exec(config: UploaderConfig): Promise<void> {
     await tracer.trace<Promise<void>>('nango.cron.uploadTelemetry', async (span) => {
         logger.info('Starting');
         await withLock(async () => {
-            const uploaded = await uploadPendingDays(config);
+            const uploaded = await uploadPendingDays(config, { deadline: new Date(Date.now() + RUN_BUDGET_MS) });
             if (uploaded.isErr()) {
                 span?.setTag('error', uploaded.error);
                 logger.error('Stopped before the end, what is left goes out on the next run', uploaded.error);
                 return;
             }
-            logger.info(`Done: ${uploaded.value.succeeded} succeeded, ${uploaded.value.failed} failed`);
+            const { succeeded, failed, outOfTime } = uploaded.value;
+            logger.info(`Done: ${succeeded} succeeded, ${failed} failed${outOfTime ? ', out of time: what is left goes out on the next run' : ''}`);
         });
     });
 }

@@ -61,6 +61,8 @@ async function stored(installationId: string): Promise<{ ts: string; metric: str
     return res.json();
 }
 
+const run = (config: UploaderConfig, deadline = new Date(Date.now() + 60_000)) => uploadPendingDays(config, { now, deadline });
+
 const pending = async () => (await listPendingUploads(knex, { since, schema: telemetry })).unwrap();
 
 async function uploader(name: string, options?: { licensed?: boolean }): Promise<UploaderConfig> {
@@ -107,6 +109,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
     await knex.raw('TRUNCATE ??.??, ??.??', [telemetry, HOSTED_TELEMETRY_TABLE, telemetry, HOSTED_TELEMETRY_UPLOADS_TABLE]);
+    vi.spyOn(Math, 'random').mockReturnValue(0);
 });
 
 afterEach(() => {
@@ -123,9 +126,9 @@ describe('uploadPendingDays', () => {
             { ts: '2026-11-10T07:00:00Z', metric: concurrency, value: 7 }
         );
 
-        const res = await uploadPendingDays(config, { now });
+        const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 3, failed: 0 });
+        expect(res.unwrap()).toEqual({ succeeded: 3, failed: 0, outOfTime: false });
         expect(await stored(config.installationId)).toEqual([
             { ts: '2026-11-08 10:00:00.000', metric: concurrency, value: 3 },
             { ts: '2026-11-09 23:59:00.000', metric: concurrency, value: 5 },
@@ -138,21 +141,21 @@ describe('uploadPendingDays', () => {
         const config = await uploader('backfill');
         await insert({ ts: '2026-10-10T10:00:00Z', metric: concurrency, value: 1 }, { ts: '2026-10-11T10:00:00Z', metric: concurrency, value: 2 });
 
-        const res = await uploadPendingDays(config, { now });
+        const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0 });
+        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
         expect(await stored(config.installationId)).toEqual([{ ts: '2026-10-11 10:00:00.000', metric: concurrency, value: 2 }]);
     });
 
     it('sends nothing twice', async () => {
         const config = await uploader('once');
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency });
-        (await uploadPendingDays(config, { now })).unwrap();
+        (await run(config)).unwrap();
         const requests = vi.spyOn(globalThis, 'fetch');
 
-        const res = await uploadPendingDays(config, { now });
+        const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 0, failed: 0 });
+        expect(res.unwrap()).toEqual({ succeeded: 0, failed: 0, outOfTime: false });
         expect(requests).not.toHaveBeenCalled();
     });
 
@@ -161,9 +164,9 @@ describe('uploadPendingDays', () => {
         await insertBigDay(concurrency);
         const requests = vi.spyOn(globalThis, 'fetch');
 
-        const res = await uploadPendingDays(config, { now });
+        const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0 });
+        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
         expect(requests).toHaveBeenCalledTimes(2);
         expect(await stored(config.installationId)).toHaveLength(BIG_DAY_ROWS);
     });
@@ -175,7 +178,7 @@ describe('uploadPendingDays', () => {
         vi.spyOn(Math, 'random').mockReturnValue(0);
         vi.spyOn(globalThis, 'fetch').mockImplementationOnce(send).mockRejectedValue(new Error('socket hang up'));
 
-        const interrupted = await uploadPendingDays(config, { now });
+        const interrupted = await run(config);
 
         expect(interrupted.isErr() && interrupted.error).toBeInstanceOf(UploadRequestError);
         expect(await stored(config.installationId)).toHaveLength(TELEMETRY_UPLOAD_MAX_ROWS);
@@ -183,10 +186,31 @@ describe('uploadPendingDays', () => {
 
         vi.restoreAllMocks();
         const requests = vi.spyOn(globalThis, 'fetch');
-        const resumed = await uploadPendingDays(config, { now });
+        const resumed = await run(config);
 
-        expect(resumed.unwrap()).toEqual({ succeeded: 1, failed: 0 });
+        expect(resumed.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
         expect(requests).toHaveBeenCalledTimes(1);
+        expect(await stored(config.installationId)).toHaveLength(BIG_DAY_ROWS);
+    });
+
+    it('stops at the deadline and goes on from there on the next run', async () => {
+        const config = await uploader('out-of-time');
+        await insertBigDay(concurrency);
+        const send = globalThis.fetch;
+        const deadline = new Date(Date.now() + 60_000);
+        vi.spyOn(globalThis, 'fetch').mockImplementationOnce(async (...args) => {
+            const answer = await send(...args);
+            deadline.setTime(0);
+            return answer;
+        });
+
+        const stopped = await run(config, deadline);
+
+        expect(stopped.unwrap()).toEqual({ succeeded: 0, failed: 0, outOfTime: true });
+        expect(await stored(config.installationId)).toHaveLength(TELEMETRY_UPLOAD_MAX_ROWS);
+        expect(await pending()).toMatchObject([{ day: '2026-11-08', metric: concurrency, cursor: { ts: expect.any(Date) } }]);
+
+        expect((await run(config)).unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
         expect(await stored(config.installationId)).toHaveLength(BIG_DAY_ROWS);
     });
 
@@ -195,14 +219,14 @@ describe('uploadPendingDays', () => {
         const tooLong = 'm'.repeat(300);
         await insert({ ts: '2026-11-08T10:00:00Z', metric: tooLong }, { ts: '2026-11-09T10:00:00Z', metric: concurrency, value: 5 });
 
-        const res = await uploadPendingDays(config, { now });
+        const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 1 });
+        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 1, outOfTime: false });
         expect(await stored(config.installationId)).toEqual([{ ts: '2026-11-09 10:00:00.000', metric: concurrency, value: 5 }]);
         expect(await pending()).toEqual([]);
 
         const requests = vi.spyOn(globalThis, 'fetch');
-        expect((await uploadPendingDays(config, { now })).unwrap()).toEqual({ succeeded: 0, failed: 0 });
+        expect((await run(config)).unwrap()).toEqual({ succeeded: 0, failed: 0, outOfTime: false });
         expect(requests).not.toHaveBeenCalled();
     });
 
@@ -211,9 +235,9 @@ describe('uploadPendingDays', () => {
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });
         const requests = vi.spyOn(globalThis, 'fetch');
 
-        const res = await uploadPendingDays(config, { now });
+        const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 0, failed: 2 });
+        expect(res.unwrap()).toEqual({ succeeded: 0, failed: 2, outOfTime: false });
         expect(requests).toHaveBeenCalledTimes(2);
         expect(await pending()).toEqual([]);
     });
@@ -224,9 +248,9 @@ describe('uploadPendingDays', () => {
         vi.spyOn(Math, 'random').mockReturnValue(0);
         const requests = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(Response.json({ error: { code: 'insert_failed' } }, { status: 500 }));
 
-        const res = await uploadPendingDays(config, { now });
+        const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0 });
+        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
         expect(requests).toHaveBeenCalledTimes(2);
         expect(await stored(config.installationId)).toEqual([{ ts: '2026-11-08 10:00:00.000', metric: concurrency, value: 3 }]);
     });
@@ -243,7 +267,7 @@ describe('uploadPendingDays', () => {
         vi.spyOn(Math, 'random').mockReturnValue(0);
         const requests = vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(answer()));
 
-        const res = await uploadPendingDays(config, { now });
+        const res = await run(config);
 
         expect(res.isErr() && res.error).toMatchObject({ name: 'UploadRequestError', status: answer().status });
         expect(requests).toHaveBeenCalledTimes(attempts);
@@ -256,7 +280,7 @@ describe('uploadPendingDays', () => {
         vi.spyOn(Math, 'random').mockReturnValue(0);
         const requests = vi.spyOn(globalThis, 'fetch');
 
-        const res = await uploadPendingDays(config, { now });
+        const res = await run(config);
 
         expect(res.isErr() && res.error).toMatchObject({ name: 'UploadRequestError', status: undefined, message: 'could not reach http://127.0.0.1:1' });
         expect(requests).toHaveBeenCalledTimes(3);

@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import { promisify } from 'node:util';
 import { gzip } from 'node:zlib';
 
@@ -21,6 +22,8 @@ const deflate = promisify(gzip);
 const REQUEST_TIMEOUT_MS = 60_000;
 const SEND_ATTEMPTS = 3;
 const PERMANENT_STATUSES = new Set([400, 401, 403, 413]);
+// A breath between requests, so a backlog does not reach Nango as one burst.
+const uploadPauseMs = () => Math.random() * 1_000;
 // A wait of its own between attempts, so installations that failed together do not come back together.
 const sendRetryDelayMs = () => 500 + Math.random() * 2_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -116,9 +119,15 @@ async function send(config: UploaderConfig, body: Buffer): Promise<Result<void, 
     return Err(new UploadRequestError(`Nango answered ${res.status}: ${answer}`, { status: res.status, code: errorCode(answer) }));
 }
 
-/** Sends what is left of a metric's day, a page at a time, moving the cursor only past what Nango acknowledged. */
-async function uploadDay(config: UploaderConfig, { day, metric, cursor }: PendingUpload): Promise<Result<void>> {
+/**
+ * Sends what is left of a metric's day, a page at a time, moving the cursor only past what Nango acknowledged. Once the
+ * deadline has passed it hands the day back unfinished.
+ */
+async function uploadDay(config: UploaderConfig, { day, metric, cursor }: PendingUpload, deadline: Date): Promise<Result<'finished' | 'out_of_time'>> {
     for (;;) {
+        if (Date.now() >= deadline.getTime()) {
+            return Ok('out_of_time');
+        }
         const page = await readUploadPage(config.knex, {
             day,
             metric,
@@ -143,20 +152,24 @@ async function uploadDay(config: UploaderConfig, { day, metric, cursor }: Pendin
         if (saved.isErr()) {
             return Err(saved.error);
         }
+        if (last) {
+            await setTimeout(uploadPauseMs());
+        }
         if (done) {
-            return Ok(undefined);
+            return Ok('finished');
         }
     }
 }
 
 /**
- * Sends every closed day of the last 30 that Nango has not acknowledged yet, oldest first. It stops at a failure worth
- * retrying, and the next run starts again from there. A day the upload endpoint turns down for good is marked as failed and the next one goes.
+ * Sends every closed day of the last 30 that Nango has not acknowledged yet, oldest first, until the deadline. It stops at
+ * a failure worth retrying, and the next run starts again from there. A day the upload endpoint turns down for good is
+ * marked as failed and the next one goes.
  */
 export async function uploadPendingDays(
     config: UploaderConfig,
-    { now = new Date() }: { now?: Date } = {}
-): Promise<Result<{ succeeded: number; failed: number }>> {
+    { now = new Date(), deadline }: { now?: Date; deadline: Date }
+): Promise<Result<{ succeeded: number; failed: number; outOfTime: boolean }>> {
     const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     const since = new Date(today.getTime() - BACKFILL_DAYS * DAY_MS);
     const schema = config.schema && { schema: config.schema };
@@ -173,8 +186,11 @@ export async function uploadPendingDays(
     let succeeded = 0;
     let failed = 0;
     for (const upload of pending.value) {
-        const uploaded = await uploadDay(config, upload);
+        const uploaded = await uploadDay(config, upload, deadline);
         if (uploaded.isOk()) {
+            if (uploaded.value === 'out_of_time') {
+                return Ok({ succeeded, failed, outOfTime: true });
+            }
             succeeded++;
         } else if (uploaded.error instanceof UploadRequestError && uploaded.error.permanent) {
             const marked = await failUpload(config.knex, { day: upload.day, metric: upload.metric, ...schema });
@@ -187,5 +203,5 @@ export async function uploadPendingDays(
             return Err(uploaded.error);
         }
     }
-    return Ok({ succeeded, failed });
+    return Ok({ succeeded, failed, outOfTime: false });
 }
