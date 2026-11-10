@@ -1,0 +1,1 @@
+export const TELEMETRY_UPLOAD_MAX_ROWS = 32_768;

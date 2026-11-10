@@ -1,5 +1,6 @@
 import { Err, Ok } from '@nangohq/utils';
 
+import { TELEMETRY_UPLOAD_MAX_ROWS } from '../../installation/upload.js';
 import { METRICS_TABLE } from './clickhouse.js';
 
 import type { ClickHouseClient } from '@clickhouse/client';
@@ -13,13 +14,15 @@ export interface InstallationMetricRow {
     value: number;
 }
 
-/** One INSERT per batch, so the whole batch is visible or none of it is. */
-export async function insertMetrics(
+export async function insertMetricsBatch(
     client: ClickHouseClient,
     { installationId, rows }: { installationId: string; rows: InstallationMetricRow[] }
 ): Promise<Result<void>> {
     if (rows.length === 0) {
         return Ok(undefined);
+    }
+    if (rows.length > TELEMETRY_UPLOAD_MAX_ROWS) {
+        return Err(new Error(`a batch holds at most ${TELEMETRY_UPLOAD_MAX_ROWS} rows, got ${rows.length}`));
     }
     try {
         await client.insert({
