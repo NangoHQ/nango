@@ -13,8 +13,8 @@ export interface ActiveFilter {
 
 export const NoMatchesState: React.FC<{ filters: ActiveFilter[]; onClearAll: () => void }> = ({ filters, onClearAll }) => (
     <div className="flex flex-col items-center gap-3 rounded-ds-md border-ds-hairline border-border-default bg-surface-panel px-6 py-14 text-center">
-        <span className="flex size-10 items-center justify-center rounded-ds-md border-ds-hairline border-border-default bg-surface-panel-inset">
-            <Search className="size-5 text-icon-secondary" />
+        <span className="flex size-10 items-center justify-center rounded-ds-md border border-border-default bg-surface-canvas">
+            <Search className="size-5 text-icon-muted" />
         </span>
         <span className="type-text-medium-md text-text-strong">No APIs match these filters</span>
         {filters.length > 0 && (

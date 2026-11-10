@@ -144,15 +144,13 @@ const NoResultsState: React.FC<{ query: string; noun: string; displayName: strin
 
 const EmptyStateCard: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> = ({ icon, children }) => (
     <div className="flex flex-col items-center gap-2 rounded-ds-md border-ds-hairline border-border-default bg-surface-panel px-6 py-12 text-center">
-        <span className="mb-1 flex size-10 items-center justify-center rounded-ds-md border-ds-hairline border-border-default bg-surface-panel-inset">
-            {icon}
-        </span>
+        <span className="mb-1 flex size-10 items-center justify-center rounded-ds-md border border-border-default bg-surface-canvas">{icon}</span>
         {children}
     </div>
 );
 
 const NoFunctionsState: React.FC<{ displayName: string }> = ({ displayName }) => (
-    <EmptyStateCard icon={<Braces className="size-5 text-icon-secondary" />}>
+    <EmptyStateCard icon={<Braces className="size-5 text-icon-muted" />}>
         <span className="type-text-medium-sm text-text-strong">No pre-built tools for {displayName} yet</span>
         <span className="type-text-regular-xs text-text-secondary">
             You can build your own, or call {displayName}&apos;s API directly through the Nango proxy.
@@ -173,7 +171,7 @@ const NoFunctionsState: React.FC<{ displayName: string }> = ({ displayName }) =>
 );
 
 const McpToolsState: React.FC = () => (
-    <EmptyStateCard icon={<Check className="size-5 text-icon-secondary" />}>
+    <EmptyStateCard icon={<Check className="size-5 text-icon-muted" />}>
         <span className="type-text-medium-sm text-text-strong">All MCP tools work out of the box</span>
         <span className="max-w-md type-text-regular-xs text-text-secondary">
             Nango automatically makes all tools of this MCP server available. You can use it with Agent sessions, or any other Nango feature.
