@@ -68,7 +68,8 @@ describe('uploaderConfig', () => {
             knex: telemetryDb.current,
             installationId: 'f4a2c0e1-7b3d-4e2a-9c1f-0a6d5e8b2c44',
             privateKeyPem: installationKey,
-            url: 'https://installations.nango.dev'
+            url: 'https://installations.nango.dev',
+            backfillDays: 30
         });
     });
 

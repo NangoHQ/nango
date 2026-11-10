@@ -27,8 +27,6 @@ const uploadPauseMs = () => 5_000 + Math.random() * 5_000;
 // A random wait before retrying, so installations that failed together do not retry together.
 const sendRetryDelayMs = () => 500 + Math.random() * 2_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
-// We only upload the last 30 days. Older data has to be requested manually.
-const BACKFILL_DAYS = 30;
 
 export interface UploaderConfig {
     knex: Knex;
@@ -36,6 +34,7 @@ export interface UploaderConfig {
     installationId: string;
     privateKeyPem: string;
     url: string;
+    backfillDays: number;
 }
 
 export class UploadRequestError extends Error {
@@ -170,7 +169,7 @@ export async function uploadQueuedDays(
     { now = new Date(), deadline }: { now?: Date; deadline: Date }
 ): Promise<Result<{ succeeded: number; failed: number; outOfTime: boolean }>> {
     const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    const since = new Date(today.getTime() - BACKFILL_DAYS * DAY_MS);
+    const since = new Date(today.getTime() - config.backfillDays * DAY_MS);
     const schema = config.schema && { schema: config.schema };
 
     const enqueued = await enqueueUploads(config.knex, { since, today, ...schema });
@@ -182,7 +181,7 @@ export async function uploadQueuedDays(
         return Err(expired.error);
     }
     if (expired.value > 0) {
-        logger.error(`${expired.value} uploads are older than ${BACKFILL_DAYS} days and were marked as failed. Request the data manually`);
+        logger.error(`${expired.value} uploads are older than ${config.backfillDays} days and were marked as failed. Request the data manually`);
     }
     const queued = await listQueuedUploads(config.knex, { since, ...schema });
     if (queued.isErr()) {

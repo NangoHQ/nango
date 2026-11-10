@@ -75,7 +75,8 @@ export async function uploaderConfig(): Promise<Result<UploaderConfig>> {
         knex,
         installationId: license.value.installation_id,
         privateKeyPem: envs.NANGO_INSTALLATION_PRIVATE_KEY,
-        url: envs.NANGO_INSTALLATIONS_API_URL
+        url: envs.NANGO_INSTALLATIONS_API_URL,
+        backfillDays: envs.NANGO_HOSTED_TELEMETRY_UPLOAD_BACKFILL_DAYS
     });
 }
 

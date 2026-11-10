@@ -75,7 +75,7 @@ const queued = async () => (await listQueuedUploads(knex, { since, schema: telem
 
 async function uploader(name: string, options?: { licensed?: boolean }): Promise<UploaderConfig> {
     const { uuid, privateKeyPem } = await seedInstallation({ knex, schema: registry }, name, options);
-    return { knex, schema: telemetry, installationId: uuid, privateKeyPem, url };
+    return { knex, schema: telemetry, installationId: uuid, privateKeyPem, url, backfillDays: 30 };
 }
 
 beforeAll(async () => {
@@ -147,17 +147,17 @@ describe('uploadQueuedDays', () => {
         expect(await queued()).toEqual([]);
     });
 
-    it('does not upload days older than thirty days', async () => {
-        const config = await uploader('backfill');
-        await insert({ ts: '2026-10-10T10:00:00Z', metric: concurrency, value: 1 }, { ts: '2026-10-11T10:00:00Z', metric: concurrency, value: 2 });
+    it('does not upload days older than the configured number of days', async () => {
+        const config = { ...(await uploader('backfill')), backfillDays: 1 };
+        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency, value: 1 }, { ts: '2026-11-09T10:00:00Z', metric: concurrency, value: 2 });
 
         const res = await run(config);
 
         expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
-        expect(await stored(config.installationId)).toEqual([{ ts: '2026-10-11 10:00:00.000', metric: concurrency, value: 2 }]);
+        expect(await stored(config.installationId)).toEqual([{ ts: '2026-11-09 10:00:00.000', metric: concurrency, value: 2 }]);
     });
 
-    it('marks an upload as failed, without sending it, once it is older than thirty days', async () => {
+    it('marks an upload as failed, without sending it, once it is older than the configured number of days', async () => {
         const config = await uploader('expired');
         await insert({ ts: '2026-10-10T10:00:00Z', metric: concurrency });
         const whenItWasRecent = new Date('2026-10-12T08:00:00Z');
