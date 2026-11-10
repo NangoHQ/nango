@@ -2,13 +2,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { migrate as migrateClickhouse } from '@nangohq/clickhouse-migrations';
-import { getLogger } from '@nangohq/utils';
 
+import { logger } from '../../utils.js';
 import { INSTALLATIONS_DATABASE, installationsClickhouseClient } from './clickhouse.js';
 
 import type { Result } from '@nangohq/utils';
-
-const logger = getLogger('self-hosting');
 
 const migrationsDir = path.join(fileURLToPath(import.meta.url), '..', 'migrations');
 const migrationsExt = import.meta.url.endsWith('.ts') ? '.ts' : '.js';
