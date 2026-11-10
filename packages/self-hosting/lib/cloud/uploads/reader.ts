@@ -11,6 +11,7 @@ import type { InstallationMetricRow } from '../clickhouse/metrics.js';
 import type { Result } from '@nangohq/utils';
 
 const inflate = promisify(gunzip);
+const utf8 = new TextDecoder('utf-8', { fatal: true });
 
 /** An upload is a gzip file of NDJSON: the first line is the header, every other line is a row. */
 export const telemetryUploadHeaderSchema = z.object({
@@ -20,7 +21,7 @@ export const telemetryUploadHeaderSchema = z.object({
 
 export const telemetryUploadRowSchema = z.object({
     kind: z.literal('row'),
-    ts: z.iso.datetime(),
+    ts: z.iso.datetime({ precision: 3 }),
     metric: z.string().min(1).max(255),
     attributes: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
     value: z.number()
@@ -57,12 +58,12 @@ function canonicalAttributes(attributes: TelemetryUploadRow['attributes']): stri
 export async function readUpload(body: Buffer): Promise<Result<{ installationId: string; rows: InstallationMetricRow[] }, UploadError>> {
     let text: string;
     try {
-        text = (await inflate(body, { maxOutputLength: TELEMETRY_UPLOAD_MAX_UNCOMPRESSED_BYTES })).toString('utf8');
+        text = utf8.decode(await inflate(body, { maxOutputLength: TELEMETRY_UPLOAD_MAX_UNCOMPRESSED_BYTES }));
     } catch (err) {
         return Err(
             err instanceof RangeError
                 ? new UploadError('request_too_large', `an upload holds at most ${TELEMETRY_UPLOAD_MAX_UNCOMPRESSED_BYTES} bytes uncompressed`)
-                : new UploadError('invalid_encoding', 'the body is not a gzip file')
+                : new UploadError('invalid_encoding', 'the body must be a gzip file of UTF-8 text')
         );
     }
 
