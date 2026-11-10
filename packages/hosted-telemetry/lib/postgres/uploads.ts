@@ -12,7 +12,7 @@ export interface UploadCursor {
     attributes: MetricRow['attributes'];
 }
 
-export interface PendingUpload {
+export interface QueuedUpload {
     day: string;
     metric: string;
     cursor: UploadCursor | null;
@@ -55,14 +55,14 @@ export async function enqueueClosedDays(
 }
 
 /** Oldest first. A succeeded or failed upload is never picked up again. */
-export async function listPendingUploads(
+export async function listQueuedUploads(
     knex: Knex,
     { since, schema = HOSTED_TELEMETRY_SCHEMA }: { since: Date; schema?: string }
-): Promise<Result<PendingUpload[]>> {
+): Promise<Result<QueuedUpload[]>> {
     try {
         const res = await knex.raw<{ rows: { day: string; metric: string; cursor_ts: Date | null; cursor_attributes: MetricRow['attributes'] | null }[] }>(
             `SELECT day::text AS day, metric, cursor_ts, cursor_attributes FROM ??.??
-             WHERE status = 'pending' AND day >= ?::date
+             WHERE status = 'queued' AND day >= ?::date
              ORDER BY day, metric`,
             [schema, HOSTED_TELEMETRY_UPLOADS_TABLE, utcDay(since)]
         );
@@ -125,7 +125,7 @@ export async function saveUploadProgress(
     try {
         await knex.raw(
             `UPDATE ??.?? SET cursor_ts = ?::timestamptz, cursor_attributes = ?::jsonb, status = CASE WHEN ? THEN 'succeeded' ELSE status END
-             WHERE day = ?::date AND metric = ? AND status = 'pending'`,
+             WHERE day = ?::date AND metric = ? AND status = 'queued'`,
             [
                 schema,
                 HOSTED_TELEMETRY_UPLOADS_TABLE,
@@ -148,13 +148,27 @@ export async function failUpload(
     { day, metric, schema = HOSTED_TELEMETRY_SCHEMA }: { day: string; metric: string; schema?: string }
 ): Promise<Result<void>> {
     try {
-        await knex.raw(`UPDATE ??.?? SET status = 'failed' WHERE day = ?::date AND metric = ? AND status = 'pending'`, [
+        await knex.raw(`UPDATE ??.?? SET status = 'failed' WHERE day = ?::date AND metric = ? AND status = 'queued'`, [
             schema,
             HOSTED_TELEMETRY_UPLOADS_TABLE,
             day,
             metric
         ]);
         return Ok(undefined);
+    } catch (err) {
+        return Err(err);
+    }
+}
+
+/** What is still queued from before `since` will not be sent any more, and has to be asked for by hand like any failed upload. */
+export async function failExpiredUploads(knex: Knex, { since, schema = HOSTED_TELEMETRY_SCHEMA }: { since: Date; schema?: string }): Promise<Result<number>> {
+    try {
+        const res = await knex.raw<{ rowCount: number }>(`UPDATE ??.?? SET status = 'failed' WHERE status = 'queued' AND day < ?::date`, [
+            schema,
+            HOSTED_TELEMETRY_UPLOADS_TABLE,
+            utcDay(since)
+        ]);
+        return Ok(res.rowCount);
     } catch (err) {
         return Err(err);
     }

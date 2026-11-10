@@ -4,7 +4,7 @@ import { gzip } from 'node:zlib';
 
 import tracer from 'dd-trace';
 
-import { enqueueClosedDays, failUpload, listPendingUploads, readUploadPage, saveUploadProgress } from '@nangohq/hosted-telemetry';
+import { enqueueClosedDays, failExpiredUploads, failUpload, listQueuedUploads, readUploadPage, saveUploadProgress } from '@nangohq/hosted-telemetry';
 import { Err, Ok, retry } from '@nangohq/utils';
 
 import { route } from '../cloud/routes/v1/telemetry/postUploads.js';
@@ -13,7 +13,7 @@ import { logger } from '../utils.js';
 import { mintInstallationToken } from './token.js';
 
 import type { TelemetryUploadHeader, TelemetryUploadRow } from '../cloud/uploads/reader.js';
-import type { MetricRow, PendingUpload } from '@nangohq/hosted-telemetry';
+import type { MetricRow, QueuedUpload } from '@nangohq/hosted-telemetry';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
@@ -123,7 +123,7 @@ async function send(config: UploaderConfig, body: Buffer): Promise<Result<void, 
  * Sends what is left of a metric's day, a page at a time, moving the cursor only past what Nango acknowledged. Once the
  * deadline has passed it hands the day back unfinished.
  */
-async function uploadDay(config: UploaderConfig, { day, metric, cursor }: PendingUpload, deadline: Date): Promise<Result<'finished' | 'out_of_time'>> {
+async function uploadDay(config: UploaderConfig, { day, metric, cursor }: QueuedUpload, deadline: Date): Promise<Result<'finished' | 'out_of_time'>> {
     for (;;) {
         if (Date.now() >= deadline.getTime()) {
             return Ok('out_of_time');
@@ -166,7 +166,7 @@ async function uploadDay(config: UploaderConfig, { day, metric, cursor }: Pendin
  * a failure worth retrying, and the next run starts again from there. A day the upload endpoint turns down for good is
  * marked as failed and the next one goes.
  */
-export async function uploadPendingDays(
+export async function uploadQueuedDays(
     config: UploaderConfig,
     { now = new Date(), deadline }: { now?: Date; deadline: Date }
 ): Promise<Result<{ succeeded: number; failed: number; outOfTime: boolean }>> {
@@ -178,14 +178,21 @@ export async function uploadPendingDays(
     if (enqueued.isErr()) {
         return Err(enqueued.error);
     }
-    const pending = await listPendingUploads(config.knex, { since, ...schema });
-    if (pending.isErr()) {
-        return Err(pending.error);
+    const expired = await failExpiredUploads(config.knex, { since, ...schema });
+    if (expired.isErr()) {
+        return Err(expired.error);
+    }
+    if (expired.value > 0) {
+        logger.error(`${expired.value} uploads are older than ${BACKFILL_DAYS} days and failed, they have to be asked for by hand`);
+    }
+    const queued = await listQueuedUploads(config.knex, { since, ...schema });
+    if (queued.isErr()) {
+        return Err(queued.error);
     }
 
     let succeeded = 0;
-    let failed = 0;
-    for (const upload of pending.value) {
+    let failed = expired.value;
+    for (const upload of queued.value) {
         const uploaded = await uploadDay(config, upload, deadline);
         if (uploaded.isOk()) {
             if (uploaded.value === 'out_of_time') {

@@ -8,7 +8,7 @@ import { Err, flags, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { mintInstallationToken } from '../token.js';
-import { uploadPendingDays } from '../uploader.js';
+import { uploadQueuedDays } from '../uploader.js';
 
 import type { UploaderConfig } from '../uploader.js';
 import type { Lock } from '@nangohq/kvstore';
@@ -83,7 +83,7 @@ export async function exec(config: UploaderConfig): Promise<void> {
     await tracer.trace<Promise<void>>('nango.cron.uploadTelemetry', async (span) => {
         logger.info('Starting');
         await withLock(async () => {
-            const uploaded = await uploadPendingDays(config, { deadline: new Date(Date.now() + RUN_BUDGET_MS) });
+            const uploaded = await uploadQueuedDays(config, { deadline: new Date(Date.now() + RUN_BUDGET_MS) });
             if (uploaded.isErr()) {
                 span?.setTag('error', uploaded.error);
                 logger.error('Stopped before the end, what is left goes out on the next run', uploaded.error);

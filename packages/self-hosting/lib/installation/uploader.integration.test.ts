@@ -4,7 +4,7 @@ import { createClient } from '@clickhouse/client';
 import knexFactory from 'knex';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { HOSTED_TELEMETRY_TABLE, HOSTED_TELEMETRY_UPLOADS_TABLE, listPendingUploads, migrate as migrateTelemetry } from '@nangohq/hosted-telemetry';
+import { HOSTED_TELEMETRY_TABLE, HOSTED_TELEMETRY_UPLOADS_TABLE, listQueuedUploads, migrate as migrateTelemetry } from '@nangohq/hosted-telemetry';
 import { ensureDailyPartitions } from '@nangohq/migrations';
 
 import { installationsClickhouseClient } from '../cloud/clickhouse/clickhouse.js';
@@ -13,7 +13,7 @@ import { migrate as migrateRegistry } from '../cloud/db/migrate.js';
 import { seedInstallation } from '../cloud/seeders/installation.seeder.js';
 import { createCloudServer } from '../cloud/server.js';
 import { TELEMETRY_UPLOAD_MAX_ROWS } from '../cloud/uploads/constants.js';
-import { uploadPendingDays, UploadRequestError } from './uploader.js';
+import { uploadQueuedDays, UploadRequestError } from './uploader.js';
 
 import type { UploaderConfig } from './uploader.js';
 import type { ClickHouseClient } from '@clickhouse/client';
@@ -69,9 +69,9 @@ async function stored(installationId: string): Promise<{ ts: string; metric: str
     return res.json();
 }
 
-const run = (config: UploaderConfig, deadline = new Date(Date.now() + 60_000)) => uploadPendingDays(config, { now, deadline });
+const run = (config: UploaderConfig, deadline = new Date(Date.now() + 60_000)) => uploadQueuedDays(config, { now, deadline });
 
-const pending = async () => (await listPendingUploads(knex, { since, schema: telemetry })).unwrap();
+const queued = async () => (await listQueuedUploads(knex, { since, schema: telemetry })).unwrap();
 
 async function uploader(name: string, options?: { licensed?: boolean }): Promise<UploaderConfig> {
     const { uuid, privateKeyPem } = await seedInstallation({ knex, schema: registry }, name, options);
@@ -125,7 +125,7 @@ afterEach(() => {
     vi.restoreAllMocks();
 });
 
-describe('uploadPendingDays', () => {
+describe('uploadQueuedDays', () => {
     it('sends every metric of each closed day to Nango and leaves the running day alone', async () => {
         const config = await uploader('closed-days');
         await insert(
@@ -144,7 +144,7 @@ describe('uploadPendingDays', () => {
             { ts: '2026-11-09 23:59:00.000', metric: concurrency, value: 5 },
             { ts: '2026-11-08 10:00:00.000', metric: connections, value: 40 }
         ]);
-        expect(await pending()).toEqual([]);
+        expect(await queued()).toEqual([]);
     });
 
     it('goes back thirty days and no further', async () => {
@@ -155,6 +155,20 @@ describe('uploadPendingDays', () => {
 
         expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
         expect(await stored(config.installationId)).toEqual([{ ts: '2026-10-11 10:00:00.000', metric: concurrency, value: 2 }]);
+    });
+
+    it('fails what could not be sent before it left the thirty days, without sending it', async () => {
+        const config = await uploader('expired');
+        await insert({ ts: '2026-10-10T10:00:00Z', metric: concurrency });
+        const whenItWasRecent = new Date('2026-10-12T08:00:00Z');
+        await uploadQueuedDays({ ...config, url: 'http://127.0.0.1:1' }, { now: whenItWasRecent, deadline: new Date(Date.now() + 60_000) });
+        const requests = vi.spyOn(globalThis, 'fetch');
+
+        const res = await run(config);
+
+        expect(res.unwrap()).toEqual({ succeeded: 0, failed: 1, outOfTime: false });
+        expect(requests).not.toHaveBeenCalled();
+        expect(await stored(config.installationId)).toEqual([]);
     });
 
     it('sends nothing twice', async () => {
@@ -192,7 +206,7 @@ describe('uploadPendingDays', () => {
 
         expect(interrupted.isErr() && interrupted.error).toBeInstanceOf(UploadRequestError);
         expect(await stored(config.installationId)).toHaveLength(TELEMETRY_UPLOAD_MAX_ROWS);
-        expect(await pending()).toMatchObject([{ day: '2026-11-08', metric: concurrency, cursor: { ts: expect.any(Date) } }]);
+        expect(await queued()).toMatchObject([{ day: '2026-11-08', metric: concurrency, cursor: { ts: expect.any(Date) } }]);
 
         vi.restoreAllMocks();
         const requests = vi.spyOn(globalThis, 'fetch');
@@ -218,7 +232,7 @@ describe('uploadPendingDays', () => {
 
         expect(stopped.unwrap()).toEqual({ succeeded: 0, failed: 0, outOfTime: true });
         expect(await stored(config.installationId)).toHaveLength(TELEMETRY_UPLOAD_MAX_ROWS);
-        expect(await pending()).toMatchObject([{ day: '2026-11-08', metric: concurrency, cursor: { ts: expect.any(Date) } }]);
+        expect(await queued()).toMatchObject([{ day: '2026-11-08', metric: concurrency, cursor: { ts: expect.any(Date) } }]);
 
         expect((await run(config)).unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
         expect(await stored(config.installationId)).toHaveLength(BIG_DAY_ROWS);
@@ -233,7 +247,7 @@ describe('uploadPendingDays', () => {
 
         expect(res.unwrap()).toEqual({ succeeded: 1, failed: 1, outOfTime: false });
         expect(await stored(config.installationId)).toEqual([{ ts: '2026-11-09 10:00:00.000', metric: concurrency, value: 5 }]);
-        expect(await pending()).toEqual([]);
+        expect(await queued()).toEqual([]);
 
         const requests = vi.spyOn(globalThis, 'fetch');
         expect((await run(config)).unwrap()).toEqual({ succeeded: 0, failed: 0, outOfTime: false });
@@ -249,7 +263,7 @@ describe('uploadPendingDays', () => {
 
         expect(res.unwrap()).toEqual({ succeeded: 0, failed: 2, outOfTime: false });
         expect(requests).toHaveBeenCalledTimes(2);
-        expect(await pending()).toEqual([]);
+        expect(await queued()).toEqual([]);
     });
 
     it('tries again within the run when Nango fails on its side', async () => {
@@ -281,7 +295,7 @@ describe('uploadPendingDays', () => {
 
         expect(res.isErr() && res.error).toMatchObject({ name: 'UploadRequestError', status: answer().status });
         expect(requests).toHaveBeenCalledTimes(attempts);
-        expect(await pending()).toHaveLength(2);
+        expect(await queued()).toHaveLength(2);
     });
 
     it('stops at the first day and keeps everything, after three attempts when Nango cannot be reached', async () => {
@@ -294,6 +308,6 @@ describe('uploadPendingDays', () => {
 
         expect(res.isErr() && res.error).toMatchObject({ name: 'UploadRequestError', status: undefined, message: 'could not reach http://127.0.0.1:1' });
         expect(requests).toHaveBeenCalledTimes(3);
-        expect(await pending()).toHaveLength(2);
+        expect(await queued()).toHaveLength(2);
     });
 });

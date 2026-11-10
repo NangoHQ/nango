@@ -5,7 +5,7 @@ export { destroyHostedTelemetryDb, hostedTelemetryDb, migrateHostedTelemetryDb, 
 export { migrate } from './postgres/migrate.js';
 export { startPartitionDaemon } from './postgres/partitions.js';
 export { HOSTED_TELEMETRY_SCHEMA, HOSTED_TELEMETRY_TABLE, HOSTED_TELEMETRY_UPLOADS_TABLE } from './postgres/schema.js';
-export { enqueueClosedDays, failUpload, listPendingUploads, readUploadPage, saveUploadProgress } from './postgres/uploads.js';
-export type { PendingUpload, UploadCursor } from './postgres/uploads.js';
+export { enqueueClosedDays, failExpiredUploads, failUpload, listQueuedUploads, readUploadPage, saveUploadProgress } from './postgres/uploads.js';
+export type { QueuedUpload, UploadCursor } from './postgres/uploads.js';
 export { createHostedTelemetry, hostedTelemetry, initHostedTelemetry, producerId } from './telemetry.js';
 export type { HostedTelemetry } from './telemetry.js';

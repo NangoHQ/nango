@@ -7,7 +7,7 @@ export async function up(knex: Knex, schema: string): Promise<void> {
         `CREATE TABLE IF NOT EXISTS ??.?? (
             day               DATE        NOT NULL,
             metric            TEXT        NOT NULL,
-            status            TEXT        NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'succeeded', 'failed')),
+            status            TEXT        NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'succeeded', 'failed')),
             cursor_ts         TIMESTAMPTZ,
             cursor_attributes JSONB,
             PRIMARY KEY (day, metric)
