@@ -36,7 +36,10 @@ const agentSession = {
 };
 
 const toolList = z.object({ tools: z.array(z.string()) });
+const integrationPolicy = z.union([z.literal('*'), z.object({ allow: z.union([z.literal('*'), toolList]).optional(), deny: toolList.optional() })]);
+const toolset = z.union([z.literal('*'), z.record(z.string(), integrationPolicy)]);
 const metaToolSwitch = z.union([z.boolean(), z.object({ enabled: z.boolean() })]);
+const createConnectionSwitch = z.union([z.boolean(), z.object({ enabled: z.boolean(), tags: z.array(z.string()).optional() })]);
 
 /** The POST /sessions body as the caller sent it, keeping integration ids, tool names and tag keys. Tag values and connection ids are dropped. */
 const agentSessionRequest = z.object({
@@ -46,19 +49,14 @@ const agentSessionRequest = z.object({
             pinned: z.array(z.object({ integration_id: z.string() })).optional()
         })
     }),
-    toolset: z
-        .union([
-            z.literal('*'),
-            z.record(z.string(), z.union([z.literal('*'), z.object({ allow: z.union([z.literal('*'), toolList]).optional(), deny: toolList.optional() })]))
-        ])
-        .optional(),
+    toolset: toolset.optional(),
     pinned_tools: z.record(z.string(), z.array(z.string())).optional(),
     meta_tools: z
         .object({
             nango_tool_search: metaToolSwitch.optional(),
             nango_execute: metaToolSwitch.optional(),
             nango_proxy: metaToolSwitch.optional(),
-            nango_create_connection: z.union([z.boolean(), z.object({ enabled: z.boolean(), tags: z.array(z.string()).optional() })]).optional()
+            nango_create_connection: createConnectionSwitch.optional()
         })
         .optional(),
     expires_in: z.string().optional()
