@@ -1,7 +1,7 @@
 import Fuse from 'fuse.js';
 import debounce from 'lodash/debounce';
 import { Search } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,22 +14,25 @@ import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { AuthBadge } from './components/AuthBadge';
 import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 
-import type { ApiIntegrationList, GetIntegrations } from '@nangohq/types';
+import type { GetIntegrations } from '@nangohq/types';
 
 export const IntegrationsList = () => {
     const navigate = useNavigate();
 
     const env = useStore((state) => state.env);
     const { data, isPending, error } = useListIntegrations(env);
-    const [integrations, setIntegrations] = useState<ApiIntegrationList[] | null>(null);
+    const [search, setSearch] = useSearchQueryState();
+    const debouncedSearch = useDebouncedValue(search);
 
     const { can } = usePermissions();
     const canWriteIntegration = can('environment:integrations:update');
@@ -38,12 +41,6 @@ export const IntegrationsList = () => {
         return data?.data ?? null;
     }, [data?.data]);
     const integrationsCount = initialIntegrations?.length ?? 0;
-
-    useEffect(() => {
-        if (initialIntegrations) {
-            setIntegrations(initialIntegrations);
-        }
-    }, [initialIntegrations]);
 
     const fuse = useMemo(() => {
         if (!initialIntegrations || initialIntegrations.length === 0) {
@@ -65,50 +62,37 @@ export const IntegrationsList = () => {
         });
     }, [initialIntegrations]);
 
+    const integrations = useMemo(() => {
+        if (!initialIntegrations || !debouncedSearch.trim() || !fuse) {
+            return initialIntegrations;
+        }
+        return fuse.search(debouncedSearch).map((result) => result.item);
+    }, [initialIntegrations, debouncedSearch, fuse]);
+
+    const resultCountRef = useRef(0);
+    useEffect(() => {
+        resultCountRef.current = integrations?.length ?? 0;
+    }, [integrations]);
+
     const trackSearch = useMemo(
-        () => debounce((resultCount: number) => track('integrations:filter_update', { filter: 'search', result_count: resultCount }), 1000),
+        () => debounce(() => track('integrations:filter_update', { filter: 'search', result_count: resultCountRef.current }), 1000),
         []
     );
 
-    const filterIntegrations = useCallback(
-        (value: string) => {
-            if (!value.trim()) {
-                trackSearch.cancel();
-                setIntegrations(initialIntegrations);
-                return;
-            }
-
-            if (!fuse) {
-                setIntegrations(initialIntegrations);
-                if (initialIntegrations) {
-                    trackSearch(0);
-                }
-                return;
-            }
-
-            const results = fuse.search(value);
-            const filtered = results.map((result) => result.item);
-            setIntegrations(filtered);
-            trackSearch(filtered.length);
-        },
-        [initialIntegrations, fuse, trackSearch]
-    );
-
-    const debouncedFilterIntegrations = useMemo(() => debounce(filterIntegrations, 300), [filterIntegrations]);
-
     useEffect(() => {
         return () => {
-            debouncedFilterIntegrations.cancel();
             trackSearch.flush();
         };
-    }, [debouncedFilterIntegrations, trackSearch]);
+    }, [trackSearch]);
 
-    const handleInputChange = useCallback(
-        (event: React.ChangeEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
-            debouncedFilterIntegrations(event.currentTarget.value);
-        },
-        [debouncedFilterIntegrations]
-    );
+    const onSearchChange = (value: string) => {
+        setSearch(value);
+        if (value.trim()) {
+            trackSearch();
+        } else {
+            trackSearch.cancel();
+        }
+    };
 
     if (error) {
         return <ErrorPageComponent title="Integrations" error={error.json as GetIntegrations['Errors']} />;
@@ -121,7 +105,12 @@ export const IntegrationsList = () => {
             </Helmet>
             <header className="flex items-center gap-3">
                 <InputGroup className="flex-1">
-                    <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} />
+                    <InputGroupInput
+                        type="text"
+                        placeholder="Search integration"
+                        value={search}
+                        onChange={(event) => onSearchChange(event.currentTarget.value)}
+                    />
                     <InputGroupAddon>
                         <Search />
                     </InputGroupAddon>
