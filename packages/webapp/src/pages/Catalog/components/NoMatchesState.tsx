@@ -38,9 +38,11 @@ export const NoMatchesState: React.FC<{ filters: ActiveFilter[]; onClearAll: () 
             Remove a filter, or check the spelling. Missing an API? Nango can add it, or you can build your own integration.
         </span>
         <div className="flex items-center gap-4">
-            <Button variant="link-accent" size="md" onClick={onClearAll}>
-                Clear all filters
-            </Button>
+            {filters.length > 0 && (
+                <Button variant="link-accent" size="md" onClick={onClearAll}>
+                    Clear all filters
+                </Button>
+            )}
             <Button asChild variant="link-accent" size="md">
                 <a href={REQUEST_API_URL} target="_blank" rel="noreferrer">
                     Build your own <ArrowUpRight />
