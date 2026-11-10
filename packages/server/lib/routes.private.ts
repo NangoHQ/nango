@@ -177,7 +177,6 @@ import {
     auditIntegrationCreated,
     auditIntegrationCredentialsRead,
     auditIntegrationDeleted,
-    auditIntegrationsCredentialsRead,
     auditIntegrationUpdated,
     auditMemberInviteAccepted,
     auditMemberInvited,
@@ -353,7 +352,7 @@ web.route('/connect-ui-settings').get(webAuth, getConnectUISettings);
 web.route('/connect-ui-settings').put(webAuth, can('account:connect_ui:update'), putConnectUISettings);
 
 // Integrations
-web.route('/integrations').get(webAuth, auditIntegrationsCredentialsRead, can('environment:integrations:list'), getIntegrations);
+web.route('/integrations').get(webAuth, can('environment:integrations:list'), getIntegrations);
 web.route('/integrations').post(webAuth, auditIntegrationCreated, can('environment:integrations:update'), postIntegration);
 web.route('/integrations/:providerConfigKey').get(webAuth, auditIntegrationCredentialsRead, can('environment:integrations:read'), getIntegration);
 web.route('/integrations/:providerConfigKey').patch(webAuth, auditIntegrationUpdated, can('environment:integrations:update'), patchIntegration);

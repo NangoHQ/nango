@@ -73,7 +73,6 @@ export {
     auditIntegrationCreated,
     auditIntegrationCredentialsRead,
     auditIntegrationDeleted,
-    auditIntegrationsCredentialsRead,
     auditIntegrationUpdated,
     auditPublicIntegrationCreated,
     auditPublicIntegrationCredentialsRead,

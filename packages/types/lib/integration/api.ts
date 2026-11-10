@@ -206,7 +206,7 @@ export type ApiIntegrationList = ApiIntegration & {
 };
 
 export type GetIntegrations = ApiEndpoint<{
-    Audit: AuditPolicy<'integration', 'credentials_read', 'environment'>;
+    Audit: { kind: 'no-audit'; reason: 'no credentials returned' };
     Method: 'GET';
     Path: '/api/v1/integrations';
     Success: {

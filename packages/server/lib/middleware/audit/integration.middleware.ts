@@ -10,7 +10,6 @@ import type {
     DeletePublicIntegration,
     Endpoint,
     GetIntegration,
-    GetIntegrations,
     GetPublicIntegration,
     PatchIntegration,
     PatchPublicIntegration,
@@ -94,11 +93,4 @@ export const auditDeprecatedProviderConfigCredentialsRead = maybeAuditable<GetDe
     skipWhen: skipUnlessCredentialsRead((req) => query(req, 'include_creds') === 'true'),
     subject: callerSubject,
     atFinish: (req) => credentialsReadTargets('integration', req, param(req, 'providerConfigKey'))
-});
-
-export const auditIntegrationsCredentialsRead = maybeAuditable<GetIntegrations>({
-    policy: Audit.auditable({ resource: 'integration', action: 'credentials_read', scope: 'environment' }),
-    skipWhen: skipUnlessCredentialsRead(),
-    subject: callerSubject,
-    atFinish: (req) => credentialsReadTargets('integration', req)
 });

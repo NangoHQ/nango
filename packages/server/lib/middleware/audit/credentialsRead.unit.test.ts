@@ -5,11 +5,7 @@ import { Ok } from '@nangohq/utils';
 import { auditAccountApiKeysCredentialsRead, auditApiKeysCredentialsRead, auditPublicApiKeyCredentialsRead } from './apiKey.middleware.js';
 import { auditConnectionCredentialsRead } from './connection.middleware.js';
 import { auditPublicEnvironmentCredentialsRead } from './environment.middleware.js';
-import {
-    auditDeprecatedProviderConfigCredentialsRead,
-    auditIntegrationsCredentialsRead,
-    auditPublicIntegrationCredentialsRead
-} from './integration.middleware.js';
+import { auditDeprecatedProviderConfigCredentialsRead, auditPublicIntegrationCredentialsRead } from './integration.middleware.js';
 import {
     customerKeySearchMock,
     fakeReq,
@@ -79,23 +75,24 @@ describe('credentials read audit middleware (unit)', () => {
         });
 
         it('a list names every entity the handler reported', async () => {
-            const req = fakeReq({ audit: read({ id: 'github', display: 'GitHub' }, { id: 'slack' }) });
-            const event = await runAudit(auditIntegrationsCredentialsRead, req, fakeRes(locals));
+            const otherKey = '00000000-0000-4000-8000-000000002552';
+            const req = fakeReq({ audit: read({ id: keyUuid, display: 'ci-key' }, { id: otherKey }) });
+            const event = await runAudit(auditApiKeysCredentialsRead, req, fakeRes(locals));
             expect(event).toMatchObject({
-                resource: 'integration',
+                resource: 'api_key',
                 action: 'credentials_read',
                 accountId: 42,
                 environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
                 outcome: 'success',
                 targets: [
-                    { type: 'integration', id: 'github', display: 'GitHub' },
-                    { type: 'integration', id: 'slack' }
+                    { type: 'api_key', id: keyUuid, display: 'ci-key' },
+                    { type: 'api_key', id: otherKey }
                 ]
             });
         });
 
         it('an empty list returned no credentials, so it records nothing', async () => {
-            expect(await run(auditIntegrationsCredentialsRead, fakeReq({ audit: read() }), fakeRes(locals))).toBe(false);
+            expect(await run(auditApiKeysCredentialsRead, fakeReq({ audit: read() }), fakeRes(locals))).toBe(false);
         });
 
         it('a response that failed after the handler reported the read records nothing', async () => {

@@ -1,7 +1,6 @@
 import { configService, countSyncConfigByConfigId, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { principalCan } from '../../../authz/principal.js';
 import { integrationToApi } from '../../../formatters/integration.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { parseAssertionOptionParamsFromTemplate, parseConnectionConfigParamsFromTemplate, parseCredentialsParamsFromTemplate } from '../../../utils/utils.js';
@@ -16,19 +15,8 @@ export const getIntegrations = asyncWrapperWithEnvironment<GetIntegrations>(asyn
     }
 
     const { environment } = res.locals;
-    const includeCredentials = principalCan(res.locals, 'environment:integrations:list_credentials');
 
     const integrations = await configService.listIntegrationForApi(environment.id);
-    if (includeCredentials) {
-        req.audit = {
-            ...req.audit,
-            credentialsRead: {
-                targets: integrations.flatMap((integration) =>
-                    integration.shared_credentials_id ? [] : [{ id: integration.unique_key, display: integration.display_name ?? undefined }]
-                )
-            }
-        };
-    }
     const rawSyncConfig = await countSyncConfigByConfigId(environment.id);
     const activeSyncConfig = new Map();
     for (const syncConfig of rawSyncConfig) {
@@ -39,7 +27,7 @@ export const getIntegrations = asyncWrapperWithEnvironment<GetIntegrations>(asyn
         const provider = getProvider(integration.provider)!;
 
         const formatted: ApiIntegrationList = {
-            ...integrationToApi(integration, { includeCredentials }),
+            ...integrationToApi(integration, { includeCredentials: false }),
             meta: {
                 authMode: provider.auth_mode,
                 scriptsCount: activeSyncConfig.get(integration.id!) || 0,

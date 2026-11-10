@@ -679,7 +679,7 @@ describe('audit middleware — live-stack contract', () => {
             expect(JSON.stringify(event)).not.toContain('audit-connection-secret');
         });
 
-        it('dashboard integration read and list', async () => {
+        it('dashboard integration read', async () => {
             const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             await seeders.createConfigSeed(env, 'algolia', 'algolia');
             const session = await authenticateUser(api, user);
@@ -691,20 +691,6 @@ describe('audit middleware — live-stack contract', () => {
                 query: { env: 'dev' }
             });
             expect(read.res.status).toBe(200);
-            expect(await credentialsReadEvent('integration')).toMatchObject({
-                outcome: 'success',
-                accountId: account.id,
-                targets: [{ type: 'integration', id: 'algolia' }]
-            });
-
-            auditSpy.mockClear();
-            const list = await api.fetch('/api/v1/integrations', {
-                // @ts-expect-error GET is not in the endpoint's method union
-                method: 'GET',
-                session,
-                query: { env: 'dev' }
-            });
-            expect(list.res.status).toBe(200);
             expect(await credentialsReadEvent('integration')).toMatchObject({
                 outcome: 'success',
                 accountId: account.id,
