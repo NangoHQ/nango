@@ -40,8 +40,8 @@
                     var state = parsed && parsed.state;
                     if (state && state.theme) {
                         theme = state.theme;
-                    } else if (state && state.darkMode === false) {
-                        theme = 'light';
+                    } else if (state && typeof state.darkMode === 'boolean') {
+                        theme = state.darkMode ? 'dark' : 'light';
                     }
                 } catch (e) {}
                 var dark = theme === 'system' ? window.matchMedia('(prefers-color-scheme: dark)').matches : theme === 'dark';

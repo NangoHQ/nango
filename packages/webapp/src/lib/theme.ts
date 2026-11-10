@@ -27,7 +27,13 @@ function getStoredTheme(): Theme {
     try {
         const raw = localStorage.getItem(LocalStorageKeys.Theme);
         const s = raw ? (JSON.parse(raw) as { state?: { theme?: Theme; darkMode?: boolean } }) : null;
-        return s?.state?.theme ?? (s?.state?.darkMode === false ? 'light' : DEFAULT_THEME);
+        if (s?.state?.theme) {
+            return s.state.theme;
+        }
+        if (typeof s?.state?.darkMode === 'boolean') {
+            return s.state.darkMode ? 'dark' : 'light';
+        }
+        return DEFAULT_THEME;
     } catch {
         return DEFAULT_THEME;
     }
