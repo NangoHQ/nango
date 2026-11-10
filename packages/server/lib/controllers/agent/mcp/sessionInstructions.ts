@@ -1,5 +1,7 @@
 import type { AgentSession, AgentSessionResolvedConnection } from '@nangohq/types';
 
+const MAX_ACCOUNT_LABEL_LENGTH = 100;
+
 /**
  * Sent once in the initialize result. Only what the session was created with goes in, so it says
  * nothing about a tool the session does not have.
@@ -82,7 +84,7 @@ function describeIntegrations(session: AgentSession): string {
     return [
         'By the integration id every tool expects:',
         ...integrations.map(({ id, provider, connection }) => `- ${id} (${provider}): ${describeConnection(connection)}`),
-        ...(integrations.some(({ connection }) => connection?.accountLabel) ? ["An account named above is the user's own account on that app."] : []),
+        'Each connected integration is on the account of the user this session acts for.',
         `This is each integration's status when you received these instructions. ${session.metaTools.nangoCreateConnection.enabled ? 'After you connect one, or when unsure' : 'When unsure'}, trust ${session.metaTools.nangoToolSearch ? 'nango_tool_search results and ' : ''}tool errors over this list.`
     ].join('\n');
 }
@@ -96,5 +98,18 @@ function describeConnection(connection: AgentSessionResolvedConnection | undefin
         return 'not connected';
     }
 
-    return connection.accountLabel ? `connected as ${connection.accountLabel}` : 'connected';
+    const accountLabel = connection.accountLabel ? cleanAccountLabel(connection.accountLabel) : '';
+    return accountLabel ? `connected by ${JSON.stringify(accountLabel)}` : 'connected';
+}
+
+/**
+ * The label is tag text the instructions quote, so it is kept to one short line that cannot start
+ * a line or a section of its own.
+ */
+function cleanAccountLabel(label: string): string {
+    return label
+        .replace(/[\s\p{Cc}\p{Cf}]+/gu, ' ')
+        .trim()
+        .slice(0, MAX_ACCOUNT_LABEL_LENGTH)
+        .trim();
 }
