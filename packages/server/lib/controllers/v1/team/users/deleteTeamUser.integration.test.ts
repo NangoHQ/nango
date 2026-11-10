@@ -14,12 +14,17 @@ vi.mock('@nangohq/utils', async (importOriginal) => ({ ...(await importOriginal<
 
 const route = '/api/v1/team/users/:id';
 let api: Awaited<ReturnType<typeof runServer>>;
+let getOrCreateCustomerSpy: MockInstance<typeof billing.getOrCreateCustomer>;
 let createSubscriptionSpy: MockInstance<typeof billing.createSubscription>;
 describe(`DELETE ${route}`, () => {
     beforeAll(async () => {
         api = await runServer();
-        vi.spyOn(billing, 'getOrCreateCustomer').mockResolvedValue(
-            Ok({ id: 'orb_cust_123', invoicingDetails: { legalEntityName: '', email: '', additionalEmails: [], address: null, taxId: null }, portalUrl: null })
+        getOrCreateCustomerSpy = vi.spyOn(billing, 'getOrCreateCustomer').mockResolvedValue(
+            Ok({
+                id: 'orb_cust_123',
+                invoicingDetails: { legalEntityName: '', email: '', additionalEmails: [], address: null, taxId: null },
+                portalUrl: null
+            })
         );
         createSubscriptionSpy = vi
             .spyOn(billing, 'createSubscription')
@@ -86,6 +91,7 @@ describe(`DELETE ${route}`, () => {
 
         const plan = await getPlan(db.knex, { accountId: movedUser!.account_id });
         expect(plan.unwrap()).toMatchObject({ orb_customer_id: 'orb_cust_123', orb_subscription_id: 'orb_sub_123' });
+        expect(getOrCreateCustomerSpy).toHaveBeenCalledWith(movedUser!.account_id, expect.objectContaining({ email: user2.email }));
         expect(createSubscriptionSpy).toHaveBeenCalledWith(expect.objectContaining({ id: movedUser!.account_id }), 'free');
     });
 });
