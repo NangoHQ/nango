@@ -16,7 +16,6 @@ import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { billedUsageMetrics, getAggregateUsageState } from '@/utils/usage';
 import DashboardLayout from '../../../layout/DashboardLayout';
-import { BillingHeaderAction } from './components/BillingHeaderAction';
 import { Payment } from './components/Payment';
 import { PaymentMethodDialog } from './components/PaymentMethodDialog';
 import { Plans } from './components/Plans';
@@ -96,7 +95,7 @@ export const TeamBilling: React.FC = () => {
     // caps the content: the usage charts have a fixed height, so unbounded width stretches them to an
     // unreadable aspect ratio on wide screens.
     return (
-        <DashboardLayout ref={scrollRef} fullWidth centered actions={<BillingHeaderAction />}>
+        <DashboardLayout ref={scrollRef} fullWidth centered>
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>

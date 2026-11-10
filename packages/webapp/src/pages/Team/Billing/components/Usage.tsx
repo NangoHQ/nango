@@ -10,11 +10,12 @@ import { useApiGetBillingPeriodCosts, useApiGetBillingUsage, useApiGetProjectedC
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { billedUsageMetrics, LEGACY_USAGE_METRICS, S26_USAGE_METRICS } from '@/utils/usage';
-import { hasMonthlySpend, isLegacyPlan } from '../planVisibility';
+import { hasMonthlySpend, isLegacyPlan, showsSummaryStrip } from '../planVisibility';
 import { buildProjectedCharges, buildUsageRowCharges } from '../usageCharges';
 import { usePlanTransition } from '../usePlanTransition';
 import { useSelectedMonth } from '../useSelectedMonth';
 import { FreeUsage } from './FreeUsage';
+import { InvoicesLink } from './InvoicesLink';
 import { MonthSelector } from './MonthSelector';
 import { USAGE_METRIC_LABELS } from './usageMetrics';
 import { UsageTable } from './UsageTable';
@@ -141,7 +142,10 @@ export const Usage: React.FC = () => {
 
             <div className="flex justify-between items-center">
                 <span className="text-text-strong text-body-medium-medium">Usage</span>
-                <MonthSelector />
+                <div className="flex items-center gap-4">
+                    {plan && !showsSummaryStrip(plan, isMigrating) && <InvoicesLink />}
+                    <MonthSelector />
+                </div>
             </div>
 
             <UsageTable
