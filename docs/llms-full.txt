@@ -6934,20 +6934,16 @@ The audit trail covers the main control-plane operations related to connections,
 
 Secrets, such as API keys and passwords, are stripped from audit log entries.
 
-These reads that return a secret are recorded as `credentials_read`:
+Two kinds of reads are recorded: queries to the audit trail itself, and reads that return credentials. A credentials read is recorded as `credentials_read`, so you can see who accessed a secret.
 
-| Resource | Recorded when |
-|----------|---------------|
-| `connection` | A connection is opened in the dashboard by someone allowed to see its credentials |
-| `integration` | An integration is read with its credentials: in the dashboard by someone allowed to see them, or through the API with `include=credentials` (or `include_creds=true` on the deprecated `GET /config/{providerConfigKey}`) |
-| `api_key` | API key secrets are read: `GET /environments/{environmentUuid}/api-keys/{keyUuid}`, or the API keys pages in the dashboard by someone allowed to see the secrets |
-| `environment` | An environment is read with its secrets: `GET /environments/{environmentUuid}?with_secrets=true` |
+Only control plane credential reads are recorded: those made from the dashboard or through the API endpoints that manage integrations, API keys, and environments. Data plane reads, such as fetching a connection's credentials with `GET /connections/{connectionId}`, are not. Control plane credential reads cover:
 
-On these endpoints, a request that asks for a secret explicitly is recorded even when it is denied. A list read records one entry whose targets are every entity whose credentials were returned.
-
-Reading connection credentials through the API, such as `GET /connections/{connectionId}`, is not recorded yet; see [Limitations](#limitations).
-
-Other reads are not recorded. Listing connections, fetching an integration without its credentials, seeing an API key masked, or opening a page in the dashboard leaves no entry. Our audit trail is designed to answer "what changed" and "who saw a secret", not "what was looked at". Queries to the audit trail are an exception and logged with the actions listed above.
+| Resource | Credentials |
+|----------|-------------|
+| `connection` | Connection credentials |
+| `integration` | Integration credentials, such as the client secret |
+| `api_key` | API key secrets |
+| `environment` | Environment secrets, such as the webhook signing key |
 
 <Note>
 The audit trail currently does not cover data plane operations, such as reading connection credentials or fetching sync records. See [Limitations](#limitations) for details.
