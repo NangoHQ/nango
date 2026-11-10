@@ -222,7 +222,8 @@ describe('POST /v1/telemetry/uploads', () => {
         const res = await send(privateKeyPem, upload(uuid, [row(), row({ value: 'many' })]));
 
         expect(res).toEqual({ status: 400, json: { error: { code: 'invalid_row', message: 'line 3 is not a valid row' } } });
-        expect(span.setTag).toHaveBeenCalledWith('error', new Error('invalid_row: line 3 is not a valid row'));
+        expect(span.addTags).toHaveBeenCalledWith({ 'nango.errorCode': 'invalid_row', 'nango.errorMessage': 'line 3 is not a valid row' });
+        expect(span.setTag).not.toHaveBeenCalledWith('error', expect.anything());
         expect(await stored(uuid)).toEqual([]);
     });
 
@@ -276,6 +277,7 @@ describe('POST /v1/telemetry/uploads', () => {
             const res = await post(body, { token: await mintInstallationToken(privateKeyPem, { body }), to: address(broken) });
 
             expect(res).toEqual({ status: 500, json: { error: { code: 'insert_failed', message: 'the upload could not be stored' } } });
+            expect(span.setTag).toHaveBeenCalledWith('error', expect.any(Error));
         } finally {
             await new Promise((resolve) => broken.close(resolve));
             await nowhere.close();

@@ -4,10 +4,11 @@ import type { UploadErrorCode } from './reader.js';
 import type { ApiError } from '@nangohq/types';
 import type { Response } from 'express';
 
-export type UploadApiErrorCode = UploadErrorCode | 'installation_mismatch' | 'insert_failed';
+export type UploadApiErrorCode = UploadErrorCode | 'invalid_body' | 'installation_mismatch' | 'insert_failed';
 
 const STATUS: Partial<Record<UploadApiErrorCode, number>> = {
     installation_mismatch: 403,
+    invalid_body: 400,
     invalid_encoding: 400,
     invalid_header: 400,
     invalid_row: 400,

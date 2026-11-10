@@ -47,6 +47,13 @@ describe('readUpload', () => {
         expect(await failure(Buffer.from(`${header}\n${row()}`))).toMatchObject({ code: 'invalid_encoding' });
     });
 
+    it('rejects text that is not valid UTF-8 instead of storing a repaired copy', async () => {
+        const [before, after] = row({ metric: 'nango.hosted_metric.SPLIT' }).split('SPLIT') as [string, string];
+        const body = gzipSync(Buffer.concat([Buffer.from(`${header}\n${before}`), Buffer.from([0xff]), Buffer.from(after)]));
+
+        expect(await failure(body)).toMatchObject({ code: 'invalid_encoding' });
+    });
+
     it('rejects a body that inflates over the limit', async () => {
         expect(await failure(gzipSync(Buffer.alloc(TELEMETRY_UPLOAD_MAX_UNCOMPRESSED_BYTES + 1)))).toMatchObject({ code: 'request_too_large' });
     });
@@ -70,6 +77,7 @@ describe('readUpload', () => {
     it.each([
         ['a value that is not finite', `{"kind":"row","ts":"2026-11-08T00:00:00.000Z","metric":"m","attributes":{},"value":1e999}`],
         ['a timestamp that is not UTC', row({ ts: '2026-11-08T00:00:00.000+01:00' })],
+        ['a timestamp finer than a millisecond', row({ ts: '2026-11-08T00:00:00.000123Z' })],
         ['a metric over 255 characters', row({ metric: 'm'.repeat(256) })],
         ['a nested attribute', row({ attributes: { environment: { name: 'prod' } } })],
         ['an attribute list', row({ attributes: { environments: ['prod'] } })],
