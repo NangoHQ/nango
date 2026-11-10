@@ -2,7 +2,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { CUSTOMERS_TABLE } from '../db/schema.js';
 import { inserted, isUniqueViolation, orMissing, table } from './db.js';
-import { deleteInstallation, deleteInstallationPreview, listInstallations } from './installation.service.js';
+import { deleteInstallation, deleteInstallationPreview, searchInstallations } from './installation.service.js';
 
 import type { RegistryDb } from './db.js';
 import type { DeleteInstallationPreview } from './installation.service.js';
@@ -35,7 +35,7 @@ export async function deleteCustomerPreview(
     db: RegistryDb,
     { customer }: { customer: DBSelfHostingCustomer }
 ): Promise<Result<{ customer: string; installations: DeleteInstallationPreview[] }>> {
-    const rows = await listInstallations(db, { customerId: customer.id });
+    const rows = await searchInstallations(db, { customerId: customer.id });
     if (rows.isErr()) {
         return Err(rows.error);
     }
@@ -56,7 +56,7 @@ export async function deleteCustomer(db: RegistryDb, { name }: { name: string })
             await db.knex.transaction(async (trx) => {
                 const inTrx = { ...db, knex: trx };
                 const customer = (await requireCustomer(inTrx, { name })).unwrap();
-                for (const installation of (await listInstallations(inTrx, { customerId: customer.id })).unwrap()) {
+                for (const installation of (await searchInstallations(inTrx, { customerId: customer.id })).unwrap()) {
                     (await deleteInstallation(inTrx, { id: installation.id })).unwrap();
                 }
                 const now = new Date();
