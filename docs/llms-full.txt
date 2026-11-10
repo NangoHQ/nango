@@ -7650,7 +7650,7 @@ The flag is only set when the integration's webhook handling knows verification 
 
 The Nango signature on flagged requests only proves the webhook came through Nango, not that the provider sent it. Anyone who knows the integration's webhook URL can send one. Treat the payload as untrusted, and set the webhook secret on the integration to enable verification. The forward operation in the Nango logs also shows a warning with the reason.
 
-Some providers reject webhooks Nango cannot verify, such as GitHub App, Gmail, Microsoft Teams, Salesforce, Airtable, Affinity, Fillout and ShipStation. For these, **Allow unverified webhooks** in **Integrations > [Integration] > Settings** lets webhooks with a missing or unverifiable signature through, flagged as above. It is off by default, and is meant for prototyping or while you set up verification. It never lets through a webhook with an invalid signature.
+Some providers reject webhooks Nango cannot verify, such as GitHub App, Gmail, Microsoft Teams, Salesforce, Airtable, DocuSign, Affinity, Fillout and ShipStation. For these, **Allow unverified webhooks** in **Integrations > [Integration] > Settings** lets webhooks with a missing or unverifiable signature through, flagged as above. It is off by default, and is meant for prototyping or while you set up verification. It never lets through a webhook with an invalid signature.
 
 ## When to use forwarding
 
@@ -16572,8 +16572,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `docmosis` | Docmosis | API_KEY | [docs](https://nango.dev/docs/api-integrations/docmosis.md) | [connect](https://nango.dev/docs/api-integrations/docmosis/connect.md) |  | productivity |
 | `docparser` | Docparser | BASIC | [docs](https://nango.dev/docs/api-integrations/docparser.md) | [connect](https://nango.dev/docs/api-integrations/docparser/connect.md) |  | productivity |
 | `document360` | Document360 | API_KEY | [docs](https://nango.dev/docs/integrations/all/document360.md) |  |  | knowledge-base |
-| `docusign` | DocuSign | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/docusign.md) |  |  | legal |
-| `docusign-sandbox` | DocuSign (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/docusign-sandbox.md) |  |  | legal |
+| `docusign` | DocuSign | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/docusign.md) |  | [setup](https://nango.dev/docs/api-integrations/docusign/how-to-register-your-own-docusign-oauth-app.md) | legal |
+| `docusign-sandbox` | DocuSign (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/docusign-sandbox.md) |  | [setup](https://nango.dev/docs/api-integrations/docusign-sandbox/how-to-register-your-own-docusign-sandbox-oauth-app.md) | legal |
 | `docuware` | DocuWare | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/docuware.md) | [connect](https://nango.dev/docs/integrations/all/docuware/connect.md) |  | productivity |
 | `domo` | Domo | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/domo.md) | [connect](https://nango.dev/docs/api-integrations/domo/connect.md) |  | productivity, other |
 | `dope-security` | dope.security | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/dope-security.md) | [connect](https://nango.dev/docs/api-integrations/dope-security/connect.md) |  | dev-tools |

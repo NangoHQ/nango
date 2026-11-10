@@ -1,0 +1,179 @@
+---
+title: 'How to set up webhooks with DocuSign (Sandbox) on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time DocuSign Connect events from developer accounts using Nango webhooks'
+---
+
+DocuSign Connect notifies your app when an envelope or recipient changes, such as an envelope being sent, signed or voided. Nango verifies each event's HMAC signature and routes it to the connection of the DocuSign account it belongs to.
+
+## How it works
+
+1. You create one HMAC key in the DocuSign account that owns your integration key, and set it as the webhook secret on your Nango integration.
+2. Your app subscribes to events on your users' accounts with `integratorManaged` set, so DocuSign signs their events with **your** key. Your users never create or share HMAC keys.
+3. When an event happens, Nango checks the signature, matches the event's `data.accountId` to the connection's `accountId`, and forwards the event to your app.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your DocuSign (Sandbox) integration and copy the **Webhook URL**.
+
+### 2. Create an HMAC key
+
+In the DocuSign developer account that owns your integration key, open [Connect](https://apps-d.docusign.com/admin/connect), go to the **Connect Keys** tab and click **Add Secret Key**. Copy the key right away: DocuSign only shows it in full once.
+
+HMAC keys can only be created in the DocuSign admin, not through the API. Developer and production accounts have separate keys, so create a new one in production when you [go live](/api-integrations/docusign/webhooks).
+
+### 3. Set the webhook secret on the integration
+
+In the Nango dashboard, open your DocuSign (Sandbox) integration settings and paste the key into **Webhook secret**.
+
+<Accordion title="For agents">
+Set the key with [update an integration](/reference/backend/http-api/integration/update), passing it as `credentials.webhook_secret` with the integration's existing OAuth credentials:
+
+```bash
+curl -X PATCH "https://api.nango.dev/integrations/<INTEGRATION-ID>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "credentials": {
+      "type": "OAUTH2",
+      "client_id": "<INTEGRATION-KEY>",
+      "client_secret": "<CLIENT-SECRET>",
+      "webhook_secret": "<DOCUSIGN-HMAC-KEY>"
+    }
+  }'
+```
+</Accordion>
+
+### 4. Subscribe to events
+
+Subscribe with the user's connection, either per envelope or for the whole account. Both need `includeHMAC` and `integratorManaged` set to `"true"`, the JSON format (`restv2.1`) and `SIM` delivery. DocuSign flags are strings.
+
+**Per envelope** (no admin rights needed): add `eventNotification` when you create the envelope.
+
+```json
+{
+  "emailSubject": "Please sign",
+  "status": "sent",
+  "documents": [...],
+  "recipients": {...},
+  "eventNotification": {
+    "url": "<NANGO-WEBHOOK-URL>",
+    "deliveryMode": "SIM",
+    "eventData": { "version": "restv2.1" },
+    "events": ["envelope-sent", "envelope-completed", "envelope-voided", "recipient-completed"],
+    "includeHMAC": "true",
+    "integratorManaged": "true",
+    "requireAcknowledgment": "true"
+  }
+}
+```
+
+**Per account** (the user must be an account admin): create a Connect configuration on the user's account.
+
+<Accordion title="For agents">
+Both requests go through the [Nango proxy](/guides/platform/proxy-requests) with the user's connection. The connection config holds the user's `accountId`.
+
+Per envelope:
+
+```bash
+curl -X POST "https://api.nango.dev/proxy/restapi/v2.1/accounts/<ACCOUNT-ID>/envelopes" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>" \
+  -H "Content-Type: application/json" \
+  -d '<ENVELOPE-WITH-EVENT-NOTIFICATION>'
+```
+
+Per account:
+
+```bash
+curl -X POST "https://api.nango.dev/proxy/restapi/v2.1/accounts/<ACCOUNT-ID>/connect" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Nango",
+    "configurationType": "custom",
+    "urlToPublishTo": "<NANGO-WEBHOOK-URL>",
+    "deliveryMode": "SIM",
+    "eventData": { "version": "restv2.1" },
+    "events": ["envelope-sent", "envelope-completed", "envelope-voided", "recipient-completed"],
+    "includeHMAC": "true",
+    "integratorManaged": "true",
+    "allUsers": "true",
+    "allowEnvelopePublish": "true"
+  }'
+```
+
+See DocuSign's guides on [HMAC for multiple accounts](https://developers.docusign.com/platform/webhooks/connect/managing-hmac-multiple-accounts/) and [creating a Connect configuration](https://developers.docusign.com/docs/esign-rest-api/reference/connect/connectconfigurations/create).
+</Accordion>
+
+## Webhook payload
+
+```json
+{
+  "event": "envelope-completed",
+  "apiVersion": "v2.1",
+  "uri": "/restapi/v2.1/accounts/<ACCOUNT-ID>/envelopes/<ENVELOPE-ID>",
+  "retryCount": 0,
+  "configurationId": 10001,
+  "generatedDateTime": "2026-11-09T12:00:00.000Z",
+  "data": {
+    "accountId": "<ACCOUNT-ID>",
+    "userId": "<USER-ID>",
+    "envelopeId": "<ENVELOPE-ID>"
+  }
+}
+```
+
+| Field | Description |
+| --- | --- |
+| `event` | The event name, such as `envelope-sent` or `recipient-completed`. Used as the webhook type. |
+| `data.accountId` | The DocuSign account the event belongs to. Used for connection matching. |
+| `data.envelopeId` | The envelope that changed. Recipient events also include `data.recipientId`. |
+| `data.envelopeSummary` | The envelope itself, when the subscription includes data. |
+
+With JSON SIM, DocuSign sends the recipient event before the envelope event.
+
+## Connection matching
+
+Nango matches `data.accountId` against the connection's `accountId`. Nango saves it when the connection is created, from the user's **default** DocuSign account. Events from another account the user belongs to do not match that connection.
+
+If several connections share the same account, each receives the event. A verified event for an account with no connection is still forwarded, without a connection ID.
+
+## Signature verification
+
+DocuSign sends one `X-DocuSign-Signature-N` header per active HMAC key, each a base64 HMAC-SHA256 of the raw body. Nango accepts the event when any of them matches the integration's webhook secret.
+
+<Warning>
+Nango rejects events with a missing or invalid signature. Without a webhook secret on the integration, Nango rejects all DocuSign events unless the integration [allows unverified webhooks](/guides/platform/webhook-forwarding#unverified-webhooks).
+</Warning>
+
+## Handle the webhook
+
+Once routed to a connection, you can:
+
+- **Forward it to your app**: Nango forwards the event to your [webhook URL](/guides/platform/webhook-forwarding).
+- **Handle it in a webhook function**: use `event` (for example `envelope-completed`) as the webhook subscription.
+
+DocuSign expects a response within five seconds. Fetch the envelope from the API when you need data the event does not carry, and keep a periodic sync running to catch anything a webhook missed.
+
+## Supported events
+
+| Object | Events |
+| --- | --- |
+| Envelope | `envelope-created`, `envelope-sent`, `envelope-delivered`, `envelope-completed`, `envelope-declined`, `envelope-voided`, `envelope-corrected`, `envelope-deleted` |
+| Recipient | `recipient-sent`, `recipient-delivered`, `recipient-completed`, `recipient-declined`, `recipient-autoresponded`, `recipient-authenticationfailed` |
+
+Subscribe only to the events you need. For the full list, see [DocuSign event triggers](https://developers.docusign.com/platform/webhooks/connect/event-triggers/).
+
+## Rollback strategy
+
+To stop events, delete the user's Connect configuration, or stop adding `eventNotification` to new envelopes.
+
+To rotate the key, add a new key in your DocuSign account, update the integration's webhook secret, then delete the old key. DocuSign signs with every active key, so events keep verifying during the switch.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>

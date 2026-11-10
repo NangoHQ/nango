@@ -9649,7 +9649,11 @@ docusign:
     proxy:
         base_url: https://www.docusign.net
     post_connection_script: docusignPostConnection
-    docs: https://nango.dev/docs/integrations/all/docusign
+    webhook_routing_script: docusignWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_signature_enforced: true
+    docs: https://nango.dev/docs/api-integrations/docusign
+    setup_guide_url: https://nango.dev/docs/api-integrations/docusign/how-to-register-your-own-docusign-oauth-app
 
 docusign-sandbox:
     display_name: DocuSign (Sandbox)
@@ -9668,7 +9672,11 @@ docusign-sandbox:
     proxy:
         base_url: https://demo.docusign.net
     post_connection_script: docusignPostConnection
-    docs: https://nango.dev/docs/integrations/all/docusign-sandbox
+    webhook_routing_script: docusignWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_signature_enforced: true
+    docs: https://nango.dev/docs/api-integrations/docusign-sandbox
+    setup_guide_url: https://nango.dev/docs/api-integrations/docusign-sandbox/how-to-register-your-own-docusign-sandbox-oauth-app
 
 docuware:
     display_name: DocuWare
