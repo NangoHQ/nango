@@ -1,184 +1,145 @@
 import * as Collapsible from '@radix-ui/react-collapsible';
-import { ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 
-import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
-import { cn } from '@/utils/utils';
-import { CatalogBadge } from '../CatalogBadge';
+import { Badge } from '@nangohq/design-system';
+
 import { isAnyOfSchema, isArraySchema, isObjectSchema, isOneOfSchema, typeToString } from './utils';
 
 import type { JSONSchema7, JSONSchema7Type } from 'json-schema';
 
+const MAX_DEPTH = 8;
+const ENUM_BADGE_MAX_LENGTH = 50;
+
 export const JsonSchemaTopLevelObject: React.FC<{ schema: JSONSchema7 }> = ({ schema }) => {
     if (!isObjectSchema(schema)) {
         return (
-            <div className="flex flex-col gap-1.5">
-                <CatalogBadge variant="light">{typeToString(schema, false)}</CatalogBadge>
-                {schema.description && <p className="text-text-muted text-body-small-medium">{schema.description}</p>}
+            <div className="flex flex-col gap-2 p-2">
+                <span>
+                    <Badge>{typeToString(schema, false)}</Badge>
+                </span>
+                {schema.description && <p className="type-label-xs text-text-secondary">{schema.description}</p>}
             </div>
         );
     }
 
+    return <FieldList schema={schema} depth={0} />;
+};
+
+const FieldList: React.FC<{ schema: JSONSchema7; depth: number }> = ({ schema, depth }) => {
+    const { properties, required, additionalProperties } = schema;
+
     return (
-        <div className="flex flex-col gap-1.5">
-            {Object.entries(schema.properties || {}).map(([name, property]) => (
-                <TopLevelWrapper key={name}>
-                    <JsonSchema name={name} schema={property as JSONSchema7} isRequired={schema.required?.includes(name)} depth={0} />
-                </TopLevelWrapper>
+        <div className="flex flex-col">
+            {Object.entries(properties ?? {}).map(([name, property]) => (
+                <Field key={name} name={name} schema={property as JSONSchema7} isRequired={required?.includes(name) ?? false} depth={depth} />
             ))}
+            {additionalProperties && (
+                <Field name="{key}" schema={typeof additionalProperties === 'object' ? additionalProperties : {}} isRequired={false} depth={depth} />
+            )}
         </div>
     );
 };
 
-const JsonSchema: React.FC<{ name: string; schema: JSONSchema7; depth: number; isArray?: boolean; isRequired?: boolean }> = ({
-    name,
-    schema,
-    isArray = false,
-    isRequired = false,
-    depth
-}) => {
-    if (isOneOfSchema(schema) || isAnyOfSchema(schema)) {
-        return <JsonSchemaOneOf name={name} schema={schema} isArray={isArray} depth={depth} />;
-    }
-
-    if (isObjectSchema(schema)) {
-        return <JsonSchemaObject name={name} schema={schema} isArray={isArray} depth={depth} />;
-    }
-
-    if (isArraySchema(schema)) {
-        return <JsonSchema name={name} schema={schema.items as JSONSchema7} isArray={true} depth={depth} />;
-    }
+const Field: React.FC<{ name: string; schema: JSONSchema7; isRequired: boolean; depth: number }> = ({ name, schema, isRequired, depth }) => {
+    const { itemSchema, arrayDepth } = unwrapArrays(schema);
+    const description = schema.description ?? itemSchema.description;
+    const defaultValue = formatDefault(schema.default ?? itemSchema.default);
+    const enumUnion = itemSchema.enum && itemSchema.enum.length > 0 ? itemSchema.enum.map((value) => JSON.stringify(value)).join(' | ') : null;
+    const showEnumInBadge = enumUnion !== null && enumUnion.length <= ENUM_BADGE_MAX_LENGTH;
+    const type = showEnumInBadge ? withArraySuffix(enumUnion, arrayDepth) : formatType(itemSchema, arrayDepth);
+    const nested = depth < MAX_DEPTH ? getNestedSchemas(itemSchema) : [];
 
     return (
-        <JsonSchemaGenericInfo
-            name={name}
-            type={typeToString(schema, isArray)}
-            description={schema.description}
-            depth={depth}
-            isRequired={isRequired}
-            defaultValue={schema.default}
-        />
-    );
-};
-
-const JsonSchemaGenericInfo: React.FC<{
-    name: string;
-    description?: string | undefined;
-    type: string;
-    depth: number;
-    isRequired?: boolean;
-    defaultValue?: JSONSchema7Type | undefined;
-}> = ({ name, description, type, depth, isRequired, defaultValue }) => {
-    const defaultString =
-        typeof defaultValue === 'string' || typeof defaultValue === 'number' || typeof defaultValue === 'boolean' ? String(defaultValue) : null;
-    return (
-        <div className="w-full flex flex-col gap-1.5">
-            <div className="flex flex-row items-start justify-between">
-                <span className="text-text-strong text-body-small-semi">{name}</span>{' '}
-                <div className="flex gap-1.5">
-                    <CatalogBadge variant={depth % 2 === 0 ? 'dark' : 'light'}>{type}</CatalogBadge>
-                    {isRequired && <CatalogBadge variant="red">required</CatalogBadge>}
-                </div>
+        <div className="flex flex-col gap-2 border-b-[0.5px] border-border-default p-2 last:border-b-0">
+            <div className="flex items-start gap-2">
+                <span className="min-w-0 flex-1 break-all type-code-medium-xs text-text-default">{name}</span>
+                <span className="flex shrink-0 items-center gap-1">
+                    <Badge>{type}</Badge>
+                    {isRequired && <Badge variant="danger">required</Badge>}
+                </span>
             </div>
-            {description && <p className="text-text-muted text-body-small-medium">{description}</p>}
-            {defaultString && <KeyValueBadge label="Default">{defaultString}</KeyValueBadge>}
-        </div>
-    );
-};
-const JsonSchemaObject: React.FC<{ name: string; schema: JSONSchema7; isArray?: boolean; depth: number }> = ({ name, schema, isArray = false, depth = 0 }) => {
-    if (!isObjectSchema(schema)) {
-        throw new Error('Expected object schema.');
-    }
-
-    const hasProperties = Object.keys(schema.properties || {}).length > 0 || schema.additionalProperties;
-
-    return (
-        <div className="flex flex-col gap-3">
-            <JsonSchemaGenericInfo name={name} type={typeToString(schema, isArray)} description={schema.description} depth={depth} />
-            {hasProperties && <CollapsibleProperties schema={schema} depth={depth + 1} />}
+            {description && <p className="type-label-xs text-text-secondary">{description}</p>}
+            {enumUnion && !showEnumInBadge && <p className="break-words type-code-regular-xxs text-text-default">{enumUnion}</p>}
+            {defaultValue && <ValueLine label="Default">{defaultValue}</ValueLine>}
+            {nested.length > 0 && <NestedFields schemas={nested} isVariants={isOneOfSchema(itemSchema) || isAnyOfSchema(itemSchema)} depth={depth + 1} />}
         </div>
     );
 };
 
-const JsonSchemaOneOf: React.FC<{ name: string; schema: JSONSchema7; isArray?: boolean; depth: number }> = ({ name, schema, isArray = false, depth = 0 }) => {
-    if (!isOneOfSchema(schema) && !isAnyOfSchema(schema)) {
-        throw new Error('Expected oneOf or anyOf schema.');
-    }
+const ValueLine: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+    <p className="type-label-xs text-text-secondary">
+        {label}: <span className="type-code-regular-xxs text-text-default">{children}</span>
+    </p>
+);
 
-    const schemas = schema.oneOf || schema.anyOf || [];
+const NestedFields: React.FC<{ schemas: JSONSchema7[]; isVariants: boolean; depth: number }> = ({ schemas, isVariants, depth }) => {
+    const fieldCount = schemas.reduce((count, schema) => count + Object.keys(schema.properties ?? {}).length + (schema.additionalProperties ? 1 : 0), 0);
+    const label = isVariants ? `${schemas.length} ${schemas.length === 1 ? 'variant' : 'variants'}` : `${fieldCount} ${fieldCount === 1 ? 'field' : 'fields'}`;
 
     return (
-        <div className="flex flex-col gap-3">
-            <JsonSchemaGenericInfo
-                name={name}
-                type={typeToString(schema, isArray)}
-                description={schema.description}
-                defaultValue={schema.default}
-                depth={depth}
-            />
-            <div className="flex flex-col gap-3">
-                {schemas
-                    .filter((s) => isObjectSchema(s as JSONSchema7))
-                    .map((s, index) => (
-                        <CollapsibleProperties key={index} schema={s as JSONSchema7} depth={depth + 1} />
-                    ))}
-            </div>
-        </div>
-    );
-};
-
-const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = ({ schema, depth }) => {
-    const [open, setOpen] = useState(false);
-
-    // Don't go too deep to avoid breaking the UI
-    if (depth >= 8) {
-        return null;
-    }
-
-    if (!isObjectSchema(schema)) {
-        throw new Error('Expected object schema.');
-    }
-    const { properties, required } = schema;
-
-    const propertyCount = properties ? Object.keys(properties).length : 0;
-    return (
-        <Collapsible.Root open={open} onOpenChange={setOpen} disabled={propertyCount === 0}>
-            <Collapsible.Trigger asChild>
-                <div
-                    className={cn(
-                        'group w-full p-4 flex flex-row items-center justify-between rounded focus-default cursor-pointer transition-all',
-                        depth % 2 === 0 ? 'bg-surface-canvas' : 'bg-surface-panel'
-                    )}
-                >
-                    <div className="inline-flex gap-1 items-center">
-                        <span className="text-text-strong text-body-small-semi grow">{open ? 'Hide child attributes' : 'Show child attributes'}</span>
-                        <ChevronDown className="size-4 text-icon-default group-data-[state=open]:rotate-180" />
-                    </div>
-                    <span className="text-text-strong text-body-small-medium">{propertyCount}</span>
-                </div>
+        <Collapsible.Root>
+            <Collapsible.Trigger className="group inline-flex cursor-pointer items-center gap-1 rounded-ds-xs type-text-medium-xs text-text-secondary transition-colors hover:text-text-default focus-default">
+                <ChevronRight className="size-3.5 transition-transform group-data-[state=open]:rotate-90" />
+                {label}
             </Collapsible.Trigger>
-            <Collapsible.Content asChild>
-                <div className={cn('group/collapsible p-4 pt-0 rounded-b', depth % 2 === 0 ? 'bg-surface-canvas' : 'bg-surface-panel')}>
-                    {Object.entries(properties || {}).map(([name, property]) => (
-                        <div
-                            key={name}
-                            className={cn('px-4 py-2 border-b last:border-b-0', depth % 2 === 0 ? 'border-border-stronger' : 'border-border-default')}
-                        >
-                            <JsonSchema name={name} schema={property as JSONSchema7} isRequired={required?.includes(name)} depth={depth} />
+            <Collapsible.Content className="mt-1 ml-1.5 border-l-[0.5px] border-border-default pl-2">
+                {isVariants ? (
+                    schemas.map((schema, index) => (
+                        <div key={index} className="flex flex-col pt-2">
+                            <span className="px-2 type-label-xxs uppercase text-text-muted">Variant {index + 1}</span>
+                            <FieldList schema={schema} depth={depth} />
                         </div>
-                    ))}
-                    {schema.additionalProperties &&
-                        (typeof schema.additionalProperties === 'object' ? (
-                            <JsonSchema name="{key}" schema={schema.additionalProperties} depth={depth} />
-                        ) : (
-                            <JsonSchemaGenericInfo name="{key}" type="any" depth={depth} />
-                        ))}
-                </div>
+                    ))
+                ) : (
+                    <FieldList schema={schemas[0] ?? {}} depth={depth} />
+                )}
             </Collapsible.Content>
         </Collapsible.Root>
     );
 };
 
-const TopLevelWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    return <div className="p-2 bg-surface-page rounded flex flex-col gap-2">{children}</div>;
-};
+function unwrapArrays(schema: JSONSchema7): { itemSchema: JSONSchema7; arrayDepth: number } {
+    let itemSchema = schema;
+    let arrayDepth = 0;
+    while (isArraySchema(itemSchema)) {
+        const { items } = itemSchema;
+        itemSchema = items && typeof items === 'object' && !Array.isArray(items) ? items : {};
+        arrayDepth++;
+    }
+    return { itemSchema, arrayDepth };
+}
+
+function formatType(schema: JSONSchema7, arrayDepth: number): string {
+    const baseType = schema.enum ? getEnumType(schema) : schema.type || schema.oneOf || schema.anyOf ? typeToString(schema, false) : 'any';
+    return withArraySuffix(baseType, arrayDepth);
+}
+
+function withArraySuffix(type: string, arrayDepth: number): string {
+    if (arrayDepth === 0) {
+        return type;
+    }
+    return `${type.includes(' | ') ? `(${type})` : type}${'[]'.repeat(arrayDepth)}`;
+}
+
+function getEnumType(schema: JSONSchema7): string {
+    if (schema.type) {
+        return Array.isArray(schema.type) ? schema.type.join(' | ') : schema.type;
+    }
+    const valueTypes = new Set((schema.enum ?? []).map((value) => (value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value)));
+    return valueTypes.size > 0 ? [...valueTypes].join(' | ') : 'any';
+}
+
+function getNestedSchemas(schema: JSONSchema7): JSONSchema7[] {
+    if (isOneOfSchema(schema) || isAnyOfSchema(schema)) {
+        return ((schema.oneOf ?? schema.anyOf ?? []) as JSONSchema7[]).filter((option) => isObjectSchema(option) && hasFields(option));
+    }
+    return isObjectSchema(schema) && hasFields(schema) ? [schema] : [];
+}
+
+function hasFields(schema: JSONSchema7): boolean {
+    return Object.keys(schema.properties ?? {}).length > 0 || Boolean(schema.additionalProperties);
+}
+
+function formatDefault(value: JSONSchema7Type | undefined): string | null {
+    return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : null;
+}
