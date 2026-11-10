@@ -46,6 +46,22 @@ export interface FunctionAvailabilityRow {
 
 type ScopedFunctionRow = FunctionRow & { integration_id: string };
 
+export async function hasActiveLegacyActions({ accountId }: { accountId: number }): Promise<boolean> {
+    const row = await db.knex
+        .from({ sc: '_nango_sync_configs' })
+        .join({ env: '_nango_environments' }, 'env.id', 'sc.environment_id')
+        .join({ nc: '_nango_configs' }, 'nc.id', 'sc.nango_config_id')
+        .where('env.account_id', accountId)
+        .whereNull('env.deleted_at')
+        .where('nc.deleted', false)
+        .where('sc.type', 'action')
+        .where('sc.active', true)
+        .where('sc.deleted', false)
+        .select<{ id: number }[]>('sc.id')
+        .first();
+    return row !== undefined;
+}
+
 const listingOrderBy = "type = 'tool' DESC, type, name, event, id";
 
 const resolutionOrderBy = "type = 'tool' DESC, type, event, id";

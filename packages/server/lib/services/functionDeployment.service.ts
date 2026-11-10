@@ -11,7 +11,7 @@ import {
     sandboxApiKeyService,
     toFunctionDeploymentCreate
 } from '@nangohq/sandbox';
-import { configService, functionConfigService, getSyncConfigRaw } from '@nangohq/shared';
+import { configService, functionConfigService, functionLookupService, getSyncConfigRaw } from '@nangohq/shared';
 import { baseUrl, Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { deployIntegrationTemplate } from './integrationTemplate.service.js';
@@ -33,6 +33,7 @@ import type { Result } from '@nangohq/utils';
 const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
 
 export type DeployFunctionServiceErrorCode =
+    | 'legacy_actions_deprecated'
     | 'customer_api_key_required'
     | 'integration_not_found'
     | 'invalid_request'
@@ -41,6 +42,7 @@ export type DeployFunctionServiceErrorCode =
     | 'deployment_failed';
 
 export type DeployTemplateServiceErrorCode =
+    | 'legacy_actions_deprecated'
     | 'invalid_request'
     | 'integration_not_found'
     | 'template_not_found'
@@ -62,6 +64,16 @@ export class FunctionDeploymentServiceError<TCode extends FunctionDeploymentServ
         super(message, { cause });
         this.name = 'FunctionDeploymentServiceError';
         this.code = code;
+    }
+}
+
+export class LegacyActionsDeprecatedError extends FunctionDeploymentServiceError<'legacy_actions_deprecated'> {
+    constructor({ actionNames = [] }: { actionNames?: string[] } = {}) {
+        super({
+            code: 'legacy_actions_deprecated',
+            message: `Actions are deprecated. Use createTool instead.${actionNames.length > 0 ? ` Found: ${actionNames.join(', ')}.` : ''}`
+        });
+        this.name = 'LegacyActionsDeprecatedError';
     }
 }
 
@@ -145,6 +157,13 @@ export async function deployFunction({
                 message: `Cannot overwrite existing function '${body.function_name}'`
             })
         );
+    }
+
+    if (body.function_type === 'action') {
+        const canDeployActions = await functionLookupService.hasActiveLegacyActions({ accountId: environment.account_id });
+        if (!canDeployActions) {
+            return Err(new LegacyActionsDeprecatedError());
+        }
     }
 
     const allowDestructiveDeploy = Boolean(body.allow_destructive && existingSource === 'standalone');
@@ -250,6 +269,8 @@ export async function deployTemplate({
 
     if (!outcome.ok) {
         switch (outcome.reason) {
+            case 'legacy_actions_deprecated':
+                return Err(new LegacyActionsDeprecatedError());
             case 'integration_not_found':
                 return Err(
                     new FunctionDeploymentServiceError({

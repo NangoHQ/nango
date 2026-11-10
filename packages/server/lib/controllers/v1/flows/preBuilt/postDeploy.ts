@@ -4,6 +4,7 @@ import { productTracking } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
+import { LegacyActionsDeprecatedError } from '../../../../services/functionDeployment.service.js';
 import { deployIntegrationTemplate } from '../../../../services/integrationTemplate.service.js';
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { flowConfig } from '../../../sync/deploy/validation.js';
@@ -47,6 +48,11 @@ export const postPreBuiltDeploy = asyncWrapperWithEnvironment<PostPreBuiltDeploy
 
     if (!outcome.ok) {
         switch (outcome.reason) {
+            case 'legacy_actions_deprecated': {
+                const error = new LegacyActionsDeprecatedError();
+                res.status(403).send({ error: { code: error.code, message: error.message } });
+                return;
+            }
             case 'integration_not_found':
                 res.status(400).send({ error: { code: 'unknown_provider' } });
                 return;
