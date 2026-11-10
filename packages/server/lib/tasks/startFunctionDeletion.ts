@@ -35,8 +35,14 @@ export async function startFunctionDeletion(params: FunctionDeletionParams): Pro
                 if (deleted.isErr()) {
                     throw deleted.error;
                 }
+                if (deleted.value === 0) {
+                    return; // Already deleted. No need to enqueue the delete task.
+                }
             }
 
+            // TODO: fix race condition where the task is enqueued before the transaction commits.
+            // The task then runs before the soft-delete is visible to it. causing the delete task to be a no-op
+            // and leave the function in a soft-deleted state indefinitely.
             const res = await tasks.enqueue('deleteFunction', params);
             if (res.isErr()) {
                 throw res.error; // roll back the soft-delete
