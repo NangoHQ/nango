@@ -75,10 +75,7 @@ describe('sandboxed function deploy client', () => {
                 NANGO_DEPLOY_ARGS: JSON.stringify([
                     'deploy',
                     'dev',
-                    '--integration',
-                    'github',
-                    '--action',
-                    'listRepos',
+                    'github/actions/listRepos.ts',
                     '--auto-confirm',
                     '--no-interactive',
                     '--version',

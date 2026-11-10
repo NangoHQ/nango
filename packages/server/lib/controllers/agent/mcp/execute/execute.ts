@@ -174,6 +174,7 @@ export async function executeSessionTool({
 
         if (tool.value) {
             const { logCtx, result } = await invokeFunction({
+                operation: { type: 'tool', action: 'call' },
                 account,
                 environment,
                 connectionId: connection.connectionId,

@@ -2,84 +2,84 @@
 
 | Function name | Description | Type |
 | - | - | - |
-| `create-calendar-entry` | Create a new task or event | [Action](/guides/functions/action-functions) |
-| `create-comment` | Add a comment to a note. | [Action](/guides/functions/action-functions) |
-| `create-company` | Create a new company in Pipeline CRM. | [Action](/guides/functions/action-functions) |
-| `create-customer` | Mark a company as a customer (creates a Customer record tied to a company, tracking a health score). | [Action](/guides/functions/action-functions) |
-| `create-deal` | Create a new deal. | [Action](/guides/functions/action-functions) |
-| `create-document` | Attach a file to a deal, person, or company by URL. | [Action](/guides/functions/action-functions) |
-| `create-lead-source` | Create a new lead source. | [Action](/guides/functions/action-functions) |
-| `create-note` | Create a new note (activity) associated with a deal, person, or company. | [Action](/guides/functions/action-functions) |
-| `create-person` | Create a new person (contact) | [Action](/guides/functions/action-functions) |
-| `create-team` | Create a new team. | [Action](/guides/functions/action-functions) |
-| `create-webhook` | Subscribe a URL to a webhook event (event_model + event_action combination). | [Action](/guides/functions/action-functions) |
-| `delete-calendar-entry` | Delete a calendar entry. | [Action](/guides/functions/action-functions) |
-| `delete-comment` | Delete a comment. | [Action](/guides/functions/action-functions) |
-| `delete-company` | Delete a company. | [Action](/guides/functions/action-functions) |
-| `delete-customer` | Remove a customer record from a company (does not delete the company itself). | [Action](/guides/functions/action-functions) |
-| `delete-deal` | Delete a deal. | [Action](/guides/functions/action-functions) |
-| `delete-document` | Delete a document. | [Action](/guides/functions/action-functions) |
-| `delete-lead-source` | Delete a lead source. | [Action](/guides/functions/action-functions) |
-| `delete-note` | Delete a note. | [Action](/guides/functions/action-functions) |
-| `delete-person` | Delete a person. | [Action](/guides/functions/action-functions) |
-| `delete-team` | Delete a team. | [Action](/guides/functions/action-functions) |
-| `get-account-notification` | Get a single account notification by id. | [Action](/guides/functions/action-functions) |
-| `get-calendar-entry` | Get a single calendar entry (task or event) by id. | [Action](/guides/functions/action-functions) |
-| `get-company` | Get a single company by id. | [Action](/guides/functions/action-functions) |
-| `get-deal` | Get a single deal by id. | [Action](/guides/functions/action-functions) |
-| `get-document` | Get a single document by id. | [Action](/guides/functions/action-functions) |
-| `get-note` | Get a single note by id. | [Action](/guides/functions/action-functions) |
-| `get-person` | Get a single person by id. | [Action](/guides/functions/action-functions) |
-| `get-profile` | Get the profile of the user this API key belongs to. | [Action](/guides/functions/action-functions) |
-| `get-team` | Get a single team by id. | [Action](/guides/functions/action-functions) |
-| `get-user` | Get a single user by id. | [Action](/guides/functions/action-functions) |
-| `list-account-notifications` | List system-generated account notifications for the authenticated user. | [Action](/guides/functions/action-functions) |
-| `list-calendar-entries` | List calendar entries — a unified model covering both Tasks and Events. | [Action](/guides/functions/action-functions) |
-| `list-calendar-entry-priorities` | List priority levels that can be assigned to a calendar entry. | [Action](/guides/functions/action-functions) |
-| `list-calendar-entry-statuses` | List statuses that can be assigned to a calendar entry. | [Action](/guides/functions/action-functions) |
-| `list-comments` | List comments on a note. | [Action](/guides/functions/action-functions) |
-| `list-companies` | List companies in this account. | [Action](/guides/functions/action-functions) |
-| `list-company-custom-field-groups` | List custom field groups defined for companies. | [Action](/guides/functions/action-functions) |
-| `list-company-custom-field-labels` | List individual custom field definitions available on companies. | [Action](/guides/functions/action-functions) |
-| `list-company-tags` | List tags available for tagging companies. | [Action](/guides/functions/action-functions) |
-| `list-custom-field-dropdown-entries` | List the picklist option values for dropdown-type custom fields. | [Action](/guides/functions/action-functions) |
-| `list-deal-custom-field-groups` | List custom field groups defined for deals. | [Action](/guides/functions/action-functions) |
-| `list-deal-custom-field-labels` | List individual custom field definitions available on deals. | [Action](/guides/functions/action-functions) |
-| `list-deal-loss-reasons` | List reasons that can be assigned when marking a deal lost. | [Action](/guides/functions/action-functions) |
-| `list-deal-pipelines` | List deal pipelines configured on this account. | [Action](/guides/functions/action-functions) |
-| `list-deal-stages` | List deal stages (steps within a pipeline) configured on this account. | [Action](/guides/functions/action-functions) |
-| `list-deal-statuses` | List deal statuses configured on this account. | [Action](/guides/functions/action-functions) |
-| `list-deal-tags` | List tags available for tagging deals. | [Action](/guides/functions/action-functions) |
-| `list-deal-won-reasons` | List reasons that can be assigned when marking a deal won. | [Action](/guides/functions/action-functions) |
-| `list-deals` | List deals in this account. | [Action](/guides/functions/action-functions) |
-| `list-document-tags` | List tags available for tagging documents/files. | [Action](/guides/functions/action-functions) |
-| `list-documents` | List documents (called "Files" in the Pipeline CRM UI) attached to deals/people/companies/calendar entries. | [Action](/guides/functions/action-functions) |
-| `list-event-categories` | List categories that can be assigned to a calendar entry (task or event). | [Action](/guides/functions/action-functions) |
-| `list-lead-sources` | List lead sources (how a person/deal originated) configured on this account. | [Action](/guides/functions/action-functions) |
-| `list-lead-statuses` | List lead statuses configured for People records. | [Action](/guides/functions/action-functions) |
-| `list-note-categories` | List categories that can be assigned to a note (activity). | [Action](/guides/functions/action-functions) |
-| `list-notes` | List notes (activities) scoped to a deal, person, company, or across the account. | [Action](/guides/functions/action-functions) |
-| `list-people` | List people (contacts/leads) in this account. | [Action](/guides/functions/action-functions) |
-| `list-person-custom-field-groups` | List custom field groups defined for people. | [Action](/guides/functions/action-functions) |
-| `list-person-custom-field-labels` | List individual custom field definitions available on people. | [Action](/guides/functions/action-functions) |
-| `list-person-tags` | List predefined tags available for tagging people/contacts. | [Action](/guides/functions/action-functions) |
-| `list-product-lines` | List product lines configured on this account for tagging deals, people, and companies. | [Action](/guides/functions/action-functions) |
-| `list-revenue-types` | List revenue types (e.g. New, Renewal) that can be assigned to a deal. | [Action](/guides/functions/action-functions) |
-| `list-teams` | List teams in this account. | [Action](/guides/functions/action-functions) |
-| `list-users` | List users (team members) in this account. | [Action](/guides/functions/action-functions) |
-| `list-webhooks` | List webhook subscriptions configured on this account. | [Action](/guides/functions/action-functions) |
-| `update-account-notification` | Mark an account notification as seen/read. | [Action](/guides/functions/action-functions) |
-| `update-calendar-entry` | Update a calendar entry, e.g. mark a task complete. | [Action](/guides/functions/action-functions) |
-| `update-comment` | Update an existing comment. | [Action](/guides/functions/action-functions) |
-| `update-company` | Update fields on an existing company | [Action](/guides/functions/action-functions) |
-| `update-customer` | Update a customer record (e.g. reassign owner). | [Action](/guides/functions/action-functions) |
-| `update-deal` | Update fields on an existing deal. | [Action](/guides/functions/action-functions) |
-| `update-document` | Update a document's title or re-point it to a new file URL. | [Action](/guides/functions/action-functions) |
-| `update-lead-source` | Update a lead source. | [Action](/guides/functions/action-functions) |
-| `update-note` | Update the content of an existing note. | [Action](/guides/functions/action-functions) |
-| `update-person` | Update fields on an existing person. | [Action](/guides/functions/action-functions) |
-| `update-team` | Update a team's name. | [Action](/guides/functions/action-functions) |
-| `update-user` | Update fields on an existing user. | [Action](/guides/functions/action-functions) |
+| `create-calendar-entry` | Create a new task or event | [Tool](/guides/functions/tools) |
+| `create-comment` | Add a comment to a note. | [Tool](/guides/functions/tools) |
+| `create-company` | Create a new company in Pipeline CRM. | [Tool](/guides/functions/tools) |
+| `create-customer` | Mark a company as a customer (creates a Customer record tied to a company, tracking a health score). | [Tool](/guides/functions/tools) |
+| `create-deal` | Create a new deal. | [Tool](/guides/functions/tools) |
+| `create-document` | Attach a file to a deal, person, or company by URL. | [Tool](/guides/functions/tools) |
+| `create-lead-source` | Create a new lead source. | [Tool](/guides/functions/tools) |
+| `create-note` | Create a new note (activity) associated with a deal, person, or company. | [Tool](/guides/functions/tools) |
+| `create-person` | Create a new person (contact) | [Tool](/guides/functions/tools) |
+| `create-team` | Create a new team. | [Tool](/guides/functions/tools) |
+| `create-webhook` | Subscribe a URL to a webhook event (event_model + event_action combination). | [Tool](/guides/functions/tools) |
+| `delete-calendar-entry` | Delete a calendar entry. | [Tool](/guides/functions/tools) |
+| `delete-comment` | Delete a comment. | [Tool](/guides/functions/tools) |
+| `delete-company` | Delete a company. | [Tool](/guides/functions/tools) |
+| `delete-customer` | Remove a customer record from a company (does not delete the company itself). | [Tool](/guides/functions/tools) |
+| `delete-deal` | Delete a deal. | [Tool](/guides/functions/tools) |
+| `delete-document` | Delete a document. | [Tool](/guides/functions/tools) |
+| `delete-lead-source` | Delete a lead source. | [Tool](/guides/functions/tools) |
+| `delete-note` | Delete a note. | [Tool](/guides/functions/tools) |
+| `delete-person` | Delete a person. | [Tool](/guides/functions/tools) |
+| `delete-team` | Delete a team. | [Tool](/guides/functions/tools) |
+| `get-account-notification` | Get a single account notification by id. | [Tool](/guides/functions/tools) |
+| `get-calendar-entry` | Get a single calendar entry (task or event) by id. | [Tool](/guides/functions/tools) |
+| `get-company` | Get a single company by id. | [Tool](/guides/functions/tools) |
+| `get-deal` | Get a single deal by id. | [Tool](/guides/functions/tools) |
+| `get-document` | Get a single document by id. | [Tool](/guides/functions/tools) |
+| `get-note` | Get a single note by id. | [Tool](/guides/functions/tools) |
+| `get-person` | Get a single person by id. | [Tool](/guides/functions/tools) |
+| `get-profile` | Get the profile of the user this API key belongs to. | [Tool](/guides/functions/tools) |
+| `get-team` | Get a single team by id. | [Tool](/guides/functions/tools) |
+| `get-user` | Get a single user by id. | [Tool](/guides/functions/tools) |
+| `list-account-notifications` | List system-generated account notifications for the authenticated user. | [Tool](/guides/functions/tools) |
+| `list-calendar-entries` | List calendar entries — a unified model covering both Tasks and Events. | [Tool](/guides/functions/tools) |
+| `list-calendar-entry-priorities` | List priority levels that can be assigned to a calendar entry. | [Tool](/guides/functions/tools) |
+| `list-calendar-entry-statuses` | List statuses that can be assigned to a calendar entry. | [Tool](/guides/functions/tools) |
+| `list-comments` | List comments on a note. | [Tool](/guides/functions/tools) |
+| `list-companies` | List companies in this account. | [Tool](/guides/functions/tools) |
+| `list-company-custom-field-groups` | List custom field groups defined for companies. | [Tool](/guides/functions/tools) |
+| `list-company-custom-field-labels` | List individual custom field definitions available on companies. | [Tool](/guides/functions/tools) |
+| `list-company-tags` | List tags available for tagging companies. | [Tool](/guides/functions/tools) |
+| `list-custom-field-dropdown-entries` | List the picklist option values for dropdown-type custom fields. | [Tool](/guides/functions/tools) |
+| `list-deal-custom-field-groups` | List custom field groups defined for deals. | [Tool](/guides/functions/tools) |
+| `list-deal-custom-field-labels` | List individual custom field definitions available on deals. | [Tool](/guides/functions/tools) |
+| `list-deal-loss-reasons` | List reasons that can be assigned when marking a deal lost. | [Tool](/guides/functions/tools) |
+| `list-deal-pipelines` | List deal pipelines configured on this account. | [Tool](/guides/functions/tools) |
+| `list-deal-stages` | List deal stages (steps within a pipeline) configured on this account. | [Tool](/guides/functions/tools) |
+| `list-deal-statuses` | List deal statuses configured on this account. | [Tool](/guides/functions/tools) |
+| `list-deal-tags` | List tags available for tagging deals. | [Tool](/guides/functions/tools) |
+| `list-deal-won-reasons` | List reasons that can be assigned when marking a deal won. | [Tool](/guides/functions/tools) |
+| `list-deals` | List deals in this account. | [Tool](/guides/functions/tools) |
+| `list-document-tags` | List tags available for tagging documents/files. | [Tool](/guides/functions/tools) |
+| `list-documents` | List documents (called "Files" in the Pipeline CRM UI) attached to deals/people/companies/calendar entries. | [Tool](/guides/functions/tools) |
+| `list-event-categories` | List categories that can be assigned to a calendar entry (task or event). | [Tool](/guides/functions/tools) |
+| `list-lead-sources` | List lead sources (how a person/deal originated) configured on this account. | [Tool](/guides/functions/tools) |
+| `list-lead-statuses` | List lead statuses configured for People records. | [Tool](/guides/functions/tools) |
+| `list-note-categories` | List categories that can be assigned to a note (activity). | [Tool](/guides/functions/tools) |
+| `list-notes` | List notes (activities) scoped to a deal, person, company, or across the account. | [Tool](/guides/functions/tools) |
+| `list-people` | List people (contacts/leads) in this account. | [Tool](/guides/functions/tools) |
+| `list-person-custom-field-groups` | List custom field groups defined for people. | [Tool](/guides/functions/tools) |
+| `list-person-custom-field-labels` | List individual custom field definitions available on people. | [Tool](/guides/functions/tools) |
+| `list-person-tags` | List predefined tags available for tagging people/contacts. | [Tool](/guides/functions/tools) |
+| `list-product-lines` | List product lines configured on this account for tagging deals, people, and companies. | [Tool](/guides/functions/tools) |
+| `list-revenue-types` | List revenue types (e.g. New, Renewal) that can be assigned to a deal. | [Tool](/guides/functions/tools) |
+| `list-teams` | List teams in this account. | [Tool](/guides/functions/tools) |
+| `list-users` | List users (team members) in this account. | [Tool](/guides/functions/tools) |
+| `list-webhooks` | List webhook subscriptions configured on this account. | [Tool](/guides/functions/tools) |
+| `update-account-notification` | Mark an account notification as seen/read. | [Tool](/guides/functions/tools) |
+| `update-calendar-entry` | Update a calendar entry, e.g. mark a task complete. | [Tool](/guides/functions/tools) |
+| `update-comment` | Update an existing comment. | [Tool](/guides/functions/tools) |
+| `update-company` | Update fields on an existing company | [Tool](/guides/functions/tools) |
+| `update-customer` | Update a customer record (e.g. reassign owner). | [Tool](/guides/functions/tools) |
+| `update-deal` | Update fields on an existing deal. | [Tool](/guides/functions/tools) |
+| `update-document` | Update a document's title or re-point it to a new file URL. | [Tool](/guides/functions/tools) |
+| `update-lead-source` | Update a lead source. | [Tool](/guides/functions/tools) |
+| `update-note` | Update the content of an existing note. | [Tool](/guides/functions/tools) |
+| `update-person` | Update fields on an existing person. | [Tool](/guides/functions/tools) |
+| `update-team` | Update a team's name. | [Tool](/guides/functions/tools) |
+| `update-user` | Update fields on an existing user. | [Tool](/guides/functions/tools) |
 | `calendar_entries` | Sync calendar entries (Tasks + Events) across the account | [Sync](/guides/functions/syncs/sync-functions) |
 | `companies` | Sync companies in this account. | [Sync](/guides/functions/syncs/sync-functions) |
 | `deals` | Sync deals in this account. | [Sync](/guides/functions/syncs/sync-functions) |

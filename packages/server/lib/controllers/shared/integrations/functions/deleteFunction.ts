@@ -4,7 +4,7 @@ import { report } from '@nangohq/utils';
 import { startFunctionDeletion } from '../../../../tasks/startFunctionDeletion.js';
 
 import type { RequestLocalsWithEnvironment } from '../../../../utils/express.js';
-import type { DBEnvironment, DeleteIntegrationFunction } from '@nangohq/types';
+import type { DBEnvironment, DeleteIntegrationFunction, RunnableFunctionType } from '@nangohq/types';
 import type { Response } from 'express';
 
 export async function handleDeleteIntegrationFunction({
@@ -18,8 +18,14 @@ export async function handleDeleteIntegrationFunction({
     environment: DBEnvironment;
     providerConfigKey: string;
     name: string;
-    type: 'sync' | 'action';
+    type: RunnableFunctionType;
 }): Promise<void> {
+    // TODO: support deleting standalone tools and functions
+    if (type === 'tool' || type === 'function') {
+        res.status(400).send({ error: { code: 'invalid_request', message: `Deleting a ${type} is not supported yet` } });
+        return;
+    }
+
     const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
     if (!integration) {
         res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });

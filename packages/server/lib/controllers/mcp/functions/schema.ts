@@ -1,7 +1,7 @@
 import * as z from 'zod/v4';
 
-import { functionListTypeSchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
-import { functionIntegrationIdSchema, runnableFunctionTypeSchema } from '../../functions/validation.js';
+import { functionListTypeSchema, providerConfigKeySchema, runnableFunctionTypeSchema, syncNameSchema } from '../../../helpers/validation.js';
+import { functionIntegrationIdSchema } from '../../functions/validation.js';
 
 export const deployFunctionArgumentsSchema = z
     .object({

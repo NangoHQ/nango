@@ -57,7 +57,7 @@ In the Nango dashboard, open your Jira integration and copy the **Webhook URL**.
 
     If the connection's token doesn't have the required scope for an event, Jira rejects the registration for that event. The response returns a `createdWebhookId` for each registered webhook — save these IDs, you'll need them to refresh or delete the webhook.
 
-    3. Refresh the webhook before it expires (30 days after creation, or after your last refresh) using Jira's webhook refresh endpoint with the saved IDs — see [Jira's webhooks reference](https://developer.atlassian.com/cloud/jira/platform/webhooks/) for the exact call. Run this on a schedule, for example from an [action function](/guides/functions/action-functions), or Jira will silently stop sending events.
+    3. Refresh the webhook before it expires (30 days after creation, or after your last refresh) using Jira's webhook refresh endpoint with the saved IDs — see [Jira's webhooks reference](https://developer.atlassian.com/cloud/jira/platform/webhooks/) for the exact call. Have your scheduler call a [tool](/guides/functions/tools) to refresh it, or Jira will silently stop sending events.
   </Tab>
   <Tab title="Admin webhook">
     Requires Jira admin permissions on the connected user, independent of your app's OAuth scopes. Covers the full event catalog, including project, board, worklog, attachment, issue link, and user events, and doesn't expire.

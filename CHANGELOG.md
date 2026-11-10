@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.72.4] - 2026-11-09
+
+### Added
+
+- *(integrations)* Add support for new providers (#8210) by @hassan254-prog
+- *(integrations)* Add support for new providers (#8212) by @hassan254-prog
+- Remote deploy/dryrun to support tools (#8208) by @TBonnin
+
 ## [v0.72.3] - 2026-11-06
 
 ### Added
@@ -8695,6 +8703,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.72.4]: https://github.com/NangoHQ/nango/compare/v0.72.3..v0.72.4
 [v0.72.3]: https://github.com/NangoHQ/nango/compare/v0.72.2..v0.72.3
 [v0.72.2]: https://github.com/NangoHQ/nango/compare/v0.72.1..v0.72.2
 [v0.72.1]: https://github.com/NangoHQ/nango/compare/v0.72.0..v0.72.1

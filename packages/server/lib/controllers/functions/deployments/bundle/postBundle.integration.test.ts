@@ -333,6 +333,59 @@ describe('function deployment bundle endpoints', () => {
         }
     });
 
+    it.each([
+        { existing: 'repo', incoming: 'standalone', ok: false },
+        { existing: 'repo', incoming: 'repo', ok: true },
+        { existing: 'standalone', incoming: 'repo', ok: true },
+        { existing: 'standalone', incoming: 'standalone', ok: true }
+    ] as const)('deploying a $incoming function over a $existing one succeeds: $ok', async ({ existing, incoming, ok }) => {
+        const { apiKey, env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const uploadSpy = vi.spyOn(remoteFileService, 'upload').mockImplementation(({ destinationPath }) => Promise.resolve(destinationPath));
+        const scope = { kind: 'function', integrationId: 'github', name: validFunction.name } as const;
+        const changed = { ...validFunction, description: 'changed', source: incoming } satisfies FunctionDeploymentArtifact;
+
+        try {
+            const created = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { reconciliationScope: scope, functions: [{ ...validFunction, source: existing }] }
+            });
+            isSuccess(created.json);
+
+            const preview = await api.fetch(previewEndpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { reconciliationScope: scope, functions: [changed] }
+            });
+            const deployed = await api.fetch(endpoint, { method: 'POST', token: apiKey.secret, body: { reconciliationScope: scope, functions: [changed] } });
+
+            const [fn] = (await functionConfigService.search(db.knex, { environmentId: env.id })).unwrap();
+            if (ok) {
+                isSuccess(preview.json);
+                isSuccess(deployed.json);
+                expect(deployed.json).toStrictEqual({
+                    created: [],
+                    updated: [{ integrationId: 'github', name: validFunction.name }],
+                    unchanged: [],
+                    deleted: []
+                });
+                expect(fn?.currentVersion.source).toBe(incoming);
+                expect(fn?.currentVersion.description).toBe(changed.description);
+            } else {
+                const error = { code: 'invalid_request', message: 'Cannot overwrite functions that are not standalone: github/fetchIssues' };
+                expect(preview.res.status).toBe(400);
+                expect(preview.json).toStrictEqual({ error });
+                expect(deployed.res.status).toBe(400);
+                expect(deployed.json).toStrictEqual({ error });
+                expect(fn?.currentVersion.source).toBe(existing);
+                expect(fn?.currentVersion.description).toBe(validFunction.description);
+            }
+        } finally {
+            uploadSpy.mockRestore();
+        }
+    });
+
     it('persists tags', async () => {
         const { apiKey, env } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');

@@ -29,6 +29,13 @@ describe('sandboxed function compiler client helpers', () => {
         });
     });
 
+    it.each(['tool', 'function'] as const)('builds %s file paths', (function_type) => {
+        expect(getFilePaths({ integration_id: 'github', function_name: 'getIssue', function_type })).toStrictEqual({
+            tsFilePath: `github/${function_type}s/getIssue.ts`,
+            cjsFilePath: `build/github_${function_type}s_getIssue.cjs`
+        });
+    });
+
     it('builds compiler file paths', () => {
         expect(getCompilerFilePaths()).toStrictEqual({
             tsFilePath: 'function/functions/function.ts',

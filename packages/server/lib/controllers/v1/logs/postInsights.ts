@@ -9,7 +9,7 @@ import type { PostInsights } from '@nangohq/types';
 
 const validation = z
     .object({
-        type: z.enum(['sync:run', 'action', 'proxy', 'webhook:incoming', 'auth:create_connection'])
+        type: z.enum(['sync:run', 'action', 'tool', 'proxy', 'webhook:incoming', 'auth:create_connection'])
     })
     .strict();
 
@@ -38,7 +38,7 @@ export const postInsights = asyncWrapperWithEnvironment<PostInsights>(async (req
     const insights = await modelInsights.retrieveInsights({
         accountId: env.account_id,
         environmentId: env.id,
-        type: body.type
+        types: body.type === 'tool' ? ['tool', 'action'] : [body.type]
     });
 
     res.status(200).send({

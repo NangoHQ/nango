@@ -273,11 +273,16 @@ describe('webhook dispatch', () => {
         mocks.functionConfigSearch.mockResolvedValue({ isErr: () => false, value: [nativeFunction()] });
         const publisher = { publish: vi.fn().mockResolvedValue({ enqueued: 2, failed: 0, failedActivityLogIds: [] }) };
         mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
-        const nango = makeInternalNango([createLogCtx('log-1'), createLogCtx('log-2')]);
+        const create = vi.fn().mockReturnValueOnce(createLogCtx('log-1')).mockReturnValueOnce(createLogCtx('log-2'));
+        const nango = makeInternalNango([], { create });
 
         await nango.executeScriptForWebhooks({ payload: { event: 'x' }, webhookTypeValue: 'push' });
 
         expect(mocks.invokeFunction).not.toHaveBeenCalled();
+        expect(create).toHaveBeenCalledTimes(2);
+        for (const [options] of create.mock.calls) {
+            expect(options.operation).toEqual({ type: 'webhook', action: 'incoming' });
+        }
         expect(publisher.publish).toHaveBeenCalledOnce();
         const messages = publisher.publish.mock.calls[0]![0].map((prepared: any) => prepared.message);
         expect(messages).toHaveLength(2);
