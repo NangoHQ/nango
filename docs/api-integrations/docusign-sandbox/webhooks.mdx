@@ -29,7 +29,7 @@ HMAC keys can only be created in the DocuSign admin, not through the API. Develo
 In the Nango dashboard, open your DocuSign (Sandbox) integration settings and paste the key into **Webhook secret**.
 
 <Accordion title="For agents">
-Set the key with [update an integration](/reference/backend/http-api/integration/update), passing it as `credentials.webhook_secret` with the integration's existing OAuth credentials:
+Set the key with [update an integration](/reference/backend/http-api/integration/update), passing it as `credentials.webhook_secret` with the integration's existing OAuth credentials. A scoped [Environment API key](/reference/backend/http-api/api-keys#scopes) needs the `environment:integrations:update` scope:
 
 ```bash
 curl -X PATCH "https://api.nango.dev/integrations/<INTEGRATION-ID>" \
@@ -73,7 +73,7 @@ Subscribe with the user's connection, either per envelope or for the whole accou
 **Per account** (the user must be an account admin): create a Connect configuration on the user's account.
 
 <Accordion title="For agents">
-Both requests go through the [Nango proxy](/guides/platform/proxy-requests) with the user's connection. The connection config holds the user's `accountId`.
+Both requests go through the [Nango proxy](/guides/platform/proxy-requests) with the user's connection, so a scoped [Environment API key](/reference/backend/http-api/api-keys#scopes) needs the `environment:proxy` scope. The connection config holds the user's `accountId`.
 
 Per envelope:
 

@@ -104,6 +104,6 @@ describe('docusign webhook routing', () => {
 
         const allowed = makeNango({ allowUnverifiedWebhooks: true });
         expect(value(await DocusignWebhookRouting.default(allowed.nango, {}, envelopeEvent, rawBody)).connectionIds).toEqual(['conn-1']);
-        expect(allowed.nango.unverified?.reason).toBe('docusign_missing_hmac_key');
+        expect(allowed.nango.unverified?.reason).toBe('docusign_missing_webhook_secret');
     });
 });

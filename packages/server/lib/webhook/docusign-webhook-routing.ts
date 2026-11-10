@@ -8,7 +8,7 @@ import type { DocusignWebhookEvent, WebhookHandler } from './types.js';
 const logger = getLogger('Webhook.Docusign');
 
 const MISSING_SECRET = {
-    reason: 'docusign_missing_hmac_key',
+    reason: 'docusign_missing_webhook_secret',
     remediation: 'Set the Connect HMAC key of the DocuSign account that owns your integration key as the integration webhook secret'
 };
 
