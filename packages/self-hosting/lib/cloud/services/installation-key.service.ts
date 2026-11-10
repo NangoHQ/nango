@@ -65,3 +65,12 @@ export async function getInstallationKey(db: RegistryDb, { kid }: { kid: string 
 export async function requireInstallationKey(db: RegistryDb, { kid }: { kid: string }): Promise<Result<DBSelfHostingInstallationKey>> {
     return orMissing(await getInstallationKey(db, { kid }), `no live key ${kid}`);
 }
+
+export async function markInstallationKeyUsed(db: RegistryDb, { id, at }: { id: number; at: Date }): Promise<Result<void>> {
+    try {
+        await keys(db).where({ id }).update({ last_used_at: at });
+        return Ok(undefined);
+    } catch (err) {
+        return Err(err);
+    }
+}

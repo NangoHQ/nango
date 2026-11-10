@@ -9,8 +9,8 @@ import {
     createInstallation,
     deleteInstallation,
     deleteInstallationPreview,
-    listInstallations,
     requireInstallation,
+    searchInstallations,
     updateInstallation
 } from './cloud/services/installation.service.js';
 import { issueLicense } from './cloud/services/licensing.service.js';
@@ -141,7 +141,7 @@ installation list    [--customer <name>] [--all]`,
                 return deleteInstallation(db, { id: row.id });
             },
             list: async (db) =>
-                listInstallations(db, {
+                searchInstallations(db, {
                     includeDeleted: values.all,
                     ...(values.customer && { customerId: (await requireCustomer(db, { name: values.customer })).unwrap().id })
                 })
