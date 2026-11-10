@@ -884,7 +884,7 @@ const ENVS_SHAPE = z.object({
         .positive()
         .max(6 * 3600 * 1000) // capped so tomorrow's partition is always created before midnight reaches it
         .default(1 * 3600 * 1000),
-    // Upload of the stored telemetry to Nango.
+    // Sending the stored telemetry to Nango.
     NANGO_INSTALLATION_PRIVATE_KEY: z.string().optional(),
     NANGO_INSTALLATIONS_API_URL: z.url().optional().default('https://installations.nango.dev'),
 

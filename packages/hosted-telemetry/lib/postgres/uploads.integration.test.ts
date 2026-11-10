@@ -5,7 +5,7 @@ import { ensureDailyPartitions } from '@nangohq/migrations';
 
 import { migrate } from './migrate.js';
 import { HOSTED_TELEMETRY_TABLE, HOSTED_TELEMETRY_UPLOADS_TABLE } from './schema.js';
-import { enqueueClosedDays, failExpiredUploads, failUpload, listQueuedUploads, readUploadPage, saveUploadProgress } from './uploads.js';
+import { enqueueUploads, failExpiredUploads, failUpload, listQueuedUploads, readUploadPage, saveUploadProgress } from './uploads.js';
 
 import type { Knex } from 'knex';
 
@@ -66,8 +66,8 @@ beforeEach(async () => {
     await knex.raw('TRUNCATE ??.??, ??.??', [schema, HOSTED_TELEMETRY_TABLE, schema, HOSTED_TELEMETRY_UPLOADS_TABLE]);
 });
 
-describe('enqueueClosedDays', () => {
-    it('tracks every metric of each closed day in the window, by UTC day', async () => {
+describe('enqueueUploads', () => {
+    it('queues every metric of each past day in the window, using UTC days', async () => {
         await insert(
             { ts: '2026-11-06T23:59:00Z', metric: concurrency },
             { ts: '2026-11-08T00:00:00Z', metric: concurrency },
@@ -77,7 +77,7 @@ describe('enqueueClosedDays', () => {
             { ts: '2026-11-10T00:00:00Z', metric: concurrency }
         );
 
-        (await enqueueClosedDays(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, schema })).unwrap();
 
         expect(await uploads()).toEqual([
             { day: '2026-11-08', metric: concurrency, status: 'queued' },
@@ -86,27 +86,27 @@ describe('enqueueClosedDays', () => {
         ]);
     });
 
-    it('leaves a day it already tracks as it is', async () => {
+    it('does not queue a day twice', async () => {
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency });
-        (await enqueueClosedDays(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, schema })).unwrap();
         (await saveUploadProgress(knex, { day: '2026-11-08', metric: concurrency, cursor: null, done: true, schema })).unwrap();
         await insert({ ts: '2026-11-08T11:00:00Z', metric: connections });
 
-        (await enqueueClosedDays(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, schema })).unwrap();
 
         expect(await uploads()).toEqual([{ day: '2026-11-08', metric: concurrency, status: 'succeeded' }]);
     });
 });
 
 describe('listQueuedUploads', () => {
-    it('lists what is still queued, oldest first, with where each one stopped', async () => {
+    it('lists the queued uploads, oldest first, with their cursor', async () => {
         await insert(
             { ts: '2026-11-08T10:00:00Z', metric: connections },
             { ts: '2026-11-08T10:00:00Z', metric: concurrency },
             { ts: '2026-11-09T10:00:00Z', metric: concurrency },
             { ts: '2026-11-07T10:00:00Z', metric: concurrency }
         );
-        (await enqueueClosedDays(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, schema })).unwrap();
         const cursor = { ts: at('2026-11-08T10:00:00Z'), attributes: { producer_id: 'a' } };
         (await saveUploadProgress(knex, { day: '2026-11-08', metric: concurrency, cursor, done: false, schema })).unwrap();
         (await saveUploadProgress(knex, { day: '2026-11-07', metric: concurrency, cursor, done: true, schema })).unwrap();
@@ -120,20 +120,20 @@ describe('listQueuedUploads', () => {
         ]);
     });
 
-    it('leaves out what failed', async () => {
+    it('does not list failed uploads', async () => {
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });
-        (await enqueueClosedDays(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, schema })).unwrap();
 
         (await failUpload(knex, { day: '2026-11-08', metric: concurrency, schema })).unwrap();
 
         expect((await listQueuedUploads(knex, { since, schema })).unwrap().map((upload) => upload.day)).toEqual(['2026-11-09']);
-        (await enqueueClosedDays(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, schema })).unwrap();
         expect((await listQueuedUploads(knex, { since, schema })).unwrap().map((upload) => upload.day)).toEqual(['2026-11-09']);
     });
 
-    it('keeps the status of an upload that already succeeded or failed', async () => {
+    it('does not change an upload that already succeeded or failed', async () => {
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-08T10:00:00Z', metric: connections });
-        (await enqueueClosedDays(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, schema })).unwrap();
         (await saveUploadProgress(knex, { day: '2026-11-08', metric: concurrency, cursor: null, done: true, schema })).unwrap();
         (await failUpload(knex, { day: '2026-11-08', metric: connections, schema })).unwrap();
 
@@ -146,9 +146,9 @@ describe('listQueuedUploads', () => {
         ]);
     });
 
-    it('leaves out what is older than the window', async () => {
+    it('does not list uploads older than the window', async () => {
         await insert({ ts: '2026-11-07T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });
-        (await enqueueClosedDays(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, schema })).unwrap();
 
         const queued = (await listQueuedUploads(knex, { since: at('2026-11-08T00:00:00Z'), schema })).unwrap();
 
@@ -157,13 +157,13 @@ describe('listQueuedUploads', () => {
 });
 
 describe('failExpiredUploads', () => {
-    it('fails what is still queued from before the window, and only that', async () => {
+    it('marks as failed only the queued uploads older than the window', async () => {
         await insert(
             { ts: '2026-11-07T10:00:00Z', metric: concurrency },
             { ts: '2026-11-07T10:00:00Z', metric: connections },
             { ts: '2026-11-08T10:00:00Z', metric: concurrency }
         );
-        (await enqueueClosedDays(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, schema })).unwrap();
         (await saveUploadProgress(knex, { day: '2026-11-07', metric: connections, cursor: null, done: true, schema })).unwrap();
 
         const expired = await failExpiredUploads(knex, { since: at('2026-11-08T00:00:00Z'), schema });
@@ -178,7 +178,7 @@ describe('failExpiredUploads', () => {
 });
 
 describe('readUploadPage', () => {
-    it('reads one metric for one UTC day in pages that neither overlap nor skip a row', async () => {
+    it('reads a metric for one UTC day page by page, without repeating or skipping a row', async () => {
         await insert(
             { ts: '2026-11-07T23:59:00Z', metric: concurrency, value: 0 },
             { ts: '2026-11-08T00:00:00Z', metric: concurrency, attributes: { producer_id: 'a' }, value: 1 },

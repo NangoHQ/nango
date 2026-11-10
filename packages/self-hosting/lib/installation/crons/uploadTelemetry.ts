@@ -17,12 +17,12 @@ import type { Result } from '@nangohq/utils';
 const logger = getLogger('cron.uploadTelemetry');
 
 const LOCK_KEY = 'lock:cron:uploadTelemetry';
-// Cron fires hourly; lock should expire well before the next tick.
+// The cron runs every hour, so the lock must expire before the next run.
 const lockTtlMs = 30 * 60 * 1000;
-// A run stops itself well before its lock expires, so two never overlap. The next one resumes from the cursor.
-const RUN_BUDGET_MS = 20 * 60 * 1000;
+// A run must stop before its lock expires. Otherwise another run could start while this one is still uploading.
+const RUN_BUDGET_MS = lockTtlMs - 10 * 60 * 1000;
 
-// A day's last rows are written within a minute of midnight UTC, so past the quarter hour the day before is complete.
+// We start at minute 15 so that yesterday's telemetry is fully written before we send it.
 const FIRST_MINUTE = 15;
 
 export async function uploadTelemetryCron(): Promise<void> {
@@ -36,7 +36,7 @@ export async function uploadTelemetryCron(): Promise<void> {
         return;
     }
 
-    // A minute of its own, so installations do not all call at the same time.
+    // Each installation picks a random minute, so they do not all call Nango at the same time.
     const minute = FIRST_MINUTE + Math.floor(Math.random() * (60 - FIRST_MINUTE));
     cron.schedule(`${minute} * * * *`, () => {
         exec(config.value).catch((err: unknown) => {
@@ -58,7 +58,7 @@ export async function uploaderConfig(): Promise<Result<UploaderConfig>> {
         return Err(new Error('NANGO_LICENSE is not set'));
     }
     if (!licensePublicKey) {
-        return Err(new Error('this build trusts no license key'));
+        return Err(new Error('this build has no license public key'));
     }
     const license = await verifyLicense(envs.NANGO_LICENSE, licensePublicKey);
     if (license.isErr()) {
@@ -86,11 +86,11 @@ export async function exec(config: UploaderConfig): Promise<void> {
             const uploaded = await uploadQueuedDays(config, { deadline: new Date(Date.now() + RUN_BUDGET_MS) });
             if (uploaded.isErr()) {
                 span?.setTag('error', uploaded.error);
-                logger.error('Stopped before the end, what is left goes out on the next run', uploaded.error);
+                logger.error('The run stopped early. The rest will be uploaded on the next run', uploaded.error);
                 return;
             }
             const { succeeded, failed, outOfTime } = uploaded.value;
-            logger.info(`Done: ${succeeded} succeeded, ${failed} failed${outOfTime ? ', out of time: what is left goes out on the next run' : ''}`);
+            logger.info(`Done: ${succeeded} succeeded, ${failed} failed${outOfTime ? ', out of time, the rest will be uploaded on the next run' : ''}`);
         });
     });
 }

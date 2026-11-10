@@ -6,7 +6,7 @@ import type { MetricRow } from '../exporter.js';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
-/** The last row Nango acknowledged for a metric and a day: the next page starts right after it. */
+/** The last row Nango accepted. The next page starts after it. */
 export interface UploadCursor {
     ts: Date;
     attributes: MetricRow['attributes'];
@@ -18,12 +18,12 @@ export interface QueuedUpload {
     cursor: UploadCursor | null;
 }
 
-/** Days are UTC days, whatever the time zone of the database session. */
+/** Days are always UTC days, even if the database session uses another time zone. */
 const utcDay = (date: Date) => date.toISOString().slice(0, 10);
 const startOf = (day: string) => `${day}T00:00:00Z`;
 
-/** Gives every metric of each closed day from `since` an upload to track, for the days that have none yet. */
-export async function enqueueClosedDays(
+/** Queues the uploads of every day we have full telemetry for, yesterday and before, that are not queued yet. */
+export async function enqueueUploads(
     knex: Knex,
     { since, today, schema = HOSTED_TELEMETRY_SCHEMA }: { since: Date; today: Date; schema?: string }
 ): Promise<Result<void>> {
@@ -54,7 +54,7 @@ export async function enqueueClosedDays(
     }
 }
 
-/** Oldest first. A succeeded or failed upload is never picked up again. */
+/** The uploads still waiting, oldest first. */
 export async function listQueuedUploads(
     knex: Knex,
     { since, schema = HOSTED_TELEMETRY_SCHEMA }: { since: Date; schema?: string }
@@ -78,7 +78,7 @@ export async function listQueuedUploads(
     }
 }
 
-/** The rows of a metric for a day after the cursor, in primary key order. */
+/** The next page of rows to send for a metric and a day. */
 export async function readUploadPage(
     knex: Knex,
     {
@@ -142,7 +142,7 @@ export async function saveUploadProgress(
     }
 }
 
-/** What was not sent of a failed upload has to be asked for by hand. */
+/** Marks an upload as failed. We do not retry it: the data has to be requested manually. */
 export async function failUpload(
     knex: Knex,
     { day, metric, schema = HOSTED_TELEMETRY_SCHEMA }: { day: string; metric: string; schema?: string }
@@ -160,7 +160,7 @@ export async function failUpload(
     }
 }
 
-/** What is still queued from before `since` will not be sent any more, and has to be asked for by hand like any failed upload. */
+/** Marks as failed the uploads that are still waiting but are now older than `since`. */
 export async function failExpiredUploads(knex: Knex, { since, schema = HOSTED_TELEMETRY_SCHEMA }: { since: Date; schema?: string }): Promise<Result<number>> {
     try {
         const res = await knex.raw<{ rowCount: number }>(`UPDATE ??.?? SET status = 'failed' WHERE status = 'queued' AND day < ?::date`, [

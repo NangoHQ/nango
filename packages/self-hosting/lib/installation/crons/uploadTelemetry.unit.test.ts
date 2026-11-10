@@ -63,7 +63,7 @@ afterEach(() => {
 });
 
 describe('uploaderConfig', () => {
-    it('takes the installation from the license and the rest from the environment', async () => {
+    it('reads the installation from the license and the rest from the environment', async () => {
         expect((await uploaderConfig()).unwrap()).toEqual({
             knex: telemetryDb.current,
             installationId: 'f4a2c0e1-7b3d-4e2a-9c1f-0a6d5e8b2c44',
@@ -80,10 +80,10 @@ describe('uploaderConfig', () => {
             'NANGO_INSTALLATION_PRIVATE_KEY cannot sign an installation token'
         ],
         ['the license is not set', () => (envs.NANGO_LICENSE = undefined), 'NANGO_LICENSE is not set'],
-        ['the build trusts no license key', () => (trusted.publicKeyPem = null), 'this build trusts no license key'],
-        ['the license is not ours', () => (envs.NANGO_LICENSE = 'not.a.license'), expect.stringContaining('the license does not verify')],
+        ['the build has no license public key', () => (trusted.publicKeyPem = null), 'this build has no license public key'],
+        ['the license does not verify', () => (envs.NANGO_LICENSE = 'not.a.license'), expect.stringContaining('the license does not verify')],
         ['there is no telemetry database', () => (telemetryDb.current = undefined), 'hosted telemetry has no database']
-    ])('has nothing to run with when %s', async (_name, arrange, message) => {
+    ])('returns an error when %s', async (_name, arrange, message) => {
         arrange();
 
         const config = await uploaderConfig();
@@ -91,7 +91,7 @@ describe('uploaderConfig', () => {
         expect(config.isErr() && config.error.message).toEqual(message);
     });
 
-    it('has nothing to run with when the license does not include telemetry', async () => {
+    it('returns an error when the license does not include telemetry', async () => {
         envs.NANGO_LICENSE = await license({ telemetry: false });
 
         const config = await uploaderConfig();
@@ -101,7 +101,7 @@ describe('uploaderConfig', () => {
 });
 
 describe('uploadTelemetryCron', () => {
-    it('runs every hour, at a minute past the quarter', async () => {
+    it('runs every hour, at a random minute from 15 to 59', async () => {
         vi.spyOn(Math, 'random').mockReturnValueOnce(0).mockReturnValueOnce(0.999);
 
         await uploadTelemetryCron();
@@ -110,7 +110,7 @@ describe('uploadTelemetryCron', () => {
         expect(vi.mocked(cron.schedule).mock.calls.map(([expression]) => expression)).toEqual(['15 * * * *', '59 * * * *']);
     });
 
-    it('does not run unless uploads are switched on', async () => {
+    it('does not run when the flag is off', async () => {
         flags.hasHostedTelemetryUpload = false;
 
         await uploadTelemetryCron();
@@ -118,7 +118,7 @@ describe('uploadTelemetryCron', () => {
         expect(cron.schedule).not.toHaveBeenCalled();
     });
 
-    it('does not run when it has nothing to run with', async () => {
+    it('does not run when the configuration is incomplete', async () => {
         envs.NANGO_INSTALLATION_PRIVATE_KEY = undefined;
 
         await uploadTelemetryCron();

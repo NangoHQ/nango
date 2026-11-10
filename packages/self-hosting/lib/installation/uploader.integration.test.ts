@@ -49,7 +49,7 @@ async function insert(...rows: { ts: string; metric: string; attributes?: Record
         .insert(rows.map((row) => ({ ts: new Date(row.ts), metric: row.metric, attributes: row.attributes ?? {}, value: row.value ?? 1 })));
 }
 
-/** One row a minute for 28 producers: more than a page for a single metric and day. */
+/** A day with more rows than fit in one request. */
 const BIG_DAY_ROWS = 1440 * 28;
 async function insertBigDay(metric: string): Promise<void> {
     await knex.raw(
@@ -126,8 +126,8 @@ afterEach(() => {
 });
 
 describe('uploadQueuedDays', () => {
-    it('sends every metric of each closed day to Nango and leaves the running day alone', async () => {
-        const config = await uploader('closed-days');
+    it('uploads every metric of each past day and skips today', async () => {
+        const config = await uploader('past-days');
         await insert(
             { ts: '2026-11-08T10:00:00Z', metric: concurrency, value: 3 },
             { ts: '2026-11-08T10:00:00Z', metric: connections, value: 40 },
@@ -147,7 +147,7 @@ describe('uploadQueuedDays', () => {
         expect(await queued()).toEqual([]);
     });
 
-    it('goes back thirty days and no further', async () => {
+    it('does not upload days older than thirty days', async () => {
         const config = await uploader('backfill');
         await insert({ ts: '2026-10-10T10:00:00Z', metric: concurrency, value: 1 }, { ts: '2026-10-11T10:00:00Z', metric: concurrency, value: 2 });
 
@@ -157,7 +157,7 @@ describe('uploadQueuedDays', () => {
         expect(await stored(config.installationId)).toEqual([{ ts: '2026-10-11 10:00:00.000', metric: concurrency, value: 2 }]);
     });
 
-    it('fails what could not be sent before it left the thirty days, without sending it', async () => {
+    it('marks an upload as failed, without sending it, once it is older than thirty days', async () => {
         const config = await uploader('expired');
         await insert({ ts: '2026-10-10T10:00:00Z', metric: concurrency });
         const whenItWasRecent = new Date('2026-10-12T08:00:00Z');
@@ -171,7 +171,7 @@ describe('uploadQueuedDays', () => {
         expect(await stored(config.installationId)).toEqual([]);
     });
 
-    it('sends nothing twice', async () => {
+    it('does not upload the same day twice', async () => {
         const config = await uploader('once');
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency });
         (await run(config)).unwrap();
@@ -183,7 +183,7 @@ describe('uploadQueuedDays', () => {
         expect(requests).not.toHaveBeenCalled();
     });
 
-    it('sends a day that is larger than a page in several requests', async () => {
+    it('uploads a day in several requests when it does not fit in one', async () => {
         const config = await uploader('paged');
         await insertBigDay(concurrency);
         const requests = vi.spyOn(globalThis, 'fetch');
@@ -195,7 +195,7 @@ describe('uploadQueuedDays', () => {
         expect(await stored(config.installationId)).toHaveLength(BIG_DAY_ROWS);
     });
 
-    it('resumes a day after the last page Nango acknowledged', async () => {
+    it('continues a day from the last page Nango accepted', async () => {
         const config = await uploader('resumed');
         await insertBigDay(concurrency);
         const send = globalThis.fetch;
@@ -217,7 +217,7 @@ describe('uploadQueuedDays', () => {
         expect(await stored(config.installationId)).toHaveLength(BIG_DAY_ROWS);
     });
 
-    it('stops at the deadline and goes on from there on the next run', async () => {
+    it('stops when the run is out of time and continues on the next run', async () => {
         const config = await uploader('out-of-time');
         await insertBigDay(concurrency);
         const send = globalThis.fetch;
@@ -238,7 +238,7 @@ describe('uploadQueuedDays', () => {
         expect(await stored(config.installationId)).toHaveLength(BIG_DAY_ROWS);
     });
 
-    it('marks a day Nango turns down as failed, never sends it again, and goes on with the others', async () => {
+    it('marks an upload that Nango rejects as failed, does not retry it, and continues with the others', async () => {
         const config = await uploader('turned-down');
         const tooLong = 'm'.repeat(300);
         await insert({ ts: '2026-11-08T10:00:00Z', metric: tooLong }, { ts: '2026-11-09T10:00:00Z', metric: concurrency, value: 5 });
@@ -254,7 +254,7 @@ describe('uploadQueuedDays', () => {
         expect(requests).not.toHaveBeenCalled();
     });
 
-    it('marks every day as failed when Nango does not accept the installation', async () => {
+    it('marks every upload as failed when Nango rejects the installation', async () => {
         const config = await uploader('unlicensed', { licensed: false });
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });
         const requests = vi.spyOn(globalThis, 'fetch');
@@ -266,7 +266,7 @@ describe('uploadQueuedDays', () => {
         expect(await queued()).toEqual([]);
     });
 
-    it('tries again within the run when Nango fails on its side', async () => {
+    it('retries within the same run when Nango is failing', async () => {
         const config = await uploader('second-attempt');
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency, value: 3 });
         vi.spyOn(Math, 'random').mockReturnValue(0);
@@ -280,12 +280,12 @@ describe('uploadQueuedDays', () => {
     });
 
     it.each([
-        ['after three attempts when Nango keeps failing on its side', () => Response.json({ error: { code: 'insert_failed' } }, { status: 500 }), 3],
-        ['at once when the clocks disagree', () => Response.json({ error: { code: 'clock_skew' } }, { status: 401 }), 1],
-        ['at once when Nango asks to slow down', () => Response.json({ error: { code: 'too_many_requests' } }, { status: 429 }), 1],
-        ['at once when the route is not there yet', () => Response.json({ error: { code: 'not_found' } }, { status: 404 }), 1],
-        ['at once when something in between turns the request down', () => new Response('Forbidden', { status: 403 }), 1]
-    ])('stops at the first day and keeps everything, %s', async (name, answer, attempts) => {
+        ['after three attempts when Nango keeps failing', () => Response.json({ error: { code: 'insert_failed' } }, { status: 500 }), 3],
+        ['right away on a clock skew', () => Response.json({ error: { code: 'clock_skew' } }, { status: 401 }), 1],
+        ['right away on a 429', () => Response.json({ error: { code: 'too_many_requests' } }, { status: 429 }), 1],
+        ['right away on a 404', () => Response.json({ error: { code: 'not_found' } }, { status: 404 }), 1],
+        ['right away when a proxy rejects the request', () => new Response('Forbidden', { status: 403 }), 1]
+    ])('stops the run and keeps the queue, %s', async (name, answer, attempts) => {
         const config = await uploader(`kept ${name}`);
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });
         vi.spyOn(Math, 'random').mockReturnValue(0);
@@ -298,7 +298,7 @@ describe('uploadQueuedDays', () => {
         expect(await queued()).toHaveLength(2);
     });
 
-    it('stops at the first day and keeps everything, after three attempts when Nango cannot be reached', async () => {
+    it('stops the run and keeps the queue, after three attempts when Nango cannot be reached', async () => {
         const config = { ...(await uploader('unreachable')), url: 'http://127.0.0.1:1' };
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });
         vi.spyOn(Math, 'random').mockReturnValue(0);

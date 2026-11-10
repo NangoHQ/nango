@@ -4,7 +4,7 @@ import { gzip } from 'node:zlib';
 
 import tracer from 'dd-trace';
 
-import { enqueueClosedDays, failExpiredUploads, failUpload, listQueuedUploads, readUploadPage, saveUploadProgress } from '@nangohq/hosted-telemetry';
+import { enqueueUploads, failExpiredUploads, failUpload, listQueuedUploads, readUploadPage, saveUploadProgress } from '@nangohq/hosted-telemetry';
 import { Err, Ok, retry } from '@nangohq/utils';
 
 import { route } from '../cloud/routes/v1/telemetry/postUploads.js';
@@ -22,12 +22,12 @@ const deflate = promisify(gzip);
 const REQUEST_TIMEOUT_MS = 60_000;
 const SEND_ATTEMPTS = 3;
 const PERMANENT_STATUSES = new Set([400, 401, 403, 413]);
-// A breath between requests, so a backlog does not reach Nango as one burst.
+// We wait a few seconds between requests, so a backlog does not hit Nango all at once.
 const uploadPauseMs = () => 5_000 + Math.random() * 5_000;
-// A wait of its own between attempts, so installations that failed together do not come back together.
+// A random wait before retrying, so installations that failed together do not retry together.
 const sendRetryDelayMs = () => 500 + Math.random() * 2_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
-// What is older is not sent any more: if Nango needs it, it is asked for by hand.
+// We only upload the last 30 days. Older data has to be requested manually.
 const BACKFILL_DAYS = 30;
 
 export interface UploaderConfig {
@@ -49,14 +49,14 @@ export class UploadRequestError extends Error {
         this.code = code;
     }
 
-    /** Nango could not be reached or failed on its side: worth another attempt right away. */
+    /** Nango is down or failing. Worth retrying right away. */
     get serverSide(): boolean {
         return this.status === undefined || this.status >= 500;
     }
 
     /**
-     * The upload endpoint turned this request down and would again. An answer that carries none of its error codes
-     * came from something in between, a proxy or a route that is not deployed yet, and goes out again on a later run.
+     * Our upload endpoint rejected the request and would reject it again, so we do not retry. Any other answer, like one
+     * from a proxy or a 404 because the route is not deployed yet, is retried on a later run.
      */
     get permanent(): boolean {
         return this.status !== undefined && PERMANENT_STATUSES.has(this.status) && this.code !== undefined && this.code !== 'clock_skew';
@@ -120,8 +120,8 @@ async function send(config: UploaderConfig, body: Buffer): Promise<Result<void, 
 }
 
 /**
- * Sends what is left of a metric's day, a page at a time, moving the cursor only past what Nango acknowledged. Once the
- * deadline has passed it hands the day back unfinished.
+ * Uploads the rows of a metric for one day, page by page. The cursor only moves after Nango accepts a page. Stops early
+ * if the run is out of time.
  */
 async function uploadDay(config: UploaderConfig, { day, metric, cursor }: QueuedUpload, deadline: Date): Promise<Result<'finished' | 'out_of_time'>> {
     for (;;) {
@@ -162,9 +162,8 @@ async function uploadDay(config: UploaderConfig, { day, metric, cursor }: Queued
 }
 
 /**
- * Sends every closed day of the last 30 that Nango has not acknowledged yet, oldest first, until the deadline. It stops at
- * a failure worth retrying, and the next run starts again from there. A day the upload endpoint turns down for good is
- * marked as failed and the next one goes.
+ * Uploads everything in the queue, oldest first. It stops when the run is out of time or when Nango is failing, and the
+ * next run continues from there. An upload that Nango rejects is marked as failed and skipped.
  */
 export async function uploadQueuedDays(
     config: UploaderConfig,
@@ -174,7 +173,7 @@ export async function uploadQueuedDays(
     const since = new Date(today.getTime() - BACKFILL_DAYS * DAY_MS);
     const schema = config.schema && { schema: config.schema };
 
-    const enqueued = await enqueueClosedDays(config.knex, { since, today, ...schema });
+    const enqueued = await enqueueUploads(config.knex, { since, today, ...schema });
     if (enqueued.isErr()) {
         return Err(enqueued.error);
     }
@@ -183,7 +182,7 @@ export async function uploadQueuedDays(
         return Err(expired.error);
     }
     if (expired.value > 0) {
-        logger.error(`${expired.value} uploads are older than ${BACKFILL_DAYS} days and failed, they have to be asked for by hand`);
+        logger.error(`${expired.value} uploads are older than ${BACKFILL_DAYS} days and were marked as failed. Request the data manually`);
     }
     const queued = await listQueuedUploads(config.knex, { since, ...schema });
     if (queued.isErr()) {
@@ -205,7 +204,7 @@ export async function uploadQueuedDays(
                 return Err(marked.error);
             }
             failed++;
-            logger.error(`Upload of ${upload.metric} for ${upload.day} failed, it has to be asked for by hand`, uploaded.error);
+            logger.error(`Upload of ${upload.metric} for ${upload.day} failed and will not be retried. Request the data manually`, uploaded.error);
         } else {
             return Err(uploaded.error);
         }
