@@ -4,6 +4,7 @@ import { productTracking, withProductTrackingContext } from '@nangohq/shared';
 
 import { PLAYGROUND_USER_TAG_KEY } from './agentPlaygroundTags.js';
 import {
+    measureAgentSessionToolCall,
     trackAgentSessionCreated,
     trackAgentSessionProxyRequest,
     trackAgentSessionTerminated,
@@ -11,6 +12,7 @@ import {
     trackAgentSessionToolSearch
 } from './agentSessionAnalytics.service.js';
 
+import type { CallToolResult } from '@modelcontextprotocol/server';
 import type { AgentSession, DBEnvironment, DBTeam } from '@nangohq/types';
 
 type Capture = (payload: { event: string; distinctId: string; properties: Record<string, unknown>; groups?: Record<string, string> }) => void;
@@ -53,6 +55,7 @@ beforeEach(() => {
 
 afterEach(() => {
     productTracking.client = realClient;
+    vi.restoreAllMocks();
 });
 
 describe('trackAgentSessionCreated', () => {
@@ -332,5 +335,111 @@ describe('trackAgentSessionToolSearch', () => {
         inRequest(() => trackAgentSessionToolSearch({ session, query: 'email a customer', matches: [], related: [], errorCode: 'search_failed' }));
 
         expect(onlyEvent().properties).toMatchObject({ match_count: 0, related_count: 0, is_success: false, error_code: 'search_failed' });
+    });
+});
+
+describe('measureAgentSessionToolCall', () => {
+    function measured(result: CallToolResult, track: () => void): Promise<CallToolResult> {
+        return withProductTrackingContext(
+            () => ({ team: { id: 42 } as DBTeam }),
+            async () =>
+                await measureAgentSessionToolCall(() => {
+                    track();
+                    return Promise.resolve(result);
+                })
+        );
+    }
+
+    it('holds the event until the result is built, then sends it with its size and duration', async () => {
+        vi.spyOn(Date, 'now').mockReturnValueOnce(1_000).mockReturnValueOnce(1_250);
+        const result: CallToolResult = { content: [{ type: 'text', text: 'a'.repeat(10) }] };
+
+        await measured(result, () => {
+            trackAgentSessionToolCall({ metaTool: 'nango_execute', session, integrationId: 'notion', toolName: 'read_doc' });
+            expect(capture).not.toHaveBeenCalled();
+        });
+
+        expect(onlyEvent().properties).toMatchObject({ result_size_bytes: 10, result_token_estimate: 3, call_duration_ms: 250 });
+    });
+
+    it('counts bytes, not characters', async () => {
+        await measured({ content: [{ type: 'text', text: 'é' }] }, () => trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc' }));
+
+        expect(onlyEvent().properties).toMatchObject({ result_size_bytes: 2, result_token_estimate: 1 });
+    });
+
+    it('counts a block that is not text as it is serialised', async () => {
+        const image = { type: 'image' as const, data: 'aGVsbG8=', mimeType: 'image/png' };
+
+        await measured({ content: [{ type: 'text', text: 'abcd' }, image] }, () =>
+            trackAgentSessionToolCall({ session, integrationId: 'linear-mcp', toolName: 'screenshot', mcpTool: true })
+        );
+
+        expect(onlyEvent().properties).toMatchObject({ result_size_bytes: 4 + Buffer.byteLength(JSON.stringify(image)) });
+    });
+
+    it('counts structured content an MCP tool returned without text', async () => {
+        const structuredContent = { rows: ['a'.repeat(100)] };
+
+        await measured({ content: [], structuredContent }, () =>
+            trackAgentSessionToolCall({ session, integrationId: 'linear-mcp', toolName: 'list', mcpTool: true })
+        );
+
+        expect(onlyEvent().properties).toMatchObject({ result_size_bytes: Buffer.byteLength(JSON.stringify(structuredContent)) });
+    });
+
+    it('counts structured content and its text copy once', async () => {
+        const structuredContent = { id: 'abc' };
+        const text = JSON.stringify(structuredContent, null, 2);
+
+        await measured({ content: [{ type: 'text', text }], structuredContent }, () =>
+            trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc' })
+        );
+
+        expect(onlyEvent().properties).toMatchObject({ result_size_bytes: Buffer.byteLength(text) });
+    });
+
+    it('measures a failed call by the error the agent received', async () => {
+        await measured({ content: [{ type: 'text', text: 'nope' }], isError: true }, () =>
+            trackAgentSessionToolSearch({ session, matches: [], related: [], errorCode: 'invalid_input' })
+        );
+
+        expect(onlyEvent().properties).toMatchObject({ is_success: false, result_size_bytes: 4, result_token_estimate: 1 });
+    });
+
+    it('measures a proxy request', async () => {
+        await measured({ content: [{ type: 'text', text: '{}' }] }, () =>
+            trackAgentSessionProxyRequest({ session, integrationId: 'notion', method: 'GET', status: 200 })
+        );
+
+        const { event, properties } = onlyEvent();
+        expect(event).toBe('agents:proxy_request_complete');
+        expect(properties).toMatchObject({ result_size_bytes: 2, result_token_estimate: 1 });
+        expect(properties).toHaveProperty('call_duration_ms');
+    });
+
+    it('still sends the duration when the call throws', async () => {
+        await expect(
+            withProductTrackingContext(
+                () => ({ team: { id: 42 } as DBTeam }),
+                async () =>
+                    await measureAgentSessionToolCall(() => {
+                        trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc' });
+                        return Promise.reject(new Error('boom'));
+                    })
+            )
+        ).rejects.toThrow('boom');
+
+        const { properties } = onlyEvent();
+        expect(properties).toHaveProperty('call_duration_ms');
+        expect(properties).not.toHaveProperty('result_size_bytes');
+    });
+
+    it('sends an event emitted outside a tool call right away, unmeasured', () => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc' }));
+
+        const { properties } = onlyEvent();
+        expect(properties).not.toHaveProperty('result_size_bytes');
+        expect(properties).not.toHaveProperty('call_duration_ms');
     });
 });
