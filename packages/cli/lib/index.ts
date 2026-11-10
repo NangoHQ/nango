@@ -32,6 +32,7 @@ import { parseIntegrationDefinitions } from './zeroYaml/definitions.js';
 import { deploy, validateDeployArguments } from './zeroYaml/deploy.js';
 import { dev } from './zeroYaml/dev.js';
 import { initZero } from './zeroYaml/init.js';
+import { isPath, resolveEntryPoint } from './zeroYaml/project-path.js';
 import { ReadableError } from './zeroYaml/utils.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
@@ -285,7 +286,7 @@ program
 program
     .command('dryrun')
     .description('Dry run a sync, action, or function against an existing connection in cloud.')
-    .argument('[name]', 'The name of the sync, action, or function to run.')
+    .argument('[file]', 'The path of the sync, action, or function to run. Passing its name instead is deprecated.')
     .argument('[connection_id]', 'The ID of the connection to use.')
     .option('-e, --environment [environment]', 'The Nango environment. If not provided, you will be prompted to select one.')
     .option(
@@ -357,6 +358,19 @@ program
             }
 
             let integrationFilter: string[] | undefined = integrationId ? [integrationId] : undefined;
+            if (name && isPath(name)) {
+                const entryPoint = resolveEntryPoint({ fullPath, file: name, entryPoints: definitions.value.entryPoints });
+                if (entryPoint.isErr()) {
+                    throw entryPoint.error;
+                }
+                if (integrationId) {
+                    throw new Error('--integration-id cannot be used with a file.');
+                }
+                name = entryPoint.value.name;
+                integrationFilter = [entryPoint.value.integrationId];
+            } else if (name) {
+                console.warn(chalk.yellow('Passing a name is deprecated. Use `nango dryrun <file> <connection_id>` instead.'));
+            }
             if (connectionId && !integrationFilter) {
                 // integration id not provided, try to infer it from the connection id
                 const inferred = await inferIntegrationsFromConnectionId(connectionId, environment);

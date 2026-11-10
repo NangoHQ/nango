@@ -1,0 +1,54 @@
+---
+title: 'New Relic - How do I link my account?'
+sidebarTitle: 'New Relic'
+---
+
+## Overview
+
+To authenticate with New Relic, you need:
+
+1. **Data Center Region** — the New Relic data center that hosts your account (US, EU or JP).
+2. **User Key** — a New Relic User key, which starts with `NRAK-`.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A New Relic account. If you don't have one, [sign up for free](https://newrelic.com/signup).
+
+### Step 1: Find your data center region
+
+Your data center is the one your account was created in. Check the address you use to log in to New Relic and pick the matching region:
+
+| You log in at          | Data Center Region (select in Nango) |
+|------------------------|--------------------------------------|
+| `one.newrelic.com`     | `api.newrelic.com`                   |
+| `one.eu.newrelic.com`  | `api.eu.newrelic.com`                |
+| `one.jp.newrelic.com`  | `api.jp.newrelic.com`                |
+
+### Step 2: Create a User key
+
+1. Log in to New Relic, open the user menu and click **API keys**.
+2. Click **Create a key** in the top-right corner.
+
+<img src="/api-integrations/new-relic/api_keys_page.png" alt="New Relic API Keys page with the Create a key button"/>
+
+3. Choose the account, keep **User** as the **Key type**, enter a name and optional notes, then click **Create a key**.
+
+<img src="/api-integrations/new-relic/create_user_key_dialog.png" alt="New Relic Create an API key dialog with Key type set to User"/>
+
+4. Click **Copy key** in the banner to copy the new User key.
+
+<img src="/api-integrations/new-relic/user_key_created.png" alt="New Relic API Keys page with the Copy key button for the new User key"/>
+
+Use a User key: Ingest keys (License, Browser) are for sending data to New Relic and don't work here.
+
+### Step 3: Enter your region and User key in the Connect UI
+
+1. Open the form where you need to authenticate with New Relic.
+2. Select your **Data Center Region** and enter your User key in the **User Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/new-relic/form.png" alt="New Relic Connect UI form with the Data Center Region and User Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to New Relic.

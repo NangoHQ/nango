@@ -20,7 +20,10 @@ import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
 export type DeploymentBundleError = Error & { code: 'functions_deployment_error' };
-export type DeploymentBundlePreparationError = DeploymentBundleError | (Error & { code: 'integration_not_found'; integrationIds: string[] });
+export type DeploymentBundlePreparationError =
+    | DeploymentBundleError
+    | (Error & { code: 'integration_not_found'; integrationIds: string[] })
+    | (Error & { code: 'invalid_request'; message: string });
 
 function functionsDeploymentError(cause: unknown): DeploymentBundleError {
     return Object.assign(new Error('functions_deployment_error', { cause }), { code: 'functions_deployment_error' as const });
@@ -28,6 +31,10 @@ function functionsDeploymentError(cause: unknown): DeploymentBundleError {
 
 function integrationNotFoundError(integrationIds: string[]): Error & { code: 'integration_not_found'; integrationIds: string[] } {
     return Object.assign(new Error('integration_not_found'), { code: 'integration_not_found' as const, integrationIds });
+}
+
+function invalidRequestError(message: string): Error & { code: 'invalid_request'; message: string } {
+    return Object.assign(new Error(message), { code: 'invalid_request' as const });
 }
 
 export async function prepareDeploymentBundle({
@@ -101,13 +108,24 @@ export async function prepareDeploymentBundle({
             return Err(functionsDeploymentError(deployed.error));
         }
 
-        return reconcile({ functions, deployed: deployed.value })
-            .map((reconciliation) => ({
-                ...reconciliation,
-                // only repo functions are removed when missing from the bundle
-                deleted: reconciliation.deleted.filter(({ currentVersion }) => currentVersion.source === 'repo')
-            }))
-            .mapError(functionsDeploymentError);
+        const reconciliation = reconcile({ functions, deployed: deployed.value });
+        if (reconciliation.isErr()) {
+            return Err(functionsDeploymentError(reconciliation.error));
+        }
+
+        const notStandalone = reconciliation.value.updated.filter(
+            ({ before, after }) => after.source === 'standalone' && before.currentVersion.source !== 'standalone'
+        );
+        if (notStandalone.length > 0) {
+            const names = notStandalone.map(({ after }) => `${after.integrationId}/${after.name}`).join(', ');
+            return Err(invalidRequestError(`Cannot overwrite functions that are not standalone: ${names}`));
+        }
+
+        return Ok({
+            ...reconciliation.value,
+            // only repo functions are removed when missing from the bundle
+            deleted: reconciliation.value.deleted.filter(({ currentVersion }) => currentVersion.source === 'repo')
+        });
     } catch (err) {
         return Err(functionsDeploymentError(err));
     }
@@ -203,7 +221,7 @@ export async function deployBundle({
                     tags: artifact.tags ?? {},
                     file_location: fileLocation,
                     version,
-                    source: 'repo' as const,
+                    source: artifact.source,
                     trigger: artifact.trigger,
                     requires: artifact.requires,
                     capabilities: artifact.capabilities,

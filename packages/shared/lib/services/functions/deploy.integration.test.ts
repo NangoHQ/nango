@@ -30,7 +30,8 @@ const githubArtifact = {
     metadata_schema_ref: null,
     checkpoint_schema_ref: null,
     json_schema: { type: 'object' },
-    fileBody: { js: 'export default async function run() {}', ts: 'export default async function run(): Promise<void> {}' }
+    fileBody: { js: 'export default async function run() {}', ts: 'export default async function run(): Promise<void> {}' },
+    source: 'repo'
 } satisfies FunctionDeploymentArtifact;
 
 const gitlabArtifact = {
@@ -162,6 +163,35 @@ describe('deployBundle instances', () => {
             expect(instances.find(({ name }) => name === scheduled.name)?.deleted_at).toBeInstanceOf(Date);
         }
     );
+
+    it('stores the artifact source', async () => {
+        const ctx = await setup();
+        (await ctx.deploy([githubArtifact, { ...githubArtifact, name: 'standaloneFunction', source: 'standalone' }])).unwrap();
+
+        const deployed = (await search(db.knex, { environmentId: ctx.environment.id })).unwrap();
+        expect(
+            deployed.map(({ config, currentVersion }) => ({ name: config.name, source: currentVersion.source })).sort((a, b) => a.name.localeCompare(b.name))
+        ).toEqual([
+            { name: githubArtifact.name, source: 'repo' },
+            { name: 'standaloneFunction', source: 'standalone' }
+        ]);
+    });
+
+    it('writes a new version when only the source changes', async () => {
+        const ctx = await setup();
+        const standalone = { ...githubArtifact, source: 'standalone' } satisfies FunctionDeploymentArtifact;
+        (await ctx.deploy([standalone])).unwrap();
+
+        const reconciliation = (
+            await prepareDeploymentBundle({ functions: [githubArtifact], environmentId: ctx.environment.id, reconciliationScope: { kind: 'environment' } })
+        ).unwrap();
+        expect(reconciliation.updated.map(({ after }) => after.name)).toEqual([githubArtifact.name]);
+        expect(reconciliation.unchanged).toEqual([]);
+        (await ctx.deploy([githubArtifact])).unwrap();
+
+        const [deployed] = (await search(db.knex, { environmentId: ctx.environment.id })).unwrap();
+        expect(deployed?.currentVersion).toMatchObject({ source: 'repo', version: functionVersionHash(githubArtifact).unwrap() });
+    });
 
     it('creates base instances only for active connections in the matching integration and environment', async () => {
         const ctx = await setup();

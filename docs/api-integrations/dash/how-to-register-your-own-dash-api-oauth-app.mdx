@@ -1,0 +1,31 @@
+---
+title: 'How to register your own Dash OAuth app'
+sidebarTitle: 'Dash Setup'
+description: 'Turn on the Dash REST API and connect its OAuth credentials to Nango'
+---
+
+This guide shows you how to get the OAuth credentials (client ID & secret) for your Dash account. Each Dash account has one client ID and secret, issued when an admin turns on the REST API. Your users can connect any Dash account with these credentials: the subdomain they enter decides which account their tokens are for.
+
+<Steps>
+  <Step title="Create a Dash account">
+    If you don't have a Dash account, [start a free trial](https://www.dash.app/).
+  </Step>
+  <Step title="Turn on the REST API">
+    Sign in to Dash as an account admin, go to **Admin** → **Integrations**, open the **REST API** tab and switch **Enable API** on. Copy the **Client ID** and **Secret key** that appear.
+  </Step>
+  <Step title="Add Nango's callback URL">
+    On the same page, add `https://api.nango.dev/oauth/callback` to the allowed callback URLs (or your own [custom callback URL](/guides/auth/auth-guide#custom-oauth-callback-url-optional)).
+  </Step>
+  <Step title="Add the credentials in Nango">
+    In your Dash integration in Nango, paste the client ID and secret. You don't need to add scopes: when a user connects, Nango asks for their Dash subdomain (`my-account` for `https://my-account.dash.app`) and requests the `subdomain:<subdomain>` scope Dash needs to know which account the token is for, plus `offline_access` for a refresh token.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+<Note>Switching **Enable API** off revokes the client ID and secret along with the saved callback URLs, and switching it on again issues a new client ID and secret, which you then update in Nango.</Note>
+
+For more details, see the [Dash API documentation](https://api-docs.dash.app/).
+
+---

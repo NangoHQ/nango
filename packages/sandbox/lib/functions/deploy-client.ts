@@ -5,6 +5,8 @@ import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { createFunctionSandbox } from './sandbox.js';
 import { deploySandboxTimeoutMs, deployTimeoutMs } from './timeouts.js';
 
+import type { RunnableFunctionType } from '@nangohq/types';
+
 const asyncDeployScriptUrl = new URL('./async-deploy-script.js', import.meta.url);
 const asyncDeployScript = readFileSync(asyncDeployScriptUrl, 'utf8');
 // This workspace-relative file is written through sandbox.writeFiles before
@@ -14,7 +16,7 @@ const asyncDeployScriptPath = '.nango/runtime/nango-function-deploy.mjs';
 export interface DeployRequest {
     integration_id: string;
     function_name: string;
-    function_type: 'action' | 'sync';
+    function_type: RunnableFunctionType;
     code: string;
     environment_name: string;
     nango_secret_key: string;
@@ -70,7 +72,7 @@ export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<P
                         NANGO_DEPLOY_AUTO_CONFIRM: 'true',
                         NANGO_DEPLOY_SOURCE: 'standalone',
                         NANGO_DEPLOY_CALLBACK_URL: request.callback_url,
-                        NANGO_DEPLOY_ARGS: JSON.stringify(buildDeployArgs(request)),
+                        NANGO_DEPLOY_ARGS: JSON.stringify(buildDeployArgs({ request, tsFilePath })),
                         NANGO_DEPLOY_TIMEOUT_MS: String(deployTimeoutMs),
                         NANGO_DEPLOY_COMPILE_EXIT_CODE: String(NangoCliExitCode.CompileError)
                     }
@@ -90,17 +92,8 @@ export function buildAsyncDeployScript(): string {
     return asyncDeployScript;
 }
 
-function buildDeployArgs(request: DeployRequest): string[] {
-    const args = [
-        'deploy',
-        request.environment_name,
-        '--integration',
-        request.integration_id,
-        request.function_type === 'action' ? '--action' : '--sync',
-        request.function_name,
-        '--auto-confirm',
-        '--no-interactive'
-    ];
+function buildDeployArgs({ request, tsFilePath }: { request: DeployRequest; tsFilePath: string }): string[] {
+    const args = ['deploy', request.environment_name, tsFilePath, '--auto-confirm', '--no-interactive'];
 
     if (request.version) {
         args.push('--version', request.version);

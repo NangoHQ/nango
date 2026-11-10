@@ -4,10 +4,12 @@ import { FunctionError } from './helpers.js';
 import { createFunctionSandbox } from './sandbox.js';
 import { compileSandboxTimeoutMs, compileTimeoutMs } from './timeouts.js';
 
+import type { RunnableFunctionType } from '@nangohq/types';
+
 interface FunctionFilePathRequest {
     integration_id: string;
     function_name: string;
-    function_type: 'action' | 'sync';
+    function_type: RunnableFunctionType;
 }
 
 export interface CompileRequest {
@@ -91,13 +93,13 @@ export function getFilePaths(request: FunctionFilePathRequest): {
     tsFilePath: string;
     cjsFilePath: string;
 } {
-    const folder = request.function_type === 'action' ? 'actions' : 'syncs';
+    const folder = `${request.function_type}s`;
     const tsFilePath = `${request.integration_id}/${folder}/${request.function_name}.ts`;
     const cjsFilePath = `build/${request.integration_id}_${folder}_${request.function_name}.cjs`;
     return { tsFilePath, cjsFilePath };
 }
 
 export function buildIndexTs(request: FunctionFilePathRequest): string {
-    const folder = request.function_type === 'action' ? 'actions' : 'syncs';
+    const folder = `${request.function_type}s`;
     return `import './${request.integration_id}/${folder}/${request.function_name}.js';\n`;
 }

@@ -2,6 +2,59 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.72.4] - 2026-11-09
+
+### Added
+
+- *(integrations)* Add support for new providers (#8210) by @hassan254-prog
+- *(integrations)* Add support for new providers (#8212) by @hassan254-prog
+- Remote deploy/dryrun to support tools (#8208) by @TBonnin
+
+## [v0.72.3] - 2026-11-06
+
+### Added
+
+- *(oauth2)* Add token_request_auth_method none for public clients (#8156) by @hassan254-prog
+- *(webapp)* Load catalog function code from the Nango API instead of GitHub (#8046) by @kaposke
+- *(cli)* Remove nango clone (#8059) by @kaposke
+- *(db)* Add account_getting_started table (#8144) by @kaposke
+- *(server)* Track agent getting started progress per account (#8145) by @kaposke
+- *(webapp)* Agent-first getting started page (#8146) by @kaposke
+- *(integrations)* Add support for new providers (#8095) by @hassan254-prog
+- *(webapp)* Move function drawer actions out of the three-dot menu (#8190) by @macko911
+- Add public environment updates (#8150) by @ErickRDev
+- Audit public environment updates (#8151) by @ErickRDev
+- Allow importing webhook signing keys during rotation (#8164) by @ErickRDev
+- *(integrations)* Add support for new providers (#8162) by @hassan254-prog
+- *(integrations)* Add support for sharefile (#8127) by @pebbleworks-ai
+- *(database)* Add enabled flag to providers_shared_credentials (#8183) by @hassan254-prog
+- *(shared-credentials)* Allow disabling Nango-managed apps (#8184) by @hassan254-prog
+- *(integrations)* Add support for new providers (#8178) by @hassan254-prog
+- *(design-system)* Refresh Button to the Dharma spec (#8172) by @gabrielle-svg
+- Prepare CLI/server to tools support in sandbox deploy/dryrun  (#8206) by @TBonnin
+- *(design-system)* Add button CTA variant to Alert (#8203) by @gabrielle-svg
+- *(design-system)* Align IconButton with the Dharma spec (#8174) by @gabrielle-svg
+- *(self-hosting)* Registry services and the license CLI (#8185) by @pfreixes
+- *(integrations)* Add support for Anymail Finder (#7764) by @emma-anymailfinder
+
+### Changed
+
+- *(self-hosting)* Explain how to create the first administrator (#8182) by @pfreixes
+- Suggest GitHub in quickstart and push agents to install the Management MCP (#8188) by @rguldener
+- Update README introduction for AI agents (#8189) by @sapnesh-nango
+- Fold webhook settings audit events under environment.updated (#8166) by @ErickRDev
+- Update rotate-webhook-signing-key docs (#8195) by @ErickRDev
+- Drop the retired MFA flag from self-managed docs (NAN-8077) (#8194) by @agusayerza
+- Update version in manifest by @actions-user
+- Remove old 0.0.1 package versions from the GitHub registry (#8040) by @macko911
+
+### Fixed
+
+- Support deleting the last legacy scripts (#8154) by @TBonnin
+- *(docs)* Rotate-webhook-signing-key response (#8196) by @ErickRDev
+- *(dev)* Fix orphaned local dev processes after nodemon restarts (#7994) by @macko911
+- *(persist)* Deleting a missing checkpoint is a no-op (#8169) by @hassan254-prog
+
 ## [v0.72.2] - 2026-11-05
 
 ### Added
@@ -8650,6 +8703,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.72.4]: https://github.com/NangoHQ/nango/compare/v0.72.3..v0.72.4
+[v0.72.3]: https://github.com/NangoHQ/nango/compare/v0.72.2..v0.72.3
 [v0.72.2]: https://github.com/NangoHQ/nango/compare/v0.72.1..v0.72.2
 [v0.72.1]: https://github.com/NangoHQ/nango/compare/v0.72.0..v0.72.1
 [v0.72.0]: https://github.com/NangoHQ/nango/compare/v0.71.14..v0.72.0

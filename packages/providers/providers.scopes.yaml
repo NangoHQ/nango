@@ -2643,6 +2643,10 @@ coros-sandbox: []
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 coupa-compass: []
 
+# source: https://api-docs.dash.app/ (offline_access; subdomain:<subdomain> is built from the connection's subdomain field)
+dash:
+    - offline_access
+
 # source: https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html
 # Databricks M2M (service principal) OAuth uses a single scope.
 # Note: Databricks U2M (user) OAuth also uses `offline_access` (space-separated).
@@ -4996,6 +5000,18 @@ hitpay:
     - payments:create
     - payments:read
     - payments:refund
+
+# source: https://developers.hive.co/docs/auth
+hive:
+    - campaigns:read
+    - contacts:read
+    - contacts:write
+    - events:read
+    - events:write
+    - orders:read
+    - orders:write
+    - segments:read
+    - segments:write
 
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 hover: []

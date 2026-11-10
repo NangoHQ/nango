@@ -1,9 +1,8 @@
-import { ChevronsUpDown, CreditCard, KeyRound, LogOut, ScrollText, SlidersHorizontal, Sprout, UserRoundCog, Users } from 'lucide-react';
+import { ChevronsUpDown, Contrast, CreditCard, History, KeyRound, LogOut, SlidersHorizontal, Sprout, UserCog, Users } from 'lucide-react';
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
-import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { useDevPanelStore, useIsDevToolsEnabled } from '@/features/DevToolPanel';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -13,7 +12,9 @@ import { track } from '@/utils/analytics';
 import { toAcronym } from '@/utils/avatar';
 import { globalEnv } from '@/utils/env';
 import { useSignout } from '@/utils/user';
-import { NavigationItem, navigationItemVariants } from './NavigationItem';
+import { cn } from '@/utils/utils';
+import { navigationMenuContentClassName, navigationMenuItemClassName, navigationMenuSeparatorClassName } from './navigationMenu';
+import { ThemeToggle } from './ThemeToggle';
 
 import type { LucideIcon } from 'lucide-react';
 
@@ -27,7 +28,6 @@ interface ProfileMenuItem {
 export const ProfileDropdown: React.FC = () => {
     const { data: metaData } = useMeta();
     const meta = metaData?.data;
-    const navigate = useNavigate();
     const signout = useSignout();
     const { user } = useUser();
     const { can } = usePermissions();
@@ -46,7 +46,7 @@ export const ProfileDropdown: React.FC = () => {
             },
             {
                 label: 'Profile',
-                icon: UserRoundCog,
+                icon: UserCog,
                 href: `/user-settings`
             }
         ];
@@ -60,19 +60,19 @@ export const ProfileDropdown: React.FC = () => {
             });
         }
 
+        if (meta?.auditTrail && canReadAuditTrail) {
+            list.push({
+                label: 'Audit trail',
+                icon: History,
+                href: `/team/audit`
+            });
+        }
+
         if (globalEnv.features.plan) {
             list.push({
                 label: 'Billing & usage',
                 icon: CreditCard,
                 href: `/team/billing`
-            });
-        }
-
-        if (meta?.auditTrail && canReadAuditTrail) {
-            list.push({
-                label: 'Audit trail',
-                icon: ScrollText,
-                href: `/team/audit`
             });
         }
 
@@ -94,51 +94,51 @@ export const ProfileDropdown: React.FC = () => {
     }
 
     return (
-        <SidebarMenu>
-            <SidebarMenuItem>
-                <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger className="group/profile focus-inset flex h-14 w-full cursor-pointer items-center justify-between border-t-[0.5px] border-b-[0.5px] border-border-default px-4 outline-none transition-colors hover:bg-state-hover data-[state=open]:bg-surface-overlay">
-                        <div className="flex min-w-0 items-center gap-3">
-                            <div className="type-text-regular-xs flex size-8 shrink-0 items-center justify-center rounded-full border-[0.5px] border-border-default bg-surface-overlay text-text-default">
-                                {initials}
-                            </div>
-                            <div className="flex min-w-0 flex-col items-start">
-                                <span className="type-text-medium-sm max-w-28 truncate text-text-default">{user?.name}</span>
-                                <span className="type-text-regular-xs max-w-28 truncate text-text-muted">{user?.email}</span>
-                            </div>
-                        </div>
-                        <ChevronsUpDown className="size-4 shrink-0 text-icon-secondary group-hover/profile:text-icon-default" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="end"
-                        alignOffset={0}
-                        side="right"
-                        sideOffset={0}
-                        className="w-50 rounded-none border-[0.5px] border-border-default p-1"
-                    >
-                        {items.map((item, index) => (
-                            <DropdownMenuItem
-                                key={index}
-                                onSelect={() => {
-                                    item.onSelect?.();
-                                    navigate(item.href);
-                                }}
-                                className={navigationItemVariants()}
-                            >
-                                <NavigationItem icon={<item.icon />}>{item.label}</NavigationItem>
-                            </DropdownMenuItem>
-                        ))}
-                        {isDevToolsEnabled && (
-                            <DropdownMenuItem onSelect={toggleDevPanel} className={navigationItemVariants()}>
-                                <NavigationItem icon={<SlidersHorizontal />}>Dev Tools</NavigationItem>
-                            </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem onSelect={() => signout()} className={navigationItemVariants()}>
-                            <NavigationItem icon={<LogOut />}>Log out</NavigationItem>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </SidebarMenuItem>
-        </SidebarMenu>
+        <DropdownMenu modal={false}>
+            <DropdownMenuTrigger className="group/profile flex w-full cursor-pointer items-center justify-between gap-2 rounded-ds-md p-2 outline-none transition-colors focus-inset hover:bg-state-hover data-[state=open]:bg-state-hover">
+                <span className="flex min-w-0 items-center gap-3">
+                    <span className="type-text-regular-xs flex size-8 shrink-0 items-center justify-center rounded-ds-full border-ds-hairline border-border-default bg-surface-overlay text-text-default">
+                        {initials}
+                    </span>
+                    <span className="flex min-w-0 flex-col items-start">
+                        <span className="type-text-medium-sm max-w-full truncate text-text-default">{user.name}</span>
+                        <span className="type-text-regular-xs max-w-full truncate text-text-muted">{user.email}</span>
+                    </span>
+                </span>
+                <ChevronsUpDown className="size-4 shrink-0 text-icon-secondary group-hover/profile:text-icon-default group-data-[state=open]/profile:text-icon-default" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="top" sideOffset={4} className={cn(navigationMenuContentClassName, 'w-58')}>
+                <div className="flex flex-col px-2 py-1.5">
+                    <span className="type-text-medium-sm truncate text-text-strong">{user.name}</span>
+                    <span className="type-text-regular-xs truncate text-text-muted">{user.email}</span>
+                </div>
+                <DropdownMenuSeparator className={navigationMenuSeparatorClassName} />
+                {items.map((item) => (
+                    <DropdownMenuItem key={item.href} asChild className={navigationMenuItemClassName}>
+                        <Link to={item.href} onClick={item.onSelect}>
+                            <item.icon />
+                            <span>{item.label}</span>
+                        </Link>
+                    </DropdownMenuItem>
+                ))}
+                {isDevToolsEnabled && (
+                    <DropdownMenuItem onSelect={toggleDevPanel} className={navigationMenuItemClassName}>
+                        <SlidersHorizontal />
+                        <span>Dev Tools</span>
+                    </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator className={navigationMenuSeparatorClassName} />
+                <div className="flex h-9 items-center gap-2 pr-1 pl-2">
+                    <Contrast className="size-4 shrink-0 text-icon-secondary" />
+                    <span className="type-text-regular-sm flex-1 text-text-default">Theme</span>
+                    <ThemeToggle />
+                </div>
+                <DropdownMenuSeparator className={navigationMenuSeparatorClassName} />
+                <DropdownMenuItem onSelect={() => void signout()} className={navigationMenuItemClassName}>
+                    <LogOut />
+                    <span>Log out</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 };
