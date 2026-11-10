@@ -35,6 +35,12 @@ const agentSession = {
     is_playground: z.boolean()
 };
 
+const toolCallResult = {
+    result_size_bytes: z.number().optional(),
+    result_token_estimate: z.number().optional(),
+    call_duration_ms: z.number().optional()
+};
+
 const toolList = z.object({ tools: z.array(z.string()) });
 const integrationPolicy = z.union([z.literal('*'), z.object({ allow: z.union([z.literal('*'), toolList]).optional(), deny: toolList.optional() })]);
 const toolset = z.union([z.literal('*'), z.record(z.string(), integrationPolicy)]);
@@ -621,11 +627,13 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'agents:tool_call_complete': {
         surface: 'server',
-        insight: 'Which tools do agents call most, which fail most often, and what the agent was trying to get done with each call',
+        insight:
+            'Which tools do agents call most, which fail most often, which return large results or run slowly, and what the agent was trying to get done with each call',
         fires: 'When a tool call in an agent session returns',
         properties: z.object({
             ...agentSession,
             ...outcome,
+            ...toolCallResult,
             tool_name: z.string().optional(),
             meta_tool: stringOf<AgentSessionMetaTool>().optional(),
             is_pinned: z.boolean().optional(),
@@ -644,6 +652,7 @@ export const analyticsEventCatalogue = defineCatalogue({
             ...agentSession,
             meta_tool: z.literal('nango_proxy'),
             ...outcome,
+            ...toolCallResult,
             integration_id: z.string().optional(),
             http_method: stringOf<HTTP_METHOD>().optional(),
             provider: z.string().optional(),
@@ -659,6 +668,7 @@ export const analyticsEventCatalogue = defineCatalogue({
             ...agentSession,
             meta_tool: z.literal('nango_tool_search'),
             ...outcome,
+            ...toolCallResult,
             query: z.string().optional(),
             goal: z.string().optional(),
             match_count: z.number(),

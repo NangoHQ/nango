@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { MFAError, mfaService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { flags, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { userToAPI } from '../../../../formatters/user.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -28,6 +28,15 @@ function validateQuery(req: Request, res: Response): boolean {
 
     res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
     return false;
+}
+
+function rejectWhenMFAUnavailable(res: Response): boolean {
+    if (flags.hasMFA) {
+        return false;
+    }
+
+    res.status(403).send({ error: { code: 'feature_disabled', message: 'Two-factor authentication requires Nango Cloud or an enterprise license' } });
+    return true;
 }
 
 function validateCode(req: Request, res: Response): string | null {
@@ -58,7 +67,7 @@ export const getMFAStatus = asyncWrapper<GetMFAStatus>(async (req, res) => {
 });
 
 export const postMFAEnrollment = asyncWrapper<PostMFAEnrollment>(async (req, res) => {
-    if (!validateQuery(req, res)) {
+    if (!validateQuery(req, res) || rejectWhenMFAUnavailable(res)) {
         return;
     }
 
@@ -75,7 +84,7 @@ export const postMFAEnrollment = asyncWrapper<PostMFAEnrollment>(async (req, res
 });
 
 export const postMFAActivation = asyncWrapper<PostMFAActivation>(async (req, res) => {
-    if (!validateQuery(req, res)) {
+    if (!validateQuery(req, res) || rejectWhenMFAUnavailable(res)) {
         return;
     }
 

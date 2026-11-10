@@ -1,8 +1,11 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
+
 import { productTracking } from '@nangohq/shared';
 
 import { isPlaygroundSession } from './agentPlaygroundTags.js';
 
 import type { CreateAgentSessionParams } from './agentSession.service.js';
+import type { CallToolResult } from '@modelcontextprotocol/server';
 import type {
     AgentSession,
     AgentSessionMetaTool,
@@ -13,12 +16,20 @@ import type {
     PostAgentSessionsBody
 } from '@nangohq/types';
 
+type ToolCallMeasurement = Pick<AnalyticsEventProperties<'agents:tool_call_complete'>, 'result_size_bytes' | 'result_token_estimate' | 'call_duration_ms'>;
+
+type MeasuredSend = (measurement: ToolCallMeasurement) => void;
+
 type SessionRequest = Pick<CreateAgentSessionParams, 'connections' | 'toolset' | 'pinnedTools' | 'metaTools' | 'expiresInMs'>;
 type TrackedRequest = AnalyticsEventProperties<'agents:session_start'>['request'];
 type TrackedPolicy = NonNullable<Exclude<TrackedRequest['toolset'], '*'>>[string];
 
+const BYTES_PER_TOKEN = 4;
+
 /** Integration ids and tool names together, so the request stays small whatever the caller sent. */
 const MAX_TRACKED_REQUEST_NAMES = 250;
+
+const pendingToolCallEvents = new AsyncLocalStorage<MeasuredSend[]>();
 
 interface Outcome {
     logOperationId?: string | undefined;
@@ -108,6 +119,27 @@ export function trackAgentSessionTerminated(session: AgentSession): void {
     });
 }
 
+/**
+ * Holds back the tool call events `call` emits until its result is built, so each one carries the size of
+ * what the agent received and how long it waited for it.
+ */
+export async function measureAgentSessionToolCall(call: () => Promise<CallToolResult>): Promise<CallToolResult> {
+    const startedAt = Date.now();
+    const pending: MeasuredSend[] = [];
+    let result: CallToolResult | undefined;
+
+    try {
+        result = await pendingToolCallEvents.run(pending, call);
+        return result;
+    } finally {
+        const callDurationMs = Date.now() - startedAt;
+        const measurement: ToolCallMeasurement = { ...(result ? resultSize(result) : {}), call_duration_ms: callDurationMs };
+        for (const send of pending) {
+            send(measurement);
+        }
+    }
+}
+
 export function trackAgentSessionToolCall({
     metaTool,
     session,
@@ -120,37 +152,43 @@ export function trackAgentSessionToolCall({
     intent,
     ...outcome
 }: ToolCallParams): void {
-    productTracking.track({
-        name: 'agents:tool_call_complete',
-        eventProperties: {
-            ...sessionProperties(session),
-            ...outcomeProperties(outcome),
-            ...(toolName ? { tool_name: toolName } : {}),
-            ...(metaTool ? { meta_tool: metaTool } : {}),
-            ...(pinned === undefined ? {} : { is_pinned: pinned }),
-            ...(integrationId ? { integration_id: integrationId } : {}),
-            ...(underlyingErrorCode ? { underlying_error_code: underlyingErrorCode } : {}),
-            ...(mcpTool ? { is_mcp_tool: true } : {}),
-            ...(goal ? { goal } : {}),
-            ...(intent ? { intent } : {})
-        }
-    });
+    sendMeasured((measurement) =>
+        productTracking.track({
+            name: 'agents:tool_call_complete',
+            eventProperties: {
+                ...sessionProperties(session),
+                ...outcomeProperties(outcome),
+                ...measurement,
+                ...(toolName ? { tool_name: toolName } : {}),
+                ...(metaTool ? { meta_tool: metaTool } : {}),
+                ...(pinned === undefined ? {} : { is_pinned: pinned }),
+                ...(integrationId ? { integration_id: integrationId } : {}),
+                ...(underlyingErrorCode ? { underlying_error_code: underlyingErrorCode } : {}),
+                ...(mcpTool ? { is_mcp_tool: true } : {}),
+                ...(goal ? { goal } : {}),
+                ...(intent ? { intent } : {})
+            }
+        })
+    );
 }
 
 export function trackAgentSessionProxyRequest({ session, integrationId, provider, method, status, providerErrorCode, ...outcome }: ProxyRequestParams): void {
-    productTracking.track({
-        name: 'agents:proxy_request_complete',
-        eventProperties: {
-            ...sessionProperties(session),
-            meta_tool: 'nango_proxy',
-            ...outcomeProperties(outcome),
-            ...(integrationId ? { integration_id: integrationId } : {}),
-            ...(method ? { http_method: method } : {}),
-            ...(provider ? { provider } : {}),
-            ...(status === undefined ? {} : { http_status: status }),
-            ...(providerErrorCode ? { provider_error_code: providerErrorCode } : {})
-        }
-    });
+    sendMeasured((measurement) =>
+        productTracking.track({
+            name: 'agents:proxy_request_complete',
+            eventProperties: {
+                ...sessionProperties(session),
+                meta_tool: 'nango_proxy',
+                ...outcomeProperties(outcome),
+                ...measurement,
+                ...(integrationId ? { integration_id: integrationId } : {}),
+                ...(method ? { http_method: method } : {}),
+                ...(provider ? { provider } : {}),
+                ...(status === undefined ? {} : { http_status: status }),
+                ...(providerErrorCode ? { provider_error_code: providerErrorCode } : {})
+            }
+        })
+    );
 }
 
 /**
@@ -159,21 +197,24 @@ export function trackAgentSessionProxyRequest({ session, integrationId, provider
  * taxonomy grants this event: everywhere else a property is a primitive.
  */
 export function trackAgentSessionToolSearch({ session, query, goal, matches, related, ...outcome }: ToolSearchParams): void {
-    productTracking.track({
-        name: 'agents:tool_search_complete',
-        eventProperties: {
-            ...sessionProperties(session),
-            meta_tool: 'nango_tool_search',
-            ...(query === undefined ? {} : { query }),
-            ...(goal === undefined ? {} : { goal }),
-            match_count: matches.length,
-            related_count: related.length,
-            ...(matches[0] ? { top_match_confidence: matches[0].confidence } : {}),
-            ...outcomeProperties(outcome),
-            matches,
-            related
-        }
-    });
+    sendMeasured((measurement) =>
+        productTracking.track({
+            name: 'agents:tool_search_complete',
+            eventProperties: {
+                ...sessionProperties(session),
+                meta_tool: 'nango_tool_search',
+                ...(query === undefined ? {} : { query }),
+                ...(goal === undefined ? {} : { goal }),
+                match_count: matches.length,
+                related_count: related.length,
+                ...(matches[0] ? { top_match_confidence: matches[0].confidence } : {}),
+                ...outcomeProperties(outcome),
+                ...measurement,
+                matches,
+                related
+            }
+        })
+    );
 }
 
 function sanitizeRequest(body: PostAgentSessionsBody): { request: TrackedRequest; isTruncated: boolean } {
@@ -258,4 +299,22 @@ function outcomeProperties({ logOperationId, errorCode }: Outcome): { is_success
         ...(logOperationId ? { log_operation_id: logOperationId } : {}),
         ...(errorCode ? { error_code: errorCode } : {})
     };
+}
+
+/** Outside a measured tool call, nothing holds the event back and it goes out without a measurement. */
+function sendMeasured(send: MeasuredSend): void {
+    const pending = pendingToolCallEvents.getStore();
+    if (pending) {
+        pending.push(send);
+        return;
+    }
+    send({});
+}
+
+/** A client reads either content or structuredContent, never both, so the larger of the two is what the agent can receive. */
+function resultSize({ content, structuredContent }: CallToolResult): Pick<ToolCallMeasurement, 'result_size_bytes' | 'result_token_estimate'> {
+    const contentBytes = content.reduce((total, block) => total + Buffer.byteLength(block.type === 'text' ? block.text : JSON.stringify(block)), 0);
+    const structuredBytes = structuredContent ? Buffer.byteLength(JSON.stringify(structuredContent)) : 0;
+    const bytes = Math.max(contentBytes, structuredBytes);
+    return { result_size_bytes: bytes, result_token_estimate: Math.ceil(bytes / BYTES_PER_TOKEN) };
 }

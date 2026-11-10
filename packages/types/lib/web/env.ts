@@ -28,5 +28,6 @@ export interface WindowEnv {
         slack: boolean;
         plan: boolean;
         authRoles: boolean;
+        mfa: boolean;
     };
 }
