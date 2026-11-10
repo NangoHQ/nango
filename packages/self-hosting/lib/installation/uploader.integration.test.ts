@@ -232,19 +232,20 @@ describe('uploadPendingDays', () => {
     });
 
     it.each([
-        ['after three attempts when Nango keeps failing on its side', 500, 'insert_failed', 3],
-        ['at once when the clocks disagree', 401, 'clock_skew', 1]
-    ])('stops at the first day and keeps everything, %s', async (_name, status, code, attempts) => {
-        const config = await uploader(`kept-${code}`);
+        ['after three attempts when Nango keeps failing on its side', () => Response.json({ error: { code: 'insert_failed' } }, { status: 500 }), 3],
+        ['at once when the clocks disagree', () => Response.json({ error: { code: 'clock_skew' } }, { status: 401 }), 1],
+        ['at once when Nango asks to slow down', () => Response.json({ error: { code: 'too_many_requests' } }, { status: 429 }), 1],
+        ['at once when the route is not there yet', () => Response.json({ error: { code: 'not_found' } }, { status: 404 }), 1],
+        ['at once when something in between turns the request down', () => new Response('Forbidden', { status: 403 }), 1]
+    ])('stops at the first day and keeps everything, %s', async (name, answer, attempts) => {
+        const config = await uploader(`kept ${name}`);
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });
         vi.spyOn(Math, 'random').mockReturnValue(0);
-        const requests = vi
-            .spyOn(globalThis, 'fetch')
-            .mockImplementation(() => Promise.resolve(Response.json({ error: { code, message: 'not now' } }, { status })));
+        const requests = vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(answer()));
 
         const res = await uploadPendingDays(config, { now });
 
-        expect(res.isErr() && res.error).toMatchObject({ name: 'UploadRequestError', status, code });
+        expect(res.isErr() && res.error).toMatchObject({ name: 'UploadRequestError', status: answer().status });
         expect(requests).toHaveBeenCalledTimes(attempts);
         expect(await pending()).toHaveLength(2);
     });

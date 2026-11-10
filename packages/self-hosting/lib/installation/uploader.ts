@@ -20,6 +20,7 @@ const deflate = promisify(gzip);
 
 const REQUEST_TIMEOUT_MS = 60_000;
 const SEND_ATTEMPTS = 3;
+const PERMANENT_STATUSES = new Set([400, 401, 403, 413]);
 // A wait of its own between attempts, so installations that failed together do not come back together.
 const sendRetryDelayMs = () => 500 + Math.random() * 2_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -50,9 +51,12 @@ export class UploadRequestError extends Error {
         return this.status === undefined || this.status >= 500;
     }
 
-    /** Worth sending again in a later run. Anything else Nango answers will be answered the same way next time. */
-    get retriable(): boolean {
-        return this.serverSide || this.code === 'clock_skew';
+    /**
+     * The upload endpoint turned this request down and would again. An answer that carries none of its error codes
+     * came from something in between, a proxy or a route that is not deployed yet, and goes out again on a later run.
+     */
+    get permanent(): boolean {
+        return this.status !== undefined && PERMANENT_STATUSES.has(this.status) && this.code !== undefined && this.code !== 'clock_skew';
     }
 }
 
@@ -147,7 +151,7 @@ async function uploadDay(config: UploaderConfig, { day, metric, cursor }: Pendin
 
 /**
  * Sends every closed day of the last 30 that Nango has not acknowledged yet, oldest first. It stops at a failure worth
- * retrying, and the next run starts again from there. A day Nango turns down for good is marked as failed and the next one goes.
+ * retrying, and the next run starts again from there. A day the upload endpoint turns down for good is marked as failed and the next one goes.
  */
 export async function uploadPendingDays(
     config: UploaderConfig,
@@ -172,7 +176,7 @@ export async function uploadPendingDays(
         const uploaded = await uploadDay(config, upload);
         if (uploaded.isOk()) {
             succeeded++;
-        } else if (uploaded.error instanceof UploadRequestError && !uploaded.error.retriable) {
+        } else if (uploaded.error instanceof UploadRequestError && uploaded.error.permanent) {
             const marked = await failUpload(config.knex, { day: upload.day, metric: upload.metric, ...schema });
             if (marked.isErr()) {
                 return Err(marked.error);

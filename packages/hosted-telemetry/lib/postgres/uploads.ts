@@ -125,7 +125,7 @@ export async function saveUploadProgress(
     try {
         await knex.raw(
             `UPDATE ??.?? SET cursor_ts = ?::timestamptz, cursor_attributes = ?::jsonb, status = CASE WHEN ? THEN 'succeeded' ELSE status END
-             WHERE day = ?::date AND metric = ?`,
+             WHERE day = ?::date AND metric = ? AND status = 'pending'`,
             [
                 schema,
                 HOSTED_TELEMETRY_UPLOADS_TABLE,
@@ -148,7 +148,12 @@ export async function failUpload(
     { day, metric, schema = HOSTED_TELEMETRY_SCHEMA }: { day: string; metric: string; schema?: string }
 ): Promise<Result<void>> {
     try {
-        await knex.raw(`UPDATE ??.?? SET status = 'failed' WHERE day = ?::date AND metric = ?`, [schema, HOSTED_TELEMETRY_UPLOADS_TABLE, day, metric]);
+        await knex.raw(`UPDATE ??.?? SET status = 'failed' WHERE day = ?::date AND metric = ? AND status = 'pending'`, [
+            schema,
+            HOSTED_TELEMETRY_UPLOADS_TABLE,
+            day,
+            metric
+        ]);
         return Ok(undefined);
     } catch (err) {
         return Err(err);

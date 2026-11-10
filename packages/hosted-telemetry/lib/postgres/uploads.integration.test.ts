@@ -131,6 +131,21 @@ describe('listPendingUploads', () => {
         expect((await listPendingUploads(knex, { since, schema })).unwrap().map((upload) => upload.day)).toEqual(['2026-11-09']);
     });
 
+    it('keeps the status of an upload that already succeeded or failed', async () => {
+        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-08T10:00:00Z', metric: connections });
+        (await enqueueClosedDays(knex, { since, today, schema })).unwrap();
+        (await saveUploadProgress(knex, { day: '2026-11-08', metric: concurrency, cursor: null, done: true, schema })).unwrap();
+        (await failUpload(knex, { day: '2026-11-08', metric: connections, schema })).unwrap();
+
+        (await failUpload(knex, { day: '2026-11-08', metric: concurrency, schema })).unwrap();
+        (await saveUploadProgress(knex, { day: '2026-11-08', metric: connections, cursor: null, done: true, schema })).unwrap();
+
+        expect(await uploads()).toEqual([
+            { day: '2026-11-08', metric: concurrency, status: 'succeeded' },
+            { day: '2026-11-08', metric: connections, status: 'failed' }
+        ]);
+    });
+
     it('leaves out what is older than the window', async () => {
         await insert({ ts: '2026-11-07T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });
         (await enqueueClosedDays(knex, { since, today, schema })).unwrap();
