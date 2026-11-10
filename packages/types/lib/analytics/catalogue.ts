@@ -35,6 +35,35 @@ const agentSession = {
     is_playground: z.boolean()
 };
 
+const toolList = z.object({ tools: z.array(z.string()) });
+const metaToolSwitch = z.union([z.boolean(), z.object({ enabled: z.boolean() })]);
+
+/** The POST /sessions body as the caller sent it, keeping integration ids, tool names and tag keys. Tag values and connection ids are dropped. */
+const agentSessionRequest = z.object({
+    tenant: z.object({
+        connections: z.object({
+            any: z.array(z.object({ tags: z.array(z.string()) })).optional(),
+            pinned: z.array(z.object({ integration_id: z.string() })).optional()
+        })
+    }),
+    toolset: z
+        .union([
+            z.literal('*'),
+            z.record(z.string(), z.union([z.literal('*'), z.object({ allow: z.union([z.literal('*'), toolList]).optional(), deny: toolList.optional() })]))
+        ])
+        .optional(),
+    pinned_tools: z.record(z.string(), z.array(z.string())).optional(),
+    meta_tools: z
+        .object({
+            nango_tool_search: metaToolSwitch.optional(),
+            nango_execute: metaToolSwitch.optional(),
+            nango_proxy: metaToolSwitch.optional(),
+            nango_create_connection: z.union([z.boolean(), z.object({ enabled: z.boolean(), tags: z.array(z.string()).optional() })]).optional()
+        })
+        .optional(),
+    expires_in: z.string().optional()
+});
+
 const playgroundApproval = {
     chat_id: z.string(),
     agent_session_id: z.string().optional(),
@@ -580,7 +609,10 @@ export const analyticsEventCatalogue = defineCatalogue({
             connection_selector_count: z.number(),
             pinned_connection_count: z.number(),
             create_connection_tag_count: z.number(),
-            expires_in_ms: z.number().optional()
+            expires_in_ms: z.number().optional(),
+            // An object on purpose: how a caller thinks about a session is read from the whole request. Names are capped, and is_request_truncated says when the cap hit.
+            request: agentSessionRequest,
+            is_request_truncated: z.boolean()
         })
     },
     'agents:session_end': {

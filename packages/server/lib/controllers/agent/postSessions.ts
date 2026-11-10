@@ -227,7 +227,7 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
         return;
     }
 
-    trackAgentSessionCreated(created.value.session, params);
+    trackAgentSessionCreated(created.value.session, params, req.body);
 
     res.status(201).send({ data: createdAgentSessionToPublicApi(created.value) });
 });

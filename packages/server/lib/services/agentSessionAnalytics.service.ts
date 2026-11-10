@@ -9,10 +9,16 @@ import type {
     AgentSessionToolSearchHit,
     AgentSessionToolsetPolicy,
     AnalyticsEventProperties,
-    HTTP_METHOD
+    HTTP_METHOD,
+    PostAgentSessionsBody
 } from '@nangohq/types';
 
 type SessionRequest = Pick<CreateAgentSessionParams, 'connections' | 'toolset' | 'pinnedTools' | 'metaTools' | 'expiresInMs'>;
+type TrackedRequest = AnalyticsEventProperties<'agents:session_start'>['request'];
+type TrackedPolicy = NonNullable<Exclude<TrackedRequest['toolset'], '*'>>[string];
+
+/** Integration ids and tool names together, so the request stays small whatever the caller sent. */
+const MAX_TRACKED_REQUEST_NAMES = 250;
 
 interface Outcome {
     logOperationId?: string | undefined;
@@ -59,7 +65,8 @@ interface ProxyRequestParams extends Outcome {
  * The account, the environment as is_production and the surface are stamped by the tracking context
  * middleware, so nothing here passes them. No tool input and no provider response is sent, on purpose.
  */
-export function trackAgentSessionCreated(session: AgentSession, requested: SessionRequest): void {
+export function trackAgentSessionCreated(session: AgentSession, requested: SessionRequest, body: PostAgentSessionsBody): void {
+    const { request, isTruncated } = sanitizeRequest(body);
     const policies = typeof requested.toolset === 'object' ? Object.values(requested.toolset) : [];
     const compiled = Object.values(session.compiledToolset);
 
@@ -83,7 +90,9 @@ export function trackAgentSessionCreated(session: AgentSession, requested: Sessi
             connection_selector_count: requested.connections.any.length,
             pinned_connection_count: requested.connections.pinned.length,
             create_connection_tag_count: Object.keys(requested.metaTools?.nangoCreateConnection?.tags ?? {}).length,
-            ...(requested.expiresInMs === undefined ? {} : { expires_in_ms: requested.expiresInMs })
+            ...(requested.expiresInMs === undefined ? {} : { expires_in_ms: requested.expiresInMs }),
+            request,
+            is_request_truncated: isTruncated
         }
     });
 }
@@ -165,6 +174,66 @@ export function trackAgentSessionToolSearch({ session, query, goal, matches, rel
             related
         }
     });
+}
+
+function sanitizeRequest(body: PostAgentSessionsBody): { request: TrackedRequest; isTruncated: boolean } {
+    let remaining = MAX_TRACKED_REQUEST_NAMES;
+    let isTruncated = false;
+    const take = <T>(items: T[]): T[] => {
+        const kept = items.slice(0, remaining);
+        isTruncated ||= kept.length < items.length;
+        remaining -= kept.length;
+        return kept;
+    };
+    const takeTools = (list: { tools: string[] }) => ({ tools: take(list.tools) });
+
+    const { connections } = body.tenant;
+    const { toolset, pinned_tools: pinnedTools, meta_tools: metaTools, expires_in: expiresIn } = body;
+    const createConnection = metaTools?.nango_create_connection;
+
+    const request: TrackedRequest = {
+        tenant: {
+            connections: {
+                ...(connections.any && { any: connections.any.map((selector) => ({ tags: Object.keys(selector.tags) })) }),
+                ...(connections.pinned && { pinned: take(connections.pinned).map((pin) => ({ integration_id: pin.integration_id })) })
+            }
+        },
+        ...(toolset !== undefined && {
+            toolset:
+                toolset === '*'
+                    ? toolset
+                    : Object.fromEntries(
+                          take(Object.entries(toolset)).map(([integrationId, policy]): [string, TrackedPolicy] => [
+                              integrationId,
+                              policy === '*'
+                                  ? policy
+                                  : {
+                                        ...(policy.allow !== undefined && { allow: policy.allow === '*' ? policy.allow : takeTools(policy.allow) }),
+                                        ...(policy.deny && { deny: takeTools(policy.deny) })
+                                    }
+                          ])
+                      )
+        }),
+        ...(pinnedTools && {
+            pinned_tools: Object.fromEntries(take(Object.entries(pinnedTools)).map(([integrationId, tools]) => [integrationId, take(tools)]))
+        }),
+        ...(metaTools && {
+            meta_tools: {
+                ...(metaTools.nango_tool_search !== undefined && { nango_tool_search: metaTools.nango_tool_search }),
+                ...(metaTools.nango_execute !== undefined && { nango_execute: metaTools.nango_execute }),
+                ...(metaTools.nango_proxy !== undefined && { nango_proxy: metaTools.nango_proxy }),
+                ...(createConnection !== undefined && {
+                    nango_create_connection:
+                        typeof createConnection === 'boolean'
+                            ? createConnection
+                            : { enabled: createConnection.enabled, ...(createConnection.tags && { tags: Object.keys(createConnection.tags) }) }
+                })
+            }
+        }),
+        ...(expiresIn !== undefined && { expires_in: expiresIn })
+    };
+
+    return { request, isTruncated };
 }
 
 function toolsetMode(toolset: AgentSessionToolsetPolicy | undefined): AnalyticsEventProperties<'agents:session_start'>['toolset_mode'] {

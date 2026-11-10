@@ -267,7 +267,7 @@ async function getOrCreateSession(
     if (created.isErr()) {
         return Err(new AgentPlaygroundError('session_creation_failed', created.error.message, { cause: created.error }));
     }
-    trackAgentSessionCreated(created.value.session, params);
+    trackAgentSessionCreated(created.value.session, params, request);
     return Ok({ session: created.value.session, created: { request, ...(reason ? { reason } : {}) } });
 }
 

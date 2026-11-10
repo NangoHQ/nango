@@ -11,7 +11,7 @@ import {
     trackAgentSessionToolSearch
 } from './agentSessionAnalytics.service.js';
 
-import type { AgentSession, DBEnvironment, DBTeam } from '@nangohq/types';
+import type { AgentSession, DBEnvironment, DBTeam, PostAgentSessionsBody } from '@nangohq/types';
 
 type Capture = (payload: { event: string; distinctId: string; properties: Record<string, unknown>; groups?: Record<string, string> }) => void;
 
@@ -43,6 +43,8 @@ const requested = {
     expiresInMs: undefined
 };
 
+const body: PostAgentSessionsBody = { tenant: { connections: { any: [{ tags: { end_user_id: 'user-1' } }] } } };
+
 /** These events carry no account of their own: the tracking context middleware is what stamps one. */
 function inRequest(track: () => void): void {
     withProductTrackingContext(() => ({ team: { id: 42 } as DBTeam, environment: { is_production: true } as DBEnvironment }), track);
@@ -65,7 +67,7 @@ afterEach(() => {
 
 describe('trackAgentSessionCreated', () => {
     it('reports the integration count and which meta tools the session runs with', () => {
-        inRequest(() => trackAgentSessionCreated(session, requested));
+        inRequest(() => trackAgentSessionCreated(session, requested, body));
 
         const { event, properties } = onlyEvent();
         expect(event).toBe('agents:session_start');
@@ -81,7 +83,7 @@ describe('trackAgentSessionCreated', () => {
     });
 
     it('reports a session that gets every connected integration', () => {
-        inRequest(() => trackAgentSessionCreated(session, requested));
+        inRequest(() => trackAgentSessionCreated(session, requested, body));
 
         const { properties } = onlyEvent();
         expect(properties).toMatchObject({
@@ -102,17 +104,21 @@ describe('trackAgentSessionCreated', () => {
 
     it('reports how the caller restricted the session, as counts', () => {
         inRequest(() =>
-            trackAgentSessionCreated(session, {
-                connections: { any: [], pinned: [{ integrationId: 'notion', connectionId: 'conn-1' }] },
-                toolset: {
-                    notion: { allow: ['create-page', 'search'], deny: [] },
-                    slack: { allow: '*', deny: ['delete-message'] },
-                    github: { allow: '*', deny: [] }
+            trackAgentSessionCreated(
+                session,
+                {
+                    connections: { any: [], pinned: [{ integrationId: 'notion', connectionId: 'conn-1' }] },
+                    toolset: {
+                        notion: { allow: ['create-page', 'search'], deny: [] },
+                        slack: { allow: '*', deny: ['delete-message'] },
+                        github: { allow: '*', deny: [] }
+                    },
+                    pinnedTools: { notion: ['create-page'] },
+                    metaTools: { nangoCreateConnection: { enabled: true, tags: { end_user_id: 'user-1', team: 'a' } } },
+                    expiresInMs: 3_600_000
                 },
-                pinnedTools: { notion: ['create-page'] },
-                metaTools: { nangoCreateConnection: { enabled: true, tags: { end_user_id: 'user-1', team: 'a' } } },
-                expiresInMs: 3_600_000
-            })
+                body
+            )
         );
 
         expect(onlyEvent().properties).toMatchObject({
@@ -129,8 +135,50 @@ describe('trackAgentSessionCreated', () => {
         });
     });
 
+    it('sends the request as posted, without tag values or connection ids', () => {
+        inRequest(() =>
+            trackAgentSessionCreated(session, requested, {
+                tenant: {
+                    connections: {
+                        any: [{ tags: { end_user_id: 'user-1', end_user_email: 'a@example.com' } }],
+                        pinned: [{ integration_id: 'notion', connection_id: 'conn-1' }]
+                    }
+                },
+                toolset: { notion: { allow: { tools: ['create-page'] } }, slack: { deny: { tools: ['delete-message'] } }, github: '*' },
+                pinned_tools: { notion: ['create-page'] },
+                meta_tools: {
+                    nango_proxy: true,
+                    nango_execute: { enabled: false },
+                    nango_create_connection: { enabled: true, tags: { end_user_id: 'user-1' } }
+                },
+                expires_in: '1h'
+            })
+        );
+
+        expect(onlyEvent().properties).toMatchObject({
+            is_request_truncated: false,
+            request: {
+                tenant: { connections: { any: [{ tags: ['end_user_id', 'end_user_email'] }], pinned: [{ integration_id: 'notion' }] } },
+                toolset: { notion: { allow: { tools: ['create-page'] } }, slack: { deny: { tools: ['delete-message'] } }, github: '*' },
+                pinned_tools: { notion: ['create-page'] },
+                meta_tools: { nango_proxy: true, nango_execute: { enabled: false }, nango_create_connection: { enabled: true, tags: ['end_user_id'] } },
+                expires_in: '1h'
+            }
+        });
+        expect(JSON.stringify(onlyEvent().properties)).not.toMatch(/user-1|a@example\.com|conn-1/);
+    });
+
+    it('caps the names a request carries', () => {
+        const tools = Array.from({ length: 300 }, (_, i) => `tool-${i}`);
+        inRequest(() => trackAgentSessionCreated(session, requested, { ...body, toolset: { notion: { allow: { tools } } }, pinned_tools: { notion: tools } }));
+
+        const { properties } = onlyEvent();
+        expect(properties).toMatchObject({ is_request_truncated: true, request: { pinned_tools: {} } });
+        expect((properties['request'] as { toolset: { notion: { allow: { tools: string[] } } } }).toolset.notion.allow.tools).toHaveLength(249);
+    });
+
     it('reports a session open to every integration', () => {
-        inRequest(() => trackAgentSessionCreated(session, { ...requested, toolset: '*' }));
+        inRequest(() => trackAgentSessionCreated(session, { ...requested, toolset: '*' }, { ...body, toolset: '*' }));
 
         expect(onlyEvent().properties).toMatchObject({ toolset_mode: 'all', allowlisted_integration_count: 0 });
     });
@@ -140,13 +188,13 @@ describe('trackAgentSessionCreated', () => {
             ...session,
             metaTools: { ...session.metaTools, nangoCreateConnection: { enabled: true, tags: { [PLAYGROUND_USER_TAG_KEY]: 'user-a' } } }
         };
-        inRequest(() => trackAgentSessionCreated(playgroundSession, requested));
+        inRequest(() => trackAgentSessionCreated(playgroundSession, requested, body));
 
         expect(onlyEvent().properties).toMatchObject({ agent_session_id: 'session-1', is_playground: true });
     });
 
     it('inherits the account and environment of the request', () => {
-        inRequest(() => trackAgentSessionCreated(session, requested));
+        inRequest(() => trackAgentSessionCreated(session, requested, body));
 
         const { groups, properties } = onlyEvent();
         expect(groups).toStrictEqual({ company: '42' });
