@@ -12,11 +12,8 @@ import { logger } from '../../../../utils.js';
 import { installationsClickhouseClient } from '../../../clickhouse/clickhouse.js';
 import { migrate as migrateClickhouse } from '../../../clickhouse/migrate.js';
 import { migrate } from '../../../db/migrate.js';
+import { seedInstallation } from '../../../seeders/installation.seeder.js';
 import { createCloudServer } from '../../../server.js';
-import { createCustomer } from '../../../services/customer.service.js';
-import { createInstallationKey } from '../../../services/installation-key.service.js';
-import { createInstallationLicense } from '../../../services/installation-license.service.js';
-import { createInstallation } from '../../../services/installation.service.js';
 import { TELEMETRY_UPLOAD_MAX_BODY_BYTES } from '../../../uploads/constants.js';
 import { route } from './postUploads.js';
 
@@ -29,7 +26,6 @@ import type { AddressInfo } from 'node:net';
 
 const schema = 'self_hosting_upload_test';
 const database = 'installations_upload_test';
-const DAY_MS = 86_400_000;
 
 let knex: Knex;
 let db: RegistryDb;
@@ -38,25 +34,7 @@ let clickhouse: ClickHouseClient;
 let api: Server;
 let url: string;
 
-async function installation(name: string, { licensed = true }: { licensed?: boolean } = {}): Promise<{ uuid: string; kid: string; privateKeyPem: string }> {
-    const customer = (await createCustomer(db, { name: `customer-${name}` })).unwrap();
-    const created = (await createInstallation(db, { customerId: customer.id, name, mode: 'byoc', stage: 'production' })).unwrap();
-    const { key, privateKeyPem } = (await createInstallationKey(db, { installationId: created.id })).unwrap();
-    if (licensed) {
-        (
-            await createInstallationLicense(db, {
-                installationId: created.id,
-                issuedAt: new Date(),
-                expiresAt: new Date(Date.now() + 365 * DAY_MS),
-                graceUntil: new Date(Date.now() + 455 * DAY_MS),
-                license: 'jws',
-                signature: 'sig',
-                signingKid: 'nango'
-            })
-        ).unwrap();
-    }
-    return { uuid: created.uuid, kid: key.kid, privateKeyPem };
-}
+const installation = (name: string, options?: { licensed?: boolean }) => seedInstallation(db, name, options);
 
 const row = (overrides: Record<string, unknown> = {}) => ({
     kind: 'row',

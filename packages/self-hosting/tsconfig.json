@@ -9,6 +9,12 @@
             "path": "../clickhouse-migrations"
         },
         {
+            "path": "../hosted-telemetry"
+        },
+        {
+            "path": "../kvstore"
+        },
+        {
             "path": "../license"
         },
         {
