@@ -52,6 +52,11 @@ export const alertVariants = cva(
                     '[--alert-link:var(--color-text-link-neutral)] [--alert-link-active:var(--color-text-link-neutral-active)]'
                 ]
             },
+            // `status` follows the variant; `success` recolours only the icon.
+            icon: {
+                status: '',
+                success: '[--alert-icon:var(--color-icon-success)]'
+            },
             // Figma "Size". Each size owns where the trailing slots sit.
             size: {
                 wide: [
@@ -116,14 +121,15 @@ export const alertVariants = cva(
         ],
         defaultVariants: {
             variant: 'success',
-            size: 'wide'
+            size: 'wide',
+            icon: 'status'
         }
     }
 );
 
 type AlertVariantProps = VariantProps<typeof alertVariants>;
 
-type AlertStyleProps = (Omit<AlertVariantProps, 'cta'> & { cta?: never }) | { variant: 'neutral'; size?: 'wide'; cta: 'button' };
+type AlertStyleProps = (Omit<AlertVariantProps, 'cta'> & { cta?: never }) | { variant: 'neutral'; size?: 'wide'; cta: 'button'; icon?: never };
 
 export type AlertProps = React.ComponentProps<'div'> &
     AlertStyleProps & {
@@ -134,8 +140,8 @@ export type AlertProps = React.ComponentProps<'div'> &
     };
 
 export const Alert = forwardRef<HTMLDivElement, AlertProps>(
-    ({ className, variant, size, cta, onDismiss, dismissLabel = 'Dismiss', children, ...props }, ref) => (
-        <div ref={ref} data-slot="alert" role="alert" className={cn(alertVariants({ variant, size, cta }), className)} {...props}>
+    ({ className, variant, size, cta, icon, onDismiss, dismissLabel = 'Dismiss', children, ...props }, ref) => (
+        <div ref={ref} data-slot="alert" role="alert" className={cn(alertVariants({ variant, size, cta, icon }), className)} {...props}>
             {children}
             {onDismiss && (
                 <button
