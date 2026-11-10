@@ -27149,6 +27149,30 @@ semrush:
             description: Your Semrush API key
             doc_section: '#step-1-finding-your-api-key'
 
+sentfromai:
+    display_name: SentFromAI
+    categories:
+        - communication
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.sentfrom.ai
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/inboxes
+    docs: https://nango.dev/docs/integrations/all/sentfromai
+    docs_connect: https://nango.dev/docs/integrations/all/sentfromai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your SentFromAI API key from the console. Paste the key without the Bearer prefix.
+            secret: true
+            doc_section: '#step-1-create-an-api-key'
+
 sentinelone:
     display_name: SentinelOne
     categories:

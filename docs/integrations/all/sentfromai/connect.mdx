@@ -1,0 +1,24 @@
+---
+title: Connect to SentFromAI
+description: Obtain a SentFromAI API key and connect your account.
+---
+
+## Step 1: Create an API key
+
+1. Sign in to the [SentFromAI console](https://console.sentfrom.ai).
+2. Open **API keys** and create a key for your integration.
+3. Copy the key when it is displayed and store it securely. Do not include the word `Bearer` when entering it into Nango.
+
+Existing active keys are supported. New keys typically start with `sf_live_`; a prefix check is intentionally not enforced because older valid keys may use a different prefix.
+
+## Step 2: Connect the account
+
+Select the SentFromAI integration in Nango and enter the API key in the **API Key** field. Nango checks the key by retrieving the account's inbox list.
+
+If verification fails, confirm that the key is active, belongs to the intended account, and has no extra spaces. A suspended account or incomplete ownership claim can also restrict API access.
+
+## Step 3: Verify the connection
+
+Use the proxy to make a `GET /v1/inboxes` request. An empty `inboxes` array is a successful response for an account with no inboxes. This check does not send email.
+
+For additional endpoints and request formats, see the [SentFromAI API documentation](https://docs.sentfrom.ai).
