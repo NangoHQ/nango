@@ -98,7 +98,7 @@ export const CatalogFunctions: React.FC<CatalogFunctionsProps> = ({ templates, d
                                         type="button"
                                         onClick={() => void setSelectedName(fn.name === selectedName ? null : fn.name)}
                                         className={cn(
-                                            'flex w-full cursor-pointer flex-col gap-0.5 py-2 pr-3 text-left transition-colors focus-default',
+                                            'flex w-full cursor-pointer flex-col gap-0.5 py-2 pr-3 text-left transition-colors focus-inset',
                                             fn.name === selected?.name
                                                 ? 'border-l-ds-2 border-l-interactive-selected-fill bg-surface-canvas pl-2.5'
                                                 : 'pl-3 hover:bg-state-hover'
