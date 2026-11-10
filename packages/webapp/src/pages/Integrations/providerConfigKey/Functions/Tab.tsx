@@ -16,6 +16,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useGetIntegrationFunction, useGetIntegrationFunctions, useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
 import { useMeta } from '@/hooks/useMeta';
+import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { isSyncOrAction } from '@/utils/scripts';
@@ -23,6 +24,7 @@ import { cn } from '@/utils/utils';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 import { FunctionDetailsPanel } from './FunctionDetailsPanel';
 import { FunctionSourceLabel } from './FunctionSourceLabel';
+import { SlidingPanelLayout } from './SlidingPanelLayout';
 
 import type { ApiIntegration, ListedNangoActionFunction, ListedNangoFunction, ListedNangoSyncFunction, NangoFunctionTemplate } from '@nangohq/types';
 
@@ -206,56 +208,14 @@ function FunctionListWithDetails({
     onDeleted: () => void;
     children: React.ReactNode;
 }) {
-    const [displayedFunction, setDisplayedFunction] = useState(selectedFunction);
-    const [panelVisible, setPanelVisible] = useState(Boolean(selectedFunction));
-
-    useEffect(() => {
-        let animationFrame: number | undefined;
-        let closeTimer: ReturnType<typeof setTimeout> | undefined;
-
-        if (selectedFunction) {
-            setDisplayedFunction(selectedFunction);
-            animationFrame = requestAnimationFrame(() => {
-                animationFrame = requestAnimationFrame(() => setPanelVisible(true));
-            });
-        } else {
-            setPanelVisible(false);
-            closeTimer = setTimeout(() => setDisplayedFunction(null), 250);
-        }
-
-        return () => {
-            if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
-            if (closeTimer !== undefined) clearTimeout(closeTimer);
-        };
-    }, [selectedFunction]);
-
     return (
-        <div className="flex w-full items-stretch overflow-clip">
-            <div
-                className={cn(
-                    'min-w-0 shrink-0 transition-[width] duration-250 ease-out motion-reduce:transition-none',
-                    panelVisible ? 'w-1/2' : 'w-full',
-                    displayedFunction && '**:data-[slot=table-container]:rounded-r-none'
-                )}
-            >
-                {children}
-            </div>
-            {displayedFunction && (
-                <div
-                    className={cn(
-                        'w-1/2 shrink-0 border-y border-r border-border-muted bg-surface-panel transition-[translate,opacity] duration-250 ease-out motion-reduce:transition-none',
-                        panelVisible ? 'translate-x-0 opacity-100' : 'pointer-events-none translate-x-full opacity-0'
-                    )}
-                >
-                    <FunctionDetailsPanel
-                        key={'enabled' in displayedFunction ? functionRowKey(displayedFunction) : templateRowKey(displayedFunction)}
-                        fn={displayedFunction}
-                        integration={integration}
-                        onDeleted={onDeleted}
-                    />
-                </div>
-            )}
-        </div>
+        <SlidingPanelLayout
+            selected={selectedFunction}
+            getKey={(fn) => ('enabled' in fn ? functionRowKey(fn) : templateRowKey(fn))}
+            renderPanel={(fn) => <FunctionDetailsPanel fn={fn} integration={integration} onDeleted={onDeleted} />}
+        >
+            {children}
+        </SlidingPanelLayout>
     );
 }
 
@@ -281,7 +241,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
     const { data: metaData } = useMeta();
     const [templateTail, setTemplateTail] = useState<{ scope: string; keys: string[] }>({ scope: '', keys: [] });
 
-    const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
+    const [search, setSearch] = useSearchQueryState();
     const debouncedSearch = useDebouncedValue(search);
 
     const [rawType, setType] = useQueryState('type', parseAsString.withDefault(''));
@@ -519,7 +479,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
                                 value={search || ''}
                                 onChange={(e) => {
                                     void setSelectedFunctionName(null);
-                                    void setSearch(e.target.value || null);
+                                    setSearch(e.target.value);
                                 }}
                             />
                             <InputGroupAddon>

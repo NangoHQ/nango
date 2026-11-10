@@ -21,6 +21,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useConnections } from '@/hooks/useConnections';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
@@ -49,7 +50,6 @@ const statusOptions: ComboboxOption<StatusFilterValue>[] = [
     { label: 'Paused syncs', value: 'paused' }
 ];
 
-const parseSearch = parseAsString.withDefault('');
 const parseIntegrations = parseAsArrayOf(parseAsString, ',').withDefault([]);
 const parseStatusFilters = parseAsArrayOf(parseAsString, ',').withDefault([]);
 
@@ -170,7 +170,7 @@ export const ConnectionList = () => {
 
     const navigate = useNavigate();
 
-    const [search, setSearch] = useQueryState('search', parseSearch);
+    const [search, setSearch] = useSearchQueryState();
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
     const [selectedIntegrations, setSelectedIntegrations] = useQueryState('integrations', parseIntegrations);
     const [rawStatusFilters, setSelectedStatusFilters] = useQueryState('status', parseStatusFilters);
@@ -320,7 +320,7 @@ export const ConnectionList = () => {
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => {
-                                                    navigate(`/${env}/integrations/create`);
+                                                    navigate(`/${env}/catalog`);
                                                 }}
                                             >
                                                 <Plus className="size-4" /> Add
