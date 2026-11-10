@@ -1,7 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
 import { createClient } from '@clickhouse/client';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import tracer from 'dd-trace';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+
+import { metrics } from '@nangohq/utils';
 
 import { installationsClickhouseClient } from './clickhouse.js';
 import { insertMetricsBatch } from './metrics.js';
@@ -44,6 +47,17 @@ afterAll(async () => {
     await admin.command({ query: `DROP DATABASE IF EXISTS ${database}` });
     await admin.close();
 });
+
+afterEach(() => {
+    vi.restoreAllMocks();
+});
+
+function observed() {
+    const span = { addTags: vi.fn(), setTag: vi.fn() };
+    vi.spyOn(tracer, 'trace').mockImplementation(((_name: string, fn: (span: unknown) => unknown) => fn(span)) as typeof tracer.trace);
+    const distribution = vi.spyOn(tracer.dogstatsd, 'distribution');
+    return { span, measured: () => distribution.mock.calls.map(([name, value, tags]) => [name, typeof value, tags]) };
+}
 
 const day = (minute: number) => new Date(Date.UTC(2026, 10, 8, 0, minute));
 
@@ -106,15 +120,34 @@ describe('insertMetricsBatch', () => {
         expect((await stored(other)).map((r) => r.value)).toEqual([2]);
     });
 
+    it('measures a stored batch and tags its span with the installation and the rows', async () => {
+        const installationId = randomUUID();
+        const { span, measured } = observed();
+
+        (await insertMetricsBatch(client, { installationId, rows: [{ ts: day(0), metric: 'm', attributes: '{}', value: 1 }] })).unwrap();
+
+        expect(span.addTags).toHaveBeenCalledExactlyOnceWith({ 'nango.installationId': installationId, rows: 1 });
+        expect(span.setTag).not.toHaveBeenCalled();
+        expect(measured()).toEqual([
+            [metrics.Types.SELF_HOSTING_CLICKHOUSE_INSERT_DURATION_MS, 'number', { success: 'true' }],
+            [metrics.Types.SELF_HOSTING_CLICKHOUSE_INSERT_ROWS, 'number', {}]
+        ]);
+    });
+
     it('an empty batch writes nothing and succeeds', async () => {
         expect((await insertMetricsBatch(client, { installationId: randomUUID(), rows: [] })).isOk()).toBe(true);
     });
 
-    it('returns the error when ClickHouse refuses the batch', async () => {
+    it('returns the error when ClickHouse rejects the batch', async () => {
         const broken = installationsClickhouseClient(process.env['CLICKHOUSE_URL']!, { database: 'installations_metrics_test_nowhere' });
         try {
+            const { span, measured } = observed();
+
             const res = await insertMetricsBatch(broken, { installationId: randomUUID(), rows: [{ ts: day(0), metric: 'm', attributes: '{}', value: 1 }] });
+
             expect(res.isErr()).toBe(true);
+            expect(span.setTag).toHaveBeenCalledExactlyOnceWith('error', res.isErr() && res.error);
+            expect(measured()).toEqual([[metrics.Types.SELF_HOSTING_CLICKHOUSE_INSERT_DURATION_MS, 'number', { success: 'false' }]]);
         } finally {
             await broken.close();
         }
