@@ -64,7 +64,7 @@ describe('credentials read audit middleware (unit)', () => {
         });
 
         it('a read that returned credentials records what the handler reported', async () => {
-            const req = fakeReq({ params: { connectionId: 'conn-1' }, audit: read({ id: 'conn-1' }) });
+            const req = fakeReq({ params: { connectionId: 'conn-1' }, query: { provider_config_key: 'github' }, audit: read({ id: 'conn-1' }) });
             const event = await runAudit(auditConnectionCredentialsRead, req, fakeRes(locals));
             expect(event).toMatchObject({
                 resource: 'connection',
@@ -73,7 +73,8 @@ describe('credentials read audit middleware (unit)', () => {
                 environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
                 actor: { type: 'user', id: '7' },
                 outcome: 'success',
-                targets: [{ type: 'connection', id: 'conn-1' }]
+                targets: [{ type: 'connection', id: 'conn-1' }],
+                metadata: { providerConfigKey: 'github' }
             });
         });
 

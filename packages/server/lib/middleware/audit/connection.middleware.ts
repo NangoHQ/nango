@@ -92,7 +92,7 @@ export const auditConnectionCredentialsRead = maybeAuditable<GetConnection>({
     policy: Audit.auditable({ resource: 'connection', action: 'credentials_read', scope: 'environment' }),
     skipWhen: skipUnlessCredentialsRead(),
     subject: callerSubject,
-    atFinish: (req) => credentialsReadTargets('connection', req)
+    atFinish: (req) => ({ ...credentialsReadTargets('connection', req), metadata: providerConfigKeyMeta(query(req, 'provider_config_key')) })
 });
 
 function providerConfigKeyMeta(value: unknown): Record<string, unknown> | undefined {

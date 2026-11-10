@@ -50,7 +50,7 @@ interface AuditEventTable {
         metadata_updated: ConnectionMetadata;
         refreshed: ConnectionMetadata;
         deleted: ConnectionMetadata;
-        credentials_read: never;
+        credentials_read: ConnectionMetadata;
     };
     sync: {
         enabled: SyncBaseMetadata;

@@ -673,7 +673,8 @@ describe('audit middleware — live-stack contract', () => {
                 accountId: account.id,
                 environment: { id: env.uuid, display: env.name },
                 actor: { type: 'user', id: String(user.id) },
-                targets: [{ type: 'connection', id: connection.connection_id }]
+                targets: [{ type: 'connection', id: connection.connection_id }],
+                metadata: { providerConfigKey: 'algolia' }
             });
             expect(JSON.stringify(event)).not.toContain('audit-connection-secret');
         });
