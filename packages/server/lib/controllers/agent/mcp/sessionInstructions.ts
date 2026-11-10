@@ -1,4 +1,4 @@
-import type { AgentSession } from '@nangohq/types';
+import type { AgentSession, AgentSessionResolvedConnection } from '@nangohq/types';
 
 /**
  * Sent once in the initialize result. Only what the session was created with goes in, so it says
@@ -72,14 +72,29 @@ export function buildSessionInstructions(session: AgentSession): string {
 }
 
 function describeIntegrations(session: AgentSession): string {
-    const integrations = Object.entries(session.compiledToolset).sort(([a], [b]) => a.localeCompare(b));
+    const integrations = Object.entries(session.compiledToolset)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([id, { provider }]) => ({ id, provider, connection: connectionOf(session, id) }));
     if (integrations.length === 0) {
         return 'This session has no integrations, so it cannot act on any app.';
     }
 
     return [
         'By the integration id every tool expects:',
-        ...integrations.map(([id, { provider }]) => `- ${id} (${provider}): ${Object.hasOwn(session.resolvedConnections, id) ? 'connected' : 'not connected'}`),
+        ...integrations.map(({ id, provider, connection }) => `- ${id} (${provider}): ${describeConnection(connection)}`),
+        ...(integrations.some(({ connection }) => connection?.accountLabel) ? ["An account named above is the user's own account on that app."] : []),
         `This is each integration's status when you received these instructions. ${session.metaTools.nangoCreateConnection.enabled ? 'After you connect one, or when unsure' : 'When unsure'}, trust ${session.metaTools.nangoToolSearch ? 'nango_tool_search results and ' : ''}tool errors over this list.`
     ].join('\n');
+}
+
+function connectionOf(session: AgentSession, integrationId: string): AgentSessionResolvedConnection | undefined {
+    return Object.hasOwn(session.resolvedConnections, integrationId) ? session.resolvedConnections[integrationId] : undefined;
+}
+
+function describeConnection(connection: AgentSessionResolvedConnection | undefined): string {
+    if (!connection) {
+        return 'not connected';
+    }
+
+    return connection.accountLabel ? `connected as ${connection.accountLabel}` : 'connected';
 }
