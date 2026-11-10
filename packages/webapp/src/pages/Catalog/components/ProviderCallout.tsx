@@ -43,7 +43,7 @@ export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, display
     }
 
     return (
-        <Alert variant="neutral" size="wide" role="note">
+        <Alert variant="neutral" size="wide" cta="button" role="note">
             <Zap data-filled />
             <AlertTitle>Instant setup</AlertTitle>
             <AlertDescription>{INSTANT_SETUP_COPY[state.kind](displayName)}</AlertDescription>
