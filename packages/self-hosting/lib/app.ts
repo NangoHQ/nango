@@ -4,12 +4,15 @@ import { metrics, once, report } from '@nangohq/utils';
 
 import { boot as bootCloud } from './cloud/boot.js';
 import { destroyCloudDb } from './cloud/db/client.js';
+import { createCloudServer } from './cloud/server.js';
 import { envs } from './env.js';
 import { boot as bootInstallation } from './installation/boot.js';
+import { createInstallationServer } from './installation/server.js';
 import { mode } from './mode.js';
-import { server } from './server.js';
 import { logger } from './utils.js';
 
+import type { ClickHouseClient } from '@clickhouse/client';
+import type { Express } from 'express';
 import type { Server } from 'node:http';
 
 process.on('unhandledRejection', (reason) => {
@@ -23,12 +26,17 @@ process.on('uncaughtException', (err) => {
 });
 
 let api: Server;
+let clickhouse: ClickHouseClient | undefined;
 
 try {
+    let server: Express;
     if (mode === 'cloud') {
-        await bootCloud();
+        const cloud = await bootCloud();
+        clickhouse = cloud.clickhouse;
+        server = createCloudServer(cloud);
     } else {
         await bootInstallation();
+        server = createInstallationServer();
     }
 
     const port = envs.NANGO_SELF_HOSTING_PORT;
@@ -49,6 +57,7 @@ const close = once(() => {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     api.close(async () => {
         await destroyCloudDb();
+        await clickhouse?.close();
 
         logger.close();
 
