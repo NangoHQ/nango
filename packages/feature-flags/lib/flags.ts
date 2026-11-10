@@ -121,8 +121,8 @@ export function buildFlags(client: FeatureFlagsClient) {
          * Whether GitHub App connections can carry their own app `private_key` and `webhook_secret`.
          * Temporary workaround for BYOA GitHub Apps. Default `false`.
          */
-        isGithubAppConnectionCredentialsEnabled(accountUuid: string) {
-            return client.isEnabled('github-app-connection-credentials', { targetingKey: accountUuid, accountUuid }, false);
+        isGithubAppConnectionCredentialsEnabled() {
+            return client.isEnabled('github-app-connection-credentials', {}, false);
         }
     };
 }

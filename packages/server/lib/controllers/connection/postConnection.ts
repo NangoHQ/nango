@@ -282,7 +282,7 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
 
             let configOverride: GithubAppConfigOverride | undefined;
             if (body.credentials.private_key !== undefined && body.credentials.webhook_secret !== undefined) {
-                if (!(await getFlags().isGithubAppConnectionCredentialsEnabled(account.uuid))) {
+                if (!(await getFlags().isGithubAppConnectionCredentialsEnabled())) {
                     void logCtx.error('Connection-level GitHub App credentials are not enabled', { providerConfigKey: body.provider_config_key });
                     await logCtx.failed();
                     res.status(400).send({

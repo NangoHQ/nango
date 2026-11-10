@@ -72,7 +72,7 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
 
     if (signature) {
         const valid =
-            !nango.integration.oauth_client_secret && (await getFlags().isGithubAppConnectionCredentialsEnabled(nango.team.uuid))
+            !nango.integration.oauth_client_secret && (await getFlags().isGithubAppConnectionCredentialsEnabled())
                 ? await validateConnectionLevelSignature(nango, headers, signature, rawBody, body)
                 : validateIntegrationLevelSignature(nango.integration, signature, rawBody);
 
