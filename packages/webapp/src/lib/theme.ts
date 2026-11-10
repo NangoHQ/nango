@@ -6,10 +6,8 @@ import { LocalStorageKeys } from '@/utils/local-storage';
 
 export type Theme = 'light' | 'dark' | 'system';
 
-// Dark is the default for now so existing users keep the current look and new users
-// don't land on light mode at rollout. Revisit defaulting to 'system' once light mode
-// has been live for a while (NAN-5960). Keep index.html's pre-paint fallback in sync.
-const DEFAULT_THEME: Theme = 'dark';
+// index.html's pre-paint script repeats this fallback; change both or the first paint flashes.
+const DEFAULT_THEME: Theme = 'system';
 
 // --- DOM utility ---
 
@@ -40,7 +38,7 @@ function getStoredTheme(): Theme {
 try {
     applyTheme(getStoredTheme());
 } catch {
-    // Keep the dark default already set via data-theme in index.html
+    // index.html already set data-theme before first paint.
 }
 
 // --- Store ---
