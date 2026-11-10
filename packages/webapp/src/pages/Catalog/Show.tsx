@@ -135,7 +135,7 @@ export const CatalogShow: React.FC = () => {
                     <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-4">
                             <div className="flex items-center gap-2">
-                                <h1 className="type-text-medium-md text-text-strong">{category ? getCategoryLabel(category) : 'All APIs'}</h1>
+                                <h2 className="type-text-medium-md text-text-strong">{category ? getCategoryLabel(category) : 'All APIs'}</h2>
                                 {!isPending && <CountBadge count={results.length} />}
                             </div>
                             <div className="flex items-center gap-4">
