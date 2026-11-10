@@ -98,8 +98,8 @@ export const CatalogProviderShow: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-4">
-                    <Button asChild variant="link-neutral" size="sm">
+                <div className="flex shrink-0 items-center gap-2">
+                    <Button asChild variant="ghost" size="md">
                         <a href={provider.docs} target="_blank" rel="noreferrer">
                             Docs <ArrowUpRight />
                         </a>
