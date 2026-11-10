@@ -190,6 +190,7 @@ export interface FunctionSearchOptions {
     limit?: number | undefined;
     afterId?: number | undefined;
     forShare?: boolean | undefined;
+    includeDeleted?: boolean | undefined;
 }
 
 export async function search(
@@ -201,7 +202,7 @@ export async function search(
         environmentId: number;
         filter?: FunctionSearchFilter | undefined;
     },
-    { limit, afterId, forShare }: FunctionSearchOptions = {}
+    { limit, afterId, forShare, includeDeleted }: FunctionSearchOptions = {}
 ): Promise<Result<CurrentFunctionConfig[]>> {
     try {
         const query = trx
@@ -215,10 +216,11 @@ export async function search(
                 ...aliasedColumns<DBFunctionConfig>('config', CONFIG_COLUMNS, CONFIG_PREFIX),
                 ...aliasedColumns<DBFunctionConfigVersion>('version', VERSION_COLUMNS, VERSION_PREFIX)
             ])
-            .where('config.environment_id', environmentId)
-            .where('integration.deleted', false)
-            .whereNull('config.deleted_at')
-            .whereNull('version.deleted_at');
+            .where('config.environment_id', environmentId);
+
+        if (includeDeleted !== true) {
+            query.where('integration.deleted', false).whereNull('config.deleted_at').whereNull('version.deleted_at');
+        }
 
         if (filter?.integrationKey !== undefined) {
             query.where('integration.unique_key', filter.integrationKey);

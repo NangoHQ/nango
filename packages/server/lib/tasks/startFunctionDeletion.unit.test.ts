@@ -8,7 +8,9 @@ const deleteSyncConfig = vi.fn((..._args: unknown[]) => {
     order.push('deleteSyncConfig');
     return Promise.resolve();
 });
+const softDelete = vi.fn();
 vi.mock('@nangohq/shared', () => ({
+    functionConfigService: { softDelete: (...args: unknown[]) => softDelete(...args) },
     deleteSyncConfig: (...args: unknown[]) => deleteSyncConfig(...args)
 }));
 
@@ -38,6 +40,7 @@ describe('startFunctionDeletion', () => {
     beforeEach(() => {
         order.length = 0;
         txOutcome = null;
+        softDelete.mockReset().mockResolvedValue(Ok(1));
         deleteSyncConfig.mockClear().mockImplementation(() => {
             order.push('deleteSyncConfig');
             return Promise.resolve();
@@ -46,6 +49,28 @@ describe('startFunctionDeletion', () => {
             order.push('enqueue');
             return Promise.resolve(Ok({ taskId: 't' }));
         });
+    });
+
+    it('soft-deletes a native config and enqueues the same task name', async () => {
+        const params = { functionConfigId: 2, environmentId: 10 };
+        expect((await startFunctionDeletion(params)).isOk()).toBe(true);
+        expect(softDelete).toHaveBeenCalledWith({}, { environmentId: 10, ids: [2] });
+        expect(enqueue).toHaveBeenCalledWith('deleteFunction', params);
+        expect(deleteSyncConfig).not.toHaveBeenCalled();
+        expect(txOutcome).toBe('committed');
+    });
+
+    it('rolls back native soft-deletion when enqueue fails', async () => {
+        enqueue.mockResolvedValueOnce(Err(new Error('queue down')));
+        expect((await startFunctionDeletion({ functionConfigId: 2, environmentId: 10 })).isErr()).toBe(true);
+        expect(txOutcome).toBe('rolledback');
+    });
+
+    it('does not enqueue native cleanup when soft-deletion fails', async () => {
+        softDelete.mockResolvedValueOnce(Err(new Error('db down')));
+        expect((await startFunctionDeletion({ functionConfigId: 2, environmentId: 10 })).isErr()).toBe(true);
+        expect(enqueue).not.toHaveBeenCalled();
+        expect(txOutcome).toBe('rolledback');
     });
 
     it('soft-deletes the config then enqueues the teardown, committing the transaction', async () => {
