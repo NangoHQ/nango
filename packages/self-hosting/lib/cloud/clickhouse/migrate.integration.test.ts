@@ -6,6 +6,7 @@ import { migrate } from './migrate.js';
 import type { ClickHouseClient } from '@clickhouse/client';
 
 const database = 'installations_migrate_test';
+const unconfigured = 'installations_migrate_unconfigured_test';
 
 let url: string;
 let admin: ClickHouseClient;
@@ -18,10 +19,12 @@ beforeAll(async () => {
     url = process.env['CLICKHOUSE_URL']!;
     admin = createClient({ url });
     await admin.command({ query: `DROP DATABASE IF EXISTS ${database}` });
+    await admin.command({ query: `DROP DATABASE IF EXISTS ${unconfigured}` });
 });
 
 afterAll(async () => {
     await admin.command({ query: `DROP DATABASE IF EXISTS ${database}` });
+    await admin.command({ query: `DROP DATABASE IF EXISTS ${unconfigured}` });
     await admin.close();
 });
 
@@ -48,6 +51,8 @@ describe('installations migrate', () => {
     });
 
     it('skips when ClickHouse is not configured', async () => {
-        expect((await migrate({ clickhouseUrl: undefined, database })).isOk()).toBe(true);
+        expect((await migrate({ clickhouseUrl: undefined, database: unconfigured })).isOk()).toBe(true);
+
+        expect(await rows<{ name: string }>(`SELECT name FROM system.databases WHERE name = '${unconfigured}'`)).toEqual([]);
     });
 });
