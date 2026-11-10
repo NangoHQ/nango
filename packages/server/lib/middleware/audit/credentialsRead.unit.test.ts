@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Ok } from '@nangohq/utils';
-
 import { auditAccountApiKeysCredentialsRead, auditApiKeysCredentialsRead, auditPublicApiKeyCredentialsRead } from './apiKey.middleware.js';
 import { auditConnectionCredentialsRead } from './connection.middleware.js';
 import { auditPublicEnvironmentCredentialsRead } from './environment.middleware.js';
@@ -10,18 +8,7 @@ import {
     auditIntegrationsCredentialsRead,
     auditPublicIntegrationCredentialsRead
 } from './integration.middleware.js';
-import {
-    customerKeySearchMock,
-    fakeReq,
-    fakeRes,
-    getEnvironmentByUuidMock,
-    installAuditMockDefaults,
-    locals,
-    recordMock,
-    resetAuditMocks,
-    runAudit,
-    secretKeyLocals
-} from './testing.js';
+import { fakeReq, fakeRes, installAuditMockDefaults, locals, recordMock, resetAuditMocks, runAudit, secretKeyLocals } from './testing.js';
 
 import type { RequestHandler } from 'express';
 
@@ -50,8 +37,6 @@ async function run(handler: RequestHandler, req: any, res: any, body?: unknown):
 describe('credentials read audit middleware (unit)', () => {
     beforeEach(() => {
         installAuditMockDefaults();
-        getEnvironmentByUuidMock.mockReset().mockResolvedValue({ id: 12, uuid: envUuid, name: 'prod' });
-        customerKeySearchMock.mockReset().mockResolvedValue(Ok([{ id: 2551, display_name: 'ci-key' }]));
     });
 
     afterEach(() => {
@@ -91,6 +76,15 @@ describe('credentials read audit middleware (unit)', () => {
                     { type: 'integration', id: 'slack' }
                 ]
             });
+        });
+
+        it('an empty list returned no credentials, so it records nothing', async () => {
+            expect(await run(auditIntegrationsCredentialsRead, fakeReq({ audit: read() }), fakeRes(locals))).toBe(false);
+        });
+
+        it('a response that failed after the handler reported the read records nothing', async () => {
+            const req = fakeReq({ params: { connectionId: 'conn-1' }, audit: read({ id: 'conn-1' }) });
+            expect(await run(auditConnectionCredentialsRead, req, fakeRes(locals, 500))).toBe(false);
         });
 
         it('a dashboard api key list with masked secrets records nothing', async () => {
@@ -150,7 +144,11 @@ describe('credentials read audit middleware (unit)', () => {
 
         it('public environment read: the environment read becomes the event environment', async () => {
             const accountKeyLocals = { ...secretKeyLocals, environment: undefined };
-            const req = fakeReq({ params: { environmentUuid: envUuid }, query: { with_secrets: 'true' }, audit: read({ id: envUuid, display: 'prod' }) });
+            const req = fakeReq({
+                params: { environmentUuid: envUuid },
+                query: { with_secrets: 'true' },
+                audit: { credentialsRead: { targets: [{ id: envUuid, display: 'prod' }], environment: { uuid: envUuid, name: 'prod' } } }
+            });
             const event = await runAudit(auditPublicEnvironmentCredentialsRead, req, fakeRes(accountKeyLocals));
             expect(event).toMatchObject({
                 resource: 'environment',
@@ -161,6 +159,12 @@ describe('credentials read audit middleware (unit)', () => {
             });
         });
 
+        it('public environment read: a denied request with a malformed environment uuid records no target', async () => {
+            const req = fakeReq({ params: { environmentUuid: 'not-a-uuid' }, query: { with_secrets: 'true' } });
+            const event = await runAudit(auditPublicEnvironmentCredentialsRead, req, fakeRes(secretKeyLocals, 403));
+            expect(event).toMatchObject({ accountId: 42, outcome: 'denied', targets: [] });
+        });
+
         it('public environment read: a denied with_secrets request names the environment from the path', async () => {
             const req = fakeReq({ params: { environmentUuid: envUuid }, query: { with_secrets: 'true' } });
             const event = await runAudit(auditPublicEnvironmentCredentialsRead, req, fakeRes(secretKeyLocals, 403));
@@ -169,7 +173,24 @@ describe('credentials read audit middleware (unit)', () => {
     });
 
     describe('endpoints that always return the secret', () => {
-        it('public api key read records a denial too, naming the key', async () => {
+        it('public api key read records the key and the environment it was read from', async () => {
+            const accountKeyLocals = { ...secretKeyLocals, environment: undefined };
+            const req = fakeReq({
+                params: { environmentUuid: envUuid, keyUuid },
+                audit: { credentialsRead: { targets: [{ id: keyUuid, display: 'ci-key' }], environment: { uuid: envUuid, name: 'prod' } } }
+            });
+            const event = await runAudit(auditPublicApiKeyCredentialsRead, req, fakeRes(accountKeyLocals));
+            expect(event).toMatchObject({
+                resource: 'api_key',
+                action: 'credentials_read',
+                accountId: 42,
+                outcome: 'success',
+                environment: { id: envUuid, display: 'prod' },
+                targets: [{ type: 'api_key', id: keyUuid, display: 'ci-key' }]
+            });
+        });
+
+        it('public api key read records a denial, naming the key from the path', async () => {
             const req = fakeReq({ params: { environmentUuid: envUuid, keyUuid } });
             const event = await runAudit(auditPublicApiKeyCredentialsRead, req, fakeRes(secretKeyLocals, 403));
             expect(event).toMatchObject({
@@ -177,14 +198,19 @@ describe('credentials read audit middleware (unit)', () => {
                 action: 'credentials_read',
                 accountId: 42,
                 outcome: 'denied',
-                environment: { id: envUuid, display: 'prod' },
-                targets: [{ type: 'api_key', id: keyUuid, display: 'ci-key' }]
+                targets: [{ type: 'api_key', id: keyUuid }]
             });
         });
 
+        it('public api key read that found no key records nothing', async () => {
+            expect(await run(auditPublicApiKeyCredentialsRead, fakeReq({ params: { environmentUuid: envUuid, keyUuid } }), fakeRes(secretKeyLocals, 404))).toBe(
+                false
+            );
+        });
+
         it('account api key list is account-scoped and names every returned key', async () => {
-            await run(auditAccountApiKeysCredentialsRead, fakeReq(), fakeRes(locals), { data: [{ uuid: keyUuid, display_name: 'ci-key' }] });
-            expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
+            const event = await runAudit(auditAccountApiKeysCredentialsRead, fakeReq({ audit: read({ id: keyUuid, display: 'ci-key' }) }), fakeRes(locals));
+            expect(event).toMatchObject({
                 resource: 'api_key',
                 action: 'credentials_read',
                 accountId: 42,
@@ -193,6 +219,10 @@ describe('credentials read audit middleware (unit)', () => {
                 outcome: 'success',
                 targets: [{ type: 'api_key', id: keyUuid, display: 'ci-key' }]
             });
+        });
+
+        it('an empty account api key list records nothing', async () => {
+            expect(await run(auditAccountApiKeysCredentialsRead, fakeReq({ audit: read() }), fakeRes(locals))).toBe(false);
         });
     });
 });

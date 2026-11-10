@@ -6,14 +6,17 @@ import type { Request } from 'express';
 
 type AnyRequest = Request<any, any, any, any>;
 
-/** Recorded when the handler reported returning credentials, or when an explicit request for them was denied. */
+/** Recorded when a successful response carried credentials the handler reported, or when an explicit request for them was denied. */
 export function skipUnlessCredentialsRead(requested?: (req: AnyRequest) => boolean) {
-    return (req: AnyRequest, _locals: Partial<RequestLocals>, outcome: AuditOutcome): boolean =>
-        !req.audit?.credentialsRead && !(requested?.(req) && outcome === 'denied');
+    return (req: AnyRequest, _locals: Partial<RequestLocals>, outcome: AuditOutcome): boolean => {
+        const returned = outcome === 'success' && (req.audit?.credentialsRead?.targets.length ?? 0) > 0;
+        return !returned && !(requested?.(req) && outcome === 'denied');
+    };
 }
 
-export function callerSubject(_req: AnyRequest, locals: Partial<RequestLocals>) {
-    return locals.account ? { account: locals.account, environment: locals.environment } : undefined;
+/** The caller's account; the environment is the one the handler read from, when the route names it in the path. */
+export function callerSubject(req: AnyRequest, locals: Partial<RequestLocals>) {
+    return locals.account ? { account: locals.account, environment: req.audit?.credentialsRead?.environment ?? locals.environment } : undefined;
 }
 
 /** The targets the handler reported. A denial ran no handler, so it falls back to what the request names. */

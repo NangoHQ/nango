@@ -6934,7 +6934,7 @@ The audit trail covers the main control-plane operations related to connections,
 
 Secrets, such as API keys and passwords, are stripped from audit log entries.
 
-Reads that return a secret are recorded as `credentials_read`:
+These reads that return a secret are recorded as `credentials_read`:
 
 | Resource | Recorded when |
 |----------|---------------|
@@ -6943,7 +6943,9 @@ Reads that return a secret are recorded as `credentials_read`:
 | `api_key` | API key secrets are read: `GET /environments/{environmentUuid}/api-keys/{keyUuid}`, or the API keys pages in the dashboard by someone allowed to see the secrets |
 | `environment` | An environment is read with its secrets: `GET /environments/{environmentUuid}?with_secrets=true` |
 
-A request that asks for a secret explicitly is recorded even when it is denied. A list read records one entry whose targets are every entity returned.
+On these endpoints, a request that asks for a secret explicitly is recorded even when it is denied. A list read records one entry whose targets are every entity returned.
+
+Reading connection credentials through the API, such as `GET /connections/{connectionId}`, is not recorded yet; see [Limitations](#limitations).
 
 Other reads are not recorded. Listing connections, fetching an integration without its credentials, seeing an API key masked, or opening a page in the dashboard leaves no entry. Our audit trail is designed to answer "what changed" and "who saw a secret", not "what was looked at". Queries to the audit trail are an exception and logged with the actions listed above.
 

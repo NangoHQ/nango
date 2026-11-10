@@ -1,7 +1,7 @@
 import { changedFields, makeAuditTarget as makeTarget } from '../../audit.js';
 import { Audit, auditable, maybeAuditable } from './auditable.js';
-import { credentialsReadTargets, skipUnlessCredentialsRead } from './credentialsRead.js';
-import { nonEmptyString, omitUndefined, param, query } from './input.js';
+import { callerSubject, credentialsReadTargets, skipUnlessCredentialsRead } from './credentialsRead.js';
+import { nonEmptyString, omitUndefined, param, query, uuid } from './input.js';
 import { accountEnvironmentTarget, environmentFromUuid } from './lookups.js';
 
 import type {
@@ -104,21 +104,15 @@ export const auditPublicEnvironmentDeleted = auditable<DeletePublicEnvironment>(
     target: (req, locals) => accountEnvironmentTarget(req.params.environmentUuid, locals)
 });
 
-// Keep only the origin (scheme + host) of a URL — a webhook URL can carry a secret token in its path,
-// query string, or userinfo, and this goes into the immutable audit record.
 export const auditPublicEnvironmentCredentialsRead = maybeAuditable<GetPublicEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'credentials_read', scope: 'environment' }),
     skipWhen: skipUnlessCredentialsRead((req) => query(req, 'with_secrets') === 'true'),
-    // The environment read is the event's environment, which an account key does not have in its locals.
-    subject: (req, locals) => {
-        const read = req.audit?.credentialsRead?.targets[0];
-        return locals.account
-            ? { account: locals.account, environment: read?.display ? { uuid: read.id, name: read.display } : locals.environment }
-            : undefined;
-    },
-    atFinish: (req) => credentialsReadTargets('environment', req, param(req, 'environmentUuid'))
+    subject: callerSubject,
+    atFinish: (req) => credentialsReadTargets('environment', req, uuid(param(req, 'environmentUuid')))
 });
 
+// Keep only the origin (scheme + host) of a URL — a webhook URL can carry a secret token in its path,
+// query string, or userinfo, and this goes into the immutable audit record.
 function safeUrl(value: unknown): string | undefined {
     if (typeof value !== 'string' || value.length === 0) {
         return undefined;

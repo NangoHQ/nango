@@ -732,9 +732,20 @@ describe('audit middleware — live-stack contract', () => {
             expect(JSON.stringify(event)).not.toContain(apiKey.secret);
         });
 
-        it('public integration read with include=credentials, and the deprecated config read', async () => {
+        it('public integration read: nothing without include=credentials, recorded with it, and the deprecated config read', async () => {
             const { account, env, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             await seeders.createConfigSeed(env, 'algolia', 'algolia');
+
+            const plain = await api.fetch('/integrations/:uniqueKey', {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { uniqueKey: 'algolia' },
+                query: {}
+            });
+            expect(plain.res.status).toBe(200);
+            // The finish listener is async; give it a turn before concluding nothing was recorded.
+            await new Promise((resolve) => setTimeout(resolve, 200));
+            expect(auditEvent('integration', 'credentials_read')).toBeUndefined();
 
             const res = await api.fetch('/integrations/:uniqueKey', {
                 method: 'GET',
@@ -763,6 +774,40 @@ describe('audit middleware — live-stack contract', () => {
                 outcome: 'success',
                 accountId: account.id,
                 targets: [{ type: 'integration', id: 'algolia' }]
+            });
+        });
+
+        it('public api key read and the account api keys list', async () => {
+            const { account, env, user, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const key = (
+                await customerKeyService.createAccountApiKey(db.knex, { accountId: account.id, displayName: 'Admin', scopes: ['account:*'] })
+            ).unwrap();
+
+            const read = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'GET',
+                token: key.secret,
+                params: { environmentUuid: env.uuid, keyUuid: apiKey.uuid }
+            });
+            expect(read.res.status).toBe(200);
+            const event = await credentialsReadEvent('api_key');
+            expect(event).toMatchObject({
+                outcome: 'success',
+                accountId: account.id,
+                environment: { id: env.uuid, display: env.name },
+                actor: { type: 'api_key', id: key.uuid },
+                targets: [{ type: 'api_key', id: apiKey.uuid }]
+            });
+            expect(JSON.stringify(event)).not.toContain(apiKey.secret);
+
+            auditSpy.mockClear();
+            const session = await authenticateUser(api, user);
+            const list = await api.fetch('/api/v1/account/api-keys', { method: 'GET', session });
+            expect(list.res.status).toBe(200);
+            expect(await credentialsReadEvent('api_key')).toMatchObject({
+                outcome: 'success',
+                accountId: account.id,
+                environment: null,
+                targets: [{ type: 'api_key', id: key.uuid, display: 'Admin' }]
             });
         });
 

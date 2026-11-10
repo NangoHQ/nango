@@ -16,7 +16,7 @@ declare global {
          */
         interface AuditFacts {
             managedSignup?: boolean;
-            credentialsRead?: { targets: { id: string; display?: string | undefined }[] };
+            credentialsRead?: { targets: { id: string; display?: string | undefined }[]; environment?: { uuid: string; name: string } };
             authSucceeded?: boolean;
             authPendingMfa?: { userId: number };
             connectionUpsert?: {

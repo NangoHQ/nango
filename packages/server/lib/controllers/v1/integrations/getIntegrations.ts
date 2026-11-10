@@ -22,7 +22,11 @@ export const getIntegrations = asyncWrapperWithEnvironment<GetIntegrations>(asyn
     if (includeCredentials) {
         req.audit = {
             ...req.audit,
-            credentialsRead: { targets: integrations.map((integration) => ({ id: integration.unique_key, display: integration.display_name ?? undefined })) }
+            credentialsRead: {
+                targets: integrations.flatMap((integration) =>
+                    integration.shared_credentials_id ? [] : [{ id: integration.unique_key, display: integration.display_name ?? undefined }]
+                )
+            }
         };
     }
     const rawSyncConfig = await countSyncConfigByConfigId(environment.id);
