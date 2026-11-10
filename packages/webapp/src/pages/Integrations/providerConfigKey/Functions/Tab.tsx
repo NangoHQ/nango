@@ -200,19 +200,20 @@ function FunctionTemplateRow({
 function FunctionListWithDetails({
     selectedFunction,
     integration,
-    onDeleted,
+    onClose,
     children
 }: {
     selectedFunction: ListedNangoFunction | NangoFunctionTemplate | null;
     integration: ApiIntegration;
-    onDeleted: () => void;
+    onClose: () => void;
     children: React.ReactNode;
 }) {
     return (
         <SlidingPanelLayout
             selected={selectedFunction}
             getKey={(fn) => ('enabled' in fn ? functionRowKey(fn) : templateRowKey(fn))}
-            renderPanel={(fn) => <FunctionDetailsPanel fn={fn} integration={integration} onDeleted={onDeleted} />}
+            renderPanel={(fn) => <FunctionDetailsPanel fn={fn} integration={integration} onDeleted={onClose} />}
+            onClose={onClose}
         >
             {children}
         </SlidingPanelLayout>
@@ -527,7 +528,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
                             integration={integration}
-                            onDeleted={() => void setSelectedFunctionName(null)}
+                            onClose={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
                                 <TableHeader>
@@ -551,7 +552,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
                             integration={integration}
-                            onDeleted={() => void setSelectedFunctionName(null)}
+                            onClose={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
                                 <TableHeader>
@@ -575,7 +576,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
                             integration={integration}
-                            onDeleted={() => void setSelectedFunctionName(null)}
+                            onClose={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
                                 <TableHeader>

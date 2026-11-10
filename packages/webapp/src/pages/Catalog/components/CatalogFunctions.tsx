@@ -76,6 +76,7 @@ export const CatalogFunctions: React.FC<CatalogFunctionsProps> = ({ templates, d
                 selected={selected}
                 getKey={(fn) => `${fn.type}:${fn.name}`}
                 renderPanel={(fn) => <CatalogFunctionPanel fn={fn} setupButton={renderSetupButton()} onClose={() => void setSelectedName(null)} />}
+                onClose={() => void setSelectedName(null)}
             >
                 <div className="overflow-hidden rounded-ds-md border-ds-hairline border-border-default bg-surface-panel">
                     <div className="border-b-ds-hairline border-border-default bg-surface-canvas px-3 py-2 type-label-xs uppercase text-text-muted">

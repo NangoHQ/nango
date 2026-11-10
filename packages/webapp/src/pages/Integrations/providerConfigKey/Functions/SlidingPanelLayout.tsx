@@ -9,10 +9,11 @@ interface SlidingPanelLayoutProps<T> {
     selected: T | null;
     getKey: (item: T) => string;
     renderPanel: (item: T) => React.ReactNode;
+    onClose: () => void;
     children: React.ReactNode;
 }
 
-export function SlidingPanelLayout<T>({ selected, getKey, renderPanel, children }: SlidingPanelLayoutProps<T>) {
+export function SlidingPanelLayout<T>({ selected, getKey, renderPanel, onClose, children }: SlidingPanelLayoutProps<T>) {
     const [displayed, setDisplayed] = useState(selected);
     const [panelVisible, setPanelVisible] = useState(Boolean(selected));
     const panelRef = useRef<HTMLDivElement>(null);
@@ -54,7 +55,8 @@ export function SlidingPanelLayout<T>({ selected, getKey, renderPanel, children 
             return;
         }
         focusedKeyRef.current = displayedKey;
-        panelRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus({ preventScroll: true });
+        const target = panelRef.current?.querySelector<HTMLElement>('[data-panel-title]') ?? panelRef.current?.querySelector<HTMLElement>(FOCUSABLE);
+        target?.focus({ preventScroll: true });
     }, [displayedKey]);
 
     return (
@@ -71,6 +73,12 @@ export function SlidingPanelLayout<T>({ selected, getKey, renderPanel, children 
             {displayed && (
                 <div
                     ref={panelRef}
+                    onKeyDown={(event) => {
+                        // React bubbles events out of portals, so Escape in a dialog opened from the panel lands here too.
+                        if (event.key === 'Escape' && event.target instanceof Node && panelRef.current?.contains(event.target)) {
+                            onClose();
+                        }
+                    }}
                     className={cn(
                         'w-1/2 shrink-0 border-y border-r border-border-muted bg-surface-panel transition-[translate,opacity] duration-250 ease-out motion-reduce:transition-none',
                         panelVisible ? 'translate-x-0 opacity-100' : 'pointer-events-none translate-x-full opacity-0'
