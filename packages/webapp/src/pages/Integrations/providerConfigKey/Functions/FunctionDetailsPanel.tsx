@@ -1,15 +1,12 @@
 import { ExternalLink, Play, Trash2 } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { Badge, Button } from '@nangohq/design-system';
 
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { CopyButton } from '@/components/ui/CopyButton';
-import { EmptyCard } from '@/components/ui/EmptyCard';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Separator } from '@/components/ui/Separator';
 import { Spinner } from '@/components/ui/Spinner';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteIntegrationFunction } from '@/hooks/useIntegration';
 import { useGetIntegrationFunctionCode, useGetTemplateFunctionCode } from '@/hooks/useIntegrationFunctions';
@@ -17,11 +14,11 @@ import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
-import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { toFunctionDetails } from './functionDetails.utils';
+import { CompactEmptyState, FunctionPanel, FunctionPanelHeader, FunctionSchemaTabs } from './FunctionPanel';
 import { FunctionSourceLabel } from './FunctionSourceLabel';
 
-import type { DetailsFunction } from './functionDetails.utils';
+import type { DetailsFunction, FunctionDetails } from './functionDetails.utils';
 import type { ApiIntegration } from '@nangohq/types';
 
 interface FunctionDetailsPanelProps {
@@ -35,40 +32,12 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
     const canOpenPlayground = useCanRunFunctions();
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
-    const [activeTab, setActiveTab] = useState<'input' | 'output' | 'code'>('input');
     const fn = useMemo(
         () => toFunctionDetails(rawFunction, { env, integration: integration.unique_key, provider: integration.provider }),
         [rawFunction, env, integration.unique_key, integration.provider]
     );
     const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, integration.unique_key, fn.name, fn.delete?.type);
     const { inputSchema, outputSchemas, delete: deletion } = fn;
-    const codeSource = fn.code;
-    const isDeployedCode = codeSource.kind === 'deployed';
-    const {
-        data: codeData,
-        isPending: deployedCodePending,
-        error: deployedCodeError
-    } = useGetIntegrationFunctionCode({
-        env,
-        providerConfigKey: integration.unique_key,
-        name: fn.name,
-        type: isDeployedCode ? codeSource.type : undefined,
-        enabled: isDeployedCode && activeTab === 'code'
-    });
-    const {
-        data: templateCode,
-        isPending: templateCodePending,
-        error: templateCodeError
-    } = useGetTemplateFunctionCode({
-        env,
-        provider: integration.provider,
-        name: fn.name,
-        type: isDeployedCode ? undefined : codeSource.type,
-        enabled: !isDeployedCode && activeTab === 'code'
-    });
-    const codePending = isDeployedCode ? deployedCodePending : templateCodePending;
-    const codeError = isDeployedCode ? deployedCodeError : templateCodeError;
-    const code = isDeployedCode ? codeData?.code : templateCode?.code;
 
     const onDelete = useCallback(async () => {
         try {
@@ -88,59 +57,56 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
     const { source, pullCommand } = fn;
 
     return (
-        <aside className="sticky top-0 flex max-h-[calc(100dvh-7rem)] min-h-[min(606px,calc(100dvh-7rem))] w-full flex-col overflow-y-auto overscroll-y-contain bg-surface-panel">
-            <div className="flex items-start justify-between gap-2 border-b border-border-default p-3">
-                <div className="flex min-w-0 flex-1 flex-col gap-2">
-                    <div className="flex items-center gap-1">
-                        <span className="truncate type-code-medium-sm text-text-default">{fn.name}</span>
-                        <CopyButton text={fn.name} className="size-4 p-0" />
-                    </div>
-                    {fn.description && <p className="type-text-regular-xs text-text-secondary">{fn.description}</p>}
-                </div>
-                {(canOpenPlayground || deletion) && (
-                    <div className="flex h-5 shrink-0 items-center gap-2">
-                        {canOpenPlayground && (
-                            <Button
-                                variant="link-accent"
-                                size="xs"
-                                disabled={!fn.runType}
-                                onClick={() => {
-                                    if (!fn.runType) return;
-                                    openPlaygroundWithContext({
-                                        source: 'function',
-                                        integration: integration.unique_key,
-                                        functionName: fn.name,
-                                        functionType: fn.runType
-                                    });
-                                }}
-                            >
-                                <Play />
-                                Test run this function
-                            </Button>
-                        )}
-                        {canOpenPlayground && deletion && <Separator orientation="vertical" />}
-                        {deletion && (
-                            <Button
-                                variant="link-neutral-danger"
-                                size="xs"
-                                loading={isDeleting}
-                                onClick={() =>
-                                    void confirm({
-                                        title: 'Delete function?',
-                                        description: deletion.description,
-                                        confirmButtonText: 'Delete function',
-                                        confirmVariant: 'danger',
-                                        onConfirm: onDelete
-                                    })
-                                }
-                            >
-                                <Trash2 />
-                                Delete
-                            </Button>
-                        )}
-                    </div>
-                )}
-            </div>
+        <FunctionPanel>
+            <FunctionPanelHeader
+                name={fn.name}
+                description={fn.description}
+                actions={
+                    (canOpenPlayground || deletion) && (
+                        <>
+                            {canOpenPlayground && (
+                                <Button
+                                    variant="link-accent"
+                                    size="xs"
+                                    disabled={!fn.runType}
+                                    onClick={() => {
+                                        if (!fn.runType) return;
+                                        openPlaygroundWithContext({
+                                            source: 'function',
+                                            integration: integration.unique_key,
+                                            functionName: fn.name,
+                                            functionType: fn.runType
+                                        });
+                                    }}
+                                >
+                                    <Play />
+                                    Test run this function
+                                </Button>
+                            )}
+                            {canOpenPlayground && deletion && <Separator orientation="vertical" />}
+                            {deletion && (
+                                <Button
+                                    variant="link-neutral-danger"
+                                    size="xs"
+                                    loading={isDeleting}
+                                    onClick={() =>
+                                        void confirm({
+                                            title: 'Delete function?',
+                                            description: deletion.description,
+                                            confirmButtonText: 'Delete function',
+                                            confirmVariant: 'danger',
+                                            onConfirm: onDelete
+                                        })
+                                    }
+                                >
+                                    <Trash2 />
+                                    Delete
+                                </Button>
+                            )}
+                        </>
+                    )
+                }
+            />
 
             <div className="pb-6">
                 <div className="grid grid-cols-2 gap-3 border-b border-border-default p-3">
@@ -185,58 +151,14 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                     </div>
                 </div>
 
-                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} className="gap-3 px-3 pt-3">
-                    <TabsList className="w-fit gap-3">
-                        <TabsTrigger value="input" className="px-2 py-1.5">
-                            Input
-                        </TabsTrigger>
-                        <TabsTrigger value="output" className="px-2 py-1.5">
-                            Output
-                        </TabsTrigger>
-                        <TabsTrigger value="code" className="px-2 py-1.5">
-                            Code
-                        </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="input">
-                        {inputSchema ? <JsonSchemaTopLevelObject schema={inputSchema} /> : <CompactEmptyState>No inputs.</CompactEmptyState>}
-                    </TabsContent>
-                    <TabsContent value="output">
-                        {outputSchemas.length > 0 ? (
-                            <Navigation defaultValue={outputSchemas[0]?.name ?? ''} orientation="horizontal">
-                                {outputSchemas.length > 1 && (
-                                    <NavigationList>
-                                        {outputSchemas.map((outputSchema) => (
-                                            <NavigationTrigger key={outputSchema.name} value={outputSchema.name}>
-                                                {outputSchema.name}
-                                            </NavigationTrigger>
-                                        ))}
-                                    </NavigationList>
-                                )}
-                                {outputSchemas.map((outputSchema) => (
-                                    <NavigationContent key={outputSchema.name} value={outputSchema.name}>
-                                        <JsonSchemaTopLevelObject schema={outputSchema.schema} />
-                                    </NavigationContent>
-                                ))}
-                            </Navigation>
-                        ) : (
-                            <CompactEmptyState>No outputs.</CompactEmptyState>
-                        )}
-                    </TabsContent>
-                    <TabsContent value="code">
-                        {codePending ? (
-                            <div className="flex h-48 items-center justify-center">
-                                <Spinner className="size-5 text-text-muted" />
-                            </div>
-                        ) : codeError || !code ? (
-                            <CompactEmptyState>Failed to load source code.</CompactEmptyState>
-                        ) : (
-                            <CodeBlock title={`${fn.name}.ts`} language="typescript" code={code} />
-                        )}
-                    </TabsContent>
-                </Tabs>
+                <FunctionSchemaTabs
+                    inputSchema={inputSchema}
+                    outputSchemas={outputSchemas}
+                    extraTabs={[{ value: 'code', label: 'Code', content: <FunctionCode fn={fn} integration={integration} /> }]}
+                />
             </div>
             {DialogComponent}
-        </aside>
+        </FunctionPanel>
     );
 };
 
@@ -247,8 +169,45 @@ const Metadata: React.FC<{ label: string; className?: string; children: React.Re
     </div>
 );
 
-const CompactEmptyState: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <EmptyCard className="h-24">
-        <span className="type-label-sm text-text-secondary">{children}</span>
-    </EmptyCard>
-);
+const FunctionCode: React.FC<{ fn: FunctionDetails; integration: ApiIntegration }> = ({ fn, integration }) => {
+    const env = useStore((state) => state.env);
+    const codeSource = fn.code;
+    const isDeployedCode = codeSource.kind === 'deployed';
+    const {
+        data: codeData,
+        isPending: deployedCodePending,
+        error: deployedCodeError
+    } = useGetIntegrationFunctionCode({
+        env,
+        providerConfigKey: integration.unique_key,
+        name: fn.name,
+        type: isDeployedCode ? codeSource.type : undefined,
+        enabled: isDeployedCode
+    });
+    const {
+        data: templateCode,
+        isPending: templateCodePending,
+        error: templateCodeError
+    } = useGetTemplateFunctionCode({
+        env,
+        provider: integration.provider,
+        name: fn.name,
+        type: isDeployedCode ? undefined : codeSource.type,
+        enabled: !isDeployedCode
+    });
+    const codePending = isDeployedCode ? deployedCodePending : templateCodePending;
+    const codeError = isDeployedCode ? deployedCodeError : templateCodeError;
+    const code = isDeployedCode ? codeData?.code : templateCode?.code;
+
+    if (codePending) {
+        return (
+            <div className="flex h-48 items-center justify-center">
+                <Spinner className="size-5 text-text-muted" />
+            </div>
+        );
+    }
+    if (codeError || !code) {
+        return <CompactEmptyState>Failed to load source code.</CompactEmptyState>;
+    }
+    return <CodeBlock title={`${fn.name}.ts`} language="typescript" code={code} />;
+};

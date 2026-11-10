@@ -16,6 +16,8 @@ import { VerifyEmailByExpiredToken } from '@/pages/Account/VerifyEmailByExpiredT
 import { AgentPlayground } from '@/pages/AgentPlayground/Show';
 import { AccountApiKeysShow } from '@/pages/ApiKeys/Show';
 import { AuditShow } from '@/pages/Audit/Show';
+import { CatalogProviderShow } from '@/pages/Catalog/ProviderShow';
+import { CatalogShow } from '@/pages/Catalog/Show';
 import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
 import { RecordsTab as ConnectionRecordsTab } from '@/pages/Connection/components/RecordsTab';
 import { SettingsTab as ConnectionSettingsTab } from '@/pages/Connection/components/SettingsTab';
@@ -29,7 +31,6 @@ import { EnvironmentSettings } from '@/pages/Environment/Settings/Show';
 import { AgentGettingStarted } from '@/pages/GettingStarted/AgentGettingStarted';
 import { Homepage } from '@/pages/Homepage/Show';
 import { CreateIntegration } from '@/pages/Integrations/Create';
-import { CreateIntegrationList } from '@/pages/Integrations/CreateList';
 import { ShowIntegration } from '@/pages/Integrations/providerConfigKey/Show';
 import { IntegrationsList } from '@/pages/Integrations/Show';
 import { LogsShow } from '@/pages/Logs/Show';
@@ -239,6 +240,21 @@ const routes: RouteObject[] = [
                         }
                     },
                     {
+                        path: 'catalog',
+                        handle: { breadcrumb: 'Catalog' } as BreadcrumbHandle,
+                        children: [
+                            {
+                                index: true,
+                                element: <CatalogShow />
+                            },
+                            {
+                                path: ':provider',
+                                element: <CatalogProviderShow />,
+                                handle: { breadcrumb: (params) => params.provider || 'Provider' } as BreadcrumbHandle
+                            }
+                        ]
+                    },
+                    {
                         path: 'integrations',
                         handle: { breadcrumb: 'Integrations' } as BreadcrumbHandle,
                         children: [
@@ -252,7 +268,7 @@ const routes: RouteObject[] = [
                                 children: [
                                     {
                                         index: true,
-                                        element: <CreateIntegrationList />
+                                        element: <Navigate to="../../catalog" replace />
                                     },
                                     {
                                         path: ':providerConfigKey',

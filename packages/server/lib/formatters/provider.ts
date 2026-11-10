@@ -3,7 +3,15 @@ import { basePublicUrl } from '@nangohq/utils';
 import { toNangoFunction } from './function.js';
 
 import type { RetrievedProvider } from '../services/provider.service.js';
-import type { ApiProvider, ApiProviderListItem, NangoSyncConfig, Provider, ProviderMcpOAUTH2, ProviderTemplatesSuccess } from '@nangohq/types';
+import type {
+    ApiProvider,
+    ApiProviderFunctionCounts,
+    ApiProviderListItem,
+    NangoSyncConfig,
+    Provider,
+    ProviderMcpOAUTH2,
+    ProviderTemplatesSuccess
+} from '@nangohq/types';
 
 export function providerToApi({ name, provider }: RetrievedProvider): ApiProvider {
     return {
@@ -25,7 +33,8 @@ export function providerListItemToAPI(
     properties: Provider,
     preConfigured: boolean,
     preConfiguredScopes: string[],
-    availableScopes?: string[]
+    availableScopes: string[] | undefined,
+    functionCounts: ApiProviderFunctionCounts | undefined
 ): ApiProviderListItem {
     const item: ApiProviderListItem = {
         name: providerName,
@@ -38,6 +47,7 @@ export function providerListItemToAPI(
         docs_connect: properties.docs_connect,
         preConfigured,
         preConfiguredScopes,
+        functionCounts: functionCounts ?? { actions: 0, syncs: 0 },
         ...(properties.integration_config && { integration_config: properties.integration_config }),
         ...(properties.auth_mode === 'MCP_OAUTH2' && {
             clientRegistration: (properties as ProviderMcpOAUTH2).client_registration
