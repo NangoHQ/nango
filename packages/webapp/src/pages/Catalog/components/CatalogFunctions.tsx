@@ -130,7 +130,7 @@ const NoResultsState: React.FC<{ query: string; noun: string; displayName: strin
             Try another word. Need something {displayName} doesn&apos;t have here? You can build your own.
         </span>
         <div className="flex items-center gap-3 pt-1">
-            <Button asChild variant="link-accent" size="sm">
+            <Button asChild variant="link-accent" size="md">
                 <a href={FUNCTIONS_GUIDE_URL} target="_blank" rel="noreferrer">
                     Build your own <ExternalLink />
                 </a>
@@ -158,12 +158,12 @@ const NoFunctionsState: React.FC<{ displayName: string }> = ({ displayName }) =>
             You can build your own, or call {displayName}&apos;s API directly through the Nango proxy.
         </span>
         <div className="flex items-center gap-4 pt-1">
-            <Button asChild variant="link-accent" size="sm">
+            <Button asChild variant="link-accent" size="md">
                 <a href={FUNCTIONS_GUIDE_URL} target="_blank" rel="noreferrer">
                     Build your own <ExternalLink />
                 </a>
             </Button>
-            <Button asChild variant="link-accent" size="sm">
+            <Button asChild variant="link-accent" size="md">
                 <a href={PROXY_GUIDE_URL} target="_blank" rel="noreferrer">
                     Proxy docs <ExternalLink />
                 </a>
@@ -179,7 +179,7 @@ const McpToolsState: React.FC = () => (
             Nango automatically makes all tools of this MCP server available. You can use it with Agent sessions, or any other Nango feature.
         </span>
         <div className="flex items-center gap-4 pt-1">
-            <Button asChild variant="link-accent" size="sm">
+            <Button asChild variant="link-accent" size="md">
                 <a href={MCP_TOOLS_GUIDE_URL} target="_blank" rel="noreferrer">
                     Docs <ExternalLink />
                 </a>
