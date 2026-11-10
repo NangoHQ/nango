@@ -1,0 +1,23 @@
+---
+title: 'Connect to Arcmira'
+sidebarTitle: 'Connect'
+description: 'Get an Arcmira API key and connect your account to Nango'
+---
+
+## Overview
+
+Arcmira uses an account API key. Nango sends it as a bearer token to `https://api.arcmira.com`.
+
+## Step 1: Get an Arcmira API key
+
+1. Sign in to [Arcmira API keys](https://arcmira.com/dashboard/api).
+2. Select **Create key** and name the key for your integration.
+3. Copy the secret when it appears. Arcmira shows it only once.
+
+Dashboard keys include research and monitor/tracker write permissions. Use an existing read-only key if your integration only needs research access. See [Arcmira authentication](https://arcmira.com/docs/authentication) for credential scopes.
+
+## Step 2: Connect the account
+
+In Nango, open the **Connections** tab and select **Add Test Connection** for your Arcmira integration. Paste the key into **API Key** and save the connection.
+
+Nango verifies the credential with `GET /v1/me`. This account-context endpoint does not consume usage credits.
