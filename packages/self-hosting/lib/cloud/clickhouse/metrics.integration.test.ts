@@ -3,7 +3,6 @@ import { randomUUID } from 'node:crypto';
 import { createClient } from '@clickhouse/client';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { TELEMETRY_UPLOAD_MAX_ROWS } from '../../installation/upload.js';
 import { installationsClickhouseClient } from './clickhouse.js';
 import { insertMetricsBatch } from './metrics.js';
 import { migrate } from './migrate.js';
@@ -109,16 +108,6 @@ describe('insertMetricsBatch', () => {
 
     it('an empty batch writes nothing and succeeds', async () => {
         expect((await insertMetricsBatch(client, { installationId: randomUUID(), rows: [] })).isOk()).toBe(true);
-    });
-
-    it('refuses a batch over the row limit and writes none of it', async () => {
-        const installationId = randomUUID();
-        const row = { ts: day(0), metric: 'nango.hosted_metric.connections.count', attributes: '{}', value: 1 };
-
-        const res = await insertMetricsBatch(client, { installationId, rows: Array.from({ length: TELEMETRY_UPLOAD_MAX_ROWS + 1 }, () => row) });
-
-        expect(res.isErr() && res.error.message).toBe('a batch holds at most 32768 rows, got 32769');
-        expect(await stored(installationId)).toEqual([]);
     });
 
     it('returns the error when ClickHouse refuses the batch', async () => {
