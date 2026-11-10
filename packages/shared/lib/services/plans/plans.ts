@@ -416,6 +416,11 @@ function mergePlanFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPla
                 overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
                 break;
             }
+            // LIST FLAGS - keep values added on top of the plan
+            case 'audit_trail_data_plane_scopes': {
+                overrides[key] = [...new Set([...currentPlan[key], ...(newPlanDefinition.flags[key] ?? [])])];
+                break;
+            }
             // NUMBER FLAGS - keep override if higher, null means unlimited
             case 'webhook_forwards_max':
             case 'monthly_actions_max':
