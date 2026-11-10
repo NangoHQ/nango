@@ -558,7 +558,8 @@ export const analyticsEventCatalogue = defineCatalogue({
 
     'agents:session_start': {
         surface: 'server',
-        insight: 'How many accounts create agent sessions each week, and which meta tools they turn on',
+        insight:
+            'How many accounts create agent sessions each week, which meta tools they turn on, and how they restrict the integrations and tools a session gets',
         fires: 'After an agent session is created',
         properties: z.object({
             ...agentSession,
@@ -566,7 +567,20 @@ export const analyticsEventCatalogue = defineCatalogue({
             is_tool_search_enabled: z.boolean(),
             is_execute_enabled: z.boolean(),
             is_proxy_enabled: z.boolean(),
-            is_create_connection_enabled: z.boolean()
+            is_create_connection_enabled: z.boolean(),
+            pinned_tool_count: z.number(),
+            searchable_tool_count: z.number(),
+            // What the caller sent, next to what the session compiled to above.
+            toolset_mode: z.enum(['connected', 'all', 'allowlist']),
+            allowlisted_integration_count: z.number(),
+            tool_allowlist_integration_count: z.number(),
+            tool_denylist_integration_count: z.number(),
+            allowed_tool_count: z.number(),
+            denied_tool_count: z.number(),
+            connection_selector_count: z.number(),
+            pinned_connection_count: z.number(),
+            create_connection_tag_count: z.number(),
+            expires_in_ms: z.number().optional()
         })
     },
     'agents:session_end': {

@@ -2,7 +2,17 @@ import { productTracking } from '@nangohq/shared';
 
 import { isPlaygroundSession } from './agentPlaygroundTags.js';
 
-import type { AgentSession, AgentSessionMetaTool, AgentSessionToolSearchHit, HTTP_METHOD } from '@nangohq/types';
+import type { CreateAgentSessionParams } from './agentSession.service.js';
+import type {
+    AgentSession,
+    AgentSessionMetaTool,
+    AgentSessionToolSearchHit,
+    AgentSessionToolsetPolicy,
+    AnalyticsEventProperties,
+    HTTP_METHOD
+} from '@nangohq/types';
+
+type SessionRequest = Pick<CreateAgentSessionParams, 'connections' | 'toolset' | 'pinnedTools' | 'metaTools' | 'expiresInMs'>;
 
 interface Outcome {
     logOperationId?: string | undefined;
@@ -49,16 +59,31 @@ interface ProxyRequestParams extends Outcome {
  * The account, the environment as is_production and the surface are stamped by the tracking context
  * middleware, so nothing here passes them. No tool input and no provider response is sent, on purpose.
  */
-export function trackAgentSessionCreated(session: AgentSession): void {
+export function trackAgentSessionCreated(session: AgentSession, requested: SessionRequest): void {
+    const policies = typeof requested.toolset === 'object' ? Object.values(requested.toolset) : [];
+    const compiled = Object.values(session.compiledToolset);
+
     productTracking.track({
         name: 'agents:session_start',
         eventProperties: {
             ...sessionProperties(session),
-            integration_count: Object.keys(session.compiledToolset).length,
+            integration_count: compiled.length,
             is_tool_search_enabled: session.metaTools.nangoToolSearch,
             is_execute_enabled: session.metaTools.nangoExecute,
             is_proxy_enabled: session.metaTools.nangoProxy,
-            is_create_connection_enabled: session.metaTools.nangoCreateConnection.enabled
+            is_create_connection_enabled: session.metaTools.nangoCreateConnection.enabled,
+            pinned_tool_count: sum(compiled.map((integration) => integration.pinned.length)),
+            searchable_tool_count: sum(compiled.map((integration) => integration.searchable.length)),
+            toolset_mode: toolsetMode(requested.toolset),
+            allowlisted_integration_count: policies.length,
+            tool_allowlist_integration_count: policies.filter((policy) => policy.allow !== '*').length,
+            tool_denylist_integration_count: policies.filter((policy) => policy.deny.length > 0).length,
+            allowed_tool_count: sum(policies.map((policy) => (policy.allow === '*' ? 0 : policy.allow.length))),
+            denied_tool_count: sum(policies.map((policy) => policy.deny.length)),
+            connection_selector_count: requested.connections.any.length,
+            pinned_connection_count: requested.connections.pinned.length,
+            create_connection_tag_count: Object.keys(requested.metaTools?.nangoCreateConnection?.tags ?? {}).length,
+            ...(requested.expiresInMs === undefined ? {} : { expires_in_ms: requested.expiresInMs })
         }
     });
 }
@@ -140,6 +165,17 @@ export function trackAgentSessionToolSearch({ session, query, goal, matches, rel
             related
         }
     });
+}
+
+function toolsetMode(toolset: AgentSessionToolsetPolicy | undefined): AnalyticsEventProperties<'agents:session_start'>['toolset_mode'] {
+    if (toolset === undefined) {
+        return 'connected';
+    }
+    return toolset === '*' ? 'all' : 'allowlist';
+}
+
+function sum(counts: number[]): number {
+    return counts.reduce((total, count) => total + count, 0);
 }
 
 function sessionProperties(session: AgentSession): { agent_session_id: string; is_playground: boolean } {

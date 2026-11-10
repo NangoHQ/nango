@@ -199,7 +199,7 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
     }
 
     const { account, environment, plan } = res.locals;
-    const created = await agentSessionService.createAgentSession({
+    const params = {
         account,
         environment,
         plan,
@@ -208,7 +208,8 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
         pinnedTools: body.data.pinned_tools,
         metaTools: body.data.meta_tools?.metaTools,
         expiresInMs: body.data.expires_in
-    });
+    };
+    const created = await agentSessionService.createAgentSession(params);
 
     if (created.isErr()) {
         if (created.error.code === 'server_error') {
@@ -226,7 +227,7 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
         return;
     }
 
-    trackAgentSessionCreated(created.value.session);
+    trackAgentSessionCreated(created.value.session, params);
 
     res.status(201).send({ data: createdAgentSessionToPublicApi(created.value) });
 });
