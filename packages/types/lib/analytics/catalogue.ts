@@ -338,7 +338,7 @@ export const analyticsEventCatalogue = defineCatalogue({
         surface: 'web',
         insight: 'How many catalog detail visits lead to the setup form, and which placement of the setup button people use',
         fires: 'When someone clicks a "Set up" button on an API\'s catalog page',
-        properties: z.object({ provider: z.string(), source: z.enum(['header', 'callout', 'panel']) })
+        properties: z.object({ provider: z.string(), source: z.enum(['header', 'panel']) })
     },
     'integrations:integration_create': {
         surface: 'server',

@@ -18,10 +18,9 @@ interface ProviderCalloutProps {
     displayName: string;
     provider: string;
     env: string;
-    setupButton: React.ReactNode;
 }
 
-export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, displayName, provider, env, setupButton }) => {
+export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, displayName, provider, env }) => {
     if (state.kind === 'none') {
         return null;
     }
@@ -44,11 +43,10 @@ export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, display
     }
 
     return (
-        <Alert variant="neutral" size="wide" cta="button" role="note">
+        <Alert variant="neutral" size="wide" role="note">
             <Zap data-filled />
             <AlertTitle>Instant setup</AlertTitle>
             <AlertDescription>{INSTANT_SETUP_COPY[state.kind](displayName)}</AlertDescription>
-            <AlertActions>{setupButton}</AlertActions>
         </Alert>
     );
 };

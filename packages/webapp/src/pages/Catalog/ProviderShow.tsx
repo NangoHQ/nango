@@ -18,7 +18,7 @@ import { useStore } from '@/store';
 import { getDisplayName } from '../Integrations/utils';
 import PageNotFound from '../PageNotFound';
 import { trackSetupButtonClick } from './analytics';
-import { countIntegrationsByProvider, getCategoryLabel, getInstantSetup, getVisibleCategories } from './catalog.utils';
+import { countIntegrationsByProvider, getCategoryLabel, getInstantSetup, getVisibleCategories, isMcp } from './catalog.utils';
 import { CatalogFunctions } from './components/CatalogFunctions';
 import { CatalogLogo } from './components/CatalogLogo';
 import { ProviderCallout } from './components/ProviderCallout';
@@ -57,7 +57,6 @@ export const CatalogProviderShow: React.FC = () => {
     }
 
     const calloutState = getCalloutState(provider, configuredCount);
-    const isSetupInCallout = calloutState.kind.startsWith('instant');
     const renderSetupButton = (source: SetupButtonSource, size: 'sm' | 'md') => (
         <PermissionGate asChild condition={canSetUp}>
             {(allowed) => (
@@ -77,7 +76,7 @@ export const CatalogProviderShow: React.FC = () => {
     const categories = getVisibleCategories(provider);
 
     return (
-        <DashboardLayout fullWidth hasPageHeading className="flex flex-col gap-6">
+        <DashboardLayout fullWidth hasPageHeading breadcrumbLabel={provider.displayName} className="flex flex-col gap-6">
             <Helmet>
                 <title>{provider.displayName} - Catalog - Nango</title>
             </Helmet>
@@ -90,7 +89,7 @@ export const CatalogProviderShow: React.FC = () => {
                         <div className="flex flex-wrap items-center gap-1.5">
                             <Badge variant="secondary">{getDisplayName(provider.authMode)}</Badge>
                             {instantSetup && <Badge variant="secondary">Instant setup</Badge>}
-                            {categories.length > 0 && <span className="mx-0.5 h-3 border-l-ds-hairline border-border-default" aria-hidden />}
+                            {categories.length > 0 && <span className="mx-0.5 h-3 border-l border-border-strong" aria-hidden />}
                             {categories.map((category) => (
                                 <Badge key={category} variant="secondary">
                                     {getCategoryLabel(category)}
@@ -105,28 +104,23 @@ export const CatalogProviderShow: React.FC = () => {
                             Docs <ArrowUpRight />
                         </a>
                     </Button>
-                    {!isSetupInCallout && renderSetupButton('header', 'md')}
+                    {renderSetupButton('header', 'md')}
                 </div>
             </header>
 
-            <ProviderCallout
-                state={calloutState}
-                displayName={provider.displayName}
-                provider={provider.name}
-                env={env}
-                setupButton={renderSetupButton('callout', 'md')}
-            />
+            <ProviderCallout state={calloutState} displayName={provider.displayName} provider={provider.name} env={env} />
 
             {templatesPending ? (
                 <Skeleton className="h-24 w-full" />
             ) : templatesError ? (
                 <Alert variant="danger">
-                    <AlertDescription>Couldn&apos;t load {provider.displayName}&apos;s functions. Refresh the page to try again.</AlertDescription>
+                    <AlertDescription>Couldn&apos;t load {provider.displayName}&apos;s tools and syncs. Refresh the page to try again.</AlertDescription>
                 </Alert>
             ) : (
                 <CatalogFunctions
                     templates={templatesData?.data ?? []}
                     displayName={provider.displayName}
+                    isMcp={isMcp(provider)}
                     renderSetupButton={() => renderSetupButton('panel', 'sm')}
                 />
             )}
