@@ -23,7 +23,7 @@ const REQUEST_TIMEOUT_MS = 60_000;
 const SEND_ATTEMPTS = 3;
 const PERMANENT_STATUSES = new Set([400, 401, 403, 413]);
 // A breath between requests, so a backlog does not reach Nango as one burst.
-const uploadPauseMs = () => Math.random() * 1_000;
+const uploadPauseMs = () => 5_000 + Math.random() * 5_000;
 // A wait of its own between attempts, so installations that failed together do not come back together.
 const sendRetryDelayMs = () => 500 + Math.random() * 2_000;
 const DAY_MS = 24 * 60 * 60 * 1000;

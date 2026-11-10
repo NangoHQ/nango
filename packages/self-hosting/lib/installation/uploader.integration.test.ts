@@ -1,3 +1,5 @@
+import { setTimeout } from 'node:timers/promises';
+
 import { createClient } from '@clickhouse/client';
 import knexFactory from 'knex';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -18,6 +20,12 @@ import type { ClickHouseClient } from '@clickhouse/client';
 import type { Knex } from 'knex';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import type * as Timers from 'node:timers/promises';
+
+vi.mock('node:timers/promises', async () => {
+    const actual: typeof Timers = await vi.importActual('node:timers/promises');
+    return { ...actual, setTimeout: vi.fn(() => Promise.resolve()) };
+});
 
 const registry = 'self_hosting_uploader_test';
 const telemetry = 'hosted_telemetry_uploader_test';
@@ -110,6 +118,7 @@ afterAll(async () => {
 beforeEach(async () => {
     await knex.raw('TRUNCATE ??.??, ??.??', [telemetry, HOSTED_TELEMETRY_TABLE, telemetry, HOSTED_TELEMETRY_UPLOADS_TABLE]);
     vi.spyOn(Math, 'random').mockReturnValue(0);
+    vi.mocked(setTimeout).mockClear();
 });
 
 afterEach(() => {
@@ -129,6 +138,7 @@ describe('uploadPendingDays', () => {
         const res = await run(config);
 
         expect(res.unwrap()).toEqual({ succeeded: 3, failed: 0, outOfTime: false });
+        expect(vi.mocked(setTimeout).mock.calls).toEqual([[5_000], [5_000], [5_000]]);
         expect(await stored(config.installationId)).toEqual([
             { ts: '2026-11-08 10:00:00.000', metric: concurrency, value: 3 },
             { ts: '2026-11-09 23:59:00.000', metric: concurrency, value: 5 },
