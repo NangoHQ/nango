@@ -649,6 +649,7 @@ const ENVS_SHAPE = z.object({
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
     FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
     FLAG_HOSTED_TELEMETRY_ENABLED: z.stringbool().optional().default(true),
+    FLAG_HOSTED_TELEMETRY_UPLOAD_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog

@@ -7,6 +7,7 @@ import { licensePublicKey, verifyLicense } from '@nangohq/license';
 import { Err, flags, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
+import { mintInstallationToken } from '../token.js';
 import { uploadPendingDays } from '../uploader.js';
 
 import type { UploaderConfig } from '../uploader.js';
@@ -42,17 +43,22 @@ export async function uploadTelemetryCron(): Promise<void> {
     });
 }
 
-export async function uploaderConfig({ publicKeyPem = licensePublicKey }: { publicKeyPem?: string | null } = {}): Promise<Result<UploaderConfig>> {
+export async function uploaderConfig(): Promise<Result<UploaderConfig>> {
     if (!envs.NANGO_INSTALLATION_PRIVATE_KEY) {
         return Err(new Error('NANGO_INSTALLATION_PRIVATE_KEY is not set'));
+    }
+    try {
+        await mintInstallationToken(envs.NANGO_INSTALLATION_PRIVATE_KEY, { body: new Uint8Array() });
+    } catch {
+        return Err(new Error('NANGO_INSTALLATION_PRIVATE_KEY cannot sign an installation token'));
     }
     if (!envs.NANGO_LICENSE) {
         return Err(new Error('NANGO_LICENSE is not set'));
     }
-    if (!publicKeyPem) {
+    if (!licensePublicKey) {
         return Err(new Error('this build trusts no license key'));
     }
-    const license = await verifyLicense(envs.NANGO_LICENSE, publicKeyPem);
+    const license = await verifyLicense(envs.NANGO_LICENSE, licensePublicKey);
     if (license.isErr()) {
         return Err(new Error(`the license does not verify: ${license.error.message}`));
     }

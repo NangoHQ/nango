@@ -90,6 +90,7 @@ describe('enqueueClosedDays', () => {
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency });
         (await enqueueClosedDays(knex, { since, today, schema })).unwrap();
         (await saveUploadProgress(knex, { day: '2026-11-08', metric: concurrency, cursor: null, done: true, schema })).unwrap();
+        await insert({ ts: '2026-11-08T11:00:00Z', metric: connections });
 
         (await enqueueClosedDays(knex, { since, today, schema })).unwrap();
 
@@ -144,9 +145,9 @@ describe('readUploadPage', () => {
     it('reads one metric for one UTC day in pages that neither overlap nor skip a row', async () => {
         await insert(
             { ts: '2026-11-07T23:59:00Z', metric: concurrency, value: 0 },
-            { ts: '2026-11-08T00:00:00Z', metric: concurrency, attributes: { producer_id: 'b' }, value: 2 },
             { ts: '2026-11-08T00:00:00Z', metric: concurrency, attributes: { producer_id: 'a' }, value: 1 },
-            { ts: '2026-11-08T00:01:00Z', metric: concurrency, attributes: { producer_id: 'a' }, value: 3 },
+            { ts: '2026-11-08T00:01:00Z', metric: concurrency, attributes: { producer_id: 'b' }, value: 3 },
+            { ts: '2026-11-08T00:01:00Z', metric: concurrency, attributes: { producer_id: 'a' }, value: 2 },
             { ts: '2026-11-08T23:59:00Z', metric: concurrency, attributes: { producer_id: 'a' }, value: 4 },
             { ts: '2026-11-08T00:00:00Z', metric: connections, value: 99 },
             { ts: '2026-11-09T00:00:00Z', metric: concurrency, value: 5 }
@@ -160,7 +161,7 @@ describe('readUploadPage', () => {
 
         expect(first).toEqual([
             { ts: at('2026-11-08T00:00:00Z'), metric: concurrency, attributes: { producer_id: 'a' }, value: 1 },
-            { ts: at('2026-11-08T00:00:00Z'), metric: concurrency, attributes: { producer_id: 'b' }, value: 2 }
+            { ts: at('2026-11-08T00:01:00Z'), metric: concurrency, attributes: { producer_id: 'a' }, value: 2 }
         ]);
         expect(second.map((row) => row.value)).toEqual([3, 4]);
         expect(third).toEqual([]);

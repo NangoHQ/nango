@@ -74,6 +74,11 @@ describe('uploaderConfig', () => {
 
     it.each([
         ['the installation private key is not set', () => (envs.NANGO_INSTALLATION_PRIVATE_KEY = undefined), 'NANGO_INSTALLATION_PRIVATE_KEY is not set'],
+        [
+            'the installation private key cannot sign',
+            () => (envs.NANGO_INSTALLATION_PRIVATE_KEY = 'not a key'),
+            'NANGO_INSTALLATION_PRIVATE_KEY cannot sign an installation token'
+        ],
         ['the license is not set', () => (envs.NANGO_LICENSE = undefined), 'NANGO_LICENSE is not set'],
         ['the build trusts no license key', () => (trusted.publicKeyPem = null), 'this build trusts no license key'],
         ['the license is not ours', () => (envs.NANGO_LICENSE = 'not.a.license'), expect.stringContaining('the license does not verify')],
