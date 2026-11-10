@@ -8,11 +8,14 @@ import type { UploadApiErrorCode } from '../uploads/errors.js';
 import type { ApiError } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
-const raw = express.raw({ type: () => true, limit: TELEMETRY_UPLOAD_MAX_BODY_BYTES, inflate: false });
+const readBody = express.raw({ type: () => true, limit: TELEMETRY_UPLOAD_MAX_BODY_BYTES, inflate: false });
 
-/** Keeps the body as it was sent: the installation token is bound to those bytes. */
-export function uploadBodyMiddleware(req: Request, res: Response<ApiError<UploadApiErrorCode>>, next: NextFunction): void {
-    raw(req, res, (err?: unknown) => {
+/**
+ * Reads the body exactly as it was sent, which is what the installation token is verified against, and answers
+ * early when reading fails.
+ */
+export function readUploadBodyMiddleware(req: Request, res: Response<ApiError<UploadApiErrorCode>>, next: NextFunction): void {
+    readBody(req, res, (err?: unknown) => {
         const failure = typeof err === 'object' && err !== null ? err : {};
         const type = 'type' in failure ? failure.type : undefined;
         const status = 'status' in failure ? failure.status : undefined;
