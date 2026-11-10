@@ -11,9 +11,9 @@ import type { Result } from '@nangohq/utils';
 const migrationsDir = path.join(fileURLToPath(import.meta.url), '..', 'migrations');
 const migrationsExt = import.meta.url.endsWith('.ts') ? '.ts' : '.js';
 
-export function migrate({ clickhouseUrl, database = INSTALLATIONS_DATABASE }: { clickhouseUrl: string | undefined; database?: string }): Promise<Result<void>> {
+export function migrate({ clickhouseUrl, database = INSTALLATIONS_DATABASE }: { clickhouseUrl: string; database?: string }): Promise<Result<void>> {
     return migrateClickhouse({
-        clickhouseClient: (opts) => (clickhouseUrl ? installationsClickhouseClient(clickhouseUrl, { database: opts?.database ?? null }) : null),
+        clickhouseClient: (opts) => installationsClickhouseClient(clickhouseUrl, { database: opts?.database ?? null }),
         database,
         migrationsDir,
         migrationsExt,
