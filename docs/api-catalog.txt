@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1205
+Provider count: 1206
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -96,6 +96,7 @@ URL patterns:
 | `ashby` | Ashby | BASIC | [docs](https://nango.dev/docs/integrations/all/ashby.md) | [connect](https://nango.dev/docs/integrations/all/ashby/connect.md) |  | ats, popular |
 | `aspire` | Aspire | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/aspire.md) | [connect](https://nango.dev/docs/api-integrations/aspire/connect.md) |  | erp |
 | `assemblyai` | AssemblyAI | API_KEY | [docs](https://nango.dev/docs/api-integrations/assemblyai.md) | [connect](https://nango.dev/docs/api-integrations/assemblyai/connect.md) |  | other |
+| `astalty` | Astalty | API_KEY | [docs](https://nango.dev/docs/api-integrations/astalty.md) | [connect](https://nango.dev/docs/api-integrations/astalty/connect.md) |  | crm |
 | `astro-mcp` | Astro (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/astro-mcp.md) |  |  | dev-tools, mcp |
 | `athenahealth` | athenahealth | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/athenahealth.md) | [connect](https://nango.dev/docs/api-integrations/athenahealth/connect.md) |  | other |
 | `athenahealth-jwks` | athenahealth (JWKS) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/athenahealth-jwks.md) | [connect](https://nango.dev/docs/api-integrations/athenahealth-jwks/connect.md) | [setup](https://nango.dev/docs/api-integrations/athenahealth-jwks/how-to-register-your-own-athenahealth-jwks-app.md) | other |

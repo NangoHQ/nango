@@ -1,0 +1,87 @@
+---
+title: 'Astalty'
+sidebarTitle: 'Astalty'
+description: 'Integrate your application with the Astalty API'
+---
+
+## 🚀 Quickstart
+
+Connect to Astalty with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Astalty_.
+    </Step>
+    <Step id="authorize-astalty" title="Authorize Astalty">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Astalty API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-astalty-api" title="Call the Astalty API">
+    Let's make your first request to the Astalty API to list the users in your account. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/public/v1/users" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/public/v1/users',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Astalty integration guides
+
+- [How do I link my account?](/api-integrations/astalty/connect)  
+Create an API key in Astalty's API Dashboard and connect it.
+
+Official docs: [Astalty API](https://docs.astalty.com.au/developers/api) and the [API reference](https://api.app.astalty.com.au/docs)
+
+## API gotchas
+
+- API access is part of Astalty's Premium plan. Only the Account Owner, or an Admin with the **Can manage API keys and webhooks** permission, can create API keys.
+- Every endpoint is under `/public/v1`, such as `/public/v1/participants`.
+- API keys are either **Full Access** or **Read Only**. Create, update, and delete requests made with a Read Only key return `403`.
+- A key acts with the account owner's permissions across the whole account. It stops working, with `401`, when it's revoked or its owner is deactivated.
+- Some endpoints depend on account features, such as Scheduling, Participant Budgets, or webhooks, being enabled.
+- The default rate limit is 60 requests per minute per key owner, shared by every key that user owns. Above that, Astalty returns `429`.
+- List endpoints paginate with `page[number]` and `page[size]` (1 to 100, default 25), and return `meta.last_page`.
+
+## 🧩 Pre-built syncs & tools for Astalty
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/astalty/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
