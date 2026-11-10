@@ -2,77 +2,77 @@
 
 | Function name | Description | Type |
 | - | - | - |
-| `add-allowlist-entry` | Add an email address to the rejection allowlist. | [Action](/guides/functions/action-functions) |
-| `add-inbound-domain` | Add an inbound-routing domain to the account. | [Action](/guides/functions/action-functions) |
-| `add-inbound-route` | Add a new mailbox route to an inbound domain. | [Action](/guides/functions/action-functions) |
-| `add-metadata-field` | Add a new custom metadata field definition for the account. | [Action](/guides/functions/action-functions) |
-| `add-reject` | Add an email address to the rejection denylist. | [Action](/guides/functions/action-functions) |
-| `add-sender-domain` | Add a sender domain to the account for SPF/DKIM verification. | [Action](/guides/functions/action-functions) |
-| `add-sms-reject` | Add a phone number to the SMS rejection denylist. | [Action](/guides/functions/action-functions) |
-| `add-tracking-domain` | Add a click/open-tracking domain to the account. | [Action](/guides/functions/action-functions) |
-| `cancel-scheduled-message` | Cancel a scheduled email before it sends. | [Action](/guides/functions/action-functions) |
-| `check-inbound-domain` | Check the MX settings for an inbound-routing domain. | [Action](/guides/functions/action-functions) |
-| `check-ip-custom-dns` | Test whether a custom reverse DNS record is correctly configured for a dedicated IP. | [Action](/guides/functions/action-functions) |
-| `check-sender-domain` | Check the SPF and DKIM settings for a sender domain. | [Action](/guides/functions/action-functions) |
-| `check-tracking-domain` | Check the CNAME settings for a tracking domain. | [Action](/guides/functions/action-functions) |
-| `create-ip-pool` | Create a new dedicated IP pool. | [Action](/guides/functions/action-functions) |
-| `create-subaccount` | Add a new subaccount. | [Action](/guides/functions/action-functions) |
-| `create-template` | Add a new Mandrill template. | [Action](/guides/functions/action-functions) |
-| `create-webhook` | Add a new webhook for account events | [Action](/guides/functions/action-functions) |
-| `delete-allowlist-entry` | Remove an email address from the rejection allowlist. | [Action](/guides/functions/action-functions) |
-| `delete-dedicated-ip` | Delete a dedicated IP. | [Action](/guides/functions/action-functions) |
-| `delete-inbound-domain` | Delete an inbound-routing domain from the account. | [Action](/guides/functions/action-functions) |
-| `delete-inbound-route` | Delete an existing inbound mailbox route. | [Action](/guides/functions/action-functions) |
-| `delete-ip-pool` | Delete a dedicated IP pool. | [Action](/guides/functions/action-functions) |
-| `delete-metadata-field` | Delete an existing custom metadata field definition. | [Action](/guides/functions/action-functions) |
-| `delete-reject` | Remove an email address from the rejection denylist. | [Action](/guides/functions/action-functions) |
-| `delete-sender-domain` | Delete an unverified sender domain from the account. | [Action](/guides/functions/action-functions) |
-| `delete-sms-reject` | Remove a phone number from the SMS rejection denylist. | [Action](/guides/functions/action-functions) |
-| `delete-subaccount` | Delete an existing subaccount. | [Action](/guides/functions/action-functions) |
-| `delete-tag` | Permanently delete a tag and its stats. | [Action](/guides/functions/action-functions) |
-| `delete-template` | Delete a template. | [Action](/guides/functions/action-functions) |
-| `delete-tracking-domain` | Delete an unverified tracking domain from the account. | [Action](/guides/functions/action-functions) |
-| `delete-webhook` | Delete an existing webhook. | [Action](/guides/functions/action-functions) |
-| `get-account-info` | Return information about the API-connected Mandrill account/user. | [Action](/guides/functions/action-functions) |
-| `get-all-tags-time-series` | Get recent hourly stats aggregated across all tags | [Action](/guides/functions/action-functions) |
-| `get-export-info` | Get the status and (if finished) download URL of an export job. | [Action](/guides/functions/action-functions) |
-| `get-ip-pool-info` | Get information about a single dedicated IP pool. | [Action](/guides/functions/action-functions) |
-| `get-message-content` | Get the full content (headers, html, text) of a single recently sent message. | [Action](/guides/functions/action-functions) |
-| `get-message-info` | Get delivery/tracking information for a single recently sent message. | [Action](/guides/functions/action-functions) |
-| `get-sender-info` | Get detailed sending information about a single sender address. | [Action](/guides/functions/action-functions) |
-| `get-sender-time-series` | Get recent hourly stats for a single sender address. | [Action](/guides/functions/action-functions) |
-| `get-subaccount-info` | Get detailed information about a single subaccount. | [Action](/guides/functions/action-functions) |
-| `get-tag-info` | Get detailed information about a single tag. | [Action](/guides/functions/action-functions) |
-| `get-tag-time-series` | Get recent hourly stats for a single tag. | [Action](/guides/functions/action-functions) |
-| `get-template-info` | Get information for a single existing template. | [Action](/guides/functions/action-functions) |
-| `get-template-time-series` | Get recent hourly stats for a single template. | [Action](/guides/functions/action-functions) |
-| `get-webhook-info` | Get data about a single existing webhook. | [Action](/guides/functions/action-functions) |
-| `list-account-senders` | List the sender email addresses (verified and unverified) that have been used on this account. | [Action](/guides/functions/action-functions) |
-| `list-exports` | List the account's export jobs. | [Action](/guides/functions/action-functions) |
-| `list-scheduled-messages` | List messages that are scheduled to be sent in the future. | [Action](/guides/functions/action-functions) |
-| `parse-mime-message` | Parse a raw MIME document into its constituent pieces (headers, text, html, attachments) without sending it. | [Action](/guides/functions/action-functions) |
-| `pause-subaccount` | Pause a subaccount's sending. | [Action](/guides/functions/action-functions) |
-| `ping-api-v2` | Validate an API key using the JSON parser version of the ping. | [Action](/guides/functions/action-functions) |
-| `ping-api` | Validate an API key and respond to a ping (legacy parser). | [Action](/guides/functions/action-functions) |
-| `publish-template` | Publish the draft content of a template so it becomes the live version. | [Action](/guides/functions/action-functions) |
-| `render-template` | Inject content and merge variables into a template and return the rendered HTML, without sending it. | [Action](/guides/functions/action-functions) |
-| `reschedule-message` | Change the send time of a scheduled email. | [Action](/guides/functions/action-functions) |
-| `resume-subaccount` | Resume a paused subaccount's sending. | [Action](/guides/functions/action-functions) |
-| `search-messages-time-series` | Search recently sent messages and return hourly send/open/click/bounce stats instead of individual messages. | [Action](/guides/functions/action-functions) |
-| `search-messages` | Search recently sent messages by date range, query, tags, senders, or API key. | [Action](/guides/functions/action-functions) |
-| `send-message-template` | Send a transactional email rendered from a stored Mandrill template. | [Action](/guides/functions/action-functions) |
-| `send-message` | Send a new transactional email message. | [Action](/guides/functions/action-functions) |
-| `send-raw-inbound-message` | Take a raw MIME document and pass it through Mandrill's inbound webhook pipeline as if it had arrived by email. | [Action](/guides/functions/action-functions) |
-| `send-raw-message` | Send a raw MIME document as a transactional message. | [Action](/guides/functions/action-functions) |
-| `start-activity-export` | Begin an asynchronous export of the account's activity history. | [Action](/guides/functions/action-functions) |
-| `start-allowlist-export` | Begin an asynchronous export of the account's rejection allowlist. | [Action](/guides/functions/action-functions) |
-| `start-rejects-export` | Begin an asynchronous export of the account's rejection denylist. | [Action](/guides/functions/action-functions) |
-| `update-inbound-route` | Update the pattern or destination webhook of an existing inbound route. | [Action](/guides/functions/action-functions) |
-| `update-metadata-field` | Update an existing custom metadata field definition. | [Action](/guides/functions/action-functions) |
-| `update-subaccount` | Update an existing subaccount's name, notes, or custom quota. | [Action](/guides/functions/action-functions) |
-| `update-template` | Update the code/content of an existing template. | [Action](/guides/functions/action-functions) |
-| `update-webhook` | Update an existing webhook's url, description, or subscribed events. | [Action](/guides/functions/action-functions) |
-| `verify-sender-domain` | Send a verification email to confirm ownership of a sender domain. | [Action](/guides/functions/action-functions) |
+| `add-allowlist-entry` | Add an email address to the rejection allowlist. | [Tool](/guides/functions/tools) |
+| `add-inbound-domain` | Add an inbound-routing domain to the account. | [Tool](/guides/functions/tools) |
+| `add-inbound-route` | Add a new mailbox route to an inbound domain. | [Tool](/guides/functions/tools) |
+| `add-metadata-field` | Add a new custom metadata field definition for the account. | [Tool](/guides/functions/tools) |
+| `add-reject` | Add an email address to the rejection denylist. | [Tool](/guides/functions/tools) |
+| `add-sender-domain` | Add a sender domain to the account for SPF/DKIM verification. | [Tool](/guides/functions/tools) |
+| `add-sms-reject` | Add a phone number to the SMS rejection denylist. | [Tool](/guides/functions/tools) |
+| `add-tracking-domain` | Add a click/open-tracking domain to the account. | [Tool](/guides/functions/tools) |
+| `cancel-scheduled-message` | Cancel a scheduled email before it sends. | [Tool](/guides/functions/tools) |
+| `check-inbound-domain` | Check the MX settings for an inbound-routing domain. | [Tool](/guides/functions/tools) |
+| `check-ip-custom-dns` | Test whether a custom reverse DNS record is correctly configured for a dedicated IP. | [Tool](/guides/functions/tools) |
+| `check-sender-domain` | Check the SPF and DKIM settings for a sender domain. | [Tool](/guides/functions/tools) |
+| `check-tracking-domain` | Check the CNAME settings for a tracking domain. | [Tool](/guides/functions/tools) |
+| `create-ip-pool` | Create a new dedicated IP pool. | [Tool](/guides/functions/tools) |
+| `create-subaccount` | Add a new subaccount. | [Tool](/guides/functions/tools) |
+| `create-template` | Add a new Mandrill template. | [Tool](/guides/functions/tools) |
+| `create-webhook` | Add a new webhook for account events | [Tool](/guides/functions/tools) |
+| `delete-allowlist-entry` | Remove an email address from the rejection allowlist. | [Tool](/guides/functions/tools) |
+| `delete-dedicated-ip` | Delete a dedicated IP. | [Tool](/guides/functions/tools) |
+| `delete-inbound-domain` | Delete an inbound-routing domain from the account. | [Tool](/guides/functions/tools) |
+| `delete-inbound-route` | Delete an existing inbound mailbox route. | [Tool](/guides/functions/tools) |
+| `delete-ip-pool` | Delete a dedicated IP pool. | [Tool](/guides/functions/tools) |
+| `delete-metadata-field` | Delete an existing custom metadata field definition. | [Tool](/guides/functions/tools) |
+| `delete-reject` | Remove an email address from the rejection denylist. | [Tool](/guides/functions/tools) |
+| `delete-sender-domain` | Delete an unverified sender domain from the account. | [Tool](/guides/functions/tools) |
+| `delete-sms-reject` | Remove a phone number from the SMS rejection denylist. | [Tool](/guides/functions/tools) |
+| `delete-subaccount` | Delete an existing subaccount. | [Tool](/guides/functions/tools) |
+| `delete-tag` | Permanently delete a tag and its stats. | [Tool](/guides/functions/tools) |
+| `delete-template` | Delete a template. | [Tool](/guides/functions/tools) |
+| `delete-tracking-domain` | Delete an unverified tracking domain from the account. | [Tool](/guides/functions/tools) |
+| `delete-webhook` | Delete an existing webhook. | [Tool](/guides/functions/tools) |
+| `get-account-info` | Return information about the API-connected Mandrill account/user. | [Tool](/guides/functions/tools) |
+| `get-all-tags-time-series` | Get recent hourly stats aggregated across all tags | [Tool](/guides/functions/tools) |
+| `get-export-info` | Get the status and (if finished) download URL of an export job. | [Tool](/guides/functions/tools) |
+| `get-ip-pool-info` | Get information about a single dedicated IP pool. | [Tool](/guides/functions/tools) |
+| `get-message-content` | Get the full content (headers, html, text) of a single recently sent message. | [Tool](/guides/functions/tools) |
+| `get-message-info` | Get delivery/tracking information for a single recently sent message. | [Tool](/guides/functions/tools) |
+| `get-sender-info` | Get detailed sending information about a single sender address. | [Tool](/guides/functions/tools) |
+| `get-sender-time-series` | Get recent hourly stats for a single sender address. | [Tool](/guides/functions/tools) |
+| `get-subaccount-info` | Get detailed information about a single subaccount. | [Tool](/guides/functions/tools) |
+| `get-tag-info` | Get detailed information about a single tag. | [Tool](/guides/functions/tools) |
+| `get-tag-time-series` | Get recent hourly stats for a single tag. | [Tool](/guides/functions/tools) |
+| `get-template-info` | Get information for a single existing template. | [Tool](/guides/functions/tools) |
+| `get-template-time-series` | Get recent hourly stats for a single template. | [Tool](/guides/functions/tools) |
+| `get-webhook-info` | Get data about a single existing webhook. | [Tool](/guides/functions/tools) |
+| `list-account-senders` | List the sender email addresses (verified and unverified) that have been used on this account. | [Tool](/guides/functions/tools) |
+| `list-exports` | List the account's export jobs. | [Tool](/guides/functions/tools) |
+| `list-scheduled-messages` | List messages that are scheduled to be sent in the future. | [Tool](/guides/functions/tools) |
+| `parse-mime-message` | Parse a raw MIME document into its constituent pieces (headers, text, html, attachments) without sending it. | [Tool](/guides/functions/tools) |
+| `pause-subaccount` | Pause a subaccount's sending. | [Tool](/guides/functions/tools) |
+| `ping-api-v2` | Validate an API key using the JSON parser version of the ping. | [Tool](/guides/functions/tools) |
+| `ping-api` | Validate an API key and respond to a ping (legacy parser). | [Tool](/guides/functions/tools) |
+| `publish-template` | Publish the draft content of a template so it becomes the live version. | [Tool](/guides/functions/tools) |
+| `render-template` | Inject content and merge variables into a template and return the rendered HTML, without sending it. | [Tool](/guides/functions/tools) |
+| `reschedule-message` | Change the send time of a scheduled email. | [Tool](/guides/functions/tools) |
+| `resume-subaccount` | Resume a paused subaccount's sending. | [Tool](/guides/functions/tools) |
+| `search-messages-time-series` | Search recently sent messages and return hourly send/open/click/bounce stats instead of individual messages. | [Tool](/guides/functions/tools) |
+| `search-messages` | Search recently sent messages by date range, query, tags, senders, or API key. | [Tool](/guides/functions/tools) |
+| `send-message-template` | Send a transactional email rendered from a stored Mandrill template. | [Tool](/guides/functions/tools) |
+| `send-message` | Send a new transactional email message. | [Tool](/guides/functions/tools) |
+| `send-raw-inbound-message` | Take a raw MIME document and pass it through Mandrill's inbound webhook pipeline as if it had arrived by email. | [Tool](/guides/functions/tools) |
+| `send-raw-message` | Send a raw MIME document as a transactional message. | [Tool](/guides/functions/tools) |
+| `start-activity-export` | Begin an asynchronous export of the account's activity history. | [Tool](/guides/functions/tools) |
+| `start-allowlist-export` | Begin an asynchronous export of the account's rejection allowlist. | [Tool](/guides/functions/tools) |
+| `start-rejects-export` | Begin an asynchronous export of the account's rejection denylist. | [Tool](/guides/functions/tools) |
+| `update-inbound-route` | Update the pattern or destination webhook of an existing inbound route. | [Tool](/guides/functions/tools) |
+| `update-metadata-field` | Update an existing custom metadata field definition. | [Tool](/guides/functions/tools) |
+| `update-subaccount` | Update an existing subaccount's name, notes, or custom quota. | [Tool](/guides/functions/tools) |
+| `update-template` | Update the code/content of an existing template. | [Tool](/guides/functions/tools) |
+| `update-webhook` | Update an existing webhook's url, description, or subscribed events. | [Tool](/guides/functions/tools) |
+| `verify-sender-domain` | Send a verification email to confirm ownership of a sender domain. | [Tool](/guides/functions/tools) |
 | `allowlist` | Sync all entries on the rejection allowlist. | [Sync](/guides/functions/syncs/sync-functions) |
 | `dedicated-ips` | Sync all dedicated IPs on this account. | [Sync](/guides/functions/syncs/sync-functions) |
 | `inbound-domains` | Sync all inbound-routing domains configured on this account. | [Sync](/guides/functions/syncs/sync-functions) |

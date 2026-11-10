@@ -56,17 +56,29 @@ Get details about a specific command by running:
 nango [command] --help
 ```
 
-`nango deploy <environment>` without selectors reconciles all repo-managed functions in the target environment: it deploys functions present locally and removes remote ones that aren't, even when the project no longer contains any. The CLI previews the selected functions, shows one combined plan, and asks for confirmation at most once before deploying.
+## Deploy
 
-- `--integration <id>` limits the deploy to that integration.
-- `--sync <name>` and `--action <name>` select the named sync or action.
-- `--version <version>` overrides sync/action versions. Tools use automatically generated versions.
+`nango deploy <environment>` without selectors reconciles all repo-managed functions in the target environment: it deploys functions present locally and removes remote ones that aren't, even when the project no longer contains any. Projects can contain sync functions, tools, event functions, and deprecated actions together. The CLI previews the selected functions, shows one combined plan, and asks for confirmation at most once before deploying.
 
-Deleting a sync with existing connections, removing a sync/action record model, or deleting any other function requires confirmation. In CI or with `--no-interactive`, approve these changes with both `--auto-confirm` and `--allow-destructive`. `NANGO_DEPLOY_AUTO_CONFIRM=true` can replace `--auto-confirm`.
+- `nango deploy <environment> <file>` deploys a single function file, for example `github/tools/get-issue.ts`. It never deletes other functions. Event functions can only be deployed with their integration or the whole project.
+- `--integration <id>` selects all functions for that integration.
+- `--sync <name>` and `--action <name>` are deprecated. Pass the function file instead.
+- `--version <version>` overrides versions of legacy syncs and actions. Tools use automatically generated versions.
+
+Deleting a sync function with existing connections, removing a sync or tool record model, or deleting any other function requires confirmation. In CI or with `--no-interactive`, approve these changes with both `--auto-confirm` and `--allow-destructive`. `NANGO_DEPLOY_AUTO_CONFIRM=true` can replace `--auto-confirm`.
+
+## Tools
+
+Create tools with [`createTool`](/reference/functions/functions-sdk#createtool) and import them from `index.ts`.
+
+```bash
+nango dryrun <tool-name> <connection-id> -e dev --input '{"id":"example"}' --validate
+nango deploy dev <integration-id>/tools/<tool-file>.ts
+```
 
 ## Interactive Mode
 
-The Nango CLI includes an interactive mode that prompts you for missing arguments. For example, if you run `nango create` without specifying the function type, integration, or name, the CLI will prompt you for them.
+The Nango CLI includes an interactive mode that prompts you for missing arguments. For example, if you run `nango create --sync` without specifying the integration or name, the CLI will prompt you for them.
 
 This mode is enabled by default when you're in an interactive terminal session.
 
@@ -77,13 +89,11 @@ This mode is enabled by default when you're in an interactive terminal session.
 If you run a command without all the required arguments, the CLI will prompt you for them.
 
 ```bash
-# Running "nango create" without arguments
-$ nango create
+# Creating a sync in a project with no integrations yet
+$ nango create --sync
 
-? What type of function do you want to create?
-❯   sync
-    action
-    on-event
+? What is the name of the integration? (e.g., "hubspot") my-api
+? What is the name of the new sync? (e.g., "contacts" or "create-ticket") get-contacts
 ```
 
 **Non-Interactive (Explicit) Usage:**

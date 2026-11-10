@@ -475,7 +475,11 @@
     },
     {
       "source": "/implementation-guides/platform/migrations/migrate-to-zero-yaml",
-      "destination": "/guides/platform/migrations/migrate-to-zero-yaml"
+      "destination": "/guides/functions/functions-guide"
+    },
+    {
+      "source": "/guides/platform/migrations/migrate-to-zero-yaml",
+      "destination": "/guides/functions/functions-guide"
     },
     {
       "source": "/reference/sdks/frontend",
@@ -835,7 +839,7 @@
                       "guides/functions/syncs/sync-partitioning"
                     ]
                   },
-                  "guides/functions/action-functions",
+                  "guides/functions/tools",
                   "guides/functions/webhook-functions",
                   "guides/functions/event-functions",
                   "guides/functions/storage",
@@ -875,7 +879,7 @@
                       "guides/platform/migrations/migrate-from-end-user",
                       "guides/platform/migrations/migrate-from-public-key",
                       "guides/platform/migrations/migrate-from-connection-mcp",
-                      "guides/platform/migrations/migrate-to-zero-yaml"
+                      "guides/platform/migrations/migrate-from-actions"
                     ]
                   },
                   "contributing"
@@ -980,7 +984,13 @@
                         ]
                       },
                       {
-                        "group": "Actions",
+                        "group": "Tools",
+                        "pages": [
+                          "reference/backend/http-api/tools/call"
+                        ]
+                      },
+                      {
+                        "group": "Actions (deprecated)",
                         "pages": [
                           "reference/backend/http-api/action/trigger"
                         ]
@@ -1336,6 +1346,7 @@
               "integrations/all/cursor-admin",
               "api-integrations/customer-io",
               "integrations/all/cyberimpact",
+              "api-integrations/dash",
               "api-integrations/databox",
               "integrations/all/databricks-account",
               "integrations/all/databricks-workspace",
@@ -1582,6 +1593,7 @@
               "api-integrations/hunter",
               "api-integrations/huntress",
               "api-integrations/hydradb",
+              "api-integrations/hyperline",
               "integrations/all/icypeas",
               "api-integrations/ids-fulfillment",
               "api-integrations/immybot",
@@ -1642,6 +1654,7 @@
               "api-integrations/laposta",
               "integrations/all/lastpass",
               "api-integrations/lattice",
+              "api-integrations/laylo",
               "api-integrations/leadfeeder",
               "integrations/all/leadmagic",
               "api-integrations/leapsome",
@@ -2193,6 +2206,7 @@
               "integrations/all/wildix-pbx",
               "api-integrations/wise-api-key",
               "api-integrations/wiseagent",
+              "api-integrations/wispr-flow-mcp",
               "api-integrations/wistia",
               "integrations/all/wiza",
               "integrations/all/woocommerce",

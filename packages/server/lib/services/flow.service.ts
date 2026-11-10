@@ -139,27 +139,15 @@ class FlowService {
     }
 
     public getSingleFlowAsStandardConfig(name: string): StandardNangoConfig | null {
-        const integrations = this.getAllAvailableFlowsAsStandardConfig();
-
-        let standardConfig: StandardNangoConfig = {} as StandardNangoConfig;
-
-        for (const integration of integrations) {
-            for (const syncs of integration.syncs) {
-                if (syncs.name === name) {
-                    standardConfig = integration;
-                    standardConfig.syncs = [syncs];
-                    standardConfig.actions = [];
-                    return standardConfig;
-                }
+        for (const integration of this.getAllAvailableFlowsAsStandardConfig()) {
+            const sync = integration.syncs.find((flow) => flow.name === name);
+            if (sync) {
+                return { ...integration, syncs: [sync], actions: [] };
             }
 
-            for (const actions of integration.actions) {
-                if (actions.name === name) {
-                    standardConfig = integration;
-                    standardConfig.actions = [actions];
-                    standardConfig.syncs = [];
-                    return standardConfig;
-                }
+            const action = integration.actions.find((flow) => flow.name === name);
+            if (action) {
+                return { ...integration, syncs: [], actions: [action] };
             }
         }
 

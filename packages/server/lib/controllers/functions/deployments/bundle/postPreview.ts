@@ -27,7 +27,9 @@ export const postFunctionDeploymentBundlePreview = asyncWrapperWithEnvironment<P
         functions: val.data.functions
     });
     if (prepared.isErr()) {
-        report(prepared.error, { environmentId: environment.id });
+        if (prepared.error.code !== 'invalid_request') {
+            report(prepared.error, { environmentId: environment.id });
+        }
         const response = toErrorResponse(prepared.error);
         res.status(response.status).send(response.error);
         return;
