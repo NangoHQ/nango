@@ -37,9 +37,7 @@ function getStoredTheme(): Theme {
 // Module code runs synchronously before ReactDOM.render().
 try {
     applyTheme(getStoredTheme());
-} catch {
-    // index.html already set data-theme before first paint.
-}
+} catch {}
 
 // --- Store ---
 
