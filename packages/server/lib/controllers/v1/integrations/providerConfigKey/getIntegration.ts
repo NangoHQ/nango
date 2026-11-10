@@ -72,6 +72,9 @@ export const getIntegration = asyncWrapperWithEnvironment<GetIntegration>(async 
     }
 
     const includeCredentials = principalCan(res.locals, 'environment:integrations:read_credentials');
+    if (includeCredentials) {
+        req.audit = { ...req.audit, credentialsRead: { targets: [{ id: integration.unique_key, display: integration.display_name ?? undefined }] } };
+    }
     const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.providerConfigKey });
     const apiIntegration = integrationToApi(integration, { includeCredentials });
     res.status(200).send({

@@ -58,7 +58,7 @@ export interface ApiPublicIntegrationInclude {
 }
 
 export type GetPublicListIntegrations = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'no credentials returned' };
     Method: 'GET';
     Path: '/integrations';
     Querystring?: { connect_session_token: string };
@@ -113,7 +113,7 @@ export type PostPublicQuickstartIntegration = ApiEndpoint<{
 }>;
 
 export type GetPublicIntegration = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'integration', 'credentials_read', 'environment'>;
     Method: 'GET';
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
@@ -206,7 +206,7 @@ export type ApiIntegrationList = ApiIntegration & {
 };
 
 export type GetIntegrations = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'integration', 'credentials_read', 'environment'>;
     Method: 'GET';
     Path: '/api/v1/integrations';
     Success: {
@@ -296,7 +296,7 @@ export type PostIntegration = ApiEndpoint<{
 }>;
 
 export type GetIntegration = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'integration', 'credentials_read', 'environment'>;
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey';
     Querystring: { env: string };

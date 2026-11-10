@@ -19,6 +19,12 @@ export const getIntegrations = asyncWrapperWithEnvironment<GetIntegrations>(asyn
     const includeCredentials = principalCan(res.locals, 'environment:integrations:list_credentials');
 
     const integrations = await configService.listIntegrationForApi(environment.id);
+    if (includeCredentials) {
+        req.audit = {
+            ...req.audit,
+            credentialsRead: { targets: integrations.map((integration) => ({ id: integration.unique_key, display: integration.display_name ?? undefined })) }
+        };
+    }
     const rawSyncConfig = await countSyncConfigByConfigId(environment.id);
     const activeSyncConfig = new Map();
     for (const syncConfig of rawSyncConfig) {

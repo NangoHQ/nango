@@ -1,12 +1,14 @@
 import { changedFields, makeAuditTarget as makeTarget } from '../../audit.js';
-import { Audit, auditable } from './auditable.js';
-import { nonEmptyString, omitUndefined } from './input.js';
+import { Audit, auditable, maybeAuditable } from './auditable.js';
+import { credentialsReadTargets, skipUnlessCredentialsRead } from './credentialsRead.js';
+import { nonEmptyString, omitUndefined, param, query } from './input.js';
 import { accountEnvironmentTarget, environmentFromUuid } from './lookups.js';
 
 import type {
     DeleteEnvironment,
     DeletePublicEnvironment,
     EnvironmentUpdatedMetadata,
+    GetPublicEnvironment,
     PatchEnvironment,
     PatchPublicEnvironment,
     PatchWebhook,
@@ -104,6 +106,19 @@ export const auditPublicEnvironmentDeleted = auditable<DeletePublicEnvironment>(
 
 // Keep only the origin (scheme + host) of a URL — a webhook URL can carry a secret token in its path,
 // query string, or userinfo, and this goes into the immutable audit record.
+export const auditPublicEnvironmentCredentialsRead = maybeAuditable<GetPublicEnvironment>({
+    policy: Audit.auditable({ resource: 'environment', action: 'credentials_read', scope: 'environment' }),
+    skipWhen: skipUnlessCredentialsRead((req) => query(req, 'with_secrets') === 'true'),
+    // The environment read is the event's environment, which an account key does not have in its locals.
+    subject: (req, locals) => {
+        const read = req.audit?.credentialsRead?.targets[0];
+        return locals.account
+            ? { account: locals.account, environment: read?.display ? { uuid: read.id, name: read.display } : locals.environment }
+            : undefined;
+    },
+    atFinish: (req) => credentialsReadTargets('environment', req, param(req, 'environmentUuid'))
+});
+
 function safeUrl(value: unknown): string | undefined {
     if (typeof value !== 'string' || value.length === 0) {
         return undefined;
