@@ -75,21 +75,21 @@ export const AgentPlayground: React.FC = () => {
     }
     if (!meta.data.agentPlayground) {
         return (
-            <DashboardLayout title="Agent Playground">
+            <DashboardLayout>
                 <p className="text-text-secondary">The Agent Playground is not enabled for this account.</p>
             </DashboardLayout>
         );
     }
     if (!can('environment:agent_sessions:write')) {
         return (
-            <DashboardLayout title="Agent Playground">
+            <DashboardLayout>
                 <p className="text-text-secondary">{`Your role can't use the Agent Playground in this environment.`}</p>
             </DashboardLayout>
         );
     }
 
     return (
-        <DashboardLayout fullWidth className="h-full" title="Agent Playground" titleActions={<div ref={setToolbarSlot} />}>
+        <DashboardLayout fullWidth className="h-full" actions={<div ref={setToolbarSlot} />}>
             <Helmet>
                 <title>Agent Playground - Nango</title>
             </Helmet>
