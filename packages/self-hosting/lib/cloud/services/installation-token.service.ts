@@ -43,7 +43,6 @@ export class InstallationTokenError extends Error {
 
 const ALGORITHM = 'EdDSA';
 
-// The database error stays in `cause`: the message of a token error is what the caller answers with.
 const registryUnavailable = (cause: unknown) => new InstallationTokenError('registry_unavailable', 'the registry is unavailable', { cause });
 
 /** Resolves a token to its live, licensed installation, for the request body it was minted for, and records the use. */
@@ -120,7 +119,7 @@ export async function verifyInstallationToken(
     const stamps = await Promise.all([markInstallationKeyUsed(db, { id: key.value.id, at: now }), markInstallationSeen(db, { id: installation.id, at: now })]);
     for (const stamp of stamps) {
         if (stamp.isErr()) {
-            logger.error('Failed to record the use of an installation token', stamp.error);
+            logger.warning('Failed to record the use of an installation token', stamp.error);
         }
     }
     return Ok(installation);
