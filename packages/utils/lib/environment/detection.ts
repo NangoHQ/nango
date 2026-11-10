@@ -45,5 +45,5 @@ export const flags = {
     hasAuthRoles: process.env['FLAG_AUTH_ROLES_ENABLED'] === 'true',
     hasAuditTrail: process.env['FLAG_AUDIT_TRAIL_ENABLED'] === 'true',
     hasHostedTelemetry: !isCloud && (z.stringbool().safeParse(process.env['FLAG_HOSTED_TELEMETRY_ENABLED']).data ?? true),
-    hasHostedTelemetryUpload: !isCloud && process.env['FLAG_HOSTED_TELEMETRY_UPLOAD_ENABLED'] === 'true'
+    hasHostedTelemetryUpload: !isCloud && (z.stringbool().safeParse(process.env['FLAG_HOSTED_TELEMETRY_UPLOAD_ENABLED']).data ?? false)
 };

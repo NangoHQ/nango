@@ -4,7 +4,7 @@ import * as cron from 'node-cron';
 import { hostedTelemetryDb } from '@nangohq/hosted-telemetry';
 import { getLocking } from '@nangohq/kvstore';
 import { licensePublicKey, verifyLicense } from '@nangohq/license';
-import { Err, flags, getLogger, Ok } from '@nangohq/utils';
+import { Err, flags, getLogger, normalizePem, Ok } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { mintInstallationToken } from '../token.js';
@@ -49,8 +49,9 @@ export async function uploaderConfig(): Promise<Result<UploaderConfig>> {
     if (!envs.NANGO_INSTALLATION_PRIVATE_KEY) {
         return Err(new Error('NANGO_INSTALLATION_PRIVATE_KEY is not set'));
     }
+    const privateKeyPem = normalizePem(envs.NANGO_INSTALLATION_PRIVATE_KEY);
     try {
-        await mintInstallationToken(envs.NANGO_INSTALLATION_PRIVATE_KEY, { body: new Uint8Array() });
+        await mintInstallationToken(privateKeyPem, { body: new Uint8Array() });
     } catch {
         return Err(new Error('NANGO_INSTALLATION_PRIVATE_KEY cannot sign an installation token'));
     }
@@ -74,7 +75,7 @@ export async function uploaderConfig(): Promise<Result<UploaderConfig>> {
     return Ok({
         knex,
         installationId: license.value.installation_id,
-        privateKeyPem: envs.NANGO_INSTALLATION_PRIVATE_KEY,
+        privateKeyPem,
         url: envs.NANGO_INSTALLATIONS_API_URL,
         backfillDays: envs.NANGO_HOSTED_TELEMETRY_UPLOAD_BACKFILL_DAYS
     });

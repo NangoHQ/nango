@@ -67,10 +67,16 @@ describe('uploaderConfig', () => {
         expect((await uploaderConfig()).unwrap()).toEqual({
             knex: telemetryDb.current,
             installationId: 'f4a2c0e1-7b3d-4e2a-9c1f-0a6d5e8b2c44',
-            privateKeyPem: installationKey,
+            privateKeyPem: installationKey.trim(),
             url: 'https://installations.nango.dev',
             backfillDays: 30
         });
+    });
+
+    it('accepts a private key whose line breaks are written as \\n, as in a one-line env value', async () => {
+        envs.NANGO_INSTALLATION_PRIVATE_KEY = installationKey.trim().replaceAll('\n', '\\n');
+
+        expect((await uploaderConfig()).unwrap().privateKeyPem).toBe(installationKey.trim());
     });
 
     it.each([
