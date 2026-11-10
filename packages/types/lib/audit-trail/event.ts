@@ -149,7 +149,6 @@ export type AuditMetadataFor<R extends AuditResource, A> = A extends keyof Audit
 
 export type AuditScope = 'account' | 'environment';
 
-/** Data-plane coverage an account's audit trail records, beyond the control plane. */
 export type AuditTrailDataPlaneScope = 'read_credentials';
 
 export type AuditTargetType = 'connection' | 'sync' | 'function' | 'integration' | 'api_key' | 'member' | 'team' | 'user' | 'environment' | 'agent_session';
