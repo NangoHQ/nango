@@ -5,7 +5,6 @@ import type { ClickHouseClient } from '@clickhouse/client';
 export const INSTALLATIONS_DATABASE = 'installations';
 export const METRICS_TABLE = 'metrics';
 
-// A suspended dev or staging instance can take longer to wake than the client's 30s default.
 const REQUEST_TIMEOUT_MS = 60_000;
 
 /** Pass `database: null` to connect without one, which is what lets the migration runner CREATE DATABASE. */
