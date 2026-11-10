@@ -1,9 +1,10 @@
 import { makeAuditTarget as makeTarget } from '../../audit.js';
 import { Audit, auditable, maybeAuditable } from './auditable.js';
 import { callerSubject, credentialsReadTargets, skipUnlessCredentialsRead } from './credentialsRead.js';
-import { bodyField, nonEmptyString, omitUndefined, param, stringArray, uuid } from './input.js';
+import { bodyField, nonEmptyString, omitUndefined, stringArray } from './input.js';
 import { accountApiKeyTarget, apiKeyTarget, environmentFromUuid, publicEnvApiKeyTarget } from './lookups.js';
 
+import type { AuditTarget } from '@nangohq/audit';
 import type {
     CreateAccountApiKey,
     CreateApiKey,
@@ -87,16 +88,13 @@ export const auditApiKeysCredentialsRead = maybeAuditable<ListApiKeys>({
     atFinish: (req) => credentialsReadTargets('api_key', req)
 });
 
-export const auditPublicApiKeyCredentialsRead = maybeAuditable<GetPublicApiKey>({
+export const auditPublicApiKeyCredentialsRead = auditable<GetPublicApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'credentials_read', scope: 'environment' }),
-    skipWhen: skipUnlessCredentialsRead(() => true),
-    subject: callerSubject,
-    atFinish: (req) => credentialsReadTargets('api_key', req, uuid(param(req, 'keyUuid')))
+    environment: (req, locals) => environmentFromUuid(req.params.environmentUuid, locals),
+    target: (req, locals) => publicEnvApiKeyTarget(req.params.keyUuid, req.params.environmentUuid, locals)
 });
 
-export const auditAccountApiKeysCredentialsRead = maybeAuditable<ListAccountApiKeys>({
+export const auditAccountApiKeysCredentialsRead = auditable<ListAccountApiKeys>({
     policy: Audit.auditable({ resource: 'api_key', action: 'credentials_read', scope: 'account' }),
-    skipWhen: skipUnlessCredentialsRead(() => true),
-    subject: callerSubject,
-    atFinish: (req) => credentialsReadTargets('api_key', req)
+    targetFromResponse: (response) => response.data.flatMap<AuditTarget>((key) => makeTarget('api_key', key.uuid, key.display_name) ?? [])
 });

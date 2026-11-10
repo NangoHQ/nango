@@ -52,10 +52,6 @@ export const getPublicEnvironmentApiKey = asyncWrapper<GetPublicApiKey>(async (r
     }
 
     const { id, uuid, display_name, scopes, secret, last_used_at, created_at } = found;
-    req.audit = {
-        ...req.audit,
-        credentialsRead: { targets: [{ id: uuid, display: display_name }], environment: { uuid: environment.uuid, name: environment.name } }
-    };
     res.status(200).send({
         data: {
             id,

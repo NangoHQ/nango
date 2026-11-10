@@ -20,7 +20,6 @@ export const listAccountApiKeys = asyncWrapper<ListAccountApiKeys>(async (req, r
         return;
     }
 
-    req.audit = { ...req.audit, credentialsRead: { targets: result.value.map((key) => ({ id: key.uuid, display: key.display_name })) } };
     res.status(200).send({
         data: result.value.map((key) => ({
             id: key.id,
