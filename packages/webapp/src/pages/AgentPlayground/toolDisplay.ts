@@ -105,7 +105,10 @@ export function describeTool(toolName: string, input: unknown, labels?: Integrat
 }
 
 export function toolArguments(toolName: string, input: unknown): unknown {
-    if (toolName === 'nango_execute' && input && typeof input === 'object') {
+    if (!input || typeof input !== 'object') {
+        return input;
+    }
+    if (toolName === 'nango_execute' || (integrationTool(toolName) && 'goal' in input && 'intent' in input)) {
         return 'input' in input ? input.input : {};
     }
     return input;

@@ -37,11 +37,12 @@ export const proxyTool = defineAgentSessionMcpTool({
     },
     async handler({ args, account, environment, plan, session }) {
         const integrationId = args.integration;
+        const purpose = { goal: args.goal, intent: args.intent };
 
         // Reaching an integration's API is gated on the session declaring it, so a toolset that
         // excluded an integration is not reachable through the escape hatch either.
         if (!Object.hasOwn(session.compiledToolset, integrationId)) {
-            trackAgentSessionProxyRequest({ session, integrationId, method: args.method, errorCode: 'unknown_integration' });
+            trackAgentSessionProxyRequest({ session, ...purpose, integrationId, method: args.method, errorCode: 'unknown_integration' });
             return Err(
                 new PublicMcpError(`Integration '${integrationId}' is not one of this session's integrations. Use one this session has.`, {
                     code: 'unknown_integration',
@@ -52,7 +53,7 @@ export const proxyTool = defineAgentSessionMcpTool({
 
         const connection = await resolveSessionConnection({ session, integrationId });
         if (!connection) {
-            trackAgentSessionProxyRequest({ session, integrationId, method: args.method, errorCode: 'integration_not_connected' });
+            trackAgentSessionProxyRequest({ session, ...purpose, integrationId, method: args.method, errorCode: 'integration_not_connected' });
             return Err(
                 new PublicMcpError(
                     `Integration '${integrationId}' has no connection in this session, so no request to it can be authenticated. ${notConnectedGuidance(integrationId, session)}`,
@@ -65,7 +66,14 @@ export const proxyTool = defineAgentSessionMcpTool({
         // rather than in the input schema, which is built once and knows no integration.
         const rejectedHeaders = rejectedHeaderNames({ headers: args.headers, provider: getProvider(connection.provider) });
         if (rejectedHeaders.length > 0) {
-            trackAgentSessionProxyRequest({ session, integrationId, provider: connection.provider, method: args.method, errorCode: 'invalid_input' });
+            trackAgentSessionProxyRequest({
+                session,
+                ...purpose,
+                integrationId,
+                provider: connection.provider,
+                method: args.method,
+                errorCode: 'invalid_input'
+            });
             return Err(
                 new PublicMcpError(
                     `Nango sets these headers itself, so they cannot be passed: ${rejectedHeaders.join(', ')}. The request is authenticated with the session's connection, so drop those headers and call again.`,
@@ -94,10 +102,18 @@ export const proxyTool = defineAgentSessionMcpTool({
                     queryParams: args.query_params,
                     headers: args.headers,
                     body: args.body,
-                    actor: { kind: 'session', id: session.id }
+                    actor: { kind: 'session', id: session.id },
+                    logMeta: purpose
                 });
             } catch (err) {
-                trackAgentSessionProxyRequest({ session, integrationId, provider: connection.provider, method: args.method, errorCode: 'internal_error' });
+                trackAgentSessionProxyRequest({
+                    session,
+                    ...purpose,
+                    integrationId,
+                    provider: connection.provider,
+                    method: args.method,
+                    errorCode: 'internal_error'
+                });
                 throw err;
             }
 
@@ -105,6 +121,7 @@ export const proxyTool = defineAgentSessionMcpTool({
 
             trackAgentSessionProxyRequest({
                 session,
+                ...purpose,
                 integrationId,
                 provider: connection.provider,
                 method: args.method,

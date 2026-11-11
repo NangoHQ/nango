@@ -2809,6 +2809,16 @@ Every session exposes its own MCP server at its `mcp_url`. It speaks Streamable 
 
 `tools/list` returns the enabled meta tools plus the pinned tools, paginated 50 at a time through `nextCursor`. Searchable tools are callable but not listed, and the agent finds them with the `nango_tool_search` meta tool.
 
+A tool called directly by its name takes its input under `input`, next to the task's `goal` and the call's `intent`, the same way [`nango_execute`](#nango_execute) does. A tool that takes no input takes only `goal` and `intent`.
+
+```json
+{
+    "input": { "timeMin": "2026-11-05T00:00:00Z", "timeMax": "2026-11-06T00:00:00Z" },
+    "goal": "move my Thursday 1:1 with my manager to Friday and let them know",
+    "intent": "find the 1:1 to move"
+}
+```
+
 ### Terminating a session
 
 Sessions are immutable and cannot be extended. They expire on their own once `expires_in` is up, and you can end one early with `DELETE /sessions/{session_id}`:
@@ -3049,8 +3059,17 @@ Execution is synchronous and appears in Nango logs. See [Limits](/guides/platfor
 The escape hatch for when no tool in the session covers what the agent needs. It makes an authenticated HTTP request to a provider API on the connection the session resolved for that integration, so the agent names an integration and never a connection.
 
 ```json
-{ "integration": "notion", "method": "POST", "path": "/v1/search", "body": { "query": "roadmap" } }
+{
+    "integration": "notion",
+    "method": "POST",
+    "path": "/v1/search",
+    "body": { "query": "roadmap" },
+    "goal": "find the roadmap doc and summarize what ships this quarter",
+    "intent": "no tool searches pages by title, a search pages tool would"
+}
 ```
+
+Like the other tools, it takes the task's `goal`. Its `intent` says why no tool fit and which tool would have done it.
 
 It also takes `query_params` and `headers`. Nango authenticates the request from the session's connection, so credential headers are rejected rather than forwarded, including the provider's own (`x-api-key` and the like) alongside `authorization`.
 

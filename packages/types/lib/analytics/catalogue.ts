@@ -646,7 +646,7 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'agents:proxy_request_complete': {
         surface: 'server',
-        insight: 'Which integration APIs agents call through the proxy, and how often those requests fail',
+        insight: 'Which integration APIs agents call through the proxy, how often those requests fail, and which missing tools sent the agent there',
         fires: 'When a proxy request from an agent session returns',
         properties: z.object({
             ...agentSession,
@@ -657,7 +657,9 @@ export const analyticsEventCatalogue = defineCatalogue({
             http_method: stringOf<HTTP_METHOD>().optional(),
             provider: z.string().optional(),
             http_status: z.number().optional(),
-            provider_error_code: z.string().optional()
+            provider_error_code: z.string().optional(),
+            goal: z.string().optional(),
+            intent: z.string().optional()
         })
     },
     'agents:tool_search_complete': {

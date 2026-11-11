@@ -67,8 +67,10 @@ function jsonResponse(body: unknown, status = 200, outcome: ProxyServiceResponse
     } as unknown as ProxyServiceResponse;
 }
 
+const PURPOSE = { goal: 'find the roadmap doc', intent: 'no tool reads a page, a read page tool would' };
+
 async function callProxy(args: Record<string, unknown>) {
-    return await proxyTool.handler(args, context());
+    return await proxyTool.handler({ ...PURPOSE, ...args }, context());
 }
 
 function errorOf(result: Result<unknown>): Error {
@@ -114,6 +116,23 @@ describe('proxyTool', () => {
         await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1' });
 
         expect(request).toHaveBeenCalledWith(expect.objectContaining({ actor: { kind: 'session', id: 'session-1' } }));
+    });
+
+    it('puts the goal and the intent on the proxy operation', async () => {
+        const request = vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse({ ok: true })) });
+
+        await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1' });
+
+        expect(request).toHaveBeenCalledWith(expect.objectContaining({ logMeta: PURPOSE }));
+    });
+
+    it('rejects a request without an intent', async () => {
+        const request = vi.spyOn(proxyService, 'request');
+
+        const result = await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1', intent: undefined });
+
+        expect(errorOf(result).message).toContain('intent');
+        expect(request).not.toHaveBeenCalled();
     });
 
     it('appends query parameters and sends a JSON body', async () => {
@@ -318,7 +337,8 @@ describe('proxyTool analytics', () => {
             integration_id: 'notion',
             provider: 'notion',
             http_method: 'GET',
-            http_status: 200
+            http_status: 200,
+            ...PURPOSE
         });
     });
 

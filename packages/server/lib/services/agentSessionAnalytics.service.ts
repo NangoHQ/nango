@@ -70,6 +70,9 @@ interface ProxyRequestParams extends Outcome {
     status?: number | undefined;
     /** The provider's own error code, when the failure carried one. */
     providerErrorCode?: string | undefined;
+    goal?: string | undefined;
+    /** Why no tool fit and which one would have, so gaps in the catalog show up. */
+    intent?: string | undefined;
 }
 
 /**
@@ -172,7 +175,17 @@ export function trackAgentSessionToolCall({
     );
 }
 
-export function trackAgentSessionProxyRequest({ session, integrationId, provider, method, status, providerErrorCode, ...outcome }: ProxyRequestParams): void {
+export function trackAgentSessionProxyRequest({
+    session,
+    integrationId,
+    provider,
+    method,
+    status,
+    providerErrorCode,
+    goal,
+    intent,
+    ...outcome
+}: ProxyRequestParams): void {
     sendMeasured((measurement) =>
         productTracking.track({
             name: 'agents:proxy_request_complete',
@@ -185,7 +198,9 @@ export function trackAgentSessionProxyRequest({ session, integrationId, provider
                 ...(method ? { http_method: method } : {}),
                 ...(provider ? { provider } : {}),
                 ...(status === undefined ? {} : { http_status: status }),
-                ...(providerErrorCode ? { provider_error_code: providerErrorCode } : {})
+                ...(providerErrorCode ? { provider_error_code: providerErrorCode } : {}),
+                ...(goal ? { goal } : {}),
+                ...(intent ? { intent } : {})
             }
         })
     );
