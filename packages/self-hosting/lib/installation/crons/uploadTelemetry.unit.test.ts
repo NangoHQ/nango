@@ -10,6 +10,7 @@ import { envs } from '../../env.js';
 import { uploadQueuedDays } from '../uploader.js';
 import { exec, uploaderConfig, uploadTelemetryCron } from './uploadTelemetry.js';
 
+import type { UploaderConfig } from '../uploader.js';
 import type * as NangoLicense from '@nangohq/license';
 import type { License } from '@nangohq/types';
 import type { Knex } from 'knex';
@@ -80,7 +81,7 @@ describe('uploaderConfig', () => {
     it('accepts a private key whose line breaks are written as \\n, as in a one-line env value', async () => {
         envs.NANGO_INSTALLATION_PRIVATE_KEY = installationKey.trim().replaceAll('\n', '\\n');
 
-        expect((await uploaderConfig()).unwrap().privateKeyPem).toBe(installationKey.trim());
+        expect((await uploaderConfig()).unwrap()?.privateKeyPem).toBe(installationKey.trim());
     });
 
     it.each([
@@ -102,12 +103,10 @@ describe('uploaderConfig', () => {
         expect(config.isErr() && config.error.message).toEqual(message);
     });
 
-    it('returns an error when the license does not include telemetry', async () => {
+    it('returns no configuration when the license does not ask for telemetry', async () => {
         envs.NANGO_LICENSE = await license({ telemetry: false });
 
-        const config = await uploaderConfig();
-
-        expect(config.isErr() && config.error.message).toBe('the license does not include telemetry');
+        expect((await uploaderConfig()).unwrap()).toBeNull();
     });
 });
 
@@ -139,22 +138,27 @@ describe('uploadTelemetryCron', () => {
 });
 
 describe('exec', () => {
+    const config: UploaderConfig = {
+        knex: {} as Knex,
+        installationId: 'f4a2c0e1-7b3d-4e2a-9c1f-0a6d5e8b2c44',
+        privateKeyPem: installationKey,
+        url: 'https://installations.nango.dev',
+        backfillDays: 30,
+        licenseGraceUntil: new Date(Date.now() + 60_000)
+    };
+
     beforeEach(() => {
         vi.mocked(uploadQueuedDays).mockResolvedValue(Ok({ succeeded: 0, failed: 0, outOfTime: false }));
     });
 
     it('uploads while the license is within its grace period', async () => {
-        const config = (await uploaderConfig()).unwrap();
-
         await exec(config);
 
         expect(uploadQueuedDays).toHaveBeenCalledWith(config, { deadline: expect.any(Date) });
     });
 
     it('does not upload once the license is past its grace period', async () => {
-        const config = { ...(await uploaderConfig()).unwrap(), licenseGraceUntil: new Date(Date.now() - 1000) };
-
-        await exec(config);
+        await exec({ ...config, licenseGraceUntil: new Date(Date.now() - 1000) });
 
         expect(uploadQueuedDays).not.toHaveBeenCalled();
     });

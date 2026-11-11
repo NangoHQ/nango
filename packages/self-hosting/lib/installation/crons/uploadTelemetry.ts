@@ -35,17 +35,23 @@ export async function uploadTelemetryCron(): Promise<void> {
         logger.warning(`Skipping (${config.error.message})`);
         return;
     }
+    const uploader = config.value;
+    if (!uploader) {
+        logger.info('Skipping (the license does not ask for telemetry)');
+        return;
+    }
 
     // Each installation picks a random minute, so they do not all call Nango at the same time.
     const minute = FIRST_MINUTE + Math.floor(Math.random() * (60 - FIRST_MINUTE));
     cron.schedule(`${minute} * * * *`, () => {
-        exec(config.value).catch((err: unknown) => {
+        exec(uploader).catch((err: unknown) => {
             logger.error('Cron tick failed unexpectedly', err);
         });
     });
 }
 
-export async function uploaderConfig(): Promise<Result<UploaderConfig>> {
+/** Returns no configuration when the license does not ask for telemetry. */
+export async function uploaderConfig(): Promise<Result<UploaderConfig | null>> {
     if (!envs.NANGO_INSTALLATION_PRIVATE_KEY) {
         return Err(new Error('NANGO_INSTALLATION_PRIVATE_KEY is not set'));
     }
@@ -66,7 +72,7 @@ export async function uploaderConfig(): Promise<Result<UploaderConfig>> {
         return Err(new Error(`the license does not verify: ${license.error.message}`));
     }
     if (!license.value.telemetry) {
-        return Err(new Error('the license does not include telemetry'));
+        return Ok(null);
     }
     const knex = hostedTelemetryDb();
     if (!knex) {
