@@ -24,7 +24,7 @@ export const ErrorPageComponent: React.FC<{ title: string; error?: ApiError<stri
     }
 
     return (
-        <DashboardLayout fullWidth title={title}>
+        <DashboardLayout fullWidth>
             <Helmet>
                 <title>Error - Nango</title>
             </Helmet>

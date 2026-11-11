@@ -77,7 +77,7 @@ export const CatalogProviderShow: React.FC = () => {
     const categories = getVisibleCategories(provider);
 
     return (
-        <DashboardLayout fullWidth className="flex flex-col gap-6">
+        <DashboardLayout fullWidth hasPageHeading className="flex flex-col gap-6">
             <Helmet>
                 <title>{provider.displayName} - Catalog - Nango</title>
             </Helmet>
