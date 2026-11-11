@@ -30,7 +30,9 @@ export const checkboxVariants = cva(
         'disabled:data-[state=indeterminate]:border-interactive-disabled disabled:data-[state=indeterminate]:bg-interactive-disabled disabled:data-[state=indeterminate]:text-icon-disabled',
         // Error: danger outline in every checked state
         'aria-invalid:border-border-input-danger aria-invalid:not-disabled:hover:border-border-input-danger-hover',
-        'aria-invalid:data-[state=checked]:border-border-input-danger aria-invalid:data-[state=indeterminate]:border-border-input-danger'
+        'aria-invalid:data-[state=checked]:border-border-input-danger aria-invalid:data-[state=indeterminate]:border-border-input-danger',
+        // ...including hover, where the filled-state hover rules would otherwise swap in the primary border
+        'aria-invalid:data-[state=checked]:not-disabled:hover:border-border-input-danger-hover aria-invalid:data-[state=indeterminate]:not-disabled:hover:border-border-input-danger-hover'
     ],
     {
         variants: {

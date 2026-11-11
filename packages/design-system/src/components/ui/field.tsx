@@ -43,15 +43,16 @@ export interface FieldProps extends React.ComponentProps<'div'>, VariantProps<ty
     'data-disabled'?: boolean | 'true' | 'false' | undefined;
 }
 
+// Inline rows: the control a row click toggles, and the targets that handle their own clicks.
+const ROW_CONTROL_SELECTOR = ':scope > [data-slot=checkbox], :scope > [data-slot=switch]';
+const INTERACTIVE_SELECTOR = 'a, button, input, label, select, textarea, [role=checkbox], [role=switch]';
+
 /**
  * Composition container for a label + control + description + error (Figma "Field").
  *
  * Field generates the ids: FieldLabel gets `htmlFor`, the first Input / InputGroupInput inside gets `id`,
  * `aria-describedby` (description + error) and `aria-invalid` (from `data-invalid`). Explicit props always win.
  */
-const ROW_CONTROL_SELECTOR = ':scope > [data-slot=checkbox], :scope > [data-slot=switch]';
-const INTERACTIVE_SELECTOR = 'a, button, input, label, select, textarea, [role=checkbox], [role=switch]';
-
 function Field({ className, orientation, children, onClick, ...props }: FieldProps) {
     const baseId = React.useId();
     const [renderedDescriptionId, registerDescription] = React.useState<string | null>(null);
