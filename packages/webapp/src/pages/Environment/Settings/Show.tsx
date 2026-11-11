@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { Badge } from '@nangohq/design-system';
-
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
@@ -36,13 +34,12 @@ export const EnvironmentSettings: React.FC = () => {
 
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
-    const isProd = environmentAndAccount?.environment?.is_production || false;
     const [activeTab, setActiveTab] = useHashNavigation('general');
     const [apiKeysResetKey, setApiKeysResetKey] = useState(0);
 
     if (!environmentAndAccount || !team) {
         return (
-            <DashboardLayout fullWidth title="Environment settings" className="flex flex-col gap-8">
+            <DashboardLayout fullWidth className="flex flex-col gap-8">
                 <Helmet>
                     <title>Environment Settings - Nango</title>
                 </Helmet>
@@ -56,12 +53,7 @@ export const EnvironmentSettings: React.FC = () => {
     const canSeeDeprecatedAuthorization = new Date(team.account.created_at) <= new Date('2025-08-25');
 
     return (
-        <DashboardLayout
-            fullWidth
-            title="Environment settings"
-            titleBadge={isProd ? <Badge variant="brand">Prod</Badge> : <Badge variant="secondary">{env}</Badge>}
-            className="flex flex-col gap-8"
-        >
+        <DashboardLayout fullWidth className="flex flex-col gap-8">
             <Helmet>
                 <title>Environment Settings - Nango</title>
             </Helmet>

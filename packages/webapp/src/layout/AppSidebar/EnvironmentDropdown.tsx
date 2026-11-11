@@ -1,14 +1,14 @@
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { ArrowUpRight, Check, ChevronsUpDown, Cog, Plus, TriangleAlert } from 'lucide-react';
+import { ArrowUpRight, Check, ChevronsUpDown, Plus, TriangleAlert } from 'lucide-react';
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { Alert, AlertActions, AlertDescription, Badge, Button } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/DropdownMenu.js';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/DropdownMenu.js';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useCurrentPlan } from '@/hooks/usePlan';
@@ -17,7 +17,7 @@ import { useStore } from '@/store';
 import { envSwitchPath } from '@/utils/routes';
 import { cn } from '@/utils/utils';
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
-import { navigationMenuContentClassName, navigationMenuItemClassName, navigationMenuSeparatorClassName } from './navigationMenu.js';
+import { navigationMenuContentClassName, navigationMenuSeparatorClassName } from './navigationMenu.js';
 
 export const EnvironmentDropdown: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -108,12 +108,6 @@ export const EnvironmentDropdown: React.FC = () => {
                         ))}
                     </DropdownMenuPrimitive.RadioGroup>
                     <DropdownMenuSeparator className={navigationMenuSeparatorClassName} />
-                    <DropdownMenuItem asChild className={navigationMenuItemClassName}>
-                        <Link to={`/${env}/environment-settings`}>
-                            <Cog />
-                            <span>Environment settings</span>
-                        </Link>
-                    </DropdownMenuItem>
                     <div className="flex flex-col gap-2 px-1 pt-2 pb-1">
                         <PermissionGate condition={canCreateEnvironment} tooltipSide="right">
                             {(allowed) => (

@@ -1530,6 +1530,83 @@ algolia:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-2-finding-your-admin-api-key'
 
+altium-365:
+    display_name: Altium 365
+    categories:
+        - dev-tools
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.authHost}/connect/token
+    token_params:
+        grant_type: refresh_token
+        refresh_token: ${credentials.refresh_token}
+        client_id: ${credentials.client_id}
+        client_secret: ${credentials.client_secret}
+    refresh_token_params:
+        grant_type: refresh_token
+        refresh_token: ${refresh_token}
+        client_id: ${credentials.client_id}
+        client_secret: ${credentials.client_secret}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    token_response:
+        token: access_token
+        refresh_token: refresh_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.region}/api
+        headers:
+            authorization: Bearer ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/altium-365
+    docs_connect: https://nango.dev/docs/api-integrations/altium-365/connect
+    connection_config:
+        authHost:
+            type: string
+            title: Realm
+            description: The Altium Identity server for your Workspace's realm, auth.365-gov.altium.com for GovCloud.
+            format: hostname
+            enum:
+                - auth.altium.com
+                - auth.365-gov.altium.com
+            order: 2
+            doc_section: '#step-1-select-your-region-and-realm'
+        region:
+            type: string
+            title: Region
+            description: The Altium 365 region your Workspace is hosted in.
+            format: hostname
+            enum:
+                - eur.365.altium.com
+                - usw.365.altium.com
+                - use.365.altium.com
+                - asp.365.altium.com
+                - use.365-gov.altium.com
+            order: 1
+            doc_section: '#step-1-select-your-region-and-realm'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID of your Altium 365 refresh token credentials.
+            order: 1
+            doc_section: '#step-2-create-a-refresh-token'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret of your Altium 365 refresh token credentials.
+            secret: true
+            order: 2
+            doc_section: '#step-2-create-a-refresh-token'
+        refresh_token:
+            type: string
+            title: Refresh Token
+            description: The refresh token of your Altium 365 refresh token credentials.
+            secret: true
+            order: 3
+            doc_section: '#step-2-create-a-refresh-token'
+
 altrata:
     display_name: Altrata
     categories:
@@ -9685,7 +9762,11 @@ docusign:
     proxy:
         base_url: https://www.docusign.net
     post_connection_script: docusignPostConnection
-    docs: https://nango.dev/docs/integrations/all/docusign
+    webhook_routing_script: docusignWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_signature_enforced: true
+    docs: https://nango.dev/docs/api-integrations/docusign
+    setup_guide_url: https://nango.dev/docs/api-integrations/docusign/how-to-register-your-own-docusign-oauth-app
 
 docusign-sandbox:
     display_name: DocuSign (Sandbox)
@@ -9704,7 +9785,11 @@ docusign-sandbox:
     proxy:
         base_url: https://demo.docusign.net
     post_connection_script: docusignPostConnection
-    docs: https://nango.dev/docs/integrations/all/docusign-sandbox
+    webhook_routing_script: docusignWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_signature_enforced: true
+    docs: https://nango.dev/docs/api-integrations/docusign-sandbox
+    setup_guide_url: https://nango.dev/docs/api-integrations/docusign-sandbox/how-to-register-your-own-docusign-sandbox-oauth-app
 
 docuware:
     display_name: DocuWare
@@ -10877,6 +10962,38 @@ ergo:
             example: ergo_api_at-48b49ba4********************************************************an1X
             doc_section: '#step-1-obtaining-your-token'
 
+ethena:
+    display_name: Ethena
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.goethena.com
+        retry:
+            after:
+                - 'retry-after'
+                - 'x-ratelimit-reset'
+            remaining: 'x-ratelimit-remaining'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/training-campaigns?limit=1
+    docs: https://nango.dev/docs/api-integrations/ethena
+    docs_connect: https://nango.dev/docs/api-integrations/ethena/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: The username to pair with your Ethena API key.
+            doc_section: '#step-1-get-your-api-credentials'
+        password:
+            type: string
+            title: API Key
+            description: Your Ethena API key.
+            secret: true
+            example: 7fe2****************80f9
+            doc_section: '#step-1-get-your-api-credentials'
+
 evaluagent:
     display_name: EvaluAgent
     categories:
@@ -12037,6 +12154,49 @@ fluxguard:
             pattern: '^[A-Za-z0-9]{20,}$'
             example: 7fK2********************************9aQx
             doc_section: '#step-1-generate-an-api-key'
+
+flyte:
+    display_name: Flyte
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.tokenUrl}
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/flyte
+    docs_connect: https://nango.dev/docs/api-integrations/flyte/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Flyte Host
+            description: The host of your Flyte instance.
+            format: hostname
+            prefix: https://
+            example: flyte.example.com
+            order: 1
+            doc_section: '#step-1-find-your-flyte-host-and-token-endpoint'
+        tokenUrl:
+            type: string
+            title: Token Endpoint
+            description: The OAuth 2.0 token endpoint of the identity provider your Flyte instance uses.
+            prefix: https://
+            example: my-company.okta.com/oauth2/default/v1/token
+            order: 2
+            doc_section: '#step-1-find-your-flyte-host-and-token-endpoint'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID of a service application registered in your identity provider for Flyte.
+            doc_section: '#step-2-get-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret of that service application.
+            secret: true
+            doc_section: '#step-2-get-client-credentials'
 
 formstack-documents:
     display_name: Formstack Documents
@@ -16187,6 +16347,40 @@ jazzhr:
             description: Your JazzHR API Key
             doc_section: '#step-1-finding-your-api-key'
 
+jfrog:
+    display_name: JFrog
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /access/api/v1/tokens/me
+    docs: https://nango.dev/docs/api-integrations/jfrog
+    docs_connect: https://nango.dev/docs/api-integrations/jfrog/connect
+    connection_config:
+        hostname:
+            type: string
+            title: JFrog Platform Hostname
+            description: Your JFrog Platform hostname, e.g. mycompany.jfrog.io
+            example: mycompany.jfrog.io
+            prefix: https://
+            format: hostname
+            order: 1
+            doc_section: '#step-1-find-your-jfrog-platform-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: Your JFrog reference token or access token
+            example: cmVm********************************************************a7Qz
+            pattern: '^[A-Za-z0-9._-]{32,}$'
+            doc_section: '#step-2-generate-an-access-token'
+
 jiminny:
     display_name: Jiminny
     categories:
@@ -16263,6 +16457,42 @@ jira:
             example: subdomain
             suffix: .atlassian.net
             prefix: https://
+
+justcall:
+    display_name: JustCall
+    categories:
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.justcall.io
+        headers:
+            authorization: ${credentials.username}:${credentials.password}
+            accept: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v2.1/users?per_page=1
+        retry:
+            at:
+                - 'x-rate-limit-burst-reset'
+            remaining: 'x-rate-limit-burst-remaining'
+    docs: https://nango.dev/docs/api-integrations/justcall
+    docs_connect: https://nango.dev/docs/api-integrations/justcall/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your JustCall API key.
+            secret: true
+            example: 7fe2****************************80f9
+            doc_section: '#step-1-copy-your-api-key-and-api-secret'
+        password:
+            type: string
+            title: API Secret
+            description: Your JustCall API secret.
+            secret: true
+            example: 3b9c****************************a1d6
+            doc_section: '#step-1-copy-your-api-key-and-api-secret'
 
 justworks:
     display_name: Justworks
@@ -16880,6 +17110,30 @@ kintone-user-api:
             example: urdzw8p24agp
             order: 1
             pattern: '^[a-z0-9_-]+$'
+
+kit:
+    display_name: Kit
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.kit.com
+        headers:
+            x-kit-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v4/account
+    docs: https://nango.dev/docs/api-integrations/kit
+    docs_connect: https://nango.dev/docs/api-integrations/kit/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Kit V4 API key.
+            pattern: '^kit_[A-Za-z0-9_-]+$'
+            example: kit_3a7f************************9c2e
+            doc_section: '#step-1-create-a-v4-api-key'
 
 konnektive:
     display_name: Konnektive
@@ -19937,6 +20191,30 @@ momentum-io:
             description: The API key for your Make account
             doc_section: '#step-1-generating-an-api-key'
 
+modernloop:
+    display_name: ModernLoop
+    categories:
+        - ats
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.modernloop.io
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/me
+    docs: https://nango.dev/docs/api-integrations/modernloop
+    docs_connect: https://nango.dev/docs/api-integrations/modernloop/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your ModernLoop API key.
+            example: a1b2****************c3d4
+            doc_section: '#step-1-create-an-api-token'
+
 modjo-ai:
     display_name: Modjo AI
     categories:
@@ -20782,6 +21060,44 @@ newsapi:
             pattern: '^[A-Za-z0-9]{20,}$'
             example: 4c1e************************a9d2
             doc_section: '#step-1-copy-your-api-key'
+
+new-relic-ingest:
+    display_name: New Relic Ingest
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.region}
+        headers:
+            api-key: ${apiKey}
+            content-type: application/json
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/new-relic-ingest
+    docs_connect: https://nango.dev/docs/api-integrations/new-relic-ingest/connect
+    connection_config:
+        region:
+            type: string
+            title: Data Center Region
+            description: The Metric API host of your New Relic data center.
+            example: metric-api.newrelic.com
+            format: hostname
+            enum:
+                - metric-api.newrelic.com
+                - metric-api.eu.newrelic.com
+                - metric-api.jp.nr-data.net
+            order: 1
+            doc_section: '#step-1-find-your-data-center-region'
+    credentials:
+        apiKey:
+            type: string
+            title: License Key
+            description: Your New Relic Ingest - License key
+            example: 4f8c********************************9d2e
+            pattern: '^[A-Za-z0-9]{32,}$'
+            doc_section: '#step-2-create-a-license-key'
 
 next-cloud-ocs:
     display_name: Next Cloud OCS
@@ -27480,6 +27796,56 @@ servicem8:
     refresh_params:
         grant_type: refresh_token
     docs: https://nango.dev/docs/integrations/all/servicem8
+
+sigma-computing:
+    display_name: Sigma Computing
+    categories:
+        - analytics
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/v2/auth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/sigma-computing
+    docs_connect: https://nango.dev/docs/api-integrations/sigma-computing/connect
+    connection_config:
+        hostname:
+            type: string
+            title: API URL
+            description: Your API URL for the cloud you're hosted on.
+            enum:
+                - api.sigmacomputing.com
+                - api.sa.gcp.sigmacomputing.com
+                - api.uk.gcp.sigmacomputing.com
+                - aws-api.sigmacomputing.com
+                - api.us-a.aws.sigmacomputing.com
+                - api.ca.aws.sigmacomputing.com
+                - api.eu.aws.sigmacomputing.com
+                - api.ch.aws.sigmacomputing.com
+                - api.au.aws.sigmacomputing.com
+                - api.uk.aws.sigmacomputing.com
+                - api.in.aws.sigmacomputing.com
+                - api.us.azure.sigmacomputing.com
+                - api.eu.azure.sigmacomputing.com
+                - api.ca.azure.sigmacomputing.com
+                - api.uk.azure.sigmacomputing.com
+                - api.au.azure.sigmacomputing.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-api-url'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID of your Sigma API credentials.
+            doc_section: '#step-2-create-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The secret of your Sigma API credentials.
+            secret: true
+            doc_section: '#step-2-create-api-credentials'
 
 signnow:
     display_name: SignNow

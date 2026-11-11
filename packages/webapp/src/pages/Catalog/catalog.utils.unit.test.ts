@@ -107,18 +107,18 @@ describe('getCategoryLabel', () => {
 
 describe('formatFunctionCounts', () => {
     it('leaves out zero parts and pluralizes', () => {
-        expect(formatFunctionCounts({ actions: 32, syncs: 5 })).toBe('32 actions · 5 syncs');
-        expect(formatFunctionCounts({ actions: 1, syncs: 0 })).toBe('1 action');
+        expect(formatFunctionCounts({ actions: 32, syncs: 5 })).toBe('32 tools · 5 syncs');
+        expect(formatFunctionCounts({ actions: 1, syncs: 0 })).toBe('1 tool');
         expect(formatFunctionCounts({ actions: 0, syncs: 2 })).toBe('2 syncs');
         expect(formatFunctionCounts({ actions: 0, syncs: 0 })).toBeNull();
     });
 });
 
 describe('getCardMeta', () => {
-    it('prefers function counts, then categories, then a fallback', () => {
-        expect(getCardMeta({ functionCounts: { actions: 3, syncs: 1 }, categories: ['crm'] })).toBe('3 actions · 1 sync');
-        expect(getCardMeta({ functionCounts: { actions: 0, syncs: 0 }, categories: ['popular', 'crm', 'dev-tools'] })).toBe('CRM · Dev Tools');
-        expect(getCardMeta({ functionCounts: { actions: 0, syncs: 0 }, categories: ['popular'] })).toBe('No pre-built functions yet');
+    it('shows function counts, never categories', () => {
+        expect(getCardMeta({ functionCounts: { actions: 3, syncs: 1 }, categories: ['crm'] })).toBe('3 tools · 1 sync');
+        expect(getCardMeta({ functionCounts: { actions: 0, syncs: 0 }, categories: ['popular', 'crm', 'dev-tools'] })).toBe('No pre-built tools yet');
+        expect(getCardMeta({ functionCounts: { actions: 0, syncs: 0 }, categories: ['productivity', 'mcp'] })).toBe('All MCP tools');
     });
 });
 
