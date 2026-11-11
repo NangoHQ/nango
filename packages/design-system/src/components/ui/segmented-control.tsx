@@ -27,7 +27,7 @@ export const segmentedControlItemVariants = cva(
         'font-sans font-ds-medium leading-ds-normal tracking-ds-normal',
         'text-text-secondary hover:text-text-default',
         // Styled on aria-checked rather than Radix's data-state, which a wrapping TooltipTrigger overwrites.
-        'aria-checked:bg-surface-panel aria-checked:text-text-strong aria-checked:shadow-container-panel',
+        'aria-checked:bg-surface-raised aria-checked:text-text-strong aria-checked:shadow-container-panel',
         'disabled:cursor-not-allowed disabled:text-text-disabled disabled:hover:text-text-disabled',
         'aria-checked:disabled:bg-state-disabled aria-checked:disabled:text-text-disabled aria-checked:disabled:shadow-none',
         // Keyboard only. Declared after the selected shadow so the ring wins on a focused selected item.
