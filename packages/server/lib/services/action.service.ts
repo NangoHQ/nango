@@ -30,7 +30,6 @@ export class ActionExecutionError extends Error {
 export interface ActionExecution {
     /** Created once the action is known to exist, so callers can enrich the operation afterwards. */
     logCtx: LogContextOrigin | undefined;
-    /** Set once the action resolves. A catalog tool that was never deployed is catalog too. */
     functionSource?: FunctionSource | undefined;
     result: Result<ActionExecutionSuccess, ActionExecutionError>;
 }
