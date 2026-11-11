@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getCatalogTool, isTemplatesZeroPath, listCatalogTools } from './actions.js';
+import { getCatalogEntry, getCatalogTool, getFlowsJson, isTemplatesZeroPath, listCatalogEntries, listCatalogTools } from './actions.js';
 
 describe('catalog tools reader', () => {
     it('returns github create-issue from flows.zero.json', () => {
@@ -24,6 +24,19 @@ describe('catalog tools reader', () => {
         const github = listCatalogTools('github');
         expect(github.some((tool) => tool.name === 'create-issue')).toBe(true);
         expect(listCatalogTools('this-provider-does-not-exist')).toEqual([]);
+    });
+
+    it('keeps every published provider compatible with the mixed reader', () => {
+        for (const integration of getFlowsJson()) {
+            const entries = listCatalogEntries(integration.providerConfigKey);
+            const actions = listCatalogTools(integration.providerConfigKey);
+            expect(actions).toEqual(entries.filter((entry) => entry.module === 'action'));
+            expect(actions).toHaveLength(integration.actions.length);
+            for (const action of actions) {
+                expect(getCatalogEntry(integration.providerConfigKey, action.name)).toBe(action);
+                expect(getCatalogTool(integration.providerConfigKey, action.name)).toBe(action);
+            }
+        }
     });
 
     it('recognizes templates-zero paths', () => {
