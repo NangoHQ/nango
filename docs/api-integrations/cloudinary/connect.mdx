@@ -1,0 +1,58 @@
+---
+title: 'Cloudinary - How do I link my account?'
+sidebarTitle: 'Cloudinary'
+---
+
+## Overview
+
+To authenticate with Cloudinary, you need:
+
+1. **Region** — the API host of the data center your account uses.
+2. **Cloud name** — the name of your Cloudinary product environment.
+3. **API Key** — the API key of the product environment.
+4. **API Secret** — the secret that belongs to that API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Cloudinary account. You can [sign up for free](https://cloudinary.com/users/register_free).
+
+### Step 1: Find your region
+
+Cloudinary serves the API from a separate host per data center. Select the host where your account was created:
+
+| Data center | Value to select |
+|-------------|-----------------|
+| US (default) | `api.cloudinary.com` |
+| Europe | `api-eu.cloudinary.com` |
+| Asia Pacific | `api-ap.cloudinary.com` |
+
+The Europe and Asia Pacific data centers are only available on Enterprise plans and must be arranged when the account is created. If you did not arrange one, select `api.cloudinary.com`. See [Admin API overview](https://cloudinary.com/documentation/admin_api) for details.
+
+### Step 2: Find your cloud name and create an API key
+
+1. Sign in to the [Cloudinary Console](https://console.cloudinary.com/).
+2. Click the **Settings** (gear) icon in the left sidebar, then under **Product environment settings** select [API Keys](https://console.cloudinary.com/app/settings/api-keys).
+3. Note your **Cloud name**, shown next to the **API Keys** title. Then click **Generate New API Key**.
+
+<img src="/api-integrations/cloudinary/api_keys_page.png" alt="Cloudinary API Keys page with the cloud name next to the title and the Generate New API Key button"/>
+
+4. Enter a **Key Name** and pick the roles the key needs (for example **Viewer** and **Reports** for read-only access), then click **Create**.
+
+<img src="/api-integrations/cloudinary/create_api_key_dialog.png" alt="Create API Key dialog in Cloudinary with the key name, Viewer and Reports roles, and the Create button"/>
+
+5. In the new row of the table, copy the value in the **API Key** column, then click the copy icon in the **API Secret** column to copy the API Secret. You may be asked for a confirmation code sent to your email before you can see the secret.
+
+<img src="/api-integrations/cloudinary/api_key_created.png" alt="Cloudinary API Keys table with the new key and the copy button for its API secret"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Cloudinary.
+2. Select your **Region** and enter your **Cloud name**.
+3. Enter your API key in the **API Key** field and your API secret in the **API Secret** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/cloudinary/form.png" alt="Cloudinary connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Cloudinary.
