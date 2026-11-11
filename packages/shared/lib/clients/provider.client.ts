@@ -32,6 +32,13 @@ const threadsLongLivedTokenUrl = 'https://graph.threads.net/access_token';
 
 const logger = getLogger('Provider.Client');
 
+function instagramGrants(raw: Record<string, any> | undefined): Record<string, unknown> {
+    return {
+        ...(raw?.['permissions'] !== undefined && { permissions: raw['permissions'] }),
+        ...(raw?.['user_id'] !== undefined && { user_id: raw['user_id'] })
+    };
+}
+
 const axios = {
     post: (url: string, data?: unknown, config?: Parameters<typeof axiosInstance.post>[2]) =>
         axiosInstance.post(url, data, { ...config, ...getOAuthAxiosRequestConfig() }),
@@ -290,7 +297,7 @@ class ProviderClient {
             case 'meta-mcp':
                 return this.refreshFacebookToken(provider.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
             case 'instagram':
-                return this.refreshInstagramToken(provider.refresh_url as string, credentials.access_token);
+                return this.refreshInstagramToken(provider.refresh_url as string, credentials.access_token, credentials.raw);
             case 'revolut-business':
                 return this.refreshRevolutToken(
                     interpolatedRefreshUrl!.href,
@@ -1207,7 +1214,9 @@ class ProviderClient {
                 const exchangeResponse = await axios.get(exchangeUrl);
 
                 if (exchangeResponse.status === 200 && exchangeResponse.data) {
+                    // The long-lived token response has no grants, so keep the ones from the short-lived response
                     return {
+                        ...instagramGrants(response.data),
                         ...exchangeResponse.data
                     };
                 }
@@ -1224,7 +1233,7 @@ class ProviderClient {
         }
     }
 
-    private async refreshInstagramToken(refreshTokenUrl: string, accessToken: string): Promise<RefreshTokenResponse> {
+    private async refreshInstagramToken(refreshTokenUrl: string, accessToken: string, previousRaw: Record<string, any>): Promise<RefreshTokenResponse> {
         try {
             const queryParams = {
                 grant_type: 'ig_refresh_token',
@@ -1236,6 +1245,7 @@ class ProviderClient {
 
             if (response.status === 200 && response.data) {
                 return {
+                    ...instagramGrants(previousRaw),
                     ...response.data
                 };
             }
