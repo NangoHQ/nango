@@ -1,53 +1,23 @@
 import { discoverAuthorizationServerMetadata, discoverOAuthProtectedResourceMetadata, refreshAuthorization } from '@modelcontextprotocol/client';
 import { OAuthClientInformationSchema, OAuthMetadataSchema } from '@modelcontextprotocol/core';
 
+import { assertSafeMcpOAuthUrl, getMcpOAuthSafeUndiciDispatcher } from '../services/proxy/outbound-policy.js';
 import { NangoError } from '../utils/error.js';
 
 import type { ServiceResponse } from '../models/Generic.js';
-import type { OAuthClientInformation, OAuthMetadata, OAuthProtectedResourceMetadata, OAuthTokens } from '@modelcontextprotocol/client';
+import type { FetchLike, OAuthClientInformation, OAuthMetadata, OAuthProtectedResourceMetadata, OAuthTokens } from '@modelcontextprotocol/client';
 import type { LogContext, LogContextStateless } from '@nangohq/logs';
 import type { DBConnectionDecrypted, OAuth2Credentials } from '@nangohq/types';
 
 /**
- * Validates MCP server URL to prevent SSRF attacks
- * - Must use HTTPS protocol
- * - Cannot be localhost or private IP addresses
- * - Cannot be IP addresses (must be domain names)
- * @throws {Error} if validation fails
+ * The MCP SDK uses plain fetch by default, which skips the outbound URL policy.
+ * Every SDK call in the MCP OAuth flow must receive this as its fetchFn.
+ * Redirects stay manual: the SDK follows same-origin ones itself by calling this again for each hop.
  */
-function validateUrl(url: string): void {
-    let parsed: URL;
-    try {
-        parsed = new URL(url);
-    } catch {
-        throw new Error('Invalid MCP server URL format');
-    }
-
-    // Must use HTTPS
-    if (parsed.protocol !== 'https:') {
-        throw new Error('MCP server URL must use HTTPS protocol');
-    }
-
-    const hostname = parsed.hostname.toLowerCase();
-
-    // Block localhost variations
-    const localhostPatterns = ['localhost', '127.0.0.1', '::1', '0.0.0.0'];
-    if (localhostPatterns.some((pattern) => hostname === pattern || hostname.startsWith(pattern + '.'))) {
-        throw new Error('MCP server URL cannot be localhost');
-    }
-
-    // Block IP addresses (both IPv4 and IPv6)
-    const ipv4Pattern = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-    const ipv6Pattern = /^([0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}$/i;
-    if (ipv4Pattern.test(hostname) || ipv6Pattern.test(hostname)) {
-        throw new Error('MCP server URL cannot be an IP address, must be a domain name');
-    }
-
-    // Block link-local addresses
-    if (hostname.startsWith('169.254.') || hostname.startsWith('fe80:')) {
-        throw new Error('MCP server URL cannot be a link-local address');
-    }
-}
+export const mcpOAuthFetch: FetchLike = async (url, init) => {
+    await assertSafeMcpOAuthUrl(url.toString());
+    return fetch(url, { ...init, redirect: 'manual', dispatcher: getMcpOAuthSafeUndiciDispatcher() } as RequestInit);
+};
 
 /**
  * Picks the client identification method following the MCP spec priority:
@@ -90,18 +60,17 @@ export async function discoverMcpMetadata(
     logCtx: LogContext
 ): Promise<{ success: boolean; metadata?: OAuthMetadata; resourceMetadata?: OAuthProtectedResourceMetadata; scopes?: string[]; error?: string }> {
     try {
-        // Validate MCP server URL for security
-        validateUrl(mcpServerUrl);
+        await assertSafeMcpOAuthUrl(mcpServerUrl);
 
         // RFC9728 - Protected Resource Metadata Discovery
         let resourceMetadata: OAuthProtectedResourceMetadata | null = null;
         let authServerUrl = new URL('/', mcpServerUrl);
 
         try {
-            resourceMetadata = await discoverOAuthProtectedResourceMetadata(mcpServerUrl);
+            resourceMetadata = await discoverOAuthProtectedResourceMetadata(mcpServerUrl, undefined, mcpOAuthFetch);
 
             if (resourceMetadata?.authorization_servers?.length && resourceMetadata.authorization_servers[0]) {
-                validateUrl(resourceMetadata.authorization_servers[0]);
+                await assertSafeMcpOAuthUrl(resourceMetadata.authorization_servers[0]);
                 authServerUrl = new URL(resourceMetadata.authorization_servers[0]);
             }
         } catch {
@@ -110,7 +79,7 @@ export async function discoverMcpMetadata(
         }
 
         // RFC8414 - Authorization Server Metadata Discovery
-        const metadata = await discoverAuthorizationServerMetadata(authServerUrl);
+        const metadata = await discoverAuthorizationServerMetadata(authServerUrl, { fetchFn: mcpOAuthFetch });
         if (!metadata) {
             throw new Error('Failed to discover OAuth authorization server metadata');
         }
@@ -131,7 +100,7 @@ export async function discoverMcpMetadata(
         for (const endpoint of endpointsToValidate) {
             if (endpoint.url) {
                 try {
-                    validateUrl(endpoint.url);
+                    await assertSafeMcpOAuthUrl(endpoint.url);
                 } catch (err) {
                     const errorMsg = `Discovered ${endpoint.name} failed security validation: ${err instanceof Error ? err.message : String(err)}`;
                     void logCtx.error(errorMsg, { endpoint: endpoint.name, url: endpoint.url });
@@ -142,7 +111,7 @@ export async function discoverMcpMetadata(
 
         if (metadata.registration_endpoint) {
             try {
-                validateUrl(metadata.registration_endpoint);
+                await assertSafeMcpOAuthUrl(metadata.registration_endpoint);
             } catch (err) {
                 void logCtx.error('Discovered registration_endpoint failed security validation, ignoring it', {
                     url: metadata.registration_endpoint,
@@ -219,7 +188,7 @@ export async function refreshMcpGenericCredentials({
     // Validate stored token endpoint for security
     if (metadata.token_endpoint) {
         try {
-            validateUrl(metadata.token_endpoint);
+            await assertSafeMcpOAuthUrl(metadata.token_endpoint);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : String(err);
             void logCtx.error('Stored token_endpoint failed security validation', {
@@ -266,7 +235,8 @@ export async function refreshMcpGenericCredentials({
             metadata,
             clientInformation,
             refreshToken: currentCredentials.refresh_token,
-            ...(resource && { resource })
+            ...(resource && { resource }),
+            fetchFn: mcpOAuthFetch
         });
     } catch (err) {
         const errorMessage = err instanceof Error ? err.message : String(err);

@@ -464,6 +464,7 @@ NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='["169.254.169.254","metadata.google.inte
 | `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST` | Secure defaults when unset | JSON array of hostnames or URLs to block; custom entries are merged with defaults |
 | `NANGO_OUTBOUND_URL_POLICY` | Secure defaults when unset | JSON object controlling SSRF protection for proxy, customer webhooks, and `uncontrolledFetch` |
 | `NANGO_OUTBOUND_URL_POLICY_OAUTH` | Inherits the base policy; RFC1918 allowed | JSON object overlay controlling SSRF protection for OAuth/token flows (token, refresh, STS, JWT-bearer endpoints) |
+| `NANGO_OUTBOUND_URL_POLICY_MCP` | Inherits the OAuth policy; https only | JSON object overlay controlling SSRF protection for MCP OAuth flows (metadata discovery, client registration, token exchange, refresh) |
 
 **Operator guidance:**
 
@@ -511,6 +512,12 @@ The same DNS-pinning protection also covers OAuth/token flows (token exchange, r
 
 ```sh
 NANGO_OUTBOUND_URL_POLICY_OAUTH='{"blockPrivateIps":true}'
+```
+
+MCP OAuth flows (metadata discovery, client registration, token exchange, and refresh for MCP servers) use the OAuth policy with one more overlay, `NANGO_OUTBOUND_URL_POLICY_MCP`, on top. It has the same JSON shape. MCP OAuth only connects over `https`, and the overlay cannot change that. Nango does not follow redirects to another origin during MCP OAuth. To keep MCP servers on public hosts only while still allowing private OAuth token endpoints, set `blockPrivateIps` on the MCP overlay:
+
+```sh
+NANGO_OUTBOUND_URL_POLICY_MCP='{"blockPrivateIps":true}'
 ```
 
 #### Securing the dashboard
