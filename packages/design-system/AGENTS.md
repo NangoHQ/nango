@@ -23,7 +23,7 @@ This writes the file to `src/components/ui/<component-name>.tsx`. The generated 
 
 ### Step 2: Replace shadcn CSS variables with design tokens
 
-shadcn's variables (`border-input`, `ring`, `bg-primary`, ...) don't exist in this package. Every colour, radius, spacing, and motion value must come from `tokens/tokens.generated.css` — via a token utility (preferred) or `var(--token-name)` when no utility exists.
+shadcn's variables (`border-input`, `ring`, `bg-primary`, ...) don't exist in this package. Every colour, radius, spacing, and motion value must come from the design tokens (`tokens/tokens.json`, built into `tokens/tokens.generated.css`) — via a token utility (preferred) or `var(--token-name)` when no utility exists.
 
 **Tailwind v4 syntax for token values:**
 
@@ -227,10 +227,18 @@ src/
   index.css                CSS entry (imports tokens.generated.css)
 stories/                   MDX guides, plus stories for the webapp's own components (not this package's)
 tokens/
-  tokens.generated.css     compiled CSS custom properties (source of truth for tokens)
-  tokens.json              Tokens Studio export
+  tokens.json              source of truth for tokens (Tokens Studio format)
+  tokens.generated.css     build output of tokens.json — never edit by hand
 components.json            shadcn CLI config
 ```
+
+## Changing a token
+
+The repo is the only place tokens change. After the PR merges, design pulls `tokens.json` from `master` into Figma through Tokens Studio; nothing flows back from Figma.
+
+1. Edit `tokens/tokens.json`.
+2. Run `npm run tokens:build --workspace=@nangohq/design-system` to regenerate `tokens/tokens.generated.css`.
+3. Commit both files together. CI fails if the CSS doesn't match `tokens.json`, an alias doesn't resolve, or a removed token is still used in the webapp.
 
 ## cn() helper
 
