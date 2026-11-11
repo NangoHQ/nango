@@ -36,7 +36,16 @@ const item = (label: string) => {
     }
     return found;
 };
-const selected = () => items().filter((el) => el.hasAttribute('data-selected'));
+const selected = () => items().filter((el) => el.getAttribute('aria-checked') === 'true');
+
+async function press(el: HTMLElement, key: string) {
+    await act(async () => {
+        el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+        // Radix's roving focus moves focus on the next tick
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        el.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true }));
+    });
+}
 
 function click(el: HTMLElement) {
     act(() => {
@@ -55,9 +64,9 @@ const Control: React.FC<Partial<React.ComponentProps<typeof SegmentedControl>>> 
 );
 
 describe('SegmentedControl', () => {
-    it('renders a named group of radios with the selected one marked', () => {
+    it('renders a named radio group with the selected one marked', () => {
         render(<Control value="syncs" />);
-        const group = container.querySelector('[role="group"]');
+        const group = container.querySelector('[role="radiogroup"]');
         expect(group?.getAttribute('aria-label')).toBe('Filter');
         expect(items().map((el) => el.getAttribute('role'))).toEqual(['radio', 'radio', 'radio']);
         expect(selected()).toEqual([item('Syncs')]);
@@ -85,30 +94,29 @@ describe('SegmentedControl', () => {
         expect(selected()).toEqual([item('Syncs')]);
     });
 
-    it('selects the item that arrow keys move focus to', () => {
+    it('moves focus and selection with the arrow keys', async () => {
         const onValueChange = vi.fn();
         render(<Control value="all" onValueChange={onValueChange} />);
-        act(() => {
-            item('All').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-            item('Syncs').focus();
-        });
+        act(() => item('All').focus());
+        await press(item('All'), 'ArrowRight');
+        expect(document.activeElement).toBe(item('Syncs'));
         expect(onValueChange).toHaveBeenCalledExactlyOnceWith('syncs');
     });
 
-    it('does not select on focus that came from elsewhere (Tab, click)', () => {
+    it('does not select on focus that came from elsewhere (Tab, click)', async () => {
         const onValueChange = vi.fn();
         render(<Control value="all" onValueChange={onValueChange} />);
+        await press(document.body, 'Shift');
         act(() => item('Syncs').focus());
         expect(onValueChange).not.toHaveBeenCalled();
     });
 
-    it('leaves Up/Down alone when horizontal', () => {
+    it('leaves Up/Down alone when horizontal', async () => {
         const onValueChange = vi.fn();
         render(<Control value="all" orientation="horizontal" onValueChange={onValueChange} />);
-        act(() => {
-            item('All').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
-            item('Syncs').focus();
-        });
+        act(() => item('All').focus());
+        await press(item('All'), 'ArrowDown');
+        expect(document.activeElement).toBe(item('All'));
         expect(onValueChange).not.toHaveBeenCalled();
     });
 
@@ -122,7 +130,7 @@ describe('SegmentedControl', () => {
 
     it('sizes the track and items', () => {
         render(<Control size="sm" value="all" />);
-        expect(container.querySelector('[role="group"]')?.className).toContain('h-7');
+        expect(container.querySelector('[role="radiogroup"]')?.className).toContain('h-7');
         expect(item('All').className).toContain('h-5.5');
     });
 

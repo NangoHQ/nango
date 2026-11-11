@@ -22,7 +22,7 @@ type State = (typeof STATES)[number];
 const FORCED: Record<State, string | undefined> = {
     Default: undefined,
     Hover: 'pointer-events-none text-text-default',
-    Focus: 'pointer-events-none shadow-focus-outline-default data-selected:shadow-focus-outline-default',
+    Focus: 'pointer-events-none shadow-focus-outline-default aria-checked:shadow-focus-outline-default',
     Disabled: undefined
 };
 
