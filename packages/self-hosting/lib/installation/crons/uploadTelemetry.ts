@@ -77,11 +77,16 @@ export async function uploaderConfig(): Promise<Result<UploaderConfig>> {
         installationId: license.value.installation_id,
         privateKeyPem,
         url: envs.NANGO_INSTALLATIONS_API_URL,
-        backfillDays: envs.NANGO_HOSTED_TELEMETRY_UPLOAD_BACKFILL_DAYS
+        backfillDays: envs.NANGO_HOSTED_TELEMETRY_UPLOAD_BACKFILL_DAYS,
+        licenseGraceUntil: new Date(license.value.grace_until)
     });
 }
 
 export async function exec(config: UploaderConfig): Promise<void> {
+    if (config.licenseGraceUntil <= new Date()) {
+        logger.warning(`Skipping (the grace period of the license ended on ${config.licenseGraceUntil.toISOString()})`);
+        return;
+    }
     await tracer.trace<Promise<void>>('nango.cron.uploadTelemetry', async (span) => {
         logger.info('Starting');
         await withLock(async () => {

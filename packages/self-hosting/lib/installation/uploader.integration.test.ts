@@ -10,7 +10,7 @@ import { ensureDailyPartitions } from '@nangohq/migrations';
 import { installationsClickhouseClient } from '../cloud/clickhouse/clickhouse.js';
 import { migrate as migrateClickhouse } from '../cloud/clickhouse/migrate.js';
 import { migrate as migrateRegistry } from '../cloud/db/migrate.js';
-import { seedInstallation } from '../cloud/seeders/installation.seeder.js';
+import { seedInstallation, seedLicense } from '../cloud/seeders/installation.seeder.js';
 import { createCloudServer } from '../cloud/server.js';
 import { TELEMETRY_UPLOAD_MAX_ROWS } from '../cloud/uploads/constants.js';
 import { uploadQueuedDays, UploadRequestError } from './uploader.js';
@@ -73,9 +73,9 @@ const run = (config: UploaderConfig, deadline = new Date(Date.now() + 60_000)) =
 
 const queued = async () => (await listQueuedUploads(knex, { since, schema: telemetry })).unwrap();
 
-async function uploader(name: string, options?: { licensed?: boolean }): Promise<UploaderConfig> {
-    const { uuid, privateKeyPem } = await seedInstallation({ knex, schema: registry }, name, options);
-    return { knex, schema: telemetry, installationId: uuid, privateKeyPem, url, backfillDays: 30 };
+async function uploader(name: string, options?: { licensed?: boolean }): Promise<UploaderConfig & { id: number }> {
+    const { id, uuid, privateKeyPem } = await seedInstallation({ knex, schema: registry }, name, options);
+    return { id, knex, schema: telemetry, installationId: uuid, privateKeyPem, url, backfillDays: 30, licenseGraceUntil: new Date('2028-01-30T00:00:00Z') };
 }
 
 beforeAll(async () => {
@@ -254,16 +254,24 @@ describe('uploadQueuedDays', () => {
         expect(requests).not.toHaveBeenCalled();
     });
 
-    it('marks every upload as failed when Nango rejects the installation', async () => {
+    it('stops the run and keeps the queue when Nango does not accept the installation, and uploads once it does', async () => {
         const config = await uploader('unlicensed', { licensed: false });
-        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });
+        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency, value: 2 }, { ts: '2026-11-09T10:00:00Z', metric: concurrency, value: 4 });
         const requests = vi.spyOn(globalThis, 'fetch');
 
         const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 0, failed: 2, outOfTime: false });
-        expect(requests).toHaveBeenCalledTimes(2);
-        expect(await queued()).toEqual([]);
+        expect(res.isErr() && res.error).toMatchObject({ name: 'UploadRequestError', status: 403, code: 'no_license' });
+        expect(requests).toHaveBeenCalledTimes(1);
+        expect(await queued()).toHaveLength(2);
+
+        await seedLicense({ knex, schema: registry }, config.id);
+
+        expect((await run(config)).unwrap()).toEqual({ succeeded: 2, failed: 0, outOfTime: false });
+        expect(await stored(config.installationId)).toEqual([
+            { ts: '2026-11-08 10:00:00.000', metric: concurrency, value: 2 },
+            { ts: '2026-11-09 10:00:00.000', metric: concurrency, value: 4 }
+        ]);
     });
 
     it('retries within the same run when Nango is failing', async () => {
@@ -281,10 +289,10 @@ describe('uploadQueuedDays', () => {
 
     it.each([
         ['after three attempts when Nango keeps failing', () => Response.json({ error: { code: 'insert_failed' } }, { status: 500 }), 3],
-        ['right away on a clock skew', () => Response.json({ error: { code: 'clock_skew' } }, { status: 401 }), 1],
+        ['right away when Nango does not accept the key', () => Response.json({ error: { code: 'unknown_key' } }, { status: 401 }), 1],
         ['right away on a 429', () => Response.json({ error: { code: 'too_many_requests' } }, { status: 429 }), 1],
         ['right away on a 404', () => Response.json({ error: { code: 'not_found' } }, { status: 404 }), 1],
-        ['right away when a proxy rejects the request', () => new Response('Forbidden', { status: 403 }), 1]
+        ['right away when a proxy rejects the request', () => new Response('Request Entity Too Large', { status: 413 }), 1]
     ])('stops the run and keeps the queue, %s', async (name, answer, attempts) => {
         const config = await uploader(`kept ${name}`);
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });

@@ -11,22 +11,26 @@ export async function seedInstallation(
     db: RegistryDb,
     name: string,
     { licensed = true }: { licensed?: boolean } = {}
-): Promise<{ uuid: string; kid: string; privateKeyPem: string }> {
+): Promise<{ id: number; uuid: string; kid: string; privateKeyPem: string }> {
     const customer = (await createCustomer(db, { name: `customer-${name}` })).unwrap();
     const installation = (await createInstallation(db, { customerId: customer.id, name, mode: 'byoc', stage: 'production' })).unwrap();
     const { key, privateKeyPem } = (await createInstallationKey(db, { installationId: installation.id })).unwrap();
     if (licensed) {
-        (
-            await createInstallationLicense(db, {
-                installationId: installation.id,
-                issuedAt: new Date(),
-                expiresAt: new Date(Date.now() + 365 * DAY_MS),
-                graceUntil: new Date(Date.now() + 455 * DAY_MS),
-                license: 'jws',
-                signature: 'sig',
-                signingKid: 'nango'
-            })
-        ).unwrap();
+        await seedLicense(db, installation.id);
     }
-    return { uuid: installation.uuid, kid: key.kid, privateKeyPem };
+    return { id: installation.id, uuid: installation.uuid, kid: key.kid, privateKeyPem };
+}
+
+export async function seedLicense(db: RegistryDb, installationId: number): Promise<void> {
+    (
+        await createInstallationLicense(db, {
+            installationId,
+            issuedAt: new Date(),
+            expiresAt: new Date(Date.now() + 365 * DAY_MS),
+            graceUntil: new Date(Date.now() + 455 * DAY_MS),
+            license: 'jws',
+            signature: 'sig',
+            signingKid: 'nango'
+        })
+    ).unwrap();
 }

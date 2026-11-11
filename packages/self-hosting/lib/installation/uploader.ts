@@ -21,7 +21,7 @@ const deflate = promisify(gzip);
 
 const REQUEST_TIMEOUT_MS = 60_000;
 const SEND_ATTEMPTS = 3;
-const PERMANENT_STATUSES = new Set([400, 401, 403, 413]);
+const REJECTED_PAYLOAD_STATUSES = new Set([400, 413]);
 // We wait a few seconds between requests, so a backlog does not hit Nango all at once.
 const uploadPauseMs = () => 5_000 + Math.random() * 5_000;
 // A random wait before retrying, so installations that failed together do not retry together.
@@ -35,6 +35,7 @@ export interface UploaderConfig {
     privateKeyPem: string;
     url: string;
     backfillDays: number;
+    licenseGraceUntil: Date;
 }
 
 export class UploadRequestError extends Error {
@@ -54,11 +55,12 @@ export class UploadRequestError extends Error {
     }
 
     /**
-     * Our upload endpoint rejected the request and would reject it again, so we do not retry. Any other answer, like one
-     * from a proxy or a 404 because the route is not deployed yet, is retried on a later run.
+     * Our upload endpoint rejected the rows we sent and would reject them again, so we do not retry. Any other answer is
+     * retried on a later run. That includes a key or a license that Nango does not accept, because fixing it does not
+     * change the rows.
      */
     get permanent(): boolean {
-        return this.status !== undefined && PERMANENT_STATUSES.has(this.status) && this.code !== undefined && this.code !== 'clock_skew';
+        return this.status !== undefined && REJECTED_PAYLOAD_STATUSES.has(this.status) && this.code !== undefined;
     }
 }
 
@@ -161,8 +163,9 @@ async function uploadDay(config: UploaderConfig, { day, metric, cursor }: Queued
 }
 
 /**
- * Uploads everything in the queue, oldest first. It stops when the run is out of time or when Nango is failing, and the
- * next run continues from there. An upload that Nango rejects is marked as failed and skipped.
+ * Uploads everything in the queue, oldest first. It stops when the run is out of time, when Nango is failing or when
+ * Nango does not accept the installation, and the next run continues from there. An upload whose rows Nango rejects is
+ * marked as failed and skipped.
  */
 export async function uploadQueuedDays(
     config: UploaderConfig,
