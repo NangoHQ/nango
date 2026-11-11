@@ -30,7 +30,6 @@ import { Err, Ok } from '../utils/result.js';
 import { tsToJsPath } from '../zeroYaml/compile.js';
 import { parseIntegrationDefinitions } from '../zeroYaml/definitions.js';
 import { ReadableError } from '../zeroYaml/utils.js';
-import { installBotbuilderZodCompat } from './botbuilderZod.js';
 import { DiagnosticsMonitor, formatDiagnostics } from './diagnostics-monitor.service.js';
 import { ResponseCollector } from './response-collector.service.js';
 import { createFunctionCLI, NangoActionCLI, NangoSyncCLI } from './sdk.js';
@@ -93,9 +92,6 @@ async function loadDynamicModule(moduleName: string) {
     try {
         // Resolve module path from user's working directory
         const modulePath = require.resolve(moduleName, { paths: [process.cwd()] });
-        if (moduleName === 'botbuilder') {
-            installBotbuilderZodCompat(modulePath);
-        }
 
         // Convert to file URL for dynamic import()
         const moduleUrl = url.pathToFileURL(modulePath).href;
@@ -669,8 +665,7 @@ export class DryRunService {
 
                 // We can't await inside require so we pre-load before, a bit wasteful if we don't use them but good enough
                 const preloaded = {
-                    soap: await loadDynamicModule('soap'),
-                    botbuilder: await loadDynamicModule('botbuilder')
+                    soap: await loadDynamicModule('soap')
                 };
 
                 const sandbox = {
@@ -690,13 +685,12 @@ export class DryRunService {
                             case 'unzipper':
                                 return unzipper;
                             case 'soap':
-                            case 'botbuilder':
-                                if (!preloaded[moduleName]) {
+                                if (!preloaded.soap) {
                                     throw new Error(
                                         `Module '${moduleName}' needs to be installed on your side in a package.json. You can also test using the Nango dashboard`
                                     );
                                 }
-                                return preloaded[moduleName];
+                                return preloaded.soap;
                             default:
                                 throw new Error(`Module '${moduleName}' is not allowed`);
                         }
