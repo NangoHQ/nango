@@ -93,6 +93,16 @@ describe('directCallInputSchema', () => {
         expect(schema).toMatchObject({ properties: { input: { properties: { node: nested, list: { items: { $ref: '#/properties/input' } } } } } });
     });
 
+    it('keeps rebasing past an empty $id, which keeps the current scope', () => {
+        const schema = directCallInputSchema({
+            $id: '',
+            type: 'object',
+            properties: { node: { $id: '', properties: { up: { $ref: '#' } } } }
+        });
+
+        expect(schema).toMatchObject({ properties: { input: { properties: { node: { properties: { up: { $ref: '#/properties/input' } } } } } } });
+    });
+
     it('keeps rebasing inside a draft-07 anchor, which is not a resource of its own', () => {
         const schema = directCallInputSchema({ type: 'object', properties: { node: { $id: '#node', properties: { up: { $ref: '#' } } } } });
 

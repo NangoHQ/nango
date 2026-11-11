@@ -94,10 +94,10 @@ function rebaseLocalRefs(schema: unknown, isRoot = false): unknown {
     );
 }
 
-/** In draft-07 an `$id` starting with `#` is only an anchor, not a resource of its own. */
+/** An empty `$id` keeps the current scope, and in draft-07 one starting with `#` is only an anchor. */
 function declaresResource(schema: object): boolean {
     const id = (schema as { $id?: unknown }).$id;
-    return typeof id === 'string' && !id.startsWith('#');
+    return typeof id === 'string' && id.length > 0 && !id.startsWith('#');
 }
 
 /** The keys of a map like `properties` are names the tool chose, so none of them is a keyword. */
