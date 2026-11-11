@@ -137,4 +137,27 @@ describe('SegmentedControl', () => {
         expect(item('Light theme').className).toContain('px-0');
         expect(selected()).toEqual([item('Light theme')]);
     });
+
+    it('requires an aria-label whenever an item would render icon-only', () => {
+        // Type-level: empty children (null, false) fall into the icon-only branch, which needs a name.
+        const unnamed = () => [
+            // @ts-expect-error -- no children and no aria-label
+            <SegmentedControlItem key="a" value="a" icon={<svg />} />,
+            // @ts-expect-error -- null children render icon-only, so aria-label is required
+            <SegmentedControlItem key="b" value="b" icon={<svg />}>
+                {null}
+            </SegmentedControlItem>
+        ];
+        expect(unnamed).toBeTypeOf('function');
+
+        render(
+            <SegmentedControl aria-label="Theme" value="light">
+                <SegmentedControlItem value="light" aria-label="Light theme" icon={<svg />}>
+                    {null}
+                </SegmentedControlItem>
+            </SegmentedControl>
+        );
+        expect(item('Light theme').getAttribute('aria-label')).toBe('Light theme');
+        expect(item('Light theme').className).toContain('w-6.5');
+    });
 });

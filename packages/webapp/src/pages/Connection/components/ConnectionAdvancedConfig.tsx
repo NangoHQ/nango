@@ -151,6 +151,7 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                     <FormItem>
                                                         <FormLabel>Override developer app credentials</FormLabel>
                                                         <BinaryToggle
+                                                            aria-label="Override developer app credentials"
                                                             value={field.value}
                                                             onChange={field.onChange}
                                                             offLabel="No override"

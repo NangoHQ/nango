@@ -149,12 +149,12 @@ type ItemBaseProps = Omit<React.ComponentPropsWithoutRef<typeof ToggleGroupPrimi
 export type SegmentedControlItemProps = ItemBaseProps &
     (
         | {
-              /** Text label. One or two words. */
-              children: React.ReactNode;
+              /** Text label. One or two words. Empty children (null, booleans) would render icon-only, so they need the other branch. */
+              children: Exclude<React.ReactNode, null | undefined | boolean>;
               'aria-label'?: string;
           }
         | {
-              children?: undefined;
+              children?: null | false;
               icon: React.ReactNode;
               /** Icon-only items need a name: it is also shown as the tooltip. */
               'aria-label': string;
@@ -168,7 +168,7 @@ export const SegmentedControlItem = forwardRef<React.ElementRef<typeof ToggleGro
             throw new Error('SegmentedControlItem must be rendered inside a SegmentedControl');
         }
         const { size, value, selectOnFocus, select } = context;
-        const iconOnly = children === undefined || children === null;
+        const iconOnly = children === undefined || children === null || typeof children === 'boolean';
 
         const item = (
             <ToggleGroupPrimitive.Item
