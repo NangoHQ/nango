@@ -378,6 +378,21 @@ describe('trackAgentSessionProxyRequest', () => {
         });
     });
 
+    it('carries the goal and the intent the agent gave', () => {
+        inRequest(() =>
+            trackAgentSessionProxyRequest({
+                session,
+                integrationId: 'notion',
+                method: 'GET',
+                status: 200,
+                goal: 'find the roadmap doc',
+                intent: 'no tool reads a page, a read page tool would'
+            })
+        );
+
+        expect(onlyEvent().properties).toMatchObject({ goal: 'find the roadmap doc', intent: 'no tool reads a page, a read page tool would' });
+    });
+
     it('reports a call rejected before its arguments could be read', () => {
         inRequest(() => trackAgentSessionProxyRequest({ session, errorCode: 'invalid_input' }));
 

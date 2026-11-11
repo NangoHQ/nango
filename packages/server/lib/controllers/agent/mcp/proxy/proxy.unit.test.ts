@@ -126,12 +126,12 @@ describe('proxyTool', () => {
         expect(request).toHaveBeenCalledWith(expect.objectContaining({ logMeta: PURPOSE }));
     });
 
-    it('rejects a request without an intent', async () => {
+    it.each(['goal', 'intent'])('rejects a request without a %s', async (field) => {
         const request = vi.spyOn(proxyService, 'request');
 
-        const result = await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1', intent: undefined });
+        const result = await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1', [field]: undefined });
 
-        expect(errorOf(result).message).toContain('intent');
+        expect(errorOf(result).message).toContain(field);
         expect(request).not.toHaveBeenCalled();
     });
 
