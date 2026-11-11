@@ -85,6 +85,7 @@ export {
     FieldSet,
     fieldVariants
 } from './components/ui/field';
+export { useFieldControl } from './components/ui/field-context';
 export {
     Tooltip,
     TooltipContent,

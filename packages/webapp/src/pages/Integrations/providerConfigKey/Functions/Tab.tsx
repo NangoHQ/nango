@@ -95,7 +95,7 @@ function FunctionStatus({ fn, integration }: { fn: ListedNangoFunction; integrat
     return (
         <div className="flex items-center gap-1.5">
             <span className={cn('type-label-sm', fn.enabled ? 'text-text-link-success' : 'text-text-secondary')}>{fn.enabled ? 'Enabled' : 'Disabled'}</span>
-            {isSyncOrAction(fn) && <FunctionSwitch flow={fn} integration={integration} variant="success" />}
+            {isSyncOrAction(fn) && <FunctionSwitch flow={fn} integration={integration} />}
         </div>
     );
 }
