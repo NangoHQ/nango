@@ -1,19 +1,5 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
-/**
- * Sync design tokens between Figma and git.
- *
- * npm run tokens:fetch  → fetch latest tokens from GitHub design/tokens branch + rebuild CSS
- * npm run tokens:build  → rebuild CSS from existing tokens.json (no fetch)
- *
- * Sync workflow:
- *   Designer edits tokens in Figma via Tokens Studio plugin → Push to design/tokens branch
- *   Developer runs tokens:fetch → fetches tokens.json → regenerates CSS → commits both
- *
- * Output files (both committed to git):
- *   packages/design-system/tokens/tokens.json          raw Tokens Studio export
- *   packages/design-system/tokens/tokens.generated.css  CSS custom properties
- */
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import os from 'os';
 import path from 'path';
@@ -25,22 +11,7 @@ import StyleDictionary from 'style-dictionary';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TOKENS_DIR = path.resolve(__dirname, '../tokens');
-const BUILD_ONLY = process.argv.includes('--build-only');
 const STRICT = process.argv.includes('--strict');
-
-const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/NangoHQ/nango/design/tokens/packages/design-system/tokens/tokens.json';
-
-// ─── GitHub fetch ──────────────────────────────────────────────────────────────
-
-async function fetchFromGitHub() {
-    console.log('Fetching tokens from GitHub (design/tokens branch)...');
-    const res = await fetch(GITHUB_RAW_URL);
-    if (!res.ok) {
-        const body = await res.text().catch(() => '');
-        throw new Error(`GitHub fetch ${res.status}: ${body}`);
-    }
-    return res.json();
-}
 
 // ─── Style Dictionary setup ────────────────────────────────────────────────────
 
@@ -363,7 +334,7 @@ export async function buildCss(tokensData, { strict = false } = {}) {
         : '';
 
     const output = [
-        '/* AUTO-GENERATED — do not edit by hand. Run: npm run tokens:fetch */',
+        '/* AUTO-GENERATED — do not edit by hand. Edit tokens.json, then run: npm run tokens:build */',
         '',
         '/*',
         ' * Primitives: raw design scale values prefixed with --ds-.',
@@ -402,40 +373,14 @@ export async function buildCss(tokensData, { strict = false } = {}) {
 }
 
 async function main() {
-    let tokensData;
+    const tokensPath = path.join(TOKENS_DIR, 'tokens.json');
+    const tokensData = JSON.parse(readFileSync(tokensPath, 'utf8'));
+    console.log('Building from tokens.json...');
 
-    if (BUILD_ONLY) {
-        const tokensPath = path.join(TOKENS_DIR, 'tokens.json');
-        try {
-            tokensData = JSON.parse(readFileSync(tokensPath, 'utf8'));
-            console.log('Building from existing tokens.json...');
-        } catch {
-            throw new Error(`tokens.json not found at ${tokensPath}.\n` + 'Run `npm run tokens:fetch` to fetch from GitHub first.');
-        }
-    } else {
-        tokensData = await fetchFromGitHub();
-    }
-
-    // Build CSS first — if SD throws, we leave the on-disk tokens.json untouched
-    // so the working tree stays consistent (old tokens.json + old tokens.generated.css).
     const css = await buildCss(tokensData, { strict: STRICT });
 
-    mkdirSync(TOKENS_DIR, { recursive: true });
-    if (!BUILD_ONLY) {
-        const tokensPath = path.join(TOKENS_DIR, 'tokens.json');
-        const prettierConfig = await prettier.resolveConfig(tokensPath);
-        const formattedJson = await prettier.format(JSON.stringify(tokensData), { ...prettierConfig, filepath: tokensPath });
-        writeFileSync(tokensPath, formattedJson);
-        console.log('✓ tokens.json updated');
-    }
     writeFileSync(path.join(TOKENS_DIR, 'tokens.generated.css'), css);
     console.log('✓ tokens.generated.css generated');
-
-    if (!BUILD_ONLY) {
-        console.log('\nCommit both files to update the design system:');
-        console.log('  git add packages/design-system/tokens/');
-        console.log('  git commit -m "chore(design-system): update tokens"');
-    }
 }
 
 // Only run when invoked directly (not when imported by tests)
