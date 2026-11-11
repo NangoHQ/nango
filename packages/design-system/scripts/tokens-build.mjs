@@ -11,7 +11,6 @@ import StyleDictionary from 'style-dictionary';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TOKENS_DIR = path.resolve(__dirname, '../tokens');
-const STRICT = process.argv.includes('--strict');
 
 // ─── Style Dictionary setup ────────────────────────────────────────────────────
 
@@ -377,7 +376,7 @@ async function main() {
     const tokensData = JSON.parse(readFileSync(tokensPath, 'utf8'));
     console.log('Building from tokens.json...');
 
-    const css = await buildCss(tokensData, { strict: STRICT });
+    const css = await buildCss(tokensData, { strict: true });
 
     writeFileSync(path.join(TOKENS_DIR, 'tokens.generated.css'), css);
     console.log('✓ tokens.generated.css generated');

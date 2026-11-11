@@ -72,7 +72,7 @@ Designers and developers change tokens the same way, in a PR:
 
 3. Commit both `tokens.json` and `tokens.generated.css` in the same PR.
 
-CI rebuilds the CSS with `--strict` and fails if it differs from the committed file, or if an alias doesn't resolve. It also fails if a token you removed is still used in the webapp.
+The build fails if an alias doesn't resolve. CI also rebuilds the CSS and fails if it differs from the committed file, or if a token you removed is still used in the webapp.
 
 After the PR merges, pull it into Figma. Don't edit tokens in Figma: nothing flows back to the repo, so the change would be overwritten on the next pull.
 
