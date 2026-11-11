@@ -227,14 +227,14 @@ src/
   index.css                CSS entry (imports tokens.generated.css)
 stories/                   MDX guides, plus stories for the webapp's own components (not this package's)
 tokens/
-  tokens.json              source of truth for tokens (Tokens Studio format)
+  tokens.json              source of truth for tokens
   tokens.generated.css     build output of tokens.json — never edit by hand
 components.json            shadcn CLI config
 ```
 
 ## Changing a token
 
-The repo is the only place tokens change. After the PR merges, design pulls `tokens.json` from `master` into Figma through Tokens Studio; nothing flows back from Figma.
+The repo is the only place tokens change. After the PR merges, design pulls `tokens.json` from `master` into Figma; nothing flows back from Figma.
 
 1. Edit `tokens/tokens.json`.
 2. Run `npm run tokens:build --workspace=@nangohq/design-system` to regenerate `tokens/tokens.generated.css`.
