@@ -77,6 +77,14 @@ export {
     fieldVariants
 } from './components/ui/field';
 export {
+    SegmentedControl,
+    SegmentedControlItem,
+    type SegmentedControlItemProps,
+    segmentedControlItemVariants,
+    type SegmentedControlProps,
+    segmentedControlVariants
+} from './components/ui/segmented-control';
+export {
     Tooltip,
     TooltipContent,
     type TooltipContentProps,

@@ -1,6 +1,4 @@
-import * as React from 'react';
-
-import { cn } from '@/utils/utils';
+import { SegmentedControl, SegmentedControlItem } from '@nangohq/design-system';
 
 interface BinaryToggleProps {
     value: boolean;
@@ -8,48 +6,25 @@ interface BinaryToggleProps {
     offLabel: string;
     onLabel: string;
     disabled?: boolean;
+    /** Layout only (margin, width): it wraps the control. */
     className?: string;
+    /** Names the choice for assistive tech. Defaults to "<offLabel> or <onLabel>". */
+    'aria-label'?: string;
 }
 
-export const BinaryToggle: React.FC<BinaryToggleProps> = ({ value, onChange, offLabel, onLabel, disabled = false, className }) => {
-    const handleToggle = () => {
-        if (!disabled) {
-            onChange(!value);
-        }
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleToggle();
-        }
-    };
-
+/** Two-option design-system `SegmentedControl` bound to a boolean (off = first option). */
+export const BinaryToggle: React.FC<BinaryToggleProps> = ({ value, onChange, offLabel, onLabel, disabled = false, className, 'aria-label': ariaLabel }) => {
     return (
-        <div
-            role="switch"
-            aria-checked={value}
-            tabIndex={disabled ? -1 : 0}
-            onClick={handleToggle}
-            onKeyDown={handleKeyDown}
-            className={cn('inline-flex rounded-lg bg-surface-canvas p-1 w-fit', disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer', className)}
-        >
-            <div
-                className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 text-body-small-medium rounded-md transition-all',
-                    !value ? 'bg-surface-page text-text-strong shadow-sm' : 'text-text-secondary'
-                )}
+        <div className={className}>
+            <SegmentedControl
+                aria-label={ariaLabel ?? `${offLabel} or ${onLabel}`}
+                value={value ? 'on' : 'off'}
+                onValueChange={(next) => onChange(next === 'on')}
+                disabled={disabled}
             >
-                <span>{offLabel}</span>
-            </div>
-            <div
-                className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 text-body-small-medium rounded-md transition-all',
-                    value ? 'bg-surface-page text-text-strong shadow-sm' : 'text-text-secondary'
-                )}
-            >
-                <span>{onLabel}</span>
-            </div>
+                <SegmentedControlItem value="off">{offLabel}</SegmentedControlItem>
+                <SegmentedControlItem value="on">{onLabel}</SegmentedControlItem>
+            </SegmentedControl>
         </div>
     );
 };

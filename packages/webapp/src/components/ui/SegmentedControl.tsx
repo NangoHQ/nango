@@ -1,4 +1,4 @@
-import { cn } from '@/utils/utils';
+import { SegmentedControl as DSSegmentedControl, SegmentedControlItem } from '@nangohq/design-system';
 
 import type { LucideIcon } from 'lucide-react';
 
@@ -13,28 +13,19 @@ interface SegmentedControlProps<T extends string> {
     onChange: (value: T) => void;
     options: SegmentedControlOption<T>[];
     'aria-label': string;
+    /** `sm` (28px) by default, the height this control had before the design-system version. */
+    size?: 'md' | 'sm';
 }
 
-export function SegmentedControl<T extends string>({ value, onChange, options, 'aria-label': ariaLabel }: SegmentedControlProps<T>) {
+/** Typed options-array wrapper around the design-system `SegmentedControl`. */
+export function SegmentedControl<T extends string>({ value, onChange, options, 'aria-label': ariaLabel, size = 'sm' }: SegmentedControlProps<T>) {
     return (
-        <div role="group" aria-label={ariaLabel} className="flex items-center h-7 rounded-[2px] border-[0.5px] border-border-input text-body-small-regular">
-            {options.map(({ value: optionValue, label, Icon }, i) => (
-                <button
-                    key={optionValue}
-                    type="button"
-                    aria-pressed={value === optionValue}
-                    onClick={() => onChange(optionValue)}
-                    className={cn(
-                        'flex items-center gap-1 px-2.5 h-full transition-colors focus-visible:outline-none focus-visible:shadow-focus-outline-default focus-visible:relative focus-visible:z-10',
-                        i === 0 ? 'rounded-l-[1.5px]' : 'border-l-[0.5px] border-border-input',
-                        i === options.length - 1 && 'rounded-r-[1.5px]',
-                        value === optionValue ? 'bg-surface-panel-inset text-text-strong' : 'text-text-secondary hover:text-text-strong'
-                    )}
-                >
-                    {Icon && <Icon className="size-3.5" />}
+        <DSSegmentedControl size={size} aria-label={ariaLabel} value={value} onValueChange={(next) => onChange(next as T)}>
+            {options.map(({ value: optionValue, label, Icon }) => (
+                <SegmentedControlItem key={optionValue} value={optionValue} icon={Icon ? <Icon /> : undefined}>
                     {label}
-                </button>
+                </SegmentedControlItem>
             ))}
-        </div>
+        </DSSegmentedControl>
     );
 }
