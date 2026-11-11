@@ -9,7 +9,7 @@ import type { VariantProps } from 'class-variance-authority';
 
 /** Pick one of 2–4 options. Use Tabs when each option swaps a panel, a Select for 5+, a Switch for on/off. */
 export const segmentedControlVariants = cva(
-    ['inline-flex shrink-0 items-center gap-0.5 px-0.5', 'rounded-ds-sm border-ds-1 border-border-default bg-surface-canvas'],
+    ['inline-flex w-fit shrink-0 items-center gap-0.5 px-0.5', 'rounded-ds-sm border-ds-1 border-border-default bg-surface-canvas'],
     {
         variants: {
             size: {
