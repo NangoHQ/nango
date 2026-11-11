@@ -60,3 +60,5 @@ export { default as cohereCredentialsVerification } from './providers/cohere/cre
 export { default as parsioIoCredentialsVerification } from './providers/parsio-io/credentials-verification.js';
 export { default as serpapiCredentialsVerification } from './providers/serpapi/credentials-verification.js';
 export { default as bannerbearCredentialsVerification } from './providers/bannerbear/credentials-verification.js';
+export { default as enginemailerCredentialsVerification } from './providers/enginemailer/credentials-verification.js';
+export { default as sendsparkPostConnection } from './providers/sendspark/post-connection.js';

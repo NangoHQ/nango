@@ -1,0 +1,38 @@
+---
+title: 'Conveyor - How do I link my account?'
+sidebarTitle: 'Conveyor'
+---
+
+## Overview
+
+To authenticate with Conveyor, you need:
+
+1. **API Key** — a Conveyor API key.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A Conveyor account whose plan includes the public API. See [Conveyor pricing](https://www.conveyor.com/pricing) to talk to sales.
+- A user in a **Superadmin** or **Conveyor Admin** role, or in a custom role that has the **Integrations** module granted at an **Admin** level.
+
+### Step 1: Create an API key
+
+1. Log in to [Conveyor](https://app.conveyor.com/).
+2. Click the dropdown in the top right, select **Settings**, then open the **Integrations** tab. You can also go directly to [app.conveyor.com/settings/organization/integrations](https://app.conveyor.com/settings/organization/integrations).
+3. Click **Add Integration** in the top right.
+4. Choose **Conveyor API** at the bottom of the list and click **Next Step**.
+5. Enter a name for the API key, select the permissions your integration needs, and click **Create**.
+6. Copy the key, then click **Done**.
+
+<Tip>Conveyor shows the full key only once. Store it securely; if you lose it, create a new one.</Tip>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Conveyor.
+2. Enter your key in the **API Key** field.
+3. Submit the form. The connection is saved without checking the key: if the key is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/conveyor/form.png" alt="Conveyor Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Conveyor.

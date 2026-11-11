@@ -1,0 +1,77 @@
+---
+title: 'Amara'
+sidebarTitle: 'Amara'
+description: 'Integrate your application with the Amara API'
+---
+
+## 🚀 Quickstart
+
+Connect to Amara with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Amara_.
+    </Step>
+    <Step id="authorize-amara" title="Authorize Amara">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Amara API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-amara-api" title="Call the Amara API">
+    Let's make your first request to the Amara API to list the languages Amara supports. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/languages/" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/languages/',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Amara integration guides
+
+- [How do I link my account?](/api-integrations/amara/connect)  
+Generate an API key on your Amara Account page and connect it in the Connect UI.
+
+Official docs: [Amara API documentation](https://apidocs.amara.org/)
+
+## 🧩 Pre-built syncs & tools for Amara
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/amara/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
