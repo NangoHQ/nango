@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 import { Button } from '@nangohq/design-system';
 
@@ -39,7 +39,7 @@ export const InvoicesLink: React.FC = () => {
         <Button asChild variant="link-accent">
             <a href={portalUrl} target="_blank" rel="noopener noreferrer" onClick={() => track('billing:invoice_link_click', {})}>
                 All invoices
-                <ExternalLink />
+                <ArrowUpRight />
             </a>
         </Button>
     );

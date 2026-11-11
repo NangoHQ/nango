@@ -1,4 +1,4 @@
-import { Braces, Check, ExternalLink } from 'lucide-react';
+import { ArrowUpRight, Braces, Check } from 'lucide-react';
 import { parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs';
 import { useState } from 'react';
 
@@ -132,7 +132,7 @@ const NoResultsState: React.FC<{ query: string; noun: string; displayName: strin
         <div className="flex items-center gap-3 pt-1">
             <Button asChild variant="link-accent" size="md">
                 <a href={FUNCTIONS_GUIDE_URL} target="_blank" rel="noreferrer">
-                    Build your own <ExternalLink />
+                    Build your own <ArrowUpRight />
                 </a>
             </Button>
             <Button variant="outline" size="sm" onClick={onClear}>
@@ -158,12 +158,12 @@ const NoFunctionsState: React.FC<{ displayName: string }> = ({ displayName }) =>
         <div className="flex items-center gap-4 pt-1">
             <Button asChild variant="link-accent" size="md">
                 <a href={FUNCTIONS_GUIDE_URL} target="_blank" rel="noreferrer">
-                    Build your own <ExternalLink />
+                    Build your own <ArrowUpRight />
                 </a>
             </Button>
             <Button asChild variant="link-accent" size="md">
                 <a href={PROXY_GUIDE_URL} target="_blank" rel="noreferrer">
-                    Proxy docs <ExternalLink />
+                    Proxy docs <ArrowUpRight />
                 </a>
             </Button>
         </div>
@@ -179,7 +179,7 @@ const McpToolsState: React.FC = () => (
         <div className="flex items-center gap-4 pt-1">
             <Button asChild variant="link-accent" size="md">
                 <a href={MCP_TOOLS_GUIDE_URL} target="_blank" rel="noreferrer">
-                    Docs <ExternalLink />
+                    Docs <ArrowUpRight />
                 </a>
             </Button>
         </div>
