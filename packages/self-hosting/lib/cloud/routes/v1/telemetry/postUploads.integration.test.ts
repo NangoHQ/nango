@@ -185,6 +185,22 @@ describe('POST /v1/telemetry/uploads', () => {
         expect(await stored(uuid)).toEqual([]);
     });
 
+    it.each([
+        ['is not valid', () => Promise.resolve('not.a.token'), 401, 'malformed'],
+        [
+            'is from an installation without a license',
+            (privateKeyPem: string) => mintInstallationToken(privateKeyPem, { body: Buffer.alloc(0) }),
+            403,
+            'no_license'
+        ]
+    ])('answers without reading the body when the token %s', async (name, token, status, code) => {
+        const { privateKeyPem } = await installation(`unread ${name}`, { licensed: false });
+
+        const res = await post(Buffer.alloc(TELEMETRY_UPLOAD_MAX_BODY_BYTES + 1), { token: await token(privateKeyPem) });
+
+        expect(res).toMatchObject({ status, json: { error: { code } } });
+    });
+
     it('rejects an installation without a license', async () => {
         const { uuid, privateKeyPem } = await installation('unlicensed', { licensed: false });
 
