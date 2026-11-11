@@ -20,7 +20,10 @@ export const fieldVariants = cva('group/field w-full', {
                 'grid grid-cols-[220px_minmax(0,1fr)] grid-rows-[auto_1fr] items-start gap-x-8 gap-y-1.5',
                 '[&>:first-child]:row-span-2 [&>:first-child]:pt-1.5',
                 '[&>:not(:first-child)]:col-start-2'
-            ]
+            ],
+            // Label beside a small control (switch, checkbox), vertically centred. This was `horizontal` before the
+            // Dharma settings-row layout took that name; existing switch/checkbox rows should use `inline`.
+            inline: 'flex flex-row items-center gap-2'
         }
     },
     defaultVariants: {
@@ -140,7 +143,7 @@ const FieldLabel = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>
                     // Layout — inline so the label can sit beside an icon, tooltip, or the optional tag
                     'flex min-w-0 flex-wrap items-baseline gap-1.5 wrap-break-word select-none',
                     // Typography (Figma label/md: Geist Medium 13, text/default)
-                    'type-label-md text-text-default',
+                    'font-sans text-ds-sm font-ds-medium leading-ds-snug tracking-ds-tight text-text-default',
                     // Disabled affordances driven by an ancestor Field[data-disabled] or a peer :disabled control
                     'group-data-[disabled=true]/field:text-text-disabled group-data-[disabled=true]/field:pointer-events-none peer-disabled:cursor-not-allowed',
                     className
@@ -148,7 +151,7 @@ const FieldLabel = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>
                 {...props}
             >
                 {children}
-                {optional && <span className="type-text-regular-xs text-text-muted">Optional</span>}
+                {optional && <span className="font-sans text-ds-xs font-ds-regular leading-ds-normal text-text-muted">Optional</span>}
             </LabelPrimitive.Root>
         );
     }
@@ -172,7 +175,7 @@ function FieldDescription({ className, id, ...props }: React.ComponentProps<'p'>
             data-slot="field-description"
             id={resolvedId}
             // Figma text/regular/xs + text/secondary
-            className={cn('type-text-regular-xs text-text-secondary', className)}
+            className={cn('font-sans text-ds-xs font-ds-regular leading-ds-normal text-text-secondary', className)}
             {...props}
         />
     );
@@ -223,7 +226,7 @@ function FieldError({ className, children, errors, id, ...props }: FieldErrorPro
             id={resolvedId}
             data-slot="field-error"
             // Figma: CircleAlert 12px icon/danger + text/regular/xs text/danger
-            className={cn('type-text-regular-xs text-text-danger flex items-start gap-1', className)}
+            className={cn('font-sans text-ds-xs font-ds-regular leading-ds-normal text-text-danger flex items-start gap-1', className)}
             {...props}
         >
             {/* Centred on the first 18px line (12px × 1.5) */}

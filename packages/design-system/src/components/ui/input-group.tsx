@@ -79,7 +79,7 @@ function InputGroup({ className, size, ...props }: InputGroupProps) {
 export const inputGroupAddonVariants = cva(
     [
         'flex h-auto shrink-0 cursor-text items-center justify-center gap-1 select-none',
-        'type-text-regular-sm text-text-secondary',
+        'font-sans text-ds-sm font-ds-regular leading-ds-normal text-text-secondary',
         // Icon addons: 14px, icon/secondary (Figma Input Group Addon 2585:310)
         "[&>svg]:text-icon-secondary [&>svg:not([class*='size-'])]:size-3.5 [&>svg]:shrink-0",
         // Icon / text / kbd / swatch addons get 6px side padding; button addons sit 4px from the edge (the group's own padding)
@@ -137,7 +137,7 @@ function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
         <span
             data-slot="input-group-text"
             className={cn(
-                "type-text-regular-sm text-text-secondary flex items-center gap-1.5 [&_svg]:pointer-events-none [&_svg]:text-icon-secondary [&_svg:not([class*='size-'])]:size-3.5",
+                "font-sans text-ds-sm font-ds-regular leading-ds-normal text-text-secondary flex items-center gap-1.5 [&_svg]:pointer-events-none [&_svg]:text-icon-secondary [&_svg:not([class*='size-'])]:size-3.5",
                 className
             )}
             {...props}
@@ -151,7 +151,7 @@ function InputGroupKbd({ className, ...props }: React.ComponentProps<'kbd'>) {
         <kbd
             data-slot="input-group-kbd"
             className={cn(
-                'type-code-regular-xs text-text-secondary border-border-default inline-flex h-4 min-w-4 items-center justify-center rounded-ds-xs border-ds-1 px-1',
+                'font-mono text-ds-2xs font-ds-regular leading-ds-normal text-text-secondary border-border-default inline-flex h-4 min-w-4 items-center justify-center rounded-ds-xs border-ds-1 px-1',
                 className
             )}
             {...props}
@@ -208,7 +208,7 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, InputGroupInputProps>
                     controlBase,
                     // Input padding-x 6px, so text sits 10px from the edge with no addon (4px group + 6px)
                     size === 'auto' ? 'h-auto p-0' : 'h-full px-1.5',
-                    mono ? 'type-code-regular-sm' : 'type-text-regular-sm',
+                    mono ? 'font-mono text-ds-xs font-ds-regular leading-ds-normal' : 'font-sans text-ds-sm font-ds-regular leading-ds-normal',
                     className
                 )}
                 value={value}
@@ -233,7 +233,7 @@ const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, React.Component
                 ref={ref}
                 data-slot="input-group-control"
                 data-filled={isFilled}
-                className={cn(controlBase, 'type-text-regular-sm resize-none self-stretch px-1.5 py-1.5', className)}
+                className={cn(controlBase, 'font-sans text-ds-sm font-ds-regular leading-ds-normal resize-none self-stretch px-1.5 py-1.5', className)}
                 value={value}
                 defaultValue={defaultValue}
                 onChange={handleChange}

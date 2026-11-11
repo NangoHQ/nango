@@ -119,6 +119,23 @@ describe('Field wiring', () => {
     });
 });
 
+describe('className overrides', () => {
+    it('lets a caller font utility win over the default typography', () => {
+        render(
+            <>
+                <Input className="font-mono" />
+                <InputGroup>
+                    <InputGroupInput className="font-mono" />
+                </InputGroup>
+            </>
+        );
+        for (const input of Array.from(container.querySelectorAll('input'))) {
+            expect(input.className).toContain('font-mono');
+            expect(input.className).not.toContain('font-sans');
+        }
+    });
+});
+
 describe('SecretInput', () => {
     const secret = 'nango_sk_dev_abcdef4c9';
 

@@ -136,6 +136,16 @@ export const Orientation: Story = {
     )
 };
 
+// orientation="inline": label beside a small control, e.g. a checkbox row. (Before the Dharma refresh this was `horizontal`.)
+export const Inline: Story = {
+    render: () => (
+        <Field orientation="inline">
+            <input type="checkbox" id="field-inline" />
+            <FieldLabel htmlFor="field-inline">Show "Secured by Nango"</FieldLabel>
+        </Field>
+    )
+};
+
 // The Figma review frame (Dharma 2588:319), rebuilt from components.
 export const ReviewFrame: Story = {
     render: () => (

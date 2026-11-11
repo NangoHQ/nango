@@ -12,7 +12,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ classNa
             className={cn(
                 // Same shape, tokens and states as Input (Figma Dharma Input Group)
                 'flex w-full min-w-0 rounded-ds-sm border-ds-1 px-2.5 py-1.5 outline-none transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out',
-                'type-text-regular-sm',
+                'font-sans text-ds-sm font-ds-regular leading-ds-normal',
                 'bg-surface-input border-border-input text-text-default placeholder:text-text-placeholder',
                 'not-read-only:hover:border-border-input-hover',
                 '[&:read-only:not(:disabled)]:bg-surface-input-muted [&:read-only:not(:disabled)]:border-border-default',

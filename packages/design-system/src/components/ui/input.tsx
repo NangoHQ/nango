@@ -55,8 +55,8 @@ export const inputVariants = cva(
             },
             // Geist Mono 12px for IDs, keys, URLs and env var names (Figma code/regular/sm). Otherwise Geist 13px (text/regular/sm).
             mono: {
-                true: 'type-code-regular-sm',
-                false: 'type-text-regular-sm'
+                true: 'font-mono text-ds-xs font-ds-regular leading-ds-normal',
+                false: 'font-sans text-ds-sm font-ds-regular leading-ds-normal'
             }
         },
         defaultVariants: {
