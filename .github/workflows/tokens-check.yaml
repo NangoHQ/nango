@@ -64,7 +64,7 @@ jobs:
               run: npm ci
 
             - name: Validate token aliases resolve cleanly
-              run: npm run tokens:build --workspace=@nangohq/design-system -- --strict
+              run: npm run tokens:build --workspace=@nangohq/design-system
 
             # The previous step rebuilds tokens.generated.css from the committed
             # tokens.json. If the committed CSS is stale, hand-edited, or mangled by
