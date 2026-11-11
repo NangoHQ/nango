@@ -110,6 +110,18 @@
       "destination": "/api-integrations/pandadoc"
     },
     {
+      "source": "/integrations/all/docusign",
+      "destination": "/api-integrations/docusign"
+    },
+    {
+      "source": "/integrations/all/docusign-sandbox",
+      "destination": "/api-integrations/docusign-sandbox"
+    },
+    {
+      "source": "/integrations/all/docusign/webhooks",
+      "destination": "/api-integrations/docusign/webhooks"
+    },
+    {
       "source": "/integrations/all/fathom",
       "destination": "/api-integrations/fathom"
     },
@@ -1382,8 +1394,8 @@
               "api-integrations/docmosis",
               "api-integrations/docparser",
               "integrations/all/document360",
-              "integrations/all/docusign",
-              "integrations/all/docusign-sandbox",
+              "api-integrations/docusign",
+              "api-integrations/docusign-sandbox",
               "integrations/all/docuware",
               "api-integrations/domo",
               "api-integrations/dope-security",
