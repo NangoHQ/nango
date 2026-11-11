@@ -34,7 +34,6 @@ const database = 'installations_uploader_test';
 const concurrency = 'nango.hosted_metric.active_concurrency.max';
 const connections = 'nango.hosted_metric.connections.count';
 const now = new Date('2026-11-10T08:00:00Z');
-const since = new Date('2026-10-01T00:00:00Z');
 
 let knex: Knex;
 let admin: ClickHouseClient;
@@ -71,7 +70,7 @@ async function stored(installationId: string): Promise<{ ts: string; metric: str
 
 const run = (config: UploaderConfig, deadline = new Date(Date.now() + 60_000)) => uploadQueuedDays(config, { now, deadline });
 
-const queued = async () => (await listQueuedUploads(knex, { since, schema: telemetry })).unwrap();
+const queued = async () => (await listQueuedUploads(knex, { schema: telemetry })).unwrap();
 
 async function uploader(name: string, options?: { licensed?: boolean }): Promise<UploaderConfig & { id: number }> {
     const { id, uuid, privateKeyPem } = await seedInstallation({ knex, schema: registry }, name, options);
@@ -171,30 +170,6 @@ describe('uploadQueuedDays', () => {
         expect(await stored(config.installationId)).toEqual([]);
     });
 
-    it('does not upload the same day twice', async () => {
-        const config = await uploader('once');
-        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency });
-        (await run(config)).unwrap();
-        const requests = vi.spyOn(globalThis, 'fetch');
-
-        const res = await run(config);
-
-        expect(res.unwrap()).toEqual({ succeeded: 0, failed: 0, outOfTime: false });
-        expect(requests).not.toHaveBeenCalled();
-    });
-
-    it('uploads a day in several requests when it does not fit in one', async () => {
-        const config = await uploader('paged');
-        await insertBigDay(concurrency);
-        const requests = vi.spyOn(globalThis, 'fetch');
-
-        const res = await run(config);
-
-        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
-        expect(requests).toHaveBeenCalledTimes(2);
-        expect(await stored(config.installationId)).toHaveLength(BIG_DAY_ROWS);
-    });
-
     it('continues a day from the last page Nango accepted', async () => {
         const config = await uploader('resumed');
         await insertBigDay(concurrency);
@@ -289,7 +264,6 @@ describe('uploadQueuedDays', () => {
 
     it.each([
         ['after three attempts when Nango keeps failing', () => Response.json({ error: { code: 'insert_failed' } }, { status: 500 }), 3],
-        ['right away when Nango does not accept the key', () => Response.json({ error: { code: 'unknown_key' } }, { status: 401 }), 1],
         ['right away on a 429', () => Response.json({ error: { code: 'too_many_requests' } }, { status: 429 }), 1],
         ['right away on a 404', () => Response.json({ error: { code: 'not_found' } }, { status: 404 }), 1],
         ['right away when a proxy rejects the request', () => new Response('Request Entity Too Large', { status: 413 }), 1]

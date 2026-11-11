@@ -186,7 +186,7 @@ export async function uploadQueuedDays(
     if (expired.value > 0) {
         logger.error(`${expired.value} uploads are older than ${config.backfillDays} days and were marked as failed. Request the data manually`);
     }
-    const queued = await listQueuedUploads(config.knex, { since, ...schema });
+    const queued = await listQueuedUploads(config.knex, { ...schema });
     if (queued.isErr()) {
         return Err(queued.error);
     }

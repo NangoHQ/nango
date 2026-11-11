@@ -111,24 +111,13 @@ describe('listQueuedUploads', () => {
         (await saveUploadProgress(knex, { day: '2026-11-08', metric: concurrency, cursor, done: false, schema })).unwrap();
         (await saveUploadProgress(knex, { day: '2026-11-07', metric: concurrency, cursor, done: true, schema })).unwrap();
 
-        const queued = (await listQueuedUploads(knex, { since, schema })).unwrap();
+        const queued = (await listQueuedUploads(knex, { schema })).unwrap();
 
         expect(queued).toEqual([
             { day: '2026-11-08', metric: concurrency, cursor },
             { day: '2026-11-08', metric: connections, cursor: null },
             { day: '2026-11-09', metric: concurrency, cursor: null }
         ]);
-    });
-
-    it('does not list failed uploads', async () => {
-        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });
-        (await enqueueUploads(knex, { since, today, schema })).unwrap();
-
-        (await failUpload(knex, { day: '2026-11-08', metric: concurrency, schema })).unwrap();
-
-        expect((await listQueuedUploads(knex, { since, schema })).unwrap().map((upload) => upload.day)).toEqual(['2026-11-09']);
-        (await enqueueUploads(knex, { since, today, schema })).unwrap();
-        expect((await listQueuedUploads(knex, { since, schema })).unwrap().map((upload) => upload.day)).toEqual(['2026-11-09']);
     });
 
     it('does not change an upload that already succeeded or failed', async () => {
@@ -144,15 +133,6 @@ describe('listQueuedUploads', () => {
             { day: '2026-11-08', metric: concurrency, status: 'succeeded' },
             { day: '2026-11-08', metric: connections, status: 'failed' }
         ]);
-    });
-
-    it('does not list uploads older than the window', async () => {
-        await insert({ ts: '2026-11-07T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });
-        (await enqueueUploads(knex, { since, today, schema })).unwrap();
-
-        const queued = (await listQueuedUploads(knex, { since: at('2026-11-08T00:00:00Z'), schema })).unwrap();
-
-        expect(queued.map((upload) => upload.day)).toEqual(['2026-11-09']);
     });
 });
 

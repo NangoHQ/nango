@@ -55,16 +55,13 @@ export async function enqueueUploads(
 }
 
 /** The uploads still waiting, oldest first. */
-export async function listQueuedUploads(
-    knex: Knex,
-    { since, schema = HOSTED_TELEMETRY_SCHEMA }: { since: Date; schema?: string }
-): Promise<Result<QueuedUpload[]>> {
+export async function listQueuedUploads(knex: Knex, { schema = HOSTED_TELEMETRY_SCHEMA }: { schema?: string } = {}): Promise<Result<QueuedUpload[]>> {
     try {
         const res = await knex.raw<{ rows: { day: string; metric: string; cursor_ts: Date | null; cursor_attributes: MetricRow['attributes'] | null }[] }>(
             `SELECT day::text AS day, metric, cursor_ts, cursor_attributes FROM ??.??
-             WHERE status = 'queued' AND day >= ?::date
+             WHERE status = 'queued'
              ORDER BY day, metric`,
-            [schema, HOSTED_TELEMETRY_UPLOADS_TABLE, utcDay(since)]
+            [schema, HOSTED_TELEMETRY_UPLOADS_TABLE]
         );
         return Ok(
             res.rows.map((row) => ({
