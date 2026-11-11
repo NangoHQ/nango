@@ -28,20 +28,38 @@ export function directCallInputSchema(toolInput: Record<string, unknown> | 'none
     if (toolInput === 'none') {
         return PURPOSE_JSON_SCHEMA as Tool['inputSchema'];
     }
+    if (toolInput === undefined) {
+        return wrap({ input: ANY_INPUT, required: [] });
+    }
 
-    const {
-        $schema = PURPOSE_JSON_SCHEMA.$schema,
-        $id: _id,
-        $defs,
-        definitions,
-        ...input
-    } = toolInput === undefined ? {} : (rebaseLocalRefs(toolInput) as Record<string, unknown>);
+    // A schema with its own identity already scopes its refs, so it is nested untouched.
+    if (declaresResource(toolInput)) {
+        const { $schema, ...input } = toolInput;
+        return wrap({ $schema, input, required: ['input'] });
+    }
 
+    const { $schema, $defs, definitions, ...input } = rebaseLocalRefs(toolInput, true) as Record<string, unknown>;
+    return wrap({ $schema, input, required: ['input'], $defs, definitions });
+}
+
+function wrap({
+    $schema = PURPOSE_JSON_SCHEMA.$schema,
+    input,
+    required,
+    $defs,
+    definitions
+}: {
+    $schema?: unknown;
+    input: Record<string, unknown>;
+    required: string[];
+    $defs?: unknown;
+    definitions?: unknown;
+}): Tool['inputSchema'] {
     return {
         ...PURPOSE_JSON_SCHEMA,
         $schema,
-        properties: { input: toolInput ? input : ANY_INPUT, ...PURPOSE_JSON_SCHEMA.properties },
-        required: toolInput ? ['input', ...(PURPOSE_JSON_SCHEMA.required ?? [])] : PURPOSE_JSON_SCHEMA.required,
+        properties: { input, ...PURPOSE_JSON_SCHEMA.properties },
+        required: [...required, ...(PURPOSE_JSON_SCHEMA.required ?? [])],
         ...($defs === undefined ? {} : { $defs }),
         ...(definitions === undefined ? {} : { definitions })
     } as Tool['inputSchema'];
@@ -51,11 +69,15 @@ export function directCallInputSchema(toolInput: Record<string, unknown> | 'none
  * Nesting the tool schema under `input` moves its root, so its local refs are pointed at the new one,
  * except refs into its definitions, which stay at the root.
  */
-function rebaseLocalRefs(schema: unknown): unknown {
+function rebaseLocalRefs(schema: unknown, isRoot = false): unknown {
     if (Array.isArray(schema)) {
         return schema.map((item) => rebaseLocalRefs(item));
     }
     if (typeof schema !== 'object' || schema === null) {
+        return schema;
+    }
+    // A nested resource resolves its own local refs against itself, so the move does not reach them.
+    if (!isRoot && declaresResource(schema)) {
         return schema;
     }
 
@@ -70,6 +92,12 @@ function rebaseLocalRefs(schema: unknown): unknown {
             return [key, NAMED_SCHEMAS_KEYWORDS.has(key) ? rebaseNamedSchemas(value) : rebaseLocalRefs(value)];
         })
     );
+}
+
+/** In draft-07 an `$id` starting with `#` is only an anchor, not a resource of its own. */
+function declaresResource(schema: object): boolean {
+    const id = (schema as { $id?: unknown }).$id;
+    return typeof id === 'string' && !id.startsWith('#');
 }
 
 /** The keys of a map like `properties` are names the tool chose, so none of them is a keyword. */

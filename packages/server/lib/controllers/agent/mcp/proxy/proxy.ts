@@ -38,11 +38,14 @@ export const proxyTool = defineAgentSessionMcpTool({
     async handler({ args, account, environment, plan, session }) {
         const integrationId = args.integration;
         const purpose = { goal: args.goal, intent: args.intent };
+        const track = (outcome: ProxyRequestOutcome) => {
+            trackAgentSessionProxyRequest({ session, integrationId, method: args.method, ...purpose, ...outcome });
+        };
 
         // Reaching an integration's API is gated on the session declaring it, so a toolset that
         // excluded an integration is not reachable through the escape hatch either.
         if (!Object.hasOwn(session.compiledToolset, integrationId)) {
-            trackAgentSessionProxyRequest({ session, ...purpose, integrationId, method: args.method, errorCode: 'unknown_integration' });
+            track({ errorCode: 'unknown_integration' });
             return Err(
                 new PublicMcpError(`Integration '${integrationId}' is not one of this session's integrations. Use one this session has.`, {
                     code: 'unknown_integration',
@@ -53,7 +56,7 @@ export const proxyTool = defineAgentSessionMcpTool({
 
         const connection = await resolveSessionConnection({ session, integrationId });
         if (!connection) {
-            trackAgentSessionProxyRequest({ session, ...purpose, integrationId, method: args.method, errorCode: 'integration_not_connected' });
+            track({ errorCode: 'integration_not_connected' });
             return Err(
                 new PublicMcpError(
                     `Integration '${integrationId}' has no connection in this session, so no request to it can be authenticated. ${notConnectedGuidance(integrationId, session)}`,
@@ -66,14 +69,7 @@ export const proxyTool = defineAgentSessionMcpTool({
         // rather than in the input schema, which is built once and knows no integration.
         const rejectedHeaders = rejectedHeaderNames({ headers: args.headers, provider: getProvider(connection.provider) });
         if (rejectedHeaders.length > 0) {
-            trackAgentSessionProxyRequest({
-                session,
-                ...purpose,
-                integrationId,
-                provider: connection.provider,
-                method: args.method,
-                errorCode: 'invalid_input'
-            });
+            track({ provider: connection.provider, errorCode: 'invalid_input' });
             return Err(
                 new PublicMcpError(
                     `Nango sets these headers itself, so they cannot be passed: ${rejectedHeaders.join(', ')}. The request is authenticated with the session's connection, so drop those headers and call again.`,
@@ -106,25 +102,14 @@ export const proxyTool = defineAgentSessionMcpTool({
                     logMeta: purpose
                 });
             } catch (err) {
-                trackAgentSessionProxyRequest({
-                    session,
-                    ...purpose,
-                    integrationId,
-                    provider: connection.provider,
-                    method: args.method,
-                    errorCode: 'internal_error'
-                });
+                track({ provider: connection.provider, errorCode: 'internal_error' });
                 throw err;
             }
 
             const { logCtx, status, result } = execution;
 
-            trackAgentSessionProxyRequest({
-                session,
-                ...purpose,
-                integrationId,
+            track({
                 provider: connection.provider,
-                method: args.method,
                 logOperationId: logCtx?.id,
                 status,
                 errorCode: proxyErrorCode(execution),
@@ -140,6 +125,14 @@ export const proxyTool = defineAgentSessionMcpTool({
         });
     }
 });
+
+interface ProxyRequestOutcome {
+    provider?: string | undefined;
+    logOperationId?: string | undefined;
+    status?: number | undefined;
+    errorCode?: string | undefined;
+    providerErrorCode?: string | undefined;
+}
 
 /**
  * A provider 4xx or 5xx comes back as a result, not an error, so the outcome is what says the

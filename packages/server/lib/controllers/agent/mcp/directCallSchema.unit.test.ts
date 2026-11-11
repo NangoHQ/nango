@@ -72,6 +72,33 @@ describe('directCallInputSchema', () => {
         });
     });
 
+    it('nests a schema with its own $id untouched, so its refs keep resolving against it', () => {
+        const toolInput = {
+            $id: 'https://example.com/tree.json',
+            type: 'object',
+            properties: { children: { type: 'array', items: { $ref: '#' } }, self: { $ref: 'https://example.com/tree.json#/properties/children' } },
+            $defs: { Leaf: { type: 'string' } }
+        };
+
+        const { $id, ...rest } = toolInput;
+        expect(directCallInputSchema(toolInput)).toMatchObject({ properties: { input: { $id, ...rest } }, required: ['input', 'goal', 'intent'] });
+        expect(directCallInputSchema(toolInput)).not.toHaveProperty('$defs');
+    });
+
+    it('leaves a nested resource alone, since its refs resolve against its own $id', () => {
+        const nested = { $id: 'https://example.com/node.json', type: 'object', properties: { next: { $ref: '#' } } };
+
+        const schema = directCallInputSchema({ type: 'object', properties: { node: nested, list: { type: 'array', items: { $ref: '#' } } } });
+
+        expect(schema).toMatchObject({ properties: { input: { properties: { node: nested, list: { items: { $ref: '#/properties/input' } } } } } });
+    });
+
+    it('keeps rebasing inside a draft-07 anchor, which is not a resource of its own', () => {
+        const schema = directCallInputSchema({ type: 'object', properties: { node: { $id: '#node', properties: { up: { $ref: '#' } } } } });
+
+        expect(schema).toMatchObject({ properties: { input: { properties: { node: { $id: '#node', properties: { up: { $ref: '#/properties/input' } } } } } } });
+    });
+
     it('leaves anchors, remote refs and data that only looks like a ref alone', () => {
         const schema = directCallInputSchema({
             type: 'object',
