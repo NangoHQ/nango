@@ -455,6 +455,22 @@ describe('executeSessionTool', () => {
         expect(track).toHaveBeenCalledWith(expect.objectContaining({ eventProperties: expect.objectContaining({ function_source: 'custom' }) }));
     });
 
+    it('tracks the source of a disabled tool', async () => {
+        const track = vi.spyOn(productTracking, 'track').mockImplementation(() => {});
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(
+            Ok({
+                config: { ...TOOL.config, enabled: false },
+                currentVersion: { ...TOOL.currentVersion, source: 'catalog' }
+            } as functionConfigService.CurrentFunctionConfig)
+        );
+
+        await execute('read_doc');
+
+        expect(track).toHaveBeenCalledWith(
+            expect.objectContaining({ eventProperties: expect.objectContaining({ error_code: 'tool_not_in_session', function_source: 'catalog' }) })
+        );
+    });
+
     it('refuses a disabled tool rather than running the action it shadows', async () => {
         vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ ...TOOL, config: { ...TOOL.config, enabled: false } }));
 

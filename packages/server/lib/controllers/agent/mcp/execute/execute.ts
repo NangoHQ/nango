@@ -167,13 +167,13 @@ export async function executeSessionTool({
             return Err(tool.error);
         }
 
-        if (tool.value && !tool.value.config.enabled) {
-            track({ errorCode: 'tool_not_in_session' });
-            return Err(toolUnavailableError({ integrationId, toolName }));
-        }
-
         if (tool.value) {
             const functionSource = tool.value.currentVersion.source;
+            if (!tool.value.config.enabled) {
+                track({ errorCode: 'tool_not_in_session', functionSource });
+                return Err(toolUnavailableError({ integrationId, toolName }));
+            }
+
             const { logCtx, result } = await invokeFunction({
                 operation: { type: 'tool', action: 'call' },
                 account,

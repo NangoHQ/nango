@@ -328,7 +328,7 @@ describe('trackAgentSessionToolCall', () => {
         expect(onlyEvent().properties).toMatchObject({ function_source: expected });
     });
 
-    it('leaves the function source off when the tool never resolved', () => {
+    it('leaves the function source off for an MCP tool', () => {
         inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'linear-mcp', toolName: 'list_issues', mcpTool: true }));
 
         expect(onlyEvent().properties).not.toHaveProperty('function_source');
