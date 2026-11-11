@@ -32151,6 +32151,71 @@ uber:
         base_url: https://api.uber.com
     docs: https://nango.dev/docs/integrations/all/uber
 
+udemy-business:
+    display_name: Udemy Business
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    token_url: https://api.udemy.com/authenticate
+    token_params:
+        grant_type: client_credentials
+        scope: course:read
+    proxy:
+        base_url: https://api.udemy.com
+    docs: https://nango.dev/docs/api-integrations/udemy-business
+    docs_connect: https://nango.dev/docs/api-integrations/udemy-business/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID of a GraphQL API client in your Udemy Business account
+        client_secret:
+            type: string
+            title: Client secret
+            description: The client secret of the same API client
+            secret: true
+
+udemy-business-rest:
+    display_name: Udemy Business (REST)
+    categories:
+        - hr
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.udemy.com
+        verification:
+            method: GET
+            endpoints:
+                - /api-2.0/organizations/${connectionConfig.organization_id}/courses/list/?page_size=1
+    docs: https://nango.dev/docs/api-integrations/udemy-business-rest
+    docs_connect: https://nango.dev/docs/api-integrations/udemy-business-rest/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Udemy Business site
+            pattern: '^[a-z0-9-]+$'
+            example: acme
+            prefix: https://
+            suffix: .udemy.com
+            order: 1
+        organization_id:
+            type: string
+            title: Account ID
+            description: Your Udemy Business account ID, a number
+            pattern: '^[0-9]+$'
+            example: '123456'
+            order: 2
+    credentials:
+        username:
+            type: string
+            title: Client ID
+            description: The client ID of a REST API client in your Udemy Business account
+        password:
+            type: string
+            title: Client secret
+            description: The client secret of the same API client
+            secret: true
+
 ukg-pro-wfm:
     display_name: UKG Pro (Workforce Management)
     categories:

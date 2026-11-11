@@ -1,0 +1,42 @@
+---
+title: 'Udemy Business (REST) - How do I link my account?'
+sidebarTitle: 'Udemy Business (REST)'
+---
+
+## Overview
+
+To connect with the Udemy Business REST API, you need:
+
+1. **Subdomain**: the subdomain of your Udemy Business site.
+2. **Account ID**: your Udemy Business account ID, a number.
+3. **Client ID**: the client ID of a REST API client in your Udemy Business account.
+4. **Client Secret**: the client secret of the same API client.
+
+### Prerequisites
+
+- A Udemy Business account on the Enterprise plan. The APIs are not available on the Team plan.
+- Admin access to that account.
+
+### Step 1: Find your subdomain
+
+Your Udemy Business site is at `https://<subdomain>.udemy.com`. Enter the part before `.udemy.com`, such as `acme` for `https://acme.udemy.com`.
+
+### Step 2: Create a REST API client
+
+1. Sign in to your Udemy Business site as an admin.
+2. Go to **Manage** > **Settings** > **APIs & integrations**.
+3. Create a REST API client.
+4. Copy the **Client ID** and **Client Secret**. Keep the secret somewhere safe.
+
+### Step 3: Find your account ID
+
+Udemy shows your account ID, a number, with your REST API details under **APIs & integrations**. Udemy's API documentation also calls it the organization ID, because every REST path includes it: `/api-2.0/organizations/<ACCOUNT-ID>/...`.
+
+### Step 4: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Udemy Business (REST).
+2. Enter your **Subdomain** and **Account ID**.
+3. Enter your **Client ID** and **Client Secret**.
+4. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Udemy Business (REST).

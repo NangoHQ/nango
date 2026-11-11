@@ -2171,6 +2171,8 @@
               "integrations/all/typefully",
               "api-integrations/typefully-v2",
               "integrations/all/uber",
+              "api-integrations/udemy-business",
+              "api-integrations/udemy-business-rest",
               "integrations/all/ukg-pro",
               "api-integrations/ukg-pro-cc",
               "integrations/all/ukg-pro-wfm",
