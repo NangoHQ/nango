@@ -6,9 +6,38 @@ This package contains the Nango design system: design tokens, React components, 
 
 Consuming apps can't restyle these components (a lint rule flags `className`/`style` on them), so when a screen needs a look no existing prop or variant covers, the fix lives **here** — add a new or extended variant. First validate with a designer that the variant is genuinely missing, then add the matching variant to the **Figma design system** so code and design stay in sync. See `stories/StylingAndCustomization.mdx` for the full guide.
 
+## Using the components
+
+### Button / IconButton width
+
+`Button` and `IconButton` have no `width` or `fullWidth` prop, and `className`/`style` are lint-flagged on them. Control width from the parent instead of proposing a width prop:
+
+- **Full width**: put the button in a `flex flex-col` parent. The default `align-items: stretch` makes it fill.
+- **Fit content inside a stretching parent**: wrap the button in a bare `<div>`.
+
+### Input `size` is a variant, not the HTML attribute
+
+`Input` and `InputGroup` have a cva `size` variant (`'default' | 'auto'`) that replaces the native `<input size>` attribute. A wrapper component must type its props on `InputProps`, not `React.ComponentProps<'input'>`, or `npm run ts-build` fails with `Type 'number' is not assignable to type '"default" | "auto"'`.
+
+### Forms: the Field family
+
+Form primitives are the Field family in `src/components/ui/field.tsx`: `Field`, `FieldLabel`, `FieldDescription`, `FieldError`, `FieldGroup`, `FieldSet`, `FieldLegend`, `FieldSeparator`.
+
+- There is no standalone `Label`. `FieldLabel` is the only label export.
+- The package has no runtime dependency on react-hook-form. The webapp's `components/ui/Form.tsx` is a thin react-hook-form adapter over the Field family; elsewhere, wire react-hook-form with `Controller` at the call site.
+- `Field orientation="horizontal"` puts the label beside its control, for a switch or checkbox row.
+
+### Label-left forms
+
+For a settings-style form with labels in a left column and controls on the right, use a per-page CSS grid: `grid grid-cols-[237px_1fr] items-center`, with `FieldLabel` and the control as direct grid cells. `pages/User/Settings.tsx` and `pages/Team/components/TeamSettings.tsx` in the webapp follow it. There is no design-system form-grid container yet.
+
+Put grid layout such as `col-span-2` on a wrapper `<div>`, never as `className` on a design-system component. For an inline-editable value, reuse the webapp's `components/patterns/EditableInput.tsx`.
+
 ## Adding a new component
 
 Components are added on-demand when first needed in a real screen — don't add components speculatively.
+
+Moving an existing component out of `packages/webapp/src/components/ui`? Use the `lifting-components-into-design-system` skill.
 
 ### Step 1: Generate the base with shadcn CLI
 
@@ -258,3 +287,7 @@ from a feature branch, as that overwrites `storybook.nango.dev` until the next m
 `build-storybook` transforms every story eagerly, unlike `storybook dev`, so it fails on broken imports
 that the dev server never loads. Run `npm run -w @nangohq/design-system build-storybook` locally before
 pushing if a story's imports changed.
+
+Storybook also builds the webapp's own stories in `stories/`, through an `@` alias to `packages/webapp/src`
+(`.storybook/main.ts`). Before deleting or moving a webapp component, grep `packages/design-system/stories`
+for it too, or the Storybook build breaks.
