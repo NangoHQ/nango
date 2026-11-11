@@ -25,7 +25,6 @@ export type InstallationTokenErrorCode =
     | 'unknown_key'
     | 'invalid_signature'
     | 'clock_skew'
-    | 'body_mismatch'
     | 'no_installation'
     | 'no_license'
     | 'license_expired'
@@ -45,11 +44,14 @@ const ALGORITHM = 'EdDSA';
 
 const registryUnavailable = (cause: unknown) => new InstallationTokenError('registry_unavailable', 'the registry is unavailable', { cause });
 
-/** Resolves a token to its live, licensed installation, for the request body it was minted for, and records the use. */
+/**
+ * Resolves a token to its live, licensed installation and records the use. It does not look at the request body: the
+ * caller compares it with `bodySha256`.
+ */
 export async function verifyInstallationToken(
     db: RegistryDb,
-    { token, bodySha256 }: { token: string; bodySha256: string }
-): Promise<Result<DBSelfHostingInstallation, InstallationTokenError>> {
+    { token }: { token: string }
+): Promise<Result<{ installation: DBSelfHostingInstallation; bodySha256: string }, InstallationTokenError>> {
     let kid: string | undefined;
     try {
         kid = decodeProtectedHeader(token).kid;
@@ -92,8 +94,9 @@ export async function verifyInstallationToken(
     if (claims['ver'] !== INSTALLATION_TOKEN_VERSION) {
         return Err(new InstallationTokenError('malformed', 'unsupported token version'));
     }
-    if (claims['body_sha256'] !== bodySha256) {
-        return Err(new InstallationTokenError('body_mismatch', 'token was not minted for this request body'));
+    const bodySha256 = claims['body_sha256'];
+    if (typeof bodySha256 !== 'string') {
+        return Err(new InstallationTokenError('malformed', 'token names no body'));
     }
 
     const installations = await searchInstallations(db, { id: key.value.installation_id });
@@ -123,5 +126,5 @@ export async function verifyInstallationToken(
             logger.warning('Failed to record the use of an installation token', stamp.error);
         }
     }
-    return Ok(installation);
+    return Ok({ installation, bodySha256 });
 }
