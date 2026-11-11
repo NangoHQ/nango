@@ -51,6 +51,10 @@ export {
     DialogTrigger
 } from './components/ui/dialog';
 export { Input, type InputProps, inputVariants } from './components/ui/input';
+export { CopyButton, type CopyButtonProps } from './components/ui/copy-button';
+export { CopyInput, type CopyInputProps } from './components/ui/copy-input';
+export { SecretInput, type SecretInputProps } from './components/ui/secret-input';
+export { SearchInput, type SearchInputProps } from './components/ui/search-input';
 export { Textarea, type TextareaProps } from './components/ui/textarea';
 export {
     InputGroup,
@@ -58,11 +62,16 @@ export {
     inputGroupAddonVariants,
     InputGroupButton,
     InputGroupInput,
+    type InputGroupInputProps,
+    InputGroupKbd,
+    type InputGroupProps,
+    InputGroupSwatch,
     InputGroupText,
     InputGroupTextarea
 } from './components/ui/input-group';
 export {
     Field,
+    FieldContent,
     FieldDescription,
     FieldError,
     type FieldErrorProps,
