@@ -67,7 +67,8 @@ export async function readUpload(body: Buffer): Promise<Result<{ installationId:
         );
     }
 
-    const lines = text.split('\n');
+    // We stop splitting just past the limit, so a file of millions of empty lines does not become millions of strings.
+    const lines = text.split('\n', TELEMETRY_UPLOAD_MAX_ROWS + 3);
     if (lines.at(-1) === '') {
         lines.pop();
     }
@@ -78,7 +79,7 @@ export async function readUpload(body: Buffer): Promise<Result<{ installationId:
         return Err(new UploadError('invalid_header', 'the first line must be a header naming the installation'));
     }
     if (rest.length > TELEMETRY_UPLOAD_MAX_ROWS) {
-        return Err(new UploadError('too_many_rows', `an upload holds at most ${TELEMETRY_UPLOAD_MAX_ROWS} rows, got ${rest.length}`));
+        return Err(new UploadError('too_many_rows', `an upload holds at most ${TELEMETRY_UPLOAD_MAX_ROWS} rows`));
     }
 
     const rows: InstallationMetricRow[] = [];

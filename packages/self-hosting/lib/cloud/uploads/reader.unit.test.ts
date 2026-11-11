@@ -71,7 +71,10 @@ describe('readUpload', () => {
         const rows = Array.from({ length: TELEMETRY_UPLOAD_MAX_ROWS }, () => row());
 
         expect(await failure(upload(header, ...rows))).toBe('ok');
-        expect(await failure(upload(header, ...rows, row()))).toEqual({ code: 'too_many_rows', message: 'an upload holds at most 32768 rows, got 32769' });
+        expect(await failure(upload(header, ...rows, ''))).toBe('ok');
+        expect(await failure(upload(header, ...rows, row()))).toEqual({ code: 'too_many_rows', message: 'an upload holds at most 32768 rows' });
+        expect(await failure(upload(header, ...rows, '', row()))).toMatchObject({ code: 'too_many_rows' });
+        expect(await failure(upload(header, ...rows, '', ''))).toMatchObject({ code: 'too_many_rows' });
     });
 
     it.each([
