@@ -12,6 +12,7 @@ import type {
     AgentSessionToolSearchHit,
     AgentSessionToolsetPolicy,
     AnalyticsEventProperties,
+    FunctionSource,
     HTTP_METHOD,
     PostAgentSessionsBody
 } from '@nangohq/types';
@@ -50,6 +51,7 @@ interface ToolCallParams extends Outcome {
     underlyingErrorCode?: string | undefined;
     /** Set when the tool ran on the integration's MCP server rather than as a deployed action. */
     mcpTool?: boolean | undefined;
+    functionSource?: FunctionSource | undefined;
     goal?: string | undefined;
     intent?: string | undefined;
 }
@@ -148,6 +150,7 @@ export function trackAgentSessionToolCall({
     pinned,
     underlyingErrorCode,
     mcpTool,
+    functionSource,
     goal,
     intent,
     ...outcome
@@ -165,6 +168,7 @@ export function trackAgentSessionToolCall({
                 ...(integrationId ? { integration_id: integrationId } : {}),
                 ...(underlyingErrorCode ? { underlying_error_code: underlyingErrorCode } : {}),
                 ...(mcpTool ? { is_mcp_tool: true } : {}),
+                ...(functionSource ? { function_source: functionSource === 'catalog' ? 'catalog' : 'custom' } : {}),
                 ...(goal ? { goal } : {}),
                 ...(intent ? { intent } : {})
             }

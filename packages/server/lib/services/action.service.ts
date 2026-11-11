@@ -7,7 +7,7 @@ import { getOrchestrator } from '../utils/utils.js';
 
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { NangoError } from '@nangohq/shared';
-import type { AsyncActionResponse, DBEnvironment, DBTeam, OperationActor, Result } from '@nangohq/types';
+import type { AsyncActionResponse, DBEnvironment, DBTeam, FunctionSource, OperationActor, Result } from '@nangohq/types';
 import type { Span } from 'dd-trace';
 
 export type ActionExecutionSuccess = AsyncActionResponse | { data: unknown };
@@ -30,6 +30,8 @@ export class ActionExecutionError extends Error {
 export interface ActionExecution {
     /** Created once the action is known to exist, so callers can enrich the operation afterwards. */
     logCtx: LogContextOrigin | undefined;
+    /** Set once the action resolves. A catalog tool that was never deployed is catalog too. */
+    functionSource?: FunctionSource | undefined;
     result: Result<ActionExecutionSuccess, ActionExecutionError>;
 }
 
@@ -66,6 +68,7 @@ export async function executeAction({
     logMeta?: Record<string, unknown> | undefined;
 }): Promise<ActionExecution> {
     let logCtx: LogContextOrigin | undefined;
+    let functionSource: FunctionSource | undefined;
     try {
         const { success, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
         if (!success || !connection) {
@@ -82,8 +85,10 @@ export async function executeAction({
             return { logCtx, result: Err(new ActionExecutionError({ code: 'unknown_action', message: 'Action not found' })) };
         }
 
+        functionSource = resolved.kind === 'deployed' ? resolved.config.source : 'catalog';
+
         if (resolved.kind === 'deployed' && !resolved.config.enabled) {
-            return { logCtx, result: Err(new ActionExecutionError({ code: 'disabled_action', message: 'The action is disabled' })) };
+            return { logCtx, functionSource, result: Err(new ActionExecutionError({ code: 'disabled_action', message: 'The action is disabled' })) };
         }
 
         const loggedSyncConfig = resolved.kind === 'deployed' ? { id: resolved.config.id, name: resolved.config.sync_name } : { name: resolved.tool.name };
@@ -123,6 +128,7 @@ export async function executeAction({
             await logCtx.failed();
             return {
                 logCtx,
+                functionSource,
                 result: Err(new ActionExecutionError({ code: 'action_failed', message: actionResponse.error.message, nangoError: actionResponse.error }))
             };
         }
@@ -144,13 +150,13 @@ export async function executeAction({
             }
         });
 
-        return { logCtx, result: Ok(actionResponse.value) };
+        return { logCtx, functionSource, result: Ok(actionResponse.value) };
     } catch (err) {
         span.setTag('nango.error', err);
         if (logCtx) {
             void logCtx.error('Failed to run action', { error: err });
             await logCtx.failed();
         }
-        return { logCtx, result: Err(new ActionExecutionError({ code: 'internal_error', message: 'Failed to run action' })) };
+        return { logCtx, functionSource, result: Err(new ActionExecutionError({ code: 'internal_error', message: 'Failed to run action' })) };
     }
 }

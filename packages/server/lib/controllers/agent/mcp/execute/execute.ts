@@ -16,7 +16,7 @@ import { actionExecutionErrorToMcp, functionInvokeErrorToMcp, remoteMcpErrorToMc
 import { executeInputSchema } from './schema.js';
 
 import type { AgentSessionMcpContext } from '../sessionTool.js';
-import type { AgentSession, AgentSessionMetaTool, AgentSessionResolvedConnection } from '@nangohq/types';
+import type { AgentSession, AgentSessionMetaTool, AgentSessionResolvedConnection, FunctionSource } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
@@ -173,6 +173,7 @@ export async function executeSessionTool({
         }
 
         if (tool.value) {
+            const functionSource = tool.value.currentVersion.source;
             const { logCtx, result } = await invokeFunction({
                 operation: { type: 'tool', action: 'call' },
                 account,
@@ -191,17 +192,18 @@ export async function executeSessionTool({
                 span.setTag('nango.error', result.error);
                 track({
                     logOperationId: logCtx?.id,
+                    functionSource,
                     errorCode: result.error.code,
                     underlyingErrorCode: result.error.cause instanceof NangoError ? result.error.cause.type : undefined
                 });
                 return Err(functionInvokeErrorToMcp({ error: result.error, integrationId, toolName }));
             }
 
-            track({ logOperationId: logCtx?.id });
+            track({ logOperationId: logCtx?.id, functionSource });
             return Ok('data' in result.value ? result.value.data : null);
         }
 
-        const { logCtx, result } = await executeAction({
+        const { logCtx, functionSource, result } = await executeAction({
             account,
             environment,
             connectionId: connection.connectionId,
@@ -217,11 +219,11 @@ export async function executeSessionTool({
 
         if (result.isErr()) {
             span.setTag('nango.error', result.error);
-            track({ logOperationId: logCtx?.id, errorCode: result.error.code, underlyingErrorCode: result.error.nangoError?.type });
+            track({ logOperationId: logCtx?.id, functionSource, errorCode: result.error.code, underlyingErrorCode: result.error.nangoError?.type });
             return Err(actionExecutionErrorToMcp({ error: result.error, integrationId, toolName }));
         }
 
-        track({ logOperationId: logCtx?.id });
+        track({ logOperationId: logCtx?.id, functionSource });
         return Ok('data' in result.value ? result.value.data : null);
     });
 }
@@ -236,6 +238,7 @@ interface ToolCallOutcome {
     errorCode?: string | undefined;
     underlyingErrorCode?: string | undefined;
     mcpTool?: boolean | undefined;
+    functionSource?: FunctionSource | undefined;
 }
 
 async function executeRemoteTool({

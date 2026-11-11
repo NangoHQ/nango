@@ -628,7 +628,7 @@ export const analyticsEventCatalogue = defineCatalogue({
     'agents:tool_call_complete': {
         surface: 'server',
         insight:
-            'Which tools do agents call most, which fail most often, which return large results or run slowly, and what the agent was trying to get done with each call',
+            'Which tools do agents call most, which fail most often and whether a failing function is ours or one the customer wrote, which return large results or run slowly, and what the agent was trying to get done with each call',
         fires: 'When a tool call in an agent session returns',
         properties: z.object({
             ...agentSession,
@@ -640,6 +640,8 @@ export const analyticsEventCatalogue = defineCatalogue({
             integration_id: z.string().optional(),
             underlying_error_code: z.string().optional(),
             is_mcp_tool: z.boolean().optional(),
+            // Catalog is a function Nango ships, custom is one the customer wrote. Unset for MCP tools and calls that failed before the tool resolved.
+            function_source: z.enum(['catalog', 'custom']).optional(),
             goal: z.string().optional(),
             intent: z.string().optional()
         })
