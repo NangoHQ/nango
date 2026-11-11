@@ -1,0 +1,47 @@
+---
+title: 'Mezmo - How do I link my account?'
+sidebarTitle: 'Mezmo'
+---
+
+## Overview
+
+To authenticate with Mezmo, you need:
+
+1. **API Key** — a Mezmo service account key, personal access key, or enterprise service account key.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Mezmo account with permission to create service accounts. Mezmo recommends reserving this permission for account administrators.
+
+### Step 1: Create a service account key
+
+1. Sign in to the [Mezmo web app](https://app.mezmo.com/account/signin).
+2. Go to **Settings** > **Organization** > **API Keys**, then under **Service Accounts** click **Create Service Account**.
+
+<img src="/api-integrations/mezmo/api_keys_page.png" alt="Manage API Keys page in Mezmo with the Create Service Account button"/>
+
+3. Enter a **Service Account Name** (3 to 50 characters) and select a parent role that grants the access your integration needs, for example **Readonly**. Nango checks the key by listing your pipelines or accounts, so the key needs read access to one of them. Click **Create**.
+
+<img src="/api-integrations/mezmo/create_service_account_dialog.png" alt="Create Service Account dialog in Mezmo with the name field and the Readonly parent role selected"/>
+
+4. Click **Copy** to copy the key, which starts with `sts_`. Mezmo shows it only once.
+
+<img src="/api-integrations/mezmo/service_account_key_created.png" alt="New Service Account Key dialog in Mezmo with the Copy button"/>
+
+To use a personal access key instead, open your profile menu, go to **User preferences** > **Access Tokens** and click **Generate**. Personal access keys start with `sta_` and cannot exceed the access of the user they belong to.
+
+<img src="/api-integrations/mezmo/personal_access_tokens_tab.png" alt="Access Tokens tab in Mezmo user preferences with the Generate button"/>
+
+Enterprise service account keys start with `ste_` and are only available through Mezmo's enterprise dashboard. They work the same way.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Mezmo.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/mezmo/form.png" alt="Mezmo connection form in the Nango Connect UI with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Mezmo.
