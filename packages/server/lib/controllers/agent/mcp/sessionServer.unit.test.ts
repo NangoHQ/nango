@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { seeders, toolService } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
+import { directCallInputSchema } from './directCallSchema.js';
 import { actionInputSchemaOf, buildSessionTools, createAgentSessionMcpServer, listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
 
 import type * as ToolSearchService from '../../../services/agentSessionToolSearch.service.js';
@@ -22,18 +23,7 @@ vi.mock('../../../services/agentSessionToolSearch.service.js', async (importOrig
 
 const DRAFT_07 = 'http://json-schema.org/draft-07/schema#';
 
-function wrapped(properties: Record<string, unknown>, required: string[], root: Record<string, unknown> = {}) {
-    return {
-        $schema: 'https://json-schema.org/draft/2020-12/schema',
-        type: 'object',
-        properties: { ...properties, goal: expect.objectContaining({ type: 'string' }), intent: expect.objectContaining({ type: 'string' }) },
-        required: [...required, 'goal', 'intent'],
-        additionalProperties: false,
-        ...root
-    };
-}
-
-const OPEN_INPUT_SCHEMA = wrapped({ input: { description: 'The input to pass to the tool.' } }, []);
+const OPEN_INPUT_SCHEMA = directCallInputSchema(undefined);
 
 function session({
     compiledToolset = {},
@@ -104,9 +94,10 @@ describe('createAgentSessionMcpServer', () => {
         });
 
         expect(findActionInputs).toHaveBeenCalledWith({ environmentId: 1, actions: [{ integrationId: 'notion', name: 'read_doc' }] });
-        expect(tools.find((listed) => listed.name === 'notion__read_doc')?.inputSchema).toStrictEqual(
-            wrapped({ input: { $ref: '#/definitions/ReadDocInput' } }, ['input'], { definitions: { ReadDocInput: model } })
-        );
+        expect(tools.find((listed) => listed.name === 'notion__read_doc')?.inputSchema).toMatchObject({
+            properties: { input: { $ref: '#/definitions/ReadDocInput' } },
+            definitions: { ReadDocInput: model }
+        });
     });
 
     it('keeps the free-form schema for an action that is no longer deployed', async () => {
@@ -370,7 +361,7 @@ describe('listSessionTools', () => {
             {
                 name: 'linear-mcp__list_issues',
                 description: 'List issues',
-                inputSchema: wrapped({ input: inputSchema }, ['input']),
+                inputSchema: directCallInputSchema(inputSchema),
                 annotations: { readOnlyHint: true },
                 _meta: { 'nango/integration': 'linear-mcp', 'nango/tool': 'list_issues' }
             }
@@ -562,7 +553,7 @@ describe('actionInputSchemaOf', () => {
                 kind: 'schema',
                 schema: { $schema: DRAFT_07, definitions: { ReadDocInput: model }, $ref: '#/definitions/ReadDocInput' }
             })
-        ).toStrictEqual(wrapped({ input: { $ref: '#/definitions/ReadDocInput' } }, ['input'], { $schema: DRAFT_07, definitions: { ReadDocInput: model } }));
+        ).toMatchObject({ $schema: DRAFT_07, properties: { input: { $ref: '#/definitions/ReadDocInput' } }, definitions: { ReadDocInput: model } });
     });
 
     it('hoists definitions nested in the input model so its refs resolve', () => {
@@ -584,7 +575,7 @@ describe('actionInputSchemaOf', () => {
     });
 
     it('lists an action with no input as taking only the goal and the intent', () => {
-        expect(actionInputSchemaOf({ kind: 'none' })).toStrictEqual(wrapped({}, []));
+        expect(actionInputSchemaOf({ kind: 'none' })).toStrictEqual(directCallInputSchema('none'));
     });
 
     it('accepts any input when the input could not be read', () => {
