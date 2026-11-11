@@ -101,6 +101,29 @@ describe('authz integration', () => {
 
     // ── Administrator — always allowed ──────────────────────
     describe('administrator', () => {
+        it('should never get credentials from the integrations list', async () => {
+            const { user, devEnv } = await seedAccountWithProdEnv();
+            await seeders.createConfigSeed(devEnv, 'github-admin-list', 'github', {
+                oauth_client_id: 'admin-id',
+                oauth_client_secret: 'admin-secret',
+                oauth_scopes: 'repo'
+            });
+            const session = await authenticateUser(api, user);
+
+            const res = await api.fetch('/api/v1/integrations', {
+                // @ts-expect-error authz test — GET not in endpoint type
+                method: 'GET',
+                query: { env: 'dev' },
+                session
+            });
+
+            expect(res.res.status).toBe(200);
+            const integration = (res.json as any).data.find((i: { unique_key: string }) => i.unique_key === 'github-admin-list');
+            expect(integration.oauth_client_id).toBe('');
+            expect(integration.oauth_client_secret).toBe('');
+            expect(integration.oauth_scopes).toBe('repo');
+        });
+
         it('should allow GET audit-trail', async () => {
             const { user } = await seedAccountWithProdEnv();
             const session = await authenticateUser(api, user);
