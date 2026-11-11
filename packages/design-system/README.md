@@ -47,13 +47,13 @@ This stores the config in `.claude/settings.local.json` (gitignored). Then start
 
 ## Tokens
 
-`tokens/tokens.json` is the source of truth for design tokens. It is compiled to CSS custom properties in `tokens/tokens.generated.css`. Figma follows the repo: [Tokens Studio](https://tokens.studio/) in the Dharma library pulls `tokens.json` from `master` and can't push.
+`tokens/tokens.json` is the source of truth for design tokens. It is compiled to CSS custom properties in `tokens/tokens.generated.css`. Figma follows the repo: the Dharma library pulls `tokens.json` from `master`, one way.
 
 ### Structure
 
 ```
 tokens/
-  tokens.json           source of truth, edited in PRs (Tokens Studio format)
+  tokens.json           source of truth, edited in PRs
   tokens.generated.css  build output — never edit by hand
 scripts/
   tokens-build.mjs      builds the CSS from tokens.json
@@ -74,7 +74,7 @@ Designers and developers change tokens the same way, in a PR:
 
 CI rebuilds the CSS with `--strict` and fails if it differs from the committed file, or if an alias doesn't resolve. It also fails if a token you removed is still used in the webapp.
 
-After the PR merges, pull in Tokens Studio to update the Figma variables (see [Tokens Studio sync](#tokens-studio-sync)). Don't edit tokens in Figma: the plugin can't push, so the change would be overwritten on the next pull.
+After the PR merges, pull it into Figma. Don't edit tokens in Figma: nothing flows back to the repo, so the change would be overwritten on the next pull.
 
 ### Generated CSS structure
 
@@ -156,18 +156,3 @@ The consumer must also import the token CSS once at the app root (see above). Co
 ### Focus rings
 
 Components apply focus rings via `box-shadow` using `--focus-outline-default` (or `--focus-outline-danger` for destructive actions) and suppress the native outline themselves with `focus-visible:outline-none`. No global `*:focus-visible` reset is needed — the webapp scopes the same behaviour per-component via its `focus-default` utility.
-
----
-
-## Tokens Studio sync
-
-Tokens Studio pulls from the repo one way. Its GitHub token is read-only, so the plugin can't push.
-
-| Field | Value |
-|---|---|
-| Sync provider | GitHub |
-| Repository | `NangoHQ/nango` |
-| Branch | `master` |
-| File path | `packages/design-system/tokens/tokens.json` |
-
-To update Figma after a token PR merges, open Tokens Studio in the Dharma library and **Pull from GitHub**, then update the Figma variables from the pulled tokens.
