@@ -234,11 +234,7 @@ components.json            shadcn CLI config
 
 ## Changing a token
 
-The repo is the only place tokens change. After the PR merges, design pulls `tokens.json` from `master` into Figma; nothing flows back from Figma.
-
-1. Edit `tokens/tokens.json`.
-2. Run `npm run tokens:build --workspace=@nangohq/design-system` to regenerate `tokens/tokens.generated.css`.
-3. Commit both files together. CI fails if the CSS doesn't match `tokens.json`, an alias doesn't resolve, or a removed token is still used in the webapp.
+The repo is the only place tokens change: edit `tokens/tokens.json`, never `tokens.generated.css`. Figma pulls from `master`, and nothing flows back from it. For the build and commit steps, see [Changing a token](README.md#changing-a-token) in the README.
 
 ## cn() helper
 
