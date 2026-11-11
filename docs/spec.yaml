@@ -367,7 +367,7 @@ paths:
     /integrations/{uniqueKey}/functions:
         get:
             summary: List functions
-            description: Returns the functions available to an integration, including Nango catalog actions when available. Requires an API key with the `environment:functions:list` scope.
+            description: Returns the functions available to an integration, including Nango catalog tools when available. Requires an API key with the `environment:functions:list` scope.
             parameters:
                 - name: uniqueKey
                   in: path
@@ -380,7 +380,7 @@ paths:
                   required: false
                   schema:
                       type: string
-                      enum: [sync, action, on-event, tool]
+                      enum: [sync, on-event, tool]
                   description: Filter by function type.
                 - name: search
                   in: query
@@ -445,7 +445,7 @@ paths:
     /integrations/{uniqueKey}/functions/{name}:
         get:
             summary: Get a function
-            description: Returns a single function available to an integration, including HTTP-triggered tools and Nango catalog actions. When multiple types share a name, use the type filter to select one; otherwise the first match in the listing's stable order is returned. Requires an API key with the `environment:functions:read` scope.
+            description: Returns a single function available to an integration, including HTTP-triggered tools and Nango catalog tools. Use the type filter to select a function type. Requires an API key with the `environment:functions:read` scope.
             parameters:
                 - name: uniqueKey
                   in: path
@@ -464,8 +464,8 @@ paths:
                   required: false
                   schema:
                       type: string
-                      enum: [sync, action, on-event, tool]
-                  description: The function type. When omitted and several functions share the name, the first one is returned in this order (tool, action, on-event, sync).
+                      enum: [sync, on-event, tool]
+                  description: Filter by function type. When omitted and several functions share the name, tools are returned first, then on-event and sync functions.
             responses:
                 '200':
                     description: Successfully returned the function
@@ -488,7 +488,7 @@ paths:
                     $ref: '#/components/responses/NotFound'
         delete:
             summary: Delete a function
-            description: Deletes a deployed function and enqueues its async teardown. Functions managed by `nango deploy` (repo source) cannot be deleted through this endpoint. Requires an API key with the `environment:functions:delete` scope.
+            description: Deletes a deployed function and enqueues its async teardown. Supports standalone native functions, tools, syncs, and deprecated actions. Functions managed by `nango deploy` (repo source) and catalog functions cannot be deleted through this endpoint. Requires an API key with the `environment:functions:delete` scope.
             parameters:
                 - name: uniqueKey
                   in: path
@@ -507,11 +507,11 @@ paths:
                   required: true
                   schema:
                       type: string
-                      enum: [sync, action]
-                  description: Required to disambiguate a sync and an action that share a name. On-event functions are not yet supported.
+                      enum: [action, sync, tool, function]
+                  description: Required to disambiguate functions that share a name.
             responses:
                 '200':
-                    description: Successfully enqueued the function deletion
+                    description: Function deletion accepted
                     content:
                         application/json:
                             schema:
@@ -527,7 +527,7 @@ paths:
                                             success:
                                                 type: boolean
                 '400':
-                    description: Invalid request, or the function is managed by `nango deploy`.
+                    description: Invalid request, or the function is managed by `nango deploy` or the tools catalog.
                     content:
                         application/json:
                             schema:
@@ -538,7 +538,7 @@ paths:
                                         properties:
                                             code:
                                                 type: string
-                                                enum: [function_managed_by_deploy]
+                                                enum: [function_managed_by_deploy, invalid_request]
                                             message:
                                                 type: string
                 '401':
@@ -570,8 +570,8 @@ paths:
                   required: false
                   schema:
                       type: string
-                      enum: [sync, action, on-event, tool]
-                  description: The function type. When omitted and several functions share the name, the first one is returned in this order (tool, action, on-event, sync).
+                      enum: [sync, on-event, tool]
+                  description: Filter by function type. When omitted and several functions share the name, tools are returned first, then on-event and sync functions.
             responses:
                 '200':
                     description: Successfully returned the function source code
@@ -586,7 +586,7 @@ paths:
                                     type:
                                         type: string
                                         enum: [sync, action, on-event, tool]
-                                        description: The function type.
+                                        description: The function type. `action` is deprecated.
                                     code:
                                         type: string
                                         description: The TypeScript source code of the function.
@@ -1610,6 +1610,7 @@ paths:
                                                             - name
                                     actions:
                                         type: array
+                                        description: Deprecated action definitions. Use tools for new on-demand functions.
                                         items:
                                             type: object
                                             properties:
@@ -2532,7 +2533,8 @@ paths:
 
     /action/{actionId}:
         get:
-            summary: Get action result
+            deprecated: true
+            summary: Get action result (deprecated)
             description: Retrieves the result of an asynchronous action. See [Asynchronous action documentation](/guides/functions/action-functions#trigger-asynchronously) for more details.
             parameters:
                 - name: actionId
@@ -2637,10 +2639,68 @@ paths:
                                 properties:
                                     message:
                                         type: string
+    /connections/{connectionId}/tools/{name}/calls:
+        post:
+            operationId: callTool
+            summary: Call a tool
+            description: |
+                Calls an enabled tool synchronously and returns its JSON output directly.
+                Requires the `environment:tools:call` scope.
+            parameters:
+                - name: connectionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The connection ID to execute the tool for.
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The tool name on the integration.
+                - name: Provider-Config-Key
+                  in: header
+                  required: false
+                  schema:
+                      type: string
+                  description: Integration ID. Required when multiple integrations share the connection ID.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            additionalProperties: false
+                            properties:
+                                input:
+                                    description: Input matching the tool's schema. Omit for tools that take no input.
+                        example:
+                            input:
+                                owner: NangoHQ
+                                repo: interactive-demo
+                                title: Bug report
+            responses:
+                '200':
+                    description: The tool's JSON output, returned directly without a data wrapper.
+                    content:
+                        application/json:
+                            schema: {}
+                '400':
+                    description: Invalid request, invalid tool input, invalid invocation, or ambiguous connection ID. Supply Provider-Config-Key to disambiguate.
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Missing permissions or function disabled during invocation.
+                '404':
+                    description: Connection or enabled tool not found.
+                '500':
+                    description: Tool execution failed or a server error occurred.
     /action/trigger:
         post:
-            summary: Trigger an action
-            description: Triggers an action for a connection
+            deprecated: true
+            summary: Trigger an action (deprecated)
+            description: Legacy action execution. Use POST /connections/{connectionId}/tools/{name}/calls for new synchronous callers. Existing async callers can continue using this endpoint.
             parameters:
                 - name: Connection-Id
                   in: header
@@ -2693,7 +2753,7 @@ paths:
                             schema:
                                 oneOf:
                                     - type: object
-                                      description: The result of the action when triggered synchronously. (cannot exceed 10MB)
+                                      description: The result of the legacy action when triggered synchronously (cannot exceed 2 MB).
                                       properties:
                                           your-properties:
                                               type: object
@@ -2931,7 +2991,7 @@ paths:
                                         on_async_action_completion:
                                             type: boolean
                                             default: true
-                                            description: Send webhooks when asynchronous action functions complete.
+                                            description: Send webhooks when deprecated asynchronous action functions complete.
                                         on_connection_deletion:
                                             type: boolean
                                             default: true
@@ -3162,6 +3222,126 @@ paths:
                     $ref: '#/components/responses/Forbidden'
                 '404':
                     $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/ServerError'
+        patch:
+            operationId: updateEnvironment
+            summary: Update an environment
+            description: Update an environment
+            parameters:
+                - name: environmentUuid
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Environment UUID.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            additionalProperties: false
+                            properties:
+                                name:
+                                    type: string
+                                    description: Environment name. Lowercase letters, digits, hyphens, and underscores only. Max 255 characters. The reserved prod environment cannot be renamed.
+                                    pattern: ^[a-z0-9_-]+$
+                                    maxLength: 255
+                                    example: staging
+                                is_production:
+                                    type: boolean
+                                    description: Change the production flag. Requires account:environments:set_production in addition to account:environments:update. The reserved prod environment cannot have its production flag changed.
+                                callback_url:
+                                    type: string
+                                    format: uri
+                                    description: Custom OAuth callback URL for this environment.
+                                slack_notifications:
+                                    type: boolean
+                                    description: Whether Slack notifications are enabled for this environment.
+                                otlp_endpoint:
+                                    type: string
+                                    description: OpenTelemetry collector endpoint. Requires a plan with OpenTelemetry export. Pass an empty string to set an empty endpoint.
+                                otlp_headers:
+                                    type: array
+                                    description: Headers sent with OpenTelemetry export requests. Requires a plan with OpenTelemetry export. Replaces the entire header set; pass an empty array to clear it. Omitted headers are preserved. Maximum 100 headers.
+                                    maxItems: 100
+                                    items:
+                                        type: object
+                                        required:
+                                            - name
+                                            - value
+                                        properties:
+                                            name:
+                                                type: string
+                                                minLength: 1
+                                                maxLength: 256
+                                            value:
+                                                type: string
+                                                minLength: 1
+                                                maxLength: 4000
+                                webhooks:
+                                    type: object
+                                    additionalProperties: false
+                                    description: Partial webhook settings. Omitted fields retain their existing values.
+                                    properties:
+                                        primary_url:
+                                            type:
+                                                - string
+                                                - 'null'
+                                            description: First webhook destination. Use an empty string for no destination. Pass null to clear the URL.
+                                        secondary_url:
+                                            type:
+                                                - string
+                                                - 'null'
+                                            description: Second webhook destination. Webhooks are sent to both configured URLs. Use an empty string for no destination. Pass null to clear the URL.
+                                        on_sync_completion_always:
+                                            type: boolean
+                                            description: Send sync completion webhooks even when no records were added, updated, or deleted.
+                                        on_auth_creation:
+                                            type: boolean
+                                            description: Send webhooks when connections are created.
+                                        on_auth_refresh_error:
+                                            type: boolean
+                                            description: Send webhooks when refreshing connection credentials fails.
+                                        on_sync_error:
+                                            type: boolean
+                                            description: Send webhooks when sync functions fail.
+                                        on_async_action_completion:
+                                            type: boolean
+                                            description: Send webhooks when asynchronous action functions complete.
+                                        on_connection_deletion:
+                                            type: boolean
+                                            description: Send webhooks when connections are deleted.
+            responses:
+                '200':
+                    description: Successfully updated the environment.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - success
+                                properties:
+                                    success:
+                                        type: boolean
+                                        const: true
+                                        example: true
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '409':
+                    description: An environment with this name already exists.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StdError'
                 '500':
                     $ref: '#/components/responses/ServerError'
         delete:
@@ -3611,7 +3791,21 @@ paths:
             summary: Rotate the webhook signing key
             description: |
                 Replace the key Nango signs its webhooks with. The previous key stops being used within 5 minutes,
-                so verify against both during that window. Requires the `environment:webhook_signing_key:rotate` scope.
+                so verify against both during that window.
+            requestBody:
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            additionalProperties: false
+                            properties:
+                                webhook_signing_key:
+                                    type: string
+                                    format: uuid
+                                    pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+                                    description: Optional UUID v4 signing key to import. If omitted, Nango generates a random key.
+                                    example: '8a27fe09-327c-43ec-8f75-b1f212904f45'
             responses:
                 '200':
                     description: The new webhook signing key
@@ -4071,11 +4265,12 @@ components:
 
         RunnableFunctionType:
             type: string
-            enum: [action, sync]
+            enum: [action, sync, tool, function]
+            description: Function type for code deployments and dry runs. The `action` value is deprecated; use `tool` for new tools.
 
         FunctionAvailability:
             type: object
-            description: 'Availability metadata attached to a listed function. Catalog actions have `id: null`, `last_deployed: null`, `enabled: true`, and `source: tools-catalog`. Deployed functions have an id and a `last_deployed` timestamp.'
+            description: 'Availability metadata attached to a listed function. Catalog tools have `id: null`, `last_deployed: null`, `enabled: true`, and `source: tools-catalog`. Deployed functions have an id and a `last_deployed` timestamp.'
             required:
                 - id
                 - enabled
@@ -4084,18 +4279,18 @@ components:
             properties:
                 id:
                     type: [number, 'null']
-                    description: Deployed function id. `null` for a Nango catalog action and for a tool, which is identified by its `uuid`.
+                    description: Deployed function id. `null` for a Nango catalog tool and for a tool, which is identified by its `uuid`.
                 enabled:
                     type: boolean
-                    description: Whether the function is enabled. Always `true` for actions, including a deployed action whose stored configuration is disabled. Syncs, on-event functions, and tools report the stored value.
+                    description: Whether the function is enabled. Always `true` for deprecated action definitions, including a deployed action whose stored configuration is disabled. Syncs, on-event functions, and tools report the stored value.
                 last_deployed:
                     type: [string, 'null']
                     format: date-time
-                    description: ISO-8601 timestamp. `null` for a Nango catalog action.
+                    description: ISO-8601 timestamp. `null` for a Nango catalog tool.
                 source:
                     type: string
                     enum: [catalog, standalone, repo, tools-catalog]
-                    description: '`tools-catalog` is a Nango catalog action that has not been deployed. `catalog`, `standalone`, and `repo` are deployed functions.'
+                    description: '`tools-catalog` is a Nango catalog tool that has not been deployed. `catalog`, `standalone`, and `repo` are deployed functions.'
 
         NangoSyncFunction:
             type: object
@@ -4137,6 +4332,8 @@ components:
 
         NangoActionFunction:
             type: object
+            deprecated: true
+            description: Deprecated action definition format, also used by some catalog tools. Use createTool for new custom implementations.
             required:
                 - name
                 - type
@@ -4266,13 +4463,13 @@ components:
                                           type: string
 
         ProviderTemplateFunction:
-            description: A sync or action template function from the provider catalog (no deployment metadata).
+            description: A sync template or catalog tool definition (no deployment metadata). Catalog tool templates currently use deprecated action definitions.
             oneOf:
                 - $ref: '#/components/schemas/NangoSyncFunction'
                 - $ref: '#/components/schemas/NangoActionFunction'
 
         ListedNangoFunction:
-            description: A listed function (sync, action, on-event, or tool) merged with its availability metadata.
+            description: A listed function (sync, deprecated action, on-event, or tool) merged with its availability metadata.
             oneOf:
                 - allOf:
                       - $ref: '#/components/schemas/NangoSyncFunction'
@@ -4457,7 +4654,7 @@ components:
                     description: The integration ID (unique_key) that you created in Nango.
                 function_name:
                     type: string
-                    description: The sync or action function name.
+                    description: The function name.
                 function_type:
                     $ref: '#/components/schemas/RunnableFunctionType'
                 code:
@@ -4466,7 +4663,7 @@ components:
                     description: The TypeScript source code for the function.
                 version:
                     type: string
-                    description: Optional version tag for this deployment.
+                    description: Optional version tag for this deployment. Ignored for tools and functions.
                 allow_destructive:
                     type: boolean
                     description: Allow overwriting an existing standalone function with the same name.
@@ -4490,7 +4687,8 @@ components:
                     type: string
                     description: The template name to deploy, as listed by `GET /providers/{provider}/templates`.
                 function_type:
-                    $ref: '#/components/schemas/RunnableFunctionType'
+                    type: string
+                    enum: [action, sync]
 
         FunctionDeploymentResponse:
             type: object
@@ -4534,7 +4732,7 @@ components:
                     description: The integration ID (unique_key) that you created in Nango.
                 function_name:
                     type: string
-                    description: The sync or action function name.
+                    description: The function name.
                 function_type:
                     $ref: '#/components/schemas/RunnableFunctionType'
                 created_at:
@@ -4562,12 +4760,12 @@ components:
                         additionalProperties: false
                         required:
                             - name
-                            - version
                         properties:
                             name:
                                 type: string
                             version:
                                 type: string
+                                description: Only set for actions and syncs.
                     description: Functions updated by the deployment.
                 output:
                     type: string
@@ -4585,42 +4783,6 @@ components:
                             type: string
                         payload:
                             description: Optional error payload.
-
-        FunctionDeployResponse:
-            type: object
-            additionalProperties: false
-            required:
-                - integration_id
-                - function_name
-                - function_type
-                - deployed
-                - deployed_functions
-                - output
-            properties:
-                integration_id:
-                    type: string
-                function_name:
-                    type: string
-                function_type:
-                    $ref: '#/components/schemas/RunnableFunctionType'
-                deployed:
-                    type: boolean
-                deployed_functions:
-                    type: array
-                    items:
-                        type: object
-                        additionalProperties: false
-                        required:
-                            - name
-                            - version
-                        properties:
-                            name:
-                                type: string
-                            version:
-                                type: string
-                output:
-                    type: string
-                    description: Deployment command output.
 
         TokenUrlObject:
             properties:
@@ -4904,6 +5066,8 @@ components:
                     enum:
                         - basic
                         - custom
+                        - private_key_jwt
+                        - none
                     type: string
             required:
                 - auth_mode

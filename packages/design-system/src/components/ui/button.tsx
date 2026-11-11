@@ -1,6 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
 import { cva } from 'class-variance-authority';
-import { Children, forwardRef, Fragment, isValidElement } from 'react';
+import { Children, cloneElement, forwardRef, Fragment, isValidElement } from 'react';
 
 import { cn } from '../../lib/cn';
 import { Spinner } from './spinner';
@@ -19,7 +19,6 @@ const LINK_UNDERLINE_STATES = [
 
 export const buttonVariants = cva(
     [
-        // gap and font size come from the size variant (Figma's per-size spec)
         'inline-flex items-center justify-center whitespace-nowrap',
         'rounded-ds-sm border-ds-hairline font-ds-medium',
         'leading-ds-normal',
@@ -55,7 +54,6 @@ export const buttonVariants = cva(
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 // interactive/outline → --interactive-outline → bg-interactive-outline
-                // border/strong → --border-strong → border-border-strong, darkening to border/stronger on hover
                 outline: [
                     'bg-interactive-outline text-text-strong border-border-strong',
                     'hover:bg-interactive-outline-hover hover:border-border-stronger',
@@ -68,11 +66,10 @@ export const buttonVariants = cva(
                 // text/secondary → --text-secondary → text-text-secondary
                 ghost: [
                     'bg-interactive-ghost text-text-secondary border-transparent',
-                    // hover/active fill with the ghost tokens and lift the text to text/strong
                     'hover:bg-interactive-ghost-hover active:bg-interactive-ghost-active',
                     'hover:text-text-strong active:text-text-strong',
-                    'disabled:text-text-disabled',
-                    'aria-disabled:text-text-disabled',
+                    'disabled:bg-interactive-ghost disabled:text-text-disabled',
+                    'aria-disabled:bg-interactive-ghost aria-disabled:text-text-disabled',
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 // interactive/danger → --interactive-danger → bg-interactive-danger
@@ -119,34 +116,39 @@ export const buttonVariants = cva(
                     'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
                     'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-default'
+                ],
+                'link-neutral-danger': [
+                    'bg-transparent text-text-link-neutral border-transparent',
+                    'decoration-from-font decoration-solid [text-underline-position:from-font]',
+                    '[&_svg]:text-icon-link-neutral',
+                    ...LINK_UNDERLINE_STATES,
+                    'not-disabled:not-aria-disabled:hover:text-text-link-danger not-disabled:not-aria-disabled:hover:[&_svg]:text-icon-link-danger',
+                    'not-disabled:not-aria-disabled:focus-visible:text-text-link-danger not-disabled:not-aria-disabled:focus-visible:[&_svg]:text-icon-link-danger',
+                    'not-disabled:not-aria-disabled:active:text-text-link-danger-active not-disabled:not-aria-disabled:active:[&_svg]:text-icon-link-danger-active',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
+                    'focus-visible:shadow-focus-outline-danger'
                 ]
             },
             size: {
                 // 20px square — smallest icon-only size (use with IconButton); icon sizing comes from the base
                 '2xs': 'size-5 p-1 gap-1 text-ds-xs',
-                // Figma Dharma button spec — height / side padding / label / icon / gap:
-                // xs 24 / 8 / 12 / 12 / 4
                 xs: ['h-6 px-2 gap-1 text-ds-xs', "[&_svg:not([class*='size-'])]:size-3"],
-                // sm 28 / 10 / 12 / 14 / 6
                 sm: ['h-7 px-2.5 gap-1.5 text-ds-xs', "[&_svg:not([class*='size-'])]:size-3.5"],
-                // md 32 / 12 / 13 / 16 / 6 (16px icon from the base)
                 md: 'h-8 px-3 gap-1.5 text-ds-sm',
-                // lg 36 / 14 / 14 / 16 / 8 (16px icon from the base)
                 lg: 'h-9 px-3.5 gap-2 text-ds-md'
             }
         },
         compoundVariants: [
             // Link variants are bare inline text in Figma — no fixed size, height comes from the line box.
             // link-danger alone gets 2px horizontal padding that link-accent/link-neutral don't have.
-            { variant: ['link-accent', 'link-neutral'], className: 'h-auto w-auto p-0' },
+            { variant: ['link-accent', 'link-neutral', 'link-neutral-danger'], className: 'h-auto w-auto p-0' },
             { variant: 'link-danger', className: 'h-auto w-auto px-0.5 py-0' },
-            // Link variants aren't part of the Dharma button refresh: keep their previous radius (2px, which only
-            // shows on the focus ring), type and gap scale (4px gap at xs/sm, 6px at md/lg; 14px label at md).
-            // Icon sizes come from the size variant.
-            { variant: ['link-accent', 'link-danger', 'link-neutral'], className: 'rounded-ds-xs' },
-            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: 'sm', className: 'gap-1' },
-            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: 'md', className: 'text-ds-md' },
-            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: 'lg', className: 'gap-1.5' }
+            // Link variants deliberately don't take the size scale's radius, gap or label size, only its icon size.
+            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], className: 'rounded-ds-xs' },
+            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: 'sm', className: 'gap-1' },
+            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: 'md', className: 'text-ds-md' },
+            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: 'lg', className: 'gap-1.5' }
         ],
         defaultVariants: {
             variant: 'primary',
@@ -157,23 +159,78 @@ export const buttonVariants = cva(
 
 // ─── Button ───────────────────────────────────────────────────────────────────
 
-// Spinner matches each size's icon (xs 12, sm 14, md/lg 16) so it can stand in for the leading icon.
-const SPINNER_SIZE = { '2xs': 'xs', xs: 'xs', sm: 'sm', md: 'md', lg: 'md' } as const satisfies Record<
+// Spinner matches each size's icon so it can stand in for the leading icon.
+const SPINNER_SIZE = { '2xs': 'md', xs: 'xs', sm: 'sm', md: 'md', lg: 'md' } as const satisfies Record<
     NonNullable<VariantProps<typeof buttonVariants>['size']>,
     SpinnerSize
 >;
 
-// A leading icon is a component element (e.g. a lucide icon) or a raw <svg>. Text labels are strings or
-// plain HTML elements like <span>, so they don't count.
+// An icon is a raw <svg> or a component that takes no children, so `<Trans>Save</Trans>` is a label.
 function isIconElement(node: React.ReactNode): boolean {
-    return isValidElement(node) && node.type !== Fragment && (typeof node.type !== 'string' || node.type === 'svg');
+    if (!isValidElement<{ children?: React.ReactNode }>(node) || node.type === Fragment) {
+        return false;
+    }
+    return node.type === 'svg' || (typeof node.type !== 'string' && node.props.children === undefined);
 }
 
-// Children with any fragments expanded, so `<><Icon />Label</>` is seen as [Icon, 'Label'], not one element.
 function flattenChildren(children: React.ReactNode): React.ReactNode[] {
     return Children.toArray(children).flatMap((child) =>
         isValidElement<{ children?: React.ReactNode }>(child) && child.type === Fragment ? flattenChildren(child.props.children) : [child]
     );
+}
+
+const spinnerOverlayClass = 'absolute inset-0 flex items-center justify-center';
+
+// Returns the same element tree whether or not `loading` is set, so toggling it never remounts the children.
+// Content is faded rather than hidden, which keeps the label as the accessible name and keeps the width.
+function renderLoadingContent(children: React.ReactNode, loading: boolean, spinner: React.ReactNode): React.ReactNode {
+    const [leading, ...rest] = flattenChildren(children);
+    if (isIconElement(leading)) {
+        return (
+            <>
+                <span className={cn('relative inline-flex shrink-0', loading && '[&>:first-child]:opacity-0')}>
+                    {leading}
+                    {loading && <span className={spinnerOverlayClass}>{spinner}</span>}
+                </span>
+                {/* flattened children can repeat keys across fragments */}
+                {rest.map((child, i) => (
+                    <Fragment key={i}>{child}</Fragment>
+                ))}
+            </>
+        );
+    }
+    return (
+        <>
+            <span className={cn('contents', loading && 'text-transparent [&_*]:opacity-0')}>{children}</span>
+            {loading && <span className={spinnerOverlayClass}>{spinner}</span>}
+        </>
+    );
+}
+
+interface SlotChildOptions {
+    isDisabled: boolean;
+    onClickCapture: React.MouseEventHandler<HTMLButtonElement> | undefined;
+    renderChildren: (children: React.ReactNode) => React.ReactNode;
+    props?: Record<string, unknown>;
+}
+
+// Slot merges its handlers after the child's, so the disabled guard has to live on the child itself:
+// pointer-events-none stops the mouse but not Enter on a slotted link.
+function renderSlotChild(child: React.ReactNode, { isDisabled, onClickCapture, renderChildren, props }: SlotChildOptions): React.ReactNode {
+    if (!isValidElement<{ children?: React.ReactNode; onClickCapture?: React.MouseEventHandler<HTMLElement> }>(child)) {
+        return child;
+    }
+    const childOnClickCapture = child.props.onClickCapture;
+    const guardedClickCapture = (event: React.MouseEvent<HTMLElement>) => {
+        if (isDisabled) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+        childOnClickCapture?.(event);
+        onClickCapture?.(event as React.MouseEvent<HTMLButtonElement>);
+    };
+    return cloneElement(child, { ...props, onClickCapture: guardedClickCapture }, renderChildren(child.props.children));
 }
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
@@ -182,54 +239,26 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, disabled, children, ...props }, ref) => {
+    ({ className, variant, size, asChild = false, loading, disabled, children, onClickCapture, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
-        const isDisabled = disabled || loading;
-        // Loading never changes the button's width. Skipped for asChild — Slot needs a single child.
-        //  - With a leading icon: a same-size spinner takes the icon's slot; the label stays visible.
-        //  - Without one: the content stays in the layout but invisible, and the spinner sits centred on top.
-        const showSpinner = loading && !asChild;
+        const isLoading = loading === true;
+        const isDisabled = disabled || isLoading;
         const spinner = <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} />;
-        const [leading, ...rest] = flattenChildren(children);
-        const swapsLeadingIcon = showSpinner && isIconElement(leading);
-
-        let content: React.ReactNode = children;
-        if (swapsLeadingIcon) {
-            content = (
-                <>
-                    {spinner}
-                    {/* flattened children can repeat keys across fragments, so re-key by position */}
-                    {rest.map((child, i) => (
-                        <Fragment key={i}>{child}</Fragment>
-                    ))}
-                </>
-            );
-        } else if (showSpinner) {
-            content = (
-                <>
-                    {/* display:contents keeps the children as flex items (same width); visibility is inherited */}
-                    <span className="contents invisible">{children}</span>
-                    <span className="absolute inset-0 flex items-center justify-center">{spinner}</span>
-                </>
-            );
-        }
+        // `loading` has no default: undefined means the button never loads, so its children stay unwrapped.
+        const renderChildren = (inner: React.ReactNode) => (loading === undefined ? inner : renderLoadingContent(inner, isLoading, spinner));
 
         return (
             <Comp
                 ref={ref}
                 type={asChild ? undefined : 'button'}
-                className={cn(
-                    buttonVariants({ variant, size }),
-                    showSpinner && !swapsLeadingIcon && 'relative',
-                    isDisabled && asChild && 'pointer-events-none',
-                    className
-                )}
+                className={cn(buttonVariants({ variant, size }), isLoading && 'relative', isDisabled && asChild && 'pointer-events-none', className)}
                 disabled={isDisabled}
                 aria-disabled={isDisabled || undefined}
-                aria-busy={loading || undefined}
+                aria-busy={isLoading || undefined}
+                onClickCapture={asChild ? undefined : onClickCapture}
                 {...props}
             >
-                {content}
+                {asChild ? renderSlotChild(children, { isDisabled, onClickCapture, renderChildren }) : renderChildren(children)}
             </Comp>
         );
     }
@@ -239,19 +268,35 @@ Button.displayName = 'Button';
 
 // ─── IconButton ───────────────────────────────────────────────────────────────
 
-export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>['variant']>;
+type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>['size']>;
+
+export const ICON_BUTTON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const satisfies readonly ButtonVariant[];
+export const ICON_BUTTON_SIZES = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ButtonSize[];
+
+export type IconButtonVariant = (typeof ICON_BUTTON_VARIANTS)[number];
+export type IconButtonSize = (typeof ICON_BUTTON_SIZES)[number];
+
+export interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label'> {
+    /** The `link-*` variants are outside the IconButton spec and kept for existing call sites only. */
+    variant?: ButtonVariant | null;
+    /** `2xs` is outside the IconButton spec and kept for existing call sites only. */
+    size?: ButtonSize | null;
     asChild?: boolean;
     loading?: boolean;
-    /** Accessible label — applied as aria-label and title. Required for icon-only buttons. */
+    /** Accessible name, applied as `aria-label`, and as the `title` tooltip unless one is passed. */
     label: string;
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, disabled, label, children, ...props }, ref) => {
+    ({ className, variant, size, asChild = false, loading = false, disabled, label, title, children, onClickCapture, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
-        // Spinner has no 2xs size; clamp to xs for the loading indicator
-        const iconSize = size === '2xs' ? 'xs' : (size ?? 'md');
+        const renderChildren = (icon: React.ReactNode) => (loading ? <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} /> : icon);
+        // Slot lets the child's own aria-label win, so `label` is set on the child itself.
+        const content = asChild
+            ? renderSlotChild(children, { isDisabled, onClickCapture, renderChildren, props: { 'aria-label': label } })
+            : renderChildren(children);
 
         return (
             <Comp
@@ -261,11 +306,12 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
                 disabled={isDisabled}
                 aria-disabled={isDisabled || undefined}
                 aria-busy={loading || undefined}
-                aria-label={label}
-                title={label}
+                title={title ?? label}
+                onClickCapture={asChild ? undefined : onClickCapture}
                 {...props}
+                aria-label={label}
             >
-                {loading ? <Spinner size={iconSize} /> : children}
+                {content}
             </Comp>
         );
     }

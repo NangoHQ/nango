@@ -2,70 +2,70 @@
 
 | Function name | Description | Type |
 | - | - | - |
-| `activate-application` | Activate an application. | [Action](/guides/functions/action-functions) |
-| `activate-group-rule` | Activate a group membership rule so it starts evaluating users. | [Action](/guides/functions/action-functions) |
-| `activate-user` | Activate a user. | [Action](/guides/functions/action-functions) |
-| `add-group` | Create a group. | [Action](/guides/functions/action-functions) |
-| `add-user-group` | Add a user to a group | [Action](/guides/functions/action-functions) |
-| `assign-group-to-application` | Assign a group to an application. | [Action](/guides/functions/action-functions) |
-| `assign-role-to-user` | Assign an admin role to a user. | [Action](/guides/functions/action-functions) |
-| `assign-user-to-application` | Assign a user to an application. | [Action](/guides/functions/action-functions) |
-| `create-application` | Create an application (e.g. a bookmark app for basic SSO tiles) | [Action](/guides/functions/action-functions) |
-| `create-authorization-server-scope` | Create a custom OAuth scope on an authorization server | [Action](/guides/functions/action-functions) |
-| `create-group-rule` | Create a group membership rule. | [Action](/guides/functions/action-functions) |
-| `create-policy-rule` | Create a rule under a policy. | [Action](/guides/functions/action-functions) |
-| `create-policy` | Create a policy. | [Action](/guides/functions/action-functions) |
-| `create-user` | Create a user. | [Action](/guides/functions/action-functions) |
-| `deactivate-application` | Deactivate an application. | [Action](/guides/functions/action-functions) |
-| `deactivate-user` | Deactivate a user. | [Action](/guides/functions/action-functions) |
-| `delete-application` | Delete an application. | [Action](/guides/functions/action-functions) |
-| `delete-authorization-server-scope` | Delete a custom OAuth scope from an authorization server. | [Action](/guides/functions/action-functions) |
-| `delete-factor` | Unenroll (delete) a factor from a user. | [Action](/guides/functions/action-functions) |
-| `delete-group-rule` | Delete a group membership rule. | [Action](/guides/functions/action-functions) |
-| `delete-group` | Delete a group. | [Action](/guides/functions/action-functions) |
-| `delete-policy` | Delete a policy. | [Action](/guides/functions/action-functions) |
-| `delete-user` | Permanently delete a deactivated user. | [Action](/guides/functions/action-functions) |
-| `enroll-factor` | Enroll a factor for a user | [Action](/guides/functions/action-functions) |
-| `expire-password` | Expire a user's current password, forcing a change on next login. | [Action](/guides/functions/action-functions) |
-| `get-application` | Retrieve an application. | [Action](/guides/functions/action-functions) |
-| `get-authorization-server` | Retrieve an authorization server | [Action](/guides/functions/action-functions) |
-| `get-factor` | Retrieve a single enrolled factor for a user. | [Action](/guides/functions/action-functions) |
-| `get-group` | Retrieve a group. | [Action](/guides/functions/action-functions) |
-| `get-policy` | Retrieve a policy. | [Action](/guides/functions/action-functions) |
-| `get-user-schema` | Retrieve the JSON schema for a user type. | [Action](/guides/functions/action-functions) |
-| `get-user` | Retrieve a user. | [Action](/guides/functions/action-functions) |
-| `list-application-groups` | List groups assigned to an application. | [Action](/guides/functions/action-functions) |
-| `list-application-users` | List users assigned to an application | [Action](/guides/functions/action-functions) |
-| `list-applications` | List applications | [Action](/guides/functions/action-functions) |
-| `list-authenticators` | List the authenticator types configured at the org level. | [Action](/guides/functions/action-functions) |
-| `list-authorization-server-claims` | List the token claims defined on an authorization server. | [Action](/guides/functions/action-functions) |
-| `list-authorization-server-scopes` | List the OAuth scopes defined on an authorization server. | [Action](/guides/functions/action-functions) |
-| `list-authorization-servers` | List authorization servers. | [Action](/guides/functions/action-functions) |
-| `list-factor-catalog` | List the factor types available for a specific user to enroll. | [Action](/guides/functions/action-functions) |
-| `list-factors` | List enrolled factors for a user | [Action](/guides/functions/action-functions) |
-| `list-group-applications` | List applications assigned to a group. | [Action](/guides/functions/action-functions) |
-| `list-group-roles` | List the admin roles assigned to a group. | [Action](/guides/functions/action-functions) |
-| `list-group-rules` | List group membership rules. | [Action](/guides/functions/action-functions) |
-| `list-group-users` | List users in a group | [Action](/guides/functions/action-functions) |
-| `list-groups` | List groups. | [Action](/guides/functions/action-functions) |
-| `list-policies` | List policies of a given type. | [Action](/guides/functions/action-functions) |
-| `list-policy-rules` | List the rules under a policy | [Action](/guides/functions/action-functions) |
-| `list-system-log` | List system log events. | [Action](/guides/functions/action-functions) |
-| `list-user-groups` | List the groups a user belongs to. | [Action](/guides/functions/action-functions) |
-| `list-user-roles` | List the admin roles assigned to a user. | [Action](/guides/functions/action-functions) |
-| `list-user-types` | List user types/schemas. | [Action](/guides/functions/action-functions) |
-| `list-users` | List users. | [Action](/guides/functions/action-functions) |
-| `remove-group-from-application` | Unassign a group from an application. | [Action](/guides/functions/action-functions) |
-| `remove-role-from-user` | Remove an admin role assignment from a user. | [Action](/guides/functions/action-functions) |
-| `remove-user-from-application` | Unassign a user from an application. | [Action](/guides/functions/action-functions) |
-| `remove-user-group` | Remove a user from a group | [Action](/guides/functions/action-functions) |
-| `reset-password` | Generate a one-time password reset token/link for a user. | [Action](/guides/functions/action-functions) |
-| `suspend-user` | Suspend an active user. | [Action](/guides/functions/action-functions) |
-| `unlock-user` | Unlock a user with a LOCKED_OUT status. | [Action](/guides/functions/action-functions) |
-| `unsuspend-user` | Return a suspended user to ACTIVE. | [Action](/guides/functions/action-functions) |
-| `update-group` | Update a group. | [Action](/guides/functions/action-functions) |
-| `update-user-schema` | Add or update a custom attribute on a user schema. | [Action](/guides/functions/action-functions) |
-| `update-user` | Update a user. | [Action](/guides/functions/action-functions) |
+| `activate-application` | Activate an application. | [Tool](/guides/functions/tools) |
+| `activate-group-rule` | Activate a group membership rule so it starts evaluating users. | [Tool](/guides/functions/tools) |
+| `activate-user` | Activate a user. | [Tool](/guides/functions/tools) |
+| `add-group` | Create a group. | [Tool](/guides/functions/tools) |
+| `add-user-group` | Add a user to a group | [Tool](/guides/functions/tools) |
+| `assign-group-to-application` | Assign a group to an application. | [Tool](/guides/functions/tools) |
+| `assign-role-to-user` | Assign an admin role to a user. | [Tool](/guides/functions/tools) |
+| `assign-user-to-application` | Assign a user to an application. | [Tool](/guides/functions/tools) |
+| `create-application` | Create an application (e.g. a bookmark app for basic SSO tiles) | [Tool](/guides/functions/tools) |
+| `create-authorization-server-scope` | Create a custom OAuth scope on an authorization server | [Tool](/guides/functions/tools) |
+| `create-group-rule` | Create a group membership rule. | [Tool](/guides/functions/tools) |
+| `create-policy-rule` | Create a rule under a policy. | [Tool](/guides/functions/tools) |
+| `create-policy` | Create a policy. | [Tool](/guides/functions/tools) |
+| `create-user` | Create a user. | [Tool](/guides/functions/tools) |
+| `deactivate-application` | Deactivate an application. | [Tool](/guides/functions/tools) |
+| `deactivate-user` | Deactivate a user. | [Tool](/guides/functions/tools) |
+| `delete-application` | Delete an application. | [Tool](/guides/functions/tools) |
+| `delete-authorization-server-scope` | Delete a custom OAuth scope from an authorization server. | [Tool](/guides/functions/tools) |
+| `delete-factor` | Unenroll (delete) a factor from a user. | [Tool](/guides/functions/tools) |
+| `delete-group-rule` | Delete a group membership rule. | [Tool](/guides/functions/tools) |
+| `delete-group` | Delete a group. | [Tool](/guides/functions/tools) |
+| `delete-policy` | Delete a policy. | [Tool](/guides/functions/tools) |
+| `delete-user` | Permanently delete a deactivated user. | [Tool](/guides/functions/tools) |
+| `enroll-factor` | Enroll a factor for a user | [Tool](/guides/functions/tools) |
+| `expire-password` | Expire a user's current password, forcing a change on next login. | [Tool](/guides/functions/tools) |
+| `get-application` | Retrieve an application. | [Tool](/guides/functions/tools) |
+| `get-authorization-server` | Retrieve an authorization server | [Tool](/guides/functions/tools) |
+| `get-factor` | Retrieve a single enrolled factor for a user. | [Tool](/guides/functions/tools) |
+| `get-group` | Retrieve a group. | [Tool](/guides/functions/tools) |
+| `get-policy` | Retrieve a policy. | [Tool](/guides/functions/tools) |
+| `get-user-schema` | Retrieve the JSON schema for a user type. | [Tool](/guides/functions/tools) |
+| `get-user` | Retrieve a user. | [Tool](/guides/functions/tools) |
+| `list-application-groups` | List groups assigned to an application. | [Tool](/guides/functions/tools) |
+| `list-application-users` | List users assigned to an application | [Tool](/guides/functions/tools) |
+| `list-applications` | List applications | [Tool](/guides/functions/tools) |
+| `list-authenticators` | List the authenticator types configured at the org level. | [Tool](/guides/functions/tools) |
+| `list-authorization-server-claims` | List the token claims defined on an authorization server. | [Tool](/guides/functions/tools) |
+| `list-authorization-server-scopes` | List the OAuth scopes defined on an authorization server. | [Tool](/guides/functions/tools) |
+| `list-authorization-servers` | List authorization servers. | [Tool](/guides/functions/tools) |
+| `list-factor-catalog` | List the factor types available for a specific user to enroll. | [Tool](/guides/functions/tools) |
+| `list-factors` | List enrolled factors for a user | [Tool](/guides/functions/tools) |
+| `list-group-applications` | List applications assigned to a group. | [Tool](/guides/functions/tools) |
+| `list-group-roles` | List the admin roles assigned to a group. | [Tool](/guides/functions/tools) |
+| `list-group-rules` | List group membership rules. | [Tool](/guides/functions/tools) |
+| `list-group-users` | List users in a group | [Tool](/guides/functions/tools) |
+| `list-groups` | List groups. | [Tool](/guides/functions/tools) |
+| `list-policies` | List policies of a given type. | [Tool](/guides/functions/tools) |
+| `list-policy-rules` | List the rules under a policy | [Tool](/guides/functions/tools) |
+| `list-system-log` | List system log events. | [Tool](/guides/functions/tools) |
+| `list-user-groups` | List the groups a user belongs to. | [Tool](/guides/functions/tools) |
+| `list-user-roles` | List the admin roles assigned to a user. | [Tool](/guides/functions/tools) |
+| `list-user-types` | List user types/schemas. | [Tool](/guides/functions/tools) |
+| `list-users` | List users. | [Tool](/guides/functions/tools) |
+| `remove-group-from-application` | Unassign a group from an application. | [Tool](/guides/functions/tools) |
+| `remove-role-from-user` | Remove an admin role assignment from a user. | [Tool](/guides/functions/tools) |
+| `remove-user-from-application` | Unassign a user from an application. | [Tool](/guides/functions/tools) |
+| `remove-user-group` | Remove a user from a group | [Tool](/guides/functions/tools) |
+| `reset-password` | Generate a one-time password reset token/link for a user. | [Tool](/guides/functions/tools) |
+| `suspend-user` | Suspend an active user. | [Tool](/guides/functions/tools) |
+| `unlock-user` | Unlock a user with a LOCKED_OUT status. | [Tool](/guides/functions/tools) |
+| `unsuspend-user` | Return a suspended user to ACTIVE. | [Tool](/guides/functions/tools) |
+| `update-group` | Update a group. | [Tool](/guides/functions/tools) |
+| `update-user-schema` | Add or update a custom attribute on a user schema. | [Tool](/guides/functions/tools) |
+| `update-user` | Update a user. | [Tool](/guides/functions/tools) |
 | `application-users` | Sync application assignments | [Sync](/guides/functions/syncs/sync-functions) |
 | `applications` | Sync applications. | [Sync](/guides/functions/syncs/sync-functions) |
 | `authorization-servers` | Sync authorization servers. | [Sync](/guides/functions/syncs/sync-functions) |

@@ -1,0 +1,60 @@
+---
+title: 'Affinda - How do I link my account?'
+sidebarTitle: 'Affinda'
+---
+
+## Overview
+
+To authenticate with Affinda, you need:
+
+1. **Region** — the Affinda API host for the instance where your account was created.
+2. **API Key** — an Affinda API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An Affinda account. You can [sign up for a free trial](https://app.affinda.com/auth/register).
+
+### Step 1: Find your region
+
+Affinda runs a separate instance per region. Check the address of the Affinda app you log in to and select the matching value:
+
+| Region | App you log in to | Value to select |
+|--------|-------------------|-----------------|
+| AU (Global) | `app.affinda.com` | `api.affinda.com` |
+| US | `app.us1.affinda.com` | `api.us1.affinda.com` |
+| EU | `app.eu1.affinda.com` | `api.eu1.affinda.com` |
+
+Your API key only works on the instance where it was generated. See [Deployment and data residency](https://docs.affinda.com/deployment-data-residency) for details.
+
+### Step 2: Create an API key
+
+1. Sign in to the Affinda app for your region.
+2. Click your avatar in the top-right corner, then click **Settings**.
+
+<img src="/api-integrations/affinda/open_user_settings.png" alt="Affinda app with the avatar menu open and the Settings option"/>
+
+3. In **Account Settings**, under **API Keys**, click **Create API Key**.
+
+<img src="/api-integrations/affinda/create_api_key_button.png" alt="Affinda Account Settings page with the Create API Key button in the API Keys section"/>
+
+4. Enter a name for the key, choose an expiration (or **Never**), then click **Create API Key**.
+
+<img src="/api-integrations/affinda/create_api_key_dialog.png" alt="Create API Key dialog in Affinda with the name and expiration fields"/>
+
+5. Click **Copy to Clipboard** to copy the new key. It is only shown once.
+
+<img src="/api-integrations/affinda/api_key_created.png" alt="Your New API Key dialog in Affinda with the Copy to Clipboard button"/>
+
+Each user can have at most three API keys.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Affinda.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/affinda/form.png" alt="Affinda connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Affinda.

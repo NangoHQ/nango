@@ -1,0 +1,54 @@
+---
+title: 'Pigment - How do I link my account?'
+sidebarTitle: 'Pigment'
+---
+
+## Overview
+
+To authenticate with Pigment, you need:
+
+1. **API Key** — a Pigment API key with the scopes your integration needs (Modeling metadata to list applications).
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A Pigment account that can manage API keys in **Workspace settings**. If you don't have a workspace, [start a free trial](https://www.pigment.com/trial/sign-up).
+
+### Step 1: Create an API key
+
+1. Sign in to [Pigment](https://pigment.app/login).
+2. In the left sidebar, click **Settings**, then click **API Keys** under **Workspace settings**.
+
+<img src="/api-integrations/pigment/workspace_settings_api_keys.png" alt="Pigment Settings sidebar with API Keys highlighted under Workspace settings"/>
+
+3. On the **API Keys management** page, click **+ Create API key**.
+
+<img src="/api-integrations/pigment/create_api_key_button.png" alt="Pigment API Keys management page with the Create API key button highlighted"/>
+
+4. Enter a **Name**, keep or change the **Expiration date**, and tick the **Scopes** your integration needs, then click **Generate**:
+    - **Modeling metadata** for the metadata endpoints (applications, blocks, views and import configurations).
+    - **Import** or **Export** for the import and export endpoints.
+    - **Files** for the File Storage endpoints and **Data Flows** for the Data Flow endpoints.
+
+    One key can have several scopes. Tick **Modeling metadata** too if the app you connect to needs to list your applications.
+
+<img src="/api-integrations/pigment/create_api_key_dialog.png" alt="Pigment Create API Key dialog with a name, an expiration date and the Modeling metadata scope ticked"/>
+
+5. Copy the key with the copy icon.
+
+<img src="/api-integrations/pigment/api_key_created.png" alt="Pigment dialog confirming the API key was generated, with the copy icon highlighted"/>
+
+<Note>Pigment shows the key only once. Copy it before you close the dialog. The key inherits the workspace, data visibility and permissions of the user who created it.</Note>
+
+<Tip>To call the Audit Logs API, a Security Admin creates an **Audit logs** API key the same way. Keys in the old format with dashes must be regenerated.</Tip>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Pigment.
+2. Paste your API key in the **API Key** field.
+3. Submit the form. The connection is saved without checking the key: if the key is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/pigment/form.png" alt="Pigment Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Pigment.

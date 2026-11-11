@@ -82,6 +82,7 @@ export interface RemoteMcpTarget {
     connectionId: string;
     provider: string;
     actor?: OperationActor | undefined;
+    logMeta?: Record<string, unknown> | undefined;
 }
 
 export interface RemoteMcpRun<T> {
@@ -239,6 +240,7 @@ function proxyFetch({ target, endpoint, log }: { target: RemoteMcpTarget; endpoi
             retries: 0,
             abortSignal: init?.signal ?? undefined,
             actor: target.actor,
+            logMeta: target.logMeta,
             activityLogId: log.operationId
         });
         log.operationId ??= execution.logCtx?.id;

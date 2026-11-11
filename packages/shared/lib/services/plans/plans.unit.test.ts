@@ -68,6 +68,13 @@ describe('mergeFlags', () => {
         }
     });
 
+    it('should record credential reads on the data plane by default on every plan but free', () => {
+        expect(getPlanDefinition('free')?.flags.audit_trail_data_plane_scopes).toEqual([]);
+        for (const plan of plansList.filter((p) => p.code !== 'free')) {
+            expect(plan.flags.audit_trail_data_plane_scopes, plan.code).toEqual(['read_credentials']);
+        }
+    });
+
     it('should show the overdue invoices banner on every plan but enterprise', () => {
         const enterprisePlans: PlanDefinition['code'][] = ['enterprise', 'enterprise-cloud-hosted'];
         for (const plan of plansList) {
@@ -192,6 +199,18 @@ describe('mergeFlags', () => {
             });
             expect(newFlags).not.toHaveProperty('has_audit_trail_access');
         });
+    });
+
+    it('should keep data-plane scopes set by hand on an upgrade, without repeating the ones the plan grants', () => {
+        const currentPlan = makePlan({ code: 'free', flagOverrides: { audit_trail_data_plane_scopes: ['read_credentials'] } });
+        const newFlags = mergeFlags({ currentPlan, newPlanDefinition: getPlanDefinition('starter-v2')! });
+        expect(newFlags.audit_trail_data_plane_scopes).toEqual(['read_credentials']);
+    });
+
+    it('should drop data-plane scopes on a downgrade to free', () => {
+        const currentPlan = makePlan({ code: 'starter-v2', flagOverrides: { audit_trail_data_plane_scopes: ['read_credentials'] } });
+        const newFlags = mergeFlags({ currentPlan, newPlanDefinition: getPlanDefinition('free')! });
+        expect(newFlags.audit_trail_data_plane_scopes).toEqual([]);
     });
 
     describe.each([{ from: 'free' }, { from: 'starter-v2' }, { from: 'growth-v2' }] as { from: PlanDefinition['code'] }[])(
@@ -355,6 +374,7 @@ function makePlan({
         has_rbac: false,
         has_audit_trail_control_plane: false,
         has_audit_trail_access: false,
+        audit_trail_data_plane_scopes: [],
         can_customize_connect_ui_theme: false,
         can_override_docs_connect_url: false,
         can_disable_connect_ui_watermark: false,

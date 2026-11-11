@@ -1,0 +1,82 @@
+---
+title: 'Flyte'
+sidebarTitle: 'Flyte'
+description: 'Integrate your application with the Flyte API'
+---
+
+## 🚀 Quickstart
+
+Connect to Flyte with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Flyte_.
+    </Step>
+    <Step id="authorize-flyte" title="Authorize Flyte">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Flyte host, your identity provider's token endpoint, and the client ID and secret of a service application. Nango gets an access token from your identity provider and gets a new one when it expires. Later, you'll let your users do the same directly from your app.
+
+    If your identity provider requires scopes for the client credentials flow (on Okta, Flyte uses the `all` scope), add them in the integration's settings.
+    </Step>
+    <Step id="call-flyte-api" title="Call the Flyte API">
+    Let's make your first request to the Flyte API (list projects). This request uses the Flyte 2 API. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/flyteidl2.project.ProjectService/ListProjects" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"limit": 10}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/flyteidl2.project.ProjectService/ListProjects',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: { limit: 10 }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Flyte integration guides
+
+- [How do I link my account?](/api-integrations/flyte/connect)  
+Find your Flyte host and token endpoint and get client credentials to connect your Flyte instance.
+
+Official docs: [Flyte docs](https://www.union.ai/docs/v2/flyte/)
+
+## 🧩 Pre-built syncs & actions for Flyte
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/flyte/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

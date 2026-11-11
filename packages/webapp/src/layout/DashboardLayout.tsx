@@ -5,41 +5,37 @@ import { FunctionPlaygroundDrawer } from '@/features/Playground';
 import { AppHeader } from '@/layout/AppHeader';
 import { cn } from '@/utils/utils';
 import { AppSidebar } from './AppSidebar';
-import { CENTERED_MAX_WIDTH, SectionHeader } from './SectionHeader';
+
+// A 14-inch MacBook Pro's content width: its 1512px viewport less the sidebar and the page padding.
+const CENTERED_MAX_WIDTH = 'max-w-[1240px]';
 
 interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
     fullWidth?: boolean;
-    /** Section title rendered in the fixed header below the top bar. Omit to hide the section header. */
-    title?: string;
-    /** Optional content rendered before the section title (e.g. an integration logo). */
-    titleLeading?: React.ReactNode;
-    /** Optional badge rendered inline after the section title (e.g. an environment badge). */
-    titleBadge?: React.ReactNode;
-    /** Optional action rendered on the right of the section header (e.g. the page's primary button). */
-    titleActions?: React.ReactNode;
-    /**
-     * Caps and centers the page content *and* the section header row at the same width, so the title
-     * and its action line up with the content's edges. Use on `fullWidth` pages whose content doesn't
-     * read well edge-to-edge on a wide screen.
-     */
+    /** The page's actions, shown on the right of the top bar. */
+    actions?: React.ReactNode;
+    /** A `PageHeader` row under the top bar, for pages about a single entity. Its title becomes the page's `h1`. */
+    pageHeader?: React.ReactNode;
+    /** The page renders its own `h1`, so the breadcrumb shouldn't. Implied by `pageHeader`. */
+    hasPageHeading?: boolean;
+    breadcrumbLabel?: string;
+    /** Caps and centers the page content. Use on `fullWidth` pages whose content doesn't read well edge-to-edge on a wide screen. */
     centered?: boolean;
 }
 
 const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(
-    ({ children, className, fullWidth = false, title, titleLeading, titleBadge, titleActions, centered = false, ...props }, ref) => {
+    ({ children, className, fullWidth = false, actions, pageHeader, hasPageHeading = false, breadcrumbLabel, centered = false, ...props }, ref) => {
         return (
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset className="max-h-screen overflow-hidden">
-                    <AppHeader />
-                    {title != null && <SectionHeader title={title} leading={titleLeading} badge={titleBadge} actions={titleActions} centered={centered} />}
+                    <AppHeader actions={actions} breadcrumbIsHeading={!pageHeader && !hasPageHeading} breadcrumbLabel={breadcrumbLabel} />
+                    {pageHeader}
                     <div
                         ref={ref}
                         className={cn('relative w-full flex-1 min-h-0 overflow-auto bg-surface-page min-w-3xl', fullWidth ? 'p-0' : 'p-11')}
                         {...props}
                     >
                         <div className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-6' : 'min-w-[968px] max-w-[1056px]', className)}>
-                            {/* Mirrors SectionHeader's inner row: same cap inside the same padding, so the two line up */}
                             {centered ? <div className={cn('mx-auto w-full', CENTERED_MAX_WIDTH)}>{children}</div> : children}
                         </div>
                         <FunctionPlaygroundDrawer />

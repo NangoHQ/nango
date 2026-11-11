@@ -236,7 +236,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
 /**
  * For an endpoint that only sometimes does the audited thing — a connection upsert that may have
  * re-authorized rather than created. `skipWhen` is read at finish, so it sees what the handler recorded on
- * the request, and it is deliberately a negative condition: the default stays "emit", so a denial or a
+ * the request and the outcome, and it is deliberately a negative condition: the default stays "emit", so a denial or a
  * failure is still recorded and only the named case is dropped.
  *
  * A separate factory rather than a field on `AuditSpec`, so `auditable`'s promise to record every outcome
@@ -244,7 +244,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
  */
 export function maybeAuditable<TEndpoint extends AuditableEndpoint>(
     spec: AuditSpec<TEndpoint> & {
-        skipWhen: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => boolean;
+        skipWhen: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>, outcome: AuditOutcome) => boolean;
         subject: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => AuditSubject | undefined;
         actor?: ((req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => AuditActor) | undefined;
         // `target`/`metadata` are resolved before the handler runs and `*FromResponse` needs a JSON body, so
@@ -260,7 +260,7 @@ export function maybeAuditable<TEndpoint extends AuditableEndpoint>(
 function build<TEndpoint extends AuditableEndpoint>(
     spec: AuditSpec<TEndpoint>,
     conditional?: {
-        skipWhen: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => boolean;
+        skipWhen: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>, outcome: AuditOutcome) => boolean;
         atFinish?: ((req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => ResolvedAudit) | undefined;
         // Who the event belongs to, read at finish. `auditable` takes this from `res.locals` before the
         // handler runs, which an unauthenticated route cannot supply.
@@ -279,7 +279,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                     res.on('finish', () => {
                         void (async () => {
                             const typedReq = req as AuditRequest<TEndpoint>;
-                            if (conditional.skipWhen(typedReq, locals)) {
+                            if (conditional.skipWhen(typedReq, locals, outcomeFromStatus(res.statusCode))) {
                                 return;
                             }
                             const subject = conditional.subject(typedReq, locals);

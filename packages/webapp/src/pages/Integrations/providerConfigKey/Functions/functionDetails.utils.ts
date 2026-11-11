@@ -7,7 +7,7 @@ import type { JSONSchema7 } from 'json-schema';
 
 export type DetailsFunction = ListedNangoFunction | NangoFunctionTemplate;
 
-export interface FunctionDetails {
+export interface FunctionDetails extends FunctionSchemas {
     name: string;
     description?: string;
     typeLabel: string;
@@ -15,21 +15,49 @@ export interface FunctionDetails {
     scopes: string[];
     scopesMatch: 'all' | 'any';
     frequency: string | null;
-    inputSchema: JSONSchema7 | null;
-    outputSchemas: { name: string; schema: JSONSchema7 }[];
     pullCommand: string | null;
     runType: 'sync' | 'action' | 'tool' | null;
     delete: { type: 'sync' | 'action'; description: string } | undefined;
     code: { kind: 'deployed'; type: FunctionListType } | { kind: 'template'; type: FunctionType };
 }
 
-export function toFunctionDetails(fn: DetailsFunction, { env, integration }: { env: string; integration: string }): FunctionDetails {
+export interface FunctionSchemas {
+    inputSchema: JSONSchema7 | null;
+    outputSchemas: { name: string; schema: JSONSchema7 }[];
+}
+
+export function toFunctionSchemas(fn: DetailsFunction): FunctionSchemas {
+    if (fn.type === 'tool') {
+        const outputSchema = displaySchema(fn.output_json_schema);
+        return {
+            inputSchema: displaySchema(fn.input_json_schema),
+            outputSchemas: outputSchema ? [{ name: 'Output', schema: outputSchema }] : []
+        };
+    }
+    if (fn.type === 'on-event') {
+        return { inputSchema: null, outputSchemas: [] };
+    }
+    const schema = fn.json_schema;
+    const input = fn.input ? schema?.definitions?.[fn.input] : null;
+    return {
+        inputSchema: displaySchema(input, schema),
+        outputSchemas: fn.returns.flatMap((name) => {
+            const output = displaySchema(schema?.definitions?.[name], schema);
+            return output ? [{ name, schema: output }] : [];
+        })
+    };
+}
+
+export function toFunctionDetails(
+    fn: DetailsFunction,
+    { env, integration, provider }: { env: string; integration: string; provider: string }
+): FunctionDetails {
     const listed = 'enabled' in fn;
     const deleteType = listed && fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn) ? fn.type : undefined;
     const base = {
         name: fn.name,
         description: fn.description,
-        typeLabel: fn.type === 'on-event' ? 'trigger' : fn.type,
+        typeLabel: fn.type === 'on-event' ? 'trigger' : fn.type === 'action' ? 'tool' : fn.type,
         source: listed ? fn.source : ('template' as const),
         frequency: fn.type === 'sync' ? fn.runs : null,
         runType: listed && fn.enabled && isRunnableFunction(fn) ? fn.type : null,
@@ -38,37 +66,25 @@ export function toFunctionDetails(fn: DetailsFunction, { env, integration }: { e
             description:
                 deleteType === 'sync'
                     ? `You are about to permanently delete the sync "${fn.name}" and all of its synced records. This operation is not reversible, are you sure you wish to continue?`
-                    : `You are about to permanently delete the action "${fn.name}". This operation is not reversible, are you sure you wish to continue?`
-        }
+                    : `You are about to permanently delete the tool "${fn.name}". This operation is not reversible, are you sure you wish to continue?`
+        },
+        ...toFunctionSchemas(fn)
     };
     if (fn.type === 'tool') {
-        const outputSchema = displaySchema(fn.output_json_schema);
         const requiredScopes = fn.meta.required_scopes;
         return {
             ...base,
             scopes: requiredScopes?.all ?? requiredScopes?.any ?? [],
             scopesMatch: requiredScopes?.any ? 'any' : 'all',
-            inputSchema: displaySchema(fn.input_json_schema),
-            outputSchemas: outputSchema ? [{ name: 'Output', schema: outputSchema }] : [],
             pullCommand: null,
             code: { kind: 'deployed', type: 'tool' }
         };
     }
-    const schema = fn.type !== 'on-event' ? fn.json_schema : null;
-    const input = fn.type !== 'on-event' && fn.input ? schema?.definitions?.[fn.input] : null;
     return {
         ...base,
         scopes: fn.scopes ?? [],
         scopesMatch: 'all',
-        inputSchema: displaySchema(input, schema),
-        outputSchemas:
-            fn.type === 'on-event'
-                ? []
-                : fn.returns.flatMap((name) => {
-                      const output = displaySchema(schema?.definitions?.[name], schema);
-                      return output ? [{ name, schema: output }] : [];
-                  }),
-        pullCommand: buildPullCommand({ integration, name: fn.name, type: fn.type, source: listed ? { env } : { catalog: true } }),
+        pullCommand: buildPullCommand({ integration, name: fn.name, type: fn.type, source: listed ? { env } : { catalog: true, provider } }),
         code: listed ? { kind: 'deployed', type: fn.type } : { kind: 'template', type: fn.type }
     };
 }

@@ -20,7 +20,9 @@ import type {
     FunctionInvocationErrorCode,
     FunctionInvocationType,
     FunctionTrigger,
-    OperationActor
+    OperationActor,
+    OperationFunction,
+    OperationTool
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
@@ -58,7 +60,9 @@ export async function invokeFunction({
     invocationType,
     options,
     orchestrator,
-    actor
+    actor,
+    logMeta,
+    operation = { type: 'function', action: 'invoke' }
 }: {
     account: DBTeam;
     environment: DBEnvironment;
@@ -70,6 +74,9 @@ export async function invokeFunction({
     options?: Record<string, unknown> | undefined;
     orchestrator: Orchestrator;
     actor?: OperationActor | undefined;
+    /** Added to the operation's meta, next to the input. */
+    logMeta?: Record<string, unknown> | undefined;
+    operation?: OperationFunction | OperationTool;
 }): Promise<FunctionInvocation> {
     let logCtx: LogContextOrigin | undefined;
     const result = await tracer.trace('nango.function.invocation', async (span): Promise<Result<FunctionInvocationResult, FunctionInvokeError>> => {
@@ -155,7 +162,7 @@ export async function invokeFunction({
         const timeoutMs = executionTimeoutMs(invocationType);
 
         logCtx = await logContextGetter.create(
-            { operation: { type: 'function', action: 'invoke' }, expiresAt: new Date(Date.now() + timeoutMs).toISOString(), actor },
+            { operation, expiresAt: new Date(Date.now() + timeoutMs).toISOString(), actor },
             {
                 account,
                 environment,
@@ -163,6 +170,7 @@ export async function invokeFunction({
                 connection: { id: connection.id, name: connection.connection_id },
                 syncConfig: { id: currentVersion.id, name: config.name },
                 meta: {
+                    ...logMeta,
                     invocation_type: invocationType,
                     ...(options ? { options } : {}),
                     ...(input !== undefined ? truncateJson({ input: envs.NANGO_LOG_FUNCTION_INPUT ? input : 'REDACTED' }) : {})

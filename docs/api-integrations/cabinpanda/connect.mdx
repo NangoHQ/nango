@@ -1,0 +1,42 @@
+---
+title: 'CabinPanda - How do I link my account?'
+sidebarTitle: 'CabinPanda'
+---
+
+## Overview
+
+To authenticate with CabinPanda, you need:
+
+1. **API Token** — a token created in your CabinPanda account settings.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A CabinPanda account with a verified email address. If you don't have an account, [sign up](https://console.cabinpanda.com/register); every plan starts with a 14-day free trial.
+
+### Step 1: Create an API token
+
+1. Sign in to the [CabinPanda console](https://console.cabinpanda.com/login).
+2. Click **Settings** in the left sidebar, then under **Account Settings**, click **API**.
+3. On the **API tokens** card, click **Create token**.
+
+<img src="/api-integrations/cabinpanda/api_tokens_page.png" alt="CabinPanda API settings page with the Create token button"/>
+
+4. Enter a **Token name** (for example, `nango-integration`) and click **Create**.
+
+<img src="/api-integrations/cabinpanda/create_api_token_dialog.png" alt="CabinPanda Create API Token dialog with the Token name field"/>
+
+5. In the **Token created** dialog, click the copy button next to the token. CabinPanda shows the token only once, so store it somewhere safe.
+
+<img src="/api-integrations/cabinpanda/token_created.png" alt="CabinPanda Token created dialog with the copy button"/>
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with CabinPanda.
+2. Paste your token in the **API Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/cabinpanda/form.png" alt="CabinPanda Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to CabinPanda.

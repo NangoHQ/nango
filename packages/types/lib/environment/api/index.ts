@@ -4,6 +4,7 @@ import type { AuditPolicy } from '../../audit-trail/event.js';
 import type { ApiPlan } from '../../plans/http.api.js';
 import type { DBEnvironment, DBExternalWebhook } from '../db.js';
 import type { ApiEnvironmentVariable } from '../variable/api.js';
+import type { WebhookSettings } from './webhook.js';
 import type { Merge } from 'type-fest';
 
 export type ApiEnvironment = Merge<DBEnvironment, { callback_url: string } & ApiTimestamps>;
@@ -30,7 +31,7 @@ export type GetPublicEnvironments = ApiEndpoint<{
 }>;
 
 export type GetPublicEnvironment = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'environment', 'credentials_read', 'environment'>;
     Method: 'GET';
     Path: '/environments/:environmentUuid';
     Params: { environmentUuid: string };
@@ -74,19 +75,7 @@ export type PostPublicEnvironment = ApiEndpoint<{
         slack_notifications?: boolean | undefined;
         otlp_endpoint?: string | undefined;
         otlp_headers?: { name: string; value: string }[] | undefined;
-        webhooks?:
-            | {
-                  primary_url?: string | undefined;
-                  secondary_url?: string | undefined;
-                  on_sync_completion_always?: boolean | undefined;
-                  on_auth_creation?: boolean | undefined;
-                  on_auth_refresh_error?: boolean | undefined;
-                  on_sync_error?: boolean | undefined;
-                  on_async_action_completion?: boolean | undefined;
-                  on_connection_deletion?: boolean | undefined;
-                  signing_key?: string | undefined;
-              }
-            | undefined;
+        webhooks?: (WebhookSettings & { signing_key?: string | undefined }) | undefined;
     };
     Success: {
         data: {
@@ -102,6 +91,26 @@ export type PostPublicEnvironment = ApiEndpoint<{
         };
     };
     Error: ApiError<'conflict' | 'resource_capped' | 'invalid_is_prod_flag'>;
+}>;
+
+export type PatchPublicEnvironment = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'updated', 'environment'>;
+    Method: 'PATCH';
+    Path: '/environments/:environmentUuid';
+    Params: { environmentUuid: string };
+    Body: {
+        name?: string | undefined;
+        is_production?: boolean | undefined;
+        callback_url?: string | undefined;
+        slack_notifications?: boolean | undefined;
+        otlp_endpoint?: string | undefined;
+        otlp_headers?: { name: string; value: string }[] | undefined;
+        webhooks?: WebhookSettings | undefined;
+    };
+    Success: {
+        success: true;
+    };
+    Error: ApiError<'conflict' | 'cannot_change_prod_environment_name' | 'cannot_toggle_prod_environment'>;
 }>;
 
 export type DeletePublicEnvironment = ApiEndpoint<{
@@ -150,7 +159,7 @@ export type PatchEnvironment = ApiEndpoint<{
     Success: {
         data: ApiEnvironment;
     };
-    Error: ApiError<'conflict' | 'cannot_toggle_prod_environment'>;
+    Error: ApiError<'conflict' | 'cannot_change_prod_environment_name' | 'cannot_toggle_prod_environment'>;
 }>;
 
 export type DeleteEnvironment = ApiEndpoint<{
@@ -175,6 +184,7 @@ export type PostPublicRotateWebhookSigningKey = ApiEndpoint<{
     Audit: AuditPolicy<'environment', 'webhook_signing_key_rotated', 'environment'>;
     Method: 'POST';
     Path: '/environment/webhook-signing-key/rotate';
+    Body: { webhook_signing_key?: string | undefined };
     Success: {
         data: { webhook_signing_key: string };
     };
@@ -189,7 +199,7 @@ export type GetPublicEnvironmentVariables = ApiEndpoint<{
 }>;
 
 export type ListApiKeys = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'api_key', 'credentials_read', 'environment'>;
     Method: 'GET';
     Path: '/api/v1/environment/api-keys';
     Success: {
@@ -267,7 +277,7 @@ export type GetPublicApiKeys = ApiEndpoint<{
 }>;
 
 export type GetPublicApiKey = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'api_key', 'credentials_read', 'environment'>;
     Method: 'GET';
     Path: '/environments/:environmentUuid/api-keys/:keyUuid';
     Params: { environmentUuid: string; keyUuid: string };

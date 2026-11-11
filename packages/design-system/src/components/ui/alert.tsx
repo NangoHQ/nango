@@ -36,6 +36,11 @@ export const alertVariants = cva(
                 danger: ['bg-status-danger-bg border-status-danger-border text-status-danger-text', '[--alert-icon:var(--color-status-danger-icon)]'],
                 neutral: ['bg-status-neutral-bg border-status-neutral-border text-status-neutral-text', '[--alert-icon:var(--color-status-neutral-icon)]']
             },
+            // `status` follows the variant; `success` recolours only the icon.
+            icon: {
+                status: '',
+                success: '[--alert-icon:var(--color-icon-success)]'
+            },
             // Figma "Size". Each size owns where the trailing slots sit.
             size: {
                 wide: [
@@ -81,44 +86,67 @@ export const alertVariants = cva(
                     'has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5 has-[>[data-slot=alert-title]]:[&>[data-slot=alert-close]]:translate-y-0.5',
                     'has-[>[data-slot=alert-actions]]:[&>svg]:translate-y-0.5 has-[>[data-slot=alert-actions]]:[&>[data-slot=alert-close]]:translate-y-0.5'
                 ]
+            },
+            // Renders no Button itself: the call site passes a primary <Button size="md"> in AlertActions.
+            cta: {
+                button: ''
             }
         },
+        compoundVariants: [
+            {
+                variant: 'neutral',
+                size: 'wide',
+                cta: 'button',
+                className: [
+                    'rounded-ds-md bg-surface-panel border-border-default',
+                    '[&>svg[data-filled]]:fill-current [&>svg[data-filled]]:stroke-none [&>svg[data-filled]]:text-icon-link'
+                ]
+            }
+        ],
         defaultVariants: {
             variant: DEFAULT_ALERT_VARIANT,
-            size: 'wide'
+            size: 'wide',
+            icon: 'status'
         }
     }
 );
 
-type AlertStatus = NonNullable<VariantProps<typeof alertVariants>['variant']>;
+type AlertVariantProps = VariantProps<typeof alertVariants>;
+
+type AlertStatus = NonNullable<AlertVariantProps['variant']>;
 
 // The parent alert's status, so AlertButton can pick the matching LinkButton tone without being told.
 // Outside an Alert it falls back to neutral.
 const AlertStatusContext = createContext<AlertStatus>('neutral');
 
-export interface AlertProps extends React.ComponentProps<'div'>, VariantProps<typeof alertVariants> {
-    /** Renders the dismiss affordance. Omit for an alert that can't be dismissed. */
-    onDismiss?: () => void;
-    /** Accessible label for the dismiss button. */
-    dismissLabel?: string;
-}
+type AlertStyleProps = (Omit<AlertVariantProps, 'cta'> & { cta?: never }) | { variant: 'neutral'; size?: 'wide'; cta: 'button'; icon?: never };
 
-export const Alert = forwardRef<HTMLDivElement, AlertProps>(({ className, variant, size, onDismiss, dismissLabel = 'Dismiss', children, ...props }, ref) => (
-    <div ref={ref} data-slot="alert" role="alert" className={cn(alertVariants({ variant, size }), className)} {...props}>
-        <AlertStatusContext.Provider value={variant ?? DEFAULT_ALERT_VARIANT}>{children}</AlertStatusContext.Provider>
-        {onDismiss && (
-            <button
-                type="button"
-                data-slot="alert-close"
-                aria-label={dismissLabel}
-                onClick={onDismiss}
-                className="cursor-pointer rounded-ds-xs text-[var(--alert-icon)] outline-none focus-visible:shadow-focus-outline-default"
-            >
-                <X className="size-4" />
-            </button>
-        )}
-    </div>
-));
+export type AlertProps = React.ComponentProps<'div'> &
+    AlertStyleProps & {
+        /** Renders the dismiss affordance. Omit for an alert that can't be dismissed. */
+        onDismiss?: () => void;
+        /** Accessible label for the dismiss button. */
+        dismissLabel?: string;
+    };
+
+export const Alert = forwardRef<HTMLDivElement, AlertProps>(
+    ({ className, variant, size, cta, icon, onDismiss, dismissLabel = 'Dismiss', children, ...props }, ref) => (
+        <div ref={ref} data-slot="alert" role="alert" className={cn(alertVariants({ variant, size, cta, icon }), className)} {...props}>
+            <AlertStatusContext.Provider value={variant ?? DEFAULT_ALERT_VARIANT}>{children}</AlertStatusContext.Provider>
+            {onDismiss && (
+                <button
+                    type="button"
+                    data-slot="alert-close"
+                    aria-label={dismissLabel}
+                    onClick={onDismiss}
+                    className="cursor-pointer rounded-ds-xs text-[var(--alert-icon)] outline-none focus-visible:shadow-focus-outline-default"
+                >
+                    <X className="size-4" />
+                </button>
+            )}
+        </div>
+    )
+);
 Alert.displayName = 'Alert';
 
 // Figma text/regular/sm (13px/400) in the status colour, truncated to one line.

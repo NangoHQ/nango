@@ -66,6 +66,7 @@ export const ACCOUNT_API_KEY_SCOPES = [
     'account:environments:list',
     'account:environments:read',
     'account:environments:read_secret',
+    'account:environments:update',
     'account:environments:create',
     'account:environments:delete',
     'account:environments:set_production',

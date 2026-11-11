@@ -47,7 +47,8 @@ const validFunction = {
     fileBody: {
         js: 'module.exports = async () => ({})',
         ts: 'export default async () => ({})'
-    }
+    },
+    source: 'repo'
 } satisfies DeployBody['functions'][number];
 
 const validBody = {
@@ -56,6 +57,14 @@ const validBody = {
 } satisfies DeployBody;
 
 describe('function deploy validation', () => {
+    it.each(['standalone', 'repo'] as const)('accepts source %s', (source) => {
+        expect(validation.parse({ ...validBody, functions: [{ ...validFunction, source }] }).functions[0]?.source).toBe(source);
+    });
+
+    it.each(['catalog', 'unknown', undefined])('rejects source %s', (source) => {
+        expect(validation.safeParse({ ...validBody, functions: [{ ...validFunction, source }] }).success).toBe(false);
+    });
+
     it.each([{}, { category: 'crm', entities: ['contacts', 'companies'] }])('accepts tags %j', (tags) => {
         const body = { ...validBody, functions: [{ ...validFunction, tags }] };
         expect(validation.parse(body)).toEqual(body);

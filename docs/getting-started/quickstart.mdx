@@ -29,7 +29,7 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
     Pick the APIs your agent can use, for example Gmail, Google Calendar, Slack, or Notion. Nango-managed OAuth apps let you test right away, without registering an app with each provider.
 
     <Accordion title="For agents">
-      Ask the user which APIs their agent needs. Suggest `google-mail` (Gmail), `google-calendar`, `slack`, and `notion` if they are unsure.
+      Ask the user which APIs their agent needs. Suggest `google-mail` (Gmail), `google-calendar`, `slack`, `notion`, and `github` (GitHub User OAuth) if they are unsure.
 
       Look up each provider. `search` matches slugs only, so Gmail is found with `google`, not `gmail`:
 
@@ -78,10 +78,10 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
         }'
       ```
 
-      Check the integration has tools. Nango catalog actions are available out of the box, with nothing to deploy:
+      Check the integration has tools. Nango catalog tools are available out of the box, with nothing to deploy:
 
       ```bash
-      curl 'https://api.nango.dev/integrations/google-mail/functions?type=action' \
+      curl 'https://api.nango.dev/integrations/google-mail/functions?type=tool' \
         --header 'Authorization: Bearer <NANGO-API-KEY>'
       ```
     </Accordion>
@@ -151,20 +151,27 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
   </Step>
 
   <Step id="test-agent" title="Test it">
-    Ask your agent something like "Summarize the last 5 emails in my inbox". The first time, it replies with a link to connect your account. Authorize, ask again, and the agent runs the right tool.
+    Ask your agent something like "Summarize the last 5 emails in my inbox" or "Star the Nango repo on GitHub". The first time, it replies with a link to connect your account. Authorize, ask again, and the agent runs the right tool.
 
     See what was created in the **Integrations**, **Connections**, and **Logs** tabs of the [Nango dashboard](https://app.nango.dev/dev/integrations).
 
     <Accordion title="For agents">
-      Ask the user to run the app and ask the agent something that needs an enabled API, for example:
+      Ask the user to run the app and ask the agent something that needs an enabled API. Suggest prompts that match the APIs they enabled, for example:
 
-      > Summarize the last 5 emails in my inbox.
+      - Gmail: "Summarize the last 5 emails in my inbox."
+      - GitHub: "Star the Nango repo on GitHub."
 
       The first time, the agent replies with a connect link. The user opens it, authorizes, and asks again. The agent then finds and runs the right tool.
 
       Then point the user to the **Integrations**, **Connections**, and **Logs** tabs in the [Nango dashboard](https://app.nango.dev/dev/integrations). **Logs** shows every tool call, provider request, and response.
 
-      Finally, suggest the user connect the [Management MCP server with OAuth](/getting-started/coding-agent-setup#oauth-recommended). It's the most efficient way for their coding agent to manage integrations, connections, and logs, and to search the Nango docs moving forward.
+      Finally, strongly recommend that the user installs the Nango Management MCP server in their coding agent, and offer to add it for them. It's the most efficient way for you to manage their integrations, connections, and logs, and to search the Nango docs from here on.
+
+      If they accept, add it with OAuth. Follow the OAuth instructions for your coding agent in [Coding agent setup > Management MCP server](/getting-started/coding-agent-setup#oauth-recommended) (`https://nango.dev/docs/getting-started/coding-agent-setup#oauth-recommended`).
+
+      If your coding agent isn't listed there, add `https://mcp.nango.dev/mcp` as a remote MCP server with the Streamable HTTP transport, and authorize with OAuth. The server identifies OAuth clients with Client ID Metadata Documents (CIMD), not Dynamic Client Registration (DCR), so your MCP client must support CIMD.
+
+      The user completes the Nango authorization in their browser. Most agents only load the new server after a restart.
     </Accordion>
   </Step>
 </Steps>
@@ -176,7 +183,7 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
     Restrict tools, pin connections, and scope access per user or organization.
   </Card>
   <Card title="Build custom tools" icon="wand-magic-sparkles" href="/guides/functions/functions-guide">
-    Write action functions for tools the catalog doesn't have.
+    Write your own tools when the catalog doesn't have what you need.
   </Card>
   <Card title="Sync data" icon="arrows-rotate" href="/guides/functions/syncs/sync-functions">
     Keep external API data fresh in your app with sync functions.

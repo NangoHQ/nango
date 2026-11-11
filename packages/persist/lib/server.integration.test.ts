@@ -2,6 +2,7 @@ import fetch from 'node-fetch';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
+import { mintTaskCapabilityToken } from '@nangohq/internal-auth/testing';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { formatRecords } from '@nangohq/records/lib/helpers/format.js';
@@ -27,6 +28,27 @@ import type { UnencryptedRecordData } from '@nangohq/records';
 import type { Sync, Job as SyncJob } from '@nangohq/shared';
 import type { AllAuthCredentials, DBAPISecret, DBEnvironment, DBPlan, DBSyncConfig, DBTeam } from '@nangohq/types';
 import type { Server } from 'node:http';
+
+interface PersistEnvModule {
+    envs: {
+        NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: { kid: string; publicKey: string }[];
+    } & Record<string, unknown>;
+}
+
+const { taskKeyId, taskKeyMaterial } = await vi.hoisted(async () => {
+    const { ed25519TestMaterial } = await import('@nangohq/internal-auth/testing');
+    return { taskKeyId: 'persist-task-test', taskKeyMaterial: ed25519TestMaterial() };
+});
+
+vi.mock('./env.js', async (importOriginal) => {
+    const actual = await importOriginal<PersistEnvModule>();
+    return {
+        envs: {
+            ...actual.envs,
+            NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: [...actual.envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS, { kid: taskKeyId, publicKey: taskKeyMaterial.raw }]
+        }
+    };
+});
 
 const mockSecretKey = 'secret-key';
 
@@ -594,33 +616,49 @@ describe('Persist API', () => {
                     { id: '2', name: 'new2' }
                 ]);
 
-                const nonExistentSyncJobId = 999999999;
-                const response = await fetch(
-                    `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${nonExistentSyncJobId}/outdated`,
-                    {
-                        method: 'DELETE',
-                        body: JSON.stringify({ model, activityLogId: seed.activityLogId }),
-                        headers: {
-                            Authorization: `Bearer ${mockSecretKey}`,
-                            'Content-Type': 'application/json',
-                            Accept: 'application/x-ndjson'
-                        }
-                    }
-                );
-
-                expect(response.status).toEqual(200);
-                expect(response.headers.get('content-type')).toEqual('application/x-ndjson');
-
-                const lines = (await response.text())
-                    .split('\n')
-                    .map((line) => line.trim())
-                    .filter((line) => line.length > 0)
-                    .map((line) => JSON.parse(line));
-
-                expect(lines.at(-1)).toMatchObject({
-                    status: 'error',
-                    error: { code: 'delete_outdated_records_failed', message: expect.stringContaining('Failed to query sync job') }
+                const syncJob = await createSyncJob({
+                    sync_id: seed.sync.id,
+                    type: SyncJobsType.FULL,
+                    status: SyncStatus.RUNNING,
+                    job_id: 'bookkeeping-failure',
+                    nangoConnection: seed.connection
                 });
+                if (!syncJob) {
+                    throw new Error('Sync job not created');
+                }
+
+                const shared = await import('@nangohq/shared');
+                const update = vi.spyOn(shared, 'updateSyncJobResult').mockRejectedValue(new Error('Failed to query sync job'));
+                try {
+                    const response = await fetch(
+                        `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${syncJob.id}/outdated`,
+                        {
+                            method: 'DELETE',
+                            body: JSON.stringify({ model, activityLogId: seed.activityLogId }),
+                            headers: {
+                                Authorization: `Bearer ${mockSecretKey}`,
+                                'Content-Type': 'application/json',
+                                Accept: 'application/x-ndjson'
+                            }
+                        }
+                    );
+
+                    expect(response.status).toEqual(200);
+                    expect(response.headers.get('content-type')).toEqual('application/x-ndjson');
+
+                    const lines = (await response.text())
+                        .split('\n')
+                        .map((line) => line.trim())
+                        .filter((line) => line.length > 0)
+                        .map((line) => JSON.parse(line));
+
+                    expect(lines.at(-1)).toMatchObject({
+                        status: 'error',
+                        error: { code: 'delete_outdated_records_failed', message: expect.stringContaining('Failed to query sync job') }
+                    });
+                } finally {
+                    update.mockRestore();
+                }
             });
         });
 
@@ -679,24 +717,40 @@ describe('Persist API', () => {
                     { id: '2', name: 'new2' }
                 ]);
 
-                const nonExistentSyncJobId = 999999998;
-                const response = await fetch(
-                    `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${nonExistentSyncJobId}/outdated`,
-                    {
-                        method: 'DELETE',
-                        body: JSON.stringify({ model, activityLogId: seed.activityLogId }),
-                        headers: {
-                            Authorization: `Bearer ${mockSecretKey}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
-
-                expect(response.status).toEqual(500);
-                expect(response.headers.get('content-type')).toEqual('application/json; charset=utf-8');
-                expect(await response.json()).toMatchObject({
-                    error: { code: 'delete_outdated_records_failed', message: expect.stringContaining('Failed to query sync job') }
+                const syncJob = await createSyncJob({
+                    sync_id: seed.sync.id,
+                    type: SyncJobsType.FULL,
+                    status: SyncStatus.RUNNING,
+                    job_id: 'bookkeeping-failure-legacy',
+                    nangoConnection: seed.connection
                 });
+                if (!syncJob) {
+                    throw new Error('Sync job not created');
+                }
+
+                const shared = await import('@nangohq/shared');
+                const update = vi.spyOn(shared, 'updateSyncJobResult').mockRejectedValue(new Error('Failed to query sync job'));
+                try {
+                    const response = await fetch(
+                        `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${syncJob.id}/outdated`,
+                        {
+                            method: 'DELETE',
+                            body: JSON.stringify({ model, activityLogId: seed.activityLogId }),
+                            headers: {
+                                Authorization: `Bearer ${mockSecretKey}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    );
+
+                    expect(response.status).toEqual(500);
+                    expect(response.headers.get('content-type')).toEqual('application/json; charset=utf-8');
+                    expect(await response.json()).toMatchObject({
+                        error: { code: 'delete_outdated_records_failed', message: expect.stringContaining('Failed to query sync job') }
+                    });
+                } finally {
+                    update.mockRestore();
+                }
             });
 
             it('should not stream in_progress lines to a legacy client', async () => {
@@ -985,6 +1039,18 @@ describe('Persist API', () => {
             expect(response.status).toEqual(409);
             expect(await response.json()).toMatchObject({ error: { code: 'checkpoint_conflict' } });
         });
+
+        it('should return 204 when deleting a non-existent checkpoint', async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint`, {
+                method: 'DELETE',
+                body: JSON.stringify({ key: 'test-checkpoint-delete-missing', expectedVersion: 1 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(response.status).toEqual(204);
+        });
     });
 
     describe('connection ownership', () => {
@@ -1028,7 +1094,7 @@ describe('Persist API', () => {
                 }
             );
             expect(response.status).toEqual(404);
-            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+            expect(await response.json()).toMatchObject({ error: { code: 'sync_job_not_found' } });
         });
 
         it("rejects a permanent hard-delete of another tenant's records (deleteHardRecords)", async () => {
@@ -1038,7 +1104,7 @@ describe('Persist API', () => {
                 headers: authHeaders
             });
             expect(response.status).toEqual(404);
-            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+            expect(await response.json()).toMatchObject({ error: { code: 'sync_job_not_found' } });
         });
 
         it("rejects a write of records onto another tenant's connection (postRecords, the shared recordsPath route)", async () => {
@@ -1055,7 +1121,7 @@ describe('Persist API', () => {
                 headers: authHeaders
             });
             expect(response.status).toEqual(404);
-            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+            expect(await response.json()).toMatchObject({ error: { code: 'sync_job_not_found' } });
         });
 
         it('rejects a nonexistent connection id with the same 404, not a different error', async () => {
@@ -1088,6 +1154,23 @@ describe('Persist API', () => {
             expect(response.status).toEqual(200);
         });
 
+        it('rejects every connection route when the connection belongs to another environment', async () => {
+            const routes = connectionRoutes();
+            expect(routes).toHaveLength(10);
+            for (const route of routes) {
+                const path = route.path
+                    .replace(':environmentId', String(seed.env.id))
+                    .replace(':nangoConnectionId', String(otherTenantSeed.connection.id))
+                    .replace(':syncId', otherTenantSeed.sync.id)
+                    .replace(':syncJobId', String(otherTenantSeed.syncJob.id));
+                const response = await fetch(`${serverUrl}${path}`, { method: route.method, headers: authHeaders });
+                expect(response.status).toEqual(404);
+                expect(await response.json()).toMatchObject({
+                    error: { code: route.path.includes(':syncJobId') ? 'sync_job_not_found' : 'connection_not_found' }
+                });
+            }
+        });
+
         it("also rejects the other tenant reaching into this seed's connection, using its own valid credentials", async () => {
             const response = await fetch(
                 `${serverUrl}/environment/${otherTenantSeed.env.id}/connection/${seed.connection.id}/records?model=Account&limit=100`,
@@ -1099,7 +1182,164 @@ describe('Persist API', () => {
             expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
         });
     });
+
+    describe('sync job ownership', () => {
+        const outsideModel = 'OutsideModel';
+
+        async function taskToken(): Promise<string> {
+            return await mintTaskCapabilityToken({
+                privateKey: taskKeyMaterial.pem,
+                kid: taskKeyId,
+                taskId: 'task-1',
+                res: { environmentId: seed.env.id, connectionId: seed.connection.id, syncId: seed.sync.id },
+                scopes: ['persist:records']
+            });
+        }
+
+        async function postRecords(syncJobId: number, model: string) {
+            return await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${syncJobId}/records`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    model,
+                    records: [{ id: 'foreign-1', name: 'nope' }],
+                    providerConfigKey: seed.connection.provider_config_key,
+                    connectionId: seed.connection.connection_id,
+                    activityLogId: seed.activityLogId,
+                    merging: { strategy: 'override' }
+                }),
+                headers: {
+                    Authorization: `Bearer ${await taskToken()}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+        }
+
+        async function jobResult(id: number): Promise<unknown> {
+            const row = await db.knex.select<{ result: unknown }>('result').from('_nango_sync_jobs').where({ id }).first();
+            return row?.result ?? null;
+        }
+
+        async function recordCount(model: string): Promise<number> {
+            const found = (await records.getRecords({ connectionId: seed.connection.id, model, plan: null })).unwrap();
+            return found.records.length;
+        }
+
+        it("rejects another environment's job id and does not write records or job results", async () => {
+            const before = await jobResult(otherTenantSeed.syncJob.id);
+            const response = await postRecords(otherTenantSeed.syncJob.id, outsideModel);
+            expect(response.status).toEqual(404);
+            const body = await response.text();
+            expect(body).not.toContain('declared sync models');
+            expect(JSON.parse(body)).toMatchObject({ error: { code: 'sync_job_not_found' } });
+            expect(await jobResult(otherTenantSeed.syncJob.id)).toEqual(before);
+            expect(await recordCount(outsideModel)).toEqual(0);
+        });
+
+        it("rejects another sync's job id on the same connection", async () => {
+            const syncConfig = await db.knex.from<DBSyncConfig>('_nango_sync_configs').where({ id: seed.sync.sync_config_id }).first();
+            if (!syncConfig) {
+                throw new Error('sync config not found');
+            }
+            const otherSync = await createSync({ connectionId: seed.connection.id, syncConfig, variant: 'other' });
+            if (!otherSync) {
+                throw new Error('other sync not created');
+            }
+            const otherJob = await createSyncJob({
+                sync_id: otherSync.id,
+                type: SyncJobsType.FULL,
+                status: SyncStatus.RUNNING,
+                job_id: 'other-sync-job',
+                nangoConnection: seed.connection
+            });
+            if (!otherJob) {
+                throw new Error('other sync job not created');
+            }
+
+            const response = await postRecords(otherJob.id, outsideModel);
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'sync_job_not_found' } });
+        });
+
+        it('rejects an unknown job id before the model allowlist can be skipped', async () => {
+            const response = await postRecords(Number.MAX_SAFE_INTEGER, outsideModel);
+            expect(response.status).toEqual(404);
+            const body = await response.text();
+            expect(body).not.toContain('declared sync models');
+            expect(JSON.parse(body)).toMatchObject({ error: { code: 'sync_job_not_found' } });
+            expect(await recordCount(outsideModel)).toEqual(0);
+        });
+
+        async function postRecordsWithSecret(syncId: string, syncJobId: number) {
+            return await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${syncId}/job/${syncJobId}/records`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    model: outsideModel,
+                    records: [{ id: 'foreign-1', name: 'nope' }],
+                    providerConfigKey: seed.connection.provider_config_key,
+                    connectionId: seed.connection.connection_id,
+                    activityLogId: seed.activityLogId,
+                    merging: { strategy: 'override' }
+                }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+        }
+
+        it("rejects another environment's job id for a secret-key caller", async () => {
+            const response = await postRecordsWithSecret(seed.sync.id, otherTenantSeed.syncJob.id);
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'sync_job_not_found' } });
+        });
+
+        it("rejects another sync's job id on the same connection for a secret-key caller", async () => {
+            const syncConfig = await db.knex.from<DBSyncConfig>('_nango_sync_configs').where({ id: seed.sync.sync_config_id }).first();
+            if (!syncConfig) {
+                throw new Error('sync config not found');
+            }
+            const otherSync = await createSync({ connectionId: seed.connection.id, syncConfig, variant: 'secret-other' });
+            if (!otherSync) {
+                throw new Error('other sync not created');
+            }
+            const otherJob = await createSyncJob({
+                sync_id: otherSync.id,
+                type: SyncJobsType.FULL,
+                status: SyncStatus.RUNNING,
+                job_id: 'secret-other-sync-job',
+                nangoConnection: seed.connection
+            });
+            if (!otherJob) {
+                throw new Error('other sync job not created');
+            }
+
+            const response = await postRecordsWithSecret(seed.sync.id, otherJob.id);
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'sync_job_not_found' } });
+        });
+
+        it('returns 404 when the sync id is not a uuid', async () => {
+            const response = await postRecordsWithSecret('not-a-uuid', seed.syncJob.id);
+            expect(response.status).toEqual(404);
+            const body = await response.text();
+            expect(body).not.toContain('invalid input syntax');
+            expect(JSON.parse(body)).toMatchObject({ error: { code: 'sync_job_not_found' } });
+        });
+    });
 });
+
+function connectionRoutes(): { method: string; path: string }[] {
+    const stack = (server as unknown as { router: { stack: { route?: { path: string; methods: Record<string, boolean> } }[] } }).router.stack;
+    return stack.flatMap((layer) => {
+        const route = layer.route;
+        if (!route?.path.includes(':nangoConnectionId')) {
+            return [];
+        }
+        return Object.entries(route.methods)
+            .filter(([, enabled]) => enabled)
+            .map(([method]) => ({ method: method.toUpperCase(), path: route.path }));
+    });
+}
 
 const initDb = async () => {
     const now = new Date();

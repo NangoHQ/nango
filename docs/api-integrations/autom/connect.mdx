@@ -1,0 +1,48 @@
+---
+title: 'Autom - How do I link my account?'
+sidebarTitle: 'Autom'
+---
+
+## Overview
+
+To authenticate with Autom, you need:
+
+1. **API Key** - An Autom API key.
+
+This guide shows you how to create one.
+
+### Prerequisites
+
+- An Autom account. You can [sign up](https://app.autom.dev/register) with email, Google, or GitHub, and no credit card is required.
+
+### Step 1: Create an API key
+
+1. Sign in to the [Autom dashboard](https://app.autom.dev/) and click **API Keys** in the sidebar.
+
+<img src="/api-integrations/autom/open_api_keys.png" alt="Autom dashboard sidebar with the API Keys item"/>
+
+2. Click **New API Key**.
+
+<img src="/api-integrations/autom/new_api_key_button.png" alt="Autom API Keys page with the New API Key button"/>
+
+3. Enter a **Name** and pick a **Category**. You can also set an expiry date, and request limits on the **Request limits** tab. Then click **Create API Key**.
+
+<img src="/api-integrations/autom/create_api_key_dialog.png" alt="Autom New API Key dialog with the Name and Category fields and the Create API Key button"/>
+
+4. Click **Copy** to copy the key. Autom shows it only once.
+
+<img src="/api-integrations/autom/copy_api_key.png" alt="Autom API Key created dialog with the Copy button"/>
+
+<Note>
+If the key expires, is deactivated, or reaches its request limits, Autom rejects requests made with it.
+</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Autom.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/autom/form.png" alt="Nango Connect UI form for entering the Autom API Key" style={{maxWidth: "450px" }}/>
+
+You are now connected to Autom.

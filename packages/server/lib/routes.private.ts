@@ -44,6 +44,9 @@ import { postForgotPassword } from './controllers/v1/account/postForgotPassword.
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
+import { getAgentGettingStarted } from './controllers/v1/agentGettingStarted/getAgentGettingStarted.js';
+import { postAgentGettingStartedDismiss } from './controllers/v1/agentGettingStarted/postAgentGettingStartedDismiss.js';
+import { postAgentGettingStartedRestart } from './controllers/v1/agentGettingStarted/postAgentGettingStartedRestart.js';
 import { postAgentPlaygroundChat } from './controllers/v1/agentPlayground/postChat.js';
 import { getAuditTrail } from './controllers/v1/audit-trail/getAuditTrail.js';
 import { getAuditTrailExport } from './controllers/v1/audit-trail/getAuditTrailExport.js';
@@ -140,8 +143,10 @@ import { agentPlaygroundRateLimit } from './middleware/agentPlaygroundRateLimit.
 import {
     auditAccountApiKeyCreated,
     auditAccountApiKeyDeleted,
+    auditAccountApiKeysCredentialsRead,
     auditApiKeyCreated,
     auditApiKeyDeleted,
+    auditApiKeysCredentialsRead,
     auditApiKeyUpdated,
     auditAppAuthPasswordChanged,
     auditAuthLogin,
@@ -157,6 +162,7 @@ import {
     auditBillingSpendAlertChanged,
     auditBillingSpendAlertRemoved,
     auditBillingTrialExtended,
+    auditConnectionCredentialsRead,
     auditConnectionDeleted,
     auditConnectionMetadataUpdated,
     auditConnectionRefreshed,
@@ -165,10 +171,11 @@ import {
     auditEnvironmentDeleted,
     auditEnvironmentUpdated,
     auditEnvironmentVariablesChanged,
-    auditEnvironmentWebhookUrlsChanged,
+    auditEnvironmentWebhooksUpdated,
     auditFunctionDeleted,
     auditFunctionUpgraded,
     auditIntegrationCreated,
+    auditIntegrationCredentialsRead,
     auditIntegrationDeleted,
     auditIntegrationUpdated,
     auditMemberInviteAccepted,
@@ -314,15 +321,15 @@ web.route('/environments').post(webAuth, auditEnvironmentCreated, can('account:e
 web.route('/environments/').patch(webAuth, auditEnvironmentUpdated, can('environment:settings:update'), patchEnvironment);
 web.route('/environments/').delete(webAuth, auditEnvironmentDeleted, can('environment:delete'), deleteEnvironment);
 web.route('/environments/current').get(webAuth, can('environment:settings:read'), getEnvironment);
-web.route('/environments/webhook').patch(webAuth, auditEnvironmentWebhookUrlsChanged, can('environment:webhooks:update'), patchWebhook);
+web.route('/environments/webhook').patch(webAuth, auditEnvironmentWebhooksUpdated, can('environment:webhooks:update'), patchWebhook);
 web.route('/environments/variables').post(webAuth, auditEnvironmentVariablesChanged, can('environment:variables:update'), postEnvironmentVariables);
 
 // API Key management
-web.route('/account/api-keys').get(webAuth, can('account:api_keys:list'), listAccountApiKeys);
+web.route('/account/api-keys').get(webAuth, auditAccountApiKeysCredentialsRead, can('account:api_keys:list'), listAccountApiKeys);
 web.route('/account/api-keys').post(webAuth, auditAccountApiKeyCreated, can('account:api_keys:create'), createAccountApiKey);
 web.route('/account/api-keys/:keyId').delete(webAuth, auditAccountApiKeyDeleted, can('account:api_keys:delete'), deleteAccountApiKey);
 
-web.route('/environment/api-keys').get(webAuth, can('environment:api_keys:list'), listApiKeys);
+web.route('/environment/api-keys').get(webAuth, auditApiKeysCredentialsRead, can('environment:api_keys:list'), listApiKeys);
 web.route('/environment/api-keys').post(webAuth, auditApiKeyCreated, can('environment:api_keys:create'), createApiKey);
 web.route('/environment/api-keys/:keyId').patch(webAuth, auditApiKeyUpdated, can('environment:api_keys:update'), patchApiKey);
 web.route('/environment/api-keys/:keyId').delete(webAuth, auditApiKeyDeleted, can('environment:api_keys:delete'), deleteApiKey);
@@ -347,7 +354,7 @@ web.route('/connect-ui-settings').put(webAuth, can('account:connect_ui:update'),
 // Integrations
 web.route('/integrations').get(webAuth, can('environment:integrations:list'), getIntegrations);
 web.route('/integrations').post(webAuth, auditIntegrationCreated, can('environment:integrations:update'), postIntegration);
-web.route('/integrations/:providerConfigKey').get(webAuth, can('environment:integrations:read'), getIntegration);
+web.route('/integrations/:providerConfigKey').get(webAuth, auditIntegrationCredentialsRead, can('environment:integrations:read'), getIntegration);
 web.route('/integrations/:providerConfigKey').patch(webAuth, auditIntegrationUpdated, can('environment:integrations:update'), patchIntegration);
 web.route('/integrations/:providerConfigKey').delete(webAuth, auditIntegrationDeleted, can('environment:integrations:delete'), deleteIntegration);
 web.route('/integrations/:providerConfigKey/flows').get(webAuth, can('environment:functions:list'), getIntegrationFlows);
@@ -367,7 +374,7 @@ web.route('/providers/:providerConfigKey/templates/:name/code').get(webAuth, cat
 // Connections
 web.route('/connections').get(webAuth, can('environment:connections:list'), getConnections);
 web.route('/connections/count').get(webAuth, can('environment:connections:list'), getConnectionsCount);
-web.route('/connections/:connectionId').get(webAuth, can('environment:connections:read'), getConnectionWeb);
+web.route('/connections/:connectionId').get(webAuth, auditConnectionCredentialsRead, can('environment:connections:read'), getConnectionWeb);
 web.route('/connections/:connectionId/records/models').get(webAuth, can('environment:connections:read'), getConnectionRecordModels);
 web.route('/connections/:connectionId/records').get(webAuth, can('environment:connections:read'), getConnectionRecords);
 web.route('/connections/:connectionId/refresh').post(webAuth, auditConnectionRefreshed, can('environment:connections:update'), getConnectionRefresh);
@@ -405,6 +412,9 @@ web.route('/functions/invoke').post(webAuth, can('environment:syncs:execute'), p
 // Getting Started
 web.route('/getting-started').get(webAuth, getGettingStarted);
 web.route('/getting-started').patch(webAuth, patchGettingStarted);
+web.route('/agent-getting-started').get(webAuth, getAgentGettingStarted);
+web.route('/agent-getting-started/restart').post(webAuth, postAgentGettingStartedRestart);
+web.route('/agent-getting-started/dismiss').post(webAuth, postAgentGettingStartedDismiss);
 
 // Logs
 web.route('/audit-trail').get(webAuth, auditTrailQueried, can('account:audit_trail:read'), getAuditTrail);

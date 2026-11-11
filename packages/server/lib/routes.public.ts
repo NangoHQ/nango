@@ -54,6 +54,7 @@ import { getPublicEnvironment } from './controllers/environment/getEnvironment.j
 import { getPublicEnvironments } from './controllers/environment/getEnvironments.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { patchPublicEnvironmentApiKey } from './controllers/environment/patchApiKey.js';
+import { patchPublicEnvironment } from './controllers/environment/patchEnvironment.js';
 import { postPublicEnvironmentApiKey } from './controllers/environment/postApiKey.js';
 import { postPublicEnvironment } from './controllers/environment/postEnvironment.js';
 import { postPublicRotateWebhookSigningKey } from './controllers/environment/postPublicRotateWebhookSigningKey.js';
@@ -105,6 +106,7 @@ import { acceptLanguageMiddleware } from './middleware/accept-language.middlewar
 import authMiddleware from './middleware/access.middleware.js';
 import {
     auditConnectionCreated,
+    auditDeprecatedProviderConfigCredentialsRead,
     auditFunctionDeployedCli,
     auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
@@ -113,14 +115,18 @@ import {
     auditFunctionVariantDeleted,
     auditFunctionVariantUpdated,
     auditPublicApiKeyCreated,
+    auditPublicApiKeyCredentialsRead,
     auditPublicApiKeyDeleted,
     auditPublicApiKeyUpdated,
     auditPublicConnectionDeleted,
     auditPublicConnectionUpdated,
     auditPublicEnvironmentCreated,
+    auditPublicEnvironmentCredentialsRead,
     auditPublicEnvironmentDeleted,
+    auditPublicEnvironmentUpdated,
     auditPublicFunctionDeleted,
     auditPublicIntegrationCreated,
+    auditPublicIntegrationCredentialsRead,
     auditPublicIntegrationDeleted,
     auditPublicIntegrationUpdated,
     auditPublicQuickstartIntegrationCreated,
@@ -282,8 +288,9 @@ publicAPI.route('/providers/:provider/templates/:name/code').get(envAuth, withEn
 
 publicAPI.use('/environments', jsonContentTypeMiddleware);
 publicAPI.route('/environments').get(apiAuth, can('account:environments:list'), getPublicEnvironments);
-publicAPI.route('/environments/:environmentUuid').get(apiAuth, can('account:environments:read'), getPublicEnvironment);
+publicAPI.route('/environments/:environmentUuid').get(apiAuth, auditPublicEnvironmentCredentialsRead, can('account:environments:read'), getPublicEnvironment);
 publicAPI.route('/environments').post(apiAuth, auditPublicEnvironmentCreated, can('account:environments:create'), postPublicEnvironment);
+publicAPI.route('/environments/:environmentUuid').patch(apiAuth, auditPublicEnvironmentUpdated, can('account:environments:update'), patchPublicEnvironment);
 publicAPI.route('/environments/:environmentUuid').delete(apiAuth, auditPublicEnvironmentDeleted, can('account:environments:delete'), deletePublicEnvironment);
 publicAPI
     .route('/environments/:environmentUuid/api-keys')
@@ -291,7 +298,7 @@ publicAPI
     .post(apiAuth, auditPublicApiKeyCreated, can('account:environments:api_keys:create'), postPublicEnvironmentApiKey);
 publicAPI
     .route('/environments/:environmentUuid/api-keys/:keyUuid')
-    .get(apiAuth, can('account:environments:api_keys:read'), getPublicEnvironmentApiKey)
+    .get(apiAuth, auditPublicApiKeyCredentialsRead, can('account:environments:api_keys:read'), getPublicEnvironmentApiKey)
     .patch(apiAuth, auditPublicApiKeyUpdated, can('account:environments:api_keys:update'), patchPublicEnvironmentApiKey)
     .delete(apiAuth, auditPublicApiKeyDeleted, can('account:environments:api_keys:delete'), deletePublicEnvironmentApiKey);
 
@@ -300,6 +307,7 @@ publicAPI
     .route('/config/:providerConfigKey')
     .get(
         envAuth,
+        auditDeprecatedProviderConfigCredentialsRead,
         can('environment:integrations:read', 'environment:integrations:read_credentials'),
         trackDeprecatedPublicEndpoint('GET /config/:providerConfigKey'),
         configController.getProviderConfig.bind(configController)
@@ -324,7 +332,12 @@ publicAPI
 publicAPI.route('/integrations/:uniqueKey').patch(envAuth, auditPublicIntegrationUpdated, can('environment:integrations:update'), patchPublicIntegration);
 publicAPI
     .route('/integrations/:uniqueKey')
-    .get(envAuth, can('environment:integrations:read', 'environment:integrations:read_credentials'), getPublicIntegration);
+    .get(
+        envAuth,
+        auditPublicIntegrationCredentialsRead,
+        can('environment:integrations:read', 'environment:integrations:read_credentials'),
+        getPublicIntegration
+    );
 
 publicAPI.route('/integrations/:uniqueKey').delete(envAuth, auditPublicIntegrationDeleted, can('environment:integrations:delete'), deletePublicIntegration);
 publicAPI.route('/integrations/:uniqueKey/functions/:name/code').get(envAuth, can('environment:functions:read'), getFunctionCode);

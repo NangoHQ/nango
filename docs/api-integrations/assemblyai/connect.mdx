@@ -1,0 +1,53 @@
+---
+title: 'AssemblyAI - How do I link my account?'
+sidebarTitle: 'AssemblyAI'
+---
+
+## Overview
+
+To authenticate with AssemblyAI, you need:
+
+1. **Region** — the AssemblyAI API endpoint your account uses.
+2. **API Key** — an AssemblyAI API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An AssemblyAI account. You can [sign up for free](https://www.assemblyai.com/dashboard/signup).
+
+### Step 1: Choose your region
+
+AssemblyAI has two API endpoints. Pick the one where your audio and transcript data should be processed:
+
+| Region | Value to select |
+|--------|-----------------|
+| US (default) | `api.assemblyai.com` |
+| EU data residency | `api.eu.assemblyai.com` |
+
+If you have no data residency requirement, use `api.assemblyai.com`. See [Cloud endpoints and data residency](https://www.assemblyai.com/docs/pre-recorded-audio/select-the-region) for details.
+
+### Step 2: Create an API key
+
+1. Sign in to the [AssemblyAI dashboard](https://www.assemblyai.com/dashboard/home).
+2. In the sidebar, go to **Workspace** > **Manage** > **API Keys**, then click **Create new API key**.
+
+<img src="/api-integrations/assemblyai/api_keys_page.png" alt="API Keys page in the AssemblyAI dashboard with the Create new API key button"/>
+
+3. Enter a descriptive name for the key and click **Create**.
+
+<img src="/api-integrations/assemblyai/create_api_key_dialog.png" alt="Create API key dialog in the AssemblyAI dashboard with the API Key name field"/>
+
+4. Click the key value next to your new key to copy it.
+
+<img src="/api-integrations/assemblyai/api_key_created.png" alt="AssemblyAI API Keys table showing the new key with its copy button"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with AssemblyAI.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/assemblyai/form.png" alt="AssemblyAI connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to AssemblyAI.
