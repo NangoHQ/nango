@@ -103,8 +103,9 @@ describe('uploaderConfig', () => {
         expect(config.isErr() && config.error.message).toEqual(message);
     });
 
-    it('returns no configuration when the license does not ask for telemetry', async () => {
+    it('returns no configuration when the license does not ask for telemetry, even without a private key', async () => {
         envs.NANGO_LICENSE = await license({ telemetry: false });
+        envs.NANGO_INSTALLATION_PRIVATE_KEY = undefined;
 
         expect((await uploaderConfig()).unwrap()).toBeNull();
     });

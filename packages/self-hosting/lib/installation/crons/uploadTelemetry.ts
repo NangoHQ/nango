@@ -52,15 +52,6 @@ export async function uploadTelemetryCron(): Promise<void> {
 
 /** Returns no configuration when the license does not ask for telemetry. */
 export async function uploaderConfig(): Promise<Result<UploaderConfig | null>> {
-    if (!envs.NANGO_INSTALLATION_PRIVATE_KEY) {
-        return Err(new Error('NANGO_INSTALLATION_PRIVATE_KEY is not set'));
-    }
-    const privateKeyPem = normalizePem(envs.NANGO_INSTALLATION_PRIVATE_KEY);
-    try {
-        await mintInstallationToken(privateKeyPem, { body: new Uint8Array() });
-    } catch {
-        return Err(new Error('NANGO_INSTALLATION_PRIVATE_KEY cannot sign an installation token'));
-    }
     if (!envs.NANGO_LICENSE) {
         return Err(new Error('NANGO_LICENSE is not set'));
     }
@@ -73,6 +64,15 @@ export async function uploaderConfig(): Promise<Result<UploaderConfig | null>> {
     }
     if (!license.value.telemetry) {
         return Ok(null);
+    }
+    if (!envs.NANGO_INSTALLATION_PRIVATE_KEY) {
+        return Err(new Error('NANGO_INSTALLATION_PRIVATE_KEY is not set'));
+    }
+    const privateKeyPem = normalizePem(envs.NANGO_INSTALLATION_PRIVATE_KEY);
+    try {
+        await mintInstallationToken(privateKeyPem, { body: new Uint8Array() });
+    } catch {
+        return Err(new Error('NANGO_INSTALLATION_PRIVATE_KEY cannot sign an installation token'));
     }
     const knex = hostedTelemetryDb();
     if (!knex) {
