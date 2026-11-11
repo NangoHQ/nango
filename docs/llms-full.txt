@@ -6912,12 +6912,12 @@ The audit trail covers the main control-plane operations related to connections,
 
 | Resource | Actions |
 |----------|---------|
-| `connection` | `created`, `updated`, `metadata_updated`, `refreshed`, `deleted` |
-| `integration` | `created`, `updated`, `deleted` |
+| `connection` | `created`, `updated`, `metadata_updated`, `refreshed`, `deleted`, `credentials_read` |
+| `integration` | `created`, `updated`, `deleted`, `credentials_read` |
 | `function` | `deployed`, `upgraded`, `updated`, `deleted`, `variant_created`, `variant_deleted`, `variant_updated` |
 | `sync` | `enabled`, `disabled`, `paused`, `started`, `triggered`, `cancelled`, `frequency_changed`, `variant_created`, `variant_deleted` |
-| `api_key` | `created`, `updated`, `deleted` |
-| `environment` | `created`, `updated`, `variables_changed`, ~~`webhook_urls_changed`~~ *(historical only)*, `webhook_signing_key_rotated`, `deleted` |
+| `api_key` | `created`, `updated`, `deleted`, `credentials_read` |
+| `environment` | `created`, `updated`, `variables_changed`, ~~`webhook_urls_changed`~~ *(historical only)*, `webhook_signing_key_rotated`, `deleted`, `credentials_read` |
 | `member` | `invited`, `invite_accepted`, `invite_declined`, `invite_revoked`, `removed`, `role_changed` |
 | `team` | `updated` |
 | `user` | `updated` |
@@ -6934,7 +6934,16 @@ The audit trail covers the main control-plane operations related to connections,
 
 Secrets, such as API keys and passwords, are stripped from audit log entries.
 
-Reads are generally not recorded. Listing connections, fetching an integration, or opening a page in the dashboard leaves no entry. Our audit trail is designed to answer "what changed", not "what was looked at". Queries to the audit trail are an exception and logged with the actions listed above.
+Two kinds of reads are recorded: queries to the audit trail itself, and reads that return credentials. A credentials read is recorded as `credentials_read`, so you can see who accessed a secret.
+
+Only control plane credential reads are recorded: those made from the dashboard or through the API endpoints that manage integrations, API keys, and environments. Data plane reads, such as fetching a connection's credentials with `GET /connections/{connectionId}`, are not. Control plane credential reads cover:
+
+| Resource | Credentials |
+|----------|-------------|
+| `connection` | Connection credentials |
+| `integration` | Integration credentials, such as the client secret |
+| `api_key` | API key secrets |
+| `environment` | Environment secrets, such as the webhook signing key |
 
 <Note>
 The audit trail currently does not cover data plane operations, such as reading connection credentials or fetching sync records. See [Limitations](#limitations) for details.
@@ -6968,7 +6977,7 @@ For example, the following activities are not covered:
 
 | Not recorded | Example |
 |--------------|----------|
-| Reading connection credentials | `GET /connection/{connectionId}` |
+| Reading connection credentials via the API | `GET /connections/{connectionId}` |
 | Reading records from Nango | `GET /records` |
 | Deleting/pruning records in Nango | `PATCH /records` pruning |
 | Setting or updating connection metadata via the API | `POST` / `PATCH /connection/metadata` |
@@ -6976,7 +6985,7 @@ For example, the following activities are not covered:
 | Proxy requests | Every call through `/proxy` |
 | Tool calls | `POST /connections/:connectionId/tools/:name/calls` |
 | Legacy action executions (deprecated) | `POST /action/trigger` |
-| Reading configuration | Listing or fetching connections, integrations, or functions |
+| Reading configuration without secrets | Listing or fetching connections, integrations, or functions |
 
 ## Proxy requests
 
@@ -7558,7 +7567,7 @@ The flag is only set when the integration's webhook handling knows verification 
 
 The Nango signature on flagged requests only proves the webhook came through Nango, not that the provider sent it. Anyone who knows the integration's webhook URL can send one. Treat the payload as untrusted, and set the webhook secret on the integration to enable verification. The forward operation in the Nango logs also shows a warning with the reason.
 
-Some providers reject webhooks Nango cannot verify, such as GitHub App, Gmail, Microsoft Teams, Salesforce, Airtable, Affinity, Fillout and ShipStation. For these, **Allow unverified webhooks** in **Integrations > [Integration] > Settings** lets webhooks with a missing or unverifiable signature through, flagged as above. It is off by default, and is meant for prototyping or while you set up verification. It never lets through a webhook with an invalid signature.
+Some providers reject webhooks Nango cannot verify, such as GitHub App, Gmail, Microsoft Teams, Salesforce, Airtable, DocuSign, Affinity, Fillout and ShipStation. For these, **Allow unverified webhooks** in **Integrations > [Integration] > Settings** lets webhooks with a missing or unverifiable signature through, flagged as above. For DocuSign, this only applies when no webhook secret is set on the integration; with a secret, a missing signature is still rejected. It is off by default, and is meant for prototyping or while you set up verification. It never lets through a webhook with an invalid signature.
 
 ## When to use forwarding
 
@@ -15857,6 +15866,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `airtable-pat` | Airtable (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/airtable-pat.md) | [connect](https://nango.dev/docs/integrations/all/airtable-pat/connect.md) |  | productivity |
 | `alchemy` | Alchemy | API_KEY | [docs](https://nango.dev/docs/api-integrations/alchemy.md) | [connect](https://nango.dev/docs/api-integrations/alchemy/connect.md) |  | dev-tools |
 | `algolia` | Algolia | API_KEY | [docs](https://nango.dev/docs/integrations/all/algolia.md) | [connect](https://nango.dev/docs/integrations/all/algolia/connect.md) |  | search |
+| `altium-365` | Altium 365 | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/altium-365.md) | [connect](https://nango.dev/docs/api-integrations/altium-365/connect.md) |  | dev-tools |
 | `altrata` | Altrata | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/altrata.md) | [connect](https://nango.dev/docs/api-integrations/altrata/connect.md) |  | analytics |
 | `alttext-ai` | AltText.ai | API_KEY | [docs](https://nango.dev/docs/api-integrations/alttext-ai.md) | [connect](https://nango.dev/docs/api-integrations/alttext-ai/connect.md) |  | other |
 | `amazon` | Amazon | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/amazon.md) |  | [setup](https://nango.dev/docs/api-integrations/amazon/how-to-register-your-own-amazon-api-oauth-app.md) | dev-tools, e-commerce |
@@ -16132,8 +16142,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `docmosis` | Docmosis | API_KEY | [docs](https://nango.dev/docs/api-integrations/docmosis.md) | [connect](https://nango.dev/docs/api-integrations/docmosis/connect.md) |  | productivity |
 | `docparser` | Docparser | BASIC | [docs](https://nango.dev/docs/api-integrations/docparser.md) | [connect](https://nango.dev/docs/api-integrations/docparser/connect.md) |  | productivity |
 | `document360` | Document360 | API_KEY | [docs](https://nango.dev/docs/integrations/all/document360.md) |  |  | knowledge-base |
-| `docusign` | DocuSign | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/docusign.md) |  |  | legal |
-| `docusign-sandbox` | DocuSign (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/docusign-sandbox.md) |  |  | legal |
+| `docusign` | DocuSign | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/docusign.md) |  | [setup](https://nango.dev/docs/api-integrations/docusign/how-to-register-your-own-docusign-oauth-app.md) | legal |
+| `docusign-sandbox` | DocuSign (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/docusign-sandbox.md) |  | [setup](https://nango.dev/docs/api-integrations/docusign-sandbox/how-to-register-your-own-docusign-sandbox-oauth-app.md) | legal |
 | `docuware` | DocuWare | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/docuware.md) | [connect](https://nango.dev/docs/integrations/all/docuware/connect.md) |  | productivity |
 | `domo` | Domo | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/domo.md) | [connect](https://nango.dev/docs/api-integrations/domo/connect.md) |  | productivity, other |
 | `dope-security` | dope.security | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/dope-security.md) | [connect](https://nango.dev/docs/api-integrations/dope-security/connect.md) |  | dev-tools |
@@ -16172,6 +16182,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `epic-games` | Epic Games | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/epic-games.md) |  |  | gaming |
 | `epost-klara` | ePost (KLARA) | API_KEY | [docs](https://nango.dev/docs/api-integrations/epost-klara.md) | [connect](https://nango.dev/docs/api-integrations/epost-klara/connect.md) |  | other |
 | `ergo` | Ergo | API_KEY | [docs](https://nango.dev/docs/api-integrations/ergo.md) | [connect](https://nango.dev/docs/api-integrations/ergo/connect.md) |  | productivity |
+| `ethena` | Ethena | BASIC | [docs](https://nango.dev/docs/api-integrations/ethena.md) | [connect](https://nango.dev/docs/api-integrations/ethena/connect.md) |  | other |
 | `etsy` | Etsy | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/etsy.md) |  | [setup](https://nango.dev/docs/api-integrations/etsy/how-to-register-your-own-etsy-api-oauth-app.md) | e-commerce |
 | `evaluagent` | EvaluAgent | BASIC | [docs](https://nango.dev/docs/integrations/all/evaluagent.md) |  |  | support |
 | `eventbrite` | Eventbrite | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/eventbrite.md) |  |  | marketing |
@@ -16214,6 +16225,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `fitbit` | Fitbit | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fitbit.md) |  |  | sports |
 | `float` | Float | API_KEY | [docs](https://nango.dev/docs/integrations/all/float.md) | [connect](https://nango.dev/docs/integrations/all/float/connect.md) |  | productivity |
 | `fluxguard` | Fluxguard | API_KEY | [docs](https://nango.dev/docs/api-integrations/fluxguard.md) | [connect](https://nango.dev/docs/api-integrations/fluxguard/connect.md) |  | analytics |
+| `flyte` | Flyte | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/flyte.md) | [connect](https://nango.dev/docs/api-integrations/flyte/connect.md) |  | dev-tools |
 | `folk` | Folk | API_KEY | [docs](https://nango.dev/docs/api-integrations/folk.md) | [connect](https://nango.dev/docs/api-integrations/folk/connect.md) |  | crm |
 | `followupboss` | Follow Up Boss | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/followupboss.md) |  | [setup](https://nango.dev/docs/api-integrations/followupboss/how-to-register-your-own-followupboss-oauth-app.md) | crm |
 | `formcarry` | Formcarry | API_KEY | [docs](https://nango.dev/docs/api-integrations/formcarry.md) | [connect](https://nango.dev/docs/api-integrations/formcarry/connect.md) |  | other |
@@ -16367,6 +16379,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `jamf-basic` | Jamf Pro (Basic Auth) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/jamf-basic.md) |  |  | other |
 | `jamie` | Jamie | API_KEY | [docs](https://nango.dev/docs/api-integrations/jamie.md) | [connect](https://nango.dev/docs/api-integrations/jamie/connect.md) |  | productivity |
 | `jazzhr` | JazzHR | API_KEY | [docs](https://nango.dev/docs/integrations/all/jazzhr.md) | [connect](https://nango.dev/docs/integrations/all/jazzhr/connect.md) |  | hr, ats |
+| `jfrog` | JFrog | API_KEY | [docs](https://nango.dev/docs/api-integrations/jfrog.md) | [connect](https://nango.dev/docs/api-integrations/jfrog/connect.md) |  | dev-tools |
 | `jiminny` | Jiminny | API_KEY | [docs](https://nango.dev/docs/api-integrations/jiminny.md) | [connect](https://nango.dev/docs/api-integrations/jiminny/connect.md) |  | productivity, communication |
 | `jira` | Jira (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/jira.md) |  | [setup](https://nango.dev/docs/api-integrations/jira/how-to-register-your-own-jira-api-oauth-app.md) | popular, productivity, ticketing |
 | `jira-basic` | Jira (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/jira-basic.md) | [connect](https://nango.dev/docs/integrations/all/jira-basic/connect.md) |  | productivity, ticketing |
@@ -16383,6 +16396,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `judgeme-oauth` | Judge.me (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/judgeme-oauth.md) | [connect](https://nango.dev/docs/api-integrations/judgeme-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/judgeme-oauth/how-to-register-your-own-judgeme-oauth-api-oauth-app.md) | e-commerce, marketing |
 | `jumpcloud` | JumpCloud | API_KEY | [docs](https://nango.dev/docs/integrations/all/jumpcloud.md) | [connect](https://nango.dev/docs/integrations/all/jumpcloud/connect.md) |  | iam |
 | `juniper-mist` | Juniper Mist | API_KEY | [docs](https://nango.dev/docs/api-integrations/juniper-mist.md) | [connect](https://nango.dev/docs/api-integrations/juniper-mist/connect.md) |  | dev-tools |
+| `justcall` | JustCall | BASIC | [docs](https://nango.dev/docs/api-integrations/justcall.md) | [connect](https://nango.dev/docs/api-integrations/justcall/connect.md) |  | communication |
 | `justworks` | Justworks | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/justworks.md) |  | [setup](https://nango.dev/docs/api-integrations/justworks/how-to-register-your-own-justworks-oauth-app.md) | hr |
 | `kandji` | Kandji | API_KEY | [docs](https://nango.dev/docs/integrations/all/kandji.md) | [connect](https://nango.dev/docs/integrations/all/kandji/connect.md) |  | support, productivity |
 | `keap` | Keap | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/keap.md) |  |  | marketing |
@@ -16390,6 +16404,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `kickbox` | Kickbox | API_KEY | [docs](https://nango.dev/docs/api-integrations/kickbox.md) | [connect](https://nango.dev/docs/api-integrations/kickbox/connect.md) |  | marketing |
 | `kintone` | Kintone | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/kintone.md) | [connect](https://nango.dev/docs/integrations/all/kintone/connect.md) |  | productivity |
 | `kintone-user-api` | Kintone User API | API_KEY | [docs](https://nango.dev/docs/integrations/all/kintone-user-api.md) | [connect](https://nango.dev/docs/integrations/all/kintone-user-api/connect.md) |  | productivity |
+| `kit` | Kit | API_KEY | [docs](https://nango.dev/docs/api-integrations/kit.md) | [connect](https://nango.dev/docs/api-integrations/kit/connect.md) |  | marketing |
 | `klaviyo` | Klaviyo (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/klaviyo.md) | [connect](https://nango.dev/docs/integrations/all/klaviyo/connect.md) |  | marketing |
 | `klaviyo-oauth` | Klaviyo (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/klaviyo-oauth.md) |  |  | marketing |
 | `klicktipp` | KlickTipp | API_KEY | [docs](https://nango.dev/docs/api-integrations/klicktipp.md) | [connect](https://nango.dev/docs/api-integrations/klicktipp/connect.md) |  | marketing |
@@ -16504,6 +16519,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `miro-scim` | Miro (SCIM API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/miro-scim.md) | [connect](https://nango.dev/docs/integrations/all/miro-scim/connect.md) |  | design, productivity |
 | `missive` | Missive | API_KEY | [docs](https://nango.dev/docs/integrations/all/missive.md) |  |  | productivity |
 | `mixpanel` | Mixpanel | BASIC | [docs](https://nango.dev/docs/integrations/all/mixpanel.md) | [connect](https://nango.dev/docs/integrations/all/mixpanel/connect.md) |  | analytics |
+| `modernloop` | ModernLoop | API_KEY | [docs](https://nango.dev/docs/api-integrations/modernloop.md) | [connect](https://nango.dev/docs/api-integrations/modernloop/connect.md) |  | ats, productivity |
 | `modjo-ai` | Modjo AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/modjo-ai.md) | [connect](https://nango.dev/docs/api-integrations/modjo-ai/connect.md) |  | crm |
 | `modjo-ai-v2` | Modjo AI (v2) | API_KEY | [docs](https://nango.dev/docs/api-integrations/modjo-ai-v2.md) | [connect](https://nango.dev/docs/api-integrations/modjo-ai-v2/connect.md) |  | crm |
 | `modmed` | ModMed | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/modmed.md) | [connect](https://nango.dev/docs/api-integrations/modmed/connect.md) |  | other |
@@ -16531,6 +16547,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `netsuite-client-credentials` | NetSuite (Client Credentials) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/netsuite-client-credentials.md) | [connect](https://nango.dev/docs/api-integrations/netsuite-client-credentials/connect.md) |  | accounting, erp |
 | `netsuite-tba` | NetSuite (TBA) | TBA | [docs](https://nango.dev/docs/api-integrations/netsuite-tba.md) |  | [setup](https://nango.dev/docs/api-integrations/netsuite-tba/how-to-set-up-netsuite-tba-with-nango.md) | accounting, erp, popular |
 | `new-relic` | New Relic | API_KEY | [docs](https://nango.dev/docs/api-integrations/new-relic.md) | [connect](https://nango.dev/docs/api-integrations/new-relic/connect.md) |  | analytics, dev-tools |
+| `new-relic-ingest` | New Relic Ingest | API_KEY | [docs](https://nango.dev/docs/api-integrations/new-relic-ingest.md) | [connect](https://nango.dev/docs/api-integrations/new-relic-ingest/connect.md) |  | analytics, dev-tools |
 | `newsapi` | NewsAPI | API_KEY | [docs](https://nango.dev/docs/api-integrations/newsapi.md) | [connect](https://nango.dev/docs/api-integrations/newsapi/connect.md) |  | other |
 | `next-cloud-ocs` | Next Cloud OCS | BASIC | [docs](https://nango.dev/docs/integrations/all/next-cloud-ocs.md) | [connect](https://nango.dev/docs/integrations/all/next-cloud-ocs/connect.md) |  | storage, productivity |
 | `nexthink` | Nexthink | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/nexthink.md) | [connect](https://nango.dev/docs/api-integrations/nexthink/connect.md) |  | analytics |
@@ -16787,6 +16804,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `short-io` | Short.io | API_KEY | [docs](https://nango.dev/docs/api-integrations/short-io.md) | [connect](https://nango.dev/docs/api-integrations/short-io/connect.md) |  | marketing |
 | `shortcut` | Shortcut | API_KEY | [docs](https://nango.dev/docs/integrations/all/shortcut.md) |  |  | dev-tools, productivity |
 | `shorten-rest` | Shorten.REST | API_KEY | [docs](https://nango.dev/docs/api-integrations/shorten-rest.md) | [connect](https://nango.dev/docs/api-integrations/shorten-rest/connect.md) |  | marketing |
+| `sigma-computing` | Sigma Computing | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/sigma-computing.md) | [connect](https://nango.dev/docs/api-integrations/sigma-computing/connect.md) |  | analytics |
 | `signnow` | SignNow | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/signnow.md) |  |  | legal |
 | `signnow-sandbox` | SignNow (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/signnow-sandbox.md) |  |  | legal |
 | `simpplr` | Simpplr | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/simpplr.md) | [connect](https://nango.dev/docs/api-integrations/simpplr/connect.md) |  | knowledge-base, productivity |

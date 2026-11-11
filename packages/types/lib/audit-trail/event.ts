@@ -50,6 +50,7 @@ interface AuditEventTable {
         metadata_updated: ConnectionMetadata;
         refreshed: ConnectionMetadata;
         deleted: ConnectionMetadata;
+        credentials_read: ConnectionMetadata;
     };
     sync: {
         enabled: SyncBaseMetadata;
@@ -75,11 +76,13 @@ interface AuditEventTable {
         created: IntegrationProviderMetadata;
         updated: IntegrationProviderMetadata & IntegrationUpdatedMetadata;
         deleted: IntegrationProviderMetadata;
+        credentials_read: never;
     };
     api_key: {
         created: ApiKeyUpdatedMetadata;
         updated: ApiKeyUpdatedMetadata;
         deleted: never;
+        credentials_read: never;
     };
     member: {
         invited: MemberInvitedMetadata;
@@ -102,6 +105,7 @@ interface AuditEventTable {
         webhook_urls_changed: EnvironmentWebhookMetadata;
         webhook_signing_key_rotated: never;
         deleted: never;
+        credentials_read: never;
     };
     app_auth: {
         login: AppAuthLoginMetadata;
@@ -149,7 +153,6 @@ export type AuditMetadataFor<R extends AuditResource, A> = A extends keyof Audit
 
 export type AuditScope = 'account' | 'environment';
 
-/** Data-plane coverage an account's audit trail records, beyond the control plane. */
 export type AuditTrailDataPlaneScope = 'read_credentials';
 
 export type AuditTargetType = 'connection' | 'sync' | 'function' | 'integration' | 'api_key' | 'member' | 'team' | 'user' | 'environment' | 'agent_session';

@@ -1,5 +1,3 @@
-exports.config = { transaction: false };
-
 /**
  * @param {import('knex').Knex} knex
  */
