@@ -35,7 +35,7 @@ export const ThemeSwitcher: React.FC = () => {
                     // Radix focuses the row on hover too; only hand focus to the selected item from the keyboard,
                     // or every hover would open its tooltip.
                     if (event.target === event.currentTarget && event.currentTarget.matches(':focus-visible')) {
-                        event.currentTarget.querySelector<HTMLElement>('[data-selected]')?.focus();
+                        event.currentTarget.querySelector<HTMLElement>('[aria-checked="true"]')?.focus();
                     }
                 }}
                 onKeyDown={(event) => {
@@ -53,6 +53,8 @@ export const ThemeSwitcher: React.FC = () => {
                 }}
             >
                 <SegmentedControl
+                    // A menu may only own groups and menu items, so the radios are announced as menu radios here
+                    role="group"
                     size="sm"
                     orientation="horizontal"
                     aria-label="Theme"
@@ -66,7 +68,7 @@ export const ThemeSwitcher: React.FC = () => {
                     }}
                 >
                     {options.map(({ value, label, Icon }) => (
-                        <SegmentedControlItem key={value} value={value} aria-label={label} icon={<Icon />} />
+                        <SegmentedControlItem key={value} role="menuitemradio" value={value} aria-label={label} icon={<Icon />} />
                     ))}
                 </SegmentedControl>
             </div>
