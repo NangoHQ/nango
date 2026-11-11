@@ -1,4 +1,4 @@
-import { ArrowUpRight, ExternalLink } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { useRef } from 'react';
 import { Helmet } from 'react-helmet';
 
@@ -69,7 +69,7 @@ export const TeamBilling: React.FC = () => {
         <OverdueInvoiceAlert size="wide" canManageBilling={canManageBilling}>
             {overdue.data.portalUrl && (
                 <AlertButtonLink to={overdue.data.portalUrl} target="_blank" rel="noopener noreferrer" onClick={() => track('billing:invoice_link_click', {})}>
-                    View invoices <ExternalLink />
+                    View invoices <ArrowUpRight />
                 </AlertButtonLink>
             )}
             <PaymentMethodDialog replace>
@@ -115,7 +115,7 @@ export const TeamBilling: React.FC = () => {
                     </>
                 )}
                 <div id="usage">
-                    <Usage />
+                    <Usage showInvoicesLink={!showSummary} />
                 </div>
                 {showSpendAlerts && (
                     <>
@@ -132,7 +132,7 @@ export const TeamBilling: React.FC = () => {
                         <Button asChild variant="link-accent">
                             <a href="https://nango.dev/pricing" target="_blank" rel="noopener noreferrer">
                                 View full pricing detail
-                                <ExternalLink />
+                                <ArrowUpRight />
                             </a>
                         </Button>
                     </div>

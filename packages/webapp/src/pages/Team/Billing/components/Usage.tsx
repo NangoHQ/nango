@@ -1,4 +1,4 @@
-import { ExternalLink, Info } from 'lucide-react';
+import { ArrowUpRight, Info } from 'lucide-react';
 import { parseAsBoolean, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
 
@@ -10,7 +10,7 @@ import { useApiGetBillingPeriodCosts, useApiGetBillingUsage, useApiGetProjectedC
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { billedUsageMetrics, LEGACY_USAGE_METRICS, S26_USAGE_METRICS } from '@/utils/usage';
-import { hasMonthlySpend, isLegacyPlan, showsSummaryStrip } from '../planVisibility';
+import { hasMonthlySpend, isLegacyPlan } from '../planVisibility';
 import { buildProjectedCharges, buildUsageRowCharges } from '../usageCharges';
 import { usePlanTransition } from '../usePlanTransition';
 import { useSelectedMonth } from '../useSelectedMonth';
@@ -25,7 +25,7 @@ import type { UsageMetric } from '@nangohq/types';
 
 const showLegacyParam = parseAsBoolean.withDefault(false).withOptions({ history: 'replace' });
 
-export const Usage: React.FC = () => {
+export const Usage: React.FC<{ showInvoicesLink: boolean }> = ({ showInvoicesLink }) => {
     const env = useStore((state) => state.env);
     const { selectedMonth, isCurrentMonth } = useSelectedMonth();
     const { data: environmentData } = useCurrentPlan(env);
@@ -68,6 +68,11 @@ export const Usage: React.FC = () => {
     if (usageError) {
         return (
             <div className="w-full flex flex-col gap-6">
+                {showInvoicesLink && (
+                    <div className="flex justify-end">
+                        <InvoicesLink />
+                    </div>
+                )}
                 <CriticalErrorAlert message="Error loading usage" />
             </div>
         );
@@ -132,7 +137,7 @@ export const Usage: React.FC = () => {
                                     onClick={() => track('billing:portal_link_click', {})}
                                 >
                                     View billing portal
-                                    <ExternalLink />
+                                    <ArrowUpRight />
                                 </a>
                             </Button>
                         </AlertActions>
@@ -143,7 +148,7 @@ export const Usage: React.FC = () => {
             <div className="flex justify-between items-center">
                 <span className="text-text-strong text-body-medium-medium">Usage</span>
                 <div className="flex items-center gap-4">
-                    {plan && !showsSummaryStrip(plan, isMigrating) && <InvoicesLink />}
+                    {showInvoicesLink && <InvoicesLink />}
                     <MonthSelector />
                 </div>
             </div>
