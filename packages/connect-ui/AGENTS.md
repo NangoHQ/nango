@@ -6,7 +6,7 @@ Connect UI is split across two packages. A fix in the wrong one, or a deploy of 
 
 | Package                                      | Role                                                                                                                             | Ships with                                                                                                       |
 | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `@nangohq/frontend` (`packages/frontend`)    | The SDK. Creates the `<iframe id="connect-ui">` (`lib/connectUI.ts`), opens and closes it, and talks to it with `postMessage`. | The `app_ui` service, which bundles it into the webapp; and the npm release (`scripts/publish.mjs`) for customers. |
+| `@nangohq/frontend` (`packages/frontend`)    | The SDK. Creates the `<iframe id="connect-ui">` (`lib/connectUI.ts`), opens and closes it, and talks to it with `postMessage`. | The `app_ui` service (the webapp bundles it), the `connect_ui` service (the iframe app bundles it too), and the npm release (`scripts/publish.mjs`) for customers. |
 | `@nangohq/connect-ui` (`packages/connect-ui`) | The React app that runs inside the iframe.                                                                                       | The `connect_ui` service.                                                                                        |
 
 Deploy services are the `service` input of `.github/workflows/deploy.yaml`.

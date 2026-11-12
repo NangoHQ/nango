@@ -17,7 +17,7 @@ Consuming apps can't restyle these components (a lint rule flags `className`/`st
 
 ### Input `size` is a variant, not the HTML attribute
 
-`Input` and `InputGroup` have a cva `size` variant (`'default' | 'auto'`) that replaces the native `<input size>` attribute. A wrapper component must type its props on `InputProps`, not `React.ComponentProps<'input'>`, or `npm run ts-build` fails with `Type 'number' is not assignable to type '"default" | "auto"'`.
+`Input` and `InputGroupInput` have a cva `size` variant (`'default' | 'auto'`) that replaces the native `<input size>` attribute. A wrapper around either must type its props on `InputProps`, not `React.ComponentProps<'input'>`, or `npm run ts-build` fails with `Type 'number' is not assignable to type '"default" | "auto"'`. `InputGroup` has its own `size` variant, which adds `'composer'` for a chat-style textarea.
 
 ### Forms: the Field family
 
