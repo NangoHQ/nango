@@ -21,10 +21,7 @@ async function isEntitled(loadPlan: () => EntitlementPlan | Promise<EntitlementP
     return plan?.[entitlement] === true;
 }
 
-/**
- * Whether the account's activity is recorded at all. A data-plane event also needs its scope in the plan's
- * data-plane scopes; self-hosted records none yet.
- */
+/** Whether the account's activity is recorded at all. A data-plane event also needs its scope in the plan's data-plane scopes. */
 export async function canRecordAuditTrail(
     plan: (Pick<DBPlan, 'has_audit_trail_control_plane'> & Partial<Pick<DBPlan, 'audit_trail_data_plane_scopes'>>) | null | undefined,
     dataPlane?: { scope: AuditTrailDataPlaneScope; accountUuid: string }
@@ -35,6 +32,7 @@ export async function canRecordAuditTrail(
     if (!dataPlane) {
         return true;
     }
+    // Data-plane events are not released for self-hosted (BYOC, self-managed) yet.
     if (!flagHasPlan || !plan?.audit_trail_data_plane_scopes?.includes(dataPlane.scope)) {
         return false;
     }

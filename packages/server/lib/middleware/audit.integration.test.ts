@@ -28,12 +28,12 @@ import type { MockInstance } from 'vitest';
 // connection.created is emitted from the connectionCreated hook rather than a middleware, so its
 // live-stack cases live in auditConnection.integration.test.ts.
 
-const dataPlaneRollout = vi.hoisted(() => ({ enabled: false }));
+const dataPlaneRollout = vi.hoisted(() => vi.fn(() => Promise.resolve(false)));
 vi.mock('@nangohq/feature-flags', async (importOriginal) => {
     const actual = await importOriginal<typeof FeatureFlags>();
     return {
         ...actual,
-        getFlags: () => ({ ...actual.getFlags(), shouldAuditDataPlaneCredentialRead: () => Promise.resolve(dataPlaneRollout.enabled) })
+        getFlags: () => ({ ...actual.getFlags(), shouldAuditDataPlaneCredentialRead: dataPlaneRollout })
     };
 });
 
@@ -831,7 +831,7 @@ describe('audit middleware — live-stack contract', () => {
     });
     describe('data-plane connection credentials read', () => {
         afterEach(() => {
-            dataPlaneRollout.enabled = false;
+            dataPlaneRollout.mockReset().mockResolvedValue(false);
         });
 
         async function seedConnection() {
@@ -848,7 +848,7 @@ describe('audit middleware — live-stack contract', () => {
         }
 
         it('records the read when the rollout picks the request, on both routes', async () => {
-            dataPlaneRollout.enabled = true;
+            dataPlaneRollout.mockResolvedValue(true);
             const { account, env, apiKey, connection } = await seedConnection();
 
             for (const path of ['/connections/:connectionId', '/connection/:connectionId']) {
@@ -880,7 +880,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records a denial from the scope check, naming the connection from the path', async () => {
-            dataPlaneRollout.enabled = true;
+            dataPlaneRollout.mockResolvedValue(true);
             const { account, env, apiKey, connection } = await seedConnection();
             (await customerKeyService.updateApiKeyScopes(db.knex, apiKey.id, ['environment:integrations:list'], env.id)).unwrap();
 
@@ -905,7 +905,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records nothing while the rollout leaves the request out', async () => {
-            const { apiKey, connection } = await seedConnection();
+            const { account, apiKey, connection } = await seedConnection();
 
             const res = await api.fetch('/connection/:connectionId', {
                 method: 'GET',
@@ -915,8 +915,10 @@ describe('audit middleware — live-stack contract', () => {
             });
 
             expect(res.res.status).toBe(200);
-            // The finish listener is async; give it a turn before concluding nothing was recorded.
-            await new Promise((resolve) => setTimeout(resolve, 50));
+            // The rollout is the gate's last check: once it has said no, the request cannot record anything.
+            await vi.waitFor(() => {
+                expect(dataPlaneRollout).toHaveBeenCalledWith(account.uuid);
+            });
             expect(auditEvent('connection', 'credentials_read')).toBeUndefined();
         });
     });
