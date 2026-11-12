@@ -1274,6 +1274,7 @@
               "api-integrations/canva-mcp",
               "integrations/all/canva-scim",
               "api-integrations/canvas-lms",
+              "api-integrations/capturekit",
               "api-integrations/carbone",
               "api-integrations/cch-axcess",
               "api-integrations/cdw",
