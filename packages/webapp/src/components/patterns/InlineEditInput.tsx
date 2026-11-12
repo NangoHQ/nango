@@ -101,7 +101,7 @@ export const InlineEditInput: React.FC<InlineEditInputProps> = ({ id, value, onS
                         className={cn(mono && 'font-mono')}
                         onChange={(e) => setDraft(e.target.value)}
                         onKeyDown={(e) => {
-                            if (!editing) return;
+                            if (!editing || saving) return;
                             if (e.key === 'Enter') {
                                 e.preventDefault();
                                 void save();
