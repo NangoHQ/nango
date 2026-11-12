@@ -16,7 +16,7 @@ export interface AccountApiKey {
 }
 
 export type ListAccountApiKeys = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'api_key', 'credentials_read', 'account'>;
     Method: 'GET';
     Path: '/api/v1/account/api-keys';
     Success: { data: AccountApiKey[] };
@@ -60,7 +60,8 @@ export type PostSignup = ApiEndpoint<{
         | ApiError<'user_already_exists'>
         | ApiError<'error_creating_account'>
         | ApiError<'not_found'>
-        | ApiError<'email_not_verified'>;
+        | ApiError<'email_not_verified'>
+        | ApiError<'disposable_email'>;
     Success: {
         data: {
             uuid: string;

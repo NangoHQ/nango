@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
-import { cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences, NangoError, startTrial } from '@nangohq/shared';
+import { cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences, NangoError, productTracking, startTrial } from '@nangohq/shared';
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -31,6 +31,7 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
 
     const body: PostDeploy['Body'] = val.data;
     const { environment, account, plan } = res.locals;
+    const { scope } = val.data;
 
     // Prevent concurrent deploys per environment, fail immediately if another deploy is in flight.
     const locking = await getLocking();
@@ -65,7 +66,8 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
             logContextGetter,
             sdkVersion: body.sdkVersion,
             orchestrator,
-            source: body.source ?? 'repo'
+            source: body.source ?? 'repo',
+            scope
         });
 
         if (!success || !syncConfigDeployResult) {
@@ -84,7 +86,7 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
                 flows: body.flowConfigs,
                 performAction: body.reconcile,
                 debug: body.debug,
-                deployMode: body.deployMode,
+                scope,
                 logCtx,
                 logContextGetter,
                 orchestrator,
@@ -101,6 +103,18 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
             }
         }
 
+        // A sandbox deploy is already tracked by the API or MCP call that started it.
+        if (!res.locals.sandboxTokenDeploymentId) {
+            productTracking.track({
+                name: 'functions:deploy_create',
+                eventProperties: {
+                    source: 'cli',
+                    is_template: false,
+                    function_count:
+                        body.flowConfigs.length + (body.onEventScriptsByProvider?.reduce((total, provider) => total + provider.scripts.length, 0) ?? 0)
+                }
+            });
+        }
         res.send(syncConfigDeployResult.result);
     } finally {
         if (lock) {

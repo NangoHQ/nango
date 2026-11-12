@@ -4,7 +4,7 @@ import { generateText, stepCountIs } from 'ai';
 import { MockLanguageModelV4 } from 'ai/test';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import { seeders, toolService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionServer.js';
@@ -237,6 +237,7 @@ describe('buildMcpTools', () => {
     let close: (() => Promise<void>) | undefined;
 
     beforeEach(async () => {
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { title: 'Roadmap' } }) });
 
         const server = createAgentSessionMcpServer({
@@ -307,5 +308,6 @@ describe('buildMcpTools', () => {
         const result = await generateText({ model, prompt: 'Read my doc', tools, stopWhen: stepCountIs(5) });
 
         expect(result.steps[0]?.content).toEqual(expect.arrayContaining([expect.objectContaining({ type: 'tool-error', toolCallId: 'call-1' })]));
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ actionName: 'read_doc', input: { id: 'doc-1' } }));
     });
 });

@@ -85,12 +85,13 @@ export const postToolCall = asyncWrapperWithEnvironment<PostToolCall>(async (req
 
     const { input } = body.data;
     const tool = resolved.value;
-    if (tool.kind === 'missing' || (tool.kind === 'deployed' && !tool.config.enabled) || (tool.kind === 'function' && !tool.fn.config.enabled)) {
+    if (tool.kind === 'missing') {
         res.status(404).send({ error: { code: 'function_not_found', message: `Tool '${name}' was not found` } });
         return;
     }
     if (tool.kind === 'function') {
-        const result = await invokeFunction({
+        const { result } = await invokeFunction({
+            operation: { type: 'tool', action: 'call' },
             account,
             environment,
             connectionId,

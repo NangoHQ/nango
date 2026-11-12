@@ -33,17 +33,18 @@
         <!-- Apply saved theme before first paint to avoid flash -->
         <script>
             (function () {
-                var dark;
+                var theme = 'system';
                 try {
                     var s = localStorage.getItem('nango_theme');
                     var parsed = s ? JSON.parse(s) : null;
                     var state = parsed && parsed.state;
-                    // Support new `theme` field and old boolean `darkMode`; default to dark to match the app default
-                    var theme = state && state.theme ? state.theme : state && state.darkMode === false ? 'light' : 'dark';
-                    dark = theme === 'system' ? window.matchMedia('(prefers-color-scheme: dark)').matches : theme === 'dark';
-                } catch (e) {
-                    dark = true;
-                }
+                    if (state && state.theme) {
+                        theme = state.theme;
+                    } else if (state && typeof state.darkMode === 'boolean') {
+                        theme = state.darkMode ? 'dark' : 'light';
+                    }
+                } catch (e) {}
+                var dark = theme === 'system' ? window.matchMedia('(prefers-color-scheme: dark)').matches : theme === 'dark';
                 document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
             })();
         </script>

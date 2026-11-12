@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import type { GetPublicConnection, Metadata } from '@nangohq/types';
+import type { Checkpoint, FunctionTriggerDefinition, GetPublicConnection, HttpRequest, Metadata, Trigger } from '@nangohq/types';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 interface RequestIdentity {
@@ -34,9 +34,15 @@ interface ApiMockResponse {
     };
 }
 
-interface UnifiedMock {
+export type RecordedTrigger = Trigger<FunctionTriggerDefinition, unknown>;
+
+export interface UnifiedMock {
     input?: unknown;
     output?: unknown;
+    triggerHttp?: HttpRequest;
+    trigger?: RecordedTrigger;
+    checkpoint?: Checkpoint;
+    variant?: string;
     nango: {
         getConnection?: { connectionId: string; provider: string };
         getMetadata?: Metadata;
@@ -73,6 +79,13 @@ export function isAxiosDefaultContentTypeForMockIdentity(headerKey: string, head
 
     const normalizedValue = String(headerValue).toLowerCase();
     return normalizedValue === 'application/json' || normalizedValue === 'undefined' || normalizedValue.startsWith('application/x-www-form-urlencoded');
+}
+
+function filterHttpRequestHeaders(request: HttpRequest): HttpRequest {
+    return {
+        ...request,
+        headers: Object.fromEntries(Object.entries(request.headers).filter(([key]) => !FILTER_HEADERS.includes(key.toLowerCase())))
+    };
 }
 
 export class ResponseCollector {
@@ -140,11 +153,19 @@ export class ResponseCollector {
         filePath,
         input,
         output,
+        triggerHttp,
+        trigger,
+        stubbedCheckpoint,
+        variant,
         stubbedMetadata
     }: {
         filePath: string;
         input?: unknown;
         output?: unknown;
+        triggerHttp?: HttpRequest;
+        trigger?: RecordedTrigger | undefined;
+        stubbedCheckpoint?: Checkpoint | undefined;
+        variant?: string | undefined;
         stubbedMetadata?: Metadata | undefined;
     }): void {
         const nangoData: UnifiedMock['nango'] = {};
@@ -169,6 +190,10 @@ export class ResponseCollector {
         const mockData: UnifiedMock = {
             input,
             output,
+            ...(triggerHttp && { triggerHttp: filterHttpRequestHeaders(triggerHttp) }),
+            ...(trigger && { trigger: trigger.kind === 'http' ? { ...trigger, request: filterHttpRequestHeaders(trigger.request) } : trigger }),
+            ...(stubbedCheckpoint !== undefined && { checkpoint: stubbedCheckpoint }),
+            ...(variant !== undefined && { variant }),
             nango: nangoData,
             api: {}
         };

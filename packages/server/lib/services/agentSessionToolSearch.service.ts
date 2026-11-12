@@ -1,7 +1,7 @@
 import Fuse from 'fuse.js';
 
 import { logContextGetter } from '@nangohq/logs';
-import { legacyFunctionService } from '@nangohq/shared';
+import { functionLookupService } from '@nangohq/shared';
 import { filterJsonSchemaForModels, report } from '@nangohq/utils';
 
 import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuidance.js';
@@ -116,15 +116,20 @@ export async function searchSessionTools({
     environment,
     session,
     query,
+    goal,
     slugOf
 }: {
     account: DBTeam;
     environment: DBEnvironment;
     session: AgentSession;
     query: string;
+    goal: string;
     slugOf: ToolSlugLookup;
 }): Promise<AgentSessionToolSearchResult> {
-    const logCtx = await logContextGetter.create({ operation: { type: 'agent_session', action: 'tool_search' } }, { account, environment, meta: { query } });
+    const logCtx = await logContextGetter.create(
+        { operation: { type: 'agent_session', action: 'tool_search' } },
+        { account, environment, meta: { query, goal } }
+    );
     await logCtx.enrichOperation({ actor: { kind: 'session', id: session.id } });
 
     try {
@@ -142,13 +147,14 @@ export async function searchSessionTools({
         );
         const related = ranked.related.map((candidate) => toMatch(candidate, undefined));
 
-        await logCtx.enrichOperation({ meta: searchOperationMeta({ query, matches, related }) });
+        await logCtx.enrichOperation({ meta: searchOperationMeta({ query, goal, matches, related }) });
         void logCtx.info(`Tool search for '${query}' returned ${matches.length} ${matches.length === 1 ? 'match' : 'matches'}`);
         await logCtx.success();
 
         trackAgentSessionToolSearch({
             session,
             query,
+            goal,
             matches: searchHits(ranked.best),
             related: searchHits(ranked.related),
             logOperationId: logCtx.id
@@ -159,7 +165,7 @@ export async function searchSessionTools({
         void logCtx.error('Failed to search the session tools', { error: err });
         await logCtx.failed();
 
-        trackAgentSessionToolSearch({ session, query, matches: [], related: [], logOperationId: logCtx.id, errorCode: 'search_failed' });
+        trackAgentSessionToolSearch({ session, query, goal, matches: [], related: [], logOperationId: logCtx.id, errorCode: 'search_failed' });
 
         throw err;
     }
@@ -296,7 +302,7 @@ export async function findActionInputs({
     environmentId: number;
     actions: { integrationId: string; name: string }[];
 }): Promise<Map<string, Map<string, AgentSessionToolInput>>> {
-    const rows = await legacyFunctionService.findActionInputSchemas({ environmentId, actions });
+    const rows = await functionLookupService.findInputSchemas({ environmentId, actions });
 
     const inputs = new Map<string, Map<string, AgentSessionToolInput>>();
     for (const row of rows) {
@@ -355,12 +361,23 @@ export function objectRootedToolInputSchema(schema: JSONSchema7): JSONSchema7 | 
 }
 
 /** Only what identifies a tool, since a full match carries a description and an input schema. */
-export function searchOperationMeta({ query, matches, related }: { query: string; matches: AgentSessionToolMatch[]; related: AgentSessionToolMatch[] }): {
+export function searchOperationMeta({
+    query,
+    goal,
+    matches,
+    related
+}: {
     query: string;
+    goal: string;
+    matches: AgentSessionToolMatch[];
+    related: AgentSessionToolMatch[];
+}): {
+    query: string;
+    goal: string;
     matches: string[];
     related: string[];
 } {
-    return { query, matches: matches.map((match) => match.tool), related: related.map((match) => match.tool) };
+    return { query, goal, matches: matches.map((match) => match.tool), related: related.map((match) => match.tool) };
 }
 
 function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | undefined): AgentSessionToolMatch {

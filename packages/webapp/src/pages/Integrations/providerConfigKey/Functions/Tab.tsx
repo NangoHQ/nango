@@ -16,20 +16,23 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useGetIntegrationFunction, useGetIntegrationFunctions, useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
 import { useMeta } from '@/hooks/useMeta';
+import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
 import { isSyncOrAction } from '@/utils/scripts';
 import { cn } from '@/utils/utils';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 import { FunctionDetailsPanel } from './FunctionDetailsPanel';
 import { FunctionSourceLabel } from './FunctionSourceLabel';
+import { SlidingPanelLayout } from './SlidingPanelLayout';
 
 import type { ApiIntegration, ListedNangoActionFunction, ListedNangoFunction, ListedNangoSyncFunction, NangoFunctionTemplate } from '@nangohq/types';
 
-const TYPE_FILTER_VALUES = ['action', 'sync', 'on-event'] as const;
+const TYPE_FILTER_VALUES = ['tool', 'sync', 'on-event'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
 
 const TYPE_PILLS: { value: TypeFilterValue; label: string; emptyLabel: string }[] = [
-    { value: 'action', label: 'Actions', emptyLabel: 'No actions' },
+    { value: 'tool', label: 'Tools', emptyLabel: 'No tools' },
     { value: 'sync', label: 'Syncs', emptyLabel: 'No syncs' },
     { value: 'on-event', label: 'Triggers', emptyLabel: 'No triggers' }
 ];
@@ -97,8 +100,25 @@ function FunctionStatus({ fn, integration }: { fn: ListedNangoFunction; integrat
     );
 }
 
-const FUNCTION_ROW_CLASS = 'group/function-row h-13 cursor-pointer hover:bg-surface-panel-inset';
+const FUNCTION_ROW_CLASS = 'group/function-row h-13 cursor-pointer hover:bg-surface-panel-inset focus-inset';
 const FUNCTION_ROW_SELECTED_CLASS = 'border-l-2 border-l-interactive-selected-fill bg-state-selected';
+
+function functionRowProps(selected: boolean, onSelect: () => void): React.ComponentProps<'tr'> {
+    return {
+        tabIndex: 0,
+        'aria-selected': selected,
+        className: cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS),
+        onClick: onSelect,
+        onKeyDown: (event) => {
+            // Enter on the row's own copy or source button must keep doing that button's job.
+            if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) {
+                return;
+            }
+            event.preventDefault();
+            onSelect();
+        }
+    };
+}
 
 function templateRowKey(template: NangoFunctionTemplate): string {
     return `${template.type}:${template.name}:`;
@@ -152,7 +172,7 @@ function FunctionTableRow({
     onSelect: () => void;
 }) {
     return (
-        <TableRow aria-selected={selected} className={cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS)} onClick={onSelect}>
+        <TableRow {...functionRowProps(selected, onSelect)}>
             <FunctionNameCell name={fn.name} description={fn.description} />
             <TableCell className="w-35 px-3">
                 <FunctionSourceLabel source={fn.source} />
@@ -180,7 +200,7 @@ function FunctionTemplateRow({
     onSelect: () => void;
 }) {
     return (
-        <TableRow aria-selected={selected} className={cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS)} onClick={onSelect}>
+        <TableRow {...functionRowProps(selected, onSelect)}>
             <FunctionNameCell name={template.name} description={template.description} />
             <TableCell className="w-35 px-3">
                 <FunctionSourceLabel source="template" />
@@ -197,64 +217,23 @@ function FunctionTemplateRow({
 function FunctionListWithDetails({
     selectedFunction,
     integration,
-    onDeleted,
+    onClose,
     children
 }: {
     selectedFunction: ListedNangoFunction | NangoFunctionTemplate | null;
     integration: ApiIntegration;
-    onDeleted: () => void;
+    onClose: () => void;
     children: React.ReactNode;
 }) {
-    const [displayedFunction, setDisplayedFunction] = useState(selectedFunction);
-    const [panelVisible, setPanelVisible] = useState(Boolean(selectedFunction));
-
-    useEffect(() => {
-        let animationFrame: number | undefined;
-        let closeTimer: ReturnType<typeof setTimeout> | undefined;
-
-        if (selectedFunction) {
-            setDisplayedFunction(selectedFunction);
-            animationFrame = requestAnimationFrame(() => {
-                animationFrame = requestAnimationFrame(() => setPanelVisible(true));
-            });
-        } else {
-            setPanelVisible(false);
-            closeTimer = setTimeout(() => setDisplayedFunction(null), 250);
-        }
-
-        return () => {
-            if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
-            if (closeTimer !== undefined) clearTimeout(closeTimer);
-        };
-    }, [selectedFunction]);
-
     return (
-        <div className="flex w-full items-stretch overflow-clip">
-            <div
-                className={cn(
-                    'min-w-0 shrink-0 transition-[width] duration-250 ease-out motion-reduce:transition-none',
-                    panelVisible ? 'w-1/2' : 'w-full',
-                    displayedFunction && '**:data-[slot=table-container]:rounded-r-none'
-                )}
-            >
-                {children}
-            </div>
-            {displayedFunction && (
-                <div
-                    className={cn(
-                        'w-1/2 shrink-0 border-y border-r border-border-muted bg-surface-panel transition-[translate,opacity] duration-250 ease-out motion-reduce:transition-none',
-                        panelVisible ? 'translate-x-0 opacity-100' : 'pointer-events-none translate-x-full opacity-0'
-                    )}
-                >
-                    <FunctionDetailsPanel
-                        key={'enabled' in displayedFunction ? functionRowKey(displayedFunction) : templateRowKey(displayedFunction)}
-                        fn={displayedFunction}
-                        integration={integration}
-                        onDeleted={onDeleted}
-                    />
-                </div>
-            )}
-        </div>
+        <SlidingPanelLayout
+            selected={selectedFunction}
+            getKey={(fn) => ('enabled' in fn ? functionRowKey(fn) : templateRowKey(fn))}
+            renderPanel={(fn) => <FunctionDetailsPanel fn={fn} integration={integration} onDeleted={onClose} />}
+            onClose={onClose}
+        >
+            {children}
+        </SlidingPanelLayout>
     );
 }
 
@@ -272,18 +251,19 @@ function pillCount(deployed: number | undefined, templatesFetched: boolean, unde
 
 interface FunctionsTabProps {
     integration: ApiIntegration;
+    onFunctionOpenChange?: (open: boolean) => void;
 }
 
-export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
+export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunctionOpenChange }) => {
     const env = useStore((state) => state.env);
     const { data: metaData } = useMeta();
     const [templateTail, setTemplateTail] = useState<{ scope: string; keys: string[] }>({ scope: '', keys: [] });
 
-    const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
+    const [search, setSearch] = useSearchQueryState();
     const debouncedSearch = useDebouncedValue(search);
 
     const [rawType, setType] = useQueryState('type', parseAsString.withDefault(''));
-    const typeFilter: TypeFilterValue = rawType && isTypeFilterValue(rawType) ? rawType : 'action';
+    const typeFilter: TypeFilterValue = rawType && isTypeFilterValue(rawType) ? rawType : 'tool';
     // The open panel is the URL, so a reload or a shared link restores it. Old `/functions/:name` links redirect here.
     const [selectedFunctionName, setSelectedFunctionName] = useQueryState('function', parseAsString);
 
@@ -295,7 +275,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     });
 
     // Unfiltered totals for the pills, including templates that are not deployed yet. Search only narrows the active table.
-    const actionCounts = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'action', limit: 1 });
+    const toolsCount = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'tool', limit: 1 });
     const syncCounts = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'sync', limit: 1 });
     const triggerCounts = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'on-event', limit: 1 });
 
@@ -307,17 +287,23 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     });
 
     const onRowClick = useCallback(
-        (name: string) => {
-            void setSelectedFunctionName(selectedFunctionName === name ? null : name);
+        (name: string, isDeployed: boolean) => {
+            const isOpening = selectedFunctionName !== name;
+            if (isOpening) {
+                track('functions:function_view', { provider: integration.provider, function_type: typeFilter, is_deployed: isDeployed });
+            }
+            void setSelectedFunctionName(isOpening ? name : null);
         },
-        [selectedFunctionName, setSelectedFunctionName]
+        [selectedFunctionName, setSelectedFunctionName, integration.provider, typeFilter]
     );
 
     const functions: ListedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
     const total = data?.pages[0]?.pagination.total ?? 0;
     const listedMatch = selectedFunctionName ? functions.find((fn) => fn.name === selectedFunctionName) : undefined;
     const rawTemplateMatch = selectedFunctionName
-        ? (templatesResponse?.data ?? []).find((template) => template.type === typeFilter && template.name === selectedFunctionName)
+        ? (templatesResponse?.data ?? []).find(
+              (template) => (typeFilter === 'tool' ? template.type === 'action' : template.type === typeFilter) && template.name === selectedFunctionName
+          )
         : undefined;
     const templateMatch = rawTemplateMatch && !rawTemplateMatch.deployed ? rawTemplateMatch : undefined;
     // A linked function can sit past the first page. Fetch it directly so the panel opens without scrolling the list.
@@ -347,17 +333,25 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
         [undeployedSyncTemplates, searchNeedle]
     );
     // Templates append only after every deployed page is loaded.
-    const listedFunctionKeys = new Set(functions.map((fn) => `${fn.type}:${fn.name}`));
+    const listedFunctionNames = new Set(functions.map((fn) => fn.name));
     const visibleActionTemplates =
-        typeFilter === 'action' && !hasNextPage && !isPlaceholderData
-            ? matchingActionTemplates.filter((template) => !listedFunctionKeys.has(`${template.type}:${template.name}`))
+        typeFilter === 'tool' && !hasNextPage && !isPlaceholderData
+            ? matchingActionTemplates.filter((template) => !listedFunctionNames.has(template.name))
             : [];
     const visibleSyncTemplates = typeFilter === 'sync' && !hasNextPage && !isPlaceholderData ? matchingSyncTemplates : [];
     const selectedFunction =
         listedMatch ?? templateMatch ?? (rawTemplateMatch?.deployed ? listedFromTemplate(rawTemplateMatch) : undefined) ?? linkedFunction?.data ?? null;
+    const functionOpen = selectedFunction !== null;
+
+    useEffect(() => {
+        onFunctionOpenChange?.(functionOpen);
+    }, [functionOpen, onFunctionOpenChange]);
+
+    useEffect(() => () => onFunctionOpenChange?.(false), [onFunctionOpenChange]);
 
     const tailScope = `${integration.unique_key}:${typeFilter}`;
-    const incomingTailKeys = (typeFilter === 'action' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : []).map(templateSectionKey);
+    const templateRows = typeFilter === 'tool' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : [];
+    const incomingTailKeys = templateRows.map(templateSectionKey);
     const incomingTailKey = incomingTailKeys.join('\n');
     const templateSectionKeys = mergeTemplateSection(templateTail.scope === tailScope ? templateTail.keys : [], incomingTailKeys);
 
@@ -392,26 +386,25 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
 
     const counts: Record<TypeFilterValue, number | undefined> = {
         // Catalog actions are already in the functions total. A failed templates request leaves the response unset, so the pill stays hidden instead of showing a deployed-only number.
-        action: pillCount(
-            actionCounts.data?.pages[0]?.pagination.total,
+        tool: pillCount(
+            toolsCount.data?.pages[0]?.pagination.total,
             templatesResponse !== undefined,
             metaData?.data.toolsCatalog === false ? undeployedActionTemplates.length : 0
         ),
         sync: pillCount(syncCounts.data?.pages[0]?.pagination.total, templatesResponse !== undefined, undeployedSyncTemplates.length),
         'on-event': triggerCounts.data?.pages[0]?.pagination.total
     };
-    const countsSettled = [actionCounts, syncCounts, triggerCounts].every((query) => query.isSuccess || query.isError);
-    const countsReady = counts.action != null && counts.sync != null && counts['on-event'] != null;
-    const totalAcrossTypes = (counts.action ?? 0) + (counts.sync ?? 0) + (counts['on-event'] ?? 0);
+    const countsSettled = [toolsCount, syncCounts, triggerCounts].every((query) => query.isSuccess || query.isError);
+    const countsReady = counts.tool != null && counts.sync != null && counts['on-event'] != null;
+    const totalAcrossTypes = (counts.tool ?? 0) + (counts.sync ?? 0) + (counts['on-event'] ?? 0);
 
     if (error) {
         return <CriticalErrorAlert message="Something went wrong while loading the functions" />;
     }
 
     const hasSearch = Boolean(debouncedSearch.trim());
-    const templateRows = typeFilter === 'action' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : [];
     // Actions omit this column until the catalog flag is known to be off. Syncs and triggers always show it.
-    const showStatus = typeFilter !== 'action' || metaData?.data.toolsCatalog === false;
+    const showStatus = typeFilter !== 'tool' || metaData?.data.toolsCatalog === false;
     const activeListHasRows = functions.length > 0 || templateRows.length > 0;
     const showEmptyNoFilters =
         countsReady &&
@@ -434,7 +427,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     integration={integration}
                     showStatus={showStatus}
                     selected={row.template.name === selectedFunctionName}
-                    onSelect={() => onRowClick(row.template.name)}
+                    onSelect={() => onRowClick(row.template.name, false)}
                 />
             );
         }
@@ -446,7 +439,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                 integration={integration}
                 selected={row.fn.name === selectedFunctionName}
                 showStatus={showStatus}
-                onSelect={() => onRowClick(row.fn.name)}
+                onSelect={() => onRowClick(row.fn.name, row.fn.id !== null)}
             />
         );
     });
@@ -504,7 +497,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                 value={search || ''}
                                 onChange={(e) => {
                                     void setSelectedFunctionName(null);
-                                    void setSearch(e.target.value || null);
+                                    setSearch(e.target.value);
                                 }}
                             />
                             <InputGroupAddon>
@@ -548,11 +541,11 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                         <EmptyCard>
                             <p className="text-text-secondary text-body-medium-regular">{activePill.emptyLabel}</p>
                         </EmptyCard>
-                    ) : typeFilter === 'action' ? (
+                    ) : typeFilter === 'tool' ? (
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
                             integration={integration}
-                            onDeleted={() => void setSelectedFunctionName(null)}
+                            onClose={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
                                 <TableHeader>
@@ -566,7 +559,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                 <TableFooter className="bg-transparent font-ds-regular">
                                     <TableRow className="h-8 hover:bg-transparent">
                                         <TableCell colSpan={2 + (showStatus ? 1 : 0)} className="px-3 type-label-xs text-text-disabled">
-                                            Showing {functions.length + visibleActionTemplates.length} of {total + visibleActionTemplates.length} actions
+                                            Showing {functions.length + visibleActionTemplates.length} of {total + visibleActionTemplates.length} tools
                                         </TableCell>
                                     </TableRow>
                                 </TableFooter>
@@ -576,7 +569,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
                             integration={integration}
-                            onDeleted={() => void setSelectedFunctionName(null)}
+                            onClose={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
                                 <TableHeader>
@@ -600,7 +593,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
                             integration={integration}
-                            onDeleted={() => void setSelectedFunctionName(null)}
+                            onClose={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
                                 <TableHeader>

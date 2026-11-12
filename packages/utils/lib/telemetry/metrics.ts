@@ -7,6 +7,8 @@ export enum Types {
 
     ACTION_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.action.incoming.payloadSizeBytes',
 
+    CATALOG_CODE_RATE_LIMITED = 'nango.catalog.code.rateLimited',
+
     AUTH_SECRET_KEY_HASH_CACHE = 'nango.auth.secretKeyHashCache',
     AUTH_SHADOW_CACHE = 'nango.auth.shadowCache',
     AUTH_CONTEXT_CACHE = 'nango.auth.contextCache',
@@ -130,6 +132,7 @@ export enum Types {
     DEPRECATED_V1_ENDPOINT_USED = 'nango.server.deprecated.v1.used',
 
     DEPRECATED_PUBLIC_ENDPOINT_USED = 'nango.server.deprecated.public.used',
+    DEPRECATED_API_KEY_SCOPE_USED = 'nango.server.deprecated.apiKeyScope.used',
 
     AUTH_SUCCESS = 'nango.server.auth.success',
     AUTH_FAILURE = 'nango.server.auth.failure',

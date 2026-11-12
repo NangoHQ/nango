@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/egress",
-    "version": "0.71.13",
+    "version": "0.72.4",
     "description": "Outbound URL security for Nango (SSRF hardening)",
     "type": "module",
     "main": "dist/index.js",
@@ -16,7 +16,7 @@
     ],
     "scripts": {},
     "dependencies": {
-        "undici": "6.29.0"
+        "undici": "6.29.1"
     },
     "devDependencies": {
         "vitest": "4.1.11"

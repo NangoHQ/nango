@@ -118,7 +118,7 @@ Connect to [Integration Name] with Nango and see data flow in 2 minutes.
     <Step title="Implement Nango in your app">
         Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
 
-        To obtain your own production credentials, follow the setup guide linked below.
+        To obtain your own credentials, follow the setup guide linked below.
     </Step>
 </Steps>
 
@@ -131,7 +131,7 @@ Register an OAuth app with [Integration Name] and obtain credentials to connect 
 
 Official docs: [[Integration Name] API docs]([API_DOCS_URL])
 
-## 🧩 Pre-built syncs & actions for [Integration Name]
+## 🧩 Pre-built syncs & tools for [Integration Name]
 
 Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
 
@@ -141,6 +141,8 @@ import PreBuiltUseCases from "/snippets/generated/[slug]/PreBuiltUseCases.mdx"
 
 ---
 ```
+
+**Nango-managed OAuth apps:** Nango-managed OAuth apps are production-ready. Never describe them as "test" apps, "for testing only", or something to replace before going live, and don't call your own credentials "production credentials". Link to [Nango-managed OAuth apps](/guides/auth/auth-guide#nango-managed-oauth-apps) for the tradeoffs instead of restating them. ("Production credentials" is fine when the provider itself issues separate sandbox and production credentials, as athenahealth does.) Only say an API has a Nango-managed OAuth app if it appears in the list under [APIs with a Nango-managed OAuth app](/guides/auth/auth-guide#apis-with-a-nango-managed-oauth-app). If it does, add the standard `<Note>` to the "Create the integration" step. Also change the "Implement Nango in your app" step's last line to "To use your own OAuth app instead of the Nango-managed one, follow the setup guide linked below." If it doesn't, say so and point to the setup guide.
 
 ### Setup Guide
 
@@ -187,7 +189,7 @@ For more details, see [[Integration Name]'s OAuth documentation]([OAUTH_DOCS_URL
 **Path:** `snippets/generated/[slug]/PreBuiltUseCases.mdx`
 
 ```mdx
-_No pre-built syncs or actions available yet._
+_No pre-built syncs or tools available yet._
 
 <Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/functions/functions-guide) independently.</Tip>
 ```

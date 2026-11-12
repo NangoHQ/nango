@@ -16,9 +16,9 @@ const schemaHeaders = z.object({
     'x-max-retries': z.coerce.number().min(0).max(5).optional().default(0)
 });
 
-const schemaBody = z.object({
+export const schemaBody = z.object({
     action_name: syncNameSchema,
-    input: z.unknown()
+    input: z.unknown().optional()
 });
 
 export const postPublicTriggerAction = asyncWrapperWithEnvironment<PostPublicTriggerAction>(async (req, res) => {

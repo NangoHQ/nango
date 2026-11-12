@@ -9,18 +9,21 @@ export function recordFunctionExecution({
     type,
     success,
     durationMs,
-    runtime
+    runtime,
+    outcome
 }: {
     accountId: number;
     type: FunctionType;
     success: boolean;
     durationMs: number;
     runtime: FunctionRuntime | undefined;
+    outcome?: string | undefined;
 }): void {
     metrics.duration(metrics.Types.FUNCTION_DURATION_MS, Math.max(0, durationMs), {
         accountId,
         type,
         success: String(success),
-        ...(runtime ? { functionRuntime: runtime } : {})
+        ...(runtime ? { functionRuntime: runtime } : {}),
+        ...(outcome ? { outcome } : {})
     });
 }

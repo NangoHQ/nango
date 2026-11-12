@@ -17,7 +17,7 @@ import type {
     PostSignup,
     PutResetPassword
 } from './account/api.js';
-import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, PostPublicTriggerAction } from './action/api.js';
+import type { GetAsyncActionResult, GetPublicV1, PostInternalInvokeFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
 import type { DeleteAgentSession, PostAgentSessions } from './agent/api.js';
 import type { GetAgentSessionMcp, PostAgentSessionMcp } from './agent/mcp.api.js';
@@ -72,11 +72,13 @@ import type {
     GetEnvironments,
     GetPublicApiKey,
     GetPublicApiKeys,
+    GetPublicEnvironment,
     GetPublicEnvironments,
     ListApiKeys,
     PatchApiKey,
     PatchEnvironment,
     PatchPublicApiKey,
+    PatchPublicEnvironment,
     PostEnvironment,
     PostPublicApiKey,
     PostPublicEnvironment,
@@ -98,12 +100,12 @@ import type {
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
+    GetProviderTemplateCode,
     GetProviderTemplates,
     GetPublicIntegrationFunction,
     GetPublicIntegrationFunctions,
+    GetPublicProviderTemplateCode,
     GetPublicProviderTemplates,
-    GetTool,
-    GetTools,
     PatchConnectionFunction,
     PatchFunction,
     PatchFunctionVariant,
@@ -118,7 +120,13 @@ import type {
     PostFunctionVariant,
     PostToolCall
 } from './functions/api.js';
-import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
+import type {
+    GetAgentGettingStarted,
+    GetGettingStarted,
+    PatchGettingStarted,
+    PostAgentGettingStartedDismiss,
+    PostAgentGettingStartedRestart
+} from './gettingStarted/api.js';
 import type {
     DeleteIntegration,
     DeletePublicIntegration,
@@ -252,15 +260,16 @@ export type PublicApiEndpoints =
     | GetPublicFunctionCode
     | GetPublicIntegrationFunctions
     | GetPublicIntegrationFunction
-    | GetTool
-    | GetTools
     | PostToolCall
     | DeletePublicIntegrationFunction
     | GetPublicProviderTemplates
+    | GetPublicProviderTemplateCode
     | PostPublicRotateWebhookSigningKey
     | AllPublicProxy
     | PostPublicEnvironment
+    | PatchPublicEnvironment
     | DeletePublicEnvironment
+    | GetPublicEnvironment
     | GetPublicEnvironments
     | GetPublicApiKey
     | GetPublicApiKeys
@@ -314,6 +323,7 @@ export type PrivateApiEndpoints =
     | DeleteIntegrationFunction
     | GetIntegrationTemplates
     | GetProviderTemplates
+    | GetProviderTemplateCode
     | DeleteIntegration
     | PatchIntegration
     | GetIntegration
@@ -360,12 +370,15 @@ export type PrivateApiEndpoints =
     | PostSharedCredentialsProvider
     | PatchSharedCredentialsProvider
     | GetGettingStarted
+    | GetAgentGettingStarted
+    | PostAgentGettingStartedRestart
+    | PostAgentGettingStartedDismiss
     | PatchGettingStarted
     | GetConnectUISettings
     | PutConnectUISettings
     | GetProviders
     | GetProvider
-    | PostInternalTriggerFunction
+    | PostInternalInvokeFunction
     | GetMFAStatus
     | PostMFAEnrollment
     | PostMFAActivation

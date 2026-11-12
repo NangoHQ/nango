@@ -216,12 +216,15 @@ function pinnedNotMatchedError(rejected: AgentSessionPinnedConnection[], matches
 }
 
 function toResolvedConnection(integrationId: string, provider: string, candidate: ConnectionMatchCandidate): AgentSessionResolvedConnection {
+    const accountLabel = candidate.tags['end_user_display_name'] || candidate.tags['end_user_email'];
+
     return {
         integrationId,
         provider,
         connectionId: candidate.connection_id,
         internalConnectionId: candidate.id,
-        configId: candidate.config_id
+        configId: candidate.config_id,
+        ...(accountLabel ? { accountLabel } : {})
     };
 }
 

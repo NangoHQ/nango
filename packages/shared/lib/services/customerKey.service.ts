@@ -331,18 +331,22 @@ class CustomerKeyService {
         trx: Knex,
         {
             accountId,
-            environmentId
+            environmentId,
+            secret: plainText = uuid.v4()
         }: {
             accountId: number;
             environmentId: number;
+            secret?: string;
         }
     ): Promise<Result<DBCustomerKey>> {
-        try {
-            const plainText = uuid.v4();
+        if (plainText.trim().length === 0) {
+            return Err(new Error('Webhook signing key cannot be blank'));
+        }
 
+        try {
             const hashed = await this.hashSecret(plainText);
             if (hashed.isErr()) {
-                throw hashed.error;
+                return Err(hashed.error);
             }
 
             const customerKey = {
@@ -364,7 +368,7 @@ class CustomerKeyService {
 
             const [created] = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE).insert(encrypted).returning('*');
             if (!created) {
-                throw new NangoError('impossible_condition');
+                return Err(new NangoError('impossible_condition'));
             }
 
             await trx<DBCustomerKeyRelation>(CUSTOMER_KEYS_RELATIONS_TABLE).insert({
@@ -436,13 +440,15 @@ class CustomerKeyService {
     }
 
     /**
-     * Replaces the environment's webhook signing key with a fresh one and returns it in plain text.
+     * Replaces the environment's webhook signing key with the supplied key or a generated one and returns it in plain text.
      * Callers in other processes keep signing with the previous key until their cache entry expires.
      */
-    public async rotateWebhookSigningKey(trx: Knex, envId: number): Promise<Result<string>> {
-        try {
-            const plainText = uuid.v4();
+    public async rotateWebhookSigningKey(trx: Knex, envId: number, plainText = uuid.v4()): Promise<Result<string>> {
+        if (plainText.trim().length === 0) {
+            return Err(new Error('Webhook signing key cannot be blank'));
+        }
 
+        try {
             const hashed = await this.hashSecret(plainText);
             if (hashed.isErr()) {
                 throw hashed.error;

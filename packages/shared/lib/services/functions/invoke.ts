@@ -11,6 +11,7 @@ import { validateFunctionInput } from './models/validate.js';
 
 import type { Orchestrator } from '../../clients/orchestrator.js';
 import type { FunctionInputValidationError } from './models/validate.js';
+import type { LogContextOrigin } from '@nangohq/logs';
 import type {
     AsyncFunctionResponse,
     DBEnvironment,
@@ -18,7 +19,10 @@ import type {
     DBTeam,
     FunctionInvocationErrorCode,
     FunctionInvocationType,
-    FunctionTrigger
+    FunctionTrigger,
+    OperationActor,
+    OperationFunction,
+    OperationTool
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
@@ -26,6 +30,12 @@ import type { JsonValue } from 'type-fest';
 type ValidationErrors = FunctionInputValidationError['validationErrors'];
 
 export type FunctionInvocationResult = AsyncFunctionResponse | { data: JsonValue };
+
+export interface FunctionInvocation {
+    /** Created once the invocation is known to be valid, so callers can enrich the operation afterwards. */
+    logCtx: LogContextOrigin | undefined;
+    result: Result<FunctionInvocationResult, FunctionInvokeError>;
+}
 
 export class FunctionInvokeError extends Error {
     readonly code: FunctionInvocationErrorCode;
@@ -49,7 +59,10 @@ export async function invokeFunction({
     request,
     invocationType,
     options,
-    orchestrator
+    orchestrator,
+    actor,
+    logMeta,
+    operation = { type: 'function', action: 'invoke' }
 }: {
     account: DBTeam;
     environment: DBEnvironment;
@@ -60,8 +73,13 @@ export async function invokeFunction({
     invocationType: FunctionInvocationType;
     options?: Record<string, unknown> | undefined;
     orchestrator: Orchestrator;
-}): Promise<Result<FunctionInvocationResult, FunctionInvokeError>> {
-    return tracer.trace('nango.function.invocation', async (span) => {
+    actor?: OperationActor | undefined;
+    /** Added to the operation's meta, next to the input. */
+    logMeta?: Record<string, unknown> | undefined;
+    operation?: OperationFunction | OperationTool;
+}): Promise<FunctionInvocation> {
+    let logCtx: LogContextOrigin | undefined;
+    const result = await tracer.trace('nango.function.invocation', async (span): Promise<Result<FunctionInvocationResult, FunctionInvokeError>> => {
         span.addTags({
             accountId: account.id,
             environmentId: environment.id,
@@ -143,8 +161,8 @@ export async function invokeFunction({
         }
         const timeoutMs = executionTimeoutMs(invocationType);
 
-        const logCtx = await logContextGetter.create(
-            { operation: { type: 'function', action: 'invoke' }, expiresAt: new Date(Date.now() + timeoutMs).toISOString() },
+        logCtx = await logContextGetter.create(
+            { operation, expiresAt: new Date(Date.now() + timeoutMs).toISOString(), actor },
             {
                 account,
                 environment,
@@ -152,6 +170,7 @@ export async function invokeFunction({
                 connection: { id: connection.id, name: connection.connection_id },
                 syncConfig: { id: currentVersion.id, name: config.name },
                 meta: {
+                    ...logMeta,
                     invocation_type: invocationType,
                     ...(options ? { options } : {}),
                     ...(input !== undefined ? truncateJson({ input: envs.NANGO_LOG_FUNCTION_INPUT ? input : 'REDACTED' }) : {})
@@ -191,6 +210,7 @@ export async function invokeFunction({
         }
         return Ok(invocation.value);
     });
+    return { logCtx, result };
 }
 
 /** Convert a function's per-connection concurrency setting to the orchestrator convention (0 means unbounded). */

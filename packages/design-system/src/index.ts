@@ -26,7 +26,15 @@ export {
     alertVariants
 } from './components/ui/alert';
 export { Badge, type BadgeProps, badgeVariants } from './components/ui/badge';
-export { Button, type ButtonProps, IconButton, type IconButtonProps, buttonVariants } from './components/ui/button';
+export {
+    Button,
+    type ButtonProps,
+    IconButton,
+    type IconButtonProps,
+    type IconButtonSize,
+    type IconButtonVariant,
+    buttonVariants
+} from './components/ui/button';
 export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './components/ui/card';
 export {
     Dialog,
@@ -68,6 +76,14 @@ export {
     FieldSet,
     fieldVariants
 } from './components/ui/field';
+export {
+    SegmentedControl,
+    SegmentedControlItem,
+    type SegmentedControlItemProps,
+    segmentedControlItemVariants,
+    type SegmentedControlProps,
+    segmentedControlVariants
+} from './components/ui/segmented-control';
 export {
     Tooltip,
     TooltipContent,

@@ -9,6 +9,7 @@ import { useApiKeys } from '../../hooks/useApiKeys';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useToast } from '../../hooks/useToast';
 import { useStore } from '../../store';
+import { track } from '../../utils/analytics';
 import { publicApiFetch } from '../../utils/api';
 import { cn, truncateMiddle } from '../../utils/utils';
 
@@ -85,6 +86,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                 }
             );
 
+            track('onboarding:run_complete', { is_success: res.ok });
             if (!res.ok) {
                 toast({
                     title: 'Something went wrong while running the code',
@@ -98,6 +100,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                 variant: 'success'
             });
         } catch {
+            track('onboarding:run_complete', { is_success: false });
             toast({
                 title: 'Something went wrong while running the code',
                 variant: 'error'

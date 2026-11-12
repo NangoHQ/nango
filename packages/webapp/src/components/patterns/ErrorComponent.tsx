@@ -52,7 +52,7 @@ export const ErrorPageComponent: React.FC<{ title: string; error: Error }> = ({ 
     }
 
     return (
-        <DashboardLayout fullWidth title={title}>
+        <DashboardLayout fullWidth>
             <Helmet>
                 <title>Error - Nango</title>
             </Helmet>

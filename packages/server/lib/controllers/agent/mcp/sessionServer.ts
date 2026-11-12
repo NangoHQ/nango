@@ -13,7 +13,7 @@ import { toolSearchTool } from './toolSearch/search.js';
 
 import type { AgentSessionCallableTool, AgentSessionMcpContext, AgentSessionMcpTool } from './sessionTool.js';
 import type { RegisteredTool, RequestId, Tool, ToolAnnotations } from '@modelcontextprotocol/server';
-import type { AgentSession, AgentSessionToolInput } from '@nangohq/types';
+import type { AgentSession, AgentSessionCompiledTool, AgentSessionCompiledToolset, AgentSessionToolInput } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export const TOOLS_PAGE_SIZE = 50;
@@ -28,7 +28,6 @@ export const TOOL_NAME_SEPARATOR = '__';
 export const INTEGRATION_META_KEY = 'nango/integration';
 export const TOOL_META_KEY = 'nango/tool';
 
-const MAX_NAME_PART_LENGTH = 30;
 const UNSAFE_NAME_CHARACTERS = /[^a-zA-Z0-9_-]/g;
 
 const JSON_SCHEMA_2020_12 = 'https://json-schema.org/draft/2020-12/schema';
@@ -254,7 +253,8 @@ interface SessionTools {
 
 /** Names are claimed in one pass so no tool can take a name an earlier one answers to, and the stable order keeps an offset cursor valid. */
 export function buildSessionTools(session: AgentSession): SessionTools {
-    const taken = new Set<string>();
+    // Stored names were picked around every other name, so reserving them first leaves the rest unchanged.
+    const taken = new Set<string>(storedSlugs(session.compiledToolset));
 
     const listed = META_TOOLS.filter((tool) => tool.isEnabled(session.metaTools)).map(
         (tool): SessionTool => ({
@@ -272,7 +272,7 @@ export function buildSessionTools(session: AgentSession): SessionTools {
 
     for (const [integrationId, integration] of integrations) {
         for (const tool of integration.pinned) {
-            const name = claimToolName(qualifiedToolName(integrationId, tool.name), taken);
+            const name = tool.slug ?? claimToolName(qualifiedToolName(integrationId, tool.name), taken);
             callable.set(name, { integrationId, name: tool.name, description: tool.description, pinned: true });
             if (!tool.mcp) {
                 actions.set(name, { integrationId, name: tool.name });
@@ -289,7 +289,7 @@ export function buildSessionTools(session: AgentSession): SessionTools {
 
     for (const [integrationId, integration] of integrations) {
         for (const tool of integration.searchable) {
-            const name = claimToolName(qualifiedToolName(integrationId, tool.name), taken);
+            const name = tool.slug ?? claimToolName(qualifiedToolName(integrationId, tool.name), taken);
             callable.set(name, { integrationId, name: tool.name, description: tool.description, pinned: false });
         }
     }
@@ -301,12 +301,47 @@ export function listSessionTools(session: AgentSession): SessionTool[] {
     return buildSessionTools(session).listed;
 }
 
+/**
+ * Names the tools an integration gained after the session was created, around every name the session
+ * already answers to, so a name an agent was already given keeps pointing at the same tool.
+ */
+export function withAddedToolSlugs({ session, added }: { session: AgentSession; added: AgentSessionCompiledToolset }): AgentSessionCompiledToolset {
+    const { listed, callable } = buildSessionTools(session);
+    const taken = new Set([...listed.map((tool) => tool.name), ...callable.keys()]);
+
+    return Object.fromEntries(
+        Object.entries(added)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([integrationId, integration]) => {
+                const existing = session.compiledToolset[integrationId];
+                const named = new Set([...(existing?.pinned ?? []), ...(existing?.searchable ?? [])].map((tool) => tool.name));
+                const withSlug = (tool: AgentSessionCompiledTool): AgentSessionCompiledTool =>
+                    named.has(tool.name) || tool.slug ? tool : { ...tool, slug: claimToolName(qualifiedToolName(integrationId, tool.name), taken) };
+
+                return [integrationId, { ...integration, pinned: integration.pinned.map(withSlug), searchable: integration.searchable.map(withSlug) }];
+            })
+    );
+}
+
+function storedSlugs(toolset: AgentSessionCompiledToolset): string[] {
+    return Object.values(toolset).flatMap((integration) =>
+        [...integration.pinned, ...integration.searchable].flatMap((tool) => (tool.slug ? [tool.slug] : []))
+    );
+}
+
+/**
+ * Clipping only the tail would let a long integration id wipe out the tool name, so a short
+ * part leaves its unused room to the other and two long parts each keep about half.
+ */
 function qualifiedToolName(integrationId: string, toolName: string): string {
-    return `${sanitizeNamePart(integrationId)}${TOOL_NAME_SEPARATOR}${sanitizeNamePart(toolName)}`;
+    const budget = MAX_TOOL_NAME_LENGTH - TOOL_NAME_SEPARATOR.length;
+    const tool = sanitizeNamePart(toolName);
+    const integration = sanitizeNamePart(integrationId).slice(0, Math.max(Math.ceil(budget / 2), budget - tool.length));
+    return `${integration}${TOOL_NAME_SEPARATOR}${tool.slice(0, budget - integration.length)}`;
 }
 
 function sanitizeNamePart(part: string): string {
-    return part.replace(UNSAFE_NAME_CHARACTERS, '_').slice(0, MAX_NAME_PART_LENGTH);
+    return part.replace(UNSAFE_NAME_CHARACTERS, '_');
 }
 
 /**

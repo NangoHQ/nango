@@ -21,6 +21,28 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007, ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: 0 });
     });
 
+    it.each([undefined, '', '   '])('allows an unset or blank signup ad cookie name while disabled (%j)', (name) => {
+        const res = parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_COOKIE_NAME: name });
+        expect(res.SIGNUP_AD_CONTEXT_ENABLED).toBe(false);
+        expect(res.SIGNUP_AD_CONTEXT_COOKIE_NAME).toBeUndefined();
+    });
+
+    it.each([undefined, '', '   '])('requires a cookie name when signup ad context is enabled (%j)', (name) => {
+        expect(() => parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_ENABLED: 'true', SIGNUP_AD_CONTEXT_COOKIE_NAME: name })).toThrowError(
+            /SIGNUP_AD_CONTEXT_COOKIE_NAME is required/
+        );
+    });
+
+    it('accepts a custom signup ad cookie name when enabled', () => {
+        const res = parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_ENABLED: 'true', SIGNUP_AD_CONTEXT_COOKIE_NAME: 'nango_signup_ads_prod' });
+        expect(res.SIGNUP_AD_CONTEXT_ENABLED).toBe(true);
+        expect(res.SIGNUP_AD_CONTEXT_COOKIE_NAME).toBe('nango_signup_ads_prod');
+    });
+
+    it.each(['invalid;name', 'a'.repeat(65)])('rejects an invalid nonempty signup ad cookie name', (name) => {
+        expect(() => parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_COOKIE_NAME: name })).toThrowError(/SIGNUP_AD_CONTEXT_COOKIE_NAME/);
+    });
+
     it('parses the local Nango user id as a non-negative integer', () => {
         expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '0' }).LOCAL_NANGO_USER_ID).toBe(0);
         expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '1e2' }).LOCAL_NANGO_USER_ID).toBe(100);
@@ -365,6 +387,22 @@ describe('parse', () => {
         expect(() => {
             parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_OAUTH: JSON.stringify({ mode: 'bogus' }) });
         }).toThrow();
+    });
+
+    it('should default NANGO_OUTBOUND_URL_POLICY_MCP to undefined when unset', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_OUTBOUND_URL_POLICY_MCP).toBeUndefined();
+    });
+
+    it('should parse a valid NANGO_OUTBOUND_URL_POLICY_MCP', () => {
+        const res = parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_MCP: JSON.stringify({ blockPrivateIps: true }) });
+        expect(res.NANGO_OUTBOUND_URL_POLICY_MCP).toEqual({ blockPrivateIps: true });
+    });
+
+    it('should throw on invalid JSON in NANGO_OUTBOUND_URL_POLICY_MCP', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_MCP: 'not-json' });
+        }).toThrow('Invalid JSON in NANGO_OUTBOUND_URL_POLICY_MCP');
     });
 
     it('should throw on unknown keys in NANGO_OUTBOUND_URL_POLICY_OAUTH (typos fail fast)', () => {

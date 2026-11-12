@@ -1,0 +1,100 @@
+---
+title: 'New Relic Ingest'
+sidebarTitle: 'New Relic Ingest'
+description: 'Integrate your application with the New Relic Ingest APIs'
+---
+
+## 🚀 Quickstart
+
+Connect to New Relic Ingest with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _New Relic Ingest_.
+    </Step>
+    <Step id="authorize-new-relic-ingest" title="Authorize New Relic Ingest">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then select your data center region and enter your New Relic license key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-new-relic-ingest-api" title="Call the New Relic Metric API">
+    Let's make your first request to the New Relic Metric API to report a gauge metric. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/metric/v1" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '[{"metrics":[{"name":"nango.test","type":"gauge","value":1,"timestamp":'"$(date +%s)"',"attributes":{"host.name":"nango-quickstart"}}]}]'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/metric/v1',
+            data: [
+                {
+                    metrics: [
+                        {
+                            name: 'nango.test',
+                            type: 'gauge',
+                            value: 1,
+                            timestamp: Math.floor(Date.now() / 1000),
+                            attributes: { 'host.name': 'nango-quickstart' }
+                        }
+                    ]
+                }
+            ],
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 New Relic Ingest integration guides
+
+- [How do I link my account?](/api-integrations/new-relic-ingest/connect)  
+Find your data center region and create a license key to connect your New Relic account.
+
+Official docs: [New Relic Metric API](https://docs.newrelic.com/docs/data-apis/ingest-apis/metric-api/report-metrics-metric-api/)
+
+## 🧩 Pre-built syncs & actions for New Relic Ingest
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/new-relic-ingest/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- The Event API is served from `insights-collector.newrelic.com` (US), `insights-collector.eu01.nr-data.net` (EU) or `insights-collector.jp.nr-data.net` (JP), not from the connection's Metric API host. Call it with `baseUrlOverride` set to the host for the connection's region; Nango keeps the connection's credentials and headers. See [Send custom events with our Event API](https://docs.newrelic.com/docs/data-apis/ingest-apis/event-api/introduction-event-api/).
+- The Log API is served from `log-api.newrelic.com` (US), `log-api.eu.newrelic.com` (EU) or `log-api.jp.nr-data.net` (JP). Call it with `baseUrlOverride` set to the host for the connection's region; Nango keeps the connection's credentials and headers. See [Send your logging data with our Log API](https://docs.newrelic.com/docs/logs/log-api/introduction-log-api/).
+- The Trace API is served from `trace-api.newrelic.com` (US), `trace-api.eu.newrelic.com` (EU) or `trace-api.jp.nr-data.net` (JP). Call it with `baseUrlOverride` set to the host for the connection's region; Nango keeps the connection's credentials and headers. See [Choose your data center](https://docs.newrelic.com/docs/accounts/accounts-billing/account-setup/choose-your-data-center/).
+- Nango does not check the key when a connection is created, so a wrong or revoked key still connects and fails on its first call.
+- To query data or manage configuration through NerdGraph, use the `new-relic` integration, which connects with a User key.
+
+---

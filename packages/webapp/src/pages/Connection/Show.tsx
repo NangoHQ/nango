@@ -1,16 +1,18 @@
-import { ExternalLink } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { Link, Outlet, useLocation, useOutletContext, useParams } from 'react-router-dom';
 
+import { Button } from '@nangohq/design-system';
+
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Tabs, TabsList, TabsTrigger, tabsTriggerClassName } from '@/components/ui/Tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConnection } from '@/hooks/useConnections';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
-import { useCanOpenPlaygroundFunctions, useOpenPlaygroundWithContext } from '@/utils/playground';
+import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
 import { IntegrationLogoWithProfile } from './components/IntegrationLogoWithProfile';
 
 import type { GetConnection, GetIntegration } from '@nangohq/types';
@@ -36,8 +38,7 @@ export const ConnectionShow = () => {
     const env = useStore((state) => state.env);
     const { connectionId, providerConfigKey } = useParams();
     const location = useLocation();
-    const openPlaygroundWithContext = useOpenPlaygroundWithContext();
-    const canOpenPlayground = useCanOpenPlaygroundFunctions();
+    const canOpenPlayground = useCanRunFunctions();
     const {
         data: connectionResponse,
         error: connectionError,
@@ -102,7 +103,7 @@ export const ConnectionShow = () => {
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout hasPageHeading>
             <Helmet>
                 <title>{connectionResponse.endUser?.email || connectionResponse.connection.connection_id} - Connection - Nango</title>
             </Helmet>
@@ -112,36 +113,38 @@ export const ConnectionShow = () => {
                     <div className="flex gap-4 items-center">
                         <IntegrationLogoWithProfile providerConfigKey={providerKey} provider={connectionResponse.provider} profile={displayName} />
                         <div className="flex flex-col">
-                            <span className="text-body-large-semi text-text-strong">
+                            <h1 className="text-body-large-semi text-text-strong">
                                 {integrationData.integration.display_name || integrationData.template.display_name} x {displayName}
-                            </span>
+                            </h1>
                             <span className="text-body-medium-regular text-text-secondary">{email ?? connectionResponse.connection.connection_id}</span>
                         </div>
                     </div>
 
-                    <TabsList>
-                        {tabs.map((tab) => (
-                            <TabsTrigger key={tab.segment} value={tab.segment} asChild>
-                                <Link to={`${basePath}/${tab.segment}`}>{tab.label}</Link>
-                            </TabsTrigger>
-                        ))}
+                    <div className="flex items-center justify-between gap-4">
+                        <TabsList className="w-fit">
+                            {tabs.map((tab) => (
+                                <TabsTrigger key={tab.segment} value={tab.segment} asChild>
+                                    <Link to={`${basePath}/${tab.segment}`}>{tab.label}</Link>
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
                         {canOpenPlayground && (
-                            <button
-                                type="button"
-                                className={tabsTriggerClassName}
-                                onClick={() => {
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
                                     openPlaygroundWithContext({
                                         source: 'connection',
                                         integration: integrationData.integration.unique_key,
                                         connection: connectionResponse.connection.connection_id
-                                    });
-                                }}
+                                    })
+                                }
                             >
-                                Playground
-                                <ExternalLink className="size-4" />
-                            </button>
+                                <Play />
+                                Test run
+                            </Button>
                         )}
-                    </TabsList>
+                    </div>
                 </div>
 
                 <Outlet context={context} />

@@ -1,0 +1,54 @@
+---
+title: 'Docmosis - How do I link my account?'
+sidebarTitle: 'Docmosis'
+---
+
+## Overview
+
+To authenticate with Docmosis, you need:
+
+1. **Region** — the Docmosis Cloud processing location where your templates are stored.
+2. **Access Key** — an access key of your Docmosis Cloud environment.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A Docmosis Cloud account. If you don't have one, [start a free trial](https://www.docmosis.com/free-trial/).
+
+### Step 1: Find your region
+
+1. Sign in to the [Docmosis Cloud console](https://www.docmosis.com/cloud-console/).
+2. In the top bar and side panel, check that you are in the right account, environment (for example **Trial Environment**) and processing location (for example **US1 (N. Virginia)**). Access keys belong to one environment, and each processing location has its own templates.
+3. Click **API** in the side panel.
+
+<img src="/api-integrations/docmosis/console_api_nav.png" alt="Docmosis Cloud console with the environment, processing location and API link in the side panel"/>
+
+4. The **Base URLs** tab lists the base URL of each processing location. Pick the region that matches your processing location:
+
+| Processing location | Region (select in Nango) |
+|---------------------|--------------------------|
+| US1                 | `us1.dws4.docmosis.com`  |
+| EU1                 | `eu1.dws4.docmosis.com`  |
+| AU1                 | `au1.dws4.docmosis.com`  |
+
+### Step 2: Copy your access key
+
+1. On the **API** page, open the **Access Keys** tab. Each environment comes with a default key named `key1` and can have up to 3 keys.
+2. To use a new key, click **New Key**, enter a key name and click **Apply**. You can also use an existing key.
+
+<img src="/api-integrations/docmosis/access_keys_new_key.png" alt="Docmosis Access Keys tab with the New Key button"/>
+
+3. Click the key's name to reveal it, then click the **Copy key to clipboard** icon.
+
+<img src="/api-integrations/docmosis/access_key_copy.png" alt="Docmosis Access Keys list with the copy key to clipboard icon next to the key"/>
+
+### Step 3: Enter your region and access key in the Connect UI
+
+1. Open the form where you need to authenticate with Docmosis.
+2. Select your **Region** and enter your access key in the **Access Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/docmosis/form.png" alt="Docmosis Connect UI form with the Region and Access Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Docmosis.

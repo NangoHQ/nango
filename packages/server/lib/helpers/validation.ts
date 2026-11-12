@@ -14,6 +14,8 @@ import {
 
 import { envs } from '../env.js';
 
+import type { FunctionReconciliationScope } from '@nangohq/types';
+
 export { TAG_MAX_COUNT, connectionTagsKeySchema, connectionTagsSchema };
 
 /**
@@ -67,9 +69,14 @@ export const scriptNameSchema = z
     .string()
     .regex(/^[a-zA-Z0-9_-]+$/)
     .max(255);
+export const reconciliationScopeSchema = z.discriminatedUnion('kind', [
+    z.object({ kind: z.literal('environment') }).strict(),
+    z.object({ kind: z.literal('integration'), integrationId: providerConfigKeySchema }).strict(),
+    z.object({ kind: z.literal('function'), integrationId: providerConfigKeySchema, name: scriptNameSchema }).strict()
+]) satisfies z.ZodType<FunctionReconciliationScope>;
 export const functionTypeSchema = z.enum(['sync', 'action', 'on-event']);
-// On-event functions can't be targeted by name alone yet, so deletion is limited to sync/action.
-export const deletableFunctionTypeSchema = z.enum(['sync', 'action']);
+export const functionListTypeSchema = z.enum(['sync', 'action', 'on-event', 'tool']);
+export const runnableFunctionTypeSchema = z.enum(['action', 'sync', 'tool', 'function']);
 export const paginationQueryFields = {
     page: z.coerce.number().int().min(0).optional().default(0),
     limit: z.coerce.number().int().min(1).max(100).optional().default(20)
@@ -77,7 +84,7 @@ export const paginationQueryFields = {
 // Shared querystring fields for the function-list endpoints. The private route adds `env`; the public route
 // derives the environment from the secret key, so it spreads these as-is.
 export const functionListQueryFields = {
-    type: functionTypeSchema.optional(),
+    type: functionListTypeSchema.optional(),
     search: z.string().trim().min(1).max(255).optional(),
     ...paginationQueryFields
 };
@@ -186,7 +193,8 @@ export const sharedCredentialsSchema = z
         client_id: z.string().min(1).max(255),
         client_secret: z.string().min(1),
         scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.*-]+(,[0-9a-zA-Z:/_.*-]+)*$/), z.string().max(0)]).optional(),
-        app_link: z.url().max(2048).optional()
+        app_link: z.url().max(2048).optional(),
+        enabled: z.boolean().optional()
     })
     .strict()
     .check((ctx) => {
@@ -255,6 +263,11 @@ export const connectionCredentialsTBASchema = z.strictObject({
 export const connectionCredentialsGithubAppSchema = z.strictObject({
     app_id: z.string().min(1).max(255),
     installation_id: z.string().min(1).max(255)
+});
+
+export const connectionCredentialsGithubAppOverrideSchema = z.strictObject({
+    private_key: z.string().trim().pipe(privateKeySchema).optional(),
+    webhook_secret: z.string().min(1).max(255).optional()
 });
 
 export const connectionEndUserTagsSchema = z

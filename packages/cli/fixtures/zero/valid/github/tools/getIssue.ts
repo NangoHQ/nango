@@ -1,4 +1,4 @@
-import { createTool } from 'nango';
+import { createTool, scopes } from 'nango';
 import * as z from 'zod';
 
 const tool = createTool({
@@ -8,12 +8,12 @@ const tool = createTool({
     output: z.object({ title: z.string() }),
     meta: {
         instructions: 'Use it to read a single issue. Search first when you only know the title.',
-        requiredScopes: ['repo'],
+        requiredScopes: scopes.all('repo'),
         tags: { domain: 'issues' }
     },
     exec: async (nango, trigger) => {
         const issue = await nango.get<{ title: string }>({ endpoint: `/repos/NangoHQ/nango/issues/${trigger.input.issueNumber}` });
-        return { title: issue.title };
+        return { title: issue.data.title };
     }
 });
 

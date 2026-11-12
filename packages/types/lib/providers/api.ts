@@ -24,6 +24,11 @@ export type GetPublicProvider = ApiEndpoint<{
     };
 }>;
 
+export interface ApiProviderFunctionCounts {
+    actions: number;
+    syncs: number;
+}
+
 export interface ApiProviderListItem {
     name: string;
     displayName: string;
@@ -37,12 +42,14 @@ export interface ApiProviderListItem {
     preConfiguredScopes: string[];
     clientRegistration?: McpOAuth2ClientRegistration;
     integration_config?: Record<string, SimplifiedJSONSchema> | undefined;
+    functionCounts: ApiProviderFunctionCounts;
 }
 
 export type GetProviders = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/providers';
+    Querystring: { env: string };
     Success: {
         data: ApiProviderListItem[];
     };

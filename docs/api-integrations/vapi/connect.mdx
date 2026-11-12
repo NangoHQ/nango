@@ -1,0 +1,56 @@
+---
+title: 'Vapi - How do I link my account?'
+sidebarTitle: 'Vapi'
+---
+
+## Overview
+
+To authenticate with Vapi, you need:
+
+1. **Region** — the Vapi API host your organization uses.
+2. **Private API Key** — a Vapi private API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Vapi account. You can [sign up for free](https://dashboard.vapi.ai/register).
+
+### Step 1: Choose your region
+
+Vapi has two API hosts. Pick the one for the region of your Vapi organization:
+
+| Region | Value to select |
+|--------|-----------------|
+| US (default) | `api.vapi.ai` |
+| EU | `api.eu.vapi.ai` |
+
+The EU region is available only with the Premier Success Package. If your organization uses it, select `api.eu.vapi.ai` and create your key in your EU dashboard. Otherwise, select `api.vapi.ai`. See [EU region](https://docs.vapi.ai/security-and-privacy/eu-region) for details.
+
+### Step 2: Create a private API key
+
+1. Sign in to the [Vapi Dashboard](https://dashboard.vapi.ai). In the sidebar, under **Integrations**, click **API Keys**.
+
+<img src="/api-integrations/vapi/sidebar_api_keys.png" alt="Vapi Dashboard sidebar with API Keys under Integrations"/>
+
+2. In the **Private API keys** section, click **Add Key**.
+
+<img src="/api-integrations/vapi/add_private_key.png" alt="Private API keys section of the Vapi API Keys page with the Add Key button"/>
+
+3. Enter a descriptive name in **Name**, leave the other fields at their defaults, and click **Create Private Token**.
+
+<img src="/api-integrations/vapi/create_private_token.png" alt="New Private API Key dialog in Vapi with the Name field and the Create Private Token button"/>
+
+4. Click the copy icon next to the new key and store it securely.
+
+<img src="/api-integrations/vapi/copy_private_key.png" alt="Private API Key Created dialog in Vapi with the copy icon next to the key"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Vapi.
+2. Select your **Region** and enter your **Private API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/vapi/form.png" alt="Vapi connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Vapi.
