@@ -1564,7 +1564,8 @@ To make registering your own app easier, Nango maintains step-by-step setup guid
 
 We add more OAuth apps every week. If an API you need is missing, please contact us and we will do our best to add it.
 
-<Accordion title="List of APIs with a Nango-managed OAuth app (81)">
+<Accordion title="List of APIs with a Nango-managed OAuth app (84)">
+- [Acuity Scheduling](/integrations/all/acuity-scheduling)
 - [Airtable](/api-integrations/airtable)
 - [Asana](/api-integrations/asana)
 - [Basecamp](/integrations/all/basecamp)
@@ -1578,7 +1579,6 @@ We add more OAuth apps every week. If an API you need is missing, please contact
 - [Confluence](/api-integrations/confluence)
 - [Contentful](/integrations/all/contentful)
 - [Discord](/api-integrations/discord)
-- [Dropbox](/api-integrations/dropbox)
 - [Eventbrite](/integrations/all/eventbrite)
 - [Exist](/integrations/all/exist)
 - [Facebook](/api-integrations/facebook)
@@ -1587,9 +1587,7 @@ We add more OAuth apps every week. If an API you need is missing, please contact
 - [GitLab](/integrations/all/gitlab)
 - [Gmail](/api-integrations/google-mail)
 - [Google Ads](/api-integrations/google-ads)
-- [Google Analytics](/api-integrations/google-analytics)
 - [Google Calendar](/api-integrations/google-calendar)
-- [Google Docs](/api-integrations/google-docs)
 - [Google Drive](/api-integrations/google-drive)
 - [Google Sheets](/api-integrations/google-sheet)
 - [Google Tasks](/api-integrations/google-tasks)
@@ -1603,7 +1601,11 @@ We add more OAuth apps every week. If an API you need is missing, please contact
 - [LinkHut](/integrations/all/linkhut)
 - [Mailchimp](/integrations/all/mailchimp)
 - [Microsoft](/api-integrations/microsoft)
+- [Microsoft Entra ID](/integrations/all/microsoft-entra-id)
 - [Microsoft Excel](/integrations/all/microsoft-excel)
+- [Microsoft People](/api-integrations/microsoft-people)
+- [Microsoft Power BI](/integrations/all/microsoft-power-bi)
+- [Microsoft PowerPoint](/api-integrations/microsoft-powerpoint)
 - [Microsoft Teams](/api-integrations/microsoft-teams)
 - [Microsoft Word](/api-integrations/microsoft-word)
 - [Miro](/integrations/all/miro)
@@ -1613,6 +1615,8 @@ We add more OAuth apps every week. If an API you need is missing, please contact
 - [Notion](/api-integrations/notion)
 - [OneDrive for Business](/api-integrations/one-drive)
 - [OneDrive Personal](/integrations/all/one-drive-personal)
+- [OneNote](/integrations/all/one-note)
+- [Outline](/api-integrations/outline)
 - [Outlook](/api-integrations/outlook)
 - [Pinterest](/integrations/all/pinterest)
 - [Pipedrive](/api-integrations/pipedrive)
@@ -1633,19 +1637,18 @@ We add more OAuth apps every week. If an API you need is missing, please contact
 - [Wakatime](/integrations/all/wakatime)
 - [Webex](/integrations/all/webex)
 - [Wrike](/integrations/all/wrike)
-- [Xero](/api-integrations/xero)
 - [YouTube](/api-integrations/youtube)
 - [Zendesk](/api-integrations/zendesk)
 - [Zoho](/integrations/all/zoho)
 - [Zoho Bigin](/integrations/all/zoho-bigin)
 - [Zoho Books](/integrations/all/zoho-books)
+- [Zoho Calendar](/integrations/all/zoho-calendar)
 - [Zoho CRM](/api-integrations/zoho-crm)
 - [Zoho Desk](/integrations/all/zoho-desk)
 - [Zoho Inventory](/integrations/all/zoho-inventory)
 - [Zoho Invoice](/integrations/all/zoho-invoice)
 - [Zoho Mail](/integrations/all/zoho-mail)
 - [Zoho People](/integrations/all/zoho-people)
-- [Zoom](/api-integrations/zoom)
 </Accordion>
 
 ## Related guides
