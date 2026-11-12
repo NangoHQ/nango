@@ -208,6 +208,7 @@ describe('installation tokens', () => {
         expect(code(await verify(withoutIssueTime))).toBe('malformed');
         expect(code(await verify(await forged(kid, privateKeyPem, { typ: 'JWT' })))).toBe('malformed');
         expect(code(await verify(await forged(kid, privateKeyPem, { claims: { ver: 2 } })))).toBe('malformed');
+        expect(code(await verify(await forged(kid, privateKeyPem, { claims: { body_sha256: undefined } })))).toBe('malformed');
         expect(code(await verify(await forged(kid, privateKeyPem, {})))).toBe('ok');
     });
 });

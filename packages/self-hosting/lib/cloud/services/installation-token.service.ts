@@ -73,6 +73,7 @@ export async function verifyInstallationToken(
         ({ payload: claims } = await jwtVerify(token, createPublicKey(key.value.public_key), {
             algorithms: [ALGORITHM],
             typ: INSTALLATION_TOKEN_TYPE,
+            requiredClaims: ['ver', 'body_sha256'],
             maxTokenAge: INSTALLATION_TOKEN_LIFETIME,
             clockTolerance: INSTALLATION_TOKEN_CLOCK_TOLERANCE
         }));

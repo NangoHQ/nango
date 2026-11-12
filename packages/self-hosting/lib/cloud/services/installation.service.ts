@@ -55,18 +55,21 @@ export async function createInstallation(
     }
 }
 
+export type InstallationSearchFilter = { id: number } | { uuid: string } | { customerId: number };
+
 export async function searchInstallations(
     db: RegistryDb,
-    { id, uuid, customerId, includeDeleted = false }: { id?: number; uuid?: string; customerId?: number; includeDeleted?: boolean } = {}
+    filter?: InstallationSearchFilter,
+    { includeDeleted = false }: { includeDeleted?: boolean } = {}
 ): Promise<Result<DBSelfHostingInstallation[]>> {
     try {
         return Ok(
             await installations(db)
                 .where({
                     ...(!includeDeleted && { deleted_at: null }),
-                    ...(id !== undefined && { id }),
-                    ...(uuid !== undefined && { uuid }),
-                    ...(customerId !== undefined && { customer_id: customerId })
+                    ...(filter && 'id' in filter && { id: filter.id }),
+                    ...(filter && 'uuid' in filter && { uuid: filter.uuid }),
+                    ...(filter && 'customerId' in filter && { customer_id: filter.customerId })
                 })
                 .orderBy('id')
         );
@@ -79,7 +82,7 @@ export async function requireInstallation(
     db: RegistryDb,
     { uuid, includeDeleted = false }: { uuid: string; includeDeleted?: boolean }
 ): Promise<Result<DBSelfHostingInstallation>> {
-    const found = await searchInstallations(db, { uuid, includeDeleted });
+    const found = await searchInstallations(db, { uuid }, { includeDeleted });
     if (found.isErr()) {
         return Err(found.error);
     }
