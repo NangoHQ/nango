@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Ok } from '@nangohq/utils';
 
 import { auditAccountApiKeysCredentialsRead, auditApiKeysCredentialsRead, auditPublicApiKeyCredentialsRead } from './apiKey.middleware.js';
-import { auditConnectionCredentialsRead } from './connection.middleware.js';
+import { auditConnectionCredentialsRead, auditPublicConnectionCredentialsRead } from './connection.middleware.js';
 import { auditPublicEnvironmentCredentialsRead } from './environment.middleware.js';
 import { auditDeprecatedProviderConfigCredentialsRead, auditPublicIntegrationCredentialsRead } from './integration.middleware.js';
 import {
@@ -19,10 +19,21 @@ import {
     secretKeyLocals
 } from './testing.js';
 
+import type * as AuditTrailUtils from '../../utils/auditTrail.js';
 import type { RequestHandler } from 'express';
 
 vi.mock('../../audit.js', async (importOriginal) => (await import('./testing.js')).auditModuleMock(importOriginal as never));
 vi.mock('@nangohq/shared', async (importOriginal) => (await import('./testing.js')).sharedModuleMock(importOriginal as never));
+// Unit runs have no plans layer, so the data-plane branch of the gate is stubbed; control-plane calls go through.
+const dataPlaneGateMock = vi.hoisted(() => vi.fn());
+vi.mock('../../utils/auditTrail.js', async (importOriginal) => {
+    const actual = await importOriginal<typeof AuditTrailUtils>();
+    return {
+        ...actual,
+        canRecordAuditTrail: (plan: Parameters<typeof actual.canRecordAuditTrail>[0], dataPlane?: Parameters<typeof actual.canRecordAuditTrail>[1]) =>
+            dataPlane ? dataPlaneGateMock(plan, dataPlane) : actual.canRecordAuditTrail(plan)
+    };
+});
 
 const envUuid = '00000000-0000-4000-8000-000000000012';
 const keyUuid = '00000000-0000-4000-8000-000000002551';
@@ -48,6 +59,7 @@ describe('credentials read audit middleware (unit)', () => {
         installAuditMockDefaults();
         getEnvironmentByUuidMock.mockReset().mockResolvedValue({ id: 12, uuid: envUuid, name: 'prod' });
         customerKeySearchMock.mockReset().mockResolvedValue(Ok([{ id: 2551, display_name: 'ci-key' }]));
+        dataPlaneGateMock.mockReset().mockResolvedValue(true);
     });
 
     afterEach(() => {
@@ -210,6 +222,67 @@ describe('credentials read audit middleware (unit)', () => {
                 outcome: 'success',
                 targets: [{ type: 'api_key', id: keyUuid, display: 'ci-key' }]
             });
+        });
+    });
+
+    describe('data-plane connection read', () => {
+        const plan = { has_audit_trail_control_plane: true, audit_trail_data_plane_scopes: ['read_credentials'] };
+        const planLocals = { ...secretKeyLocals, plan };
+
+        function syncReq(overrides: Record<string, unknown>) {
+            return fakeReq({ get: (h: string) => ({ 'user-agent': 'vitest', 'nango-is-sync': 'true' })[h.toLowerCase()], ...overrides });
+        }
+
+        it('records the connection, the integration and the Nango-Is-Sync header when the gate lets it through', async () => {
+            const req = syncReq({ params: { connectionId: 'conn-1' }, query: { provider_config_key: 'github' }, audit: read({ id: 'conn-1' }) });
+            const event = await runAudit(auditPublicConnectionCredentialsRead, req, fakeRes(planLocals));
+            expect(event).toMatchObject({
+                resource: 'connection',
+                action: 'credentials_read',
+                accountId: 42,
+                environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
+                actor: { type: 'api_key', id: 'c0000000-0000-4000-8000-000000000005', display: 'ci-key' },
+                outcome: 'success',
+                targets: [{ type: 'connection', id: 'conn-1' }],
+                metadata: { providerConfigKey: 'github', nangoIsSyncHeader: true }
+            });
+            expect(dataPlaneGateMock).toHaveBeenCalledWith(plan, { scope: 'read_credentials', accountUuid: 'acc-uuid' });
+        });
+
+        it('leaves the header out of the metadata when the request did not send it', async () => {
+            const req = fakeReq({ params: { connectionId: 'conn-1' }, query: { provider_config_key: 'github' }, audit: read({ id: 'conn-1' }) });
+            const event = await runAudit(auditPublicConnectionCredentialsRead, req, fakeRes(planLocals));
+            expect(event.metadata).toEqual({ providerConfigKey: 'github' });
+        });
+
+        it('records nothing when the gate keeps it off', async () => {
+            dataPlaneGateMock.mockResolvedValue(false);
+            const req = fakeReq({ params: { connectionId: 'conn-1' }, audit: read({ id: 'conn-1' }) });
+            expect(await run(auditPublicConnectionCredentialsRead, req, fakeRes(planLocals))).toBe(false);
+        });
+
+        it('a read without credentials records nothing and does not ask the gate', async () => {
+            expect(await run(auditPublicConnectionCredentialsRead, fakeReq({ params: { connectionId: 'conn-1' } }), fakeRes(planLocals))).toBe(false);
+            expect(dataPlaneGateMock).not.toHaveBeenCalled();
+        });
+
+        it('records a denial, naming the connection from the path', async () => {
+            const req = fakeReq({ params: { connectionId: 'conn-1' }, query: { provider_config_key: 'github' } });
+            const event = await runAudit(auditPublicConnectionCredentialsRead, req, fakeRes(planLocals, 403));
+            expect(event).toMatchObject({
+                resource: 'connection',
+                action: 'credentials_read',
+                accountId: 42,
+                environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
+                actor: { type: 'api_key', id: 'c0000000-0000-4000-8000-000000000005' },
+                outcome: 'denied',
+                targets: [{ type: 'connection', id: 'conn-1' }],
+                metadata: { providerConfigKey: 'github' }
+            });
+        });
+
+        it('a failure records nothing', async () => {
+            expect(await run(auditPublicConnectionCredentialsRead, fakeReq({ params: { connectionId: 'conn-1' } }), fakeRes(planLocals, 404))).toBe(false);
         });
     });
 });

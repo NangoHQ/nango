@@ -10,6 +10,7 @@ import type {
     DeletePublicConnection,
     Endpoint,
     GetConnection,
+    GetPublicConnection,
     PatchConnection,
     PatchPublicConnection,
     PostConnectionMetadata,
@@ -93,6 +94,21 @@ export const auditConnectionCredentialsRead = maybeAuditable<GetConnection>({
     skipWhen: skipUnlessCredentialsRead(),
     subject: callerSubject,
     atFinish: (req) => ({ ...credentialsReadTargets('connection', req), metadata: providerConfigKeyMeta(query(req, 'provider_config_key')) })
+});
+
+// Data plane: the hot path, so nothing here does a lookup.
+export const auditPublicConnectionCredentialsRead = maybeAuditable<GetPublicConnection>({
+    policy: Audit.auditable({ resource: 'connection', action: 'credentials_read', scope: 'environment', dataPlaneScope: 'read_credentials' }),
+    // The endpoint returns credentials whenever the key allows it, so every denial is a denied credentials read.
+    skipWhen: skipUnlessCredentialsRead(() => true),
+    subject: callerSubject,
+    atFinish: (req) => ({
+        ...credentialsReadTargets('connection', req, nonEmptyString(param(req, 'connectionId'))),
+        metadata: omitUndefined({
+            providerConfigKey: nonEmptyString(query(req, 'provider_config_key')),
+            nangoIsSyncHeader: req.get('Nango-Is-Sync') === 'true' || undefined
+        })
+    })
 });
 
 function providerConfigKeyMeta(value: unknown): Record<string, unknown> | undefined {

@@ -7,6 +7,7 @@ import type {
     BillingPaymentMethodRemovedMetadata,
     BillingPlanChangedMetadata,
     BillingSpendAlertChangedMetadata,
+    ConnectionCredentialsReadMetadata,
     ConnectionMetadata,
     ConnectionUpdatedMetadata,
     EnvironmentCreatedMetadata,
@@ -50,7 +51,7 @@ interface AuditEventTable {
         metadata_updated: ConnectionMetadata;
         refreshed: ConnectionMetadata;
         deleted: ConnectionMetadata;
-        credentials_read: ConnectionMetadata;
+        credentials_read: ConnectionCredentialsReadMetadata;
     };
     sync: {
         enabled: SyncBaseMetadata;
@@ -204,12 +205,18 @@ export interface NoAttribution {
 // decision — a customer endpoint cannot be added without consciously opting in or out. The policy's
 // resource/action/scope are captured as type parameters so the endpoint's declaration and the
 // middleware spec that services it are checked against each other by the compiler.
-export interface AuditPolicy<R extends AuditResource = AuditResource, A extends AuditActionOf<R> = AuditActionOf<R>, S extends AuditScope = AuditScope> {
+// A data-plane endpoint also declares its data-plane scope, which the plan must include for it to record.
+export type AuditPolicy<
+    R extends AuditResource = AuditResource,
+    A extends AuditActionOf<R> = AuditActionOf<R>,
+    S extends AuditScope = AuditScope,
+    D extends AuditTrailDataPlaneScope | undefined = AuditTrailDataPlaneScope | undefined
+> = {
     kind: 'audit';
     resource: R;
     action: A;
     scope: S;
-}
+} & (D extends AuditTrailDataPlaneScope ? { dataPlaneScope: D } : { dataPlaneScope?: undefined });
 export interface NoAudit<Reason extends string = 'non-auditable'> {
     kind: 'no-audit';
     reason: Reason;

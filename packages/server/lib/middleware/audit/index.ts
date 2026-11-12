@@ -39,6 +39,7 @@ export {
     auditConnectionMetadataUpdated,
     auditConnectionRefreshed,
     auditConnectionUpdated,
+    auditPublicConnectionCredentialsRead,
     auditPublicConnectionDeleted,
     auditPublicConnectionUpdated
 } from './connection.middleware.js';

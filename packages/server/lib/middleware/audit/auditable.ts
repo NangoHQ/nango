@@ -18,20 +18,28 @@ import type {
     AuditTargetType,
     AuditVia
 } from '@nangohq/audit';
-import type { AuditActionOf, AuditPolicy, AuditResource, AuditScope, Endpoint } from '@nangohq/types';
+import type { AuditActionOf, AuditPolicy, AuditResource, AuditScope, AuditTrailDataPlaneScope, Endpoint } from '@nangohq/types';
 import type { Request, RequestHandler, Response } from 'express';
 
 export const logger = getLogger('Audit');
 
+function auditablePolicy<R extends AuditResource, A extends AuditActionOf<R>, S extends AuditScope>(policy: {
+    resource: R;
+    action: A;
+    scope: S;
+}): AuditPolicy<R, A, S, undefined>;
+function auditablePolicy<R extends AuditResource, A extends AuditActionOf<R>, S extends AuditScope, D extends AuditTrailDataPlaneScope>(policy: {
+    resource: R;
+    action: A;
+    scope: S;
+    dataPlaneScope: D;
+}): AuditPolicy<R, A, S, D>;
+function auditablePolicy(policy: object): object {
+    return { kind: 'audit', ...policy };
+}
+
 export const Audit = {
-    auditable: <R extends AuditResource, A extends AuditActionOf<R>, S extends AuditScope>(policy: {
-        resource: R;
-        action: A;
-        scope: S;
-    }): AuditPolicy<R, A, S> => ({
-        kind: 'audit',
-        ...policy
-    })
+    auditable: auditablePolicy
 };
 
 type AuditRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params'], TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring']>;
@@ -217,6 +225,11 @@ async function auditedAccountPlan(account: { id: number }, locals: Partial<Reque
     return account.id === locals.account?.id ? locals.plan : await getPlanSafe(db.knex, { accountId: account.id });
 }
 
+async function canRecordSpec(policy: AuditPolicy, account: { id: number; uuid: string }, locals: Partial<RequestLocals>): Promise<boolean> {
+    const plan = await auditedAccountPlan(account, locals);
+    return await canRecordAuditTrail(plan, policy.dataPlaneScope ? { scope: policy.dataPlaneScope, accountUuid: account.uuid } : undefined);
+}
+
 interface AuditSubject {
     account: { id: number; uuid: string };
     environment: { uuid: string; name: string } | undefined;
@@ -283,7 +296,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                                 return;
                             }
                             const subject = conditional.subject(typedReq, locals);
-                            if (!subject || !(await canRecordAuditTrail(await auditedAccountPlan(subject.account, locals)))) {
+                            if (!subject || !(await canRecordSpec(spec.policy, subject.account, locals))) {
                                 return;
                             }
                             await emit(
@@ -304,7 +317,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                 const account = spec.account ? await spec.account(req, locals) : locals.account;
                 // Freeze account + environment before the handler runs, for the same reason as target/metadata below.
                 const environment = spec.environment ? await resolveEnvironment(spec.environment, req, locals, spec.policy.resource) : locals.environment;
-                if (account && (await canRecordAuditTrail(await auditedAccountPlan(account, locals)))) {
+                if (account && (await canRecordSpec(spec.policy, account, locals))) {
                     // Capture the response body only when a spec needs it — the id of a created resource is
                     // known only after the handler responds. Wrap res.json before next() runs the handler.
                     let responseBody: unknown;
