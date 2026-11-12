@@ -32,6 +32,15 @@ describe('copyText', () => {
         expect(document.querySelector('textarea')).toBeNull();
     });
 
+    it('falls back to the copy command when the clipboard API rejects', async () => {
+        vi.stubGlobal('navigator', { clipboard: { writeText: vi.fn().mockRejectedValue(new Error('NotAllowedError')) } });
+        document.execCommand = vi.fn(() => true);
+
+        await copyText('hello');
+
+        expect(document.execCommand).toHaveBeenCalledWith('copy');
+    });
+
     it('fails when the copy command does', async () => {
         vi.stubGlobal('navigator', {});
         document.execCommand = vi.fn(() => false);
