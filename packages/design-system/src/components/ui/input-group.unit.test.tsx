@@ -220,6 +220,27 @@ describe('CopyButton', () => {
         });
         expect(button.getAttribute('aria-label')).toBe('Copy');
     });
+
+    it('restarts the Copied timer on every copy', async () => {
+        vi.useFakeTimers();
+        Object.assign(navigator, { clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
+        render(<CopyButton text="a0583184" />);
+        const button = $<HTMLButtonElement>('button');
+        const click = () =>
+            act(async () => {
+                button.click();
+                await Promise.resolve();
+            });
+        await click();
+        act(() => {
+            vi.advanceTimersByTime(1000);
+        });
+        await click();
+        act(() => {
+            vi.advanceTimersByTime(1000);
+        });
+        expect(button.getAttribute('aria-label')).toBe('Copied');
+    });
 });
 
 describe('SearchInput', () => {
