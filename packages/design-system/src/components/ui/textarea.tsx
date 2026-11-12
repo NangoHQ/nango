@@ -1,10 +1,12 @@
 import * as React from 'react';
 
 import { cn } from '../../lib/cn';
+import { useFieldControl } from './field-context';
 
 export type TextareaProps = React.ComponentProps<'textarea'>;
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ className, ...props }, ref) => {
+    const fieldProps = useFieldControl(props);
     return (
         <textarea
             ref={ref}
@@ -23,6 +25,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ classNa
                 className
             )}
             {...props}
+            {...fieldProps}
         />
     );
 });

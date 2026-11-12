@@ -9,6 +9,7 @@ import { Input } from './input';
 import { InputGroup, InputGroupInput } from './input-group';
 import { SearchInput, setNativeValue } from './search-input';
 import { maskSecret, SecretInput } from './secret-input';
+import { Textarea } from './textarea';
 import { TooltipProvider } from './tooltip';
 
 import type { Root } from 'react-dom/client';
@@ -103,6 +104,44 @@ describe('Field wiring', () => {
         const ids = Array.from(container.querySelectorAll('input')).map((input) => input.id);
         expect(ids[0]).toBeTruthy();
         expect(ids[1]).toBe('');
+    });
+
+    it('points the label at an explicit control id', () => {
+        render(
+            <Field>
+                <FieldLabel>Name</FieldLabel>
+                <Input id="own" />
+            </Field>
+        );
+        expect($<HTMLLabelElement>('label').htmlFor).toBe('own');
+    });
+
+    it('hands the Field id to a control that replaces the first one', () => {
+        const ui = (k: string) => (
+            <Field>
+                <FieldLabel>Name</FieldLabel>
+                <Input key={k} />
+            </Field>
+        );
+        render(ui('a'));
+        render(ui('b'));
+        const input = $<HTMLInputElement>('input');
+        expect(input.id).toBeTruthy();
+        expect($<HTMLLabelElement>('label').htmlFor).toBe(input.id);
+    });
+
+    it('wires a Textarea too', () => {
+        render(
+            <Field data-invalid>
+                <FieldLabel>Notes</FieldLabel>
+                <Textarea />
+                <FieldError>Required.</FieldError>
+            </Field>
+        );
+        const textarea = $<HTMLTextAreaElement>('textarea');
+        expect($<HTMLLabelElement>('label').htmlFor).toBe(textarea.id);
+        expect(textarea.getAttribute('aria-invalid')).toBe('true');
+        expect(textarea.getAttribute('aria-describedby')).toBeTruthy();
     });
 
     it('renders the optional tag and no error when empty', () => {

@@ -47,27 +47,39 @@ function Field({ className, orientation, children, ...props }: FieldProps) {
     const baseId = React.useId();
     const [renderedDescriptionId, registerDescription] = React.useState<string | null>(null);
     const [renderedErrorId, registerError] = React.useState<string | null>(null);
-    const claimedBy = React.useRef<string | null>(null);
+    const [controls, setControls] = React.useState<{ key: string; id: string | undefined }[]>([]);
     const invalid = props['data-invalid'] === true || props['data-invalid'] === 'true';
     const disabled = props['data-disabled'] === true || props['data-disabled'] === 'true';
 
+    const registerControl = React.useCallback((key: string) => {
+        setControls((prev) => [...prev, { key, id: undefined }]);
+        return () => setControls((prev) => prev.filter((control) => control.key !== key));
+    }, []);
+    const setControlId = React.useCallback((key: string, id: string | undefined) => {
+        setControls((prev) =>
+            prev.some((control) => control.key === key && control.id !== id) ? prev.map((control) => (control.key === key ? { key, id } : control)) : prev
+        );
+    }, []);
+    const primary = controls[0];
+    const controlId = `${baseId}-control`;
+
     const value = React.useMemo<FieldContextValue>(
         () => ({
-            controlId: `${baseId}-control`,
+            controlId,
             descriptionId: `${baseId}-description`,
             errorId: `${baseId}-error`,
             invalid,
             disabled,
             registerDescription,
             registerError,
-            claimControl: (key) => {
-                claimedBy.current ??= key;
-                return claimedBy.current === key;
-            },
+            registerControl,
+            setControlId,
+            primaryControlKey: primary?.key ?? null,
+            labelTarget: primary?.id ?? controlId,
             renderedDescriptionId,
             renderedErrorId
         }),
-        [baseId, invalid, disabled, renderedDescriptionId, renderedErrorId]
+        [controlId, invalid, disabled, registerControl, setControlId, primary?.key, primary?.id, renderedDescriptionId, renderedErrorId]
     );
 
     return (
@@ -138,7 +150,7 @@ const FieldLabel = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>
             <LabelPrimitive.Root
                 ref={ref}
                 data-slot="field-label"
-                htmlFor={htmlFor ?? field?.controlId}
+                htmlFor={htmlFor ?? field?.labelTarget}
                 className={cn(
                     // Layout — inline so the label can sit beside an icon, tooltip, or the optional tag
                     'flex min-w-0 flex-wrap items-baseline gap-1.5 wrap-break-word select-none',
