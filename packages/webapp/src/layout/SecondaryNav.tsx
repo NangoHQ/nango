@@ -31,7 +31,7 @@ interface SecondaryNavItemProps {
 export const SecondaryNavItem: React.FC<SecondaryNavItemProps> = ({ isSelected, onClick, isFilter = false, trailing, children }) => (
     <button
         type="button"
-        aria-current={isFilter ? undefined : isSelected || undefined}
+        aria-current={isSelected && !isFilter ? 'page' : undefined}
         aria-pressed={isFilter ? isSelected : undefined}
         onClick={onClick}
         className={cn(
