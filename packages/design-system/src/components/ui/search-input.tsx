@@ -1,6 +1,8 @@
 import { Search, X } from 'lucide-react';
 import * as React from 'react';
 
+import { cn } from '../../lib/cn';
+import { useFieldContext } from './field-context';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupKbd } from './input-group';
 
 import type { InputGroupInputProps, InputGroupProps } from './input-group';
@@ -47,6 +49,8 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
             shortcut = true,
             placeholder = 'Search',
             disabled,
+            readOnly,
+            className,
             'aria-label': ariaLabel,
             ...props
         },
@@ -56,6 +60,11 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
         React.useImperativeHandle(forwardedRef, () => innerRef.current as HTMLInputElement);
         const [uncontrolled, setUncontrolled] = React.useState(() => (defaultValue === undefined ? '' : String(defaultValue)));
         const current = value === undefined ? uncontrolled : String(value);
+        const field = useFieldContext();
+        const clearable = !disabled && !readOnly;
+        // A FieldLabel or aria-labelledby already names the input, and an aria-label would override it.
+        const namedElsewhere = Boolean(field) || props['aria-labelledby'] !== undefined;
+        const placeholderLabel = typeof placeholder === 'string' ? placeholder : 'Search';
 
         React.useEffect(() => {
             if (!shortcut || disabled) {
@@ -88,12 +97,13 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
                     ref={innerRef}
                     type="search"
                     // The native search clear (×) duplicates ours
-                    className="[&::-webkit-search-cancel-button]:appearance-none"
-                    aria-label={ariaLabel ?? (typeof placeholder === 'string' ? placeholder : 'Search')}
+                    className={cn('[&::-webkit-search-cancel-button]:appearance-none', className)}
+                    aria-label={ariaLabel ?? (namedElsewhere ? undefined : placeholderLabel)}
                     placeholder={placeholder}
                     value={value}
                     defaultValue={defaultValue}
                     disabled={disabled}
+                    readOnly={readOnly}
                     onChange={(e) => {
                         if (value === undefined) {
                             setUncontrolled(e.target.value);
@@ -106,10 +116,10 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
                         if (e.defaultPrevented || e.key !== 'Escape') {
                             return;
                         }
-                        if (current) {
+                        if (current && clearable) {
                             e.preventDefault();
                             clear();
-                        } else {
+                        } else if (!current) {
                             e.currentTarget.blur();
                         }
                     }}
@@ -117,7 +127,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
                 />
                 <InputGroupAddon align="inline-end">
                     {current ? (
-                        <InputGroupButton label="Clear search" disabled={disabled} onClick={clear}>
+                        <InputGroupButton label="Clear search" disabled={!clearable} onClick={clear}>
                             <X />
                         </InputGroupButton>
                     ) : (

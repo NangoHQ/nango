@@ -276,6 +276,24 @@ describe('SearchInput', () => {
         expect(document.activeElement).toBe(other);
     });
 
+    it('does not clear a read-only field', () => {
+        render(<SearchInput defaultValue="read" readOnly />);
+        const input = $<HTMLInputElement>('input');
+        key(input, 'Escape');
+        expect(input.value).toBe('read');
+        expect($<HTMLButtonElement>('button[aria-label="Clear search"]').disabled).toBe(true);
+    });
+
+    it('takes its name from a FieldLabel, not the placeholder', () => {
+        render(
+            <Field>
+                <FieldLabel>Scopes</FieldLabel>
+                <SearchInput />
+            </Field>
+        );
+        expect($('input').hasAttribute('aria-label')).toBe(false);
+    });
+
     it('clears on Esc (uncontrolled)', () => {
         const onValueChange = vi.fn();
         render(<SearchInput defaultValue="read" onValueChange={onValueChange} />);
