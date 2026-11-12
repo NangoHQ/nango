@@ -31,7 +31,7 @@ export type GetPublicEnvironments = ApiEndpoint<{
 }>;
 
 export type GetPublicEnvironment = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'environment', 'credentials_read', 'environment'>;
     Method: 'GET';
     Path: '/environments/:environmentUuid';
     Params: { environmentUuid: string };
@@ -199,7 +199,7 @@ export type GetPublicEnvironmentVariables = ApiEndpoint<{
 }>;
 
 export type ListApiKeys = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'api_key', 'credentials_read', 'environment'>;
     Method: 'GET';
     Path: '/api/v1/environment/api-keys';
     Success: {
@@ -277,7 +277,7 @@ export type GetPublicApiKeys = ApiEndpoint<{
 }>;
 
 export type GetPublicApiKey = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'api_key', 'credentials_read', 'environment'>;
     Method: 'GET';
     Path: '/environments/:environmentUuid/api-keys/:keyUuid';
     Params: { environmentUuid: string; keyUuid: string };

@@ -9,15 +9,15 @@ import type { ApiAuditTrailEvent, AuditAction, AuditActionOf, AuditEventKey, Aud
  * step by the checks below, as `PUBLIC_ENVIRONMENT_SCOPES` does in `@nangohq/authz`.
  */
 const actionsByResource = {
-    connection: ['created', 'updated', 'metadata_updated', 'refreshed', 'deleted'],
+    connection: ['created', 'updated', 'metadata_updated', 'refreshed', 'deleted', 'credentials_read'],
     sync: ['enabled', 'disabled', 'paused', 'started', 'triggered', 'cancelled', 'frequency_changed', 'variant_created', 'variant_deleted'],
     function: ['deployed', 'upgraded', 'updated', 'deleted', 'variant_created', 'variant_deleted', 'variant_updated'],
-    integration: ['created', 'updated', 'deleted'],
-    api_key: ['created', 'updated', 'deleted'],
+    integration: ['created', 'updated', 'deleted', 'credentials_read'],
+    api_key: ['created', 'updated', 'deleted', 'credentials_read'],
     member: ['invited', 'invite_accepted', 'invite_declined', 'invite_revoked', 'role_changed', 'removed'],
     team: ['updated'],
     user: ['updated'],
-    environment: ['created', 'updated', 'variables_changed', 'webhook_urls_changed', 'webhook_signing_key_rotated', 'deleted'],
+    environment: ['created', 'updated', 'variables_changed', 'webhook_urls_changed', 'webhook_signing_key_rotated', 'deleted', 'credentials_read'],
     app_auth: ['login', 'logout', 'signup', 'password_changed', 'password_reset'],
     mfa: ['enrolled', 'enabled', 'disabled', 'verified', 'recovery_regenerated'],
     billing: [

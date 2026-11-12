@@ -93,8 +93,12 @@ export function filterProviders<T extends Pick<ApiProviderListItem, 'categories'
     );
 }
 
+export function isMcp(provider: Pick<ApiProviderListItem, 'categories'>): boolean {
+    return provider.categories?.includes('mcp') ?? false;
+}
+
 export function formatFunctionCounts({ actions, syncs }: ApiProviderFunctionCounts): string | null {
-    const parts = [actions > 0 && pluralize(actions, 'action'), syncs > 0 && pluralize(syncs, 'sync')].filter((part) => typeof part === 'string');
+    const parts = [actions > 0 && pluralize(actions, 'tool'), syncs > 0 && pluralize(syncs, 'sync')].filter((part) => typeof part === 'string');
     return parts.length > 0 ? parts.join(' · ') : null;
 }
 
@@ -103,11 +107,7 @@ export function getCardMeta(provider: Pick<ApiProviderListItem, 'functionCounts'
     if (functions) {
         return functions;
     }
-    const categories = getVisibleCategories(provider);
-    if (categories.length > 0) {
-        return categories.map(getCategoryLabel).join(' · ');
-    }
-    return 'No pre-built functions yet';
+    return isMcp(provider) ? 'All MCP tools' : 'No pre-built tools yet';
 }
 
 export function getInitials(displayName: string): string {

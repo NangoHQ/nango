@@ -74,6 +74,7 @@ export const getPublicIntegration = asyncWrapperWithEnvironment<GetPublicIntegra
     }
     if (credentials !== undefined) {
         include.credentials = integrationCredentialsToPublicApi(credentials);
+        req.audit = { ...req.audit, credentialsRead: { targets: [{ id: integration.unique_key, display: integration.display_name ?? undefined }] } };
     }
 
     res.status(200).send({

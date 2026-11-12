@@ -4,14 +4,30 @@ import { productTracking } from '@nangohq/shared';
 
 import { isPlaygroundSession } from './agentPlaygroundTags.js';
 
+import type { CreateAgentSessionParams } from './agentSession.service.js';
 import type { CallToolResult } from '@modelcontextprotocol/server';
-import type { AgentSession, AgentSessionMetaTool, AgentSessionToolSearchHit, AnalyticsEventProperties, HTTP_METHOD } from '@nangohq/types';
+import type {
+    AgentSession,
+    AgentSessionMetaTool,
+    AgentSessionToolSearchHit,
+    AgentSessionToolsetPolicy,
+    AnalyticsEventProperties,
+    HTTP_METHOD,
+    PostAgentSessionsBody
+} from '@nangohq/types';
 
 type ToolCallMeasurement = Pick<AnalyticsEventProperties<'agents:tool_call_complete'>, 'result_size_bytes' | 'result_token_estimate' | 'call_duration_ms'>;
 
 type MeasuredSend = (measurement: ToolCallMeasurement) => void;
 
+type SessionRequest = Pick<CreateAgentSessionParams, 'connections' | 'toolset' | 'pinnedTools' | 'metaTools' | 'expiresInMs'>;
+type TrackedRequest = AnalyticsEventProperties<'agents:session_start'>['request'];
+type TrackedPolicy = NonNullable<Exclude<TrackedRequest['toolset'], '*'>>[string];
+
 const BYTES_PER_TOKEN = 4;
+
+/** Integration ids and tool names together, so the request stays small whatever the caller sent. */
+const MAX_TRACKED_REQUEST_NAMES = 250;
 
 const pendingToolCallEvents = new AsyncLocalStorage<MeasuredSend[]>();
 
@@ -60,16 +76,34 @@ interface ProxyRequestParams extends Outcome {
  * The account, the environment as is_production and the surface are stamped by the tracking context
  * middleware, so nothing here passes them. No tool input and no provider response is sent, on purpose.
  */
-export function trackAgentSessionCreated(session: AgentSession): void {
+export function trackAgentSessionCreated(session: AgentSession, requested: SessionRequest, body: PostAgentSessionsBody): void {
+    const { request, isTruncated } = sanitizeRequest(body);
+    const policies = typeof requested.toolset === 'object' ? Object.values(requested.toolset) : [];
+    const compiled = Object.values(session.compiledToolset);
+
     productTracking.track({
         name: 'agents:session_start',
         eventProperties: {
             ...sessionProperties(session),
-            integration_count: Object.keys(session.compiledToolset).length,
+            integration_count: compiled.length,
             is_tool_search_enabled: session.metaTools.nangoToolSearch,
             is_execute_enabled: session.metaTools.nangoExecute,
             is_proxy_enabled: session.metaTools.nangoProxy,
-            is_create_connection_enabled: session.metaTools.nangoCreateConnection.enabled
+            is_create_connection_enabled: session.metaTools.nangoCreateConnection.enabled,
+            pinned_tool_count: sum(compiled.map((integration) => integration.pinned.length)),
+            searchable_tool_count: sum(compiled.map((integration) => integration.searchable.length)),
+            toolset_mode: toolsetMode(requested.toolset),
+            allowlisted_integration_count: policies.length,
+            tool_allowlist_integration_count: policies.filter((policy) => policy.allow !== '*').length,
+            tool_denylist_integration_count: policies.filter((policy) => policy.deny.length > 0).length,
+            allowed_tool_count: sum(policies.map((policy) => (policy.allow === '*' ? 0 : policy.allow.length))),
+            denied_tool_count: sum(policies.map((policy) => policy.deny.length)),
+            connection_selector_count: requested.connections.any.length,
+            pinned_connection_count: requested.connections.pinned.length,
+            create_connection_tag_count: Object.keys(requested.metaTools?.nangoCreateConnection?.tags ?? {}).length,
+            ...(requested.expiresInMs === undefined ? {} : { expires_in_ms: requested.expiresInMs }),
+            request,
+            is_request_truncated: isTruncated
         }
     });
 }
@@ -181,6 +215,77 @@ export function trackAgentSessionToolSearch({ session, query, goal, matches, rel
             }
         })
     );
+}
+
+function sanitizeRequest(body: PostAgentSessionsBody): { request: TrackedRequest; isTruncated: boolean } {
+    let remaining = MAX_TRACKED_REQUEST_NAMES;
+    let isTruncated = false;
+    const take = <T>(items: T[]): T[] => {
+        const kept = items.slice(0, remaining);
+        isTruncated ||= kept.length < items.length;
+        remaining -= kept.length;
+        return kept;
+    };
+    const takeTools = (list: { tools: string[] }) => ({ tools: take(list.tools) });
+
+    const { connections } = body.tenant;
+    const { toolset, pinned_tools: pinnedTools, meta_tools: metaTools, expires_in: expiresIn } = body;
+    const createConnection = metaTools?.nango_create_connection;
+
+    const request: TrackedRequest = {
+        tenant: {
+            connections: {
+                ...(connections.any && { any: connections.any.map((selector) => ({ tags: Object.keys(selector.tags) })) }),
+                ...(connections.pinned && { pinned: take(connections.pinned).map((pin) => ({ integration_id: pin.integration_id })) })
+            }
+        },
+        ...(toolset !== undefined && {
+            toolset:
+                toolset === '*'
+                    ? toolset
+                    : Object.fromEntries(
+                          take(Object.entries(toolset)).map(([integrationId, policy]): [string, TrackedPolicy] => [
+                              integrationId,
+                              policy === '*'
+                                  ? policy
+                                  : {
+                                        ...(policy.allow !== undefined && { allow: policy.allow === '*' ? policy.allow : takeTools(policy.allow) }),
+                                        ...(policy.deny && { deny: takeTools(policy.deny) })
+                                    }
+                          ])
+                      )
+        }),
+        ...(pinnedTools && {
+            pinned_tools: Object.fromEntries(take(Object.entries(pinnedTools)).map(([integrationId, tools]) => [integrationId, take(tools)]))
+        }),
+        ...(metaTools && {
+            meta_tools: {
+                ...(metaTools.nango_tool_search !== undefined && { nango_tool_search: metaTools.nango_tool_search }),
+                ...(metaTools.nango_execute !== undefined && { nango_execute: metaTools.nango_execute }),
+                ...(metaTools.nango_proxy !== undefined && { nango_proxy: metaTools.nango_proxy }),
+                ...(createConnection !== undefined && {
+                    nango_create_connection:
+                        typeof createConnection === 'boolean'
+                            ? createConnection
+                            : { enabled: createConnection.enabled, ...(createConnection.tags && { tags: Object.keys(createConnection.tags) }) }
+                })
+            }
+        }),
+        ...(expiresIn !== undefined && { expires_in: expiresIn })
+    };
+
+    return { request, isTruncated };
+}
+
+function toolsetMode(toolset: AgentSessionToolsetPolicy | undefined): AnalyticsEventProperties<'agents:session_start'>['toolset_mode'] {
+    if (toolset === undefined) {
+        return 'connected';
+    }
+    return toolset === '*' ? 'all' : 'allowlist';
+}
+
+function sum(counts: number[]): number {
+    return counts.reduce((total, count) => total + count, 0);
 }
 
 function sessionProperties(session: AgentSession): { agent_session_id: string; is_playground: boolean } {

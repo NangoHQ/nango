@@ -100,8 +100,25 @@ function FunctionStatus({ fn, integration }: { fn: ListedNangoFunction; integrat
     );
 }
 
-const FUNCTION_ROW_CLASS = 'group/function-row h-13 cursor-pointer hover:bg-surface-panel-inset';
+const FUNCTION_ROW_CLASS = 'group/function-row h-13 cursor-pointer hover:bg-surface-panel-inset focus-inset';
 const FUNCTION_ROW_SELECTED_CLASS = 'border-l-2 border-l-interactive-selected-fill bg-state-selected';
+
+function functionRowProps(selected: boolean, onSelect: () => void): React.ComponentProps<'tr'> {
+    return {
+        tabIndex: 0,
+        'aria-selected': selected,
+        className: cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS),
+        onClick: onSelect,
+        onKeyDown: (event) => {
+            // Enter on the row's own copy or source button must keep doing that button's job.
+            if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) {
+                return;
+            }
+            event.preventDefault();
+            onSelect();
+        }
+    };
+}
 
 function templateRowKey(template: NangoFunctionTemplate): string {
     return `${template.type}:${template.name}:`;
@@ -155,7 +172,7 @@ function FunctionTableRow({
     onSelect: () => void;
 }) {
     return (
-        <TableRow aria-selected={selected} className={cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS)} onClick={onSelect}>
+        <TableRow {...functionRowProps(selected, onSelect)}>
             <FunctionNameCell name={fn.name} description={fn.description} />
             <TableCell className="w-35 px-3">
                 <FunctionSourceLabel source={fn.source} />
@@ -183,7 +200,7 @@ function FunctionTemplateRow({
     onSelect: () => void;
 }) {
     return (
-        <TableRow aria-selected={selected} className={cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS)} onClick={onSelect}>
+        <TableRow {...functionRowProps(selected, onSelect)}>
             <FunctionNameCell name={template.name} description={template.description} />
             <TableCell className="w-35 px-3">
                 <FunctionSourceLabel source="template" />
@@ -200,19 +217,20 @@ function FunctionTemplateRow({
 function FunctionListWithDetails({
     selectedFunction,
     integration,
-    onDeleted,
+    onClose,
     children
 }: {
     selectedFunction: ListedNangoFunction | NangoFunctionTemplate | null;
     integration: ApiIntegration;
-    onDeleted: () => void;
+    onClose: () => void;
     children: React.ReactNode;
 }) {
     return (
         <SlidingPanelLayout
             selected={selectedFunction}
             getKey={(fn) => ('enabled' in fn ? functionRowKey(fn) : templateRowKey(fn))}
-            renderPanel={(fn) => <FunctionDetailsPanel fn={fn} integration={integration} onDeleted={onDeleted} />}
+            renderPanel={(fn) => <FunctionDetailsPanel fn={fn} integration={integration} onDeleted={onClose} />}
+            onClose={onClose}
         >
             {children}
         </SlidingPanelLayout>
@@ -527,7 +545,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
                             integration={integration}
-                            onDeleted={() => void setSelectedFunctionName(null)}
+                            onClose={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
                                 <TableHeader>
@@ -551,7 +569,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
                             integration={integration}
-                            onDeleted={() => void setSelectedFunctionName(null)}
+                            onClose={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
                                 <TableHeader>
@@ -575,7 +593,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
                             integration={integration}
-                            onDeleted={() => void setSelectedFunctionName(null)}
+                            onClose={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
                                 <TableHeader>

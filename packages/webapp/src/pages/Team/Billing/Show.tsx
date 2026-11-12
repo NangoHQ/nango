@@ -1,4 +1,4 @@
-import { ArrowUpRight, ExternalLink } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { useRef } from 'react';
 import { Helmet } from 'react-helmet';
 
@@ -16,7 +16,6 @@ import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { billedUsageMetrics, getAggregateUsageState } from '@/utils/usage';
 import DashboardLayout from '../../../layout/DashboardLayout';
-import { BillingHeaderAction } from './components/BillingHeaderAction';
 import { Payment } from './components/Payment';
 import { PaymentMethodDialog } from './components/PaymentMethodDialog';
 import { Plans } from './components/Plans';
@@ -70,7 +69,7 @@ export const TeamBilling: React.FC = () => {
         <OverdueInvoiceAlert size="wide" canManageBilling={canManageBilling}>
             {overdue.data.portalUrl && (
                 <AlertButtonLink to={overdue.data.portalUrl} target="_blank" rel="noopener noreferrer" onClick={() => track('billing:invoice_link_click', {})}>
-                    View invoices <ExternalLink />
+                    View invoices <ArrowUpRight />
                 </AlertButtonLink>
             )}
             <PaymentMethodDialog replace>
@@ -96,7 +95,7 @@ export const TeamBilling: React.FC = () => {
     // caps the content: the usage charts have a fixed height, so unbounded width stretches them to an
     // unreadable aspect ratio on wide screens.
     return (
-        <DashboardLayout ref={scrollRef} fullWidth centered actions={<BillingHeaderAction />}>
+        <DashboardLayout ref={scrollRef} fullWidth centered>
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>
@@ -116,7 +115,7 @@ export const TeamBilling: React.FC = () => {
                     </>
                 )}
                 <div id="usage">
-                    <Usage />
+                    <Usage showInvoicesLink={!showSummary} />
                 </div>
                 {showSpendAlerts && (
                     <>
@@ -133,7 +132,7 @@ export const TeamBilling: React.FC = () => {
                         <Button asChild variant="link-accent">
                             <a href="https://nango.dev/pricing" target="_blank" rel="noopener noreferrer">
                                 View full pricing detail
-                                <ExternalLink />
+                                <ArrowUpRight />
                             </a>
                         </Button>
                     </div>

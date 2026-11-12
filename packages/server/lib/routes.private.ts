@@ -143,8 +143,10 @@ import { agentPlaygroundRateLimit } from './middleware/agentPlaygroundRateLimit.
 import {
     auditAccountApiKeyCreated,
     auditAccountApiKeyDeleted,
+    auditAccountApiKeysCredentialsRead,
     auditApiKeyCreated,
     auditApiKeyDeleted,
+    auditApiKeysCredentialsRead,
     auditApiKeyUpdated,
     auditAppAuthPasswordChanged,
     auditAuthLogin,
@@ -160,6 +162,7 @@ import {
     auditBillingSpendAlertChanged,
     auditBillingSpendAlertRemoved,
     auditBillingTrialExtended,
+    auditConnectionCredentialsRead,
     auditConnectionDeleted,
     auditConnectionMetadataUpdated,
     auditConnectionRefreshed,
@@ -172,6 +175,7 @@ import {
     auditFunctionDeleted,
     auditFunctionUpgraded,
     auditIntegrationCreated,
+    auditIntegrationCredentialsRead,
     auditIntegrationDeleted,
     auditIntegrationUpdated,
     auditMemberInviteAccepted,
@@ -321,11 +325,11 @@ web.route('/environments/webhook').patch(webAuth, auditEnvironmentWebhooksUpdate
 web.route('/environments/variables').post(webAuth, auditEnvironmentVariablesChanged, can('environment:variables:update'), postEnvironmentVariables);
 
 // API Key management
-web.route('/account/api-keys').get(webAuth, can('account:api_keys:list'), listAccountApiKeys);
+web.route('/account/api-keys').get(webAuth, auditAccountApiKeysCredentialsRead, can('account:api_keys:list'), listAccountApiKeys);
 web.route('/account/api-keys').post(webAuth, auditAccountApiKeyCreated, can('account:api_keys:create'), createAccountApiKey);
 web.route('/account/api-keys/:keyId').delete(webAuth, auditAccountApiKeyDeleted, can('account:api_keys:delete'), deleteAccountApiKey);
 
-web.route('/environment/api-keys').get(webAuth, can('environment:api_keys:list'), listApiKeys);
+web.route('/environment/api-keys').get(webAuth, auditApiKeysCredentialsRead, can('environment:api_keys:list'), listApiKeys);
 web.route('/environment/api-keys').post(webAuth, auditApiKeyCreated, can('environment:api_keys:create'), createApiKey);
 web.route('/environment/api-keys/:keyId').patch(webAuth, auditApiKeyUpdated, can('environment:api_keys:update'), patchApiKey);
 web.route('/environment/api-keys/:keyId').delete(webAuth, auditApiKeyDeleted, can('environment:api_keys:delete'), deleteApiKey);
@@ -350,7 +354,7 @@ web.route('/connect-ui-settings').put(webAuth, can('account:connect_ui:update'),
 // Integrations
 web.route('/integrations').get(webAuth, can('environment:integrations:list'), getIntegrations);
 web.route('/integrations').post(webAuth, auditIntegrationCreated, can('environment:integrations:update'), postIntegration);
-web.route('/integrations/:providerConfigKey').get(webAuth, can('environment:integrations:read'), getIntegration);
+web.route('/integrations/:providerConfigKey').get(webAuth, auditIntegrationCredentialsRead, can('environment:integrations:read'), getIntegration);
 web.route('/integrations/:providerConfigKey').patch(webAuth, auditIntegrationUpdated, can('environment:integrations:update'), patchIntegration);
 web.route('/integrations/:providerConfigKey').delete(webAuth, auditIntegrationDeleted, can('environment:integrations:delete'), deleteIntegration);
 web.route('/integrations/:providerConfigKey/flows').get(webAuth, can('environment:functions:list'), getIntegrationFlows);
@@ -370,7 +374,7 @@ web.route('/providers/:providerConfigKey/templates/:name/code').get(webAuth, cat
 // Connections
 web.route('/connections').get(webAuth, can('environment:connections:list'), getConnections);
 web.route('/connections/count').get(webAuth, can('environment:connections:list'), getConnectionsCount);
-web.route('/connections/:connectionId').get(webAuth, can('environment:connections:read'), getConnectionWeb);
+web.route('/connections/:connectionId').get(webAuth, auditConnectionCredentialsRead, can('environment:connections:read'), getConnectionWeb);
 web.route('/connections/:connectionId/records/models').get(webAuth, can('environment:connections:read'), getConnectionRecordModels);
 web.route('/connections/:connectionId/records').get(webAuth, can('environment:connections:read'), getConnectionRecords);
 web.route('/connections/:connectionId/refresh').post(webAuth, auditConnectionRefreshed, can('environment:connections:update'), getConnectionRefresh);
