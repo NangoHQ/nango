@@ -2,7 +2,7 @@ import Fuse from 'fuse.js';
 import debounce from 'lodash/debounce';
 import { Check, ChevronDown } from 'lucide-react';
 import { parseAsBoolean, parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs';
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
@@ -13,17 +13,19 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Switch } from '@/components/ui/Switch';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { useProviders } from '@/hooks/useProviders';
 import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { trackCatalogFilter } from './analytics';
-import { countIntegrationsByProvider, filterProviders, getCategoryLabel, listCategories, PAGE_SIZE, sortProviders } from './catalog.utils';
+import { countIntegrationsByProvider, filterProviders, getCategoryLabel, listCategories, sortProviders } from './catalog.utils';
 import { CatalogCard } from './components/CatalogCard';
 import { CategoryRail } from './components/CategoryRail';
 import { NoMatchesState } from './components/NoMatchesState';
 import { SearchField } from './components/SearchField';
+import { useCatalogPlace } from './useCatalogPlace';
 
 import type { CatalogFilter } from './analytics';
 import type { CatalogSort } from './catalog.utils';
@@ -87,10 +89,18 @@ export const CatalogShow: React.FC = () => {
     }, [filtered, debouncedSearch, sort]);
     const deferredResults = useDeferredValue(results);
 
-    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-    useEffect(() => {
-        setVisibleCount(PAGE_SIZE);
-    }, [category, instantOnly, sort, debouncedSearch]);
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+    const { visibleCount, loadMore, isLoadingMore } = useCatalogPlace({
+        scrollRef,
+        filterKey: JSON.stringify([category, instantOnly, sort, debouncedSearch]),
+        isReady: !isPending
+    });
+    const sentinelRef = useInfiniteScroll({
+        hasNextPage: visibleCount < deferredResults.length,
+        isFetchingNextPage: isLoadingMore,
+        fetchNextPage: loadMore,
+        threshold: 600
+    });
 
     const resultCountRef = useRef(0);
     useEffect(() => {
@@ -111,7 +121,6 @@ export const CatalogShow: React.FC = () => {
     }
 
     const visible = deferredResults.slice(0, visibleCount);
-    const remaining = deferredResults.length - visible.length;
 
     const query = debouncedSearch.trim();
     const activeFilters: ActiveFilter[] = [
@@ -126,7 +135,7 @@ export const CatalogShow: React.FC = () => {
     };
 
     return (
-        <DashboardLayout fullWidth className="p-0">
+        <DashboardLayout ref={scrollRef} fullWidth className="p-0">
             <Helmet>
                 <title>Catalog - Nango</title>
             </Helmet>
@@ -226,14 +235,7 @@ export const CatalogShow: React.FC = () => {
                             </div>
                         )}
 
-                        {remaining > 0 && (
-                            <div className="flex justify-center pt-3">
-                                <Button variant="outline" size="md" onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}>
-                                    Show more
-                                    <span className="type-code-regular-xs text-text-muted">{remaining.toLocaleString('en-US')} left</span>
-                                </Button>
-                            </div>
-                        )}
+                        <div ref={sentinelRef} aria-hidden />
                     </div>
                 </div>
             </div>
