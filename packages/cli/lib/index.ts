@@ -105,17 +105,17 @@ class NangoCommand extends Command {
                 process.env['NANGO_CLI_DEBUG'] = 'true';
             }
 
-            const commandName = actionCommand.name();
-            if (isTelemetryCommand(commandName)) {
-                trackCliCommand(commandName);
-            }
-
             if (opts.debug && fs.existsSync('.env')) {
                 printDebug('.env file detected and loaded', opts.debug);
             }
 
             if (!isCI) {
                 await upgradeAction(opts.debug);
+            }
+
+            const commandName = actionCommand.name();
+            if (isTelemetryCommand(commandName)) {
+                trackCliCommand(commandName);
             }
         });
 

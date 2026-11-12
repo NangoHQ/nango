@@ -17,6 +17,7 @@ import { serializeError } from 'serialize-error';
 import { cloudHost, localhostUrl } from './constants.js';
 import { state } from './state.js';
 import { getCliHttpsAgent } from './tls.js';
+import { restartCliAfterUpgrade } from './utils/restart.js';
 import { Err, Ok } from './utils/result.js';
 import { NANGO_VERSION } from './version.js';
 
@@ -136,6 +137,7 @@ export async function upgradeAction(debug = false) {
         return;
     }
 
+    let upgradedVersion: string;
     try {
         const resolved = npa('nango');
         const version = NANGO_VERSION;
@@ -205,9 +207,21 @@ export async function upgradeAction(debug = false) {
 
             child.on('error', reject);
         });
+        upgradedVersion = latestVersion;
     } catch (err: any) {
         console.error(`An error occurred: ${err.message}`);
+        return;
     }
+
+    // Never resume the command with modules loaded before the upgrade.
+    let exitCode: number;
+    try {
+        exitCode = await restartCliAfterUpgrade({ locallyInstalled, version: upgradedVersion });
+    } catch (err) {
+        console.error(`Could not restart the upgraded Nango CLI: ${err instanceof Error ? err.message : String(err)}. Please rerun your command.`);
+        exitCode = 1;
+    }
+    process.exit(exitCode);
 }
 
 export async function getConnection(
