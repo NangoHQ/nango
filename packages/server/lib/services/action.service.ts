@@ -7,7 +7,7 @@ import { getOrchestrator } from '../utils/utils.js';
 
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { NangoError } from '@nangohq/shared';
-import type { AsyncActionResponse, DBEnvironment, DBTeam, OperationActor, Result } from '@nangohq/types';
+import type { AsyncActionResponse, DBTeam, EnvironmentWithoutSecrets, OperationActor, Result } from '@nangohq/types';
 import type { Span } from 'dd-trace';
 
 export type ActionExecutionSuccess = AsyncActionResponse | { data: unknown };
@@ -53,7 +53,7 @@ export async function executeAction({
     logMeta
 }: {
     account: DBTeam;
-    environment: DBEnvironment;
+    environment: EnvironmentWithoutSecrets;
     connectionId: string;
     providerConfigKey: string;
     actionName: string;
