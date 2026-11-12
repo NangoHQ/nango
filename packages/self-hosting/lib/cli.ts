@@ -141,9 +141,8 @@ installation list    [--customer <name>] [--all]`,
                 return deleteInstallation(db, { id: row.id });
             },
             list: async (db) =>
-                searchInstallations(db, {
-                    includeDeleted: values.all,
-                    ...(values.customer && { customerId: (await requireCustomer(db, { name: values.customer })).unwrap().id })
+                searchInstallations(db, values.customer ? { customerId: (await requireCustomer(db, { name: values.customer })).unwrap().id } : undefined, {
+                    includeDeleted: values.all
                 })
         }
     },
