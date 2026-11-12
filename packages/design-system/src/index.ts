@@ -21,9 +21,15 @@ export {
     type AlertButtonProps,
     alertButtonVariants,
     AlertDescription,
+    type AlertAction,
     type AlertProps,
+    type AlertSize,
+    type AlertStatus,
     AlertTitle,
-    alertVariants
+    alertVariants,
+    type LegacyAlertProps,
+    type StatusAlertProps,
+    statusAlertVariants
 } from './components/ui/alert';
 export { Badge, type BadgeProps, badgeVariants } from './components/ui/badge';
 export {
@@ -50,6 +56,14 @@ export {
     DialogTitle,
     DialogTrigger
 } from './components/ui/dialog';
+export {
+    InlineCode,
+    type InlineCodeProps,
+    type InlineCodeSize,
+    type InlineCodeTone,
+    InlineCodeToneProvider,
+    inlineCodeVariants
+} from './components/ui/inline-code';
 export { Input, type InputProps, inputVariants } from './components/ui/input';
 export { Textarea, type TextareaProps } from './components/ui/textarea';
 export {

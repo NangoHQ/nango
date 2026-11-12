@@ -7,7 +7,7 @@ import type { AlertProps } from './alert';
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
-    title: 'Design System/Components/Alert',
+    title: 'Design System/Components/Alert (legacy)',
     parameters: { layout: 'padded' }
 };
 

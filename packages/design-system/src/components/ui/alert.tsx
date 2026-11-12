@@ -1,9 +1,11 @@
 import { Slot } from '@radix-ui/react-slot';
 import { cva } from 'class-variance-authority';
-import { X } from 'lucide-react';
-import { forwardRef } from 'react';
+import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from 'lucide-react';
+import { forwardRef, useState } from 'react';
 
 import { cn } from '../../lib/cn';
+import { Button } from './button';
+import { InlineCodeToneProvider } from './inline-code';
 
 import type { VariantProps } from 'class-variance-authority';
 
@@ -131,18 +133,20 @@ type AlertVariantProps = VariantProps<typeof alertVariants>;
 
 type AlertStyleProps = (Omit<AlertVariantProps, 'cta'> & { cta?: never }) | { variant: 'neutral'; size?: 'wide'; cta: 'button'; icon?: never };
 
-export type AlertProps = React.ComponentProps<'div'> &
+/** @deprecated Compose-by-children API. Pass `status` to use the prop-driven `Alert`. */
+export type LegacyAlertProps = React.ComponentProps<'div'> &
     AlertStyleProps & {
+        status?: never;
         /** Renders the dismiss affordance. Omit for an alert that can't be dismissed. */
         onDismiss?: () => void;
         /** Accessible label for the dismiss button. */
         dismissLabel?: string;
     };
 
-export const Alert = forwardRef<HTMLDivElement, AlertProps>(
+const LegacyAlert = forwardRef<HTMLDivElement, LegacyAlertProps>(
     ({ className, variant, size, cta, icon, onDismiss, dismissLabel = 'Dismiss', children, ...props }, ref) => (
         <div ref={ref} data-slot="alert" role="alert" className={cn(alertVariants({ variant, size, cta, icon }), className)} {...props}>
-            {children}
+            <InlineCodeToneProvider value={variant ?? 'success'}>{children}</InlineCodeToneProvider>
             {onDismiss && (
                 <button
                     type="button"
@@ -157,7 +161,7 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
         </div>
     )
 );
-Alert.displayName = 'Alert';
+LegacyAlert.displayName = 'LegacyAlert';
 
 // Figma text/regular/sm (13px/400) in the status colour, truncated to one line.
 export const AlertTitle = forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => (
@@ -241,3 +245,188 @@ export const AlertButton = forwardRef<HTMLButtonElement, AlertButtonProps>(({ cl
     );
 });
 AlertButton.displayName = 'AlertButton';
+
+export type AlertStatus = 'info' | 'success' | 'warning' | 'danger' | 'neutral';
+export type AlertSize = 'wide' | 'compact' | 'toast';
+
+export interface AlertAction {
+    label: React.ReactNode;
+    onClick?: React.MouseEventHandler<HTMLButtonElement>;
+    href?: string;
+    target?: React.HTMLAttributeAnchorTarget;
+    icon?: React.ReactNode;
+    disabled?: boolean;
+    loading?: boolean;
+}
+
+export type StatusAlertProps = Omit<React.ComponentProps<'div'>, 'title'> & {
+    status: AlertStatus;
+    size?: AlertSize;
+    title?: React.ReactNode;
+    action?: AlertAction;
+    secondaryAction?: AlertAction;
+    /** Replaces the status icon; `false` renders none. */
+    icon?: React.ReactNode | false;
+    dismissible?: boolean;
+    onDismiss?: () => void;
+    dismissLabel?: string;
+    variant?: never;
+    cta?: never;
+};
+
+export type AlertProps = StatusAlertProps | LegacyAlertProps;
+
+export const statusAlertVariants = cva('relative flex w-full items-start gap-2.5 rounded-ds-md border-ds-hairline px-3 py-2.5', {
+    variants: {
+        status: {
+            info: 'bg-status-info-bg border-status-info-border',
+            success: 'bg-status-success-bg border-status-success-border',
+            warning: 'bg-status-warning-bg border-status-warning-border',
+            danger: 'bg-status-danger-bg border-status-danger-border',
+            neutral: 'bg-status-neutral-bg border-border-default'
+        }
+    }
+});
+
+const STATUS_ICON: Record<AlertStatus, React.ReactNode> = {
+    info: <Info />,
+    success: <CircleCheck />,
+    warning: <TriangleAlert />,
+    danger: <CircleAlert />,
+    neutral: <Info />
+};
+
+const STATUS_ICON_COLOR: Record<AlertStatus, string> = {
+    info: 'text-status-info-icon',
+    success: 'text-status-success-icon',
+    warning: 'text-status-warning-icon',
+    danger: 'text-status-danger-icon',
+    neutral: 'text-status-neutral-icon'
+};
+
+const STATUS_LINK_VARIANT = {
+    info: 'link-accent',
+    success: 'link-success',
+    warning: 'link-warning',
+    danger: 'link-danger',
+    neutral: 'link-neutral'
+} as const;
+
+const AlertActionButton = ({ action, status }: { action: AlertAction; status: AlertStatus }) => {
+    const variant = STATUS_LINK_VARIANT[status];
+    const content = (
+        <>
+            {action.label}
+            {action.icon}
+        </>
+    );
+
+    if (action.href) {
+        return (
+            <Button asChild variant={variant} size="sm" disabled={action.disabled}>
+                <a href={action.href} target={action.target} rel={action.target === '_blank' ? 'noreferrer' : undefined}>
+                    {content}
+                </a>
+            </Button>
+        );
+    }
+    return (
+        <Button variant={variant} size="sm" onClick={action.onClick} disabled={action.disabled} loading={action.loading}>
+            {content}
+        </Button>
+    );
+};
+
+const StatusAlert = forwardRef<HTMLDivElement, StatusAlertProps>(
+    (
+        {
+            className,
+            status,
+            size = 'wide',
+            title,
+            action,
+            secondaryAction,
+            icon,
+            dismissible = false,
+            onDismiss,
+            dismissLabel = 'Dismiss',
+            children,
+            role = 'alert',
+            ...props
+        },
+        ref
+    ) => {
+        const [dismissed, setDismissed] = useState(false);
+        if (dismissed) {
+            return null;
+        }
+
+        const hasActions = Boolean(action || secondaryAction);
+        // Each wrapper is one 13px line box tall, so the icon, actions and close sit on the first line of text.
+        const actions = hasActions && (
+            <div data-slot="alert-actions" className={cn('flex min-h-5 shrink-0 items-center gap-3', size !== 'wide' && 'pt-1')}>
+                {action && <AlertActionButton action={action} status={status} />}
+                {secondaryAction && <AlertActionButton action={secondaryAction} status={status} />}
+            </div>
+        );
+        const iconNode = icon === undefined ? STATUS_ICON[status] : icon;
+
+        return (
+            <div
+                ref={ref}
+                data-slot="alert"
+                data-status={status}
+                data-size={size}
+                role={role}
+                className={cn(statusAlertVariants({ status }), className)}
+                {...props}
+            >
+                {iconNode !== false && iconNode !== null && (
+                    <span data-slot="alert-icon" className={cn('mt-0.5 flex shrink-0 [&>svg]:size-4', STATUS_ICON_COLOR[status])}>
+                        {iconNode}
+                    </span>
+                )}
+                <InlineCodeToneProvider value={status}>
+                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                        {title && (
+                            <div data-slot="alert-title" className="type-text-medium-sm text-text-strong">
+                                {title}
+                            </div>
+                        )}
+                        {children && (
+                            <div data-slot="alert-description" className="type-text-regular-sm text-text-default wrap-anywhere">
+                                {children}
+                            </div>
+                        )}
+                        {size !== 'wide' && actions}
+                    </div>
+                </InlineCodeToneProvider>
+                {size === 'wide' && actions}
+                {dismissible && (
+                    <button
+                        type="button"
+                        data-slot="alert-close"
+                        aria-label={dismissLabel}
+                        onClick={() => {
+                            setDismissed(true);
+                            onDismiss?.();
+                        }}
+                        className={cn(
+                            'mt-0.5 shrink-0 cursor-pointer rounded-ds-xs outline-none focus-visible:shadow-focus-outline-default',
+                            STATUS_ICON_COLOR[status]
+                        )}
+                    >
+                        <X className="size-4" />
+                    </button>
+                )}
+            </div>
+        );
+    }
+);
+StatusAlert.displayName = 'StatusAlert';
+
+// Without `status`, falls back to the deprecated compose-by-children API until its call sites migrate.
+export const Alert = forwardRef<HTMLDivElement, AlertProps>((props, ref) =>
+    props.status ? <StatusAlert ref={ref} {...props} /> : <LegacyAlert ref={ref} {...(props as LegacyAlertProps)} />
+);
+Alert.displayName = 'Alert';
