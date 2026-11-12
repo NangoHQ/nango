@@ -3,7 +3,7 @@ import { ArrowUpRight, Check, ChevronsUpDown, Plus, TriangleAlert } from 'lucide
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Alert, AlertActions, AlertDescription, Badge, Button } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertDescription, Button, EnvPill } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
@@ -71,7 +71,7 @@ export const EnvironmentDropdown: React.FC = () => {
                             <LogoInverted className="size-5 text-text-strong" />
                         </span>
                         <span className="type-text-medium-sm truncate text-text-default">{env}</span>
-                        {isProduction && <Badge variant="warning">Prod</Badge>}
+                        {isProduction && <EnvPill env="Prod" production />}
                     </span>
                     <ChevronsUpDown className="size-4 shrink-0 text-icon-secondary group-hover/env:text-icon-default group-data-[state=open]/env:text-icon-default" />
                 </DropdownMenuTrigger>
@@ -97,7 +97,7 @@ export const EnvironmentDropdown: React.FC = () => {
                                     >
                                         <span className="flex min-w-0 items-center gap-1.5">
                                             <span className="type-code-regular-sm truncate">{environment.name}</span>
-                                            {environment.is_production && <Badge variant="warning">Prod</Badge>}
+                                            {environment.is_production && <EnvPill env="Prod" production />}
                                         </span>
                                         <DropdownMenuPrimitive.ItemIndicator className="ml-auto flex">
                                             <Check className="size-3.5 text-icon-default" />
