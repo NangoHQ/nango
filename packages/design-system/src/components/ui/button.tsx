@@ -282,7 +282,7 @@ Button.displayName = 'Button';
 type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>['variant']>;
 type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>['size']>;
 
-export const ICON_BUTTON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const satisfies readonly ButtonVariant[];
+export const ICON_BUTTON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger-ghost', 'danger'] as const satisfies readonly ButtonVariant[];
 export const ICON_BUTTON_SIZES = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ButtonSize[];
 
 export type IconButtonVariant = (typeof ICON_BUTTON_VARIANTS)[number];
