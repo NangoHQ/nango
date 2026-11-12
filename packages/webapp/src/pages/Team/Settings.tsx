@@ -21,7 +21,7 @@ export const TeamSettingsPage: React.FC = () => {
 
     if (isLoading) {
         return (
-            <DashboardLayout fullWidth className="flex flex-col gap-8 max-w-7xl mx-0">
+            <DashboardLayout showEnv={false} fullWidth className="flex flex-col gap-8 max-w-7xl mx-0">
                 <Helmet>
                     <title>Team Settings - Nango</title>
                 </Helmet>
@@ -40,7 +40,7 @@ export const TeamSettingsPage: React.FC = () => {
     const isNangoAdmin = data?.data.isAdminTeam;
 
     return (
-        <DashboardLayout fullWidth className="flex flex-col gap-8 max-w-7xl mx-0">
+        <DashboardLayout showEnv={false} fullWidth className="flex flex-col gap-8 max-w-7xl mx-0">
             <Helmet>
                 <title>Team Settings - Nango</title>
             </Helmet>

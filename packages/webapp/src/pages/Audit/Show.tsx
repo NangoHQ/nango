@@ -120,7 +120,7 @@ export const AuditShow: React.FC = () => {
     // Menu entry + route are gated on the flag and the permission, but guard direct navigation too.
     if (meta && !meta.auditTrail) {
         return (
-            <DashboardLayout fullWidth>
+            <DashboardLayout showEnv={false} fullWidth>
                 <Helmet>
                     <title>Audit trail - Nango</title>
                 </Helmet>
@@ -134,7 +134,7 @@ export const AuditShow: React.FC = () => {
 
     if (user && !canReadAuditTrail) {
         return (
-            <DashboardLayout fullWidth>
+            <DashboardLayout showEnv={false} fullWidth>
                 <Helmet>
                     <title>Audit trail - Nango</title>
                 </Helmet>
@@ -154,7 +154,7 @@ export const AuditShow: React.FC = () => {
     );
 
     return (
-        <DashboardLayout fullWidth>
+        <DashboardLayout showEnv={false} fullWidth>
             <Helmet>
                 <title>Audit trail - Nango</title>
             </Helmet>

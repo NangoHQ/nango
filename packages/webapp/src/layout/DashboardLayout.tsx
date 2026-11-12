@@ -2,7 +2,9 @@ import React from 'react';
 
 import { SidebarInset, SidebarProvider } from '@/components/ui/Sidebar';
 import { FunctionPlaygroundDrawer } from '@/features/Playground';
+import { useMeta } from '@/hooks/useMeta';
 import { AppHeader } from '@/layout/AppHeader';
+import { useStore } from '@/store';
 import { cn } from '@/utils/utils';
 import { AppSidebar } from './AppSidebar';
 
@@ -20,15 +22,30 @@ interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
     breadcrumbLabel?: string;
     /** Caps and centers the page content. Use on `fullWidth` pages whose content doesn't read well edge-to-edge on a wide screen. */
     centered?: boolean;
+    /** Turn off on pages that aren't scoped to an environment, e.g. team or user settings. */
+    showEnv?: boolean;
 }
 
 const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(
-    ({ children, className, fullWidth = false, actions, pageHeader, hasPageHeading = false, breadcrumbLabel, centered = false, ...props }, ref) => {
+    (
+        { children, className, fullWidth = false, actions, pageHeader, hasPageHeading = false, breadcrumbLabel, centered = false, showEnv = true, ...props },
+        ref
+    ) => {
+        const env = useStore((state) => state.env);
+        const { data: metaData } = useMeta();
+        const currentEnvironment = metaData?.data.environments.find((environment) => environment.name === env);
+
         return (
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset className="max-h-screen overflow-hidden">
-                    <AppHeader actions={actions} breadcrumbIsHeading={!pageHeader && !hasPageHeading} breadcrumbLabel={breadcrumbLabel} />
+                    <AppHeader
+                        actions={actions}
+                        breadcrumbIsHeading={!pageHeader && !hasPageHeading}
+                        breadcrumbLabel={breadcrumbLabel}
+                        environment={currentEnvironment && { name: currentEnvironment.name, isProduction: currentEnvironment.is_production }}
+                        showEnv={showEnv}
+                    />
                     {pageHeader}
                     <div
                         ref={ref}

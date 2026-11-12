@@ -85,7 +85,7 @@ export const Enable2FA: React.FC = () => {
     const hasValidCode = /^\d{6}$/.test(code);
 
     return (
-        <DashboardLayout fullWidth>
+        <DashboardLayout showEnv={false} fullWidth>
             <Helmet>
                 <title>Enable 2FA - Nango</title>
             </Helmet>

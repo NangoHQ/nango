@@ -95,7 +95,7 @@ export const TeamBilling: React.FC = () => {
     // caps the content: the usage charts have a fixed height, so unbounded width stretches them to an
     // unreadable aspect ratio on wide screens.
     return (
-        <DashboardLayout ref={scrollRef} fullWidth centered>
+        <DashboardLayout showEnv={false} ref={scrollRef} fullWidth centered>
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>
