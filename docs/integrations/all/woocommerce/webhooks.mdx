@@ -28,7 +28,7 @@ Generate a random secret for the connection, for example with `openssl rand -hex
   <Tab title="WooCommerce admin">
     1. In the WordPress admin, go to **WooCommerce → Settings → Advanced → Webhooks** and select **Add webhook**.
     2. Set **Status** to **Active** and pick a **Topic**, for example **Order updated**.
-    3. Set **Delivery URL** to your Nango webhook URL with `?nangoConnectionId=<CONNECTION-ID>` appended.
+    3. Set **Delivery URL** to the URL from step 1.
     4. Set **Secret** to the secret from step 2.
     5. Save. WooCommerce pings the URL once, and Nango answers it without routing anything.
 

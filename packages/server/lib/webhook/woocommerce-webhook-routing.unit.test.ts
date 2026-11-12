@@ -109,13 +109,15 @@ describe('WooCommerce webhook routing', () => {
         expect(execute).not.toHaveBeenCalled();
     });
 
-    it('rejects an unknown connection and one without a secret the same way', async () => {
+    it('rejects an unknown connection, one without a secret and a wrong signature the same way', async () => {
+        const wrongSignature = await route(getNangoMock().nango, deliveryHeaders(sign(rawBody, 'another-store-webhook-secret')), body, rawBody, query);
         const unknown = await route(getNangoMock({ connectionExists: false }).nango, deliveryHeaders(), body, rawBody, query);
         const noSecret = await route(getNangoMock({ secret: null }).nango, deliveryHeaders(), body, rawBody, query);
         const notAString = await route(getNangoMock({ secret: 123 }).nango, deliveryHeaders(), body, rawBody, query);
 
-        expect(unknown.isErr() && unknown.error).toMatchObject({ type: 'webhook_invalid_secret' });
-        expect(noSecret.isErr() && noSecret.error).toStrictEqual(unknown.isErr() && unknown.error);
-        expect(notAString.isErr() && notAString.error).toStrictEqual(unknown.isErr() && unknown.error);
+        expect(wrongSignature.isErr() && wrongSignature.error).toMatchObject({ type: 'webhook_invalid_signature' });
+        expect(unknown.isErr() && unknown.error).toStrictEqual(wrongSignature.isErr() && wrongSignature.error);
+        expect(noSecret.isErr() && noSecret.error).toStrictEqual(wrongSignature.isErr() && wrongSignature.error);
+        expect(notAString.isErr() && notAString.error).toStrictEqual(wrongSignature.isErr() && wrongSignature.error);
     });
 });

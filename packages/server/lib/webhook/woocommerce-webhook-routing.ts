@@ -30,13 +30,11 @@ const route: WebhookHandler<Record<string, unknown>> = async (nango, headers, bo
         return Err(new NangoError('webhook_missing_signature'));
     }
 
+    // An unknown connection, one without a secret and a wrong signature all return the same error, so the
+    // endpoint can't be used to check which connection ids exist.
     const connection = await nango.getConnectionForWebhook(connectionIdentifierValue);
     const secret = connection?.metadata?.['webhookSecret'];
-    if (typeof secret !== 'string' || !secret) {
-        return Err(new NangoError('webhook_invalid_secret', { reason: 'No webhook secret configured to validate this request' }));
-    }
-
-    if (!validateHmacSignature({ secret, rawBody, signature, digest: 'base64' })) {
+    if (typeof secret !== 'string' || !validateHmacSignature({ secret, rawBody, signature, digest: 'base64' })) {
         return Err(new NangoError('webhook_invalid_signature'));
     }
 
