@@ -15844,6 +15844,10 @@ hunter:
         base_url: https://api.hunter.io
         headers:
             x-api-key: ${apiKey}
+        retry:
+            error_code:
+                - '403'
+                - '5xx'
         verification:
             method: GET
             endpoints:
@@ -15855,7 +15859,7 @@ hunter:
             type: string
             title: API Key
             description: Your Hunter API key.
-            pattern: '^[A-Za-z0-9]+$'
+            pattern: '^[a-f0-9]{40}$'
             example: c4e7********************************19ab
             doc_section: '#step-1-copy-your-api-key'
 
