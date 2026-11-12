@@ -1158,6 +1158,7 @@
               "api-integrations/asana-mcp",
               "integrations/all/asana-scim",
               "integrations/all/ashby",
+              "api-integrations/asin",
               "api-integrations/aspire",
               "api-integrations/assemblyai",
               "api-integrations/astro-mcp",
