@@ -3,7 +3,7 @@ export type { SourceFileRef } from './artifacts.js';
 export { deployBundle, prepareDeploymentBundle } from './deploy.js';
 export type { DeploymentBundleError, DeploymentBundlePreparationError } from './deploy.js';
 export * as functionLookupService from './lookup/index.js';
-export type { ListFunctionsError, ListFunctionsErrorCode } from './lookup/service.js';
+export type { ListFunctionsError, ListFunctionsErrorCode, ResolvedFunction } from './lookup/service.js';
 export type { ActionInputSchemaRow, IntegrationFunctionRow } from './lookup/models/functions.js';
 export * as functionConfigService from './models/functions.js';
 export * as functionInstanceService from './models/instances.js';

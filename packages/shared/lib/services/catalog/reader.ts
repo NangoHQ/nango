@@ -1,5 +1,7 @@
 import { filterJsonSchemaForModels } from '@nangohq/utils';
 
+import { isCatalogFunctionUuid } from './uuid.js';
+
 import type { CatalogFunctionManifestEntry, Feature, FlowsZeroJson, FlowZeroJson, FunctionCapabilities } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
@@ -26,6 +28,7 @@ export interface CatalogAction {
 }
 
 export type CatalogFunctionDefinition = Omit<CatalogFunctionManifestEntry, 'fileLocation' | 'sourceLocation'> & {
+    source: 'catalog';
     provider: string;
     /** Compiled JavaScript under templates-zero/. */
     fileLocation: string;
@@ -39,10 +42,12 @@ type ProviderCatalog = {
     entries: CatalogEntry[];
     actions: CatalogAction[];
     byName: Map<string, CatalogEntry>;
+    byUuid: Map<string, CatalogFunctionDefinition>;
 };
 
 export class CatalogReader {
     private readonly providers = new Map<string, ProviderCatalog>();
+    private providersByUuid: Map<string, string> | undefined;
 
     constructor(private readonly loadManifest: () => FlowsZeroJson) {}
 
@@ -52,6 +57,42 @@ export class CatalogReader {
 
     public getEntry(provider: string, name: string): CatalogEntry | undefined {
         return this.load(provider).byName.get(name);
+    }
+
+    public getFunctionByUuid(uuid: string): CatalogFunctionDefinition | undefined {
+        const normalized = uuid.toLowerCase();
+        if (!isCatalogFunctionUuid(normalized)) {
+            return undefined;
+        }
+        const provider = this.indexFunctionUuids().get(normalized);
+        return provider === undefined ? undefined : this.load(provider).byUuid.get(normalized);
+    }
+
+    // TODO: decide how catalog function UUIDs work for provider aliases (symLinkTargetName, e.g. github-pat -> github).
+    // Today every alias must publish its own UUIDs, and any UUID repeated across providers fails every UUID lookup.
+    // Alias blocks in the manifest are verbatim copies of their target's actions; if functions are copied the same way
+    // (UUID included), this duplicate check will break the whole catalog.
+    // Leaning option: aliases share the canonical UUID. Index canonical providers only, verify each alias copy's UUID
+    // belongs to its target, set `provider` to the canonical provider, and make invocation accept alias connections.
+    // Parked until the catalog manifest format settles (it may change or move to a different file).
+    private indexFunctionUuids(): Map<string, string> {
+        if (this.providersByUuid) {
+            return this.providersByUuid;
+        }
+        const providersByUuid = new Map<string, string>();
+        for (const integration of this.loadManifest()) {
+            for (const entry of integration.functions ?? []) {
+                if (!isCatalogFunctionUuid(entry.uuid)) {
+                    throw new Error(`Invalid catalog function UUID for '${entry.name}' in provider '${integration.providerConfigKey}'`);
+                }
+                if (providersByUuid.has(entry.uuid)) {
+                    throw new Error(`Duplicate catalog function UUID '${entry.uuid}' across the catalog`);
+                }
+                providersByUuid.set(entry.uuid, integration.providerConfigKey);
+            }
+        }
+        this.providersByUuid = providersByUuid;
+        return providersByUuid;
     }
 
     public listActions(provider: string): CatalogAction[] {
@@ -74,6 +115,7 @@ export class CatalogReader {
         const actions = integration ? loadActions(integration, folder) : [];
         const functions: CatalogFunctionDefinition[] = (integration?.functions ?? []).map((item) => ({
             ...item,
+            source: 'catalog',
             provider,
             fileLocation: `${TEMPLATES_ZERO_PREFIX}/${folder}/${item.fileLocation}`,
             sourceLocation: `${TEMPLATES_ZERO_PREFIX}/${folder}/${item.sourceLocation}`
@@ -87,7 +129,18 @@ export class CatalogReader {
             byName.set(entry.name, entry);
         }
 
-        const catalog = { entries, actions, byName };
+        const byUuid = new Map<string, CatalogFunctionDefinition>();
+        for (const entry of functions) {
+            if (!isCatalogFunctionUuid(entry.uuid)) {
+                throw new Error(`Invalid catalog function UUID for '${entry.name}' in provider '${provider}'`);
+            }
+            if (byUuid.has(entry.uuid)) {
+                throw new Error(`Duplicate catalog function UUID '${entry.uuid}' for provider '${provider}'`);
+            }
+            byUuid.set(entry.uuid, entry);
+        }
+
+        const catalog = { entries, actions, byName, byUuid };
         this.providers.set(provider, catalog);
         return catalog;
     }

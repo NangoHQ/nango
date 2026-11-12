@@ -2,7 +2,7 @@ import { createRequire } from 'node:module';
 
 import { CatalogReader, TEMPLATES_ZERO_PREFIX } from './reader.js';
 
-import type { CatalogAction, CatalogEntry } from './reader.js';
+import type { CatalogAction, CatalogEntry, CatalogFunctionDefinition } from './reader.js';
 import type { FlowsZeroJson } from '@nangohq/types';
 
 export { TEMPLATES_ZERO_PREFIX } from './reader.js';
@@ -24,6 +24,10 @@ export function listCatalogEntries(provider: string): CatalogEntry[] {
 
 export function getCatalogEntry(provider: string, name: string): CatalogEntry | undefined {
     return reader.getEntry(provider, name);
+}
+
+export function getCatalogFunctionByUuid(uuid: string): CatalogFunctionDefinition | undefined {
+    return reader.getFunctionByUuid(uuid);
 }
 
 /** Legacy action-only API. Native functions must not enter action execution. */

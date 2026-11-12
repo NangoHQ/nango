@@ -70,7 +70,15 @@ export * from './services/checkpoints/checkpoints.js';
 export * from './services/shared-credentials.service.js';
 export * as connectUISettingsService from './services/connect-ui-settings.service.js';
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
-export { listCatalogEntries, getCatalogEntry, listCatalogTools, getCatalogTool, isTemplatesZeroPath } from './services/catalog/actions.js';
+export {
+    listCatalogEntries,
+    getCatalogEntry,
+    getCatalogFunctionByUuid,
+    listCatalogTools,
+    getCatalogTool,
+    isTemplatesZeroPath
+} from './services/catalog/actions.js';
+export { generateCatalogFunctionUuid, isCatalogFunctionUuid } from './services/catalog/uuid.js';
 export type { CatalogEntry, CatalogFunctionDefinition, CatalogTool } from './services/catalog/actions.js';
 export { findCatalogFunctions } from './services/catalog/functions.js';
 export type { CatalogFunction } from './services/catalog/functions.js';

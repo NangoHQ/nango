@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { getCatalogEntry, getCatalogTool, getFlowsJson, isTemplatesZeroPath, listCatalogEntries, listCatalogTools } from './actions.js';
+import {
+    getCatalogEntry,
+    getCatalogFunctionByUuid,
+    getCatalogTool,
+    getFlowsJson,
+    isTemplatesZeroPath,
+    listCatalogEntries,
+    listCatalogTools
+} from './actions.js';
+import { generateCatalogFunctionUuid } from './uuid.js';
 
 describe('catalog tools reader', () => {
     it('returns github create-issue from flows.zero.json', () => {
@@ -36,7 +45,19 @@ describe('catalog tools reader', () => {
                 expect(getCatalogEntry(integration.providerConfigKey, action.name)).toBe(action);
                 expect(getCatalogTool(integration.providerConfigKey, action.name)).toBe(action);
             }
+            const functions = entries.filter((entry) => entry.module === 'function');
+            expect(functions).toHaveLength(integration.functions?.length ?? 0);
+            for (const definition of functions) {
+                expect(getCatalogFunctionByUuid(definition.uuid)).toBe(definition);
+            }
         }
+    });
+
+    it('does not treat a reserved UUID as catalog membership or turn a legacy action into a native function', () => {
+        const uuid = generateCatalogFunctionUuid({ provider: 'github', name: 'create-issue' });
+
+        expect(getCatalogFunctionByUuid(uuid)).toBeUndefined();
+        expect(getCatalogFunctionByUuid('not-a-uuid')).toBeUndefined();
     });
 
     it('recognizes templates-zero paths', () => {

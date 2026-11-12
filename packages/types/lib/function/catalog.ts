@@ -3,6 +3,8 @@ import type { FunctionDeploymentArtifact } from '../functions/api.js';
 /** A native function published in the integration catalog, without a deployed configuration. */
 export type CatalogFunctionManifestEntry = Omit<FunctionDeploymentArtifact, 'integrationId' | 'fileBody' | 'source'> & {
     module: 'function';
+    /** Stable, published catalog UUIDv8 identity, independent of the function version. */
+    uuid: string;
     /** Content hash of the definition and code, comparable with a deployed native function's version. */
     version: string;
     sdkVersion: string;

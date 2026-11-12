@@ -1,12 +1,33 @@
+import db from '@nangohq/database';
 import { Err, Ok } from '@nangohq/utils';
 
+import { getCatalogFunctionByUuid } from '../../catalog/actions.js';
+import { isCatalogFunctionUuid } from '../../catalog/uuid.js';
 import configService from '../../config.service.js';
+import * as functionConfigService from '../models/functions.js';
 import { toListedNangoFunction } from './mappers.js';
 import * as functionsModel from './models/functions.js';
 
+import type { CatalogFunctionDefinition } from '../../catalog/reader.js';
 import type { FunctionRow } from './models/functions.js';
-import type { FunctionListType, ListedNangoActionFunction, ListedNangoFunction, NangoFunctionTemplate } from '@nangohq/types';
+import type {
+    DBFunctionConfigVersion,
+    FunctionListType,
+    IntegrationConfig,
+    ListedNangoActionFunction,
+    ListedNangoFunction,
+    NangoFunctionTemplate
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+
+export type ResolvedFunction = {
+    uuid: string;
+    name: string;
+    enabled: boolean;
+} & (
+    | { kind: 'deployed'; integration: Pick<IntegrationConfig, 'unique_key' | 'provider'> & { id: number }; definition: DBFunctionConfigVersion }
+    | { kind: 'catalog'; definition: CatalogFunctionDefinition }
+);
 
 export type ListFunctionsErrorCode = 'integration_not_found' | 'list_failed';
 
@@ -169,6 +190,40 @@ export async function getFunction({
         return Ok(fn.value);
     } catch (err) {
         return Err(new Error('failed_to_get_function', { cause: err }));
+    }
+}
+
+export async function resolveFunctionByUuid({
+    environmentId,
+    functionUuid
+}: {
+    environmentId: number;
+    functionUuid: string;
+}): Promise<Result<ResolvedFunction | undefined>> {
+    try {
+        const uuid = functionUuid.toLowerCase();
+        if (isCatalogFunctionUuid(uuid)) {
+            const definition = getCatalogFunctionByUuid(uuid);
+            return Ok(definition ? { kind: 'catalog', uuid: definition.uuid, name: definition.name, enabled: true, definition } : undefined);
+        }
+        const functions = await functionConfigService.search(db.knex, { environmentId, filter: { uuid: functionUuid } });
+        if (functions.isErr()) {
+            return Err(new Error('failed_to_get_function_by_uuid', { cause: functions.error }));
+        }
+        const fn = functions.value[0];
+        if (functions.value.length !== 1 || !fn) {
+            return Ok(undefined);
+        }
+        return Ok({
+            kind: 'deployed',
+            uuid: fn.config.uuid,
+            name: fn.config.name,
+            enabled: fn.config.enabled,
+            integration: fn.integration,
+            definition: fn.currentVersion
+        });
+    } catch (err) {
+        return Err(new Error('failed_to_get_function_by_uuid', { cause: err }));
     }
 }
 
