@@ -47,7 +47,7 @@ This stores the config in `.claude/settings.local.json` (gitignored). Then start
 
 ## Tokens
 
-`tokens/tokens.json` is the source of truth for design tokens. It is compiled to CSS custom properties in `tokens/tokens.generated.css`. Figma follows the repo: the Dharma library pulls `tokens.json` from `master`, one way.
+`tokens/tokens.json` is the source of truth for design tokens. It is compiled to CSS custom properties in `tokens/tokens.generated.css`. Figma follows the repo: a script pushes `tokens.json` into the Dharma library, one way.
 
 ### Structure
 
@@ -57,6 +57,7 @@ tokens/
   tokens.generated.css  build output — never edit by hand
 scripts/
   tokens-build.mjs      builds the CSS from tokens.json
+  tokens-figma.mjs      syncs tokens.json into Dharma
 ```
 
 ### Changing a token
@@ -70,11 +71,12 @@ Designers and developers change tokens the same way, in a PR:
     npm run tokens:build --workspace=@nangohq/design-system
     ```
 
-3. Commit both `tokens.json` and `tokens.generated.css` in the same PR.
+3. Sync Dharma from the same branch. An agent with the Figma MCP does this with the `syncing-figma-tokens` skill: it checks what differs, applies the changes after you approve them, and writes the keys of new variables back into `tokens.json`.
+4. Commit `tokens.json` and `tokens.generated.css` in the same PR.
 
 The build fails if an alias doesn't resolve. CI also rebuilds the CSS and fails if it differs from the committed file, or if a token you removed is still used in the webapp.
 
-After the PR merges, pull it into Figma. Don't edit tokens in Figma: nothing flows back to the repo, so the change would be overwritten on the next pull.
+Don't edit tokens in Figma: nothing flows back to the repo, so the next sync overwrites the change.
 
 ### Generated CSS structure
 
