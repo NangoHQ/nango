@@ -1,6 +1,7 @@
+import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
-import { FieldLabel } from '@nangohq/design-system';
+import { Alert, FieldLabel } from '@nangohq/design-system';
 
 import { DocsIconLink } from '@/components/patterns/DocsIconLink';
 import { EditableInput } from '@/components/patterns/EditableInput';
@@ -46,6 +47,18 @@ export const DeprecatedSettings: React.FC = () => {
 
     return (
         <SettingsContent title="Deprecated authorization">
+            <Alert
+                status="warning"
+                title="Public key and HMAC authorization are deprecated"
+                action={{
+                    label: 'Migration guide',
+                    icon: <ExternalLink />,
+                    href: 'https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key',
+                    target: '_blank'
+                }}
+            >
+                Move to Connect sessions before these methods are removed.
+            </Alert>
             <SettingsGroup
                 label={
                     <div className="flex gap-1.5">

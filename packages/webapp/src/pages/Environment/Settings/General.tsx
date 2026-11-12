@@ -1,8 +1,7 @@
-import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Alert, AlertDescription, Input } from '@nangohq/design-system';
+import { Alert, InlineCode, Input } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { DocsIconLink } from '@/components/patterns/DocsIconLink';
@@ -87,17 +86,9 @@ export const General: React.FC = () => {
                     />
 
                     {env !== PROD_ENVIRONMENT_NAME && (
-                        <Alert variant="info">
-                            <Info />
-                            <AlertDescription>
-                                <span>
-                                    When using the CLI for custom functions, add this to your .env:{' '}
-                                    <code className="text-text-strong">
-                                        NANGO_SECRET_KEY_{env.toUpperCase()}={'<secret-key>'}
-                                    </code>
-                                    .
-                                </span>
-                            </AlertDescription>
+                        <Alert status="warning">
+                            When using the CLI for custom functions, add <InlineCode>NANGO_SECRET_KEY_{env.toUpperCase()}</InlineCode> to your{' '}
+                            <InlineCode>.env</InlineCode>.
                         </Alert>
                     )}
                 </div>

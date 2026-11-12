@@ -1,8 +1,8 @@
-import { ExternalLink, Info } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { Alert, AlertActions, AlertButton, AlertDescription } from '@nangohq/design-system';
+import { Alert, InlineCode } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -71,26 +71,17 @@ export const BackendSettings: React.FC = () => {
                         canEdit={canEditEnvironment}
                     />
                     {isEditingCallbackUrl && (
-                        <Alert variant="info">
-                            <Info />
-                            <AlertDescription>
-                                <span>
-                                    Changing the callback URL requires an active 308 redirect and updating the registered callback URL with all OAuth API
-                                    providers. Otherwise authorization attempts will fail.
-                                </span>
-                            </AlertDescription>
-                            <AlertActions>
-                                <AlertButton asChild>
-                                    <a
-                                        href="https://nango.dev/docs/guides/auth/auth-guide#custom-oauth-callback-url-optional"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        View docs
-                                        <ExternalLink />
-                                    </a>
-                                </AlertButton>
-                            </AlertActions>
+                        <Alert
+                            status="warning"
+                            action={{
+                                label: 'View docs',
+                                icon: <ExternalLink />,
+                                href: 'https://nango.dev/docs/guides/auth/auth-guide#custom-oauth-callback-url-optional',
+                                target: '_blank'
+                            }}
+                        >
+                            Changing the callback URL requires an active <InlineCode>308</InlineCode> redirect and updating the registered callback URL with all
+                            OAuth API providers. Otherwise authorization attempts will fail.
                         </Alert>
                     )}
                 </div>

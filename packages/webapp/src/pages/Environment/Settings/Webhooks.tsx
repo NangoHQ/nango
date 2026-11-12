@@ -1,7 +1,7 @@
-import { RefreshCw, TriangleAlert } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { Alert, AlertDescription, AlertTitle, Button, FieldLabel } from '@nangohq/design-system';
+import { Alert, Button, FieldLabel } from '@nangohq/design-system';
 
 import { DocsIconLink } from '@/components/patterns/DocsIconLink.js';
 import { EditableInput } from '@/components/patterns/EditableInput.js';
@@ -128,13 +128,9 @@ export const Webhooks: React.FC = () => {
                     </p>
                     <SecretInput value={environmentAndAccount.webhook_signing_key ?? ''} copy={canReadSigningKey} canRead={canReadSigningKey} readOnly />
                     {bothKeysValidUntil && (
-                        <Alert variant="warning" size="compact">
-                            <TriangleAlert />
-                            <AlertTitle>Accept both keys until {bothKeysValidUntil.toLocaleTimeString()}</AlertTitle>
-                            <AlertDescription>
-                                The new key takes up to 5 minutes to reach every Nango process. Until then, webhooks can be signed with either the old or the
-                                new key. Switching verification over right away will reject valid webhooks.
-                            </AlertDescription>
+                        <Alert status="warning" size="compact" title={`Accept both keys until ${bothKeysValidUntil.toLocaleTimeString()}`}>
+                            The new key takes up to 5 minutes to reach every Nango process. Until then, webhooks can be signed with either the old or the new
+                            key. Switching verification over right away will reject valid webhooks.
                         </Alert>
                     )}
                     <div className="self-start">

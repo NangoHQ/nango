@@ -1,9 +1,13 @@
+import { Lock } from 'lucide-react';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
+
+import { Alert, InlineCode } from '@nangohq/design-system';
 
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useTeam } from '../../../hooks/useTeam';
 import DashboardLayout from '../../../layout/DashboardLayout';
@@ -32,10 +36,25 @@ export const EnvironmentSettings: React.FC = () => {
     const { data: teamData } = useTeam(env);
     const team = teamData?.data;
 
-    const { data } = useEnvironment(env);
+    const { data, isError } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
     const [activeTab, setActiveTab] = useHashNavigation('general');
     const [apiKeysResetKey, setApiKeysResetKey] = useState(0);
+    const { can } = usePermissions();
+    const canEditEnvironment = can('environment:settings:update');
+
+    if (isError && !environmentAndAccount) {
+        return (
+            <DashboardLayout fullWidth className="flex flex-col gap-8">
+                <Helmet>
+                    <title>Environment Settings - Nango</title>
+                </Helmet>
+                <Alert status="danger" title="Couldn't load environment settings">
+                    The request to <InlineCode>GET /api/v1/environments/current</InlineCode> failed. Refresh the page to try again.
+                </Alert>
+            </DashboardLayout>
+        );
+    }
 
     if (!environmentAndAccount || !team) {
         return (
@@ -57,6 +76,12 @@ export const EnvironmentSettings: React.FC = () => {
             <Helmet>
                 <title>Environment Settings - Nango</title>
             </Helmet>
+
+            {!canEditEnvironment && (
+                <Alert status="neutral" icon={<Lock />}>
+                    You have read-only access to this environment. Ask an admin to change its settings.
+                </Alert>
+            )}
 
             <div className="flex h-fit justify-center" key={env}>
                 <Navigation value={activeTab} onValueChange={setActiveTab}>
