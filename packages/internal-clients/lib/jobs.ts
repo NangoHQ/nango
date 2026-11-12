@@ -1,7 +1,6 @@
 import { getInternalAuthBearerHeaderIfPresent } from '@nangohq/internal-auth';
 import { Err, Ok } from '@nangohq/utils';
 
-import { envs, jobsServiceUrl } from '../env.js';
 import { httpFetch } from './http.js';
 
 import type { PostHeartbeat, PostIdle, PostRegister, PutTask } from '@nangohq/types';
@@ -15,11 +14,13 @@ const defaultRetryOptions = {
 
 export type TaskAuthOpts = { internalAuthToken?: string | null | undefined };
 
-class JobsClient {
+export class JobsClient {
     private baseUrl: string;
+    private nodeToken: string | null | undefined;
 
-    constructor({ baseUrl }: { baseUrl: string }) {
+    constructor({ baseUrl, nodeToken }: { baseUrl: string; nodeToken?: string | null | undefined }) {
         this.baseUrl = baseUrl;
+        this.nodeToken = nodeToken;
     }
 
     async postHeartbeat({ taskId, internalAuthToken }: PostHeartbeat['Params'] & TaskAuthOpts): Promise<Result<PostHeartbeat['Success']>> {
@@ -92,7 +93,7 @@ class JobsClient {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    ...getInternalAuthBearerHeaderIfPresent(envs.NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN)
+                    ...getInternalAuthBearerHeaderIfPresent(this.nodeToken)
                 },
                 body: JSON.stringify({ url })
             },
@@ -109,7 +110,7 @@ class JobsClient {
             `${this.baseUrl}/runners/${nodeId}/idle`,
             {
                 method: 'POST',
-                headers: getInternalAuthBearerHeaderIfPresent(envs.NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN)
+                headers: getInternalAuthBearerHeaderIfPresent(this.nodeToken)
             },
             defaultRetryOptions
         );
@@ -119,5 +120,3 @@ class JobsClient {
         return Ok((await resp.json()) as PostIdle['Success']);
     }
 }
-
-export const jobsClient = new JobsClient({ baseUrl: jobsServiceUrl });

@@ -8,7 +8,7 @@ import { FleetRunner } from './fleet.runner.js';
 import { RemoteRunner } from './remote.runner.js';
 
 import type { Node } from '@nangohq/fleet';
-import type { ProxyAppRouter } from '@nangohq/nango-runner';
+import type { ProxyAppRouter } from '@nangohq/nango-runner/client';
 import type { Result } from '@nangohq/utils';
 
 export enum RunnerType {

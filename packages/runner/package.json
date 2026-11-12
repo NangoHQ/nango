@@ -3,8 +3,16 @@
     "version": "1.0.0",
     "description": "Runs Nango integration code",
     "type": "module",
-    "main": "dist/index.js",
-    "typings": "dist/index.d.ts",
+    "exports": {
+        "./client": {
+            "types": "./dist/client.d.ts",
+            "default": "./dist/client.js"
+        },
+        "./runner": {
+            "types": "./dist/runner.d.ts",
+            "default": "./dist/runner.js"
+        }
+    },
     "private": true,
     "scripts": {
         "start": "node dist/app.js",
@@ -19,6 +27,7 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
         "@nangohq/internal-auth": "file:../internal-auth",
+        "@nangohq/internal-clients": "file:../internal-clients",
         "@nangohq/node": "file:../node-client",
         "@nangohq/providers": "file:../providers",
         "@nangohq/runner-sdk": "file:../runner-sdk",

@@ -6,6 +6,9 @@
     },
     "references": [
         {
+            "path": "../internal-clients"
+        },
+        {
             "path": "../runner"
         },
         {

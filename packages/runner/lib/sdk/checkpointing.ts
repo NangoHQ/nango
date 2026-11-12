@@ -1,6 +1,6 @@
 import { validateCheckpoint } from '@nangohq/runner-sdk';
 
-import type { PersistClient } from '../clients/persist.js';
+import type { PersistClient } from '@nangohq/internal-clients/persist';
 import type { Checkpoint, CheckpointRange } from '@nangohq/types';
 
 type CheckpointState = {
