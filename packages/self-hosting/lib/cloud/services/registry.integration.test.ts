@@ -312,7 +312,7 @@ describe('installation updates and deletion', () => {
 
         expect(deleted.deleted_at).toBeInstanceOf(Date);
         expect((await searchInstallations(db, { uuid: created.uuid })).unwrap()).toStrictEqual([]);
-        expect((await searchInstallations(db, { uuid: created.uuid, includeDeleted: true })).unwrap().map((i) => i.id)).toStrictEqual([created.id]);
+        expect((await searchInstallations(db, { uuid: created.uuid }, { includeDeleted: true })).unwrap().map((i) => i.id)).toStrictEqual([created.id]);
         expect((await getActiveLicense(db, { installationId: created.id })).unwrap()).toBeNull();
         expect((await listInstallationKeys(db, { installationId: created.id })).unwrap()).toStrictEqual([]);
         expect((await deleteInstallationKey(db, { kid: key.kid })).isErr()).toBe(true);
@@ -392,6 +392,6 @@ describe('lists', () => {
         (await deleteInstallation(db, { id: gone.id })).unwrap();
 
         expect((await searchInstallations(db, { customerId })).unwrap()).toStrictEqual([]);
-        expect((await searchInstallations(db, { customerId, includeDeleted: true })).unwrap().map((i) => i.id)).toStrictEqual([gone.id]);
+        expect((await searchInstallations(db, { customerId }, { includeDeleted: true })).unwrap().map((i) => i.id)).toStrictEqual([gone.id]);
     });
 });
