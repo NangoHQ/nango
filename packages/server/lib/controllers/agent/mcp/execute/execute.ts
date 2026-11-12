@@ -26,7 +26,7 @@ const RETRY_MAX = 0;
 export const executeTool = defineAgentSessionMcpTool({
     name: 'nango_execute',
     description:
-        "Run one of this session's tools, named as it is listed in tools/list or returned by nango_tool_search, on the connection the session resolved for it. Reaches tools that are not listed, and tools whose input is not an object.",
+        "Run one of this session's tools, named as it is listed in tools/list or returned by nango_tool_search, on the connection the session resolved for it. Reaches tools that are not listed.",
     inputSchema: executeInputSchema,
     annotations: {
         readOnlyHint: false,

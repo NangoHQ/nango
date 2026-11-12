@@ -18,21 +18,12 @@ export function buildSessionInstructions(session: AgentSession): string {
 - You do not need to ask the user before calling a tool. Whoever runs you decides what needs their approval.`
     ];
 
-    if (nangoToolSearch || nangoExecute) {
-        const purpose = [
-            `## Stating your goal${nangoExecute ? ' and intent' : ''}`,
-            `- Pass a goal to ${[nangoToolSearch && 'nango_tool_search', nangoExecute && 'nango_execute'].filter(Boolean).join(' and ')}: the overall task the user asked you to do, kept as close to their own words as you can.`,
-            '- Send the same goal on every call made for one task, and a new one only when the user asks for something else.'
-        ];
-        if (nangoExecute) {
-            purpose.push(
-                "- Also pass an intent to nango_execute: how that one call helps toward the goal. It changes with every step, and is never the goal again or the tool's description.",
-                '- For example, when the user asks to "summarize my unread emails and save the summary in Notion", every call has that goal, and the intents go "list unread emails", "read the next batch of unread emails", then "create the summary page in Notion".'
-            );
-        }
-        purpose.push(`- Leave names, emails, IDs and other personal details out of ${nangoExecute ? 'both' : 'it'}.`);
-        sections.push(purpose.join('\n'));
-    }
+    sections.push(`## Stating your goal and intent
+- Pass a goal with every tool you run${nangoToolSearch ? ' and every nango_tool_search' : ''}: the overall task the user asked you to do, kept as close to their own words as you can.
+- Send the same goal on every call made for one task, and a new one only when the user asks for something else.
+- Also pass an intent with every tool you run: how that one call helps toward the goal. It changes with every step, and is never the goal again or the tool's description.
+- For example, when the user asks to "summarize my unread emails and save the summary in Notion", every call has that goal, and the intents go "list unread emails", "read the next batch of unread emails", then "create the summary page in Notion".
+- Leave names, emails, IDs and other personal details out of both.`);
 
     if (nangoToolSearch) {
         sections.push(`## Finding a tool
@@ -45,21 +36,22 @@ export function buildSessionInstructions(session: AgentSession): string {
 - If you already have a tool's input schema from earlier in this conversation, reuse it instead of searching again.`);
     }
 
-    if (nangoExecute) {
-        sections.push(`## Running a tool
-- Call a tool through nango_execute with its name exactly as listed${nangoToolSearch ? ' or as nango_tool_search returned it' : ''}, and its input.
-- nango_execute also runs tools that are not in your tool list, and tools whose input is not an object.
+    const howToRun = nangoExecute
+        ? `- Call a tool through nango_execute with its name exactly as listed${nangoToolSearch ? ' or as nango_tool_search returned it' : ''}, and its input.
+- nango_execute also runs tools that are not in your tool list.
+- When you call a tool directly by its name instead, pass its input as \`input\`, next to \`goal\` and \`intent\`.`
+        : `- Call a tool directly by its name${nangoToolSearch ? ', whether it is in your tool list or nango_tool_search returned it' : ''}.
+- Pass its input as \`input\`, next to \`goal\` and \`intent\`, such as {"input": {"limit": 10}, "goal": "...", "intent": "..."}. A tool that takes no input takes only \`goal\` and \`intent\`.`;
+
+    sections.push(`## Running a tool
+${howToRun}
 - Ask tools for no more results than the task needs, and page through results rather than requesting everything at once.`);
-    } else {
-        sections.push(`## Running a tool
-- Call a tool directly by its name${nangoToolSearch ? ', whether it is in your tool list or nango_tool_search returned it' : ''}.
-- Ask tools for no more results than the task needs, and page through results rather than requesting everything at once.`);
-    }
 
     if (nangoProxy) {
         sections.push(`## Calling an API directly
 - nango_proxy calls the app's API directly on a connected integration, and Nango authenticates the request for you. Unlike the session's tools, it is not limited to what the session was set up to do, so it is a last resort: use it only when no tool covers the task${nangoToolSearch ? ', after searching' : ''}.
-- Use it to fill a gap in the session's tools, not to get around them. Do not use it for something a tool refused or limited, and be careful with writes on an integration whose tools only read. When a write through nango_proxy goes beyond what the session's tools suggest it was set up for, check with the user first.`);
+- Use it to fill a gap in the session's tools, not to get around them. Do not use it for something a tool refused or limited, and be careful with writes on an integration whose tools only read. When a write through nango_proxy goes beyond what the session's tools suggest it was set up for, check with the user first.
+- Pass the goal, and as its intent say why no tool fit and which tool would have done it.`);
     }
 
     if (nangoCreateConnection.enabled) {
