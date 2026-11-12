@@ -252,6 +252,12 @@
         height: 100%;
     }
 
+    /* Without this, iOS Safari rubber-bands the zoomed-out dashboard past its edges. */
+    [data-viewport='desktop'],
+    [data-viewport='desktop'] * {
+        overscroll-behavior: none;
+    }
+
     [data-theme='dark'] {
         color-scheme: dark;
     }
