@@ -46,13 +46,22 @@ describe('readUpload', () => {
         expect(res.unwrap().rows.map((r) => r.attributes)).toEqual(['{"environment":"prod","producer_id":"a1"}', '{"environment":"prod","producer_id":"a1"}']);
     });
 
-    it('reads lines that are split between two inflated blocks', async () => {
-        const rows = Array.from({ length: 2000 }, (_, value) => row({ value, attributes: { environment: `producción-${value}` } }));
+    it('reads a line wherever the end of an inflated block falls in it', async () => {
+        const blockBytes = 16 * 1024;
+        const split = row({ value: 2, attributes: { environment: 'producción 日本 🚀' } });
+        const before = Array.from({ length: Math.floor((blockBytes - 600) / (row().length + 1)) }, () => row({ value: 1 }));
+        const bytesBefore = Buffer.byteLength([header, ...before].join('\n')) + 1;
+        const expected = [...before.map(() => 1), 2, 3];
 
-        const res = (await readUpload(upload(header, ...rows))).unwrap();
+        // The first row grows one space at a time, which moves the split row across the end of the first block.
+        for (let shift = -2; shift <= Buffer.byteLength(split) + 2; shift++) {
+            const [first, ...others] = before as [string, ...string[]];
+            const padded = first.padEnd(first.length + blockBytes - bytesBefore - shift);
+            const res = (await readUpload(upload(header, padded, ...others, split, row({ value: 3 })))).unwrap();
 
-        expect(res.rows.map((r) => r.value)).toEqual(rows.map((_, value) => value));
-        expect(res.rows.at(-1)?.attributes).toBe('{"environment":"producción-1999"}');
+            expect(res.rows.map((r) => r.value)).toEqual(expected);
+            expect(res.rows.at(-2)?.attributes).toBe('{"environment":"producción 日本 🚀"}');
+        }
     });
 
     it('reads the installation in lower case', async () => {
@@ -113,7 +122,8 @@ describe('readUpload', () => {
         ['no line at all', []],
         ['a row first', [row()]],
         ['an installation that is not a uuid', [JSON.stringify({ kind: 'header', installation_id: 'byoc-acme' })]],
-        ['a line that is not JSON', ['header']]
+        ['a line that is not JSON', ['header']],
+        ['a byte order mark before the header', [`\uFEFF${header}`]]
     ])('rejects %s as the header', async (_name, lines) => {
         expect(await failure(upload(...lines))).toMatchObject({ code: 'invalid_header' });
     });
@@ -137,6 +147,7 @@ describe('readUpload', () => {
         ['an attribute list', row({ attributes: { environments: ['prod'] } })],
         ['a second header', header],
         ['a line that is not JSON', 'row'],
+        ['a byte order mark before the row', `\uFEFF${row()}`],
         ['an empty line', '']
     ])('rejects %s, naming the line', async (_name, line) => {
         expect(await failure(upload(header, row(), line, row()))).toEqual({ code: 'invalid_row', message: 'line 3 is not a valid row' });
