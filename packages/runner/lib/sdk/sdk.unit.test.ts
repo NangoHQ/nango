@@ -605,7 +605,7 @@ describe('getRecordsById', () => {
         }
 
         const mockPersistClient = new PersistClient({ secretKey: '***' });
-        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: Array.from(records.values()), nextCursor: undefined }));
+        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: Array.from(records.values()), next_cursor: undefined }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         const result = await nango.getRecordsByIds(Array.from(records.keys()), 'Whatever');
@@ -624,14 +624,57 @@ describe('getRecordsById', () => {
         const recordsArray = Array.from(records.values());
         mockPersistClient.getRecords = vi
             .fn()
-            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(0, 100), nextCursor: 'next' }))
-            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(100, 200), nextCursor: 'next' }));
+            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(0, 100), next_cursor: null }))
+            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(100, 200), next_cursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         const result = await nango.getRecordsByIds(Array.from(records.keys()), 'Whatever');
 
         expect(result).toEqual(records);
         expect(mockPersistClient.getRecords).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe('getRecordsByIds paging (issue 8179)', () => {
+    it('follows next_cursor when one batch spans two pages', async () => {
+        const ids = Array.from({ length: 10 }, (_, i) => i);
+        const rows = ids.map((i) => ({ id: i.toString() }));
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        mockPersistClient.getRecords = vi
+            .fn()
+            .mockResolvedValueOnce(Ok({ records: rows.slice(0, 5), next_cursor: 'c2' }))
+            .mockResolvedValueOnce(Ok({ records: rows.slice(5), next_cursor: null }));
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
+        const result = await nango.getRecordsByIds(ids, 'Whatever');
+
+        expect(result.size).toBe(10);
+        expect(mockPersistClient.getRecords).toHaveBeenCalledTimes(2);
+        expect(vi.mocked(mockPersistClient.getRecords).mock.calls[1]?.[0]).toMatchObject({
+            cursor: 'c2',
+            externalIds: ids.map(String)
+        });
+    });
+
+    it('never sends one batch cursor with the next batch ids', async () => {
+        const ids = Array.from({ length: 150 }, (_, i) => i);
+        const rows = ids.map((i) => ({ id: i.toString() }));
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        mockPersistClient.getRecords = vi
+            .fn()
+            .mockResolvedValueOnce(Ok({ records: rows.slice(0, 60), next_cursor: 'b1-p2' }))
+            .mockResolvedValueOnce(Ok({ records: rows.slice(60, 100), next_cursor: null }))
+            .mockResolvedValueOnce(Ok({ records: rows.slice(100), next_cursor: null }));
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
+        const result = await nango.getRecordsByIds(ids, 'Whatever');
+
+        expect(result.size).toBe(150);
+        const calls = vi.mocked(mockPersistClient.getRecords).mock.calls.map((c) => c[0]);
+        expect(calls).toHaveLength(3);
+        expect(calls[1]).toMatchObject({ cursor: 'b1-p2' });
+        expect(calls[2]?.cursor).toBeUndefined();
+        expect(calls[2]?.externalIds).toEqual(ids.slice(100).map(String));
     });
 });
 
@@ -655,7 +698,7 @@ describe('listRecords', () => {
             { id: '2', name: 'b' }
         ];
         const mockPersistClient = new PersistClient({ secretKey: '***' });
-        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records, nextCursor: null }));
+        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records, next_cursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         const out: unknown[] = [];
@@ -677,7 +720,7 @@ describe('listRecords', () => {
 
     it('should pass cursor to getRecords when options.cursor is set', async () => {
         const mockPersistClient = new PersistClient({ secretKey: '***' });
-        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: [], nextCursor: null }));
+        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: [], next_cursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         for await (const _ of nango.listRecords('SomeModel', { cursor: 'cursor123' })) {
@@ -700,8 +743,8 @@ describe('listRecords', () => {
         const mockPersistClient = new PersistClient({ secretKey: '***' });
         mockPersistClient.getRecords = vi
             .fn()
-            .mockResolvedValueOnce(Ok({ records: page1, nextCursor: 'c2' }))
-            .mockResolvedValueOnce(Ok({ records: page2, nextCursor: null }));
+            .mockResolvedValueOnce(Ok({ records: page1, next_cursor: 'c2' }))
+            .mockResolvedValueOnce(Ok({ records: page2, next_cursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         const out: unknown[] = [];
