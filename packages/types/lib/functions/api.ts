@@ -1,11 +1,12 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTags, FunctionTriggerDefinition } from '../function/config.js';
+import type { ToolTags } from '../function/tool.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
-import type { FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
+import type { FunctionListType, FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 import type { JSONSchema7 } from 'json-schema';
 
-export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
+export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'> | 'tool' | 'function';
 
 export type FunctionErrorCode =
     | 'invalid_request'
@@ -133,6 +134,11 @@ export interface FunctionDeploymentCreateSuccess {
     created_at: string;
 }
 
+export interface DeployedFunction {
+    name: string;
+    version?: string | undefined;
+}
+
 export interface FunctionDeploymentResultSuccess {
     id: string;
     status: FunctionDeploymentStatus;
@@ -145,7 +151,7 @@ export interface FunctionDeploymentResultSuccess {
     completed_at?: string | undefined;
     duration_ms?: number | undefined;
     deployed?: boolean | undefined;
-    deployed_functions?: { name: string; version: string }[] | undefined;
+    deployed_functions?: DeployedFunction[] | undefined;
     output?: string | undefined;
     error?: ApiError<FunctionErrorCode>['error'] | undefined;
 }
@@ -242,7 +248,7 @@ export interface GetFunctionResponse {
     provider: string;
     name: string;
     description: string;
-    tags: FunctionTags;
+    tags: FunctionTags | ToolTags;
     state: 'enabled' | 'disabled';
     source: FunctionSource;
     trigger: FunctionTriggerDefinition;
@@ -313,7 +319,7 @@ export type PostFunctionInvocation = ApiEndpoint<{
         invocation_type: FunctionInvocationType;
         options?: Record<string, unknown> | undefined;
     };
-    Error: ApiError<FunctionInvocationErrorCode>;
+    Error: ApiError<FunctionInvocationErrorCode | 'function_runtime_error'>;
     Success: FunctionInvocationSuccess;
 }>;
 
@@ -378,14 +384,16 @@ export type GetFunctionInvocation = ApiEndpoint<{
     Method: 'GET';
     Path: '/connections/:connectionId/functions/:functionUuid/invocations/:id';
     Params: { connectionId: string; functionUuid: string; id: string };
-    Error: ApiError<'invalid_uri_params' | 'not_found' | 'function_not_found' | 'connection_not_found' | 'function_failed' | 'server_error'>;
+    Error: ApiError<
+        'invalid_uri_params' | 'not_found' | 'function_not_found' | 'connection_not_found' | 'function_failed' | 'function_runtime_error' | 'server_error'
+    >;
     Success: FunctionInvocationSuccess;
 }>;
 
 // Shared between the private and public function-management endpoints. The two surfaces differ only in auth,
 // path, param names, and the `env` querystring (private) — the payloads and filters below are identical.
 export interface FunctionListFilters {
-    type?: FunctionType;
+    type?: FunctionListType;
     search?: string;
     page?: number;
     limit?: number;
@@ -421,7 +429,7 @@ export type GetIntegrationFunction = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
-    Querystring: { env: string; type?: FunctionType };
+    Querystring: { env: string; type?: FunctionListType };
     Params: { providerConfigKey: string; functionName: string };
     Success: ListedFunctionSuccess;
 }>;
@@ -459,7 +467,7 @@ export type GetPublicIntegrationFunction = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/integrations/:uniqueKey/functions/:name';
-    Querystring: { type?: FunctionType };
+    Querystring: { type?: FunctionListType };
     Params: { uniqueKey: string; name: string };
     Success: ListedFunctionSuccess;
 }>;
@@ -484,7 +492,7 @@ export type PostToolCall = ApiEndpoint<{
     Body: {
         input?: unknown | undefined;
     };
-    Error: ApiError<FunctionInvocationErrorCode | 'ambiguous_connection'>;
+    Error: ApiError<FunctionInvocationErrorCode | 'function_runtime_error' | 'ambiguous_connection'>;
     Success: FunctionInvocationSuccess;
 }>;
 
@@ -494,6 +502,31 @@ export type GetPublicProviderTemplates = ApiEndpoint<{
     Path: '/providers/:provider/templates';
     Params: { provider: string };
     Success: ProviderTemplatesSuccess;
+}>;
+
+type ProviderTemplateCodeError =
+    | ApiError<'unknown_function'>
+    | ApiError<'source_unavailable'>
+    | ApiError<'ambiguous_function', undefined, { matches: { type: FunctionType; name: string }[] }>;
+
+export type GetPublicProviderTemplateCode = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/providers/:provider/templates/:name/code';
+    Params: { provider: string; name: string };
+    Querystring: { type?: FunctionType | undefined };
+    Success: { type: FunctionType; code: string };
+    Error: ProviderTemplateCodeError;
+}>;
+
+export type GetProviderTemplateCode = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/providers/:providerConfigKey/templates/:name/code';
+    Params: { providerConfigKey: string; name: string };
+    Querystring: { env: string; type?: FunctionType | undefined };
+    Success: { type: FunctionType; code: string };
+    Error: ProviderTemplateCodeError;
 }>;
 
 export type GetIntegrationTemplates = ApiEndpoint<{
@@ -509,7 +542,7 @@ export interface FunctionDeploymentArtifact {
     name: string;
     integrationId: string;
     description: string;
-    tags?: FunctionTags | undefined;
+    tags?: FunctionTags | ToolTags | undefined;
     trigger: FunctionTriggerDefinition;
     requires: FunctionRequires;
     capabilities: FunctionCapabilities;
@@ -524,9 +557,13 @@ export interface FunctionDeploymentArtifact {
         js: string;
         ts: string;
     };
+    source: Exclude<FunctionSource, 'catalog'>;
 }
 
-export type FunctionReconciliationScope = { kind: 'environment' } | { kind: 'integration'; integrationId: string };
+export type FunctionReconciliationScope =
+    | { kind: 'environment' }
+    | { kind: 'integration'; integrationId: string }
+    | { kind: 'function'; integrationId: string; name: string };
 
 export interface FunctionDeploymentBundleBody {
     reconciliationScope: FunctionReconciliationScope;
@@ -545,7 +582,7 @@ export type PostFunctionDeploymentBundlePreview = ApiEndpoint<{
     Method: 'POST';
     Path: '/functions/deployments/bundle/preview';
     Body: FunctionDeploymentBundleBody;
-    Error: ApiError<'functions_deployment_error' | 'integration_not_found'>;
+    Error: ApiError<'functions_deployment_error' | 'integration_not_found' | 'invalid_request'>;
     Success: FunctionDeploymentBundleSuccess;
 }>;
 
@@ -554,6 +591,6 @@ export type PostFunctionDeploymentBundle = ApiEndpoint<{
     Method: 'POST';
     Path: '/functions/deployments/bundle';
     Body: FunctionDeploymentBundleBody;
-    Error: ApiError<'functions_deployment_error' | 'concurrent_deployment' | 'integration_not_found'>;
+    Error: ApiError<'functions_deployment_error' | 'concurrent_deployment' | 'integration_not_found' | 'invalid_request'>;
     Success: FunctionDeploymentBundleSuccess;
 }>;

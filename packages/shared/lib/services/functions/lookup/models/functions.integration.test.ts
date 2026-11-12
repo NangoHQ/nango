@@ -1,0 +1,541 @@
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import db, { multipleMigrations } from '@nangohq/database';
+
+import { createAccount } from '../../../../seeders/account.seeder.js';
+import { createConfigSeed } from '../../../../seeders/config.seeder.js';
+import { createEnvironmentSeed } from '../../../../seeders/environment.seeder.js';
+import { getCatalogTool } from '../../../catalog/actions.js';
+import * as functionConfigService from '../../models/functions.js';
+import { findTool } from '../../tools.js';
+import { findActiveByName, findActiveFunctionAvailability, findInputSchemas, findIntegrationFunctions } from './functions.js';
+
+import type { DBEnvironment, DBFunctionConfigVersion, DBSyncConfig, IntegrationConfig, NangoConfigMetadata } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
+
+const { mockHasCatalogTools } = vi.hoisted(() => {
+    return { mockHasCatalogTools: vi.fn() };
+});
+
+vi.mock('@nangohq/feature-flags', () => ({
+    getFlags: () => ({ hasCatalogTools: mockHasCatalogTools })
+}));
+
+beforeEach(() => {
+    mockHasCatalogTools.mockResolvedValue(true);
+});
+
+async function insertSyncConfig({
+    environmentId,
+    integration,
+    name,
+    type,
+    metadata,
+    input,
+    modelsJsonSchema,
+    enabled = true,
+    active = true,
+    deleted = false
+}: {
+    environmentId: number;
+    integration: IntegrationConfig;
+    name: string;
+    type: 'sync' | 'action';
+    metadata?: NangoConfigMetadata;
+    input?: string;
+    modelsJsonSchema?: { definitions: Record<string, JSONSchema7> };
+    enabled?: boolean;
+    active?: boolean;
+    deleted?: boolean;
+}): Promise<void> {
+    if (integration.id === undefined) {
+        throw new Error('Seeded integration has no id');
+    }
+
+    await db.knex.from<DBSyncConfig>('_nango_sync_configs').insert({
+        environment_id: environmentId,
+        nango_config_id: integration.id,
+        sync_name: name,
+        type,
+        file_location: 'file_location',
+        version: '0.0.1',
+        source: 'repo',
+        runs: type === 'sync' ? 'every day' : null,
+        track_deletes: false,
+        auto_start: false,
+        webhook_subscriptions: [],
+        models: [],
+        metadata: metadata ?? {},
+        ...(input ? { input } : {}),
+        ...(modelsJsonSchema ? { models_json_schema: modelsJsonSchema } : {}),
+        active,
+        enabled,
+        deleted,
+        deleted_at: deleted ? new Date() : null
+    });
+}
+
+async function insertFunction({
+    environment,
+    integrationId,
+    name,
+    enabled = true,
+    subscriptions
+}: {
+    environment: DBEnvironment;
+    integrationId: string;
+    name: string;
+    enabled?: boolean;
+    subscriptions?: string[] | undefined;
+}): Promise<void> {
+    const version: Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> = {
+        description: `${name} tool`,
+        tags: {},
+        file_location: `functions/${name}`,
+        version: 'test',
+        source: 'repo',
+        trigger: { kind: 'http', ...(subscriptions !== undefined && { subscriptions }) },
+        requires: { connection: true, outbound: false, invoke: false },
+        capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+        limits: { concurrency: { perConnection: 'max' } },
+        input_schema_ref: '#/definitions/ToolInput',
+        output_schema_ref: null,
+        model_schema_refs: [],
+        metadata_schema_ref: null,
+        checkpoint_schema_ref: null,
+        json_schema: toolInput
+    };
+    const [tool] = (await functionConfigService.upsert(db.knex, [{ environmentId: environment.id, integrationId, name, version }])).unwrap();
+    if (!enabled && tool) {
+        await db.knex('function_configs').where({ id: tool.config.id }).update({ enabled: false });
+    }
+}
+
+const toolInput: { definitions: Record<string, JSONSchema7> } = {
+    definitions: { ToolInput: { type: 'object', properties: { id: { type: 'string' } } } }
+};
+
+const objectInput: { definitions: Record<string, JSONSchema7> } = {
+    definitions: { SendEmailInput: { type: 'object', properties: { to: { type: 'string' } }, required: ['to'] } }
+};
+
+describe(findActiveFunctionAvailability, () => {
+    beforeAll(async () => {
+        await multipleMigrations();
+    });
+
+    it('HTTP functions with subscriptions are not tools', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+        const name = 'handle-issue';
+        await insertFunction({ environment, integrationId: github.unique_key, name, subscriptions: ['issues.opened'] });
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name, type: 'action' });
+
+        const scope = { environmentId: environment.id, providerConfigKey: github.unique_key };
+        expect((await findActiveFunctionAvailability(scope)).toolNames).toEqual([]);
+        expect(await findIntegrationFunctions({ environmentId: environment.id })).toEqual([expect.objectContaining({ name, type: 'action' })]);
+        expect(await findActiveByName({ ...scope, name, type: 'tool' })).toMatchObject({ name, type: 'action' });
+        expect((await findTool({ environmentId: environment.id, integrationKey: github.unique_key, name })).unwrap()).toBeNull();
+    });
+
+    it.each([undefined, []])('HTTP functions without subscriptions are tools (subscriptions: %j)', async (subscriptions) => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+        const name = 'create-issue';
+        await insertFunction({ environment, integrationId: github.unique_key, name, subscriptions });
+
+        const scope = { environmentId: environment.id, providerConfigKey: github.unique_key };
+        expect((await findActiveFunctionAvailability(scope)).toolNames).toEqual([name]);
+        expect(await findIntegrationFunctions({ environmentId: environment.id })).toEqual([expect.objectContaining({ name, type: 'tool' })]);
+        expect(await findActiveByName({ ...scope, name, type: 'tool' })).toMatchObject({ name, type: 'tool' });
+        expect((await findTool({ environmentId: environment.id, integrationKey: github.unique_key, name })).unwrap()?.config.name).toBe(name);
+    });
+
+    it('reports a disabled action as enabled and leaves a disabled sync alone when tools-catalog is on', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action', enabled: false });
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'sync_issues', type: 'sync', enabled: false });
+
+        const { deployed } = await findActiveFunctionAvailability({ environmentId: environment.id, providerConfigKey: 'github' });
+
+        expect(deployed).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ name: 'create_issue', type: 'action', enabled: true }),
+                expect.objectContaining({ name: 'sync_issues', type: 'sync', enabled: false })
+            ])
+        );
+    });
+
+    it('keeps a disabled action disabled when tools-catalog is off', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action', enabled: false });
+
+        const { deployed } = await findActiveFunctionAvailability({ environmentId: environment.id, providerConfigKey: 'github' });
+
+        expect(deployed).toEqual([expect.objectContaining({ name: 'create_issue', type: 'action', enabled: false })]);
+    });
+});
+
+describe(findIntegrationFunctions, () => {
+    beforeAll(async () => {
+        await multipleMigrations();
+    });
+
+    it('returns every integration with its active syncs and actions', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const notion = await createConfigSeed(environment, 'notion', 'notion');
+        const github = await createConfigSeed(environment, 'github', 'github');
+        await createConfigSeed(environment, 'gmail', 'google');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'upsert_doc', type: 'action', metadata: { description: 'Upsert' } });
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'sync_pages', type: 'sync' });
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'paused_sync', type: 'sync', enabled: false });
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action', enabled: false });
+
+        const functions = await findIntegrationFunctions({ environmentId: environment.id });
+
+        expect(functions).toEqual(
+            expect.arrayContaining([
+                { integration_id: 'github', provider: 'github', name: 'create_issue', type: 'action', description: null, enabled: true },
+                { integration_id: 'notion', provider: 'notion', name: 'paused_sync', type: 'sync', description: null, enabled: false },
+                { integration_id: 'notion', provider: 'notion', name: 'sync_pages', type: 'sync', description: null, enabled: true },
+                { integration_id: 'notion', provider: 'notion', name: 'upsert_doc', type: 'action', description: 'Upsert', enabled: true }
+            ])
+        );
+        expect(functions.filter((row) => row.integration_id === 'gmail')).toEqual([
+            { integration_id: 'gmail', provider: 'google', name: null, type: null, description: null, enabled: null }
+        ]);
+        expect(functions).toEqual(
+            expect.arrayContaining([expect.objectContaining({ integration_id: 'github', name: 'create-issue', type: 'action', enabled: true })])
+        );
+    });
+
+    it('returns tools, shadowing the actions and catalog tools they share a name with', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const notion = await createConfigSeed(environment, 'notion', 'notion');
+        await createConfigSeed(environment, 'github', 'github');
+        await createConfigSeed(environment, 'gmail', 'google');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'read_doc', type: 'action' });
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'archive_doc', type: 'action' });
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'sync_pages', type: 'sync' });
+        await insertFunction({ environment, integrationId: 'notion', name: 'read_doc' });
+        await insertFunction({ environment, integrationId: 'notion', name: 'archive_doc', enabled: false });
+        await insertFunction({ environment, integrationId: 'notion', name: 'sync_pages' });
+        await insertFunction({ environment, integrationId: 'github', name: 'create-issue' });
+        await insertFunction({ environment, integrationId: 'gmail', name: 'send_email' });
+
+        const functions = await findIntegrationFunctions({ environmentId: environment.id });
+
+        const seeded = ['archive_doc', 'read_doc', 'sync_pages'];
+        expect(functions.filter((row) => row.integration_id === 'notion' && seeded.includes(row.name ?? ''))).toEqual([
+            { integration_id: 'notion', provider: 'notion', name: 'archive_doc', type: 'tool', description: 'archive_doc tool', enabled: false },
+            { integration_id: 'notion', provider: 'notion', name: 'read_doc', type: 'tool', description: 'read_doc tool', enabled: true },
+            { integration_id: 'notion', provider: 'notion', name: 'sync_pages', type: 'sync', description: null, enabled: true },
+            { integration_id: 'notion', provider: 'notion', name: 'sync_pages', type: 'tool', description: 'sync_pages tool', enabled: true }
+        ]);
+        expect(functions.filter((row) => row.integration_id === 'github' && row.name === 'create-issue')).toEqual([
+            { integration_id: 'github', provider: 'github', name: 'create-issue', type: 'tool', description: 'create-issue tool', enabled: true }
+        ]);
+        expect(functions.filter((row) => row.integration_id === 'gmail' && (row.name === null || row.type === 'tool'))).toEqual([
+            { integration_id: 'gmail', provider: 'google', name: 'send_email', type: 'tool', description: 'send_email tool', enabled: true }
+        ]);
+    });
+
+    it('leaves out deleted and superseded function versions', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const notion = await createConfigSeed(environment, 'notion', 'notion');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'old_version', type: 'action', active: false });
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'removed', type: 'action', deleted: true });
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'kept', type: 'action' });
+
+        const functions = await findIntegrationFunctions({ environmentId: environment.id });
+
+        expect(functions.map((row) => row.name)).toContain('kept');
+        expect(functions.map((row) => row.name)).not.toContain('old_version');
+        expect(functions.map((row) => row.name)).not.toContain('removed');
+    });
+
+    it('narrows to the integrations asked for', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const notion = await createConfigSeed(environment, 'notion', 'notion');
+        const github = await createConfigSeed(environment, 'github', 'github');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'upsert_doc', type: 'action' });
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action' });
+
+        const functions = await findIntegrationFunctions({ environmentId: environment.id, providerConfigKeys: ['notion'] });
+
+        expect(functions.every((row) => row.integration_id === 'notion')).toBe(true);
+        expect(functions.map((row) => row.name)).toContain('upsert_doc');
+        expect(functions.some((row) => row.integration_id === 'github')).toBe(false);
+        expect(await findIntegrationFunctions({ environmentId: environment.id, providerConfigKeys: [] })).toEqual([]);
+    });
+
+    it('does not leak another environment', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const other = await createEnvironmentSeed(account.id);
+        const notion = await createConfigSeed(environment, 'notion', 'notion');
+        const otherNotion = await createConfigSeed(other, 'notion', 'notion');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'mine', type: 'action' });
+        await insertSyncConfig({ environmentId: other.id, integration: otherNotion, name: 'theirs', type: 'action' });
+
+        const functions = await findIntegrationFunctions({ environmentId: environment.id });
+
+        expect(functions.map((row) => row.name)).toContain('mine');
+        expect(functions.map((row) => row.name)).not.toContain('theirs');
+    });
+
+    it('does not append catalog actions when tools-catalog is off', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action', enabled: false });
+
+        const functions = await findIntegrationFunctions({ environmentId: environment.id });
+
+        expect(mockHasCatalogTools).toHaveBeenCalledWith(account.uuid);
+        expect(functions.some((row) => row.name === 'create-issue')).toBe(false);
+        expect(functions).toEqual(
+            expect.arrayContaining([{ integration_id: 'github', provider: 'github', name: 'create_issue', type: 'action', description: null, enabled: false }])
+        );
+    });
+
+    it('does not return a function whose environment disagrees with its integration', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const other = await createEnvironmentSeed(account.id);
+        const notion = await createConfigSeed(environment, 'notion', 'notion');
+
+        await insertSyncConfig({ environmentId: other.id, integration: notion, name: 'stray', type: 'action' });
+
+        const functions = await findIntegrationFunctions({ environmentId: environment.id });
+
+        expect(functions.every((row) => row.integration_id === 'notion')).toBe(true);
+        expect(functions.map((row) => row.name)).not.toContain('stray');
+    });
+});
+
+describe(findInputSchemas, () => {
+    beforeAll(async () => {
+        await multipleMigrations();
+    });
+
+    it('returns the input model and the schema definitions for the actions asked for', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const gmail = await createConfigSeed(environment, 'gmail', 'google');
+
+        await insertSyncConfig({
+            environmentId: environment.id,
+            integration: gmail,
+            name: 'send_email',
+            type: 'action',
+            input: 'SendEmailInput',
+            modelsJsonSchema: objectInput
+        });
+
+        const rows = await findInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'gmail', name: 'send_email' }]
+        });
+
+        expect(rows).toStrictEqual([{ integration_id: 'gmail', name: 'send_email', input: 'SendEmailInput', models_json_schema: objectInput }]);
+    });
+
+    it('returns a tool schema ahead of an action of the same name, and nothing for a disabled one', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+
+        for (const name of ['create-issue', 'list-issues']) {
+            await insertSyncConfig({
+                environmentId: environment.id,
+                integration: github,
+                name,
+                type: 'action',
+                input: 'SendEmailInput',
+                modelsJsonSchema: objectInput
+            });
+        }
+        await insertFunction({ environment, integrationId: 'github', name: 'create-issue' });
+        await insertFunction({ environment, integrationId: 'github', name: 'list-issues', enabled: false });
+
+        const rows = await findInputSchemas({
+            environmentId: environment.id,
+            actions: [
+                { integrationId: 'github', name: 'create-issue' },
+                { integrationId: 'github', name: 'list-issues' }
+            ]
+        });
+
+        expect(rows).toStrictEqual([{ integration_id: 'github', name: 'create-issue', input: 'ToolInput', models_json_schema: toolInput }]);
+    });
+
+    it('reads several integrations in one batch and returns nothing when asked for nothing', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const gmail = await createConfigSeed(environment, 'gmail', 'google');
+        const zendesk = await createConfigSeed(environment, 'zendesk', 'zendesk');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: gmail, name: 'send_email', type: 'action' });
+        await insertSyncConfig({ environmentId: environment.id, integration: zendesk, name: 'create_ticket', type: 'action' });
+
+        const rows = await findInputSchemas({
+            environmentId: environment.id,
+            actions: [
+                { integrationId: 'gmail', name: 'send_email' },
+                { integrationId: 'zendesk', name: 'create_ticket' }
+            ]
+        });
+
+        expect(rows.map((row) => row.name).sort()).toStrictEqual(['create_ticket', 'send_email']);
+        expect(await findInputSchemas({ environmentId: environment.id, actions: [] })).toStrictEqual([]);
+    });
+
+    it("does not pair an integration with another integration's tool of the same name", async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const gmail = await createConfigSeed(environment, 'gmail', 'google');
+        const outlook = await createConfigSeed(environment, 'outlook', 'microsoft');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: gmail, name: 'send_email', type: 'action' });
+        await insertSyncConfig({ environmentId: environment.id, integration: outlook, name: 'send_email', type: 'action' });
+
+        const rows = await findInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'gmail', name: 'send_email' }]
+        });
+
+        expect(rows.map((row) => row.integration_id)).toStrictEqual(['gmail']);
+    });
+
+    it('leaves out a sync, a disabled action, and a superseded or deleted version', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const notion = await createConfigSeed(environment, 'notion', 'notion');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'sync_pages', type: 'sync' });
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'turned_off', type: 'action', enabled: false });
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'old_version', type: 'action', active: false });
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'removed', type: 'action', deleted: true });
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'kept', type: 'action' });
+
+        const rows = await findInputSchemas({
+            environmentId: environment.id,
+            actions: ['sync_pages', 'turned_off', 'old_version', 'removed', 'kept'].map((name) => ({ integrationId: 'notion', name }))
+        });
+
+        expect(rows.map((row) => row.name).sort()).toStrictEqual(['kept', 'turned_off']);
+    });
+
+    it('leaves out a disabled action when tools-catalog is off', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const notion = await createConfigSeed(environment, 'notion', 'notion');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'turned_off', type: 'action', enabled: false });
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'kept', type: 'action' });
+
+        const rows = await findInputSchemas({
+            environmentId: environment.id,
+            actions: ['turned_off', 'kept'].map((name) => ({ integrationId: 'notion', name }))
+        });
+
+        expect(rows.map((row) => row.name)).toStrictEqual(['kept']);
+    });
+
+    it('does not fall back to the catalog when an active deployed action occupies the name', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+
+        await insertSyncConfig({
+            environmentId: environment.id,
+            integration: github,
+            name: 'create-issue',
+            type: 'action',
+            enabled: false,
+            input: 'DeployedInput'
+        });
+
+        const rows = await findInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'github', name: 'create-issue' }]
+        });
+
+        expect(rows).toStrictEqual([{ integration_id: 'github', name: 'create-issue', input: 'DeployedInput', models_json_schema: null }]);
+    });
+
+    it('does not return the catalog schema when tools-catalog is off', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        await createConfigSeed(environment, 'github', 'github');
+
+        const rows = await findInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'github', name: 'create-issue' }]
+        });
+
+        expect(rows).toStrictEqual([]);
+    });
+
+    it('returns the catalog schema when the name is unoccupied', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        await createConfigSeed(environment, 'github', 'github');
+
+        const catalog = getCatalogTool('github', 'create-issue');
+        const rows = await findInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'github', name: 'create-issue' }]
+        });
+
+        expect(rows).toHaveLength(1);
+        expect(rows[0]?.name).toBe('create-issue');
+        expect(rows[0]?.input).toBe(catalog?.input ?? null);
+        expect(rows[0]?.models_json_schema).toEqual(catalog?.jsonSchema);
+    });
+
+    it('does not leak another environment', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const other = await createEnvironmentSeed(account.id);
+        const notion = await createConfigSeed(environment, 'notion', 'notion');
+        const otherNotion = await createConfigSeed(other, 'notion', 'notion');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'mine', type: 'action' });
+        await insertSyncConfig({ environmentId: other.id, integration: otherNotion, name: 'theirs', type: 'action' });
+
+        const rows = await findInputSchemas({
+            environmentId: environment.id,
+            actions: [
+                { integrationId: 'notion', name: 'mine' },
+                { integrationId: 'notion', name: 'theirs' }
+            ]
+        });
+
+        expect(rows.map((row) => row.name)).toStrictEqual(['mine']);
+    });
+});

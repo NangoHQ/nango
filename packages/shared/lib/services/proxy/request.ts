@@ -7,6 +7,7 @@ import { axiosInstance as axios, Err, getLogger, Ok, redactHeaders, redactURL, r
 import { envs } from '../../env.js';
 import { createMeteringTransport } from './byte-metering-transport.js';
 import { getProxyRetryFromErr } from './retry.js';
+import { proxyMonitoringAttributes, trackBaseUrlOverride } from './telemetry.js';
 import { getAxiosConfiguration, ProxyError } from './utils.js';
 
 import type { MeteredBytes } from './byte-metering-transport.js';
@@ -112,6 +113,8 @@ export class ProxyRequest {
      * Send a request to the third-party with retry.
      */
     public async request(): Promise<Result<AxiosResponse>> {
+        const interpolations = new Set<string>();
+        let overrideTracked = false;
         try {
             const response = await retryFlexible<Promise<AxiosResponse>>(
                 async (retryAttempt) => {
@@ -125,15 +128,28 @@ export class ProxyRequest {
                         Object.values(proxyHeaders).some((v) => typeof v === 'string' && (v.includes('${clientId}') || v.includes('${clientSecret}')));
 
                     const needsIntegrationConfig = Boolean(this.config.provider.integration_config);
-                    if (this.connection.credentials.type === 'OAUTH1' || headersNeedOAuthAppCredentials || needsIntegrationConfig) {
+                    // Override telemetry also needs integration secrets available for URL redaction.
+                    if (
+                        (this.config.baseUrlOverride && this.config.monitoringContext) ||
+                        this.connection.credentials.type === 'OAUTH1' ||
+                        headersNeedOAuthAppCredentials ||
+                        needsIntegrationConfig
+                    ) {
                         this.integrationConfig = await this.getIntegrationConfig();
+                    }
+
+                    const properties = proxyMonitoringAttributes(this.config, this.connection, this.integrationConfig);
+                    if (properties && this.config.baseUrlOverride && !overrideTracked) {
+                        overrideTracked = true;
+                        trackBaseUrlOverride(this.config, properties);
                     }
 
                     this.axiosConfig = getAxiosConfiguration({
                         integrationConfig: this.integrationConfig,
                         proxyConfig: this.config,
                         connection: this.connection,
-                        outboundPolicy: this.outboundPolicy
+                        outboundPolicy: this.outboundPolicy,
+                        tracking: properties ? { properties, interpolations } : undefined
                     });
                     // In Node, axios' timeout is a hard limit until the response headers arrive (sending the body included),
                     // then a socket inactivity timeout that every chunk resets. Undocumented: https://github.com/axios/axios/issues/5896

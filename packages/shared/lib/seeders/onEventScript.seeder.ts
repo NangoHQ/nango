@@ -1,3 +1,5 @@
+import db from '@nangohq/database';
+
 import { onEventScriptService } from '../services/on-event-scripts.service.js';
 
 import type { DBEnvironment, DBTeam, OnEventScript, OnEventScriptsByProvider } from '@nangohq/types';
@@ -25,11 +27,12 @@ export async function createOnEventScript({
             ]
         }
     ];
-    const [added] = await onEventScriptService.update({
+    const [added] = await onEventScriptService.update(db.knex, {
         environment,
         account,
         onEventScriptsByProvider: scripts,
-        sdkVersion
+        sdkVersion,
+        scope: { kind: 'integration', integrationId: providerConfigKey }
     });
     if (!added) {
         throw new Error('failed_to_create_on_event_script');

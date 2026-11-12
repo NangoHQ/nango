@@ -11,6 +11,7 @@ import { sendVerificationEmail } from '../../../helpers/email.js';
 import { identifyAccountMembership } from '../../../services/accountAnalytics.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
+import { isDisposableEmail } from '../../../utils/disposableEmail.js';
 import { signupAcquisitionSchema } from '../../../utils/signupAcquisition.js';
 import { signupAdvertisingFromRequest } from '../../../utils/signupAdvertising.js';
 
@@ -51,6 +52,12 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     }
 
     const { email, password, name, token, foundUs, acquisition }: PostSignup['Body'] = val.data;
+
+    // Before the user lookup, so an unverified disposable signup can't get a fresh verification email.
+    if (!token && envs.AUTH_ALLOW_SIGNUP && isDisposableEmail(email)) {
+        res.status(400).send({ error: { code: 'disposable_email', message: 'Please sign up with a permanent email address.' } });
+        return;
+    }
 
     const existingUser = await userService.getUserByEmail(email);
     if (existingUser) {

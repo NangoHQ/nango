@@ -1,0 +1,39 @@
+---
+title: 'Envoice - How do I link my account?'
+sidebarTitle: 'Envoice'
+---
+
+## Overview
+
+To authenticate with Envoice, you need:
+
+1. **Environment** - The Envoice environment your connection uses.
+
+This guide shows you how to pick the right environment.
+
+### Prerequisites
+
+- An Envoice account with access to the company you want to connect.
+
+### Instructions
+
+#### Step 1: Choose your environment
+
+Envoice has two environments:
+
+| Environment | Value | Use it with |
+|---|---|---|
+| Production (default) | `api.envoice.eu` | Production OAuth app credentials and live Envoice companies |
+| Sandbox | `demo-api.envoice.eu` | Development (sandbox) OAuth app credentials and test companies |
+
+The environment must match the credentials of the Envoice integration in Nango. Production credentials do not work against the sandbox, and development credentials do not work against production.
+
+#### Step 2: Enter your details in the Connect UI
+
+1. Open the form where you need to authenticate with Envoice.
+2. Select the **Environment**. The form selects `api.envoice.eu` (production) by default.
+3. Click **Connect**, then log in to Envoice and choose the company to connect.
+
+<img src="/api-integrations/envoice/form.png" alt="Nango Connect UI form for selecting the Envoice environment" style={{maxWidth: "450px" }}/>
+
+You are now connected to Envoice.

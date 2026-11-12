@@ -3,7 +3,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import flowService from './flow.service.js';
 
-import type { NangoSyncConfig, Provider } from '@nangohq/types';
+import type { ApiProviderFunctionCounts, NangoSyncConfig, Provider } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export type GetProviderServiceErrorCode = 'not_found' | 'get_failed' | 'list_templates_failed';
@@ -65,6 +65,24 @@ export class ProviderService {
                 new ProviderServiceError({
                     code: 'get_failed',
                     message: 'Failed to get provider',
+                    cause: err
+                })
+            );
+        }
+    }
+
+    countTemplatesByProvider(): Result<Map<string, ApiProviderFunctionCounts>, ListProviderTemplatesServiceError> {
+        try {
+            const counts = new Map<string, ApiProviderFunctionCounts>();
+            for (const entry of flowService.getAllAvailableFlowsAsStandardConfig()) {
+                counts.set(entry.providerConfigKey, { actions: entry.actions.length, syncs: entry.syncs.length });
+            }
+            return Ok(counts);
+        } catch (err) {
+            return Err(
+                new ProviderServiceError({
+                    code: 'list_templates_failed',
+                    message: 'Failed to count provider templates',
                     cause: err
                 })
             );

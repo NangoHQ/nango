@@ -22,7 +22,7 @@ function parseFunctionOptionValue(value: string): { type: Exclude<PlaygroundFunc
     if (separator <= 0) return null;
     const type = value.slice(0, separator);
     const name = value.slice(separator + 1);
-    if ((type !== 'action' && type !== 'sync') || !name) return null;
+    if ((type !== 'action' && type !== 'sync' && type !== 'tool') || !name) return null;
     return { type, name };
 }
 
@@ -82,8 +82,8 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functions
             .map((fn) => ({
                 value: functionOptionValue(fn.type, fn.name),
                 label: fn.name,
-                filterValue: `${fn.name} ${fn.type}`,
-                tag: <Badge case="capitalize">{fn.type}</Badge>
+                filterValue: fn.type === 'action' ? `${fn.name} ${fn.type} tool` : `${fn.name} ${fn.type}`,
+                tag: <Badge case="capitalize">{fn.type === 'action' ? 'tool' : fn.type}</Badge>
             }));
         if (selectedFunctionValue && playgroundFunction && !opts.some((option) => option.value === selectedFunctionValue)) {
             opts.unshift({ value: selectedFunctionValue, label: playgroundFunction, filterValue: playgroundFunction });

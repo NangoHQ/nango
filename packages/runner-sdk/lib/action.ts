@@ -1,6 +1,15 @@
+import { isDeepStrictEqual } from 'node:util';
+
 import { getProvider } from '@nangohq/providers';
 
-import { ActionError, ExecutionAbortedSDKError, ExecutionInterruptedSDKError, ExecutionTimeoutSDKError, UnknownProviderSDKError } from './errors.js';
+import {
+    ActionError,
+    ExecutionAbortedSDKError,
+    ExecutionInterruptedSDKError,
+    ExecutionTimeoutSDKError,
+    FunctionError,
+    UnknownProviderSDKError
+} from './errors.js';
 import paginateService from './paginate.service.js';
 
 import type { ZodCheckpoint, ZodMetadata } from './types.js';
@@ -9,6 +18,7 @@ import type { Nango } from '@nangohq/node';
 import type {
     ApiPublicAllAuthCredentials,
     ApiPublicConnectionFull,
+    CheckpointRange,
     EnvironmentVariable,
     GetPublicConnection,
     GetPublicIntegration,
@@ -71,6 +81,7 @@ export abstract class NangoActionBase<
     public integrationConfig?: NangoProps['integrationConfig'];
     private readonly functionVariant: string;
 
+    public Error = FunctionError;
     public ActionError = ActionError;
 
     public telemetryBag: TelemetryBag = {
@@ -161,8 +172,17 @@ export abstract class NangoActionBase<
         }
         // function exceeded its maximum execution time
         if (this.lifecycle?.killAfter && new Date() > this.lifecycle.killAfter) {
+            const range = this.getCheckpointRange();
+            if (range?.to && !isDeepStrictEqual(range.from, range.to)) {
+                throw new ExecutionInterruptedSDKError();
+            }
+
             throw new ExecutionTimeoutSDKError();
         }
+    }
+
+    protected getCheckpointRange(): CheckpointRange | null {
+        return null;
     }
 
     protected throwIfInterrupted(): void {

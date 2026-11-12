@@ -1,4 +1,4 @@
-import { ExternalLink, Pencil } from 'lucide-react';
+import { ArrowUpRight, Pencil } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { Button, Card } from '@nangohq/design-system';
@@ -87,7 +87,7 @@ export const Payment: React.FC = () => {
                         <Button asChild variant="link-accent">
                             <a href={usage.data.customer.portalUrl} target="_blank" rel="noopener noreferrer">
                                 View all invoices
-                                <ExternalLink />
+                                <ArrowUpRight />
                             </a>
                         </Button>
                     )

@@ -127,6 +127,7 @@ export async function upsertCheckpoint(
  * @param connectionId - The connection ID the checkpoint belongs to.
  * @param key - The key of the checkpoint to delete.
  * @param expectedVersion - The expected version of the checkpoint. Delete will fail if version doesn't match.
+ *                          Deleting a checkpoint that doesn't exist or is already deleted succeeds.
  * @param force - If true, will delete without checking version.
  */
 export async function deleteCheckpoint(
@@ -134,21 +135,27 @@ export async function deleteCheckpoint(
     props: { environmentId: number; connectionId: number; key: string } & ({ expectedVersion: number } | { force: true })
 ): Promise<Result<void>> {
     try {
-        const query = db
-            .from<DBCheckpoint>(TABLE)
-            .where({ environment_id: props.environmentId, connection_id: props.connectionId, key: props.key })
-            .whereNull('deleted_at')
-            .update({
-                deleted_at: db.fn.now(),
-                version: db.raw('version + 1')
-            });
-        if ('expectedVersion' in props && props.expectedVersion) {
-            query.where({ version: props.expectedVersion });
-        }
+        const expectedVersion = 'expectedVersion' in props ? props.expectedVersion : null;
+        const result = await db.raw<{ rows: { conflict: boolean }[] }>(
+            `
+            WITH live AS (
+                SELECT id, version FROM ${TABLE}
+                WHERE environment_id = ? AND connection_id = ? AND key = ? AND deleted_at IS NULL
+                FOR UPDATE
+            ),
+            deleted AS (
+                UPDATE ${TABLE}
+                SET deleted_at = NOW(), version = ${TABLE}.version + 1
+                FROM live
+                WHERE ${TABLE}.id = live.id AND (?::int IS NULL OR live.version = ?)
+                RETURNING ${TABLE}.id
+            )
+            SELECT EXISTS (SELECT 1 FROM live) AND NOT EXISTS (SELECT 1 FROM deleted) AS conflict
+            `,
+            [props.environmentId, props.connectionId, props.key, expectedVersion, expectedVersion]
+        );
 
-        const count = await query;
-
-        if (count === 0) {
+        if (result.rows[0]?.conflict) {
             return Err(new Error('checkpoint_conflict'));
         }
         return Ok(undefined);

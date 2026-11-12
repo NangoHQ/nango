@@ -1,0 +1,39 @@
+---
+title: 'athenahealth (JWKS) - How do I connect a practice?'
+sidebarTitle: 'athenahealth (JWKS)'
+---
+
+## Overview
+
+To connect a practice to athenahealth, you need:
+
+1. **Hostname** - the athenahealth API hostname for the practice's environment: `api.platform.athenahealth.com` for production or `api.preview.platform.athenahealth.com` for preview.
+2. **Practice ID** - the ID of the athenahealth practice you're connecting to.
+
+Your app's Client ID, key, and scope are set once on the integration, so you won't be asked for them here.
+
+### Prerequisites
+
+- Your app is registered with athenahealth and configured in Nango. See the [setup guide](/api-integrations/athenahealth-jwks/how-to-register-your-own-athenahealth-jwks-app).
+- The practice has granted your app access.
+
+### Step 1: Choose your environment
+
+Select `api.platform.athenahealth.com` for production or `api.preview.platform.athenahealth.com` for preview. It must match the environment your app is registered in, since athenahealth issues separate apps for each environment.
+
+### Step 2: Find your Practice ID
+
+Nearly every athenahealth API endpoint is scoped to a practice. To find the Practice ID:
+
+1. Log in to athenaNet and click your username in the top-right corner.
+2. Your practice name is shown with a number in parentheses next to it. That number is your Practice ID.
+
+### Step 3: Enter your details in the Connect UI
+
+1. Open the form where you need to authenticate with athenahealth.
+2. Select the **Hostname** and enter the **Practice ID**.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/athenahealth-jwks/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to athenahealth.

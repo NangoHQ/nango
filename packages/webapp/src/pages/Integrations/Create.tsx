@@ -1,4 +1,5 @@
 import { BookOpen } from 'lucide-react';
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -12,6 +13,7 @@ import { useProvider } from '@/hooks/useProvider';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
 import { CardContent, CardHeader, CardLayout } from './components/CardLayout';
 import { AuthCreateForm } from './components/forms/AuthCreateForm';
 import { getDisplayName } from './utils';
@@ -28,6 +30,13 @@ export const CreateIntegration = () => {
     const { data: providerData, isLoading: loadingProvider } = useProvider(env, providerConfigKey);
 
     const provider = providerData?.data;
+    const providerName = provider?.name;
+    const hasSharedCredentials = provider?.preConfigured;
+
+    useEffect(() => {
+        if (!providerName || hasSharedCredentials === undefined) return;
+        track('integrations:create_page_view', { provider: providerName, has_shared_credentials: hasSharedCredentials });
+    }, [providerName, hasSharedCredentials]);
 
     const onSubmit = async (data: PostIntegration['Body']) => {
         if (!provider) {

@@ -1,0 +1,64 @@
+---
+title: 'How to register your own athenahealth app'
+sidebarTitle: 'athenahealth (JWKS) setup'
+description: 'Register a JWKS-authenticated athenahealth app and connect it to Nango'
+---
+
+This guide covers the one-time setup for athenahealth's JWT client assertion flow. You do this once for your app. Every connection you create afterward (one per practice) reuses the same Client ID and key.
+
+<Note>
+This flow authenticates your app, not an end user, so there's no OAuth redirect or login screen. Nango signs a short-lived JWT with your private key using `RS384`, and athenahealth verifies it against the public key you register. The private key must be an RSA key.
+</Note>
+
+<Steps>
+  <Step id="register-app" title="Register your app with athenahealth">
+    Register your app in the [athenahealth Developer Portal](https://docs.athenahealth.com/api/) for 2-legged OAuth (client credentials). athenahealth issues separate apps for preview and production, each with its own **Client ID**.
+  </Step>
+  <Step id="generate-key-pair" title="Generate an RSA key pair">
+    ```bash
+    openssl genrsa -out privatekey.pem 2048
+    openssl rsa -in privatekey.pem -pubout -out publickey.pem
+    ```
+
+    Keep `privatekey.pem` secret. You'll paste its contents into Nango in a later step.
+  </Step>
+  <Step id="register-jwks" title="Register your public key as a JWKS">
+    Convert your public key to JWK format and register it on your app, either by importing the JWKS or by hosting it at a public URL you control. Give the key a unique `kid` (key ID). You'll need this exact value in Nango.
+
+    Register the JWKS on every app you use: preview and production are separate apps, and an app without a JWKS rejects the token request.
+
+    ```json
+    {
+      "keys": [
+        {
+          "kty": "RSA",
+          "alg": "RS384",
+          "use": "sig",
+          "kid": "<your-key-id>",
+          "n": "<modulus>",
+          "e": "<exponent>"
+        }
+      ]
+    }
+    ```
+
+    <Warning>If you host the JWKS at a URL, it must stay reachable. If it goes down or the key is removed, every connection stops authenticating.</Warning>
+  </Step>
+  <Step id="enter-credentials-in-nango" title="Enter your credentials in Nango">
+    1. In Nango, go to **Integrations** → your athenahealth (JWKS) integration → **Settings** tab.
+    2. Enter:
+        - **Client ID**: your app's Client ID.
+        - **Key ID**: the `kid` from your JWKS entry.
+        - **Private Key**: the full contents of `privatekey.pem`.
+        - **Scope**: the space-separated scopes granted to your app, in SMART v2 format (e.g. `system/Patient.r`). athenahealth has no default scopes, so this is required, and requesting a scope your app isn't granted fails the whole token request.
+
+    Every connection under this integration reuses these values.
+  </Step>
+  <Step id="connect-a-practice" title="Next">
+    Follow the [connect guide](/api-integrations/athenahealth-jwks/connect) to create a connection for your first practice.
+  </Step>
+</Steps>
+
+For more details, see the [athenahealth API documentation](https://docs.athenahealth.com/api/).
+
+---

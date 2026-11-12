@@ -40,7 +40,8 @@ const validFunction = {
     fileBody: {
         js: 'module.exports = async () => ({})',
         ts: 'export default async () => ({})'
-    }
+    },
+    source: 'repo'
 } satisfies FunctionDeploymentArtifact;
 
 const validBody = {
@@ -292,6 +293,94 @@ describe('function deployment bundle endpoints', () => {
             const gitlabConfig = await db.knex<DBFunctionConfig>('function_configs').where({ nango_config_id: gitlabIntegrationId }).first();
             expect(githubConfig?.deleted_at).toBeInstanceOf(Date);
             expect(gitlabConfig?.deleted_at).toBeNull();
+        } finally {
+            uploadSpy.mockRestore();
+        }
+    });
+
+    it('should deploy a single function in a function-scoped bundle without deleting other functions', async () => {
+        const { apiKey, env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const siblingFunction = { ...validFunction, name: 'consumePullRequestWebhook' } satisfies FunctionDeploymentArtifact;
+        const uploadSpy = vi.spyOn(remoteFileService, 'upload').mockImplementation(({ destinationPath }) => Promise.resolve(destinationPath));
+        const deployRequest = async (body: PostFunctionDeploymentBundle['Body']) =>
+            await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body
+            });
+
+        try {
+            const created = await deployRequest({ reconciliationScope: { kind: 'environment' }, functions: [validFunction] });
+            isSuccess(created.json);
+
+            const single = await deployRequest({
+                reconciliationScope: { kind: 'function', integrationId: 'github', name: siblingFunction.name },
+                functions: [siblingFunction]
+            });
+            isSuccess(single.json);
+            expect(single.json).toStrictEqual({
+                created: [{ integrationId: 'github', name: siblingFunction.name }],
+                updated: [],
+                unchanged: [],
+                deleted: []
+            });
+
+            const configs = await db.knex<DBFunctionConfig>('function_configs').where({ environment_id: env.id }).whereNull('deleted_at');
+            expect(configs.map((config) => config.name).sort()).toStrictEqual([siblingFunction.name, validFunction.name].sort());
+        } finally {
+            uploadSpy.mockRestore();
+        }
+    });
+
+    it.each([
+        { existing: 'repo', incoming: 'standalone', ok: false },
+        { existing: 'repo', incoming: 'repo', ok: true },
+        { existing: 'standalone', incoming: 'repo', ok: true },
+        { existing: 'standalone', incoming: 'standalone', ok: true }
+    ] as const)('deploying a $incoming function over a $existing one succeeds: $ok', async ({ existing, incoming, ok }) => {
+        const { apiKey, env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const uploadSpy = vi.spyOn(remoteFileService, 'upload').mockImplementation(({ destinationPath }) => Promise.resolve(destinationPath));
+        const scope = { kind: 'function', integrationId: 'github', name: validFunction.name } as const;
+        const changed = { ...validFunction, description: 'changed', source: incoming } satisfies FunctionDeploymentArtifact;
+
+        try {
+            const created = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { reconciliationScope: scope, functions: [{ ...validFunction, source: existing }] }
+            });
+            isSuccess(created.json);
+
+            const preview = await api.fetch(previewEndpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { reconciliationScope: scope, functions: [changed] }
+            });
+            const deployed = await api.fetch(endpoint, { method: 'POST', token: apiKey.secret, body: { reconciliationScope: scope, functions: [changed] } });
+
+            const [fn] = (await functionConfigService.search(db.knex, { environmentId: env.id })).unwrap();
+            if (ok) {
+                isSuccess(preview.json);
+                isSuccess(deployed.json);
+                expect(deployed.json).toStrictEqual({
+                    created: [],
+                    updated: [{ integrationId: 'github', name: validFunction.name }],
+                    unchanged: [],
+                    deleted: []
+                });
+                expect(fn?.currentVersion.source).toBe(incoming);
+                expect(fn?.currentVersion.description).toBe(changed.description);
+            } else {
+                const error = { code: 'invalid_request', message: 'Cannot overwrite functions that are not standalone: github/fetchIssues' };
+                expect(preview.res.status).toBe(400);
+                expect(preview.json).toStrictEqual({ error });
+                expect(deployed.res.status).toBe(400);
+                expect(deployed.json).toStrictEqual({ error });
+                expect(fn?.currentVersion.source).toBe(existing);
+                expect(fn?.currentVersion.description).toBe(validFunction.description);
+            }
         } finally {
             uploadSpy.mockRestore();
         }

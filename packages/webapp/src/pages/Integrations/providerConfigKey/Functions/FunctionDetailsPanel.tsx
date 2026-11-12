@@ -1,37 +1,25 @@
-import { Ellipsis, ExternalLink, Play, SquareTerminal, Trash2 } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { ExternalLink, Play, Trash2 } from 'lucide-react';
+import { useCallback, useMemo } from 'react';
 
-import { Badge, Button, IconButton } from '@nangohq/design-system';
+import { Badge, Button } from '@nangohq/design-system';
 
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { CopyButton } from '@/components/ui/CopyButton';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
-import { EmptyCard } from '@/components/ui/EmptyCard';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
+import { Separator } from '@/components/ui/Separator';
 import { Spinner } from '@/components/ui/Spinner';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { useDeleteIntegrationFunction, useGetIntegration } from '@/hooks/useIntegration';
+import { useDeleteIntegrationFunction } from '@/hooks/useIntegration';
 import { useGetIntegrationFunctionCode, useGetTemplateFunctionCode } from '@/hooks/useIntegrationFunctions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
-import { buildPullCommand, isSyncOrAction } from '@/utils/scripts';
-import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
-import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
+import { toFunctionDetails } from './functionDetails.utils';
+import { CompactEmptyState, FunctionPanel, FunctionPanelHeader, FunctionSchemaTabs } from './FunctionPanel';
 import { FunctionSourceLabel } from './FunctionSourceLabel';
 
-import type { ApiIntegration, ListedNangoFunction, NangoFunctionTemplate } from '@nangohq/types';
-import type { JSONSchema7 } from 'json-schema';
-
-type DetailsFunction = ListedNangoFunction | NangoFunctionTemplate;
-
-const menuItemClassName = 'text-body-medium-regular';
-
-function isListedFunction(fn: DetailsFunction): fn is ListedNangoFunction {
-    return 'enabled' in fn;
-}
+import type { DetailsFunction, FunctionDetails } from './functionDetails.utils';
+import type { ApiIntegration } from '@nangohq/types';
 
 interface FunctionDetailsPanelProps {
     fn: DetailsFunction;
@@ -39,44 +27,17 @@ interface FunctionDetailsPanelProps {
     onDeleted: () => void;
 }
 
-export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, integration, onDeleted }) => {
+export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: rawFunction, integration, onDeleted }) => {
     const env = useStore((state) => state.env);
     const canOpenPlayground = useCanRunFunctions();
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
-    const [activeTab, setActiveTab] = useState<'input' | 'output' | 'code'>('input');
-    const functionType = fn.type === 'sync' ? 'sync' : 'action';
-    const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, integration.unique_key, fn.name, functionType);
-
-    const inputSchema = useMemo(() => getInputSchema(fn), [fn]);
-    const outputSchemas = useMemo(() => getOutputSchemas(fn), [fn]);
-    const listed = isListedFunction(fn);
-    const { data: integrationDetails } = useGetIntegration(env, integration.unique_key);
-    const repoProvider = integrationDetails?.data.symLinkTargetName ?? integration.provider;
-    const {
-        data: codeData,
-        isPending: deployedCodePending,
-        error: deployedCodeError
-    } = useGetIntegrationFunctionCode({
-        env,
-        providerConfigKey: integration.unique_key,
-        name: fn.name,
-        type: fn.type,
-        enabled: listed && activeTab === 'code'
-    });
-    const {
-        data: templateCode,
-        isPending: templateCodePending,
-        error: templateCodeError
-    } = useGetTemplateFunctionCode({
-        provider: repoProvider,
-        name: fn.name,
-        type: fn.type,
-        enabled: !listed && activeTab === 'code'
-    });
-    const codePending = listed ? deployedCodePending : templateCodePending;
-    const codeError = listed ? deployedCodeError : templateCodeError;
-    const code = listed ? codeData?.code : templateCode;
+    const fn = useMemo(
+        () => toFunctionDetails(rawFunction, { env, integration: integration.unique_key, provider: integration.provider }),
+        [rawFunction, env, integration.unique_key, integration.provider]
+    );
+    const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, integration.unique_key, fn.name, fn.delete?.type);
+    const { inputSchema, outputSchemas, delete: deletion } = fn;
 
     const onDelete = useCallback(async () => {
         try {
@@ -93,72 +54,45 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
         }
     }, [deleteFunction, fn.name, onDeleted, toast]);
 
-    const source = listed ? fn.source : 'template';
-    const pullCommand = buildPullCommand({
-        integration: integration.unique_key,
-        name: fn.name,
-        type: fn.type,
-        source: listed ? { env } : { catalog: true }
-    });
-    const canDelete = listed && fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn);
-    const canUsePlayground = listed && fn.enabled && isSyncOrAction(fn);
-    const copyPullCommand = async () => {
-        await navigator.clipboard.writeText(pullCommand);
-        toast({ title: 'Pull command copied', variant: 'success' });
-    };
+    const { source, pullCommand } = fn;
 
     return (
-        <aside className="sticky top-0 flex max-h-[calc(100dvh-7rem)] min-h-[min(606px,calc(100dvh-7rem))] w-full flex-col overflow-y-auto overscroll-y-contain bg-surface-panel">
-            <div className="flex items-start justify-between gap-2 border-b border-border-default p-3">
-                <div className="flex min-w-0 flex-1 flex-col gap-2">
-                    <div className="flex items-center gap-1">
-                        <span className="truncate type-code-medium-sm text-text-default">{fn.name}</span>
-                        <CopyButton text={fn.name} className="size-4 p-0" />
-                    </div>
-                    {fn.description && <p className="type-text-regular-xs text-text-secondary">{fn.description}</p>}
-                </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <IconButton variant="outline" size="sm" label="Function actions" loading={isDeleting}>
-                            <Ellipsis />
-                        </IconButton>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-52">
-                        {canOpenPlayground && (
-                            <DropdownMenuItem
-                                className={menuItemClassName}
-                                disabled={!canUsePlayground}
-                                onSelect={() => {
-                                    if (!isListedFunction(fn) || !isSyncOrAction(fn)) return;
-                                    openPlaygroundWithContext({
-                                        source: 'function',
-                                        integration: integration.unique_key,
-                                        functionName: fn.name,
-                                        functionType: fn.type
-                                    });
-                                }}
-                            >
-                                <Play />
-                                Test run
-                            </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem className={menuItemClassName} onSelect={() => void copyPullCommand()}>
-                            <SquareTerminal />
-                            Copy pull command
-                        </DropdownMenuItem>
-                        {canDelete && (
-                            <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    className={menuItemClassName}
-                                    variant="destructive"
-                                    onSelect={() =>
+        <FunctionPanel>
+            <FunctionPanelHeader
+                name={fn.name}
+                description={fn.description}
+                actions={
+                    (canOpenPlayground || deletion) && (
+                        <>
+                            {canOpenPlayground && (
+                                <Button
+                                    variant="link-accent"
+                                    size="xs"
+                                    disabled={!fn.runType}
+                                    onClick={() => {
+                                        if (!fn.runType) return;
+                                        openPlaygroundWithContext({
+                                            source: 'function',
+                                            integration: integration.unique_key,
+                                            functionName: fn.name,
+                                            functionType: fn.runType
+                                        });
+                                    }}
+                                >
+                                    <Play />
+                                    Test run this function
+                                </Button>
+                            )}
+                            {canOpenPlayground && deletion && <Separator orientation="vertical" />}
+                            {deletion && (
+                                <Button
+                                    variant="link-neutral-danger"
+                                    size="xs"
+                                    loading={isDeleting}
+                                    onClick={() =>
                                         void confirm({
                                             title: 'Delete function?',
-                                            description:
-                                                fn.type === 'sync'
-                                                    ? `You are about to permanently delete the sync "${fn.name}" and all of its synced records. This operation is not reversible, are you sure you wish to continue?`
-                                                    : `You are about to permanently delete the action "${fn.name}". This operation is not reversible, are you sure you wish to continue?`,
+                                            description: deletion.description,
                                             confirmButtonText: 'Delete function',
                                             confirmVariant: 'danger',
                                             onConfirm: onDelete
@@ -166,25 +100,25 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                                     }
                                 >
                                     <Trash2 />
-                                    Delete function
-                                </DropdownMenuItem>
-                            </>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
+                                    Delete
+                                </Button>
+                            )}
+                        </>
+                    )
+                }
+            />
 
             <div className="pb-6">
                 <div className="grid grid-cols-2 gap-3 border-b border-border-default p-3">
                     <Metadata label="Type">
-                        <Badge case="capitalize">{fn.type === 'on-event' ? 'trigger' : fn.type}</Badge>
+                        <Badge case="capitalize">{fn.typeLabel}</Badge>
                     </Metadata>
-                    {fn.type === 'sync' && fn.runs && <Metadata label="Frequency">{fn.runs}</Metadata>}
+                    {fn.frequency && <Metadata label="Frequency">{fn.frequency}</Metadata>}
                     <Metadata label="Source">
                         <FunctionSourceLabel source={source} />
                     </Metadata>
                     {fn.scopes && fn.scopes.length > 0 && (
-                        <Metadata label="Required scopes" className="col-span-2">
+                        <Metadata label={fn.scopesMatch === 'any' ? 'Requires one of these scopes' : 'Required scopes'} className="col-span-2">
                             <div className="flex flex-wrap gap-2">
                                 {fn.scopes.map((scope) => (
                                     <Badge key={scope} variant="secondary">
@@ -208,64 +142,23 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                                 </Button>
                             )}
                         </div>
-                        <div className="rounded-ds-lg bg-surface-panel px-3 py-2.5">
-                            <span className="type-code-medium-xs text-text-secondary">{pullCommand}</span>
+                        <div className="flex items-center gap-2 rounded-ds-lg bg-surface-panel px-3 py-2.5">
+                            <span className="min-w-0 flex-1 type-code-medium-xs text-text-secondary">
+                                {pullCommand ?? 'Pulling tools is not supported yet.'}
+                            </span>
+                            {pullCommand && <CopyButton text={pullCommand} />}
                         </div>
                     </div>
                 </div>
 
-                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} className="gap-3 px-3 pt-3">
-                    <TabsList className="w-fit gap-3">
-                        <TabsTrigger value="input" className="px-2 py-1.5">
-                            Input
-                        </TabsTrigger>
-                        <TabsTrigger value="output" className="px-2 py-1.5">
-                            Output
-                        </TabsTrigger>
-                        <TabsTrigger value="code" className="px-2 py-1.5">
-                            Code
-                        </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="input">
-                        {inputSchema ? <JsonSchemaTopLevelObject schema={inputSchema} /> : <CompactEmptyState>No inputs.</CompactEmptyState>}
-                    </TabsContent>
-                    <TabsContent value="output">
-                        {outputSchemas.length > 0 ? (
-                            <Navigation defaultValue={outputSchemas[0]?.name ?? ''} orientation="horizontal">
-                                {outputSchemas.length > 1 && (
-                                    <NavigationList>
-                                        {outputSchemas.map((outputSchema) => (
-                                            <NavigationTrigger key={outputSchema.name} value={outputSchema.name}>
-                                                {outputSchema.name}
-                                            </NavigationTrigger>
-                                        ))}
-                                    </NavigationList>
-                                )}
-                                {outputSchemas.map((outputSchema) => (
-                                    <NavigationContent key={outputSchema.name} value={outputSchema.name}>
-                                        <JsonSchemaTopLevelObject schema={outputSchema.schema} />
-                                    </NavigationContent>
-                                ))}
-                            </Navigation>
-                        ) : (
-                            <CompactEmptyState>No outputs.</CompactEmptyState>
-                        )}
-                    </TabsContent>
-                    <TabsContent value="code">
-                        {codePending ? (
-                            <div className="flex h-48 items-center justify-center">
-                                <Spinner className="size-5 text-text-muted" />
-                            </div>
-                        ) : codeError || !code ? (
-                            <CompactEmptyState>Failed to load source code.</CompactEmptyState>
-                        ) : (
-                            <CodeBlock title={`${fn.name}.ts`} language="typescript" code={code} />
-                        )}
-                    </TabsContent>
-                </Tabs>
+                <FunctionSchemaTabs
+                    inputSchema={inputSchema}
+                    outputSchemas={outputSchemas}
+                    extraTabs={[{ value: 'code', label: 'Code', content: <FunctionCode fn={fn} integration={integration} /> }]}
+                />
             </div>
             {DialogComponent}
-        </aside>
+        </FunctionPanel>
     );
 };
 
@@ -276,24 +169,45 @@ const Metadata: React.FC<{ label: string; className?: string; children: React.Re
     </div>
 );
 
-const CompactEmptyState: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <EmptyCard className="h-24">
-        <span className="type-label-sm text-text-secondary">{children}</span>
-    </EmptyCard>
-);
-
-function getInputSchema(fn: DetailsFunction): JSONSchema7 | null {
-    if (fn.type === 'on-event' || !fn.input || !fn.json_schema) return null;
-    const schema = fn.json_schema.definitions?.[fn.input] ?? null;
-    if (!schema || isNullSchema(schema as JSONSchema7) || isObjectWithNoProperties(schema as JSONSchema7)) return null;
-    return schema as JSONSchema7;
-}
-
-function getOutputSchemas(fn: DetailsFunction): { name: string; schema: JSONSchema7 }[] {
-    if (fn.type === 'on-event' || !fn.returns || !fn.json_schema) return [];
-    return fn.returns.flatMap((name) => {
-        const schema = fn.json_schema?.definitions?.[name] ?? null;
-        if (!schema || isNullSchema(schema as JSONSchema7) || isObjectWithNoProperties(schema as JSONSchema7)) return [];
-        return [{ name, schema: schema as JSONSchema7 }];
+const FunctionCode: React.FC<{ fn: FunctionDetails; integration: ApiIntegration }> = ({ fn, integration }) => {
+    const env = useStore((state) => state.env);
+    const codeSource = fn.code;
+    const isDeployedCode = codeSource.kind === 'deployed';
+    const {
+        data: codeData,
+        isPending: deployedCodePending,
+        error: deployedCodeError
+    } = useGetIntegrationFunctionCode({
+        env,
+        providerConfigKey: integration.unique_key,
+        name: fn.name,
+        type: isDeployedCode ? codeSource.type : undefined,
+        enabled: isDeployedCode
     });
-}
+    const {
+        data: templateCode,
+        isPending: templateCodePending,
+        error: templateCodeError
+    } = useGetTemplateFunctionCode({
+        env,
+        provider: integration.provider,
+        name: fn.name,
+        type: isDeployedCode ? undefined : codeSource.type,
+        enabled: !isDeployedCode
+    });
+    const codePending = isDeployedCode ? deployedCodePending : templateCodePending;
+    const codeError = isDeployedCode ? deployedCodeError : templateCodeError;
+    const code = isDeployedCode ? codeData?.code : templateCode?.code;
+
+    if (codePending) {
+        return (
+            <div className="flex h-48 items-center justify-center">
+                <Spinner className="size-5 text-text-muted" />
+            </div>
+        );
+    }
+    if (codeError || !code) {
+        return <CompactEmptyState>Failed to load source code.</CompactEmptyState>;
+    }
+    return <CodeBlock title={`${fn.name}.ts`} language="typescript" code={code} />;
+};

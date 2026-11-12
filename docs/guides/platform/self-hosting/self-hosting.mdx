@@ -67,10 +67,10 @@ All paid features available on Nango Cloud are also included in both BYOC and Se
 
 ## Scaling
 
-The default configuration supports 1M+ sync/action executions per day (assuming ~2s execution time per action/sync).
+The default configuration supports 1M+ sync/tool executions per day (assuming ~2s execution time per tool/sync).
 
 Bottlenecks mostly depend on:
-- **Action/sync execution time**: solved by scaling the Runner service vertically, then horizontally.
+- **Tool/sync execution time**: solved by scaling the Runner service vertically, then horizontally.
 - **Cached records & size (for sync functions only)**: solved by scaling Postgres vertically.
 
 ## Data storage
@@ -89,7 +89,7 @@ Yes, Nango is flexible with data store setups. However, we recommend a separate 
 ## Internet access requirements
 
 - **Server:** Required for proxy requests, credential management, and incoming/outgoing webhooks.
-- **Runner:** Required for reading/writing data from external APIs during sync and action executions.
+- **Runner:** Required for reading/writing data from external APIs during sync and tool executions.
 
 ## Exporting metrics & logs
 

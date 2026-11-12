@@ -143,7 +143,8 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'events:post_connection_creation': 'Event-based executions',
     'events:pre_connection_deletion': 'Event-based executions',
     'events:validate_connection': 'Event-based executions',
-    'function:invoke': 'Function invoked'
+    'function:invoke': 'Function invoked',
+    'tool:call': 'Tool called'
 };
 
 /**

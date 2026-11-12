@@ -20,9 +20,9 @@ import {
 } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
-import { LogoWolf } from '@/assets/LogoWolf';
 import { OpenAIIcon } from '@/assets/OpenAIIcon';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { PromptCard } from '@/components/patterns/PromptCard';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
@@ -38,6 +38,7 @@ import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
 import { approvalProperties, pendingApprovals } from './approvalTracking';
 import { describeChatError } from './chatError';
+import { HeroIllustration } from './components/HeroIllustration';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
@@ -53,7 +54,7 @@ const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
     { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
     { prompt: 'Summarize my 3 latest emails in Gmail', provider: 'google-mail', name: 'Gmail' },
     { prompt: "Star Nango's GitHub repo", provider: 'github', name: 'GitHub' },
-    { prompt: 'Send me a Slack message saying "Hello, world!"', provider: 'slack', name: 'Slack' },
+    { prompt: 'Send me "Hello, world!" on Slack', provider: 'slack', name: 'Slack' },
     { prompt: 'What Linear issues are assigned to me?', provider: 'linear', name: 'Linear' },
     { prompt: 'Show my 5 newest HubSpot contacts', provider: 'hubspot', name: 'HubSpot' }
 ];
@@ -74,21 +75,21 @@ export const AgentPlayground: React.FC = () => {
     }
     if (!meta.data.agentPlayground) {
         return (
-            <DashboardLayout title="Agent Playground">
+            <DashboardLayout>
                 <p className="text-text-secondary">The Agent Playground is not enabled for this account.</p>
             </DashboardLayout>
         );
     }
     if (!can('environment:agent_sessions:write')) {
         return (
-            <DashboardLayout title="Agent Playground">
+            <DashboardLayout>
                 <p className="text-text-secondary">{`Your role can't use the Agent Playground in this environment.`}</p>
             </DashboardLayout>
         );
     }
 
     return (
-        <DashboardLayout fullWidth className="h-full" title="Agent Playground" titleActions={<div ref={setToolbarSlot} />}>
+        <DashboardLayout fullWidth className="h-full" actions={<div ref={setToolbarSlot} />}>
             <Helmet>
                 <title>Agent Playground - Nango</title>
             </Helmet>
@@ -634,26 +635,14 @@ const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced
 const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string, provider: string) => void }> = ({ composer, onPick }) => {
     return (
         <div className="flex flex-1 flex-col items-center text-center">
-            <div className="flex w-full flex-1 flex-col items-center justify-end pb-6">
-                <LogoWolf
-                    aria-hidden
-                    className="pointer-events-none -mb-28 h-auto w-[337px] text-text-strong opacity-[0.06] [mask-image:linear-gradient(to_bottom,black_45px,transparent_199px)]"
-                />
-                <h2 className="relative text-heading-medium text-text-strong">Explore how Nango works with an agent</h2>
+            <div className="flex w-full flex-[3] flex-col items-center justify-end gap-12 pb-6">
+                <HeroIllustration />
+                <h2 className="text-heading-medium text-text-strong">Explore how Nango works with an agent</h2>
             </div>
             {composer}
-            <div className="grid w-full flex-1 auto-rows-min grid-cols-2 gap-3 pt-6">
-                {STARTER_PROMPTS.map(({ prompt, provider }) => (
-                    <button
-                        key={prompt}
-                        type="button"
-                        onClick={() => onPick(prompt, provider)}
-                        className="group flex items-center gap-2.5 rounded-ds-xs border-ds-hairline border-border-muted bg-surface-panel px-3 py-3 text-left text-body-medium-regular text-text-default transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-container-panel"
-                    >
-                        <IntegrationLogo provider={provider} className="size-5 shrink-0 border-0 bg-transparent p-0" />
-                        <span className="flex-1">{prompt}</span>
-                        <ArrowUpRight className="size-4 shrink-0 text-text-muted opacity-0 transition-opacity group-hover:opacity-100" />
-                    </button>
+            <div className="grid w-full flex-[4] auto-rows-min grid-cols-2 gap-3 pt-6">
+                {STARTER_PROMPTS.map(({ prompt, provider, name }) => (
+                    <PromptCard key={prompt} prompt={prompt} provider={provider} name={name} action="send" onClick={() => onPick(prompt, provider)} />
                 ))}
             </div>
         </div>

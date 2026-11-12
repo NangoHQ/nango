@@ -180,10 +180,10 @@ export interface OAuthPolicyEnvInput {
     outboundUrlPolicyOAuth?: OutboundUrlPolicyRaw | undefined;
 }
 
-export function resolvePolicyForOAuth(input: OAuthPolicyEnvInput): OutboundUrlPolicy {
+function mergeOAuthPolicyRaw(input: OAuthPolicyEnvInput): OutboundUrlPolicyRaw {
     const denylistEntries =
         input.proxyBaseUrlOverrideDenylist.length === 0 ? [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST] : input.proxyBaseUrlOverrideDenylist;
-    const merged = mergePolicyRaw(
+    return mergePolicyRaw(
         mergePolicyRaw(
             {
                 blockPrivateIps: false,
@@ -194,5 +194,26 @@ export function resolvePolicyForOAuth(input: OAuthPolicyEnvInput): OutboundUrlPo
         ),
         input.outboundUrlPolicyOAuth ?? {}
     );
+}
+
+export function resolvePolicyForOAuth(input: OAuthPolicyEnvInput): OutboundUrlPolicy {
+    const merged = mergeOAuthPolicyRaw(input);
     return rawToPolicy(merged, mergeProxyBaseUrlOverrideDenylist(merged.denylist ?? []));
+}
+
+export interface McpPolicyEnvInput extends OAuthPolicyEnvInput {
+    /** MCP-specific overlay (NANGO_OUTBOUND_URL_POLICY_MCP), already parsed. */
+    outboundUrlPolicyMcp?: OutboundUrlPolicyRaw | undefined;
+}
+
+/**
+ * Policy for MCP OAuth: the OAuth policy with the MCP overlay on top, restricted to https.
+ * The MCP authorization spec requires https for authorization server endpoints, so the overlay cannot relax it.
+ */
+export function resolvePolicyForMcp(input: McpPolicyEnvInput): OutboundUrlPolicy {
+    const merged = mergePolicyRaw(mergeOAuthPolicyRaw(input), input.outboundUrlPolicyMcp ?? {});
+    return {
+        ...rawToPolicy(merged, mergeProxyBaseUrlOverrideDenylist(merged.denylist ?? [])),
+        allowedSchemes: new Set(['https:'])
+    };
 }

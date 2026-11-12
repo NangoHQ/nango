@@ -1,5 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ArrowUpRight, ChevronLeft, ExternalLink, Info, Loader } from 'lucide-react';
+import { ArrowUpRight, ChevronLeft, ExternalLink, Info, Loader, Search } from 'lucide-react';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLocalStorage } from 'react-use';
@@ -17,6 +17,9 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
+    InputGroup,
+    InputGroupAddon,
+    InputGroupInput,
     Tooltip,
     TooltipContent,
     TooltipTrigger
@@ -27,7 +30,9 @@ import { CodeBlock } from '@/components/ui/CodeBlock';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useConnectionRecordModels, useConnectionRecordPayload, useConnectionRecords } from '@/hooks/useRecords';
+import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import { ConnectionTabLayout } from '@/pages/Connection/components/ConnectionTabLayout';
 import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
@@ -147,14 +152,18 @@ export const ConnectionRecordTable = ({
     model: ConnectionRecordModel;
     providerConfigKey: string;
 }) => {
-    const { data, error, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useConnectionRecords(
+    const [search, setSearch] = useSearchQueryState();
+    const debouncedSearch = useDebouncedValue(search.trim(), 300);
+
+    const { data, error, isLoading, isPlaceholderData, fetchNextPage, hasNextPage, isFetchingNextPage } = useConnectionRecords(
         {
             env,
             provider_config_key: providerConfigKey,
             model: model.model,
             variant: model.variant || undefined,
             limit: RECORDS_PAGE_SIZE,
-            metadata_only: true
+            metadata_only: true,
+            record_id: debouncedSearch || undefined
         },
         { connectionId }
     );
@@ -198,7 +207,7 @@ export const ConnectionRecordTable = ({
                     <ChevronLeft className="size-5 shrink-0 text-text-muted transition-colors group-hover:text-text-strong" />
                     <span className="text-body-large-semi text-text-strong">{formatModelLabel(model)}</span>
                 </Link>
-                {model.count > 0 && (
+                {model.count > 0 && !debouncedSearch && (
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <span className="text-body-small-regular text-text-muted cursor-default">{formatCountCompact(model.count)} records found</span>
@@ -208,11 +217,27 @@ export const ConnectionRecordTable = ({
                 )}
             </div>
 
+            {model.count > 0 && (
+                <InputGroup>
+                    <InputGroupInput type="text" placeholder="Search by record ID" value={search} onChange={(e) => setSearch(e.target.value)} />
+                    <InputGroupAddon>
+                        <Search />
+                    </InputGroupAddon>
+                </InputGroup>
+            )}
+
             {error && <CriticalErrorAlert message="Failed to load records for this model" />}
 
             {!error && isLoading && <Skeleton className="h-72 w-full" />}
 
-            {!error && !isLoading && records.length === 0 && (
+            {!error && !isLoading && records.length === 0 && debouncedSearch && (
+                <EmptyCard className="h-52 gap-3">
+                    <span className="text-title-body text-text-strong">No record with this ID.</span>
+                    <span className="text-body-medium-regular text-text-secondary">Search matches the full record ID exactly.</span>
+                </EmptyCard>
+            )}
+
+            {!error && !isLoading && records.length === 0 && !debouncedSearch && (
                 <EmptyCard className="h-52 gap-3">
                     <span className="text-title-body text-text-strong">No records found for this model.</span>
                     <span className="text-body-medium-regular text-text-secondary">This model currently has no synced records available to inspect.</span>
@@ -223,7 +248,11 @@ export const ConnectionRecordTable = ({
                 <>
                     <div
                         ref={scrollParentRef}
-                        className="w-full min-w-0 overflow-auto rounded border border-border-muted [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                        aria-busy={isPlaceholderData}
+                        className={cn(
+                            'w-full min-w-0 overflow-auto rounded border border-border-muted [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
+                            isPlaceholderData && 'pointer-events-none opacity-60'
+                        )}
                         style={{ height: scrollContainerHeight }}
                     >
                         <VirtualizedRecordRows scrollParentRef={scrollParentRef} records={records} onOpenPayload={setActiveRecordId} />

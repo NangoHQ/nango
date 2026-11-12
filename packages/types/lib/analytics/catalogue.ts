@@ -35,6 +35,39 @@ const agentSession = {
     is_playground: z.boolean()
 };
 
+const toolCallResult = {
+    result_size_bytes: z.number().optional(),
+    result_token_estimate: z.number().optional(),
+    call_duration_ms: z.number().optional()
+};
+
+const toolList = z.object({ tools: z.array(z.string()) });
+const integrationPolicy = z.union([z.literal('*'), z.object({ allow: z.union([z.literal('*'), toolList]).optional(), deny: toolList.optional() })]);
+const toolset = z.union([z.literal('*'), z.record(z.string(), integrationPolicy)]);
+const metaToolSwitch = z.union([z.boolean(), z.object({ enabled: z.boolean() })]);
+const createConnectionSwitch = z.union([z.boolean(), z.object({ enabled: z.boolean(), tags: z.array(z.string()).optional() })]);
+
+/** The POST /sessions body as the caller sent it, keeping integration ids, tool names and tag keys. Tag values and connection ids are dropped. */
+const agentSessionRequest = z.object({
+    tenant: z.object({
+        connections: z.object({
+            any: z.array(z.object({ tags: z.array(z.string()) })).optional(),
+            pinned: z.array(z.object({ integration_id: z.string() })).optional()
+        })
+    }),
+    toolset: toolset.optional(),
+    pinned_tools: z.record(z.string(), z.array(z.string())).optional(),
+    meta_tools: z
+        .object({
+            nango_tool_search: metaToolSwitch.optional(),
+            nango_execute: metaToolSwitch.optional(),
+            nango_proxy: metaToolSwitch.optional(),
+            nango_create_connection: createConnectionSwitch.optional()
+        })
+        .optional(),
+    expires_in: z.string().optional()
+});
+
 const playgroundApproval = {
     chat_id: z.string(),
     agent_session_id: z.string().optional(),
@@ -220,6 +253,73 @@ export const analyticsEventCatalogue = defineCatalogue({
         })
     },
 
+    'onboarding:connect_button_click': {
+        surface: 'web',
+        insight: 'How many accounts start the Getting Started flow by connecting GitHub',
+        fires: 'When someone clicks to connect GitHub on the Getting Started page',
+        properties: none
+    },
+    'onboarding:connection_create': {
+        surface: 'web',
+        insight: 'How many accounts that start Getting Started get through the GitHub connect flow',
+        fires: 'When the GitHub connection on the Getting Started page is created',
+        properties: none
+    },
+    'onboarding:run_complete': {
+        surface: 'web',
+        insight: 'How many accounts run the Getting Started code snippet, and how often it fails',
+        fires: 'When the Getting Started code snippet returns a result or an error',
+        properties: z.object({ is_success: z.boolean() })
+    },
+    'onboarding:create_button_click': {
+        surface: 'web',
+        insight: 'How many accounts finish Getting Started and go on to set up their own integration',
+        fires: 'When someone clicks to set up their own integration at the end of Getting Started',
+        properties: none
+    },
+    'onboarding:copy_prompt_button_click': {
+        surface: 'web',
+        insight: 'How many accounts start adding Nango to their own agent from Getting Started',
+        fires: 'When someone copies the install prompt for their agent on the Getting Started page',
+        properties: z.object({ has_api_key: z.boolean() })
+    },
+    'onboarding:copy_api_key_button_click': {
+        surface: 'web',
+        insight: 'How often people need the API key on its own while installing Nango in their agent',
+        fires: 'When someone copies the API key on the Getting Started page',
+        properties: none
+    },
+    'onboarding:playground_link_click': {
+        surface: 'web',
+        insight: 'How many accounts try the Agent Playground before installing Nango in their own agent',
+        fires: 'When someone follows the Agent Playground link on the Getting Started page',
+        properties: none
+    },
+    'onboarding:try_prompt_button_click': {
+        surface: 'web',
+        insight: 'Which integrations people try first with their own agent',
+        fires: 'When someone copies an example prompt for their agent on the Getting Started page',
+        properties: z.object({ integration: z.string() })
+    },
+    'onboarding:go_further_link_click': {
+        surface: 'web',
+        insight: 'Where accounts go after finishing Getting Started',
+        fires: 'When someone opens a Go further link on the Getting Started page',
+        properties: z.object({ destination: z.enum(['integrations', 'logs', 'catalog', 'syncs_docs']) })
+    },
+    'onboarding:restart_button_click': {
+        surface: 'web',
+        insight: 'How often accounts start Getting Started over',
+        fires: 'When someone confirms restarting Getting Started',
+        properties: none
+    },
+    'onboarding:dismiss_button_click': {
+        surface: 'web',
+        insight: 'How many accounts hide Getting Started',
+        fires: 'When someone hides Getting Started from the sidebar',
+        properties: none
+    },
+
     'connections:create_button_click': {
         surface: 'web',
         insight: 'How many people start creating a connection, and for which provider',
@@ -255,11 +355,48 @@ export const analyticsEventCatalogue = defineCatalogue({
         properties: none
     },
 
+    'catalog:filter_update': {
+        surface: 'web',
+        insight: 'Which catalog filters people use to find an API, and how often they find nothing',
+        fires: 'When someone stops typing in the catalog search, or changes the category, the sort order or the Instant setup filter',
+        properties: z.object({ filter: z.enum(['search', 'category', 'instant_setup', 'sort']), result_count: z.number() })
+    },
+    'catalog:provider_link_click': {
+        surface: 'web',
+        insight: 'Which APIs people open from the catalog, and whether Instant setup or already configured APIs draw more interest',
+        fires: 'When someone clicks an API card in the catalog',
+        properties: z.object({ provider: z.string(), is_instant_setup: z.boolean(), is_configured: z.boolean() })
+    },
+    'catalog:setup_button_click': {
+        surface: 'web',
+        insight: 'How many catalog detail visits lead to the setup form, and which placement of the setup button people use',
+        fires: 'When someone clicks a "Set up" button on an API\'s catalog page',
+        properties: z.object({ provider: z.string(), source: z.enum(['header', 'panel']) })
+    },
     'integrations:integration_create': {
         surface: 'server',
-        insight: 'How many accounts create integrations each week, and how many of those come from the Agent Playground',
-        fires: 'After an integration is created from the dashboard or by an Agent Playground starter',
-        properties: z.object({ provider: z.string(), is_playground: z.boolean() })
+        insight: "How many accounts create integrations each week, from where, and whether they use Nango's developer app or fill in their own credentials",
+        fires: 'After an integration is created from the dashboard, the API, the management MCP or an Agent Playground starter',
+        properties: z.object({
+            provider: z.string(),
+            is_playground: z.boolean(),
+            source: z.enum(['dashboard', 'api', 'mcp', 'playground']),
+            is_shared_credentials: z.boolean(),
+            has_missing_fields: z.boolean()
+        })
+    },
+    'integrations:filter_update': {
+        surface: 'web',
+        insight: 'How often people search their integrations list, and how often the search finds nothing',
+        fires: 'When someone stops typing in the integrations list search',
+        properties: z.object({ filter: z.enum(['search']), result_count: z.number() })
+    },
+    'integrations:create_page_view': {
+        surface: 'web',
+        insight:
+            "How many accounts open a provider's setup form, and how many leave it without creating an integration, split by whether Nango has a developer app for it",
+        fires: "When a provider's create integration form loads",
+        properties: z.object({ provider: z.string(), has_shared_credentials: z.boolean() })
     },
     'integrations:integration_update': {
         surface: 'server',
@@ -305,6 +442,18 @@ export const analyticsEventCatalogue = defineCatalogue({
         insight: "How many accounts run, pause or resume their connections' syncs from the dashboard each week",
         fires: 'After the dashboard sends a command to a sync and the server accepts it',
         properties: z.object({ command: z.enum(['run', 'full_resync', 'pause', 'resume', 'cancel']) })
+    },
+    'functions:function_view': {
+        surface: 'web',
+        insight: "How many accounts browse an integration's functions, and whether they look at catalog templates or functions they already deployed",
+        fires: "When someone opens a function's details from the list on an integration's Functions tab",
+        properties: z.object({ provider: z.string(), function_type: z.string(), is_deployed: z.boolean() })
+    },
+    'functions:deploy_create': {
+        surface: 'server',
+        insight: 'How many accounts deploy functions each week, from where, and whether they deploy templates or their own code',
+        fires: 'After the server accepts a function deployment from the CLI, the API, the dashboard or the management MCP',
+        properties: z.object({ source: z.enum(['cli', 'api', 'dashboard', 'mcp']), is_template: z.boolean(), function_count: z.number() })
     },
 
     'logs:filter_update': {
@@ -442,7 +591,8 @@ export const analyticsEventCatalogue = defineCatalogue({
 
     'agents:session_start': {
         surface: 'server',
-        insight: 'How many accounts create agent sessions each week, and which meta tools they turn on',
+        insight:
+            'How many accounts create agent sessions each week, which meta tools they turn on, and how they restrict the integrations and tools a session gets',
         fires: 'After an agent session is created',
         properties: z.object({
             ...agentSession,
@@ -450,7 +600,23 @@ export const analyticsEventCatalogue = defineCatalogue({
             is_tool_search_enabled: z.boolean(),
             is_execute_enabled: z.boolean(),
             is_proxy_enabled: z.boolean(),
-            is_create_connection_enabled: z.boolean()
+            is_create_connection_enabled: z.boolean(),
+            pinned_tool_count: z.number(),
+            searchable_tool_count: z.number(),
+            // What the caller sent, next to what the session compiled to above.
+            toolset_mode: z.enum(['connected', 'all', 'allowlist']),
+            allowlisted_integration_count: z.number(),
+            tool_allowlist_integration_count: z.number(),
+            tool_denylist_integration_count: z.number(),
+            allowed_tool_count: z.number(),
+            denied_tool_count: z.number(),
+            connection_selector_count: z.number(),
+            pinned_connection_count: z.number(),
+            create_connection_tag_count: z.number(),
+            expires_in_ms: z.number().optional(),
+            // An object on purpose: how a caller thinks about a session is read from the whole request. Names are capped, and is_request_truncated says when the cap hit.
+            request: agentSessionRequest,
+            is_request_truncated: z.boolean()
         })
     },
     'agents:session_end': {
@@ -461,17 +627,21 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'agents:tool_call_complete': {
         surface: 'server',
-        insight: 'Which tools do agents call most, and which fail most often?',
+        insight:
+            'Which tools do agents call most, which fail most often, which return large results or run slowly, and what the agent was trying to get done with each call',
         fires: 'When a tool call in an agent session returns',
         properties: z.object({
             ...agentSession,
             ...outcome,
+            ...toolCallResult,
             tool_name: z.string().optional(),
             meta_tool: stringOf<AgentSessionMetaTool>().optional(),
             is_pinned: z.boolean().optional(),
             integration_id: z.string().optional(),
             underlying_error_code: z.string().optional(),
-            is_mcp_tool: z.boolean().optional()
+            is_mcp_tool: z.boolean().optional(),
+            goal: z.string().optional(),
+            intent: z.string().optional()
         })
     },
     'agents:proxy_request_complete': {
@@ -482,6 +652,7 @@ export const analyticsEventCatalogue = defineCatalogue({
             ...agentSession,
             meta_tool: z.literal('nango_proxy'),
             ...outcome,
+            ...toolCallResult,
             integration_id: z.string().optional(),
             http_method: stringOf<HTTP_METHOD>().optional(),
             provider: z.string().optional(),
@@ -491,13 +662,15 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'agents:tool_search_complete': {
         surface: 'server',
-        insight: 'How often does tool search return a tool the agent then uses?',
+        insight: 'How often does tool search return a tool the agent then uses, read against the task the agent was searching for',
         fires: 'When a tool search in an agent session returns',
         properties: z.object({
             ...agentSession,
             meta_tool: z.literal('nango_tool_search'),
             ...outcome,
+            ...toolCallResult,
             query: z.string().optional(),
+            goal: z.string().optional(),
             match_count: z.number(),
             related_count: z.number(),
             top_match_confidence: z.number().optional(),

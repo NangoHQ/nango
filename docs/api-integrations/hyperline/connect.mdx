@@ -1,0 +1,48 @@
+---
+title: 'Hyperline - How do I link my account?'
+sidebarTitle: 'Hyperline'
+---
+
+## Overview
+
+To authenticate with Hyperline, you need:
+
+1. **Environment** — the Hyperline API host: production or sandbox (test mode).
+2. **API Key** — a Hyperline API key for that environment.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Hyperline account with admin access. Only Hyperline admins can create API keys.
+
+### Step 1: Choose your environment
+
+Hyperline has separate production and sandbox environments. Select the one your API key belongs to:
+
+| Environment | Key prefix | Value to select |
+|-------------|------------|-----------------|
+| Production | `prod_` | `api.hyperline.co` |
+| Sandbox (test mode) | `test_` | `sandbox.api.hyperline.co` |
+
+A sandbox key only works with `sandbox.api.hyperline.co`, and a production key only with `api.hyperline.co`.
+
+### Step 2: Create an API key
+
+1. Sign in to Hyperline as an admin. For a sandbox key, switch your account to test mode first.
+2. Go to **Settings**, section [API](https://app.hyperline.co/app/settings/api).
+3. Click **+ New API key**.
+4. Enter a name for the key and select its scopes. In most cases you need read/write access.
+5. Copy the key and store it somewhere safe. You won't be able to see it again in Hyperline.
+
+Production keys start with `prod_` and sandbox keys with `test_`. See [Authentication](https://docs.hyperline.co/developers/authentication) for details.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Hyperline.
+2. Select your **Environment** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/hyperline/form.png" alt="Hyperline connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Hyperline.
