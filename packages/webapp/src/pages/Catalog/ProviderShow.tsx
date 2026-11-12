@@ -25,7 +25,7 @@ import { ProviderCallout } from './components/ProviderCallout';
 
 import type { SetupButtonSource } from './analytics';
 import type { ProviderCalloutState } from './components/ProviderCallout';
-import type { ApiProviderListItem, GetProviders } from '@nangohq/types';
+import type { ApiProviderListItem } from '@nangohq/types';
 
 export const CatalogProviderShow: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -42,8 +42,8 @@ export const CatalogProviderShow: React.FC = () => {
         [integrationsLoaded, integrationsData, providerName]
     );
 
-    if (error) {
-        return <ErrorPageComponent title="Catalog" error={error.json as GetProviders['Errors']} />;
+    if (error && !providersData) {
+        return <ErrorPageComponent title="Catalog" error={error} />;
     }
     if (isPending) {
         return (
