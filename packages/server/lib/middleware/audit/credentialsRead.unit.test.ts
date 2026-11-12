@@ -242,6 +242,7 @@ describe('credentials read audit middleware (unit)', () => {
                 targets: [{ type: 'connection', id: 'conn-1' }],
                 metadata: { providerConfigKey: 'github' }
             });
+            expect(event.metadata).toEqual({ providerConfigKey: 'github' });
             expect(dataPlaneGateMock).toHaveBeenCalledWith(plan, { scope: 'read_credentials', accountUuid: 'acc-uuid' });
         });
 
