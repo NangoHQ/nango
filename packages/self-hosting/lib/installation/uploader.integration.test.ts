@@ -78,6 +78,9 @@ async function uploader(name: string, options?: { licensed?: boolean }): Promise
 }
 
 beforeAll(async () => {
+    // The endpoint only accepts recent rows, so it has to read the same date as the uploader.
+    vi.useFakeTimers({ toFake: ['Date'], now });
+
     const postgres = `postgres://${process.env['NANGO_DB_USER']}:${process.env['NANGO_DB_PASSWORD']}@${process.env['NANGO_DB_HOST']}:${process.env['NANGO_DB_PORT']}`;
     knex = knexFactory({ client: 'pg', connection: { connectionString: postgres } });
     await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [registry]);
@@ -105,6 +108,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+    vi.useRealTimers();
     await new Promise((resolve) => api.close(resolve));
     await clickhouse.close();
     await admin.command({ query: `DROP DATABASE IF EXISTS ${database}` });
