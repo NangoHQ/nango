@@ -112,6 +112,30 @@
             secret: true
             doc_section: '#step-3-obtain-your-client-credentials'
 
+2chat:
+    display_name: 2Chat
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.p.2chat.io/open
+        headers:
+            x-user-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /info
+    docs: https://nango.dev/docs/api-integrations/2chat
+    docs_connect: https://nango.dev/docs/api-integrations/2chat/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your 2Chat API key.
+            pattern: '^[A-Za-z0-9-]{20,}$'
+            example: Qm7x*******************************Rk2d
+            doc_section: '#step-1-create-an-api-key'
+
 3cx:
     display_name: 3CX
     categories:
@@ -412,6 +436,40 @@ acumatica:
             description: The client secret created for your application in Acumatica ERP.
             secret: true
             doc_section: '#step-3-add-a-client-secret'
+
+adafruit-io:
+    display_name: Adafruit IO
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://io.adafruit.com/api
+        headers:
+            x-aio-key: ${apiKey}
+        connection_config:
+            username: ${connectionConfig.username}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/user
+    docs: https://nango.dev/docs/api-integrations/adafruit-io
+    docs_connect: https://nango.dev/docs/api-integrations/adafruit-io/connect
+    connection_config:
+        username:
+            type: string
+            title: Username
+            description: Your Adafruit IO username.
+            example: test_username
+            order: 1
+            doc_section: '#step-1-copy-your-username-and-adafruit-io-key'
+    credentials:
+        apiKey:
+            type: string
+            title: Adafruit IO Key
+            description: Your Adafruit IO Key.
+            pattern: '^(aio_)?[A-Za-z0-9]+$'
+            example: aio_Xk7P********************q9Rm
+            doc_section: '#step-1-copy-your-username-and-adafruit-io-key'
 
 addepar:
     display_name: Addepar (OAuth)
@@ -749,6 +807,35 @@ adp-workforce-now-next-gen:
     docs: https://nango.dev/docs/integrations/all/adp-workforce-now-next-gen
     docs_connect: https://nango.dev/docs/integrations/all/adp-workforce-now-next-gen/connect
 
+adtraction:
+    display_name: Adtraction
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.adtraction.net
+        headers:
+            x-token: ${apiKey}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+            remaining: 'x-ratelimit-remaining'
+        verification:
+            method: GET
+            endpoints:
+                - /v2/partner/markets/
+                - /v2/advertiser/account/
+    docs: https://nango.dev/docs/api-integrations/adtraction
+    docs_connect: https://nango.dev/docs/api-integrations/adtraction/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: A partner or advertiser API key from Settings > API in Adtraction
+            pattern: '^[A-Za-z0-9_-]+$'
+            example: Q7KD********************************M2X9
+            doc_section: '#step-1-create-an-api-key'
+
 adyen:
     display_name: Adyen
     categories:
@@ -1056,6 +1143,73 @@ agentline:
             description: Your AgentLine API key.
             pattern: '^al_live_[a-zA-Z0-9_]+$'
             doc_section: '#step-1-finding-your-api-key'
+
+agile-crm:
+    display_name: Agile CRM
+    categories:
+        - crm
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.agilecrm.com/dev
+        headers:
+            accept: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /api/milestone/pipelines
+    docs: https://nango.dev/docs/api-integrations/agile-crm
+    docs_connect: https://nango.dev/docs/api-integrations/agile-crm/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Agile CRM Domain
+            description: The part of your Agile CRM URL before .agilecrm.com
+            example: acme
+            prefix: https://
+            suffix: .agilecrm.com
+            order: 1
+            doc_section: '#step-1-find-your-agile-crm-domain'
+    credentials:
+        username:
+            type: string
+            title: Email
+            description: The email address you sign in to Agile CRM with
+            doc_section: '#step-2-copy-your-rest-api-key'
+        password:
+            type: string
+            title: REST API Key
+            description: The API Key for REST client from Admin Settings
+            secret: true
+            example: a1b2****************c3d4
+            doc_section: '#step-2-copy-your-rest-api-key'
+
+agiled:
+    display_name: Agiled
+    categories:
+        - crm
+        - invoicing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.agiled.ai
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /public/v1/me
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/agiled
+    docs_connect: https://nango.dev/docs/api-integrations/agiled/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: An API key from Settings > API in Agiled
+            pattern: '^[A-Za-z0-9_-]+\|[A-Za-z0-9_-]+$'
+            example: 4b7e*********************************************************************x3m8
+            doc_section: '#step-1-create-an-api-key'
 
 agentql:
     display_name: AgentQL
@@ -1410,6 +1564,33 @@ alchemy:
             pattern: '^[A-Za-z0-9_-]+$'
             doc_section: '#step-1-copy-your-app-api-key'
 
+autobound:
+    display_name: Autobound
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://signals.autobound.ai
+        headers:
+            x-api-key: ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/account
+    docs: https://nango.dev/docs/api-integrations/autobound
+    docs_connect: https://nango.dev/docs/api-integrations/autobound/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Autobound Signal API key
+            example: sk-3f8e********************************************************b27d
+            pattern: '^sk-[A-Za-z0-9]+$'
+            doc_section: '#step-1-create-an-api-key'
+
 autodesk:
     display_name: Autodesk
     categories:
@@ -1553,6 +1734,30 @@ autumn:
             pattern: '^am_sk_(live|test)_[A-Za-z0-9]+$'
             doc_section: '#step-1-generating-your-autumn-api-key'
 
+algodocs:
+    display_name: Algodocs
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.algodocs.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/me
+    docs: https://nango.dev/docs/api-integrations/algodocs
+    docs_connect: https://nango.dev/docs/api-integrations/algodocs/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Secret API Key
+            description: Your Algodocs Secret API key.
+            example: k7q2**********************************x9m4
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-copy-your-secret-api-key'
+
 algolia:
     display_name: Algolia
     categories:
@@ -1689,6 +1894,31 @@ altium-365:
             order: 3
             doc_section: '#step-2-create-a-refresh-token'
 
+altoviz:
+    display_name: Altoviz
+    categories:
+        - invoicing
+        - accounting
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.altoviz.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /hello
+    docs: https://nango.dev/docs/api-integrations/altoviz
+    docs_connect: https://nango.dev/docs/api-integrations/altoviz/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Altoviz API key
+            example: 4f7a****************************3f64
+            pattern: '^[A-Za-z0-9-]+$'
+            doc_section: '#step-1-create-an-api-key'
+
 altrata:
     display_name: Altrata
     categories:
@@ -1768,6 +1998,26 @@ alttext-ai:
             pattern: '^(atai_)?[A-Za-z0-9_-]+$'
             doc_section: '#step-1-create-an-api-key'
 
+alttextlab:
+    display_name: AltTextLab
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.alttextlab.com
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/alttextlab
+    docs_connect: https://nango.dev/docs/api-integrations/alttextlab/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your AltTextLab API key
+            example: pMOp************************************************************NirQ
+            pattern: '^[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-create-an-api-key'
+
 amara:
     display_name: Amara
     categories:
@@ -1791,6 +2041,30 @@ amara:
             pattern: '^[A-Za-z0-9]{20,}$'
             example: 3c9e********************************b71d
             doc_section: '#step-1-generate-your-api-key'
+
+amazing-marvin:
+    display_name: Amazing Marvin
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://serv.amazingmarvin.com/api
+        headers:
+            x-api-token: ${apiKey}
+        verification:
+            method: POST
+            endpoints:
+                - /test
+    docs: https://nango.dev/docs/api-integrations/amazing-marvin
+    docs_connect: https://nango.dev/docs/api-integrations/amazing-marvin/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Amazing Marvin API token
+            pattern: '^[A-Za-z0-9+/=]{16,}$'
+            example: Kq7Z********************Fd1=
+            doc_section: '#step-1-copy-your-api-token'
 
 amazon:
     display_name: Amazon
@@ -2224,6 +2498,40 @@ anvil:
             default_value: ''
             hidden: true
 
+anydb:
+    display_name: AnyDB
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.anydb.com
+        headers:
+            x-anydb-api-key: ${apiKey}
+            x-anydb-email: ${connectionConfig.userEmail}
+        verification:
+            method: GET
+            endpoints:
+                - /api/integrations/ext/listteams
+    docs: https://nango.dev/docs/api-integrations/anydb
+    docs_connect: https://nango.dev/docs/api-integrations/anydb/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from Profile > Integrations in AnyDB
+            pattern: '^[A-Za-z0-9-]+$'
+            example: 7c2e****************************9a4f
+            doc_section: '#step-1-copy-your-api-key'
+    connection_config:
+        userEmail:
+            type: string
+            title: AnyDB Account Email
+            description: The email address of the AnyDB account that owns the API key
+            format: email
+            example: user@example.com
+            order: 1
+            doc_section: '#step-2-find-your-account-email'
+
 anymailfinder:
     display_name: Anymail Finder
     categories:
@@ -2271,6 +2579,34 @@ apaleo:
             after:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/apaleo
+
+apiframe:
+    display_name: Apiframe
+    categories:
+        - dev-tools
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.apiframe.ai
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/me
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/apiframe
+    docs_connect: https://nango.dev/docs/api-integrations/apiframe/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Apiframe API key (starts with afk_).
+            pattern: '^afk_[A-Za-z0-9_-]+$'
+            example: afk_q7m2********************************h4x9
+            doc_section: '#step-1-create-an-api-key'
 
 apexverify:
     display_name: ApexVerify
@@ -2621,6 +2957,46 @@ apple-calendar:
             pattern: '^[a-z]{4}-[a-z]{4}-[a-z]{4}-[a-z]{4}$'
             doc_section: '#step-2-generate-an-app-specific-password'
 
+appointo:
+    display_name: Appointo
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.appointo.me/api
+        headers:
+            appointo-token: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /products?limit=1
+    docs: https://nango.dev/docs/api-integrations/appointo
+    docs_connect: https://nango.dev/docs/api-integrations/appointo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Appointo API token.
+            doc_section: '#step-1-generate-an-api-token'
+
+appveyor:
+    display_name: AppVeyor
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://ci.appveyor.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/appveyor
+    docs_connect: https://nango.dev/docs/api-integrations/appveyor/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your AppVeyor API key (account-level or user-level v2)
+            doc_section: '#step-1-copy-your-api-key'
+
 appstle-subscriptions:
     display_name: Appstle Subscriptions
     categories:
@@ -2777,6 +3153,30 @@ ashby:
             description: ''
             default_value: ''
             hidden: true
+
+asin-data-api:
+    display_name: ASIN Data API
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.asindataapi.com
+        query:
+            api_key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /account
+    docs: https://nango.dev/docs/api-integrations/asin-data-api
+    docs_connect: https://nango.dev/docs/api-integrations/asin-data-api/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your ASIN Data API key
+            pattern: '^[A-Za-z0-9]+$'
+            example: Q7MZ************************K4TB
+            doc_section: '#step-1-copy-your-api-key'
 
 aspire:
     display_name: Aspire
@@ -4053,6 +4453,31 @@ aws-sigv4:
                 equals: basic
             order: 11
 
+ayrshare:
+    display_name: Ayrshare
+    categories:
+        - social
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.ayrshare.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /user
+    docs: https://nango.dev/docs/api-integrations/ayrshare
+    docs_connect: https://nango.dev/docs/api-integrations/ayrshare/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key of your Ayrshare Primary Profile.
+            pattern: '^[A-Za-z0-9-]{8,}$'
+            example: H4QW***********************F5YS
+            doc_section: '#step-1-copy-your-api-key'
+
 azure-blob-storage:
     categories:
         - storage
@@ -4343,6 +4768,27 @@ basecamp:
             pattern: '^[0-9]+$'
             doc_section: '#step-1-finding-your-account-id'
 
+baselinker:
+    display_name: BaseLinker
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.baselinker.com
+        headers:
+            x-bltoken: ${apiKey}
+    credentials_verification_script: baselinkerCredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/baselinker
+    docs_connect: https://nango.dev/docs/api-integrations/baselinker/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your BaseLinker API token
+            example: 'XEJ3************************************************************************PY1Z'
+            pattern: '^[A-Za-z0-9-]+$'
+            doc_section: '#step-1-create-an-api-token'
+
 baserow:
     display_name: Baserow
     categories:
@@ -4619,6 +5065,28 @@ bettercontact:
             pattern: '^[a-z0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
 
+bidsketch:
+    display_name: Bidsketch
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://bidsketch.com
+        headers:
+            authorization: 'Token token="${apiKey}"'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/clients.json?per_page=1
+    docs: https://nango.dev/docs/api-integrations/bidsketch
+    docs_connect: https://nango.dev/docs/api-integrations/bidsketch/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Bidsketch API token.
+            doc_section: '#step-1-create-an-api-token'
+
 bliro:
     display_name: Bliro
     categories:
@@ -4713,6 +5181,30 @@ bigcommerce:
             title: ''
             description: ''
             automated: true
+
+bika-ai:
+    display_name: Bika.ai
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://bika.ai/api/openapi/bika
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/spaces
+    docs: https://nango.dev/docs/api-integrations/bika-ai
+    docs_connect: https://nango.dev/docs/api-integrations/bika-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Bika.ai API token.
+            pattern: '^[A-Za-z0-9]{20,}$'
+            example: bktW***************************x3Lp
+            doc_section: '#step-1-create-an-api-token'
 
 bigmailer:
     display_name: BigMailer
@@ -5096,6 +5588,40 @@ boondmanager:
     docs: https://nango.dev/docs/api-integrations/boondmanager
     setup_guide_url: https://nango.dev/docs/api-integrations/boondmanager/how-to-register-your-own-boondmanager-api-oauth-app
 
+booqable:
+    display_name: Booqable
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.booqable.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/4/companies/current
+    docs: https://nango.dev/docs/api-integrations/booqable
+    docs_connect: https://nango.dev/docs/api-integrations/booqable/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Company Slug
+            description: The part of your Booqable account URL before .booqable.com
+            example: example
+            prefix: https://
+            suffix: .booqable.com
+            order: 1
+            doc_section: '#step-1-find-your-company-slug'
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: Your Booqable access token
+            example: f3a1********************************************************7c9e
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-2-create-an-access-token'
+
 bouncer:
     display_name: Bouncer
     categories:
@@ -5158,6 +5684,31 @@ booking-com:
             type: string
             title: Machine Account Password
             description: The password for your Booking.com machine account
+
+bookingmood:
+    display_name: Bookingmood
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.bookingmood.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+                - 'x-ratelimit-reset'
+            remaining: 'x-ratelimit-remaining'
+    docs: https://nango.dev/docs/api-integrations/bookingmood
+    docs_connect: https://nango.dev/docs/api-integrations/bookingmood/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Bookingmood API key
+            pattern: '^bm_[A-Za-z0-9_-]+$'
+            example: bm_Q7rK***********************************x2Lp
+            doc_section: '#step-1-create-an-api-key'
 
 braintree:
     display_name: Braintree
@@ -22045,6 +22596,43 @@ notion-scim:
             description: The API key for your Notion scim account
             doc_section: '#step-1-finding-your-scim-api-key-token'
 
+ntfy:
+    display_name: ntfy
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/account
+    docs: https://nango.dev/docs/api-integrations/ntfy
+    docs_connect: https://nango.dev/docs/api-integrations/ntfy/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Server Host
+            description: Your ntfy server host, ntfy.sh or your self-hosted domain.
+            example: ntfy.sh
+            prefix: https://
+            format: hostname
+            order: 1
+            doc_section: '#step-1-find-your-ntfy-server-host'
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: Your ntfy access token.
+            pattern: '^tk_[A-Za-z0-9]+$'
+            example: tk_q7m2*********************x8kd
+            doc_section: '#step-2-create-an-access-token'
+
 nyne-ai:
     display_name: Nyne AI
     categories:
@@ -24527,6 +25115,46 @@ pushinator:
             example: 'k7Rt****************************************3mQz'
             pattern: '^[A-Za-z0-9_-]{20,}$'
             doc_section: '#step-1-create-an-api-token'
+
+pushover:
+    display_name: Pushover
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.pushover.net
+        query:
+            token: ${apiKey}
+        connection_config:
+            userKey: ${connectionConfig.userKey}
+        retry:
+            at:
+                - 'x-limit-app-reset'
+            remaining: 'x-limit-app-remaining'
+        verification:
+            method: GET
+            endpoints:
+                - /1/apps/limits.json
+                - /1/teams.json
+    docs: https://nango.dev/docs/api-integrations/pushover
+    docs_connect: https://nango.dev/docs/api-integrations/pushover/connect
+    connection_config:
+        userKey:
+            type: string
+            title: User or Group Key
+            description: Your Pushover user key or a delivery group key.
+            pattern: '^[A-Za-z0-9]{30}$'
+            example: gT4w**********************Kc7b
+            order: 1
+            doc_section: '#step-2-copy-your-user-key'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Pushover application API token or Team API token.
+            pattern: '^[A-Za-z0-9]+$'
+            example: k3v9**********************7qx2
+            doc_section: '#step-1-create-an-application'
 
 pushpay-chms-v1:
     display_name: Pushpay ChMS (v1)
@@ -28885,6 +29513,30 @@ shipbob-pat:
             pattern: '^[A-F0-9]{64}-\d+$'
             doc_section: '#step-1-generate-your-token'
 
+shipday:
+    display_name: Shipday
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.shipday.com
+        headers:
+            authorization: Basic ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /carriers
+    docs: https://nango.dev/docs/api-integrations/shipday
+    docs_connect: https://nango.dev/docs/api-integrations/shipday/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Shipday API key
+            pattern: '^[A-Za-z0-9._-]{20,}$'
+            example: Kq7T***********************GfJ5
+            doc_section: '#step-1-copy-your-api-key'
+
 shippo:
     display_name: Shippo
     categories:
@@ -30696,6 +31348,34 @@ supadata:
             pattern: '^(sd_)?[A-Za-z0-9]{20,}$'
             example: sd_4k9x************************q2m7
             doc_section: '#step-1-create-an-api-key'
+
+supersaas:
+    display_name: SuperSaaS
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://www.supersaas.com/api
+        verification:
+            method: GET
+            endpoints:
+                - /schedules.json
+    docs: https://nango.dev/docs/api-integrations/supersaas
+    docs_connect: https://nango.dev/docs/api-integrations/supersaas/connect
+    credentials:
+        username:
+            type: string
+            title: Account name
+            description: Your SuperSaaS account name.
+            doc_section: '#step-1-find-your-account-name'
+        password:
+            type: string
+            title: API key
+            description: Your SuperSaaS API key.
+            secret: true
+            example: pQ7v**************x3Lm
+            pattern: '^[A-Za-z0-9_-]{16,}$'
+            doc_section: '#step-2-generate-your-api-key'
 
 surecontact:
     display_name: SureContact

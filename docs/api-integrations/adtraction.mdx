@@ -1,0 +1,77 @@
+---
+title: 'Adtraction'
+sidebarTitle: 'Adtraction'
+description: 'Integrate your application with the Adtraction API'
+---
+
+## 🚀 Quickstart
+
+Connect to Adtraction with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Adtraction_.
+    </Step>
+    <Step id="authorize-adtraction" title="Authorize Adtraction">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Adtraction API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-adtraction-api" title="Call the Adtraction API">
+    Let's make your first request to the Adtraction API to list the markets where Adtraction offers partner programs (this endpoint takes a partner API key). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/partner/markets/" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/partner/markets/',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Adtraction integration guides
+
+- [How do I link my account?](/api-integrations/adtraction/connect)  
+Create an Adtraction API key and connect it in the Connect UI.
+
+Official docs: [Adtraction API reference](https://apidocs.adtraction.net/nextgen/)
+
+## 🧩 Pre-built syncs & tools for Adtraction
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/adtraction/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
