@@ -1,4 +1,6 @@
-import type { AgentSession } from '@nangohq/types';
+import type { AgentSession, AgentSessionResolvedConnection } from '@nangohq/types';
+
+const MAX_ACCOUNT_LABEL_LENGTH = 100;
 
 /**
  * Sent once in the initialize result. Only what the session was created with goes in, so it says
@@ -80,14 +82,42 @@ export function buildSessionInstructions(session: AgentSession): string {
 }
 
 function describeIntegrations(session: AgentSession): string {
-    const integrations = Object.entries(session.compiledToolset).sort(([a], [b]) => a.localeCompare(b));
+    const integrations = Object.entries(session.compiledToolset)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([id, { provider }]) => ({ id, provider, connection: connectionOf(session, id) }));
     if (integrations.length === 0) {
         return 'This session has no integrations, so it cannot act on any app.';
     }
 
     return [
         'By the integration id every tool expects:',
-        ...integrations.map(([id, { provider }]) => `- ${id} (${provider}): ${Object.hasOwn(session.resolvedConnections, id) ? 'connected' : 'not connected'}`),
+        ...integrations.map(({ id, provider, connection }) => `- ${id} (${provider}): ${describeConnection(connection)}`),
+        'Each connected integration is on the account of the user this session acts for.',
         `This is each integration's status when you received these instructions. ${session.metaTools.nangoCreateConnection.enabled ? 'After you connect one, or when unsure' : 'When unsure'}, trust ${session.metaTools.nangoToolSearch ? 'nango_tool_search results and ' : ''}tool errors over this list.`
     ].join('\n');
+}
+
+function connectionOf(session: AgentSession, integrationId: string): AgentSessionResolvedConnection | undefined {
+    return Object.hasOwn(session.resolvedConnections, integrationId) ? session.resolvedConnections[integrationId] : undefined;
+}
+
+function describeConnection(connection: AgentSessionResolvedConnection | undefined): string {
+    if (!connection) {
+        return 'not connected';
+    }
+
+    const accountLabel = connection.accountLabel ? cleanAccountLabel(connection.accountLabel) : '';
+    return accountLabel ? `connected by ${JSON.stringify(accountLabel)}` : 'connected';
+}
+
+/**
+ * The label is tag text the instructions quote, so it is kept to one short line that cannot start
+ * a line or a section of its own.
+ */
+function cleanAccountLabel(label: string): string {
+    return label
+        .replace(/[\s\p{Cc}\p{Cf}]+/gu, ' ')
+        .trim()
+        .slice(0, MAX_ACCOUNT_LABEL_LENGTH)
+        .trim();
 }
