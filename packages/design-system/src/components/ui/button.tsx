@@ -72,10 +72,8 @@ export const buttonVariants = cva(
                     'aria-disabled:bg-interactive-ghost aria-disabled:text-text-disabled',
                     'focus-visible:shadow-focus-outline-default'
                 ],
-                // Figma Type=Danger Ghost — ghost's box with link-danger's colours: transparent at rest,
-                // status/danger/bg on hover, status/danger/bg-hover on press. Disabled matches ghost.
                 'danger-ghost': [
-                    'bg-transparent text-text-link-danger border-transparent',
+                    'bg-interactive-ghost text-text-link-danger border-transparent',
                     '[&_svg]:text-icon-link-danger',
                     'hover:bg-status-danger-bg hover:text-text-link-danger-active hover:[&_svg]:text-icon-link-danger-active',
                     'active:bg-status-danger-bg-hover active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active',
