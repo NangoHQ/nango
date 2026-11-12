@@ -342,6 +342,56 @@ describe('listSessionTools', () => {
         }
     });
 
+    it('keeps long names up to 64 characters', () => {
+        const integrationId = 'i'.repeat(31);
+        const toolName = 't'.repeat(31);
+        const tools = listSessionTools(session({ compiledToolset: { [integrationId]: { provider: 'notion', pinned: [tool(toolName)], searchable: [] } } }));
+
+        expect(tools[2]?.name).toBe(`${integrationId}__${toolName}`);
+    });
+
+    it('gives a short tool name the room a long integration id cannot have', () => {
+        const tools = listSessionTools(session({ compiledToolset: { ['i'.repeat(100)]: { provider: 'notion', pinned: [tool('get_task')], searchable: [] } } }));
+
+        expect(tools[2]?.name).toBe(`${'i'.repeat(54)}__get_task`);
+    });
+
+    it('gives a short integration id room for a long tool name', () => {
+        const tools = listSessionTools(session({ compiledToolset: { asana: { provider: 'asana', pinned: [tool('t'.repeat(100))], searchable: [] } } }));
+
+        expect(tools[2]?.name).toBe(`asana__${'t'.repeat(57)}`);
+    });
+
+    it('splits the room when both parts are long', () => {
+        const tools = listSessionTools(
+            session({ compiledToolset: { ['i'.repeat(100)]: { provider: 'notion', pinned: [tool('t'.repeat(100))], searchable: [] } } })
+        );
+
+        expect(tools[2]?.name).toBe(`${'i'.repeat(31)}__${'t'.repeat(31)}`);
+    });
+
+    it('numbers names that collide after clipping within 64 characters', () => {
+        const prefix = 't'.repeat(70);
+        const tools = listSessionTools(
+            session({
+                compiledToolset: {
+                    ['i'.repeat(100)]: {
+                        provider: 'notion',
+                        pinned: [tool(`${prefix}_read`), tool(`${prefix}_write`), tool(`${prefix}_delete`)],
+                        searchable: []
+                    }
+                }
+            })
+        );
+
+        const names = tools.slice(2).map((listed) => listed.name);
+        const base = `${'i'.repeat(31)}__${'t'.repeat(31)}`;
+        expect(names).toStrictEqual([base, `${base.slice(0, 62)}_2`, `${base.slice(0, 62)}_3`]);
+        for (const name of names) {
+            expect(name.length).toBeLessThanOrEqual(64);
+        }
+    });
+
     it('numbers a name two different tools would otherwise share', () => {
         const tools = listSessionTools(
             session({

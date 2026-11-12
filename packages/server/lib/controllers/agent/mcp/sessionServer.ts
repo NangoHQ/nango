@@ -28,7 +28,6 @@ export const TOOL_NAME_SEPARATOR = '__';
 export const INTEGRATION_META_KEY = 'nango/integration';
 export const TOOL_META_KEY = 'nango/tool';
 
-const MAX_NAME_PART_LENGTH = 30;
 const UNSAFE_NAME_CHARACTERS = /[^a-zA-Z0-9_-]/g;
 
 const JSON_SCHEMA_2020_12 = 'https://json-schema.org/draft/2020-12/schema';
@@ -330,12 +329,19 @@ function storedSlugs(toolset: AgentSessionCompiledToolset): string[] {
     );
 }
 
+/**
+ * Clipping only the tail would let a long integration id wipe out the tool name, so a short
+ * part leaves its unused room to the other and two long parts each keep about half.
+ */
 function qualifiedToolName(integrationId: string, toolName: string): string {
-    return `${sanitizeNamePart(integrationId)}${TOOL_NAME_SEPARATOR}${sanitizeNamePart(toolName)}`;
+    const budget = MAX_TOOL_NAME_LENGTH - TOOL_NAME_SEPARATOR.length;
+    const tool = sanitizeNamePart(toolName);
+    const integration = sanitizeNamePart(integrationId).slice(0, Math.max(Math.ceil(budget / 2), budget - tool.length));
+    return `${integration}${TOOL_NAME_SEPARATOR}${tool.slice(0, budget - integration.length)}`;
 }
 
 function sanitizeNamePart(part: string): string {
-    return part.replace(UNSAFE_NAME_CHARACTERS, '_').slice(0, MAX_NAME_PART_LENGTH);
+    return part.replace(UNSAFE_NAME_CHARACTERS, '_');
 }
 
 /**
