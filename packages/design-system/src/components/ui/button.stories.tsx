@@ -12,7 +12,19 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger', 'link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'] as const;
+const VARIANTS = [
+    'primary',
+    'secondary',
+    'outline',
+    'ghost',
+    'danger',
+    'link-accent',
+    'link-danger',
+    'link-neutral',
+    'link-neutral-danger',
+    'link-success',
+    'link-warning'
+] as const;
 const SIZES = ['xs', 'sm', 'md', 'lg'] as const;
 
 type Variant = (typeof VARIANTS)[number];
@@ -75,3 +87,5 @@ export const LinkAccent = matrixStory('link-accent');
 export const LinkDanger = matrixStory('link-danger');
 export const LinkNeutral = matrixStory('link-neutral');
 export const LinkNeutralDanger = matrixStory('link-neutral-danger');
+export const LinkSuccess = matrixStory('link-success');
+export const LinkWarning = matrixStory('link-warning');
