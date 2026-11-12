@@ -323,7 +323,7 @@ const AlertActionButton = ({ action, status }: { action: AlertAction; status: Al
 
     if (action.href) {
         return (
-            <Button asChild variant={variant} size="sm" disabled={action.disabled}>
+            <Button asChild variant={variant} size="sm" disabled={action.disabled} loading={action.loading}>
                 <a href={action.href} target={action.target} rel={action.target === '_blank' ? 'noreferrer' : undefined}>
                     {content}
                 </a>

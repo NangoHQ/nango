@@ -37,8 +37,10 @@ const SHAPES: Shape[] = [
     { label: 'Body and action', actions: 1 }
 ];
 
+const MATRIX_WIDTH: Record<AlertSize, string> = { wide: 'max-w-[720px]', compact: 'w-[320px]', toast: 'w-[350px]' };
+
 const Matrix = ({ size }: { size: AlertSize }) => (
-    <div className="flex max-w-[720px] flex-col gap-8 pb-6">
+    <div className={`flex flex-col gap-8 pb-6 ${MATRIX_WIDTH[size]}`}>
         {SHAPES.map((shape) => (
             <div key={shape.label} className="flex flex-col gap-2">
                 <span className="text-ds-xs text-text-secondary">{shape.label}</span>
