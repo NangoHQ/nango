@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1241
+Provider count: 1242
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -1152,6 +1152,7 @@ URL patterns:
 | `typefully` | Typefully | API_KEY | [docs](https://nango.dev/docs/integrations/all/typefully.md) |  |  | analytics, communication, social |
 | `typefully-v2` | Typefully (API v2) | API_KEY | [docs](https://nango.dev/docs/api-integrations/typefully-v2.md) | [connect](https://nango.dev/docs/api-integrations/typefully-v2/connect.md) |  | analytics, communication, social |
 | `uber` | Uber | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/uber.md) |  |  | other |
+| `uberllm` | UberLLM | API_KEY | [docs](https://nango.dev/docs/api-integrations/uberllm.md) | [connect](https://nango.dev/docs/api-integrations/uberllm/connect.md) |  | dev-tools |
 | `ukg-pro` | UKG Pro | BASIC | [docs](https://nango.dev/docs/integrations/all/ukg-pro.md) | [connect](https://nango.dev/docs/integrations/all/ukg-pro/connect.md) |  | hr, popular |
 | `ukg-pro-cc` | UKG Pro HCM (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/ukg-pro-cc.md) | [connect](https://nango.dev/docs/api-integrations/ukg-pro-cc/connect.md) |  | hr |
 | `ukg-pro-wfm` | UKG Pro (Workforce Management) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ukg-pro-wfm.md) | [connect](https://nango.dev/docs/integrations/all/ukg-pro-wfm/connect.md) |  | hr |

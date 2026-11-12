@@ -2209,6 +2209,7 @@
               "integrations/all/typefully",
               "api-integrations/typefully-v2",
               "integrations/all/uber",
+              "api-integrations/uberllm",
               "integrations/all/ukg-pro",
               "api-integrations/ukg-pro-cc",
               "integrations/all/ukg-pro-wfm",
