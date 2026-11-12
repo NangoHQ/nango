@@ -318,6 +318,22 @@ describe('trackAgentSessionToolCall', () => {
         expect(onlyEvent().properties).not.toHaveProperty('is_mcp_tool');
     });
 
+    it.each([
+        { functionSource: 'catalog', expected: 'catalog' },
+        { functionSource: 'repo', expected: 'custom' },
+        { functionSource: 'standalone', expected: 'custom' }
+    ] as const)('reports a $functionSource function as $expected', ({ functionSource, expected }) => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc', functionSource }));
+
+        expect(onlyEvent().properties).toMatchObject({ function_source: expected });
+    });
+
+    it('leaves the function source off for an MCP tool', () => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'linear-mcp', toolName: 'list_issues', mcpTool: true }));
+
+        expect(onlyEvent().properties).not.toHaveProperty('function_source');
+    });
+
     it('leaves pinned out when the call site cannot say', () => {
         inRequest(() => trackAgentSessionToolCall({ metaTool: 'nango_execute', session, toolName: 'made_up', errorCode: 'tool_not_in_session' }));
 
