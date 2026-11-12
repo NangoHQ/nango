@@ -93,7 +93,7 @@ export const CatalogShow: React.FC = () => {
     const { visibleCount, loadMore, isLoadingMore } = useCatalogPlace({
         scrollRef,
         filterKey: JSON.stringify([category, instantOnly, sort, debouncedSearch]),
-        isReady: !isPending
+        isReady: !isPending && deferredResults === results
     });
     const sentinelRef = useInfiniteScroll({
         hasNextPage: visibleCount < deferredResults.length,
