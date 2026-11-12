@@ -35,6 +35,9 @@ try {
     api = server.listen(port, () => {
         logger.info(`🚀 self-hosting (${mode}) ready at http://localhost:${port}`);
     });
+    // Longer than the load balancer's idle timeout, so it never reuses a connection we already closed.
+    api.keepAliveTimeout = envs.NANGO_SELF_HOSTING_KEEP_ALIVE_TIMEOUT_MS;
+    api.headersTimeout = envs.NANGO_SELF_HOSTING_KEEP_ALIVE_TIMEOUT_MS + 1000;
     api.once('error', (err) => {
         logger.error('Failed to listen', err);
         process.exit(1);
