@@ -15,8 +15,11 @@ export interface FieldContextValue {
     /** The id the FieldDescription actually rendered with (an explicit `id` overrides `descriptionId`). */
     registerDescription: (id: string | null) => void;
     registerError: (id: string | null) => void;
-    /** Only the first control in a Field takes `controlId`, so a Field holding two inputs never duplicates an id. */
-    claimControl: (key: string) => boolean;
+    registerControl: (key: string) => () => void;
+    setControlId: (key: string, id: string | undefined) => void;
+    /** Only the first mounted control takes `controlId`, so a Field holding two inputs never duplicates an id. */
+    primaryControlKey: string | null;
+    labelTarget: string;
     renderedDescriptionId: string | null;
     renderedErrorId: string | null;
 }
@@ -40,12 +43,16 @@ interface ControlA11yProps {
 export function useFieldControl(props: ControlA11yProps): ControlA11yProps {
     const field = useFieldContext();
     const key = React.useId();
+    const registerControl = field?.registerControl;
+    const setControlId = field?.setControlId;
+    React.useLayoutEffect(() => registerControl?.(key), [registerControl, key]);
+    React.useLayoutEffect(() => setControlId?.(key, props.id), [setControlId, key, props.id]);
     if (!field) {
         return {};
     }
 
     const result: ControlA11yProps = {};
-    if (props.id === undefined && field.claimControl(key)) {
+    if (props.id === undefined && field.primaryControlKey === key) {
         result.id = field.controlId;
     }
     if (props['aria-describedby'] === undefined) {

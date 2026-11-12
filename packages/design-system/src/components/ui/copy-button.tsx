@@ -1,6 +1,7 @@
 import { Check, Copy } from 'lucide-react';
 import * as React from 'react';
 
+import { copyText } from '../../lib/clipboard';
 import { IconButton } from './button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 
@@ -9,7 +10,7 @@ import type { IconButtonProps } from './button';
 /** How long the Copied state (check icon + "Copied" tooltip) stays up. */
 export const COPIED_DURATION_MS = 1500;
 
-export interface CopyButtonProps extends Omit<IconButtonProps, 'label' | 'children' | 'onClick' | 'className' | 'variant'> {
+export interface CopyButtonProps extends Omit<IconButtonProps, 'label' | 'children' | 'onClick' | 'className' | 'variant' | 'title' | 'asChild'> {
     /** Text written to the clipboard. */
     text: string;
     /** Accessible name and tooltip before copying. */
@@ -24,22 +25,19 @@ export interface CopyButtonProps extends Omit<IconButtonProps, 'label' | 'childr
 export const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(({ text, label = 'Copy', onCopy, size = 'xs', disabled, ...props }, ref) => {
     const [copied, setCopied] = React.useState(false);
     const [hovered, setHovered] = React.useState(false);
+    const timer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-    React.useEffect(() => {
-        if (!copied) {
-            return;
-        }
-        const timer = setTimeout(() => setCopied(false), COPIED_DURATION_MS);
-        return () => clearTimeout(timer);
-    }, [copied]);
+    React.useEffect(() => () => clearTimeout(timer.current), []);
 
     const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation();
         try {
-            await navigator.clipboard.writeText(text);
+            await copyText(text);
         } catch {
             return;
         }
+        clearTimeout(timer.current);
+        timer.current = setTimeout(() => setCopied(false), COPIED_DURATION_MS);
         setCopied(true);
         onCopy?.();
     };

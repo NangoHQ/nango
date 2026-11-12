@@ -9,6 +9,7 @@ import { Input } from './input';
 import { InputGroup, InputGroupInput } from './input-group';
 import { SearchInput, setNativeValue } from './search-input';
 import { maskSecret, SecretInput } from './secret-input';
+import { Textarea } from './textarea';
 import { TooltipProvider } from './tooltip';
 
 import type { Root } from 'react-dom/client';
@@ -105,6 +106,44 @@ describe('Field wiring', () => {
         expect(ids[1]).toBe('');
     });
 
+    it('points the label at an explicit control id', () => {
+        render(
+            <Field>
+                <FieldLabel>Name</FieldLabel>
+                <Input id="own" />
+            </Field>
+        );
+        expect($<HTMLLabelElement>('label').htmlFor).toBe('own');
+    });
+
+    it('hands the Field id to a control that replaces the first one', () => {
+        const ui = (k: string) => (
+            <Field>
+                <FieldLabel>Name</FieldLabel>
+                <Input key={k} />
+            </Field>
+        );
+        render(ui('a'));
+        render(ui('b'));
+        const input = $<HTMLInputElement>('input');
+        expect(input.id).toBeTruthy();
+        expect($<HTMLLabelElement>('label').htmlFor).toBe(input.id);
+    });
+
+    it('wires a Textarea too', () => {
+        render(
+            <Field data-invalid>
+                <FieldLabel>Notes</FieldLabel>
+                <Textarea />
+                <FieldError>Required.</FieldError>
+            </Field>
+        );
+        const textarea = $<HTMLTextAreaElement>('textarea');
+        expect($<HTMLLabelElement>('label').htmlFor).toBe(textarea.id);
+        expect(textarea.getAttribute('aria-invalid')).toBe('true');
+        expect(textarea.getAttribute('aria-describedby')).toBeTruthy();
+    });
+
     it('renders the optional tag and no error when empty', () => {
         render(
             <Field>
@@ -150,9 +189,14 @@ describe('SecretInput', () => {
         expect(input.readOnly).toBe(true);
         expect(input.value).toBe(maskSecret(secret));
         const reveal = $<HTMLButtonElement>('button[aria-label="Show secret"]');
+        expect(reveal.getAttribute('aria-pressed')).toBe('false');
         act(() => reveal.click());
         expect(input.value).toBe(secret);
-        expect($('button[aria-label="Hide secret"]').getAttribute('aria-pressed')).toBe('true');
+        expect(reveal.getAttribute('aria-label')).toBe('Show secret');
+        expect(reveal.getAttribute('aria-pressed')).toBe('true');
+        act(() => reveal.click());
+        expect(input.value).toBe(maskSecret(secret));
+        expect(reveal.getAttribute('aria-pressed')).toBe('false');
     });
 
     it('hides reveal and copy without access', () => {
@@ -180,6 +224,27 @@ describe('CopyButton', () => {
             vi.advanceTimersByTime(1500);
         });
         expect(button.getAttribute('aria-label')).toBe('Copy');
+    });
+
+    it('restarts the Copied timer on every copy', async () => {
+        vi.useFakeTimers();
+        Object.assign(navigator, { clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
+        render(<CopyButton text="a0583184" />);
+        const button = $<HTMLButtonElement>('button');
+        const click = () =>
+            act(async () => {
+                button.click();
+                await Promise.resolve();
+            });
+        await click();
+        act(() => {
+            vi.advanceTimersByTime(1000);
+        });
+        await click();
+        act(() => {
+            vi.advanceTimersByTime(1000);
+        });
+        expect(button.getAttribute('aria-label')).toBe('Copied');
     });
 });
 
@@ -214,6 +279,24 @@ describe('SearchInput', () => {
         act(() => other.focus());
         key(other, '/');
         expect(document.activeElement).toBe(other);
+    });
+
+    it('does not clear a read-only field', () => {
+        render(<SearchInput defaultValue="read" readOnly />);
+        const input = $<HTMLInputElement>('input');
+        key(input, 'Escape');
+        expect(input.value).toBe('read');
+        expect($<HTMLButtonElement>('button[aria-label="Clear search"]').disabled).toBe(true);
+    });
+
+    it('takes its name from a FieldLabel, not the placeholder', () => {
+        render(
+            <Field>
+                <FieldLabel>Scopes</FieldLabel>
+                <SearchInput />
+            </Field>
+        );
+        expect($('input').hasAttribute('aria-label')).toBe(false);
     });
 
     it('clears on Esc (uncontrolled)', () => {

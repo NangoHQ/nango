@@ -48,7 +48,7 @@ export const SecretInput = React.forwardRef<HTMLInputElement, SecretInputProps>(
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <InputGroupButton
-                                    label={revealLabel}
+                                    label="Show secret"
                                     title=""
                                     aria-pressed={isRevealed}
                                     disabled={disabled}
