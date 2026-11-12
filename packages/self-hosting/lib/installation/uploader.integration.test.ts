@@ -50,12 +50,12 @@ async function insert(...rows: { ts: string; metric: string; attributes?: Record
 
 /** A day with more rows than fit in one request. */
 const BIG_DAY_ROWS = 1440 * 28;
-async function insertBigDay(metric: string): Promise<void> {
+async function insertBigDay(metric: string, { producers = 28, padding = 0 }: { producers?: number; padding?: number } = {}): Promise<void> {
     await knex.raw(
         `INSERT INTO ??.?? (ts, metric, attributes, value)
-         SELECT '2026-11-08T00:00:00Z'::timestamptz + minute * interval '1 minute', ?, jsonb_build_object('producer_id', 'p' || producer), minute
-         FROM generate_series(0, 1439) AS minute, generate_series(1, 28) AS producer`,
-        [telemetry, HOSTED_TELEMETRY_TABLE, metric]
+         SELECT '2026-11-08T00:00:00Z'::timestamptz + minute * interval '1 minute', ?, jsonb_build_object('producer_id', 'p' || producer || repeat('x', ?)), minute
+         FROM generate_series(0, 1439) AS minute, generate_series(1, ?) AS producer`,
+        [telemetry, HOSTED_TELEMETRY_TABLE, metric, padding, producers]
     );
 }
 
@@ -194,6 +194,19 @@ describe('uploadQueuedDays', () => {
         expect(resumed.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
         expect(requests).toHaveBeenCalledTimes(1);
         expect(await stored(config.installationId)).toHaveLength(BIG_DAY_ROWS);
+    });
+
+    it('sends a day in several requests when its rows are under the row limit but too big for one request', async () => {
+        const config = await uploader('heavy-rows');
+        await insertBigDay(concurrency, { producers: 8, padding: 900 });
+        const requests = vi.spyOn(globalThis, 'fetch');
+
+        const res = await run(config);
+
+        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
+        expect(requests).toHaveBeenCalledTimes(2);
+        expect(await stored(config.installationId)).toHaveLength(1440 * 8);
+        expect(await queued()).toEqual([]);
     });
 
     it('stops when the run is out of time and continues on the next run', async () => {

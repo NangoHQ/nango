@@ -8,7 +8,7 @@ import { enqueueUploads, failExpiredUploads, failUpload, listQueuedUploads, read
 import { Err, Ok, retry } from '@nangohq/utils';
 
 import { route } from '../cloud/routes/v1/telemetry/postUploads.js';
-import { TELEMETRY_UPLOAD_MAX_ROWS } from '../cloud/uploads/constants.js';
+import { TELEMETRY_UPLOAD_MAX_ROWS, TELEMETRY_UPLOAD_MAX_UNCOMPRESSED_BYTES } from '../cloud/uploads/constants.js';
 import { logger } from '../utils.js';
 import { mintInstallationToken } from './token.js';
 
@@ -74,20 +74,28 @@ function errorCode(body: string): string | undefined {
     }
 }
 
+/** Sends the first rows of a page, as many as fit in one upload, and returns how many it sent. */
 async function sendPage(
     config: UploaderConfig,
     { day, metric, rows }: { day: string; metric: string; rows: MetricRow[] }
-): Promise<Result<void, UploadRequestError>> {
+): Promise<Result<number, UploadRequestError>> {
     return await tracer.trace('nango.self_hosting.upload.send', async (span) => {
-        span?.addTags({ metric, day, rows: rows.length });
+        const header = JSON.stringify({ kind: 'header', installation_id: config.installationId } satisfies TelemetryUploadHeader);
+        const lines = [header];
+        let bytes = Buffer.byteLength(header);
+        for (const row of rows) {
+            const fields: TelemetryUploadRow = { kind: 'row', ts: row.ts.toISOString(), metric: row.metric, attributes: row.attributes, value: row.value };
+            const line = JSON.stringify(fields);
+            bytes += 1 + Buffer.byteLength(line);
+            if (bytes > TELEMETRY_UPLOAD_MAX_UNCOMPRESSED_BYTES) {
+                break;
+            }
+            lines.push(line);
+        }
+        const sentRows = lines.length - 1;
+        span?.addTags({ metric, day, rows: sentRows });
 
-        const header: TelemetryUploadHeader = { kind: 'header', installation_id: config.installationId };
-        const lines: (TelemetryUploadHeader | TelemetryUploadRow)[] = [
-            header,
-            ...rows.map((row) => ({ kind: 'row' as const, ts: row.ts.toISOString(), metric: row.metric, attributes: row.attributes, value: row.value }))
-        ];
-        const body = await deflate(lines.map((line) => JSON.stringify(line)).join('\n'));
-
+        const body = await deflate(lines.join('\n'));
         const sent = await retry(() => send(config, body), {
             maxAttempts: SEND_ATTEMPTS,
             delayMs: sendRetryDelayMs,
@@ -95,8 +103,9 @@ async function sendPage(
         });
         if (sent.isErr()) {
             span?.setTag('error', sent.error);
+            return Err(sent.error);
         }
-        return sent;
+        return Ok(sentRows);
     });
 }
 
@@ -139,16 +148,16 @@ async function uploadDay(config: UploaderConfig, { day, metric, cursor }: Queued
         if (page.isErr()) {
             return Err(page.error);
         }
-        const last = page.value.at(-1);
+        const sent = page.value.length > 0 ? await sendPage(config, { day, metric, rows: page.value }) : Ok(0);
+        if (sent.isErr()) {
+            return Err(sent.error);
+        }
+        const last = page.value[sent.value - 1];
         if (last) {
-            const sent = await sendPage(config, { day, metric, rows: page.value });
-            if (sent.isErr()) {
-                return Err(sent.error);
-            }
             cursor = { ts: last.ts, attributes: last.attributes };
         }
 
-        const done = page.value.length < TELEMETRY_UPLOAD_MAX_ROWS;
+        const done = page.value.length < TELEMETRY_UPLOAD_MAX_ROWS && sent.value === page.value.length;
         const saved = await saveUploadProgress(config.knex, { day, metric, cursor, done, ...(config.schema && { schema: config.schema }) });
         if (saved.isErr()) {
             return Err(saved.error);
