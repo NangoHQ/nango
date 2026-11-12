@@ -16399,6 +16399,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `hubspot-mcp` | HubSpot (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hubspot-mcp.md) |  | [setup](https://nango.dev/docs/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app.md) | marketing, support, crm, mcp |
 | `hubstaff` | Hubstaff | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hubstaff.md) |  | [setup](https://nango.dev/docs/api-integrations/hubstaff/how-to-register-your-own-hubstaff-oauth-app.md) | hr, productivity |
 | `humaans-io` | Humaans.io | API_KEY | [docs](https://nango.dev/docs/api-integrations/humaans-io.md) | [connect](https://nango.dev/docs/api-integrations/humaans-io/connect.md) |  | hr |
+| `huntapi` | HuntAPI | API_KEY | [docs](https://nango.dev/docs/api-integrations/huntapi.md) | [connect](https://nango.dev/docs/api-integrations/huntapi/connect.md) |  | video |
 | `hunter` | Hunter | API_KEY | [docs](https://nango.dev/docs/api-integrations/hunter.md) | [connect](https://nango.dev/docs/api-integrations/hunter/connect.md) |  | marketing, crm |
 | `huntress` | Huntress | BASIC | [docs](https://nango.dev/docs/api-integrations/huntress.md) | [connect](https://nango.dev/docs/api-integrations/huntress/connect.md) |  | other |
 | `hydradb` | HydraDB | API_KEY | [docs](https://nango.dev/docs/api-integrations/hydradb.md) | [connect](https://nango.dev/docs/api-integrations/hydradb/connect.md) |  | knowledge-base |
