@@ -81,7 +81,7 @@ export const AgentGettingStarted: React.FC = () => {
 
     const [promptCopiedByEnv, setPromptCopiedByEnv] = useLocalStorage<Record<string, boolean>>(LocalStorageKeys.GettingStartedPromptCopied, {});
     const promptCopied = Boolean(promptCopiedByEnv?.[env]);
-    const setPromptCopied = (copied: boolean) => setPromptCopiedByEnv({ ...promptCopiedByEnv, [env]: copied });
+    const markPromptCopied = () => setPromptCopiedByEnv({ ...promptCopiedByEnv, [env]: true });
     const progress = data ? deriveAgentProgress({ progress: data.data, promptCopied }) : null;
 
     const [justCopied, setJustCopied] = useState<Copied | null>(null);
@@ -112,7 +112,7 @@ export const AgentGettingStarted: React.FC = () => {
             return;
         }
         track('onboarding:copy_prompt_button_click', { has_api_key: apiKey !== null });
-        setPromptCopied(true);
+        markPromptCopied();
     };
 
     const copyApiKey = async () => {
@@ -141,7 +141,7 @@ export const AgentGettingStarted: React.FC = () => {
                     throw new Error('restart_failed');
                 }
                 track('onboarding:restart_button_click');
-                setPromptCopied(false);
+                setPromptCopiedByEnv({});
             }
         });
     };
