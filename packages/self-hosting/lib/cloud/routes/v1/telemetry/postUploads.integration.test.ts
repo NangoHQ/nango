@@ -36,9 +36,11 @@ let url: string;
 
 const installation = (name: string, options?: { licensed?: boolean }) => seedInstallation(db, name, options);
 
+const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+
 const row = (overrides: Record<string, unknown> = {}) => ({
     kind: 'row',
-    ts: '2026-11-08T00:00:00.000Z',
+    ts: `${yesterday}T00:00:00.000Z`,
     metric: 'nango.hosted_metric.active_concurrency.max',
     attributes: {},
     value: 1,
@@ -120,19 +122,19 @@ describe('POST /v1/telemetry/uploads', () => {
 
         const res = await send(
             privateKeyPem,
-            upload(uuid, [row({ value: 3, attributes: { producer_id: 'a1', environment: 'prod' } }), row({ ts: '2026-11-08T00:01:00.000Z', value: 5 })])
+            upload(uuid, [row({ value: 3, attributes: { producer_id: 'a1', environment: 'prod' } }), row({ ts: `${yesterday}T00:01:00.000Z`, value: 5 })])
         );
 
         expect(res).toEqual({ status: 200, json: { rows: 2 } });
         expect(setUser).toHaveBeenCalledExactlyOnceWith({ id: uuid, name: 'accepted' });
         expect(await stored(uuid)).toEqual([
             {
-                ts: '2026-11-08 00:00:00.000',
+                ts: `${yesterday} 00:00:00.000`,
                 metric: 'nango.hosted_metric.active_concurrency.max',
                 attributes: '{"environment":"prod","producer_id":"a1"}',
                 value: 3
             },
-            { ts: '2026-11-08 00:01:00.000', metric: 'nango.hosted_metric.active_concurrency.max', attributes: '{}', value: 5 }
+            { ts: `${yesterday} 00:01:00.000`, metric: 'nango.hosted_metric.active_concurrency.max', attributes: '{}', value: 5 }
         ]);
         expect(span.addTags).toHaveBeenCalledExactlyOnceWith({ 'nango.installationId': uuid, 'nango.upload.rows': 2 });
         expect(span.setTag).not.toHaveBeenCalledWith('error', expect.anything());
@@ -140,12 +142,21 @@ describe('POST /v1/telemetry/uploads', () => {
 
     it('a replayed upload leaves one copy of each row', async () => {
         const { uuid, privateKeyPem } = await installation('replayed');
-        const body = upload(uuid, [row(), row({ ts: '2026-11-08T00:01:00.000Z' })]);
+        const body = upload(uuid, [row(), row({ ts: `${yesterday}T00:01:00.000Z` })]);
 
         expect((await send(privateKeyPem, body)).status).toBe(200);
         expect((await send(privateKeyPem, body)).status).toBe(200);
 
         expect(await stored(uuid)).toHaveLength(2);
+    });
+
+    it('accepts a header that names the installation in upper case', async () => {
+        const { uuid, privateKeyPem } = await installation('upper-case');
+
+        const res = await send(privateKeyPem, upload(uuid.toUpperCase(), [row()]));
+
+        expect(res).toEqual({ status: 200, json: { rows: 1 } });
+        expect(await stored(uuid)).toHaveLength(1);
     });
 
     it('rejects an upload whose header names another installation', async () => {
