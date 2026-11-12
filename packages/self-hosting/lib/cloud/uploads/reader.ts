@@ -17,7 +17,8 @@ import type { InstallationMetricRow } from '../clickhouse/metrics.js';
 import type { Result } from '@nangohq/utils';
 
 const NEWLINE = 0x0a;
-const utf8 = new TextDecoder('utf-8', { fatal: true });
+// The decoder would drop a byte order mark at the start of every line it is given.
+const utf8 = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
 
 /** An upload is a gzip file of NDJSON: the first line is the header, every other line is a row. */
 export const telemetryUploadHeaderSchema = z.object({
