@@ -1,18 +1,18 @@
 import {
     ArrowRight,
     ArrowUpRight,
-    Blocks,
+    BookOpen,
     Check,
     Copy,
     KeyRound,
+    LibraryBig,
     List,
     Lock,
     MessageSquareCode,
     PartyPopper,
     RefreshCw,
     RotateCcw,
-    Sparkles,
-    Wrench
+    Sparkles
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
@@ -333,20 +333,21 @@ type GoFurtherDestination = AnalyticsEventProperties<'onboarding:go_further_link
 const GoFurther: React.FC<{ env: string }> = ({ env }) => {
     const links: { destination: GoFurtherDestination; icon: LucideIcon; title: string; description: string; to: string; external?: boolean }[] = [
         {
-            destination: 'integrations',
-            icon: Blocks,
-            title: 'Add more integrations',
-            description: 'Give your agent access to 1,000+ APIs.',
-            to: `/${env}/integrations`
-        },
-        { destination: 'logs', icon: List, title: 'View logs', description: 'Every tool call and API request your agent makes.', to: `/${env}/logs` },
-        {
             destination: 'catalog',
-            icon: Wrench,
+            icon: LibraryBig,
             title: 'Explore the catalog',
             description: 'Pre-built tools your agent can use right away.',
             to: `/${env}/catalog`
         },
+        {
+            destination: 'agent_sessions_docs',
+            icon: BookOpen,
+            title: 'How agent sessions work',
+            description: 'One MCP server per user, for all your APIs.',
+            to: 'https://nango.dev/docs/guides/agent-sessions',
+            external: true
+        },
+        { destination: 'logs', icon: List, title: 'View logs', description: 'Every tool call and API request your agent makes.', to: `/${env}/logs` },
         {
             destination: 'syncs_docs',
             icon: RefreshCw,

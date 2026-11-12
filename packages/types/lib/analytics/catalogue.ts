@@ -305,7 +305,7 @@ export const analyticsEventCatalogue = defineCatalogue({
         surface: 'web',
         insight: 'Where accounts go after finishing Getting Started',
         fires: 'When someone opens a Go further link on the Getting Started page',
-        properties: z.object({ destination: z.enum(['integrations', 'logs', 'catalog', 'syncs_docs']) })
+        properties: z.object({ destination: z.enum(['catalog', 'agent_sessions_docs', 'logs', 'syncs_docs']) })
     },
     'onboarding:restart_button_click': {
         surface: 'web',
