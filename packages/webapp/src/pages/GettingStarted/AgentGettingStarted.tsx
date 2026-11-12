@@ -17,6 +17,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
+import { useLocalStorage } from 'react-use';
 
 import { Button } from '@nangohq/design-system';
 
@@ -38,6 +39,7 @@ import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { copyText } from '@/utils/clipboard';
 import { globalEnv } from '@/utils/env';
+import { LocalStorageKeys } from '@/utils/local-storage';
 import { deriveAgentProgress } from './agentProgress';
 import { getInstallPrompt, pickPromptApiKey } from './agentPrompt';
 
@@ -77,7 +79,9 @@ export const AgentGettingStarted: React.FC = () => {
     const { data, error } = useAgentGettingStarted();
     const restartMutation = useRestartAgentGettingStarted();
 
-    const [promptCopied, setPromptCopied] = useState(false);
+    const [promptCopiedByEnv, setPromptCopiedByEnv] = useLocalStorage<Record<string, boolean>>(LocalStorageKeys.GettingStartedPromptCopied, {});
+    const promptCopied = Boolean(promptCopiedByEnv?.[env]);
+    const setPromptCopied = (copied: boolean) => setPromptCopiedByEnv({ ...promptCopiedByEnv, [env]: copied });
     const progress = data ? deriveAgentProgress({ progress: data.data, promptCopied }) : null;
 
     const [justCopied, setJustCopied] = useState<Copied | null>(null);
