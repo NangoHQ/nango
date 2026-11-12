@@ -50,6 +50,7 @@ export {
     DialogTitle,
     DialogTrigger
 } from './components/ui/dialog';
+export { EnvPill, type EnvPillProps, envPillVariants } from './components/ui/env-pill';
 export { Input, type InputProps, inputVariants } from './components/ui/input';
 export { Textarea, type TextareaProps } from './components/ui/textarea';
 export {
