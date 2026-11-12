@@ -199,7 +199,7 @@ export const AccountApiKeysShow: React.FC = () => {
 
     if (!user) {
         return (
-            <DashboardLayout fullWidth>
+            <DashboardLayout>
                 <Helmet>
                     <title>Account API keys - Nango</title>
                 </Helmet>
@@ -214,7 +214,7 @@ export const AccountApiKeysShow: React.FC = () => {
 
     if (!canListAccountKeys) {
         return (
-            <DashboardLayout fullWidth>
+            <DashboardLayout>
                 <Helmet>
                     <title>Account API keys - Nango</title>
                 </Helmet>
@@ -229,7 +229,7 @@ export const AccountApiKeysShow: React.FC = () => {
     const apiKeys = data?.data ?? [];
 
     return (
-        <DashboardLayout fullWidth>
+        <DashboardLayout>
             <Helmet>
                 <title>Account API keys - Nango</title>
             </Helmet>

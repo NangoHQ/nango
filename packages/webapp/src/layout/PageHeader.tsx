@@ -12,7 +12,7 @@ interface PageHeaderProps {
  * Every other page relies on the breadcrumb for its title and puts its actions in the top bar.
  */
 export const PageHeader: React.FC<PageHeaderProps> = ({ title, leading, actions }) => (
-    <div className="flex h-16 shrink-0 items-center justify-between gap-4 border-b-[0.5px] border-border-default bg-surface-page px-6">
+    <div className="flex h-16 shrink-0 items-center justify-between gap-4 border-b-[0.5px] border-border-default bg-surface-page px-5">
         <div className="flex min-w-0 items-center gap-2">
             {leading}
             {title && <h1 className="type-heading-sm truncate text-text-strong">{title}</h1>}

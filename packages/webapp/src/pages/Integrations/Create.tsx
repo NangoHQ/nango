@@ -54,7 +54,7 @@ export const CreateIntegration = () => {
 
     if (loadingProvider || !provider) {
         return (
-            <DashboardLayout>
+            <DashboardLayout width="wide">
                 <Helmet>
                     <title>Create integration - Nango</title>
                 </Helmet>
@@ -81,7 +81,7 @@ export const CreateIntegration = () => {
     }
 
     return (
-        <DashboardLayout>
+        <DashboardLayout width="wide">
             <Helmet>
                 <title>Create integration - Nango</title>
             </Helmet>

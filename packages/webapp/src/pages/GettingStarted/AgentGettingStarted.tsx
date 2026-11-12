@@ -143,11 +143,11 @@ export const AgentGettingStarted: React.FC = () => {
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout width="narrow">
             <Helmet>
                 <title>Getting started - Nango</title>
             </Helmet>
-            <div className="mx-auto flex w-full max-w-[820px] flex-col gap-7">
+            <div className="flex flex-col gap-7">
                 <h2 className="text-ds-3xl font-ds-regular leading-ds-tight tracking-ds-tight text-text-strong">Add Nango to your agent</h2>
 
                 {error && !data ? (

@@ -37,7 +37,7 @@ export const GettingStarted: React.FC = () => {
     }
 
     return (
-        <DashboardLayout className="flex flex-col gap-10">
+        <DashboardLayout width="wide" className="flex flex-col gap-10">
             <Helmet>
                 <title>Getting Started - Nango</title>
             </Helmet>

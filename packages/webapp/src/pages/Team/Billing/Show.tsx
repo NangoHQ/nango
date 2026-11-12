@@ -91,11 +91,9 @@ export const TeamBilling: React.FC = () => {
         (!canManageBilling || (!isBillingUsagePending && !arePaymentMethodsPending));
     useScrollToHash(scrollRef, pageHeightSettled);
 
-    // Full-width page shell keeps chrome consistent with the other dashboard pages, but `centered`
-    // caps the content: the usage charts have a fixed height, so unbounded width stretches them to an
-    // unreadable aspect ratio on wide screens.
+    // The usage charts have a fixed height, so unbounded width stretches them to an unreadable aspect ratio on wide screens.
     return (
-        <DashboardLayout ref={scrollRef} fullWidth centered>
+        <DashboardLayout ref={scrollRef} width="wide">
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>
