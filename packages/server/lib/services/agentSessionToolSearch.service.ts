@@ -342,22 +342,17 @@ export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
 }
 
 /**
- * MCP needs an object at the root of a tool's input, so the input model is inlined there with the
- * definitions it points at. Any other root has no object form and is reachable only through
- * nango_execute.
+ * The input model can carry definitions of its own that its $refs point at from the document root,
+ * so they are merged into the root definitions for the schema to resolve when the model is nested.
  */
-export function objectRootedToolInputSchema(schema: JSONSchema7): JSONSchema7 | undefined {
+export function withModelDefinitionsHoisted(schema: JSONSchema7): JSONSchema7 {
     const { $ref, definitions } = schema;
-    if (!$ref?.startsWith(DEFINITIONS_POINTER) || !definitions) {
-        return undefined;
+    const model = $ref?.startsWith(DEFINITIONS_POINTER) ? definitions?.[$ref.slice(DEFINITIONS_POINTER.length)] : undefined;
+    if (typeof model !== 'object' || !model.definitions) {
+        return schema;
     }
 
-    const model = definitions[$ref.slice(DEFINITIONS_POINTER.length)];
-    if (typeof model !== 'object' || model.type !== 'object') {
-        return undefined;
-    }
-
-    return { $schema: JSON_SCHEMA_DRAFT_07, ...model, definitions: { ...definitions, ...model.definitions } };
+    return { ...schema, definitions: { ...definitions, ...model.definitions } };
 }
 
 /** Only what identifies a tool, since a full match carries a description and an input schema. */

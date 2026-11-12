@@ -7,9 +7,10 @@ import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 interface BreadcrumbsProps {
     /** Render the last crumb as the page's `h1`. Off when the page shows its own title. */
     currentIsHeading: boolean;
+    currentLabel?: string;
 }
 
-export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ currentIsHeading }) => {
+export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ currentIsHeading, currentLabel }) => {
     const breadcrumbs = useBreadcrumbs();
     const current = breadcrumbs.at(-1);
 
@@ -37,7 +38,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ currentIsHeading }) =>
                     ))}
                 </nav>
             )}
-            <CurrentTag className="truncate type-text-medium-md text-text-default">{current.label}</CurrentTag>
+            <CurrentTag className="truncate type-text-medium-md text-text-default">{currentLabel ?? current.label}</CurrentTag>
         </div>
     );
 };

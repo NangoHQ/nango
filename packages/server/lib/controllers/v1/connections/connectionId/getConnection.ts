@@ -97,6 +97,9 @@ export const getConnection = asyncWrapperWithEnvironment<GetConnection>(async (r
     }
 
     const includeCredentials = principalCan(res.locals, 'environment:connections:read_credentials');
+    if (includeCredentials) {
+        req.audit = { ...req.audit, credentialsRead: { targets: [{ id: connection.connection_id }] } };
+    }
 
     const errorLog = await errorNotificationService.auth.get(connection.id);
 

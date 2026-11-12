@@ -22,11 +22,12 @@ import { trackCatalogFilter } from './analytics';
 import { countIntegrationsByProvider, filterProviders, getCategoryLabel, listCategories, PAGE_SIZE, sortProviders } from './catalog.utils';
 import { CatalogCard } from './components/CatalogCard';
 import { CategoryRail } from './components/CategoryRail';
+import { NoMatchesState } from './components/NoMatchesState';
 import { SearchField } from './components/SearchField';
 
 import type { CatalogFilter } from './analytics';
 import type { CatalogSort } from './catalog.utils';
-import type { GetProviders } from '@nangohq/types';
+import type { ActiveFilter } from './components/NoMatchesState';
 import type { DebouncedFunc } from 'lodash';
 
 const SORT_LABELS: Record<CatalogSort, string> = { popular: 'Popular first', alphabetical: 'A–Z' };
@@ -38,6 +39,13 @@ function createFilterTrackers(getResultCount: () => number) {
         CatalogFilter,
         DebouncedFunc<() => void>
     >;
+}
+
+function getResultsTitle(query: string, category: string | null): string {
+    if (query) {
+        return `Results for “${query}”`;
+    }
+    return category ? getCategoryLabel(category) : 'All APIs';
 }
 
 export const CatalogShow: React.FC = () => {
@@ -59,6 +67,7 @@ export const CatalogShow: React.FC = () => {
     const categories = useMemo(() => listCategories(filterProviders(providers, { category: null, instantOnly })), [providers, instantOnly]);
     const instantCount = useMemo(() => filterProviders(providers, { category: null, instantOnly }).length, [providers, instantOnly]);
 
+    const scopeCount = useMemo(() => filterProviders(providers, { category, instantOnly: false }).length, [providers, category]);
     const filtered = useMemo(() => filterProviders(providers, { category, instantOnly }), [providers, category, instantOnly]);
     const results = useMemo(() => {
         const query = debouncedSearch.trim();
@@ -96,12 +105,24 @@ export const CatalogShow: React.FC = () => {
         [trackFilter]
     );
 
-    if (error) {
-        return <ErrorPageComponent title="Catalog" error={error.json as GetProviders['Errors']} />;
+    if (error && !providersData) {
+        return <ErrorPageComponent title="Catalog" error={error} />;
     }
 
     const visible = deferredResults.slice(0, visibleCount);
     const remaining = deferredResults.length - visible.length;
+
+    const query = debouncedSearch.trim();
+    const activeFilters: ActiveFilter[] = [
+        ...(query ? [{ key: 'search', label: 'Search', value: `“${query}”`, onRemove: () => setSearch('') }] : []),
+        ...(category ? [{ key: 'category', label: 'Category', value: getCategoryLabel(category), onRemove: () => void setCategory(null) }] : []),
+        ...(instantOnly ? [{ key: 'instant', label: 'Filter', value: 'Instant setup', onRemove: () => void setInstantOnly(null) }] : [])
+    ];
+    const clearAllFilters = () => {
+        for (const filter of activeFilters) {
+            filter.onRemove();
+        }
+    };
 
     return (
         <DashboardLayout fullWidth className="p-0">
@@ -135,8 +156,8 @@ export const CatalogShow: React.FC = () => {
                     <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-4">
                             <div className="flex items-center gap-2">
-                                <h2 className="type-text-medium-md text-text-strong">{category ? getCategoryLabel(category) : 'All APIs'}</h2>
-                                {!isPending && <CountBadge count={results.length} />}
+                                <h2 className="type-text-medium-md text-text-strong">{getResultsTitle(query, category)}</h2>
+                                {!isPending && <CountBadge count={results.length} total={results.length === scopeCount ? undefined : scopeCount} />}
                             </div>
                             <div className="flex items-center gap-4">
                                 {isSearching ? (
@@ -195,10 +216,7 @@ export const CatalogShow: React.FC = () => {
                                 ))}
                             </div>
                         ) : visible.length === 0 ? (
-                            <div className="flex flex-col items-center gap-1 rounded-ds-md border-ds-hairline border-border-default bg-surface-panel px-6 py-12 text-center">
-                                <span className="type-text-medium-sm text-text-strong">No APIs match your filters</span>
-                                <span className="type-text-regular-xs text-text-secondary">Try another word, or turn off a filter.</span>
-                            </div>
+                            <NoMatchesState filters={activeFilters} onClearAll={clearAllFilters} />
                         ) : (
                             <div className={GRID_CLASSES}>
                                 {visible.map((provider) => (

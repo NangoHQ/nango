@@ -28,6 +28,10 @@ export const listApiKeys = asyncWrapperWithEnvironment<ListApiKeys>(async (req, 
         return;
     }
 
+    if (canReadSecret) {
+        req.audit = { ...req.audit, credentialsRead: { targets: keysResult.value.map((key) => ({ id: key.uuid, display: key.display_name })) } };
+    }
+
     const data = keysResult.value.map((key) => {
         const secret = canReadSecret ? key.secret : `****${key.secret.slice(-4)}`;
         return {

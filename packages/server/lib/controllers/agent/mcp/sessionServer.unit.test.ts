@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { seeders, toolService } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
+import { directCallInputSchema } from './directCallSchema.js';
 import { actionInputSchemaOf, buildSessionTools, createAgentSessionMcpServer, listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
 
 import type * as ToolSearchService from '../../../services/agentSessionToolSearch.service.js';
@@ -20,7 +21,9 @@ vi.mock('../../../services/agentSessionToolSearch.service.js', async (importOrig
     findActionInputs
 }));
 
-const OPEN_INPUT_SCHEMA = { $schema: 'https://json-schema.org/draft/2020-12/schema', type: 'object', properties: {}, additionalProperties: true };
+const DRAFT_07 = 'http://json-schema.org/draft-07/schema#';
+
+const OPEN_INPUT_SCHEMA = directCallInputSchema(undefined);
 
 function session({
     compiledToolset = {},
@@ -91,9 +94,8 @@ describe('createAgentSessionMcpServer', () => {
         });
 
         expect(findActionInputs).toHaveBeenCalledWith({ environmentId: 1, actions: [{ integrationId: 'notion', name: 'read_doc' }] });
-        expect(tools.find((listed) => listed.name === 'notion__read_doc')?.inputSchema).toStrictEqual({
-            $schema: 'http://json-schema.org/draft-07/schema#',
-            ...model,
+        expect(tools.find((listed) => listed.name === 'notion__read_doc')?.inputSchema).toMatchObject({
+            properties: { input: { $ref: '#/definitions/ReadDocInput' } },
             definitions: { ReadDocInput: model }
         });
     });
@@ -204,6 +206,79 @@ describe('createAgentSessionMcpServer', () => {
     });
 });
 
+describe('direct tool calls', () => {
+    const PURPOSE = { goal: 'summarize my roadmap doc', intent: 'read the roadmap doc' };
+
+    beforeEach(() => {
+        executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
+    });
+
+    async function callTool(args: Record<string, unknown>) {
+        const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+        const server = createAgentSessionMcpServer({
+            account: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: null,
+            session: session({
+                compiledToolset: { notion: { provider: 'notion', pinned: [tool('read_doc')], searchable: [] } },
+                resolvedConnections: {
+                    notion: { integrationId: 'notion', provider: 'notion', connectionId: 'notion-acme', internalConnectionId: 10, configId: 20 }
+                }
+            })
+        });
+        const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+        await server.connect(serverTransport);
+        await client.connect(clientTransport);
+
+        try {
+            return await client.callTool({ name: 'notion__read_doc', arguments: args });
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    }
+
+    it('unwraps the input and records the goal and the intent', async () => {
+        await callTool({ input: { id: 'doc-1' }, ...PURPOSE });
+
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ input: { id: 'doc-1' }, logMeta: PURPOSE }));
+    });
+
+    it('passes no input when a wrapped call leaves it out', async () => {
+        await callTool(PURPOSE);
+
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ input: undefined, logMeta: PURPOSE }));
+    });
+
+    it('passes an input that is not an object', async () => {
+        await callTool({ input: ['doc-1', 'doc-2'], ...PURPOSE });
+
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ input: ['doc-1', 'doc-2'] }));
+    });
+
+    it('still accepts the bare input of a session created before the wrapper', async () => {
+        await callTool({ id: 'doc-1' });
+
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ input: { id: 'doc-1' }, logMeta: undefined }));
+    });
+
+    it("treats a tool's own goal field as its input when the intent is missing", async () => {
+        await callTool({ goal: 'ship v2' });
+
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ input: { goal: 'ship v2' } }));
+    });
+
+    it('rejects a wrapped call with an empty intent', async () => {
+        const result = await callTool({ input: { id: 'doc-1' }, goal: PURPOSE.goal, intent: ' ' });
+
+        expect(result.isError).toBe(true);
+        expect(JSON.stringify(result.content)).toContain('intent');
+        expect(executeAction).not.toHaveBeenCalled();
+    });
+});
+
 describe('listSessionTools', () => {
     it('lists the meta tools the session was created with', () => {
         expect(listSessionTools(session()).map((tool) => tool.name)).toStrictEqual(['nango_tool_search', 'nango_execute']);
@@ -255,13 +330,13 @@ describe('listSessionTools', () => {
             {
                 name: 'discord__send_message',
                 description: 'send_message description',
-                inputSchema: { $schema: 'https://json-schema.org/draft/2020-12/schema', type: 'object', properties: {}, additionalProperties: true },
+                inputSchema: OPEN_INPUT_SCHEMA,
                 _meta: { 'nango/integration': 'discord', 'nango/tool': 'send_message' }
             },
             {
                 name: 'slack__send_message',
                 description: 'send_message description',
-                inputSchema: { $schema: 'https://json-schema.org/draft/2020-12/schema', type: 'object', properties: {}, additionalProperties: true },
+                inputSchema: OPEN_INPUT_SCHEMA,
                 _meta: { 'nango/integration': 'slack', 'nango/tool': 'send_message' }
             }
         ]);
@@ -286,7 +361,7 @@ describe('listSessionTools', () => {
             {
                 name: 'linear-mcp__list_issues',
                 description: 'List issues',
-                inputSchema,
+                inputSchema: directCallInputSchema(inputSchema),
                 annotations: { readOnlyHint: true },
                 _meta: { 'nango/integration': 'linear-mcp', 'nango/tool': 'list_issues' }
             }
@@ -339,6 +414,56 @@ describe('listSessionTools', () => {
 
         for (const listed of tools) {
             expect(listed.name).toMatch(/^[a-zA-Z0-9_-]{1,64}$/);
+        }
+    });
+
+    it('keeps long names up to 64 characters', () => {
+        const integrationId = 'i'.repeat(31);
+        const toolName = 't'.repeat(31);
+        const tools = listSessionTools(session({ compiledToolset: { [integrationId]: { provider: 'notion', pinned: [tool(toolName)], searchable: [] } } }));
+
+        expect(tools[2]?.name).toBe(`${integrationId}__${toolName}`);
+    });
+
+    it('gives a short tool name the room a long integration id cannot have', () => {
+        const tools = listSessionTools(session({ compiledToolset: { ['i'.repeat(100)]: { provider: 'notion', pinned: [tool('get_task')], searchable: [] } } }));
+
+        expect(tools[2]?.name).toBe(`${'i'.repeat(54)}__get_task`);
+    });
+
+    it('gives a short integration id room for a long tool name', () => {
+        const tools = listSessionTools(session({ compiledToolset: { asana: { provider: 'asana', pinned: [tool('t'.repeat(100))], searchable: [] } } }));
+
+        expect(tools[2]?.name).toBe(`asana__${'t'.repeat(57)}`);
+    });
+
+    it('splits the room when both parts are long', () => {
+        const tools = listSessionTools(
+            session({ compiledToolset: { ['i'.repeat(100)]: { provider: 'notion', pinned: [tool('t'.repeat(100))], searchable: [] } } })
+        );
+
+        expect(tools[2]?.name).toBe(`${'i'.repeat(31)}__${'t'.repeat(31)}`);
+    });
+
+    it('numbers names that collide after clipping within 64 characters', () => {
+        const prefix = 't'.repeat(70);
+        const tools = listSessionTools(
+            session({
+                compiledToolset: {
+                    ['i'.repeat(100)]: {
+                        provider: 'notion',
+                        pinned: [tool(`${prefix}_read`), tool(`${prefix}_write`), tool(`${prefix}_delete`)],
+                        searchable: []
+                    }
+                }
+            })
+        );
+
+        const names = tools.slice(2).map((listed) => listed.name);
+        const base = `${'i'.repeat(31)}__${'t'.repeat(31)}`;
+        expect(names).toStrictEqual([base, `${base.slice(0, 62)}_2`, `${base.slice(0, 62)}_3`]);
+        for (const name of names) {
+            expect(name.length).toBeLessThanOrEqual(64);
         }
     });
 
@@ -422,23 +547,38 @@ describe('listSessionTools', () => {
 describe('actionInputSchemaOf', () => {
     const model: JSONSchema7 = { type: 'object', properties: { title: { type: 'string' } } };
 
-    it('lists the input model as the object at the root', () => {
+    it('nests the input model under input, with its definitions at the root', () => {
         expect(
             actionInputSchemaOf({
                 kind: 'schema',
-                schema: { $schema: 'http://json-schema.org/draft-07/schema#', definitions: { ReadDocInput: model }, $ref: '#/definitions/ReadDocInput' }
+                schema: { $schema: DRAFT_07, definitions: { ReadDocInput: model }, $ref: '#/definitions/ReadDocInput' }
             })
-        ).toStrictEqual({ $schema: 'http://json-schema.org/draft-07/schema#', ...model, definitions: { ReadDocInput: model } });
+        ).toMatchObject({ $schema: DRAFT_07, properties: { input: { $ref: '#/definitions/ReadDocInput' } }, definitions: { ReadDocInput: model } });
     });
 
-    it('lists an action with no input as taking an empty object', () => {
-        expect(actionInputSchemaOf({ kind: 'none' })).toStrictEqual({ ...OPEN_INPUT_SCHEMA, additionalProperties: false });
+    it('hoists definitions nested in the input model so its refs resolve', () => {
+        const nested: JSONSchema7 = {
+            type: 'object',
+            properties: { child: { $ref: '#/definitions/__schema0' } },
+            definitions: { __schema0: { type: 'string' } }
+        };
+
+        expect(
+            actionInputSchemaOf({ kind: 'schema', schema: { $schema: DRAFT_07, definitions: { ReadDocInput: nested }, $ref: '#/definitions/ReadDocInput' } })
+        ).toMatchObject({ definitions: { ReadDocInput: nested, __schema0: { type: 'string' } } });
     });
 
-    it.each<AgentSessionToolInput>([
-        { kind: 'unavailable' },
-        { kind: 'schema', schema: { definitions: { ReadDocInput: { type: 'array' } }, $ref: '#/definitions/ReadDocInput' } }
-    ])('falls back to a free-form object when the input has no object form', (input) => {
-        expect(actionInputSchemaOf(input)).toStrictEqual(OPEN_INPUT_SCHEMA);
+    it('lists an input that is not an object, which the wrapper makes callable directly', () => {
+        const schema: JSONSchema7 = { $schema: DRAFT_07, definitions: { ReadDocInput: { type: 'array' } }, $ref: '#/definitions/ReadDocInput' };
+
+        expect(actionInputSchemaOf({ kind: 'schema', schema })).toMatchObject({ properties: { input: { $ref: '#/definitions/ReadDocInput' } } });
+    });
+
+    it('lists an action with no input as taking only the goal and the intent', () => {
+        expect(actionInputSchemaOf({ kind: 'none' })).toStrictEqual(directCallInputSchema('none'));
+    });
+
+    it('accepts any input when the input could not be read', () => {
+        expect(actionInputSchemaOf({ kind: 'unavailable' } satisfies AgentSessionToolInput)).toStrictEqual(OPEN_INPUT_SCHEMA);
     });
 });

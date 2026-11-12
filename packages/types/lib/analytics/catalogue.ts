@@ -41,6 +41,33 @@ const toolCallResult = {
     call_duration_ms: z.number().optional()
 };
 
+const toolList = z.object({ tools: z.array(z.string()) });
+const integrationPolicy = z.union([z.literal('*'), z.object({ allow: z.union([z.literal('*'), toolList]).optional(), deny: toolList.optional() })]);
+const toolset = z.union([z.literal('*'), z.record(z.string(), integrationPolicy)]);
+const metaToolSwitch = z.union([z.boolean(), z.object({ enabled: z.boolean() })]);
+const createConnectionSwitch = z.union([z.boolean(), z.object({ enabled: z.boolean(), tags: z.array(z.string()).optional() })]);
+
+/** The POST /sessions body as the caller sent it, keeping integration ids, tool names and tag keys. Tag values and connection ids are dropped. */
+const agentSessionRequest = z.object({
+    tenant: z.object({
+        connections: z.object({
+            any: z.array(z.object({ tags: z.array(z.string()) })).optional(),
+            pinned: z.array(z.object({ integration_id: z.string() })).optional()
+        })
+    }),
+    toolset: toolset.optional(),
+    pinned_tools: z.record(z.string(), z.array(z.string())).optional(),
+    meta_tools: z
+        .object({
+            nango_tool_search: metaToolSwitch.optional(),
+            nango_execute: metaToolSwitch.optional(),
+            nango_proxy: metaToolSwitch.optional(),
+            nango_create_connection: createConnectionSwitch.optional()
+        })
+        .optional(),
+    expires_in: z.string().optional()
+});
+
 const playgroundApproval = {
     chat_id: z.string(),
     agent_session_id: z.string().optional(),
@@ -344,7 +371,7 @@ export const analyticsEventCatalogue = defineCatalogue({
         surface: 'web',
         insight: 'How many catalog detail visits lead to the setup form, and which placement of the setup button people use',
         fires: 'When someone clicks a "Set up" button on an API\'s catalog page',
-        properties: z.object({ provider: z.string(), source: z.enum(['header', 'callout', 'panel']) })
+        properties: z.object({ provider: z.string(), source: z.enum(['header', 'panel']) })
     },
     'integrations:integration_create': {
         surface: 'server',
@@ -564,7 +591,8 @@ export const analyticsEventCatalogue = defineCatalogue({
 
     'agents:session_start': {
         surface: 'server',
-        insight: 'How many accounts create agent sessions each week, and which meta tools they turn on',
+        insight:
+            'How many accounts create agent sessions each week, which meta tools they turn on, and how they restrict the integrations and tools a session gets',
         fires: 'After an agent session is created',
         properties: z.object({
             ...agentSession,
@@ -572,7 +600,23 @@ export const analyticsEventCatalogue = defineCatalogue({
             is_tool_search_enabled: z.boolean(),
             is_execute_enabled: z.boolean(),
             is_proxy_enabled: z.boolean(),
-            is_create_connection_enabled: z.boolean()
+            is_create_connection_enabled: z.boolean(),
+            pinned_tool_count: z.number(),
+            searchable_tool_count: z.number(),
+            // What the caller sent, next to what the session compiled to above.
+            toolset_mode: z.enum(['connected', 'all', 'allowlist']),
+            allowlisted_integration_count: z.number(),
+            tool_allowlist_integration_count: z.number(),
+            tool_denylist_integration_count: z.number(),
+            allowed_tool_count: z.number(),
+            denied_tool_count: z.number(),
+            connection_selector_count: z.number(),
+            pinned_connection_count: z.number(),
+            create_connection_tag_count: z.number(),
+            expires_in_ms: z.number().optional(),
+            // An object on purpose: how a caller thinks about a session is read from the whole request. Names are capped, and is_request_truncated says when the cap hit.
+            request: agentSessionRequest,
+            is_request_truncated: z.boolean()
         })
     },
     'agents:session_end': {
@@ -584,7 +628,7 @@ export const analyticsEventCatalogue = defineCatalogue({
     'agents:tool_call_complete': {
         surface: 'server',
         insight:
-            'Which tools do agents call most, which fail most often, which return large results or run slowly, and what the agent was trying to get done with each call',
+            'Which tools do agents call most, which fail most often and whether a failing function is ours or one the customer wrote, which return large results or run slowly, and what the agent was trying to get done with each call',
         fires: 'When a tool call in an agent session returns',
         properties: z.object({
             ...agentSession,
@@ -596,13 +640,15 @@ export const analyticsEventCatalogue = defineCatalogue({
             integration_id: z.string().optional(),
             underlying_error_code: z.string().optional(),
             is_mcp_tool: z.boolean().optional(),
+            // Catalog is a function Nango ships, custom is one the customer wrote. Unset for MCP tools and calls that failed before the tool resolved.
+            function_source: z.enum(['catalog', 'custom']).optional(),
             goal: z.string().optional(),
             intent: z.string().optional()
         })
     },
     'agents:proxy_request_complete': {
         surface: 'server',
-        insight: 'Which integration APIs agents call through the proxy, and how often those requests fail',
+        insight: 'Which integration APIs agents call through the proxy, how often those requests fail, and which missing tools sent the agent there',
         fires: 'When a proxy request from an agent session returns',
         properties: z.object({
             ...agentSession,
@@ -613,7 +659,9 @@ export const analyticsEventCatalogue = defineCatalogue({
             http_method: stringOf<HTTP_METHOD>().optional(),
             provider: z.string().optional(),
             http_status: z.number().optional(),
-            provider_error_code: z.string().optional()
+            provider_error_code: z.string().optional(),
+            goal: z.string().optional(),
+            intent: z.string().optional()
         })
     },
     'agents:tool_search_complete': {
