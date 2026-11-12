@@ -23,7 +23,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ actions, breadcrumbIsHeadi
                 {showEnv && environment && (
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <EnvPill env={environment.name} production={environment.isProduction} />
+                            <EnvPill env={environment.name} production={environment.isProduction} tabIndex={0} />
                         </TooltipTrigger>
                         <TooltipContent side="bottom">You are editing this environment</TooltipContent>
                     </Tooltip>

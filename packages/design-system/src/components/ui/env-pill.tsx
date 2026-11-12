@@ -3,17 +3,20 @@ import * as React from 'react';
 
 import { cn } from '../../lib/cn';
 
-export const envPillVariants = cva('type-code-medium-xs inline-flex h-5 w-fit max-w-48 shrink-0 items-center rounded-ds-sm px-1.5 whitespace-nowrap', {
-    variants: {
-        production: {
-            false: 'bg-state-selected text-text-default',
-            true: 'bg-status-warning-bg text-status-warning-text inset-ring-[0.5px] inset-ring-status-warning-border'
+export const envPillVariants = cva(
+    'type-code-medium-xs inline-flex h-5 w-fit max-w-48 shrink-0 items-center rounded-ds-sm px-1.5 whitespace-nowrap outline-none focus-visible:shadow-focus-outline-default',
+    {
+        variants: {
+            production: {
+                false: 'bg-state-selected text-text-default',
+                true: 'bg-status-warning-bg text-status-warning-text inset-ring-[0.5px] inset-ring-status-warning-border'
+            }
+        },
+        defaultVariants: {
+            production: false
         }
-    },
-    defaultVariants: {
-        production: false
     }
-});
+);
 
 export interface EnvPillProps extends Omit<React.ComponentProps<'span'>, 'children'> {
     env: string;
