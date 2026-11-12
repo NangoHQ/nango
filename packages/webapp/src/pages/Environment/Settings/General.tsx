@@ -87,8 +87,11 @@ export const General: React.FC = () => {
 
                     {env !== PROD_ENVIRONMENT_NAME && (
                         <Alert status="warning">
-                            When using the CLI for custom functions, add <InlineCode>NANGO_SECRET_KEY_{env.toUpperCase()}</InlineCode> to your{' '}
-                            <InlineCode>.env</InlineCode>.
+                            When using the CLI for custom functions, add{' '}
+                            <InlineCode>
+                                NANGO_SECRET_KEY_{env.toUpperCase()}={'<secret-key>'}
+                            </InlineCode>{' '}
+                            to your <InlineCode>.env</InlineCode>.
                         </Alert>
                     )}
                 </div>
