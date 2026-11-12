@@ -4,6 +4,8 @@ sidebarTitle: 'Ironclad'
 description: 'Access the Ironclad API in 2 minutes 💨'
 ---
 
+import PreBuiltUseCases from "/snippets/generated/ironclad/PreBuiltUseCases.mdx"
+
 <Tabs>
   <Tab title="🚀 Quickstart">
     <Steps>
@@ -117,6 +119,11 @@ description: 'Access the Ironclad API in 2 minutes 💨'
     - Every Ironclad API endpoint requires specific resource scopes (e.g., `public.workflows.createdWorkflows`). Check the API documentation for each endpoint to identify the necessary scopes.
     - Each Ironclad environment operates independently. OAuth applications created on one environment cannot be used on other environments and must be recreated separately for each environment you need to access.
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ironclad.mdx)</Note>
+  </Tab>
+  <Tab title="🧩 Pre-built syncs & actions">
+    Explore Nango-provided syncs and actions in your dashboard. Extend and customize them to fit your needs.
+
+    <PreBuiltUseCases />
   </Tab>
 </Tabs>
 
