@@ -2784,13 +2784,13 @@ asin:
         - e-commerce
     auth_mode: API_KEY
     proxy:
-        base_url: https://www.asin.dev/api/v1
+        base_url: https://www.asin.dev/api
         headers:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
             endpoints:
-                - /account
+                - /v1/account
     docs: https://nango.dev/docs/api-integrations/asin
     docs_connect: https://nango.dev/docs/api-integrations/asin/connect
     credentials:
