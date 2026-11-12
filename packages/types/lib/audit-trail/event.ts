@@ -7,7 +7,6 @@ import type {
     BillingPaymentMethodRemovedMetadata,
     BillingPlanChangedMetadata,
     BillingSpendAlertChangedMetadata,
-    ConnectionCredentialsReadMetadata,
     ConnectionMetadata,
     ConnectionUpdatedMetadata,
     EnvironmentCreatedMetadata,
@@ -51,7 +50,7 @@ interface AuditEventTable {
         metadata_updated: ConnectionMetadata;
         refreshed: ConnectionMetadata;
         deleted: ConnectionMetadata;
-        credentials_read: ConnectionCredentialsReadMetadata;
+        credentials_read: ConnectionMetadata;
     };
     sync: {
         enabled: SyncBaseMetadata;

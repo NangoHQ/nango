@@ -4,12 +4,6 @@ export interface ConnectionMetadata {
     providerConfigKey?: string;
 }
 
-export interface ConnectionCredentialsReadMetadata {
-    providerConfigKey?: string;
-    // The client sets the header, so it is not proof that a function made the read.
-    nangoIsSyncHeader?: boolean;
-}
-
 export interface ConnectionUpdatedMetadata {
     providerConfigKey?: string;
     changedFields?: string[];

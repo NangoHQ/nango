@@ -229,12 +229,8 @@ describe('credentials read audit middleware (unit)', () => {
         const plan = { has_audit_trail_control_plane: true, audit_trail_data_plane_scopes: ['read_credentials'] };
         const planLocals = { ...secretKeyLocals, plan };
 
-        function syncReq(overrides: Record<string, unknown>) {
-            return fakeReq({ get: (h: string) => ({ 'user-agent': 'vitest', 'nango-is-sync': 'true' })[h.toLowerCase()], ...overrides });
-        }
-
-        it('records the connection, the integration and the Nango-Is-Sync header when the gate lets it through', async () => {
-            const req = syncReq({ params: { connectionId: 'conn-1' }, query: { provider_config_key: 'github' }, audit: read({ id: 'conn-1' }) });
+        it('records the connection and the integration when the gate lets it through', async () => {
+            const req = fakeReq({ params: { connectionId: 'conn-1' }, query: { provider_config_key: 'github' }, audit: read({ id: 'conn-1' }) });
             const event = await runAudit(auditPublicConnectionCredentialsRead, req, fakeRes(planLocals));
             expect(event).toMatchObject({
                 resource: 'connection',
@@ -244,15 +240,9 @@ describe('credentials read audit middleware (unit)', () => {
                 actor: { type: 'api_key', id: 'c0000000-0000-4000-8000-000000000005', display: 'ci-key' },
                 outcome: 'success',
                 targets: [{ type: 'connection', id: 'conn-1' }],
-                metadata: { providerConfigKey: 'github', nangoIsSyncHeader: true }
+                metadata: { providerConfigKey: 'github' }
             });
             expect(dataPlaneGateMock).toHaveBeenCalledWith(plan, { scope: 'read_credentials', accountUuid: 'acc-uuid' });
-        });
-
-        it('leaves the header out of the metadata when the request did not send it', async () => {
-            const req = fakeReq({ params: { connectionId: 'conn-1' }, query: { provider_config_key: 'github' }, audit: read({ id: 'conn-1' }) });
-            const event = await runAudit(auditPublicConnectionCredentialsRead, req, fakeRes(planLocals));
-            expect(event.metadata).toEqual({ providerConfigKey: 'github' });
         });
 
         it('records nothing when the gate keeps it off', async () => {

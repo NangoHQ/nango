@@ -858,8 +858,7 @@ describe('audit middleware — live-stack contract', () => {
                     method: 'GET',
                     token: apiKey.secret,
                     params: { connectionId: connection.connection_id },
-                    query: { provider_config_key: 'algolia' },
-                    headers: { 'Nango-Is-Sync': 'true' }
+                    query: { provider_config_key: 'algolia' }
                 });
 
                 expect(res.res.status).toBe(200);
@@ -873,7 +872,7 @@ describe('audit middleware — live-stack contract', () => {
                     environment: { id: env.uuid, display: env.name },
                     actor: { type: 'api_key', id: apiKey.uuid },
                     targets: [{ type: 'connection', id: connection.connection_id }],
-                    metadata: { providerConfigKey: 'algolia', nangoIsSyncHeader: true }
+                    metadata: { providerConfigKey: 'algolia' }
                 });
                 expect(JSON.stringify(event)).not.toContain('audit-data-plane-secret');
             }

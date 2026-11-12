@@ -104,10 +104,7 @@ export const auditPublicConnectionCredentialsRead = maybeAuditable<GetPublicConn
     subject: callerSubject,
     atFinish: (req) => ({
         ...credentialsReadTargets('connection', req, nonEmptyString(param(req, 'connectionId'))),
-        metadata: omitUndefined({
-            providerConfigKey: nonEmptyString(query(req, 'provider_config_key')),
-            nangoIsSyncHeader: req.get('Nango-Is-Sync') === 'true' || undefined
-        })
+        metadata: providerConfigKeyMeta(query(req, 'provider_config_key'))
     })
 });
 
