@@ -20,7 +20,10 @@ export function useViewport(mode: 'desktop' | 'device') {
             return;
         }
 
-        const content = mode === 'desktop' && window.screen.width < DESKTOP_VIEWPORT_WIDTH ? desktopViewport() : DEVICE_VIEWPORT;
+        const desktop = mode === 'desktop' && window.screen.width < DESKTOP_VIEWPORT_WIDTH;
+        document.documentElement.dataset['viewport'] = desktop ? 'desktop' : 'device';
+
+        const content = desktop ? desktopViewport() : DEVICE_VIEWPORT;
         // Every write makes mobile browsers re-apply the viewport and reset the user's zoom.
         if (meta.content !== content) {
             meta.content = content;
