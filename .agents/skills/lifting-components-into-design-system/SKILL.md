@@ -22,22 +22,22 @@ Not for adding a brand-new component with no webapp predecessor. Follow `package
 
 Don't turn a single-screen redesign into a library-wide migration.
 
-**Parity gate.** A component enters the design system only when it has a source in the Figma library **Nango — Design System [Dharma]** and the code reaches full parity with it. No Dharma source means it stays in the webapp.
+**Parity gate.** A component enters the design system only when it has a source component in the design system's Figma library and the code reaches full parity with it. No Figma source means it stays in the webapp.
 
-**Radix is not a blocker.** `Dialog`, `AlertDialog` and `Tooltip` were lifted as-is on Radix. Don't fold a Radix → Base UI swap into a lift; that is separate work.
+**Lift on the primitive it already uses.** A Radix-based component lifts as-is on Radix. Swapping Radix for Base UI is separate work, never part of a lift.
 
-| Bucket                                     | Examples                                                                                                   |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| Lift to the design system                  | Has a Dharma source: `Card`, `Badge`, `Dialog`, `Tooltip` (all lifted)                                    |
-| Stay in `webapp/src/components/ui`         | No Dharma source (`Dot`, `InfoTooltip`), or peripheral to the screen (`Skeleton`, `Table`). Each a future ticket. |
-| Stay in `webapp/src/components/patterns`   | App compositions, never design-system primitives: `EditableInput`, `PermissionGate`, `ConditionalTooltip` |
-| Page-local                                 | Screen-specific layout: `pages/Team/components/RoleSelect.tsx`, a label-left settings grid                |
+| Where it goes                             | When                                                                                    |
+| ----------------------------------------- | --------------------------------------------------------------------------------------- |
+| The design system                         | It has a Figma source and the screen needs it now                                       |
+| Stays in `webapp/src/components/ui`       | No Figma source yet, or the screen doesn't depend on it. Lift it later, on its own.    |
+| Stays in `webapp/src/components/patterns` | An app composition, such as an editable field or a permission wrapper. Never a primitive. |
+| Page-local                                | Layout specific to one screen                                                           |
 
-Example: the Team Settings redesign (NAN-5626) lifted `Card` (NAN-6385) and `Badge` (NAN-6386), and left `Dot` (no Dharma source) and `Table` (deferred) in the webapp. The screen picked up each lifted component with an import-path swap once its ticket landed.
+The screen redesign doesn't wait inside one PR: each lift lands on its own, and the screen picks up the component by swapping its import.
 
 ## Ticket
 
-One ticket per lift, in the Linear project **App Redesign — Design System**, milestone **Component consolidation**, label `Frontend`. Before the move, the ticket works through:
+One ticket per lift. Before the move, the ticket works through:
 
 1. **Figma source.** List its variants, props and states. That is the parity target.
 2. **Usage and gaps.** Inventory every call-site. A gap is a code variant Figma lacks, or a Figma variant nothing uses.
@@ -55,11 +55,11 @@ For `packages/webapp/src/components/ui/<X>.tsx` → `packages/design-system/src/
 5. **Export** from `packages/design-system/src/index.ts`.
 6. **Migrate every call-site** to `@nangohq/design-system`, then delete the webapp file. Imports come as `@/components/ui/<X>` and as relative paths (`../../components/ui/<X>`), so grep for `components/ui/<X>`. Grep `packages/design-system/stories` as well as the webapp: those stories import webapp components through Storybook's `@` alias.
 7. **Verify**: `npm run ts-build`, `npm run lint`, `npm run format:check`, and `npm run -w @nangohq/design-system build-storybook`. Then check every migrated screen in the browser, in light and dark.
-8. **File a separate consolidation ticket.** While in the code, grep for UI elsewhere with the same shape that could adopt the lifted component: other bespoke components and ad-hoc markup. Capture it in its own ticket under **Component consolidation**, split into:
+8. **File a separate consolidation ticket.** While in the code, grep for UI elsewhere with the same shape that could adopt the lifted component: other bespoke components and ad-hoc markup. Capture it in its own ticket, split into:
    - **direct map**: an existing variant fits;
    - **needs a new variant**: Figma parity first, probably with design input.
 
-   Without that split, the ticket quietly turns into a design project. Templates: NAN-6388 (Card), NAN-6401 (Badge). The consolidation ticket never blocks the lift PR.
+   Without that split, the ticket quietly turns into a design project. The consolidation ticket never blocks the lift PR.
 
 Keeping consolidation separate keeps the lift PR a reviewable, mechanical move. An app-wide visual change is a different risk and carries its own design decisions.
 
@@ -74,7 +74,7 @@ A lift changes how many screens look, so the PR description gives reviewers some
 
 | Mistake                                                          | Fix                                                                 |
 | ---------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Lifting a component with no Dharma source                        | It stays in the webapp                                              |
+| Lifting a component with no Figma source                         | It stays in the webapp                                              |
 | Bundling the lift into the screen redesign PR                    | Separate ticket and PR; the screen swaps the import afterwards      |
 | Widening the lift to adopt the component in new places           | That goes in the consolidation ticket                               |
 | Leaving the old `App Components/UI/<X>` story behind             | Delete it in the lift PR                                            |
