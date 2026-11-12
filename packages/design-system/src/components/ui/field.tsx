@@ -163,7 +163,7 @@ const FieldLabel = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>
                 {...props}
             >
                 {children}
-                {optional && <span className="font-sans text-ds-xs font-ds-regular leading-ds-normal text-text-muted">Optional</span>}
+                {optional && <span className="font-sans text-ds-xs font-ds-regular leading-ds-normal tracking-ds-normal text-text-muted">Optional</span>}
             </LabelPrimitive.Root>
         );
     }
