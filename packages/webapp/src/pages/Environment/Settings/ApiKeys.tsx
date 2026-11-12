@@ -435,7 +435,7 @@ const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }
             confirmationKeyword={displayName}
             confirmButtonText="Delete API Key"
             trigger={
-                <IconButton label="Delete API key" variant="ghost" size="2xs" className="text-text-muted hover:text-status-danger-text">
+                <IconButton label="Delete API key" variant="danger-ghost" size="2xs">
                     <Trash2 className="size-3.5" />
                 </IconButton>
             }

@@ -68,4 +68,5 @@ export const Primary = matrixStory('primary');
 export const Secondary = matrixStory('secondary');
 export const Outline = matrixStory('outline');
 export const Ghost = matrixStory('ghost', ['2xs', ...ICON_BUTTON_SIZES]);
+export const DangerGhost = matrixStory('danger-ghost', ['2xs', ...ICON_BUTTON_SIZES]);
 export const Danger = matrixStory('danger');
