@@ -31709,7 +31709,7 @@ tableau:
             optional: true
             example: test-eaec4a3fe2
             doc_section: '#step-5-finding-your-content-url'
-            description: Your content URL
+            description: Required for Tableau Cloud. On Tableau Server, leave blank to use the default site.
     connection_config:
         hostname:
             type: string
