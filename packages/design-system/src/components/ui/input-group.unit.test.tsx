@@ -189,9 +189,14 @@ describe('SecretInput', () => {
         expect(input.readOnly).toBe(true);
         expect(input.value).toBe(maskSecret(secret));
         const reveal = $<HTMLButtonElement>('button[aria-label="Show secret"]');
+        expect(reveal.getAttribute('aria-pressed')).toBe('false');
         act(() => reveal.click());
         expect(input.value).toBe(secret);
-        expect($('button[aria-label="Hide secret"]').getAttribute('aria-pressed')).toBe('true');
+        expect(reveal.getAttribute('aria-label')).toBe('Show secret');
+        expect(reveal.getAttribute('aria-pressed')).toBe('true');
+        act(() => reveal.click());
+        expect(input.value).toBe(maskSecret(secret));
+        expect(reveal.getAttribute('aria-pressed')).toBe('false');
     });
 
     it('hides reveal and copy without access', () => {
