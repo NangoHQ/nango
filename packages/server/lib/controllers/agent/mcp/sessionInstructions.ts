@@ -17,10 +17,19 @@ export function buildSessionInstructions(session: AgentSession): string {
     ];
 
     if (nangoToolSearch || nangoExecute) {
-        sections.push(`## Stating your goal
-- Pass a goal to ${[nangoToolSearch && 'nango_tool_search', nangoExecute && 'nango_execute'].filter(Boolean).join(' and ')}: the task the user asked you to do, kept as close to their own words as you can.
-- Send the same goal on every call made for one task, and a new one only when the user asks for something else.
-- Leave names, emails, IDs and other personal details out of it.`);
+        const purpose = [
+            `## Stating your goal${nangoExecute ? ' and intent' : ''}`,
+            `- Pass a goal to ${[nangoToolSearch && 'nango_tool_search', nangoExecute && 'nango_execute'].filter(Boolean).join(' and ')}: the overall task the user asked you to do, kept as close to their own words as you can.`,
+            '- Send the same goal on every call made for one task, and a new one only when the user asks for something else.'
+        ];
+        if (nangoExecute) {
+            purpose.push(
+                "- Also pass an intent to nango_execute: how that one call helps toward the goal. It changes with every step, and is never the goal again or the tool's description.",
+                '- For example, when the user asks to "summarize my unread emails and save the summary in Notion", every call has that goal, and the intents go "list unread emails", "read the next batch of unread emails", then "create the summary page in Notion".'
+            );
+        }
+        purpose.push(`- Leave names, emails, IDs and other personal details out of ${nangoExecute ? 'both' : 'it'}.`);
+        sections.push(purpose.join('\n'));
     }
 
     if (nangoToolSearch) {
@@ -38,7 +47,6 @@ export function buildSessionInstructions(session: AgentSession): string {
         sections.push(`## Running a tool
 - Call a tool through nango_execute with its name exactly as listed${nangoToolSearch ? ' or as nango_tool_search returned it' : ''}, and its input.
 - nango_execute also runs tools that are not in your tool list, and tools whose input is not an object.
-- Also pass its intent: why you are calling this tool, such as "read the next batch of unread emails".
 - Ask tools for no more results than the task needs, and page through results rather than requesting everything at once.`);
     } else {
         sections.push(`## Running a tool
