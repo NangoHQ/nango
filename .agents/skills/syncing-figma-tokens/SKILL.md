@@ -5,7 +5,7 @@ description: Use after changing packages/design-system/tokens/tokens.json, or wh
 
 # Syncing design tokens to Figma
 
-`packages/design-system/tokens/tokens.json` is the only source of design tokens. The Dharma Figma library mirrors it. Nothing flows from Figma back to the repo, except the Figma keys of variables and styles the sync creates.
+`packages/design-system/tokens/tokens.json` is the only source of design tokens. The Dharma Figma library mirrors it. Token values never flow from Figma back to the repo. Only two things do: the Figma keys of variables and styles the sync creates, and, once, the descriptions Dharma already had (step 5).
 
 Run the sync from the branch that changes the tokens, before the PR merges, so the new keys land in the same PR. Only run it if you have edit access to Dharma through the Figma MCP. If you don't, tell the user the tokens changed and still need syncing.
 
@@ -27,19 +27,27 @@ Run the sync from the branch that changes the tokens, before the PR merges, so t
     npm run tokens:figma --workspace=@nangohq/design-system -- diff <check-result.json>
     ```
 
-    It prints what would change and writes `apply-N.js` files. Show the user the diff and wait for a yes. `✓ Figma matches tokens.json` means you're done.
+    It prints what would change and writes `apply-N.js` files. `✓ Figma matches tokens.json` means you're done.
 
-5. Run each `apply-N.js` with `use_figma`, in order. Save each JSON result.
-
-6. Record the keys of anything created:
+5. **First sync only:** if `tokens.json` has no `$description` on most tokens, copy Dharma's descriptions in, or the apply erases them. Then run `diff` again.
 
     ```bash
-    npm run tokens:figma --workspace=@nangohq/design-system -- write-keys <apply-1.json> [apply-2.json ...]
+    npm run tokens:figma --workspace=@nangohq/design-system -- pull-descriptions <check-result.json>
+    ```
+
+    It fills only empty descriptions. Where both sides have one, it keeps the repo's and lists the token.
+
+6. Show the user the diff and wait for a yes. Then run each `apply-N.js` with `use_figma`, in order, and save each JSON result.
+
+7. Record the keys of anything created, and drop stale ones. With no `apply-N.js` files, run it with no arguments:
+
+    ```bash
+    npm run tokens:figma --workspace=@nangohq/design-system -- write-keys [apply-1.json apply-2.json ...]
     ```
 
     Commit the `tokens.json` change with the token change.
 
-7. Run the check again. It should report nothing changed.
+8. Run the check again. It should report nothing changed.
 
 ## Reading the diff
 
@@ -52,16 +60,6 @@ Run the sync from the branch that changes the tokens, before the PR merges, so t
 | `! ...` | An error. Fix it before applying. |
 
 A value change where Figma looks newer than the repo means someone edited Figma directly. Ask the user before overwriting it.
-
-## First sync
-
-Dharma has descriptions the repo never had, and applying would erase them. Before the first apply, copy them in, then run `diff` again:
-
-```bash
-npm run tokens:figma --workspace=@nangohq/design-system -- pull-descriptions <check-result.json>
-```
-
-It fills only empty descriptions. Where both sides have one, it keeps the repo's and lists the token.
 
 ## Mapping
 

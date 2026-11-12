@@ -47,7 +47,7 @@ This stores the config in `.claude/settings.local.json` (gitignored). Then start
 
 ## Tokens
 
-`tokens/tokens.json` is the source of truth for design tokens. It is compiled to CSS custom properties in `tokens/tokens.generated.css`. Figma follows the repo: a script pushes `tokens.json` into the Dharma library, one way.
+`tokens/tokens.json` is the source of truth for design tokens. It is compiled to CSS custom properties in `tokens/tokens.generated.css`. Figma follows the repo: an agent pushes `tokens.json` into the Dharma library, one way, with the `syncing-figma-tokens` skill.
 
 ### Structure
 
@@ -57,7 +57,7 @@ tokens/
   tokens.generated.css  build output — never edit by hand
 scripts/
   tokens-build.mjs      builds the CSS from tokens.json
-  tokens-figma.mjs      syncs tokens.json into Dharma
+  tokens-figma.mjs      builds the Figma check and update scripts for the sync
 ```
 
 ### Changing a token
