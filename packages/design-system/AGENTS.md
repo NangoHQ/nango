@@ -234,9 +234,9 @@ components.json            shadcn CLI config
 
 ## Changing a token
 
-The repo is the only place tokens change: edit `tokens/tokens.json`, never `tokens.generated.css`. Nothing flows back from Figma. For the build and commit steps, see [Changing a token](README.md#changing-a-token) in the README.
+The repo is the only place tokens change: edit `tokens/tokens.json`, never `tokens.generated.css`. Token values never flow back from Figma. For the build and commit steps, see [Changing a token](README.md#changing-a-token) in the README.
 
-After changing `tokens.json`, sync Dharma with the `syncing-figma-tokens` skill. If you can't reach Figma, tell the user the tokens still need syncing.
+After changing `tokens.json`, sync Dharma with the `syncing-figma-tokens` skill, and commit the Figma keys it writes into `tokens.json`. If you can't reach Figma, tell the user the tokens still need syncing.
 
 ## cn() helper
 
