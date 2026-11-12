@@ -19,7 +19,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ classNa
                 'not-read-only:hover:border-border-input-hover',
                 '[&:read-only:not(:disabled)]:bg-surface-input-muted [&:read-only:not(:disabled)]:border-border-default',
                 'focus:border-focus-ring-default! focus:shadow-[inset_0_0_0_0.5px_var(--focus-ring-default)]',
-                'aria-invalid:border-border-input-danger! aria-invalid:hover:border-border-input-danger-hover!',
+                'aria-invalid:not-disabled:border-border-input-danger! aria-invalid:not-disabled:hover:border-border-input-danger-hover!',
                 'aria-invalid:focus:border-focus-ring-danger! aria-invalid:focus:shadow-[inset_0_0_0_0.5px_var(--focus-ring-danger)]',
                 'disabled:cursor-not-allowed disabled:bg-state-disabled! disabled:border-border-disabled! disabled:text-text-disabled disabled:placeholder:text-text-disabled',
                 className
