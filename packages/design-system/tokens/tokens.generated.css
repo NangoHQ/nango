@@ -397,6 +397,7 @@
     --control-switch-track-off: #a1a2a5;
     --control-switch-track-off-danger: #a1a2a5;
     --control-switch-thumb-off: #ffffff;
+    --control-switch-thumb-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     --control-checkbox-border: #8b8c8f;
     --control-checkbox-border-hover: #505155;
     --dialog-footer-bg: #fafafa;
@@ -544,6 +545,7 @@
     --control-switch-track-off: #18191b;
     --control-switch-track-off-danger: #18191b;
     --control-switch-thumb-off: #ffffff;
+    --control-switch-thumb-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     --control-checkbox-border: #ffffff66;
     --control-checkbox-border-hover: #ffffffa3;
     --dialog-footer-bg: #121212;
@@ -700,6 +702,7 @@
     --shadow-container-inset: var(--container-inset);
     --shadow-container-panel: var(--container-panel);
     --shadow-container-sheet: var(--container-sheet);
+    --shadow-control-switch-thumb-shadow: var(--control-switch-thumb-shadow);
 }
 
 /*

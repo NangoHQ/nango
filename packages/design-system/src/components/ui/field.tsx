@@ -21,9 +21,15 @@ export const fieldVariants = cva('group/field w-full', {
                 '[&>:first-child]:row-span-2 [&>:first-child]:pt-1.5',
                 '[&>:not(:first-child)]:col-start-2'
             ],
-            // Label beside a small control (switch, checkbox), vertically centred. This was `horizontal` before the
-            // Dharma settings-row layout took that name; existing switch/checkbox rows should use `inline`.
-            inline: 'flex flex-row items-center gap-2'
+            // Label beside a small control (switch, checkbox), control first, 8px apart (Figma 2596:38). This was
+            // `horizontal` before the Dharma settings-row layout took that name. The control centres on the label's
+            // first line (row height 20 on md, 18 on sm), so a wrapping label or a description hangs below it.
+            inline: [
+                'flex flex-row items-start gap-2',
+                '[&>[data-slot=checkbox]]:mt-0.5 [&>[data-slot=switch]]:mt-px',
+                // The whole row is clickable (see Field's onClick)
+                'has-[>[data-slot=checkbox]:enabled]:cursor-pointer has-[>[data-slot=switch]:enabled]:cursor-pointer'
+            ]
         }
     },
     defaultVariants: {
@@ -37,13 +43,17 @@ export interface FieldProps extends React.ComponentProps<'div'>, VariantProps<ty
     'data-disabled'?: boolean | 'true' | 'false' | undefined;
 }
 
+// Inline rows: the control a row click toggles, and the targets that handle their own clicks.
+const ROW_CONTROL_SELECTOR = ':scope > [data-slot=checkbox], :scope > [data-slot=switch]';
+const INTERACTIVE_SELECTOR = 'a, button, input, label, select, textarea, [role=checkbox], [role=switch]';
+
 /**
  * Composition container for a label + control + description + error (Figma "Field").
  *
  * Field generates the ids: FieldLabel gets `htmlFor`, the first Input / InputGroupInput inside gets `id`,
  * `aria-describedby` (description + error) and `aria-invalid` (from `data-invalid`). Explicit props always win.
  */
-function Field({ className, orientation, children, ...props }: FieldProps) {
+function Field({ className, orientation, children, onClick, ...props }: FieldProps) {
     const baseId = React.useId();
     const [renderedDescriptionId, registerDescription] = React.useState<string | null>(null);
     const [renderedErrorId, registerError] = React.useState<string | null>(null);
@@ -82,6 +92,19 @@ function Field({ className, orientation, children, ...props }: FieldProps) {
         [controlId, invalid, disabled, registerControl, setControlId, primary?.key, primary?.id, renderedDescriptionId, renderedErrorId]
     );
 
+    // Inline rows: a click anywhere in the row (description, gap) toggles the checkbox/switch. The label already
+    // does via htmlFor, and clicks on the control or other interactive children are left alone.
+    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+        onClick?.(event);
+        if (orientation !== 'inline' || event.defaultPrevented) {
+            return;
+        }
+        if (event.target instanceof Element && event.target.closest(INTERACTIVE_SELECTOR)) {
+            return;
+        }
+        event.currentTarget.querySelector<HTMLElement>(ROW_CONTROL_SELECTOR)?.click();
+    };
+
     return (
         <FieldContext.Provider value={value}>
             <div
@@ -89,6 +112,7 @@ function Field({ className, orientation, children, ...props }: FieldProps) {
                 data-slot="field"
                 data-orientation={orientation ?? 'vertical'}
                 className={cn(fieldVariants({ orientation }), className)}
+                onClick={handleClick}
                 {...props}
             >
                 {children}
@@ -158,6 +182,11 @@ const FieldLabel = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>
                     'font-sans text-ds-sm font-ds-medium leading-ds-snug tracking-ds-tight text-text-default',
                     // Disabled affordances driven by an ancestor Field[data-disabled] or a peer :disabled control
                     'group-data-[disabled=true]/field:text-text-disabled group-data-[disabled=true]/field:pointer-events-none peer-disabled:cursor-not-allowed',
+                    // Beside a checkbox/switch (Figma text/regular/sm, 12px with an sm control; text/disabled when it's disabled)
+                    'group-data-[orientation=inline]/field:font-ds-regular group-data-[orientation=inline]/field:leading-ds-normal group-data-[orientation=inline]/field:tracking-ds-normal',
+                    'group-has-[>[data-slot=checkbox][data-size=sm]]/field:text-ds-xs group-has-[>[data-slot=switch][data-size=sm]]/field:text-ds-xs',
+                    'group-has-[>[data-slot=checkbox]:enabled]/field:cursor-pointer group-has-[>[data-slot=switch]:enabled]/field:cursor-pointer',
+                    'group-has-[>[data-slot=checkbox]:disabled]/field:text-text-disabled group-has-[>[data-slot=switch]:disabled]/field:text-text-disabled',
                     className
                 )}
                 {...props}
