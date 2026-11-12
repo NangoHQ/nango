@@ -17,6 +17,7 @@ type Story = StoryObj<typeof meta>;
 
 const DEV: AppHeaderEnvironment = { name: 'dev', isProduction: false };
 const PROD: AppHeaderEnvironment = { name: 'prod', isProduction: true };
+const LONG: AppHeaderEnvironment = { name: 'staging-europe-west-customer-sandbox-for-the-enterprise-pilot', isProduction: false };
 
 const ListPage: React.FC<{ environment: AppHeaderEnvironment }> = ({ environment }) => {
     const router = createMemoryRouter(
@@ -67,3 +68,4 @@ export const ListDev: Story = { render: () => <ListPage environment={DEV} /> };
 export const ListProd: Story = { render: () => <ListPage environment={PROD} /> };
 export const DetailDev: Story = { render: () => <DetailPage environment={DEV} /> };
 export const DetailProd: Story = { render: () => <DetailPage environment={PROD} /> };
+export const DetailLongName: Story = { render: () => <DetailPage environment={LONG} /> };
