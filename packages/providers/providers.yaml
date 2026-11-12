@@ -15834,6 +15834,30 @@ humaans-io:
             example: P9IAs9**********************9oVR
             pattern: '^[A-Za-z0-9]{32}$'
 
+huntapi:
+    display_name: HuntAPI
+    categories:
+        - video
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.huntapi.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/usage
+    docs: https://nango.dev/docs/api-integrations/huntapi
+    docs_connect: https://nango.dev/docs/api-integrations/huntapi/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your HuntAPI API key.
+            pattern: '^[A-Za-z0-9_-]{20,}$'
+            example: 5d8a****************************b04e
+            doc_section: '#step-1-create-an-api-key'
+
 hunter:
     display_name: Hunter
     categories:
