@@ -9,7 +9,7 @@ import PageNotFound from '../../pages/PageNotFound';
 
 import type { ApiError } from '@nangohq/types';
 
-export const ErrorPageComponent: React.FC<{ title: string; error?: ApiError<string> }> = ({ title, error }) => {
+export const ErrorPageComponent: React.FC<{ title: string; error?: ApiError<string>; showEnv?: boolean }> = ({ title, error, showEnv }) => {
     const code = error?.error.code;
 
     useEffect(() => {
@@ -24,7 +24,7 @@ export const ErrorPageComponent: React.FC<{ title: string; error?: ApiError<stri
     }
 
     return (
-        <DashboardLayout fullWidth>
+        <DashboardLayout fullWidth showEnv={showEnv}>
             <Helmet>
                 <title>Error - Nango</title>
             </Helmet>

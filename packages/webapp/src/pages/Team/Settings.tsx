@@ -34,7 +34,7 @@ export const TeamSettingsPage: React.FC = () => {
     }
 
     if (error) {
-        return <ErrorPageComponent title="Team Settings" error={error?.json as ApiError<string>} />;
+        return <ErrorPageComponent title="Team Settings" error={error?.json as ApiError<string>} showEnv={false} />;
     }
 
     const isNangoAdmin = data?.data.isAdminTeam;
