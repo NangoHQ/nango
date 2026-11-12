@@ -159,6 +159,10 @@ async function applyTokens(input) {
         const collection = state.collectionByName.get(want.collection);
         let variable = (want.key && state.byKey.get(want.key)) || state.byName.get(`${want.collection}|${want.name}`);
         if (!variable) {
+            if (!collection) {
+                errors.push(`${want.name}: collection ${want.collection} is missing; create it by hand first`);
+                continue;
+            }
             variable = figma.variables.createVariable(want.name, collection, want.type);
             variable.scopes = ['ALL_SCOPES'];
             state.byName.set(`${want.collection}|${want.name}`, variable);
@@ -168,12 +172,17 @@ async function applyTokens(input) {
             continue;
         }
         variable.name = want.name;
+        state.byName.set(`${want.collection}|${want.name}`, variable);
         variable.description = want.description;
         pending.push([variable, want]);
     }
     for (const [variable, want] of pending) {
         for (const [modeName, value] of Object.entries(want.valuesByMode)) {
             const modeId = state.modeIds.get(`${want.collection}|${modeName}`);
+            if (!modeId) {
+                errors.push(`${want.name}: mode ${modeName} is missing in collection ${want.collection}`);
+                continue;
+            }
             if (value.alias) {
                 const target = findVariable(value.alias);
                 if (!target) {
@@ -209,6 +218,7 @@ async function applyTokens(input) {
                     showShadowBehindNode: false
                 };
                 const target = e.colorAlias && findVariable(e.colorAlias);
+                if (e.colorAlias && !target) errors.push(`${want.name}: color alias ${e.colorAlias} doesn't exist yet; run the check again`);
                 return target ? figma.variables.setBoundVariableForEffect(effect, 'color', target) : effect;
             });
             continue;
@@ -236,7 +246,9 @@ async function applyTokens(input) {
             ['fontSize', want.fontSize],
             ['letterSpacing', want.letterSpacing]
         ]) {
-            style.setBoundVariable(field, (binding.alias && findVariable(binding.alias)) || null);
+            const target = binding.alias ? findVariable(binding.alias) : null;
+            if (binding.alias && !target) errors.push(`${want.name}: ${field} alias ${binding.alias} doesn't exist yet; run the check again`);
+            style.setBoundVariable(field, target || null);
         }
     }
     return { created, errors };
