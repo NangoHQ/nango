@@ -124,7 +124,7 @@ export const InlineEditInput: React.FC<InlineEditInputProps> = ({ id, value, onS
                         ) : (
                             <>
                                 <CopyButton text={committed} />
-                                <PermissionGate condition={canEdit}>
+                                <PermissionGate asChild condition={canEdit}>
                                     {(allowed) => (
                                         <InputGroupButton ref={editButtonRef} label="Edit" onClick={() => setEditing(true)} disabled={!allowed}>
                                             <Pencil />
