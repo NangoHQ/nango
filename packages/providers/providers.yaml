@@ -33336,6 +33336,24 @@ tanium:
             doc_section: '#step-2-find-your-hostname'
             order: 1
 
+taskade:
+    display_name: Taskade
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://www.taskade.com/oauth2/authorize
+    token_url: https://www.taskade.com/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://www.taskade.com/api/v2
+    docs: https://nango.dev/docs/api-integrations/taskade
+    setup_guide_url: https://nango.dev/docs/api-integrations/taskade/how-to-register-your-own-taskade-oauth-app
+
 tavily:
     display_name: Tavily
     categories:

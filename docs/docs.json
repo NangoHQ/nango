@@ -2225,6 +2225,7 @@
               "api-integrations/tally",
               "api-integrations/tanium",
               "integrations/all/tapclicks",
+              "api-integrations/taskade",
               "api-integrations/tavily",
               "integrations/all/teamleader",
               "integrations/all/teamtailor",

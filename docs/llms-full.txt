@@ -17006,6 +17006,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `tally` | Tally | API_KEY | [docs](https://nango.dev/docs/api-integrations/tally.md) | [connect](https://nango.dev/docs/api-integrations/tally/connect.md) |  | productivity |
 | `tanium` | Tanium | API_KEY | [docs](https://nango.dev/docs/api-integrations/tanium.md) | [connect](https://nango.dev/docs/api-integrations/tanium/connect.md) |  | dev-tools |
 | `tapclicks` | TapClicks | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/tapclicks.md) | [connect](https://nango.dev/docs/integrations/all/tapclicks/connect.md) |  | marketing, analytics |
+| `taskade` | Taskade | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/taskade.md) |  | [setup](https://nango.dev/docs/api-integrations/taskade/how-to-register-your-own-taskade-oauth-app.md) | productivity |
 | `tavily` | Tavily | API_KEY | [docs](https://nango.dev/docs/api-integrations/tavily.md) | [connect](https://nango.dev/docs/api-integrations/tavily/connect.md) |  | search, dev-tools |
 | `teamleader` | Teamleader Focus | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/teamleader.md) |  |  | invoicing, crm |
 | `teamtailor` | Teamtailor | API_KEY | [docs](https://nango.dev/docs/integrations/all/teamtailor.md) |  |  | ats |
