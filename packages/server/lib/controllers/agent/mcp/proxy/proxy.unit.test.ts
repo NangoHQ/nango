@@ -367,13 +367,15 @@ describe('proxyTool analytics', () => {
         { provider: 'Slack', body: { ok: false, error: 'channel_not_found' }, code: 'channel_not_found' },
         { provider: 'Salesforce', body: [{ errorCode: 'INVALID_FIELD', message: 'No such column' }], code: 'INVALID_FIELD' },
         { provider: 'HubSpot', body: { status: 'error', category: 'VALIDATION_ERROR', message: 'Property values were not valid' }, code: 'VALIDATION_ERROR' },
-        { provider: 'a GraphQL API', body: { errors: [{ message: 'Argument not valid', extensions: { code: 'INVALID_INPUT' } }] }, code: 'INVALID_INPUT' }
+        { provider: 'a GraphQL API', body: { errors: [{ message: 'Argument not valid', extensions: { code: 'INVALID_INPUT' } }] }, code: 'INVALID_INPUT' },
+        { provider: 'Twilio', body: { code: 21211, message: "The 'To' number is not a valid phone number.", status: 400 }, code: '21211' },
+        { provider: 'Meta', body: { error: { message: 'Invalid OAuth access token', type: 'OAuthException', code: 190 } }, code: '190' }
     ])('records the error code $provider answered with', async ({ body, code }) => {
         vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse(body, 400, 'upstream_error')) });
 
         await callProxyInRequest({ integration: 'notion', method: 'POST', path: '/v1/pages' });
 
-        expect(onlyEvent().properties).toMatchObject({ http_status: 400, error_code: 'upstream_error', provider_error_code: code });
+        expect(onlyEvent().properties).toMatchObject({ is_success: false, http_status: 400, error_code: 'upstream_error', provider_error_code: code });
     });
 
     it('records no provider error code when the provider answered with only a message', async () => {
@@ -383,7 +385,9 @@ describe('proxyTool analytics', () => {
 
         await callProxyInRequest({ integration: 'notion', method: 'POST', path: '/v1/pages' });
 
-        expect(onlyEvent().properties).not.toHaveProperty('provider_error_code');
+        const { properties } = onlyEvent();
+        expect(properties).toMatchObject({ is_success: false, error_code: 'upstream_error' });
+        expect(properties).not.toHaveProperty('provider_error_code');
     });
 
     // A failure before the provider answered carries Nango's status, so reporting it would read as the provider's.
