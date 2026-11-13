@@ -26464,6 +26464,57 @@ rippling-shop-app:
             description: ''
             automated: true
 
+rizamo-mcp:
+    display_name: Rizamo (MCP)
+    categories:
+        - marketing
+        - social
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://app.rizamo.com/api/auth/oauth2/authorize
+    token_url: https://app.rizamo.com/api/auth/oauth2/token
+    registration_url: https://app.rizamo.com/api/auth/oauth2/register
+    default_scopes:
+        - accounts:read
+        - accounts:write
+        - fields:read
+        - fields:write
+        - posts:read
+        - posts:write
+        - media:read
+        - media:write
+        - inbox:read
+        - inbox:write
+        - links:read
+        - links:write
+        - analytics:read
+        - automations:read
+        - automations:write
+        - events:read
+        - webhooks:read
+        - webhooks:write
+        - offline_access
+    authorization_params:
+        response_type: code
+        resource: https://mcp.rizamo.com/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://mcp.rizamo.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/rizamo-mcp
+
 roam-scim:
     display_name: Roam (SCIM API)
     categories:
