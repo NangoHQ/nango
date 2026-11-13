@@ -283,6 +283,7 @@ describe('POST /api/v1/agent-playground/chat', () => {
             ]);
         });
         expect(model.doGenerateCalls).toHaveLength(1);
+        expect(JSON.stringify(track.mock.calls)).not.toContain('Copy my Asana tasks into Linear');
     });
 
     it('does not label a later message', async () => {

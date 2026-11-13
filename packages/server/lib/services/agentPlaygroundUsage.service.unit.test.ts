@@ -169,6 +169,7 @@ describe('trackPlaygroundTurn', () => {
 
         const [payload] = capture.mock.calls[0] ?? [];
         expect(payload?.properties).toMatchObject({
+            is_success: true,
             intent: 'summarize unread emails',
             requested_providers: ['google-mail'],
             requested_provider_count: 1,
