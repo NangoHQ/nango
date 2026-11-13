@@ -13889,7 +13889,7 @@ facebook-system-user:
             doc_section: '#step-1-generating-a-system-user-access-token'
 
 facebook-login-for-business:
-    display_name: Facebook Login for Business
+    display_name: Facebook (Login for Business)
     categories:
         - marketing
         - social
