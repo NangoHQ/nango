@@ -6338,6 +6338,30 @@ canva-scim:
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
 
+capturekit:
+    display_name: CaptureKit
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.capturekit.dev
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/usage
+    docs: https://nango.dev/docs/api-integrations/capturekit
+    docs_connect: https://nango.dev/docs/api-integrations/capturekit/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your CaptureKit API key.
+            pattern: '^[A-Za-z0-9_-]{20,}$'
+            example: 7c2f****************************e91b
+            doc_section: '#step-1-create-an-api-key'
+
 carbone:
     display_name: Carbone
     categories:
