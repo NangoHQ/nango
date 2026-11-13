@@ -1,4 +1,5 @@
 import { setTimeout } from 'node:timers/promises';
+import { gunzipSync } from 'node:zlib';
 
 import { createClient } from '@clickhouse/client';
 import knexFactory from 'knex';
@@ -15,6 +16,7 @@ import { createCloudServer } from '../cloud/server.js';
 import { TELEMETRY_UPLOAD_MAX_ROWS } from '../cloud/uploads/constants.js';
 import { uploadQueuedDays, UploadRequestError } from './uploader.js';
 
+import type { TelemetryUploadHeader } from '../cloud/uploads/reader.js';
 import type { UploaderConfig } from './uploader.js';
 import type { ClickHouseClient } from '@clickhouse/client';
 import type { Knex } from 'knex';
@@ -50,12 +52,15 @@ async function insert(...rows: { ts: string; metric: string; attributes?: Record
 
 /** A day with more rows than fit in one request. */
 const BIG_DAY_ROWS = 1440 * 28;
-async function insertBigDay(metric: string, { producers = 28, padding = 0 }: { producers?: number; padding?: number } = {}): Promise<void> {
+async function insertBigDay(
+    metric: string,
+    { producers = 28, minutes = 1440, padding = 0 }: { producers?: number; minutes?: number; padding?: number } = {}
+): Promise<void> {
     await knex.raw(
         `INSERT INTO ??.?? (ts, metric, attributes, value)
          SELECT '2026-11-08T00:00:00Z'::timestamptz + minute * interval '1 minute', ?, jsonb_build_object('producer_id', 'p' || producer || repeat('x', ?)), minute
-         FROM generate_series(0, 1439) AS minute, generate_series(1, ?) AS producer`,
-        [telemetry, HOSTED_TELEMETRY_TABLE, metric, padding, producers]
+         FROM generate_series(0, ? - 1) AS minute, generate_series(1, ?) AS producer`,
+        [telemetry, HOSTED_TELEMETRY_TABLE, metric, padding, minutes, producers]
     );
 }
 
@@ -68,13 +73,33 @@ async function stored(installationId: string): Promise<{ ts: string; metric: str
     return res.json();
 }
 
+/** What each request told Nango, in the order they were sent. Needs a spy on fetch. */
+const sent = () =>
+    vi.mocked(globalThis.fetch).mock.calls.map(([, init]) => {
+        const [header = '', ...rows] = gunzipSync(init?.body as Buffer)
+            .toString()
+            .split('\n');
+        const { metric, from, to } = JSON.parse(header) as TelemetryUploadHeader;
+        return { metric, from, to, rows: rows.length };
+    });
+
 const run = (config: UploaderConfig, deadline = new Date(Date.now() + 60_000)) => uploadQueuedDays(config, { now, deadline });
 
 const queued = async () => (await listQueuedUploads(knex, { schema: telemetry })).unwrap();
 
 async function uploader(name: string, options?: { licensed?: boolean }): Promise<UploaderConfig & { id: number }> {
     const { id, uuid, privateKeyPem } = await seedInstallation({ knex, schema: registry }, name, options);
-    return { id, knex, schema: telemetry, installationId: uuid, privateKeyPem, url, backfillDays: 30, licenseGraceUntil: new Date('2028-01-30T00:00:00Z') };
+    return {
+        id,
+        knex,
+        schema: telemetry,
+        installationId: uuid,
+        privateKeyPem,
+        url,
+        backfillDays: 30,
+        metrics: [],
+        licenseGraceUntil: new Date('2028-01-30T00:00:00Z')
+    };
 }
 
 beforeAll(async () => {
@@ -148,6 +173,51 @@ describe('uploadQueuedDays', () => {
             { ts: '2026-11-08 10:00:00.000', metric: connections, value: 40 }
         ]);
         expect(await queued()).toEqual([]);
+    });
+
+    it('uploads a metric that has no rows that day, so Nango knows nothing is missing', async () => {
+        const config = { ...(await uploader('quiet-metric')), backfillDays: 1, metrics: [concurrency, connections] };
+        await insert({ ts: '2026-11-09T10:00:00Z', metric: concurrency, value: 3 });
+        vi.spyOn(globalThis, 'fetch');
+
+        const res = await run(config);
+
+        expect(res.unwrap()).toEqual({ succeeded: 2, failed: 0, outOfTime: false });
+        expect(sent()).toEqual([
+            { metric: concurrency, from: '2026-11-09T00:00:00.000Z', to: '2026-11-10T00:00:00.000Z', rows: 1 },
+            { metric: connections, from: '2026-11-09T00:00:00.000Z', to: '2026-11-10T00:00:00.000Z', rows: 0 }
+        ]);
+        expect(await stored(config.installationId)).toEqual([{ ts: '2026-11-09 10:00:00.000', metric: concurrency, value: 3 }]);
+        expect(await queued()).toEqual([]);
+    });
+
+    it('tells Nango the range each page completes, ending a cut page at its last row', async () => {
+        const config = await uploader('ranges');
+        await insertBigDay(concurrency);
+        vi.spyOn(globalThis, 'fetch');
+
+        const res = await run(config);
+
+        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
+        expect(sent()).toEqual([
+            { metric: concurrency, from: '2026-11-08T00:00:00.000Z', to: '2026-11-08T19:30:00.000Z', rows: TELEMETRY_UPLOAD_MAX_ROWS },
+            { metric: concurrency, from: '2026-11-08T19:30:00.000Z', to: '2026-11-09T00:00:00.000Z', rows: BIG_DAY_ROWS - TELEMETRY_UPLOAD_MAX_ROWS }
+        ]);
+    });
+
+    it('sends an upload without rows to complete a day whose last page was full', async () => {
+        const config = await uploader('full-last-page');
+        await insertBigDay(concurrency, { producers: 32, minutes: TELEMETRY_UPLOAD_MAX_ROWS / 32 });
+        vi.spyOn(globalThis, 'fetch');
+
+        const res = await run(config);
+
+        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
+        expect(sent()).toEqual([
+            { metric: concurrency, from: '2026-11-08T00:00:00.000Z', to: '2026-11-08T17:03:00.000Z', rows: TELEMETRY_UPLOAD_MAX_ROWS },
+            { metric: concurrency, from: '2026-11-08T17:03:00.000Z', to: '2026-11-09T00:00:00.000Z', rows: 0 }
+        ]);
+        expect(await stored(config.installationId)).toHaveLength(TELEMETRY_UPLOAD_MAX_ROWS);
     });
 
     it('does not upload days older than the configured number of days', async () => {

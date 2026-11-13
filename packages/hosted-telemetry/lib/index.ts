@@ -1,3 +1,4 @@
+export { storedMetricNames } from './catalog.js';
 export type { HostedMetricName } from './catalog.js';
 export { PostgresMetricExporter, PRODUCER_ID_ATTRIBUTE } from './exporter.js';
 export type { MetricRow } from './exporter.js';

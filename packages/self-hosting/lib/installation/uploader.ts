@@ -27,6 +27,8 @@ const uploadPauseMs = () => 5_000 + Math.random() * 5_000;
 // A random wait before retrying, so installations that failed together do not retry together.
 const sendRetryDelayMs = () => 500 + Math.random() * 2_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
+// Room kept for the header line, which is written after the rows of the upload are chosen.
+const HEADER_MAX_BYTES = 1024;
 
 export interface UploaderConfig {
     knex: Knex;
@@ -35,6 +37,8 @@ export interface UploaderConfig {
     privateKeyPem: string;
     url: string;
     backfillDays: number;
+    /** Uploaded for every day, with or without rows. */
+    metrics: string[];
     licenseGraceUntil: Date;
 }
 
@@ -74,28 +78,38 @@ function errorCode(body: string): string | undefined {
     }
 }
 
-/** Sends the first rows of a page, as many as fit in one upload, and returns how many it sent. */
+/** The rows as upload lines, as many of the first ones as fit in one upload. */
+function linesThatFit(rows: MetricRow[]): string[] {
+    const lines: string[] = [];
+    let bytes = HEADER_MAX_BYTES;
+    for (const row of rows) {
+        const fields: TelemetryUploadRow = { kind: 'row', ts: row.ts.toISOString(), metric: row.metric, attributes: row.attributes, value: row.value };
+        const line = JSON.stringify(fields);
+        bytes += 1 + Buffer.byteLength(line);
+        if (bytes > TELEMETRY_UPLOAD_MAX_UNCOMPRESSED_BYTES) {
+            break;
+        }
+        lines.push(line);
+    }
+    return lines;
+}
+
 async function sendPage(
     config: UploaderConfig,
-    { day, metric, rows }: { day: string; metric: string; rows: MetricRow[] }
-): Promise<Result<number, UploadRequestError>> {
+    { day, metric, from, to, lines }: { day: string; metric: string; from: Date; to: Date; lines: string[] }
+): Promise<Result<void, UploadRequestError>> {
     return await tracer.trace('nango.self_hosting.upload.send', async (span) => {
-        const header = JSON.stringify({ kind: 'header', installation_id: config.installationId } satisfies TelemetryUploadHeader);
-        const lines = [header];
-        let bytes = Buffer.byteLength(header);
-        for (const row of rows) {
-            const fields: TelemetryUploadRow = { kind: 'row', ts: row.ts.toISOString(), metric: row.metric, attributes: row.attributes, value: row.value };
-            const line = JSON.stringify(fields);
-            bytes += 1 + Buffer.byteLength(line);
-            if (bytes > TELEMETRY_UPLOAD_MAX_UNCOMPRESSED_BYTES) {
-                break;
-            }
-            lines.push(line);
-        }
-        const sentRows = lines.length - 1;
-        span?.addTags({ metric, day, rows: sentRows });
+        span?.addTags({ metric, day, rows: lines.length });
 
-        const body = await deflate(lines.join('\n'));
+        const header: TelemetryUploadHeader = {
+            kind: 'header',
+            installation_id: config.installationId,
+            metric,
+            from: from.toISOString(),
+            to: to.toISOString()
+        };
+        const body = await deflate([JSON.stringify(header), ...lines].join('\n'));
+
         const sent = await retry(() => send(config, body), {
             maxAttempts: SEND_ATTEMPTS,
             delayMs: sendRetryDelayMs,
@@ -103,9 +117,8 @@ async function sendPage(
         });
         if (sent.isErr()) {
             span?.setTag('error', sent.error);
-            return Err(sent.error);
         }
-        return Ok(sentRows);
+        return sent;
     });
 }
 
@@ -130,10 +143,14 @@ async function send(config: UploaderConfig, body: Buffer): Promise<Result<void, 
 }
 
 /**
- * Uploads the rows of a metric for one day, page by page. The cursor only moves after Nango accepts a page. Stops early
- * if the run is out of time.
+ * Uploads the rows of a metric for one day, page by page. Every page tells Nango the range it completes: from the
+ * start of the day or the last row of the page before, to its own last row, or to the end of the day when there is
+ * nothing left to read. So a day without rows is still one upload. The cursor only moves after Nango accepts a page.
+ * Stops early if the run is out of time.
  */
 async function uploadDay(config: UploaderConfig, { day, metric, cursor }: QueuedUpload, deadline: Date): Promise<Result<'finished' | 'out_of_time'>> {
+    const start = new Date(`${day}T00:00:00.000Z`);
+    const end = new Date(start.getTime() + DAY_MS);
     for (;;) {
         if (Date.now() >= deadline.getTime()) {
             return Ok('out_of_time');
@@ -148,23 +165,24 @@ async function uploadDay(config: UploaderConfig, { day, metric, cursor }: Queued
         if (page.isErr()) {
             return Err(page.error);
         }
-        const sent = page.value.length > 0 ? await sendPage(config, { day, metric, rows: page.value }) : Ok(0);
+        const lines = linesThatFit(page.value);
+        const last = page.value[lines.length - 1];
+        const done = page.value.length < TELEMETRY_UPLOAD_MAX_ROWS && lines.length === page.value.length;
+        const from = cursor?.ts ?? start;
+
+        const sent = await sendPage(config, { day, metric, from, to: done ? end : (last?.ts ?? from), lines });
         if (sent.isErr()) {
             return Err(sent.error);
         }
-        const last = page.value[sent.value - 1];
         if (last) {
             cursor = { ts: last.ts, attributes: last.attributes };
         }
 
-        const done = page.value.length < TELEMETRY_UPLOAD_MAX_ROWS && sent.value === page.value.length;
         const saved = await saveUploadProgress(config.knex, { day, metric, cursor, done, ...(config.schema && { schema: config.schema }) });
         if (saved.isErr()) {
             return Err(saved.error);
         }
-        if (last) {
-            await setTimeout(uploadPauseMs());
-        }
+        await setTimeout(uploadPauseMs());
         if (done) {
             return Ok('finished');
         }
@@ -184,7 +202,7 @@ export async function uploadQueuedDays(
     const since = new Date(today.getTime() - config.backfillDays * DAY_MS);
     const schema = config.schema && { schema: config.schema };
 
-    const enqueued = await enqueueUploads(config.knex, { since, today, ...schema });
+    const enqueued = await enqueueUploads(config.knex, { since, today, metrics: config.metrics, ...schema });
     if (enqueued.isErr()) {
         return Err(enqueued.error);
     }

@@ -22,10 +22,13 @@ export interface QueuedUpload {
 const utcDay = (date: Date) => date.toISOString().slice(0, 10);
 const startOf = (day: string) => `${day}T00:00:00Z`;
 
-/** Queues the uploads of every day we have full telemetry for, yesterday and before, that are not queued yet. */
+/**
+ * Queues the uploads of every day we have full telemetry for, yesterday and before, that are not queued yet. A day
+ * gets one upload per metric in `metrics`, with or without rows, and one per other metric it has rows for.
+ */
 export async function enqueueUploads(
     knex: Knex,
-    { since, today, schema = HOSTED_TELEMETRY_SCHEMA }: { since: Date; today: Date; schema?: string }
+    { since, today, metrics, schema = HOSTED_TELEMETRY_SCHEMA }: { since: Date; today: Date; metrics: string[]; schema?: string }
 ): Promise<Result<void>> {
     try {
         await knex.raw(
@@ -33,7 +36,9 @@ export async function enqueueUploads(
              SELECT (d.start AT TIME ZONE 'UTC')::date, m.metric
              FROM generate_series(?::timestamptz, ?::timestamptz - interval '24 hours', interval '24 hours') AS d(start)
              CROSS JOIN LATERAL (
-                 SELECT DISTINCT metric FROM ??.?? WHERE ts >= d.start AND ts < d.start + interval '24 hours'
+                 SELECT jsonb_array_elements_text(?::jsonb) AS metric
+                 UNION
+                 SELECT metric FROM ??.?? WHERE ts >= d.start AND ts < d.start + interval '24 hours'
              ) m
              WHERE NOT EXISTS (SELECT 1 FROM ??.?? u WHERE u.day = (d.start AT TIME ZONE 'UTC')::date)
              ON CONFLICT DO NOTHING`,
@@ -42,6 +47,7 @@ export async function enqueueUploads(
                 HOSTED_TELEMETRY_UPLOADS_TABLE,
                 startOf(utcDay(since)),
                 startOf(utcDay(today)),
+                JSON.stringify(metrics),
                 schema,
                 HOSTED_TELEMETRY_TABLE,
                 schema,

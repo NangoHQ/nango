@@ -77,7 +77,7 @@ describe('enqueueUploads', () => {
             { ts: '2026-11-10T00:00:00Z', metric: concurrency }
         );
 
-        (await enqueueUploads(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
 
         expect(await uploads()).toEqual([
             { day: '2026-11-08', metric: concurrency, status: 'queued' },
@@ -86,13 +86,29 @@ describe('enqueueUploads', () => {
         ]);
     });
 
+    it('queues the given metrics for every past day in the window, with or without rows', async () => {
+        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: 'nango.hosted_metric.retired' });
+
+        (await enqueueUploads(knex, { since, today, metrics: [concurrency, connections], schema })).unwrap();
+
+        expect(await uploads()).toEqual([
+            { day: '2026-11-07', metric: concurrency, status: 'queued' },
+            { day: '2026-11-07', metric: connections, status: 'queued' },
+            { day: '2026-11-08', metric: concurrency, status: 'queued' },
+            { day: '2026-11-08', metric: connections, status: 'queued' },
+            { day: '2026-11-09', metric: concurrency, status: 'queued' },
+            { day: '2026-11-09', metric: connections, status: 'queued' },
+            { day: '2026-11-09', metric: 'nango.hosted_metric.retired', status: 'queued' }
+        ]);
+    });
+
     it('does not queue a day twice', async () => {
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency });
-        (await enqueueUploads(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
         (await saveUploadProgress(knex, { day: '2026-11-08', metric: concurrency, cursor: null, done: true, schema })).unwrap();
         await insert({ ts: '2026-11-08T11:00:00Z', metric: connections });
 
-        (await enqueueUploads(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
 
         expect(await uploads()).toEqual([{ day: '2026-11-08', metric: concurrency, status: 'succeeded' }]);
     });
@@ -106,7 +122,7 @@ describe('listQueuedUploads', () => {
             { ts: '2026-11-09T10:00:00Z', metric: concurrency },
             { ts: '2026-11-07T10:00:00Z', metric: concurrency }
         );
-        (await enqueueUploads(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
         const cursor = { ts: at('2026-11-08T10:00:00Z'), attributes: { producer_id: 'a' } };
         (await saveUploadProgress(knex, { day: '2026-11-08', metric: concurrency, cursor, done: false, schema })).unwrap();
         (await saveUploadProgress(knex, { day: '2026-11-07', metric: concurrency, cursor, done: true, schema })).unwrap();
@@ -122,7 +138,7 @@ describe('listQueuedUploads', () => {
 
     it('does not change an upload that already succeeded or failed', async () => {
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-08T10:00:00Z', metric: connections });
-        (await enqueueUploads(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
         (await saveUploadProgress(knex, { day: '2026-11-08', metric: concurrency, cursor: null, done: true, schema })).unwrap();
         (await failUpload(knex, { day: '2026-11-08', metric: connections, schema })).unwrap();
 
@@ -143,7 +159,7 @@ describe('failExpiredUploads', () => {
             { ts: '2026-11-07T10:00:00Z', metric: connections },
             { ts: '2026-11-08T10:00:00Z', metric: concurrency }
         );
-        (await enqueueUploads(knex, { since, today, schema })).unwrap();
+        (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
         (await saveUploadProgress(knex, { day: '2026-11-07', metric: connections, cursor: null, done: true, schema })).unwrap();
 
         const expired = await failExpiredUploads(knex, { since: at('2026-11-08T00:00:00Z'), schema });

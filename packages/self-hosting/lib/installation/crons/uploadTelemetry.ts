@@ -1,7 +1,7 @@
 import tracer from 'dd-trace';
 import * as cron from 'node-cron';
 
-import { hostedTelemetryDb } from '@nangohq/hosted-telemetry';
+import { hostedTelemetryDb, storedMetricNames } from '@nangohq/hosted-telemetry';
 import { getLocking } from '@nangohq/kvstore';
 import { licensePublicKey, verifyLicense } from '@nangohq/license';
 import { Err, flags, getLogger, normalizePem, Ok } from '@nangohq/utils';
@@ -84,6 +84,7 @@ export async function uploaderConfig(): Promise<Result<UploaderConfig | null>> {
         privateKeyPem,
         url: envs.NANGO_INSTALLATIONS_API_URL,
         backfillDays: envs.NANGO_HOSTED_TELEMETRY_UPLOAD_BACKFILL_DAYS,
+        metrics: storedMetricNames(),
         licenseGraceUntil: new Date(license.value.grace_until)
     });
 }

@@ -20,7 +20,10 @@ const trusted = vi.hoisted(() => ({ publicKeyPem: null as string | null }));
 
 vi.mock('node-cron', () => ({ schedule: vi.fn() }));
 vi.mock('../uploader.js', () => ({ uploadQueuedDays: vi.fn() }));
-vi.mock('@nangohq/hosted-telemetry', () => ({ hostedTelemetryDb: () => telemetryDb.current }));
+vi.mock('@nangohq/hosted-telemetry', () => ({
+    hostedTelemetryDb: () => telemetryDb.current,
+    storedMetricNames: () => ['nango.hosted_metric.active_concurrency.max']
+}));
 vi.mock('@nangohq/license', async () => {
     const actual: typeof NangoLicense = await vi.importActual('@nangohq/license');
     return {
@@ -74,6 +77,7 @@ describe('uploaderConfig', () => {
             privateKeyPem: installationKey.trim(),
             url: 'https://installations.nango.dev',
             backfillDays: 30,
+            metrics: ['nango.hosted_metric.active_concurrency.max'],
             licenseGraceUntil: new Date('2028-01-30T00:00:00.000Z')
         });
     });
@@ -145,6 +149,7 @@ describe('exec', () => {
         privateKeyPem: installationKey,
         url: 'https://installations.nango.dev',
         backfillDays: 30,
+        metrics: [],
         licenseGraceUntil: new Date(Date.now() + 60_000)
     };
 
