@@ -13,7 +13,8 @@ export {
     resolvePolicyFromProcessEnvForRunner,
     resolveProxyDenylistFromServerRaw,
     getRunnerPolicyFromEnv,
-    resolvePolicyForOAuth
+    resolvePolicyForOAuth,
+    resolvePolicyForMcp
 } from './policy.js';
 export type {
     OutboundUrlPolicyMode,
@@ -21,5 +22,6 @@ export type {
     OutboundUrlPolicy,
     ServerPolicyEnvInput,
     RunnerPolicyEnvInput,
-    OAuthPolicyEnvInput
+    OAuthPolicyEnvInput,
+    McpPolicyEnvInput
 } from './policy.js';

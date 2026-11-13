@@ -438,3 +438,20 @@ export interface CommandAlkonWebhookEvent {
     metaData?: Record<string, unknown>;
     payload?: Record<string, unknown>;
 }
+
+// https://developers.docusign.com/platform/webhooks/connect/json-sim-event-model
+export interface DocusignWebhookEvent {
+    event?: string;
+    apiVersion?: string;
+    uri?: string;
+    retryCount?: number;
+    configurationId?: number;
+    generatedDateTime?: string;
+    data?: {
+        accountId?: string;
+        userId?: string;
+        envelopeId?: string;
+        recipientId?: string;
+        envelopeSummary?: Record<string, unknown>;
+    };
+}

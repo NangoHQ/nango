@@ -1,0 +1,87 @@
+---
+title: 'Altium 365'
+sidebarTitle: 'Altium 365'
+description: 'Integrate your application with the Altium 365 API'
+---
+
+## 🚀 Quickstart
+
+Connect to Altium 365 with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Altium 365_.
+    </Step>
+    <Step id="authorize-altium-365" title="Authorize Altium 365">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then select your region and realm and enter the client ID, client secret and refresh token you created in **Admin** → **Developer**. Nango exchanges the refresh token for an access token and gets a new one when it expires. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-altium-365-api" title="Call the Altium 365 API">
+    Let's make your first request to the Altium 365 GraphQL API to list your Workspaces and their API endpoints. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/graphql" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"query":"{ desWorkspaceInfos { name url location { apiServiceUrl } } }"}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/graphql',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                query: '{ desWorkspaceInfos { name url location { apiServiceUrl } } }'
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Altium 365 integration guides
+
+- [How do I link my account?](/api-integrations/altium-365/connect)  
+Select your region and realm and create refresh token credentials to connect your Altium 365 Workspace.
+
+Official docs: [Altium 365 API](https://www.altium.com/documentation/altium-developer-center/altium-365/api)
+
+## 🧩 Pre-built syncs & actions for Altium 365
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/altium-365/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- A connection calls the regional endpoint of the region selected in the Connect UI. Altium uses regional endpoints for data that is not tied to a Workspace, such as the list of Workspaces a user can access, users and organizations. See [Altium 365 API endpoints](https://www.altium.com/documentation/altium-developer-center/altium-365/api).
+- Workspace data (projects, components, BOMs, comments, workflows) is served from the Workspace endpoint, `https://{workspace-domain}/api/graphql`. Get the Workspace's domain from the `url` and `location` fields of the `desWorkspaceInfos` query above, then call it with `baseUrlOverride` set to `https://{workspace-domain}/api`; Nango keeps the connection's access token. To look it up once per connection, run the query in a [`post-connection-creation` event function](/guides/functions/event-functions) and store the domain in the connection's metadata.
+
+---

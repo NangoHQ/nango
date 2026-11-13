@@ -140,6 +140,7 @@ class ConfigController {
                     has_webhook_user_defined_secret: provider.webhook_user_defined_secret || false,
                     webhook_url: webhookUrl
                 } satisfies IntegrationWithCreds;
+                req.audit = { ...req.audit, credentialsRead: { targets: [{ id: config.unique_key, display: config.display_name ?? undefined }] } };
             } else {
                 configRes = { unique_key: config.unique_key, provider: config.provider, syncs: [], actions: [] } satisfies ProviderIntegration;
             }

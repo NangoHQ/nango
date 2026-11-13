@@ -430,6 +430,47 @@ describe('executeSessionTool', () => {
         expect(executeAction).not.toHaveBeenCalled();
     });
 
+    it.each([
+        { source: 'catalog', expected: 'catalog' },
+        { source: 'repo', expected: 'custom' }
+    ] as const)('tracks a $source action as a $expected function', async ({ source, expected }) => {
+        const track = vi.spyOn(productTracking, 'track').mockImplementation(() => {});
+        executeAction.mockResolvedValue({
+            logCtx: undefined,
+            functionSource: source,
+            result: Err(new ActionExecutionError({ code: 'action_failed', message: 'boom' }))
+        });
+
+        await execute('read_doc');
+
+        expect(track).toHaveBeenCalledWith(expect.objectContaining({ eventProperties: expect.objectContaining({ function_source: expected }) }));
+    });
+
+    it('tracks the source of an invoked tool', async () => {
+        const track = vi.spyOn(productTracking, 'track').mockImplementation(() => {});
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ ...TOOL, currentVersion: { ...TOOL.currentVersion, source: 'standalone' } }));
+
+        await execute('read_doc', { input: { id: '1' } });
+
+        expect(track).toHaveBeenCalledWith(expect.objectContaining({ eventProperties: expect.objectContaining({ function_source: 'custom' }) }));
+    });
+
+    it('tracks the source of a disabled tool', async () => {
+        const track = vi.spyOn(productTracking, 'track').mockImplementation(() => {});
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(
+            Ok({
+                config: { ...TOOL.config, enabled: false },
+                currentVersion: { ...TOOL.currentVersion, source: 'catalog' }
+            } as functionConfigService.CurrentFunctionConfig)
+        );
+
+        await execute('read_doc');
+
+        expect(track).toHaveBeenCalledWith(
+            expect.objectContaining({ eventProperties: expect.objectContaining({ error_code: 'tool_not_in_session', function_source: 'catalog' }) })
+        );
+    });
+
     it('refuses a disabled tool rather than running the action it shadows', async () => {
         vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ ...TOOL, config: { ...TOOL.config, enabled: false } }));
 

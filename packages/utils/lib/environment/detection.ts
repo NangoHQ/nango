@@ -44,6 +44,7 @@ export const flags = {
     hasAdminCapabilities: Boolean(process.env['NANGO_ADMIN_UUID']),
     hasAuthRoles: process.env['FLAG_AUTH_ROLES_ENABLED'] === 'true',
     hasAuditTrail: process.env['FLAG_AUDIT_TRAIL_ENABLED'] === 'true',
+    hasMFA: !isHosted || isTest,
     hasHostedTelemetry: !isCloud && (z.stringbool().safeParse(process.env['FLAG_HOSTED_TELEMETRY_ENABLED']).data ?? true),
     hasHostedTelemetryUpload: !isCloud && (z.stringbool().safeParse(process.env['FLAG_HOSTED_TELEMETRY_UPLOAD_ENABLED']).data ?? false)
 };

@@ -1,0 +1,41 @@
+---
+title: 'Kit - How do I link my account?'
+sidebarTitle: 'Kit'
+---
+
+## Overview
+
+To authenticate with Kit, you need:
+
+1. **API Key** — a V4 API key from your Kit account settings.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A Kit account. If you don't have one, [sign up](https://app.kit.com/users/signup?plan=kit-free).
+
+### Step 1: Create a V4 API key
+
+1. Sign in to Kit and open **Settings** > **Developer** ([direct link](https://app.kit.com/account_settings/developer_settings)).
+2. Under **API keys** > **V4 Keys**, click **Add a new key**. Use a V4 key, not the legacy **V3 Key** shown on the same page.
+
+<img src="/api-integrations/kit/developer_settings_add_key.png" alt="Kit Developer settings with the Add a new key button under V4 Keys"/>
+
+3. Enter a name in **Name (Internal use only)**, then click **Create API Key**.
+
+<img src="/api-integrations/kit/new_api_key_dialog.png" alt="Kit New API Key dialog with the name field and the Create API Key button"/>
+
+4. Click **Copy** to copy the key, then click **Done**. You can't view the key again after you close this window.
+
+<img src="/api-integrations/kit/api_key_created.png" alt="Kit dialog confirming the API key was created, with the Copy button"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Kit.
+2. Enter your V4 API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/kit/form.png" alt="Kit Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Kit.

@@ -20,11 +20,12 @@ export interface AgentSessionResolvedConnection {
     readonly connectionId: string;
     readonly internalConnectionId: number;
     readonly configId: number;
+    readonly accountLabel?: string;
 }
 
 export type AgentSessionResolvedConnections = Record<string, AgentSessionResolvedConnection>;
 
-export type AgentSessionResolvedConnectionSummary = Omit<AgentSessionResolvedConnection, 'internalConnectionId' | 'configId'>;
+export type AgentSessionResolvedConnectionSummary = Omit<AgentSessionResolvedConnection, 'internalConnectionId' | 'configId' | 'accountLabel'>;
 
 export type AgentSessionConnectionResolutionErrorCode = 'ambiguous_connections' | 'pinned_connection_not_matched' | 'unknown_pinned_connection';
 

@@ -1,13 +1,12 @@
 import { Braces, CheckCircle2, ChevronDown, ChevronUp, CircleSlash, RotateCcw, Table2, Wrench, XCircle } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { Badge, Button } from '@nangohq/design-system';
+import { Badge, Button, SegmentedControl, SegmentedControlItem } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
-import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Spinner } from '@/components/ui/Spinner';
 import { INTERRUPTED_CALL } from '@/store/agentPlaygroundChat';
 import { cn } from '@/utils/utils';
@@ -341,15 +340,14 @@ const Payload: React.FC<{ input: unknown; output: unknown; error: string | undef
                 value={input}
                 view={view}
                 action={
-                    <SegmentedControl<PayloadView>
-                        aria-label="Payload view"
-                        value={view}
-                        onChange={setView}
-                        options={[
-                            { value: 'table', label: 'Table', Icon: Table2 },
-                            { value: 'json', label: 'JSON', Icon: Braces }
-                        ]}
-                    />
+                    <SegmentedControl size="sm" aria-label="Payload view" value={view} onValueChange={(next) => setView(next as PayloadView)}>
+                        <SegmentedControlItem value="table" icon={<Table2 />}>
+                            Table
+                        </SegmentedControlItem>
+                        <SegmentedControlItem value="json" icon={<Braces />}>
+                            JSON
+                        </SegmentedControlItem>
+                    </SegmentedControl>
                 }
             />
             {error !== undefined ? (

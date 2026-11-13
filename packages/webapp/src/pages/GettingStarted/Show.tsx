@@ -14,8 +14,6 @@ import { FirstStep } from './FirstStep';
 import { SecondStep } from './SecondStep';
 import { ThirdStep } from './ThirdStep';
 
-import type { GetGettingStarted } from '@nangohq/types';
-
 export const GettingStarted: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data: gettingStartedResult, error, refetch, isLoading } = useGettingStarted(env);
@@ -24,7 +22,7 @@ export const GettingStarted: React.FC = () => {
     const { toast } = useToast();
 
     if (error && !gettingStarted) {
-        return <ErrorPageComponent title="Getting started" error={error.json as GetGettingStarted['Errors']} />;
+        return <ErrorPageComponent title="Getting started" error={error} />;
     }
 
     let currentStep = gettingStarted?.connection ? (gettingStarted?.step ?? 0) : 0;
@@ -39,7 +37,7 @@ export const GettingStarted: React.FC = () => {
     }
 
     return (
-        <DashboardLayout title="Getting started" className="flex flex-col gap-10">
+        <DashboardLayout className="flex flex-col gap-10">
             <Helmet>
                 <title>Getting Started - Nango</title>
             </Helmet>

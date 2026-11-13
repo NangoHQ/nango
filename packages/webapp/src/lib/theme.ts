@@ -6,10 +6,8 @@ import { LocalStorageKeys } from '@/utils/local-storage';
 
 export type Theme = 'light' | 'dark' | 'system';
 
-// Dark is the default for now so existing users keep the current look and new users
-// don't land on light mode at rollout. Revisit defaulting to 'system' once light mode
-// has been live for a while (NAN-5960). Keep index.html's pre-paint fallback in sync.
-const DEFAULT_THEME: Theme = 'dark';
+// index.html's pre-paint script repeats this fallback; change both or the first paint flashes.
+const DEFAULT_THEME: Theme = 'system';
 
 // --- DOM utility ---
 
@@ -29,7 +27,13 @@ function getStoredTheme(): Theme {
     try {
         const raw = localStorage.getItem(LocalStorageKeys.Theme);
         const s = raw ? (JSON.parse(raw) as { state?: { theme?: Theme; darkMode?: boolean } }) : null;
-        return s?.state?.theme ?? (s?.state?.darkMode === false ? 'light' : DEFAULT_THEME);
+        if (s?.state?.theme) {
+            return s.state.theme;
+        }
+        if (typeof s?.state?.darkMode === 'boolean') {
+            return s.state.darkMode ? 'dark' : 'light';
+        }
+        return DEFAULT_THEME;
     } catch {
         return DEFAULT_THEME;
     }
@@ -39,9 +43,7 @@ function getStoredTheme(): Theme {
 // Module code runs synchronously before ReactDOM.render().
 try {
     applyTheme(getStoredTheme());
-} catch {
-    // Keep the dark default already set via data-theme in index.html
-}
+} catch {}
 
 // --- Store ---
 

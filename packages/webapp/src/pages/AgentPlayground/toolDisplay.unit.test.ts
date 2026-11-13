@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { describeTool, integrationLabels, labelFor } from './toolDisplay.js';
+import { describeTool, integrationLabels, labelFor, toolArguments } from './toolDisplay.js';
 
 const labels = integrationLabels([
     { unique_key: 'github-getting-started', provider: 'github', display_name: 'Github (Getting Started)', meta: { displayName: 'GitHub (User OAuth)' } },
@@ -39,6 +39,23 @@ describe('labelFor', () => {
 
     it('guesses from the id when the integration is not in the list', () => {
         expect(labelFor('my-hubspot', labels)).toEqual({ provider: 'my-hubspot', name: 'My Hubspot', integrationName: 'My Hubspot' });
+    });
+});
+
+describe('toolArguments', () => {
+    const purpose = { goal: 'summarize my roadmap doc', intent: 'read the roadmap doc' };
+
+    it('shows the input nango_execute passes to the tool', () => {
+        expect(toolArguments('nango_execute', { tool: 'notion__read_doc', input: { id: '1' }, ...purpose })).toStrictEqual({ id: '1' });
+    });
+
+    it('unwraps a direct tool call', () => {
+        expect(toolArguments('notion__read_doc', { input: { id: '1' }, ...purpose })).toStrictEqual({ id: '1' });
+        expect(toolArguments('notion__read_doc', purpose)).toStrictEqual({});
+    });
+
+    it('shows a bare direct tool call as it was sent', () => {
+        expect(toolArguments('notion__read_doc', { id: '1' })).toStrictEqual({ id: '1' });
     });
 });
 
