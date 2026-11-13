@@ -441,6 +441,7 @@ describe('trackAgentSessionToolSearch', () => {
             trackAgentSessionToolSearch({
                 session,
                 query: 'email a customer',
+                queryCount: 2,
                 goal: 'reply to the customer about their refund',
                 matches,
                 related,
@@ -454,6 +455,7 @@ describe('trackAgentSessionToolSearch', () => {
             agent_session_id: 'session-1',
             meta_tool: 'nango_tool_search',
             query: 'email a customer',
+            query_count: 2,
             goal: 'reply to the customer about their refund',
             match_count: 2,
             related_count: 1,
@@ -470,6 +472,7 @@ describe('trackAgentSessionToolSearch', () => {
 
         const { properties } = onlyEvent();
         expect(properties).not.toHaveProperty('query');
+        expect(properties).not.toHaveProperty('query_count');
         expect(properties).toMatchObject({ is_success: false, error_code: 'invalid_input' });
     });
 

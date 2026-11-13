@@ -19,8 +19,14 @@ export interface AgentSessionToolMatch {
     readonly input?: AgentSessionToolInput;
 }
 
-export interface AgentSessionToolSearchResult {
+export interface AgentSessionToolSearchQueryResult {
+    readonly query: string;
     readonly guidance: string;
     readonly matches: AgentSessionToolMatch[];
     readonly related: AgentSessionToolMatch[];
+}
+
+/** One entry per query, in the order the queries were sent. */
+export interface AgentSessionToolSearchResult {
+    readonly results: AgentSessionToolSearchQueryResult[];
 }
