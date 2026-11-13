@@ -6710,6 +6710,31 @@ chartmogul:
             hidden: true
             default_value: ''
 
+chartquery:
+    display_name: ChartQuery
+    categories:
+        - design
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.chartquery.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/usage
+    docs: https://nango.dev/docs/api-integrations/chartquery
+    docs_connect: https://nango.dev/docs/api-integrations/chartquery/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your ChartQuery API key.
+            pattern: '^[A-Za-z0-9_-]{20,}$'
+            example: 2a6b****************************c38d
+            doc_section: '#step-1-create-an-api-key'
+
 chatarmin:
     display_name: Chatarmin
     categories:

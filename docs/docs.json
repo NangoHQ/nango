@@ -1286,6 +1286,7 @@
               "api-integrations/charliehr",
               "api-integrations/chartboost",
               "api-integrations/chartmogul",
+              "api-integrations/chartquery",
               "api-integrations/chatarmin",
               "api-integrations/chatgpt-enterprise",
               "integrations/all/chattermill",
