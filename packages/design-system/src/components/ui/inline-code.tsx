@@ -11,7 +11,7 @@ const InlineCodeToneContext = createContext<InlineCodeTone | undefined>(undefine
 /** Sets the tone every `InlineCode` below it takes when it isn't given one. */
 export const InlineCodeToneProvider = InlineCodeToneContext.Provider;
 
-export const inlineCodeVariants = cva('inline-flex align-baseline whitespace-nowrap rounded-ds-xs px-1', {
+export const inlineCodeVariants = cva('box-decoration-clone wrap-anywhere rounded-ds-xs px-1', {
     variants: {
         tone: {
             default: 'bg-state-selected text-text-default',
@@ -35,7 +35,6 @@ export const inlineCodeVariants = cva('inline-flex align-baseline whitespace-now
 export interface InlineCodeProps extends React.ComponentProps<'code'> {
     /** Falls back to the surrounding `Alert`'s status, then `default`. */
     tone?: InlineCodeTone;
-    /** `sm` (12px) sits in 13px text, `xs` (11px) in 12px text. */
     size?: InlineCodeSize;
 }
 
