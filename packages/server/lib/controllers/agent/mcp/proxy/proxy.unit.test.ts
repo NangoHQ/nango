@@ -337,7 +337,7 @@ describe('proxyTool analytics', () => {
             integration_id: 'notion',
             provider: 'notion',
             http_method: 'GET',
-            endpoint: '/v1/pages/{id}',
+            endpoint: '/v1/pages/1',
             http_status: 200,
             ...PURPOSE
         });

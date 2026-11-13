@@ -27,11 +27,6 @@ type TrackedPolicy = NonNullable<Exclude<TrackedRequest['toolset'], '*'>>[string
 
 const BYTES_PER_TOKEN = 4;
 
-const ID_PLACEHOLDER = '{id}';
-const API_VERSION_SEGMENT = /^v\d+(\.\d+)*$/i;
-/** Longer than any word in an API path, so only an id or a token reaches it. */
-const MAX_WORD_SEGMENT_LENGTH = 40;
-
 /** Integration ids and tool names together, so the request stays small whatever the caller sent. */
 const MAX_TRACKED_REQUEST_NAMES = 250;
 
@@ -79,7 +74,7 @@ interface ProxyRequestParams extends Outcome {
     session: AgentSession;
     integrationId?: string | undefined;
     method?: HTTP_METHOD | undefined;
-    /** As the agent sent it. Only its endpoint, with ids and the query string dropped, is tracked. */
+    /** As the agent sent it. Tracked without its query string. */
     path?: string | undefined;
     provider?: string | undefined;
     status?: number | undefined;
@@ -219,7 +214,7 @@ export function trackAgentSessionProxyRequest({
                 ...measurement,
                 ...(integrationId ? { integration_id: integrationId } : {}),
                 ...(method ? { http_method: method } : {}),
-                ...(path ? { endpoint: endpointOf(path) } : {}),
+                ...(path ? { endpoint: path.split(/[?#]/)[0] } : {}),
                 ...(provider ? { provider } : {}),
                 ...(status === undefined ? {} : { http_status: status }),
                 ...(providerErrorCode ? { provider_error_code: providerErrorCode } : {}),
@@ -363,27 +358,4 @@ function resultSize({ content, structuredContent }: CallToolResult): Pick<ToolCa
     const structuredBytes = structuredContent ? Buffer.byteLength(JSON.stringify(structuredContent)) : 0;
     const bytes = Math.max(contentBytes, structuredBytes);
     return { result_size_bytes: bytes, result_token_estimate: Math.ceil(bytes / BYTES_PER_TOKEN) };
-}
-
-/**
- * Replaces each path segment that looks like an id, so requests to the same endpoint group together and
- * no record id reaches the event. A segment is an id when it is numeric, when it mixes digits into
- * something at least eight long, when it is an email, or when it is too long to be a word.
- */
-function endpointOf(path: string): string {
-    const pathOnly = path.split(/[?#]/)[0] ?? '';
-    return pathOnly
-        .split('/')
-        .map((segment) => (isIdSegment(segment) ? ID_PLACEHOLDER : segment))
-        .join('/');
-}
-
-function isIdSegment(segment: string): boolean {
-    if (segment === '' || API_VERSION_SEGMENT.test(segment)) {
-        return false;
-    }
-    if (/^\d+$/.test(segment) || (/\d/.test(segment) && segment.length >= 8)) {
-        return true;
-    }
-    return segment.includes('@') || segment.toLowerCase().includes('%40') || segment.length > MAX_WORD_SEGMENT_LENGTH;
 }

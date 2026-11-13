@@ -375,13 +375,9 @@ describe('trackAgentSessionProxyRequest', () => {
     });
 
     it.each([
-        { path: '/v1/pages/1?filter=archived', endpoint: '/v1/pages/{id}' },
-        { path: '/v1/pages/59833787-2cf9-4fdf-8782-e53db20768a5', endpoint: '/v1/pages/{id}' },
-        { path: '/gmail/v1/users/me/messages/18c2f3a9b0e1d4c7', endpoint: '/gmail/v1/users/me/messages/{id}' },
-        { path: '/services/data/v59.0/sobjects/Account/0015g00000XyZabAAF', endpoint: '/services/data/v59.0/sobjects/Account/{id}' },
-        { path: '/users/jane%40acme.com/calendar', endpoint: '/users/{id}/calendar' },
-        { path: '/api/conversations.history', endpoint: '/api/conversations.history' },
-        { path: '/oauth2/v3/userinfo#me', endpoint: '/oauth2/v3/userinfo' }
+        { path: '/v1/pages/59833787-2cf9-4fdf-8782-e53db20768a5?filter=archived', endpoint: '/v1/pages/59833787-2cf9-4fdf-8782-e53db20768a5' },
+        { path: '/oauth2/v3/userinfo#me', endpoint: '/oauth2/v3/userinfo' },
+        { path: '/repos/acme/billing-service/issues/42', endpoint: '/repos/acme/billing-service/issues/42' }
     ])('reports $path as the endpoint $endpoint', ({ path, endpoint }) => {
         inRequest(() => trackAgentSessionProxyRequest({ session, integrationId: 'notion', method: 'GET', path }));
 
