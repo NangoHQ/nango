@@ -1,0 +1,57 @@
+---
+title: 'Documenso - How do I link my account?'
+sidebarTitle: 'Documenso'
+---
+
+## Overview
+
+To authenticate with Documenso, you need:
+
+1. **Environment** — the Documenso environment your account is on.
+2. **API Token** — a Documenso API token for the team you want to connect.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Documenso account. The API is available on all plans, including Free. You can [sign up here](https://app.documenso.com/signup).
+
+### Step 1: Choose your environment
+
+Select the environment matching the Documenso app you log in to:
+
+| Environment | App you log in to | Value to select |
+|-------------|-------------------|-----------------|
+| Production | `app.documenso.com` | `app.documenso.com` |
+| Staging (demo) | `stg-app.documenso.com` | `stg-app.documenso.com` |
+
+The staging environment needs its own account; your production account does not work there. See [Demo environment](https://docs.documenso.com/docs/developers/demo-environment).
+
+### Step 2: Create an API token
+
+API tokens belong to a team and give full access to that team.
+
+1. Sign in to Documenso and switch to the team you want to connect.
+2. Go to **Team Settings** -> **API Tokens**, then click **Create token**.
+
+<img src="/api-integrations/documenso/api_tokens_page.png" alt="Documenso Team Settings API Tokens page with the Create token button"/>
+
+3. Enter a name for the token, choose when it expires under **Expires in**, then click **Create token**.
+
+<img src="/api-integrations/documenso/create_token_dialog.png" alt="Create API token dialog in Documenso with the name and expiration fields"/>
+
+4. Copy the token from the **Token created** dialog. It is only shown once.
+
+<img src="/api-integrations/documenso/token_created.png" alt="Token created dialog in Documenso with the field to copy the new token"/>
+
+See [Authentication](https://docs.documenso.com/docs/developers/getting-started/authentication) for details.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Documenso.
+2. Select your **Environment** and enter your **API Token** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/documenso/form.png" alt="Documenso connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Documenso.
