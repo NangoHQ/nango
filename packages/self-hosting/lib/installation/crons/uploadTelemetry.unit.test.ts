@@ -58,6 +58,7 @@ async function license(overrides: Partial<License> = {}): Promise<string> {
 beforeEach(async () => {
     flags.hasHostedTelemetryUpload = true;
     envs.NANGO_INSTALLATION_PRIVATE_KEY = installationKey;
+    envs.NANGO_INSTALLATIONS_API_URL = 'https://installations.example.com';
     envs.NANGO_LICENSE = await license();
     trusted.publicKeyPem = publicKeyPem;
     telemetryDb.current = {} as Knex;
@@ -75,7 +76,7 @@ describe('uploaderConfig', () => {
             knex: telemetryDb.current,
             installationId: 'f4a2c0e1-7b3d-4e2a-9c1f-0a6d5e8b2c44',
             privateKeyPem: installationKey.trim(),
-            url: 'https://installations.nango.dev',
+            url: 'https://installations.example.com',
             backfillDays: 30,
             metrics: ['nango.hosted_metric.active_concurrency.max'],
             licenseGraceUntil: new Date('2028-01-30T00:00:00.000Z')
@@ -95,6 +96,7 @@ describe('uploaderConfig', () => {
             () => (envs.NANGO_INSTALLATION_PRIVATE_KEY = 'not a key'),
             expect.stringMatching(/^NANGO_INSTALLATION_PRIVATE_KEY cannot sign an installation token: .+/)
         ],
+        ['the installations URL is not set', () => (envs.NANGO_INSTALLATIONS_API_URL = undefined), 'NANGO_INSTALLATIONS_API_URL is not set'],
         ['the license is not set', () => (envs.NANGO_LICENSE = undefined), 'NANGO_LICENSE is not set'],
         ['the build has no license public key', () => (trusted.publicKeyPem = null), 'this build has no license public key'],
         ['the license does not verify', () => (envs.NANGO_LICENSE = 'not.a.license'), expect.stringContaining('the license does not verify')],
@@ -147,7 +149,7 @@ describe('exec', () => {
         knex: {} as Knex,
         installationId: 'f4a2c0e1-7b3d-4e2a-9c1f-0a6d5e8b2c44',
         privateKeyPem: installationKey,
-        url: 'https://installations.nango.dev',
+        url: 'https://installations.example.com',
         backfillDays: 30,
         metrics: [],
         licenseGraceUntil: new Date(Date.now() + 60_000)

@@ -888,7 +888,7 @@ const ENVS_SHAPE = z.object({
         .default(1 * 3600 * 1000),
     // Sending the stored telemetry to Nango.
     NANGO_INSTALLATION_PRIVATE_KEY: z.string().optional(),
-    NANGO_INSTALLATIONS_API_URL: z.url().optional().default('https://installations.nango.dev'),
+    NANGO_INSTALLATIONS_API_URL: z.url().optional(),
     // We only upload the most recent days. Older data has to be requested manually.
     NANGO_HOSTED_TELEMETRY_UPLOAD_BACKFILL_DAYS: z.coerce.number().int().positive().optional().default(30),
 

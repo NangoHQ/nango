@@ -74,6 +74,9 @@ export async function uploaderConfig(): Promise<Result<UploaderConfig | null>> {
     } catch (err) {
         return Err(new Error(`NANGO_INSTALLATION_PRIVATE_KEY cannot sign an installation token: ${err instanceof Error ? err.message : String(err)}`));
     }
+    if (!envs.NANGO_INSTALLATIONS_API_URL) {
+        return Err(new Error('NANGO_INSTALLATIONS_API_URL is not set'));
+    }
     const knex = hostedTelemetryDb();
     if (!knex) {
         return Err(new Error('hosted telemetry has no database'));
