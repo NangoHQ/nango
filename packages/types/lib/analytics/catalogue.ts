@@ -10,7 +10,7 @@ import type { UsageMetric } from '../usage/index.js';
 import type { AnalyticsEventName, AnalyticsSurface } from './taxonomy.js';
 
 export interface AnalyticsEventDefinition {
-    surface: AnalyticsSurface;
+    surface: AnalyticsSurface | readonly AnalyticsSurface[];
     insight: string;
     fires: string;
     properties: z.ZodType;
@@ -278,10 +278,24 @@ export const analyticsEventCatalogue = defineCatalogue({
         properties: none
     },
     'onboarding:copy_prompt_button_click': {
-        surface: 'web',
-        insight: 'How many accounts start adding Nango to their own agent from Getting Started',
-        fires: 'When someone copies the install prompt for their agent on the Getting Started page',
-        properties: z.object({ has_api_key: z.boolean() })
+        surface: ['web', 'website'],
+        insight: 'How often people start adding Nango to their agent from the website or Getting Started',
+        fires: 'On website Copy prompt activation, or after copying the install prompt on Getting Started',
+        properties: z.object({
+            has_api_key: z.boolean(),
+            placement: z.enum(['hero', 'closing']).optional(),
+            prompt_version: z.string().optional()
+        })
+    },
+    'onboarding:copy_prompt_button_complete': {
+        surface: 'website',
+        insight: 'How many website sessions successfully copy the setup prompt for their agent',
+        fires: 'After the website Copy prompt clipboard write succeeds',
+        properties: z.object({
+            is_success: z.literal(true),
+            placement: z.enum(['hero', 'closing']),
+            prompt_version: z.string()
+        })
     },
     'onboarding:copy_api_key_button_click': {
         surface: 'web',
@@ -690,8 +704,12 @@ export const analyticsEventCatalogue = defineCatalogue({
 type AnalyticsEventCatalogue = typeof analyticsEventCatalogue;
 type AnalyticsEventKey = keyof AnalyticsEventCatalogue;
 
+type EventSurface<E extends AnalyticsEventKey> = AnalyticsEventCatalogue[E]['surface'] extends readonly AnalyticsSurface[]
+    ? AnalyticsEventCatalogue[E]['surface'][number]
+    : AnalyticsEventCatalogue[E]['surface'];
+
 export type AnalyticsEventNameFor<S extends AnalyticsSurface> = {
-    [E in AnalyticsEventKey]: S extends AnalyticsEventCatalogue[E]['surface'] ? E : never;
+    [E in AnalyticsEventKey]: S extends EventSurface<E> ? E : never;
 }[AnalyticsEventKey];
 
 export type AnalyticsEventProperties<E extends AnalyticsEventKey> = z.infer<AnalyticsEventCatalogue[E]['properties']>;
