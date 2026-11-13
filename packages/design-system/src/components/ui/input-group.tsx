@@ -94,14 +94,13 @@ function InputGroupAddon({ className, align = 'inline-start', ...props }: React.
 
 // Icon-only affordance for input groups (edit, clear, …). Renders the design-system IconButton;
 // the input-group icon sizes map to IconButton sizes: icon-sm → xs (24px), icon-xs → 2xs (20px).
-function InputGroupButton({
-    type = 'button',
-    variant = 'ghost',
-    size = 'icon-xs',
-    ...props
-}: Omit<React.ComponentProps<typeof IconButton>, 'size' | 'className'> & { size?: 'icon-xs' | 'icon-sm' }) {
-    return <IconButton type={type} variant={variant} size={size === 'icon-sm' ? 'xs' : '2xs'} {...props} />;
-}
+const InputGroupButton = React.forwardRef<
+    HTMLButtonElement,
+    Omit<React.ComponentProps<typeof IconButton>, 'size' | 'className' | 'ref'> & { size?: 'icon-xs' | 'icon-sm' }
+>(({ type = 'button', variant = 'ghost', size = 'icon-xs', ...props }, ref) => {
+    return <IconButton ref={ref} type={type} variant={variant} size={size === 'icon-sm' ? 'xs' : '2xs'} {...props} />;
+});
+InputGroupButton.displayName = 'InputGroupButton';
 
 function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
     return (

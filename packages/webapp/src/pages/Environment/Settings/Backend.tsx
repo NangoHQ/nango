@@ -1,10 +1,9 @@
 import { ExternalLink, Info } from 'lucide-react';
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { Alert, AlertActions, AlertButton, AlertDescription } from '@nangohq/design-system';
 
-import { EditableInput } from '@/components/patterns/EditableInput';
+import { InlineEditInput } from '@/components/patterns/InlineEditInput';
 import { usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
@@ -23,8 +22,6 @@ export const BackendSettings: React.FC = () => {
 
     const { can } = usePermissions();
     const canEditEnvironment = can('environment:settings:update');
-
-    const [isEditingCallbackUrl, setIsEditingCallbackUrl] = useState(false);
 
     if (!environmentAndAccount) {
         return null;
@@ -48,29 +45,27 @@ export const BackendSettings: React.FC = () => {
                     </>
                 }
             >
-                <div className="flex flex-col gap-2">
-                    <EditableInput
-                        id="callback_url"
-                        placeholder="https://api.nango.dev/oauth/callback"
-                        initialValue={environmentAndAccount.environment.callback_url}
-                        onEditingChange={setIsEditingCallbackUrl}
-                        onSave={async (value) => {
-                            try {
-                                await patchEnvironmentAsync({ callback_url: value });
-                                toast({ title: 'Successfully updated', variant: 'success' });
-                            } catch (err) {
-                                if (err instanceof APIError) {
-                                    toast({ title: err.json.error?.message ?? 'Failed to update', variant: 'error' });
-                                } else {
-                                    toast({ title: 'Failed to update', variant: 'error' });
-                                }
-                                // Throw for EditableInput
-                                throw err;
+                <InlineEditInput
+                    id="callback_url"
+                    mono
+                    placeholder="https://api.nango.dev/oauth/callback"
+                    value={environmentAndAccount.environment.callback_url}
+                    canEdit={canEditEnvironment}
+                    onSave={async (value) => {
+                        try {
+                            await patchEnvironmentAsync({ callback_url: value });
+                            toast({ title: 'Successfully updated', variant: 'success' });
+                        } catch (err) {
+                            if (err instanceof APIError) {
+                                toast({ title: err.json.error?.message ?? 'Failed to update', variant: 'error' });
+                            } else {
+                                toast({ title: 'Failed to update', variant: 'error' });
                             }
-                        }}
-                        canEdit={canEditEnvironment}
-                    />
-                    {isEditingCallbackUrl && (
+                            // Rethrow so InlineEditInput stays in edit mode.
+                            throw err;
+                        }
+                    }}
+                    editingFooter={
                         <Alert variant="info">
                             <Info />
                             <AlertDescription>
@@ -92,8 +87,8 @@ export const BackendSettings: React.FC = () => {
                                 </AlertButton>
                             </AlertActions>
                         </Alert>
-                    )}
-                </div>
+                    }
+                />
             </SettingsGroup>
         </SettingsContent>
     );
