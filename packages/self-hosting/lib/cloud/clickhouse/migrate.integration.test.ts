@@ -26,7 +26,7 @@ afterAll(async () => {
 });
 
 describe('installations migrate', () => {
-    it('creates the database with the metrics table, deduplicating on received_at', async () => {
+    it('creates the database with the metrics table, deduplicating on received_at and keeping rows for 24 months', async () => {
         expect((await migrate({ clickhouseUrl: url, database })).isOk()).toBe(true);
 
         expect((await rows<{ name: string }>(`SELECT name FROM system.tables WHERE database = {db:String} ORDER BY name`)).map((r) => r.name)).toEqual([
@@ -38,6 +38,7 @@ describe('installations migrate', () => {
         );
         expect(table).toMatchObject({ sorting_key: 'installation_id, metric, ts, attributes', partition_key: 'toYYYYMM(ts)' });
         expect(table?.engine_full).toMatch(/^ReplacingMergeTree\(received_at\)/);
+        expect(table?.engine_full).toContain('TTL toDateTime(ts) + toIntervalMonth(24)');
     });
 
     it('does not re-apply an already-applied migration', async () => {
