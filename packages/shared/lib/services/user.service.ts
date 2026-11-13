@@ -186,6 +186,7 @@ class UserService {
         if (result.length === 1 && result[0]?.id) {
             const user = await this.getUserById(result[0].id);
             if (user) {
+                productTracking.identifyUser(user);
                 productTracking.track({
                     name: 'auth:user_create',
                     team: { id: account_id },

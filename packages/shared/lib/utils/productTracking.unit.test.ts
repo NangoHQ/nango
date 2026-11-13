@@ -18,6 +18,7 @@ type GroupIdentify = (payload: { groupType: string; groupKey: string; properties
 
 const capture = vi.fn<Capture>();
 const groupIdentify = vi.fn<GroupIdentify>();
+const identify = vi.fn();
 const realClient = productTracking.client;
 
 function lastCapture() {
@@ -27,8 +28,9 @@ function lastCapture() {
 beforeEach(() => {
     capture.mockClear();
     groupIdentify.mockClear();
+    identify.mockReset();
     productTracking.identifiedAccounts.clear();
-    productTracking.client = { capture, groupIdentify } as unknown as typeof productTracking.client;
+    productTracking.client = { capture, groupIdentify, identify } as unknown as typeof productTracking.client;
 });
 
 afterEach(() => {
@@ -174,6 +176,51 @@ describe('identifyAccountGroup', () => {
             { groupType: 'company', groupKey: '48', properties: { is_internal: true } },
             { groupType: 'company', groupKey: '48', properties: { name: 'Acme' } }
         ]);
+    });
+});
+
+describe('identifyUser', () => {
+    const createdUser = { id: 3, account_id: 42, email: 'user@example.com', name: 'Test User', hashed_password: 'never-send' };
+
+    it('sets only email and name on the same user profile as the signup event', () => {
+        productTracking.identifyUser(createdUser);
+        productTracking.track({ name: 'auth:user_create', team, user: createdUser, eventProperties: { method: 'password' } });
+
+        expect(identify).toHaveBeenCalledExactlyOnceWith({
+            distinctId: '3',
+            properties: { email: 'user@example.com', name: 'Test User' }
+        });
+        expect(lastCapture().distinctId).toBe('3');
+        expect(lastCapture().properties).not.toHaveProperty('email');
+        expect(lastCapture().properties).not.toHaveProperty('$set');
+        expect(groupIdentify).not.toHaveBeenCalled();
+    });
+
+    it('does not identify users while impersonating', () => {
+        withProductTrackingContext(
+            () => ({ team, impersonated: true }),
+            () => productTracking.identifyUser(createdUser)
+        );
+
+        expect(identify).not.toHaveBeenCalled();
+    });
+
+    it('does nothing when tracking is not configured', () => {
+        productTracking.client = undefined;
+
+        expect(() => productTracking.identifyUser(createdUser)).not.toThrow();
+        expect(identify).not.toHaveBeenCalled();
+    });
+
+    it('still tracks signup if identifying the profile fails', () => {
+        identify.mockImplementationOnce(() => {
+            throw new Error('unavailable');
+        });
+
+        expect(() => productTracking.identifyUser(createdUser)).not.toThrow();
+        productTracking.track({ name: 'auth:user_create', team, user: createdUser, eventProperties: { method: 'google' } });
+
+        expect(capture).toHaveBeenCalledTimes(1);
     });
 });
 

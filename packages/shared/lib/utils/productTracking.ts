@@ -196,6 +196,19 @@ class ProductTracking {
         }
     }
 
+    /** Name a saved user even when the browser's identify request never arrives. */
+    public identifyUser(user: Pick<DBUser, 'id' | 'email' | 'name' | 'account_id'>) {
+        try {
+            if (!this.client || resolveContext({ team: { id: user.account_id }, user }) === IMPERSONATED) {
+                return;
+            }
+
+            this.client.identify({ distinctId: String(user.id), properties: { email: user.email, name: user.name } });
+        } catch (err) {
+            report(err);
+        }
+    }
+
     private identifyAccount(client: PostHog, { team, plan }: TrackingContext) {
         this.sendGroupProperties(client, team.id, accountGroupProperties(team, plan));
     }
