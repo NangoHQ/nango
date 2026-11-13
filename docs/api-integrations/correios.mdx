@@ -1,0 +1,84 @@
+---
+title: 'Correios'
+sidebarTitle: 'Correios'
+description: 'Integrate your application with the Correios APIs'
+---
+
+## 🚀 Quickstart
+
+Connect to Correios with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Correios_.
+    </Step>
+    <Step id="authorize-correios" title="Authorize Correios">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then choose the environment and enter your Meu Correios username, API access code and contract number. Nango exchanges them for a token and keeps it valid. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-correios-api" title="Call the Correios API">
+    Let's make your first request to the Correios Busca CEP API to list the states and their postal code ranges (the Busca CEP service must be enabled on your contract). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/cep/v1/ufs" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/cep/v1/ufs',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Correios integration guides
+
+- [How do I link my account?](/api-integrations/correios/connect)  
+Create an API access code in Correios Web Services and find your contract number.
+
+Official docs: [Correios Developers](https://www.correios.com.br/atendimento/developers)
+
+## 🧩 Pre-built syncs & tools for Correios
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/correios/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- API access needs a company Meu Correios account and a commercial contract with Correios. Each API (Busca CEP, Rastro, Preço, Prazo…) must be enabled on the contract.
+- Nango gets a token from `POST /token/v1/autentica/contrato`. Correios returns the same token until 30 minutes before it expires (24 hours), so Nango asks for it every 20 minutes and always has a valid one.
+- The token endpoint allows 3 requests per second and answers `429` above that.
+- Homologation (`apihom.correios.com.br`) needs its own Meu Correios account, set up through your Correios account representative.
+
+---

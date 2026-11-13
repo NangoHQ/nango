@@ -1,0 +1,86 @@
+---
+title: 'Melhor Envio'
+sidebarTitle: 'Melhor Envio'
+description: 'Integrate your application with the Melhor Envio API'
+---
+
+## 🚀 Quickstart
+
+Connect to Melhor Envio with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Melhor Envio_. Paste the client ID and secret of your Melhor Envio app, and add the scopes your integration needs (for example `users-read`).
+    </Step>
+    <Step id="authorize-melhor-envio" title="Authorize Melhor Envio">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, choose the environment (production or sandbox), then log in to Melhor Envio and allow access. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-melhor-envio-api" title="Call the Melhor Envio API">
+    Let's make your first request to the Melhor Envio API to read the connected user. Melhor Envio requires a `User-Agent` header with your app's name and a contact email. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v2/me" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "User-Agent: MyApp (support@myapp.com)"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v2/me',
+            headers: { 'User-Agent': 'MyApp (support@myapp.com)' },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Melhor Envio integration guides
+
+- [How to register your own Melhor Envio OAuth app](/api-integrations/melhor-envio/how-to-register-your-own-melhor-envio-oauth-app)  
+Create a Melhor Envio app (production or sandbox) and connect its credentials to Nango.
+
+Official docs: [Melhor Envio API](https://docs.melhorenvio.com.br/reference/introducao-api-melhor-envio)
+
+## 🧩 Pre-built syncs & tools for Melhor Envio
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/melhor-envio/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Production and sandbox are separate: each has its own accounts, apps and tokens. Create one Nango integration per environment with the app from that environment, and pick the same environment when connecting.
+- Every request must send a `User-Agent` header with your app's name and a contact email, for example `MyApp (support@myapp.com)`. Pass it in the headers of each proxy call.
+- Access tokens last 30 days and refresh tokens 45 days. Each refresh returns a new refresh token, which Nango stores.
+- The API allows 250 requests per minute per authorized user.
+
+---
