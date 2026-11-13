@@ -826867,7 +826867,7 @@
                 "output": ["ActionOutput_quickbooks_createinvoice"],
                 "scopes": ["com.intuit.quickbooks.accounting"],
                 "usedModels": ["ActionInput_quickbooks_createinvoice", "ActionOutput_quickbooks_createinvoice"],
-                "version": "2.0.1",
+                "version": "2.1.0",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_quickbooks_createinvoice": {
@@ -826886,8 +826886,17 @@
                                     "description": "Reference to the customer"
                                 },
                                 "txnDate": {
+                                    "description": "Transaction date in YYYY-MM-DD format. Defaults to the current date if omitted. Example: \"2024-01-15\"",
+                                    "type": "string"
+                                },
+                                "dueDate": {
+                                    "description": "Due date in YYYY-MM-DD format. Defaults to the transaction date plus the sales terms if omitted. Example: \"2024-02-14\"",
+                                    "type": "string"
+                                },
+                                "docNumber": {
+                                    "description": "Invoice number. If omitted, QuickBooks assigns the next number when automatic numbering is on. Example: \"INV-1001\"",
                                     "type": "string",
-                                    "description": "Transaction date in YYYY-MM-DD format. Example: \"2024-01-15\""
+                                    "maxLength": 21
                                 },
                                 "line": {
                                     "type": "array",
@@ -826933,9 +826942,31 @@
                                         "additionalProperties": false
                                     },
                                     "description": "Invoice line items"
+                                },
+                                "currencyRef": {
+                                    "description": "Currency of the invoice. Only needed when multicurrency is enabled; defaults to the home currency. Example: { \"value\": \"USD\" }",
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": false
+                                },
+                                "projectRef": {
+                                    "description": "Project to assign the invoice to. Only for companies with Projects enabled. The value must be a project ID, not a customer ID; omit it when the invoice is not part of a project.",
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": false
                                 }
                             },
-                            "required": ["customerRef", "txnDate", "line"],
+                            "required": ["customerRef", "line"],
                             "additionalProperties": false
                         },
                         "ActionOutput_quickbooks_createinvoice": {
@@ -826963,6 +826994,18 @@
                                 },
                                 "docNumber": {
                                     "description": "Document number",
+                                    "type": "string"
+                                },
+                                "dueDate": {
+                                    "description": "Due date",
+                                    "type": "string"
+                                },
+                                "currency": {
+                                    "description": "Currency code",
+                                    "type": "string"
+                                },
+                                "projectId": {
+                                    "description": "Project ID",
                                     "type": "string"
                                 },
                                 "lineItems": {
@@ -832585,7 +832628,7 @@
                 "output": ["ActionOutput_quickbooks_updateinvoice"],
                 "scopes": ["com.intuit.quickbooks.accounting"],
                 "usedModels": ["ActionInput_quickbooks_updateinvoice", "ActionOutput_quickbooks_updateinvoice"],
-                "version": "2.0.1",
+                "version": "2.1.0",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_quickbooks_updateinvoice": {
@@ -832669,6 +832712,22 @@
                                 "TxnDate": {
                                     "description": "Transaction date (YYYY-MM-DD)",
                                     "type": "string"
+                                },
+                                "DocNumber": {
+                                    "description": "Invoice number. Example: \"INV-1001\"",
+                                    "type": "string",
+                                    "maxLength": 21
+                                },
+                                "ProjectRef": {
+                                    "description": "Project to assign the invoice to. Only for companies with Projects enabled. The value must be a project ID, not a customer ID; when omitted, the project is left unchanged only for sparse updates (a full update with sparse: false clears it).",
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": false
                                 },
                                 "DueDate": {
                                     "description": "Due date (YYYY-MM-DD)",
@@ -832842,6 +832901,12 @@
                                         }
                                     },
                                     "additionalProperties": false
+                                },
+                                "currency": {
+                                    "type": "string"
+                                },
+                                "projectId": {
+                                    "type": "string"
                                 },
                                 "lineItems": {
                                     "type": "array",
@@ -836685,7 +836750,7 @@
                 "output": ["ActionOutput_quickbooks_createinvoice"],
                 "scopes": ["com.intuit.quickbooks.accounting"],
                 "usedModels": ["ActionInput_quickbooks_createinvoice", "ActionOutput_quickbooks_createinvoice"],
-                "version": "2.0.1",
+                "version": "2.1.0",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_quickbooks_createinvoice": {
@@ -836704,8 +836769,17 @@
                                     "description": "Reference to the customer"
                                 },
                                 "txnDate": {
+                                    "description": "Transaction date in YYYY-MM-DD format. Defaults to the current date if omitted. Example: \"2024-01-15\"",
+                                    "type": "string"
+                                },
+                                "dueDate": {
+                                    "description": "Due date in YYYY-MM-DD format. Defaults to the transaction date plus the sales terms if omitted. Example: \"2024-02-14\"",
+                                    "type": "string"
+                                },
+                                "docNumber": {
+                                    "description": "Invoice number. If omitted, QuickBooks assigns the next number when automatic numbering is on. Example: \"INV-1001\"",
                                     "type": "string",
-                                    "description": "Transaction date in YYYY-MM-DD format. Example: \"2024-01-15\""
+                                    "maxLength": 21
                                 },
                                 "line": {
                                     "type": "array",
@@ -836751,9 +836825,31 @@
                                         "additionalProperties": false
                                     },
                                     "description": "Invoice line items"
+                                },
+                                "currencyRef": {
+                                    "description": "Currency of the invoice. Only needed when multicurrency is enabled; defaults to the home currency. Example: { \"value\": \"USD\" }",
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": false
+                                },
+                                "projectRef": {
+                                    "description": "Project to assign the invoice to. Only for companies with Projects enabled. The value must be a project ID, not a customer ID; omit it when the invoice is not part of a project.",
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": false
                                 }
                             },
-                            "required": ["customerRef", "txnDate", "line"],
+                            "required": ["customerRef", "line"],
                             "additionalProperties": false
                         },
                         "ActionOutput_quickbooks_createinvoice": {
@@ -836781,6 +836877,18 @@
                                 },
                                 "docNumber": {
                                     "description": "Document number",
+                                    "type": "string"
+                                },
+                                "dueDate": {
+                                    "description": "Due date",
+                                    "type": "string"
+                                },
+                                "currency": {
+                                    "description": "Currency code",
+                                    "type": "string"
+                                },
+                                "projectId": {
+                                    "description": "Project ID",
                                     "type": "string"
                                 },
                                 "lineItems": {
@@ -842403,7 +842511,7 @@
                 "output": ["ActionOutput_quickbooks_updateinvoice"],
                 "scopes": ["com.intuit.quickbooks.accounting"],
                 "usedModels": ["ActionInput_quickbooks_updateinvoice", "ActionOutput_quickbooks_updateinvoice"],
-                "version": "2.0.1",
+                "version": "2.1.0",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_quickbooks_updateinvoice": {
@@ -842487,6 +842595,22 @@
                                 "TxnDate": {
                                     "description": "Transaction date (YYYY-MM-DD)",
                                     "type": "string"
+                                },
+                                "DocNumber": {
+                                    "description": "Invoice number. Example: \"INV-1001\"",
+                                    "type": "string",
+                                    "maxLength": 21
+                                },
+                                "ProjectRef": {
+                                    "description": "Project to assign the invoice to. Only for companies with Projects enabled. The value must be a project ID, not a customer ID; when omitted, the project is left unchanged only for sparse updates (a full update with sparse: false clears it).",
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": false
                                 },
                                 "DueDate": {
                                     "description": "Due date (YYYY-MM-DD)",
@@ -842660,6 +842784,12 @@
                                         }
                                     },
                                     "additionalProperties": false
+                                },
+                                "currency": {
+                                    "type": "string"
+                                },
+                                "projectId": {
+                                    "type": "string"
                                 },
                                 "lineItems": {
                                     "type": "array",
