@@ -18,7 +18,7 @@ export const Homepage: React.FC = () => {
 
     if (!globalEnv.features.logs) {
         return (
-            <DashboardLayout>
+            <DashboardLayout width="wide">
                 <Helmet>
                     <title>Homepage - Nango</title>
                 </Helmet>
@@ -43,7 +43,7 @@ export const Homepage: React.FC = () => {
     }
 
     return (
-        <DashboardLayout>
+        <DashboardLayout width="wide">
             <Helmet>
                 <title>Homepage - Nango</title>
             </Helmet>

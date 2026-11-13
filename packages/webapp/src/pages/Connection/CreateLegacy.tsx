@@ -619,7 +619,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout width="wide">
             <Helmet>
                 <title>Create Connection - Nango</title>
             </Helmet>
