@@ -117,26 +117,6 @@ export const buttonVariants = cva(
                     'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-default'
                 ],
-                'link-success': [
-                    'bg-transparent text-text-link-success border-transparent',
-                    'decoration-from-font decoration-solid [text-underline-position:from-font]',
-                    '[&_svg]:text-icon-link-success',
-                    ...LINK_UNDERLINE_STATES,
-                    'active:text-text-link-success-active active:[&_svg]:text-icon-link-success-active',
-                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
-                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
-                    'focus-visible:shadow-focus-outline-default'
-                ],
-                'link-warning': [
-                    'bg-transparent text-text-link-warning border-transparent',
-                    'decoration-from-font decoration-solid [text-underline-position:from-font]',
-                    '[&_svg]:text-icon-link-warning',
-                    ...LINK_UNDERLINE_STATES,
-                    'active:text-text-link-warning-active active:[&_svg]:text-icon-link-warning-active',
-                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
-                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
-                    'focus-visible:shadow-focus-outline-default'
-                ],
                 'link-neutral-danger': [
                     'bg-transparent text-text-link-neutral border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
@@ -162,17 +142,13 @@ export const buttonVariants = cva(
         compoundVariants: [
             // Link variants are bare inline text in Figma — no fixed size, height comes from the line box.
             // link-danger alone gets 2px horizontal padding that link-accent/link-neutral don't have.
-            { variant: ['link-accent', 'link-neutral', 'link-neutral-danger', 'link-success', 'link-warning'], className: 'h-auto w-auto p-0' },
+            { variant: ['link-accent', 'link-neutral', 'link-neutral-danger'], className: 'h-auto w-auto p-0' },
             { variant: 'link-danger', className: 'h-auto w-auto px-0.5 py-0' },
             // Link variants deliberately don't take the size scale's radius, gap or label size, only its icon size.
-            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger', 'link-success', 'link-warning'], className: 'rounded-ds-xs' },
-            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger', 'link-success', 'link-warning'], size: 'sm', className: 'gap-1' },
-            {
-                variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger', 'link-success', 'link-warning'],
-                size: 'md',
-                className: 'text-ds-md'
-            },
-            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger', 'link-success', 'link-warning'], size: 'lg', className: 'gap-1.5' }
+            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], className: 'rounded-ds-xs' },
+            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: 'sm', className: 'gap-1' },
+            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: 'md', className: 'text-ds-md' },
+            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: 'lg', className: 'gap-1.5' }
         ],
         defaultVariants: {
             variant: 'primary',

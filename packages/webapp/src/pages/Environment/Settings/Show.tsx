@@ -1,8 +1,8 @@
-import { Lock } from 'lucide-react';
+import { CircleAlert, Lock } from 'lucide-react';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { Alert, InlineCode } from '@nangohq/design-system';
+import { Alert, AlertDescription, AlertTitle } from '@nangohq/design-system';
 
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -33,24 +33,26 @@ const EnvironmentSettingsContent: React.FC<{ value: string; children: ReactNode 
 };
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { data: teamData } = useTeam(env);
+    const { data: teamData, isError: isTeamError } = useTeam(env);
     const team = teamData?.data;
 
-    const { data, isError } = useEnvironment(env);
+    const { data, isError: isEnvironmentError } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
     const [activeTab, setActiveTab] = useHashNavigation('general');
     const [apiKeysResetKey, setApiKeysResetKey] = useState(0);
     const { can } = usePermissions();
     const canEditEnvironment = can('environment:settings:update');
 
-    if (isError && !environmentAndAccount) {
+    if ((isEnvironmentError && !environmentAndAccount) || (isTeamError && !team)) {
         return (
             <DashboardLayout fullWidth className="flex flex-col gap-8">
                 <Helmet>
                     <title>Environment Settings - Nango</title>
                 </Helmet>
-                <Alert status="danger" title="Couldn't load environment settings">
-                    The request to <InlineCode>GET /api/v1/environments/current</InlineCode> failed. Refresh the page to try again.
+                <Alert variant="danger">
+                    <CircleAlert />
+                    <AlertTitle>Couldn&apos;t load environment settings</AlertTitle>
+                    <AlertDescription>Refresh the page to try again.</AlertDescription>
                 </Alert>
             </DashboardLayout>
         );
@@ -78,8 +80,9 @@ export const EnvironmentSettings: React.FC = () => {
             </Helmet>
 
             {!canEditEnvironment && (
-                <Alert status="neutral" icon={<Lock />}>
-                    You have read-only access to this environment. Ask an admin to change its settings.
+                <Alert variant="neutral">
+                    <Lock />
+                    <AlertDescription>You have read-only access to this environment. Ask an admin to change its settings.</AlertDescription>
                 </Alert>
             )}
 

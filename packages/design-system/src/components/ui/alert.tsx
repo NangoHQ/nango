@@ -1,10 +1,9 @@
 import { Slot } from '@radix-ui/react-slot';
 import { cva } from 'class-variance-authority';
-import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from 'lucide-react';
-import { forwardRef, useState } from 'react';
+import { X } from 'lucide-react';
+import { forwardRef } from 'react';
 
 import { cn } from '../../lib/cn';
-import { Button } from './button';
 import { InlineCodeToneProvider } from './inline-code';
 
 import type { VariantProps } from 'class-variance-authority';
@@ -17,12 +16,12 @@ import type { VariantProps } from 'class-variance-authority';
 export const alertVariants = cva(
     [
         'relative grid w-full items-start gap-y-0.5',
-        'rounded-ds-sm border-ds-hairline',
+        'rounded-ds-md border-ds-hairline',
         // 16px icon, top-aligned so it stays on the first line when the description wraps. Each size nudges
         // it down to sit optically centred on that line — see the size variants for the amounts.
         // Figma colours the icon from status/{s}/icon, a more vibrant stop than the status text colour, so it
         // takes --alert-icon rather than inheriting currentColor.
-        '[&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:size-4 [&>svg]:text-[var(--alert-icon)] [&>svg]:mr-2'
+        '[&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:size-4 [&>svg]:text-[var(--alert-icon)] [&>svg]:mr-2.5'
     ],
     {
         variants: {
@@ -49,7 +48,7 @@ export const alertVariants = cva(
                     '[--alert-link:var(--color-text-link-danger)] [--alert-link-active:var(--color-text-link-danger-active)]'
                 ],
                 neutral: [
-                    'bg-status-neutral-bg border-status-neutral-border text-status-neutral-text',
+                    'bg-status-neutral-bg border-border-default text-status-neutral-text',
                     '[--alert-icon:var(--color-status-neutral-icon)]',
                     '[--alert-link:var(--color-text-link-neutral)] [--alert-link-active:var(--color-text-link-neutral-active)]'
                 ]
@@ -62,37 +61,26 @@ export const alertVariants = cva(
             // Figma "Size". Each size owns where the trailing slots sit.
             size: {
                 wide: [
-                    'grid-cols-[auto_1fr_auto_auto] px-2 py-2',
+                    'grid-cols-[auto_1fr_auto_auto] px-3 py-2.5',
                     // 1px centres the 16px icon on a 12px description line (18px box); a 13px title line
                     // (19.5px box) needs 2px. Nudged rather than centred so it stays on the first line.
                     '[&>svg]:translate-y-px has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
-                    '[&>[data-slot=alert-title]]:pr-3 [&>[data-slot=alert-description]]:pr-3',
-                    '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-center [&>[data-slot=alert-actions]]:ml-4',
-                    // Figma leaves 16px between the trailing slot and the right border, 8px more than the root
-                    // padding, so whichever slot comes last takes the extra 8px.
-                    '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-center [&>[data-slot=alert-close]]:ml-4 [&>[data-slot=alert-close]]:mr-2',
-                    'not-has-[>[data-slot=alert-close]]:[&>[data-slot=alert-actions]]:mr-2',
-                    // With a title *and* a description the alert is two rows tall; the trailing slots span both so they
-                    // centre on the banner. Start and span go in one `grid-row` declaration — a separate `row-span-2`
-                    // emits the shorthand, which resets the `row-start-1` above and drops them into the second row.
-                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-actions]]:row-[1/span_2]',
-                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-close]]:row-[1/span_2]'
+                    '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-start [&>[data-slot=alert-actions]]:gap-3 [&>[data-slot=alert-actions]]:ml-2.5',
+                    '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-start [&>[data-slot=alert-close]]:ml-3',
+                    '[&>[data-slot=alert-close]]:translate-y-px has-[>[data-slot=alert-title]]:[&>[data-slot=alert-close]]:translate-y-0.5'
                 ],
                 // actions drop to their own row, aligned right under the text column; close stays top-right
                 compact: [
-                    'grid-cols-[auto_1fr_auto] px-2 py-2',
+                    'grid-cols-[auto_1fr_auto] px-3 py-2.5',
                     // 1px centres a 16px glyph on a 12px description line (18px box); a 13px title line
                     // (19.5px box) needs 2px. Nudged rather than centred so it stays on the first line.
                     '[&>svg]:translate-y-px has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
                     '[&>[data-slot=alert-close]]:translate-y-px has-[>[data-slot=alert-title]]:[&>[data-slot=alert-close]]:translate-y-0.5',
-                    // Actions sit left-aligned under the text, 8px apart — tighter than wide's 16px.
-                    '[&>[data-slot=alert-actions]]:col-start-2 [&>[data-slot=alert-actions]]:gap-2 [&>[data-slot=alert-actions]]:mt-1',
+                    '[&>[data-slot=alert-actions]]:col-start-2 [&>[data-slot=alert-actions]]:gap-3 [&>[data-slot=alert-actions]]:mt-1',
                     '[&>[data-slot=alert-close]]:col-start-3 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-start [&>[data-slot=alert-close]]:ml-2'
                 ],
                 toast: [
-                    'grid-cols-[auto_1fr_auto_auto] px-2 py-2',
-                    // Figma tightens the toast to 4px as soon as it carries a title; description-only keeps the standard 8px.
-                    'has-[>[data-slot=alert-title]]:py-1',
+                    'grid-cols-[auto_1fr_auto_auto] px-3 py-2.5',
                     // Figma "CTA": the action sits inline at the end of the description row, or beneath it when
                     // there is a title.
                     '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-start [&>[data-slot=alert-actions]]:gap-2 [&>[data-slot=alert-actions]]:ml-2',
@@ -133,17 +121,15 @@ type AlertVariantProps = VariantProps<typeof alertVariants>;
 
 type AlertStyleProps = (Omit<AlertVariantProps, 'cta'> & { cta?: never }) | { variant: 'neutral'; size?: 'wide'; cta: 'button'; icon?: never };
 
-/** @deprecated Compose-by-children API. Pass `status` to use the prop-driven `Alert`. */
-export type LegacyAlertProps = React.ComponentProps<'div'> &
+export type AlertProps = React.ComponentProps<'div'> &
     AlertStyleProps & {
-        status?: never;
         /** Renders the dismiss affordance. Omit for an alert that can't be dismissed. */
         onDismiss?: () => void;
         /** Accessible label for the dismiss button. */
         dismissLabel?: string;
     };
 
-const LegacyAlert = forwardRef<HTMLDivElement, LegacyAlertProps>(
+export const Alert = forwardRef<HTMLDivElement, AlertProps>(
     ({ className, variant, size, cta, icon, onDismiss, dismissLabel = 'Dismiss', children, ...props }, ref) => (
         <div ref={ref} data-slot="alert" role="alert" className={cn(alertVariants({ variant, size, cta, icon }), className)} {...props}>
             <InlineCodeToneProvider value={variant ?? 'success'}>{children}</InlineCodeToneProvider>
@@ -161,11 +147,15 @@ const LegacyAlert = forwardRef<HTMLDivElement, LegacyAlertProps>(
         </div>
     )
 );
-LegacyAlert.displayName = 'LegacyAlert';
+Alert.displayName = 'Alert';
 
-// Figma text/regular/sm (13px/400) in the status colour, truncated to one line.
 export const AlertTitle = forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => (
-    <div ref={ref} data-slot="alert-title" className={cn('type-text-regular-sm col-start-2 row-start-1 line-clamp-1 min-h-4', className)} {...props} />
+    <div
+        ref={ref}
+        data-slot="alert-title"
+        className={cn('type-text-medium-sm col-start-2 row-start-1 line-clamp-1 min-h-4 text-text-strong', className)}
+        {...props}
+    />
 ));
 AlertTitle.displayName = 'AlertTitle';
 
@@ -245,188 +235,3 @@ export const AlertButton = forwardRef<HTMLButtonElement, AlertButtonProps>(({ cl
     );
 });
 AlertButton.displayName = 'AlertButton';
-
-export type AlertStatus = 'info' | 'success' | 'warning' | 'danger' | 'neutral';
-export type AlertSize = 'wide' | 'compact' | 'toast';
-
-export interface AlertAction {
-    label: React.ReactNode;
-    onClick?: React.MouseEventHandler<HTMLButtonElement>;
-    href?: string;
-    target?: React.HTMLAttributeAnchorTarget;
-    icon?: React.ReactNode;
-    disabled?: boolean;
-    loading?: boolean;
-}
-
-export type StatusAlertProps = Omit<React.ComponentProps<'div'>, 'title'> & {
-    status: AlertStatus;
-    size?: AlertSize;
-    title?: React.ReactNode;
-    action?: AlertAction;
-    secondaryAction?: AlertAction;
-    /** Replaces the status icon; `false` renders none. */
-    icon?: React.ReactNode | false;
-    dismissible?: boolean;
-    onDismiss?: () => void;
-    dismissLabel?: string;
-    variant?: never;
-    cta?: never;
-};
-
-export type AlertProps = StatusAlertProps | LegacyAlertProps;
-
-export const statusAlertVariants = cva('relative flex w-full items-start gap-2.5 rounded-ds-md border-ds-hairline px-3 py-2.5', {
-    variants: {
-        status: {
-            info: 'bg-status-info-bg border-status-info-border',
-            success: 'bg-status-success-bg border-status-success-border',
-            warning: 'bg-status-warning-bg border-status-warning-border',
-            danger: 'bg-status-danger-bg border-status-danger-border',
-            neutral: 'bg-status-neutral-bg border-border-default'
-        }
-    }
-});
-
-const STATUS_ICON: Record<AlertStatus, React.ReactNode> = {
-    info: <Info />,
-    success: <CircleCheck />,
-    warning: <TriangleAlert />,
-    danger: <CircleAlert />,
-    neutral: <Info />
-};
-
-const STATUS_ICON_COLOR: Record<AlertStatus, string> = {
-    info: 'text-status-info-icon',
-    success: 'text-status-success-icon',
-    warning: 'text-status-warning-icon',
-    danger: 'text-status-danger-icon',
-    neutral: 'text-status-neutral-icon'
-};
-
-const STATUS_LINK_VARIANT = {
-    info: 'link-accent',
-    success: 'link-success',
-    warning: 'link-warning',
-    danger: 'link-danger',
-    neutral: 'link-neutral'
-} as const;
-
-const AlertActionButton = ({ action, status }: { action: AlertAction; status: AlertStatus }) => {
-    const variant = STATUS_LINK_VARIANT[status];
-    const content = (
-        <>
-            {action.label}
-            {action.icon}
-        </>
-    );
-
-    if (action.href) {
-        return (
-            <Button asChild variant={variant} size="sm" disabled={action.disabled} loading={action.loading}>
-                <a href={action.href} target={action.target} rel={action.target === '_blank' ? 'noreferrer' : undefined}>
-                    {content}
-                </a>
-            </Button>
-        );
-    }
-    return (
-        <Button variant={variant} size="sm" onClick={action.onClick} disabled={action.disabled} loading={action.loading}>
-            {content}
-        </Button>
-    );
-};
-
-const StatusAlert = forwardRef<HTMLDivElement, StatusAlertProps>(
-    (
-        {
-            className,
-            status,
-            size = 'wide',
-            title,
-            action,
-            secondaryAction,
-            icon,
-            dismissible = false,
-            onDismiss,
-            dismissLabel = 'Dismiss',
-            children,
-            role = 'alert',
-            ...props
-        },
-        ref
-    ) => {
-        const [dismissed, setDismissed] = useState(false);
-        if (dismissed) {
-            return null;
-        }
-
-        const hasActions = Boolean(action || secondaryAction);
-        // Each wrapper is one 13px line box tall, so the icon, actions and close sit on the first line of text.
-        const actions = hasActions && (
-            <div data-slot="alert-actions" className={cn('flex min-h-5 shrink-0 items-center gap-3', size !== 'wide' && 'pt-1')}>
-                {action && <AlertActionButton action={action} status={status} />}
-                {secondaryAction && <AlertActionButton action={secondaryAction} status={status} />}
-            </div>
-        );
-        const iconNode = icon === undefined ? STATUS_ICON[status] : icon;
-
-        return (
-            <div
-                ref={ref}
-                data-slot="alert"
-                data-status={status}
-                data-size={size}
-                role={role}
-                className={cn(statusAlertVariants({ status }), className)}
-                {...props}
-            >
-                {iconNode !== false && iconNode !== null && (
-                    <span data-slot="alert-icon" className={cn('mt-0.5 flex shrink-0 [&>svg]:size-4', STATUS_ICON_COLOR[status])}>
-                        {iconNode}
-                    </span>
-                )}
-                <InlineCodeToneProvider value={status}>
-                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                        {title && (
-                            <div data-slot="alert-title" className="type-text-medium-sm text-text-strong">
-                                {title}
-                            </div>
-                        )}
-                        {children && (
-                            <div data-slot="alert-description" className="type-text-regular-sm text-text-default wrap-anywhere">
-                                {children}
-                            </div>
-                        )}
-                        {size !== 'wide' && actions}
-                    </div>
-                </InlineCodeToneProvider>
-                {size === 'wide' && actions}
-                {dismissible && (
-                    <button
-                        type="button"
-                        data-slot="alert-close"
-                        aria-label={dismissLabel}
-                        onClick={() => {
-                            setDismissed(true);
-                            onDismiss?.();
-                        }}
-                        className={cn(
-                            'mt-0.5 shrink-0 cursor-pointer rounded-ds-xs outline-none focus-visible:shadow-focus-outline-default',
-                            STATUS_ICON_COLOR[status]
-                        )}
-                    >
-                        <X className="size-4" />
-                    </button>
-                )}
-            </div>
-        );
-    }
-);
-StatusAlert.displayName = 'StatusAlert';
-
-// Without `status`, falls back to the deprecated compose-by-children API until its call sites migrate.
-export const Alert = forwardRef<HTMLDivElement, AlertProps>((props, ref) =>
-    props.status ? <StatusAlert ref={ref} {...props} /> : <LegacyAlert ref={ref} {...(props as LegacyAlertProps)} />
-);
-Alert.displayName = 'Alert';

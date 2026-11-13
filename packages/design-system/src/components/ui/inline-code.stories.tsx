@@ -1,7 +1,8 @@
-import { Alert } from './alert';
+import { Info } from 'lucide-react';
+
+import { Alert, AlertDescription } from './alert';
 import { InlineCode } from './inline-code';
 
-import type { AlertStatus } from './alert';
 import type { InlineCodeSize, InlineCodeTone } from './inline-code';
 import type { Meta, StoryObj } from '@storybook/react';
 
@@ -16,7 +17,7 @@ type Story = StoryObj<typeof meta>;
 
 const TONES: InlineCodeTone[] = ['default', 'neutral', 'info', 'success', 'warning', 'danger'];
 const SIZES: InlineCodeSize[] = ['sm', 'xs'];
-const STATUSES: AlertStatus[] = ['info', 'success', 'warning', 'danger', 'neutral'];
+const STATUSES = ['info', 'success', 'warning', 'danger', 'neutral'] as const;
 
 export const Playground: Story = {
     args: { tone: 'default', size: 'sm', children: 'NANGO_SECRET_KEY_DEV' },
@@ -55,8 +56,14 @@ export const InsideAlert: Story = {
     render: () => (
         <div className="flex flex-col gap-3">
             {STATUSES.map((status) => (
-                <Alert key={status} status={status}>
-                    Picks up the {status} tone: <InlineCode>GET /api/v1/environments/current</InlineCode>
+                <Alert key={status} variant={status}>
+                    <Info />
+                    <AlertDescription>
+                        <span>
+                            Picks up the {status} tone: add <InlineCode>NANGO_SECRET_KEY_A_VERY_LONG_ENVIRONMENT_NAME=&lt;secret-key&gt;</InlineCode> to your{' '}
+                            <InlineCode>.env</InlineCode>.
+                        </span>
+                    </AlertDescription>
                 </Alert>
             ))}
         </div>

@@ -1,60 +1,83 @@
-import { ExternalLink, Lock } from 'lucide-react';
+import { CircleAlert, CircleCheck, ExternalLink, Info, TriangleAlert, Zap } from 'lucide-react';
 
-import { Alert } from './alert';
-import { InlineCode } from './inline-code';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from './alert';
+import { Button } from './button';
 
-import type { AlertAction, AlertSize, AlertStatus, StatusAlertProps } from './alert';
+import type { AlertProps } from './alert';
 import type { Meta, StoryObj } from '@storybook/react';
 
-const meta: Meta<StatusAlertProps> = {
+const meta: Meta = {
     title: 'Design System/Components/Alert',
-    render: (args) => <Alert {...args} />,
     parameters: { layout: 'padded' }
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const STATUSES: AlertStatus[] = ['info', 'success', 'warning', 'danger', 'neutral'];
-const SIZES: AlertSize[] = ['wide', 'compact', 'toast'];
+// Storybook-only dismiss handler; the close affordance renders whenever `onDismiss` is passed.
+const onDismiss = () => undefined;
 
-const action: AlertAction = { label: 'View docs', icon: <ExternalLink />, href: 'https://nango.dev/docs', target: '_blank' };
-const secondaryAction: AlertAction = { label: 'Dismiss for now', onClick: () => undefined };
+const VARIANTS = ['info', 'success', 'warning', 'danger', 'neutral'] as const;
+const ONE_VARIANT = ['info'] as const;
 
-const BODY = 'Changing the callback URL requires an active redirect and updating the registered callback URL with every OAuth provider.';
+const ICONS: Record<(typeof VARIANTS)[number], React.ReactNode> = {
+    info: <Info />,
+    success: <CircleCheck />,
+    warning: <TriangleAlert />,
+    danger: <CircleAlert />,
+    neutral: <Info />
+};
+
+const action = (
+    <AlertActions>
+        <AlertButton>
+            Button
+            <ExternalLink />
+        </AlertButton>
+    </AlertActions>
+);
 
 interface Shape {
     label: string;
     title?: boolean;
-    actions?: 0 | 1 | 2;
+    withAction?: boolean;
+    /** Defaults to true; set false for the not-dismissible shape. */
+    dismissible?: boolean;
+    /** Defaults to true. */
+    icon?: boolean;
+    /** Only the first group of each story runs every status — the rest vary shape, not colour. */
+    allVariants?: boolean;
 }
 
+// Titled shapes first, then the description-only ones together, ending with the barest.
 const SHAPES: Shape[] = [
-    { label: 'Body only' },
-    { label: 'With title', title: true },
-    { label: 'With title and action', title: true, actions: 1 },
-    { label: 'With title and two actions', title: true, actions: 2 },
-    { label: 'Body and action', actions: 1 }
+    { label: 'With title', title: true, allVariants: true },
+    { label: 'With title and action', title: true, withAction: true },
+    { label: 'With title and action, not dismissible', title: true, withAction: true, dismissible: false },
+    { label: 'Description only' },
+    { label: 'Description only, with action', withAction: true },
+    { label: 'Description only, no icon or dismiss', icon: false, dismissible: false }
 ];
 
-const MATRIX_WIDTH: Record<AlertSize, string> = { wide: 'max-w-[720px]', compact: 'w-[320px]', toast: 'w-[350px]' };
+const TOAST_SHAPES: Shape[] = [
+    { label: 'Description only', allVariants: true },
+    { label: 'Description only, with action', withAction: true },
+    { label: 'With title', title: true },
+    { label: 'With title and action', title: true, withAction: true }
+];
 
-const Matrix = ({ size }: { size: AlertSize }) => (
-    <div className={`flex flex-col gap-8 pb-6 ${MATRIX_WIDTH[size]}`}>
-        {SHAPES.map((shape) => (
+const ShapeGroups = ({ shapes, size, description, className }: { shapes: Shape[]; size: AlertProps['size']; description: string; className?: string }) => (
+    // pb-6 keeps the last alert off the bottom edge once the story scrolls
+    <div className={`flex flex-col gap-8 pb-6 ${className ?? ''}`}>
+        {shapes.map((shape) => (
             <div key={shape.label} className="flex flex-col gap-2">
                 <span className="text-ds-xs text-text-secondary">{shape.label}</span>
-                {STATUSES.map((status) => (
-                    <Alert
-                        key={status}
-                        status={status}
-                        size={size}
-                        title={shape.title ? 'Alert title' : undefined}
-                        action={shape.actions ? action : undefined}
-                        secondaryAction={shape.actions === 2 ? secondaryAction : undefined}
-                        dismissible
-                    >
-                        {BODY}
+                {(shape.allVariants ? VARIANTS : ONE_VARIANT).map((variant) => (
+                    <Alert key={variant} variant={variant} size={size} onDismiss={shape.dismissible === false ? undefined : onDismiss}>
+                        {shape.icon === false ? null : ICONS[variant]}
+                        {shape.title && <AlertTitle>Alert title</AlertTitle>}
+                        <AlertDescription>{description}</AlertDescription>
+                        {shape.withAction && action}
                     </Alert>
                 ))}
             </div>
@@ -62,46 +85,43 @@ const Matrix = ({ size }: { size: AlertSize }) => (
     </div>
 );
 
-export const Playground: Story = {
-    args: {
-        status: 'info',
-        size: 'wide',
-        title: 'Alert title',
-        children: BODY,
-        action,
-        dismissible: false
-    },
-    argTypes: {
-        status: { control: 'select', options: STATUSES },
-        size: { control: 'inline-radio', options: SIZES }
-    }
+const DESCRIPTION = 'This is an alert banner description. This is an alert banner description.';
+
+export const Wide: Story = {
+    render: () => <ShapeGroups shapes={SHAPES} size="wide" description={DESCRIPTION} />
 };
 
-export const Wide: Story = { render: () => <Matrix size="wide" /> };
-export const Compact: Story = { render: () => <Matrix size="compact" /> };
-export const Toast: Story = { render: () => <Matrix size="toast" /> };
+export const Compact: Story = {
+    // 320px matches the compact size's width in Figma, so text wraps the way it does there
+    render: () => <ShapeGroups shapes={SHAPES} size="compact" description={DESCRIPTION} className="w-[320px]" />
+};
 
-export const WithInlineCode: Story = {
+export const Toast: Story = {
+    render: () => <ShapeGroups shapes={TOAST_SHAPES} size="toast" description="This is an alert toast description." className="w-[350px]" />
+};
+
+export const ButtonCta: Story = {
+    name: 'Button CTA',
     render: () => (
-        <div className="flex max-w-[720px] flex-col gap-3">
-            {STATUSES.map((status) => (
-                <Alert key={status} status={status} title="Rename the secret key">
-                    When using the CLI, add <InlineCode>NANGO_SECRET_KEY_DEV</InlineCode> to your <InlineCode>.env</InlineCode>.
-                </Alert>
-            ))}
-        </div>
+        <Alert variant="neutral" size="wide" cta="button" onDismiss={onDismiss}>
+            <Zap data-filled />
+            <AlertTitle>This is an alert title</AlertTitle>
+            <AlertDescription>This is an alert description.</AlertDescription>
+            <AlertActions>
+                <Button variant="primary" size="md">
+                    Button
+                </Button>
+            </AlertActions>
+        </Alert>
     )
 };
 
-export const CustomIcon: Story = {
+export const IconColor: Story = {
     render: () => (
-        <div className="flex max-w-[720px] flex-col gap-3">
-            <Alert status="neutral" icon={<Lock />}>
-                You have read-only access to this environment. Ask an admin to change its settings.
-            </Alert>
-            <Alert status="info" icon={false}>
-                No icon.
-            </Alert>
-        </div>
+        <Alert variant="neutral" icon="success">
+            <CircleCheck />
+            <AlertTitle>Icon: success</AlertTitle>
+            <AlertDescription>{DESCRIPTION}</AlertDescription>
+        </Alert>
     )
 };

@@ -21,15 +21,9 @@ export {
     type AlertButtonProps,
     alertButtonVariants,
     AlertDescription,
-    type AlertAction,
     type AlertProps,
-    type AlertSize,
-    type AlertStatus,
     AlertTitle,
-    alertVariants,
-    type LegacyAlertProps,
-    type StatusAlertProps,
-    statusAlertVariants
+    alertVariants
 } from './components/ui/alert';
 export { Badge, type BadgeProps, badgeVariants } from './components/ui/badge';
 export {

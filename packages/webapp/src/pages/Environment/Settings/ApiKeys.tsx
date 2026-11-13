@@ -1,8 +1,9 @@
-import { ExternalLink, Eye, EyeOff, Key, Pencil, Trash2 } from 'lucide-react';
+import { ExternalLink, Eye, EyeOff, Key, Pencil, Trash2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
 import {
     Alert,
+    AlertDescription,
     Button,
     Dialog,
     DialogBody,
@@ -235,9 +236,14 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                 </div>
             )}
             {permissionMode === 'custom' && hasCredentialsScope && (
-                <Alert status="warning" size="compact">
-                    Scopes ending in <InlineCode>_credentials</InlineCode> let this key read raw OAuth tokens and API keys. Only grant them to backends that
-                    need them.
+                <Alert variant="warning" size="compact">
+                    <TriangleAlert />
+                    <AlertDescription>
+                        <span>
+                            Scopes ending in <InlineCode>_credentials</InlineCode> let this key read raw OAuth tokens and API keys. Only grant them to backends
+                            that need them.
+                        </span>
+                    </AlertDescription>
                 </Alert>
             )}
         </div>
