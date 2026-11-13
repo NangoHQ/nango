@@ -16,6 +16,15 @@ if [ -z $GIT_HASH ]; then
   exit
 fi
 
+case "$PLATFORMS" in
+  linux/amd64 | linux/arm64 | linux/amd64,linux/arm64 | linux/arm64,linux/amd64) ;;
+  *)
+    echo -e "${RED}Unsupported platforms: ${PLATFORMS}${NC}"
+    echo "$USAGE"
+    exit 1
+    ;;
+esac
+
 # Move to here no matter where the file was executed
 cd "$(dirname "$0")"
 
@@ -29,7 +38,10 @@ VERSION=$(node -p "require('../package.json').version")
 if [ "$PUSH" == 'true' ]; then
   out="--push"
 else
-  PLATFORMS=${PLATFORMS%%,*}
+  if [[ "$PLATFORMS" == *,* ]]; then
+    echo "Not pushing, so building only ${PLATFORMS%%,*} of ${PLATFORMS}"
+    PLATFORMS=${PLATFORMS%%,*}
+  fi
   out="--load"
 fi
 
