@@ -49,7 +49,12 @@ runs:
           run: |
               if [[ "$CAN_PUSH" == 'true' ]]; then
                 ./scripts/build_docker.sh push "$SHA" "$PLATFORM"
-                echo "digest=$(jq -r '."containerimage.digest"' "$METADATA_FILE")" >> "$GITHUB_OUTPUT"
+                digest=$(jq -r '."containerimage.digest"' "$METADATA_FILE")
+                if [[ "$digest" != sha256:* ]]; then
+                  echo "No digest in $METADATA_FILE"
+                  exit 1
+                fi
+                echo "digest=$digest" >> "$GITHUB_OUTPUT"
               else
                 ./scripts/build_docker.sh build "$SHA" "$PLATFORM"
               fi
