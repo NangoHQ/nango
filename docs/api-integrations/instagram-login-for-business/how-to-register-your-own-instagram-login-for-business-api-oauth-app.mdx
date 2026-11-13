@@ -31,12 +31,12 @@ Your users' Instagram accounts must be professional (business or creator) accoun
   <Step title="Create a configuration">
     1. In the left sidebar, go to **Facebook Login for Business** > **Configurations**, then click **Create configuration**.
     2. Choose the access token type:
-       - **System-user access token**: a business integration system user token, shared by the business and set to never expire by default. Only available to [Tech Providers](https://developers.facebook.com/docs/development/release/tech-providers).
+       - **System-user access token**: a business integration system user token, shared by the business and set to never expire by default.
        - **User access token**: a token tied to the person who logs in.
     3. Choose the token expiration and the assets. Select the Pages and Instagram accounts your app needs.
     4. Add the [Instagram permissions](https://developers.facebook.com/docs/permissions) your app needs (for example `instagram_basic`, `instagram_content_publish`, `instagram_manage_messages`), plus `pages_show_list` to list the linked Pages.
     5. Save the configuration and copy its **Configuration ID**.
-    <Note>Some [permissions](https://developers.facebook.com/docs/facebook-login/guides/permissions/review) require App Review before going live.</Note>
+    <Note>Some [permissions](https://developers.facebook.com/docs/facebook-login/guides/permissions/review) require App Review before going live. To access data owned by other businesses, your business also needs [Business Verification](https://developers.facebook.com/docs/development/release/business-verification).</Note>
   </Step>
   <Step title="Create the integration in Nango">
     Enter the **Client ID**, **Client Secret** and **Configuration ID** when you create the integration. Leave the scopes empty: the configuration sets the permissions.
