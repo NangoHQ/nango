@@ -18017,6 +18017,9 @@ laylo:
                 content-type: application/json
             data:
                 query: '{ __typename }'
+    webhook_routing_script: layloWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/laylo
     docs_connect: https://nango.dev/docs/api-integrations/laylo/connect
     credentials:
