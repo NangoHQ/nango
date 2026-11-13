@@ -14504,6 +14504,14 @@ google-service-account:
             example: 'some.user@example.com'
             optional: true
             doc_section: '#step-2-generate-a-service-account-key'
+    integration_config:
+        scopes:
+            type: string
+            title: Scopes
+            description: Space-separated scopes requested for every connection. When set, end users aren't asked for scopes in Connect UI.
+            pattern: '^https://[^\s]+( https://[^\s]+)*$'
+            example: 'https://www.googleapis.com/auth/drive'
+            optional: true
 
 gorgias:
     display_name: Gorgias
