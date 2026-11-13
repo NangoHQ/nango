@@ -365,18 +365,27 @@ describe('proxyTool analytics', () => {
         expect(properties).toMatchObject({ error_code: 'proxy_request_failed', provider_error_code: 'bad_gateway' });
     });
 
-    it('records what an invalid request was trying to reach and why it was rejected', async () => {
+    it('records which integration an invalid request was for and why it was rejected, without its input', async () => {
         await callProxyInRequest({ integration: 'notion', method: 'GET', path: 'v1/pages/1', connection_id: 'other' });
 
         const { properties } = onlyEvent();
         expect(properties).toMatchObject({
             integration_id: 'notion',
             http_method: 'GET',
-            endpoint: 'v1/pages/{id}',
             error_code: 'invalid_input',
-            invalid_arguments: 'path: invalid_format, connection_id: unrecognized_key',
-            ...PURPOSE
+            invalid_arguments: 'path: invalid_format, connection_id: unrecognized_key'
         });
+        expect(properties).not.toHaveProperty('endpoint');
+        expect(properties).not.toHaveProperty('goal');
+        expect(properties).not.toHaveProperty('intent');
+    });
+
+    it('leaves out an integration that is itself the invalid argument', async () => {
+        await callProxyInRequest({ integration: 'not/a/key', method: 'GET', path: '/v1/pages/1' });
+
+        const { properties } = onlyEvent();
+        expect(properties).not.toHaveProperty('integration_id');
+        expect(properties).toMatchObject({ invalid_arguments: 'integration: invalid_format' });
     });
 
     it('records a credential header as the reason a request was rejected', async () => {

@@ -21,10 +21,6 @@ import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 import type * as z from 'zod/v4';
 
-/** Arguments that failed validation are whatever the agent sent, so each is capped like a valid one. */
-const MAX_TRACKED_INTEGRATION_LENGTH = 255;
-const MAX_TRACKED_GOAL_LENGTH = 500;
-const MAX_TRACKED_INTENT_LENGTH = 255;
 const MAX_TRACKED_INVALID_ARGUMENTS = 10;
 
 export const proxyTool = defineAgentSessionMcpTool({
@@ -43,11 +39,8 @@ export const proxyTool = defineAgentSessionMcpTool({
         const raw: Record<string, unknown> = typeof args === 'object' && args !== null ? (args as Record<string, unknown>) : {};
         trackAgentSessionProxyRequest({
             session,
-            integrationId: rawString(raw['integration'], MAX_TRACKED_INTEGRATION_LENGTH),
+            integrationId: proxyInputSchema.shape.integration.safeParse(raw['integration']).data,
             method: proxyInputSchema.shape.method.safeParse(raw['method']).data,
-            path: rawString(raw['path']),
-            goal: rawString(raw['goal'], MAX_TRACKED_GOAL_LENGTH),
-            intent: rawString(raw['intent'], MAX_TRACKED_INTENT_LENGTH),
             errorCode: 'invalid_input',
             invalidArguments: invalidArgumentsOf(error)
         });
@@ -179,8 +172,4 @@ function invalidArgumentsOf(error: z.ZodError): string[] {
         return [`${issue.path.length > 0 ? String(issue.path[0]) : 'arguments'}: ${issue.code}`];
     });
     return [...new Set(invalid)].slice(0, MAX_TRACKED_INVALID_ARGUMENTS);
-}
-
-function rawString(value: unknown, maxLength?: number): string | undefined {
-    return typeof value === 'string' ? value.slice(0, maxLength) : undefined;
 }
