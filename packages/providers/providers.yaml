@@ -13905,23 +13905,20 @@ facebook-login-for-business:
     proxy:
         base_url: https://graph.facebook.com
     docs: https://nango.dev/docs/api-integrations/facebook-login-for-business
-    docs_connect: https://nango.dev/docs/api-integrations/facebook-login-for-business/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/facebook-login-for-business/how-to-register-your-own-facebook-login-for-business-api-oauth-app
     integration_config:
         configId:
             type: string
             title: Configuration ID
-            description: The ID of your Facebook Login for Business configuration. Set it here to use it for every connection.
+            description: The ID of your Facebook Login for Business configuration, from your Meta app's dashboard.
             pattern: '^[0-9]+$'
-            optional: true
+    # Copied from integration_config at auth time so authorization_params can read it; never asked of end users
     connection_config:
         configId:
             type: string
-            title: Configuration ID
-            description: The ID of the Facebook Login for Business configuration to log in with.
-            pattern: '^[0-9]+$'
-            example: '1234567890123456'
-            doc_section: '#step-1-find-your-configuration-id'
+            title: ''
+            description: ''
+            automated: true
 
 fanvue:
     display_name: Fanvue
@@ -18474,7 +18471,6 @@ instagram-login-for-business:
     alias: facebook-login-for-business
     display_name: Instagram (Facebook Login for Business)
     docs: https://nango.dev/docs/api-integrations/instagram-login-for-business
-    docs_connect: https://nango.dev/docs/api-integrations/instagram-login-for-business/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/instagram-login-for-business/how-to-register-your-own-instagram-login-for-business-api-oauth-app
 
 icypeas:
