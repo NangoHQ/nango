@@ -118,6 +118,7 @@ import {
     auditPublicApiKeyCredentialsRead,
     auditPublicApiKeyDeleted,
     auditPublicApiKeyUpdated,
+    auditPublicConnectionCredentialsRead,
     auditPublicConnectionDeleted,
     auditPublicConnectionUpdated,
     auditPublicEnvironmentCreated,
@@ -352,6 +353,7 @@ publicAPI.use('/connection', jsonContentTypeMiddleware);
 // @deprecated
 publicAPI.route('/connection/:connectionId').get(
     envAuth,
+    auditPublicConnectionCredentialsRead,
     can('environment:connections:read', 'environment:connections:read_credentials'),
     trackDeprecatedPublicEndpoint('GET /connection/:connectionId', (req) => req.get('Nango-Is-Sync') === 'true'),
     getPublicConnection
@@ -420,7 +422,7 @@ publicAPI.route('/connections/metadata').post(envAuth, can('environment:connecti
 publicAPI.route('/connections/metadata').patch(envAuth, can('environment:connections:update'), patchPublicMetadata);
 publicAPI
     .route('/connections/:connectionId')
-    .get(envAuth, can('environment:connections:read', 'environment:connections:read_credentials'), getPublicConnection);
+    .get(envAuth, auditPublicConnectionCredentialsRead, can('environment:connections:read', 'environment:connections:read_credentials'), getPublicConnection);
 publicAPI.route('/connections/:connectionId').patch(envAuth, auditPublicConnectionUpdated, can('environment:connections:update'), patchPublicConnection);
 publicAPI.route('/connections/:connectionId').delete(envAuth, auditPublicConnectionDeleted, can('environment:connections:delete'), deletePublicConnection);
 

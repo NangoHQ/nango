@@ -110,6 +110,9 @@ export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnecti
         return;
     }
 
+    if (includeCredentials) {
+        req.audit = { ...req.audit, credentialsRead: { targets: [{ id: connectionId }] } };
+    }
     res.status(200).send(retrievedConnectionResultToPublicApi(result.value, includeCredentials));
 });
 

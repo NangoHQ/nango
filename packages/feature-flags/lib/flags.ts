@@ -123,6 +123,13 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         isGithubAppConnectionCredentialsEnabled() {
             return client.isEnabled('github-app-connection-credentials', {}, false);
+        },
+        /**
+         * Whether this data-plane credential read is recorded in the audit trail. Temporary, for the rollout,
+         * which uses random stickiness so a percentage applies to requests, not accounts. Default `false`.
+         */
+        shouldAuditDataPlaneCredentialRead(accountUuid: string) {
+            return client.isEnabled('audit-trail-data-plane-credential-reads', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }
