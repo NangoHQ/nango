@@ -657,9 +657,13 @@ export const analyticsEventCatalogue = defineCatalogue({
             ...toolCallResult,
             integration_id: z.string().optional(),
             http_method: stringOf<HTTP_METHOD>().optional(),
+            // The path the agent called, with segments that look like ids replaced by {id} and no query string.
+            endpoint: z.string().optional(),
             provider: z.string().optional(),
             http_status: z.number().optional(),
             provider_error_code: z.string().optional(),
+            // On invalid_input, each rejected argument and the reason, like "path: invalid_format, headers: credential_header".
+            invalid_arguments: z.string().optional(),
             goal: z.string().optional(),
             intent: z.string().optional()
         })

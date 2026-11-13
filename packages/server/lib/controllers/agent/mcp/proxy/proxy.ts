@@ -19,6 +19,13 @@ import type { McpProxyExecution } from '../../../../services/mcpProxy.service.js
 import type { ProxyRequestOutput } from '../../../../services/mcpProxySchema.js';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
+import type * as z from 'zod/v4';
+
+/** Arguments that failed validation are whatever the agent sent, so each is capped like a valid one. */
+const MAX_TRACKED_INTEGRATION_LENGTH = 255;
+const MAX_TRACKED_GOAL_LENGTH = 500;
+const MAX_TRACKED_INTENT_LENGTH = 255;
+const MAX_TRACKED_INVALID_ARGUMENTS = 10;
 
 export const proxyTool = defineAgentSessionMcpTool({
     name: 'nango_proxy',
@@ -32,14 +39,24 @@ export const proxyTool = defineAgentSessionMcpTool({
         openWorldHint: true
     },
     isEnabled: (metaTools) => metaTools.nangoProxy,
-    onInvalidArguments: ({ session }) => {
-        trackAgentSessionProxyRequest({ session, errorCode: 'invalid_input' });
+    onInvalidArguments: ({ session }, { args, error }) => {
+        const raw: Record<string, unknown> = typeof args === 'object' && args !== null ? (args as Record<string, unknown>) : {};
+        trackAgentSessionProxyRequest({
+            session,
+            integrationId: rawString(raw['integration'], MAX_TRACKED_INTEGRATION_LENGTH),
+            method: proxyInputSchema.shape.method.safeParse(raw['method']).data,
+            path: rawString(raw['path']),
+            goal: rawString(raw['goal'], MAX_TRACKED_GOAL_LENGTH),
+            intent: rawString(raw['intent'], MAX_TRACKED_INTENT_LENGTH),
+            errorCode: 'invalid_input',
+            invalidArguments: invalidArgumentsOf(error)
+        });
     },
     async handler({ args, account, environment, plan, session }) {
         const integrationId = args.integration;
         const purpose = { goal: args.goal, intent: args.intent };
         const track = (outcome: ProxyRequestOutcome) => {
-            trackAgentSessionProxyRequest({ session, integrationId, method: args.method, ...purpose, ...outcome });
+            trackAgentSessionProxyRequest({ session, integrationId, method: args.method, path: args.path, ...purpose, ...outcome });
         };
 
         // Reaching an integration's API is gated on the session declaring it, so a toolset that
@@ -69,7 +86,7 @@ export const proxyTool = defineAgentSessionMcpTool({
         // rather than in the input schema, which is built once and knows no integration.
         const rejectedHeaders = rejectedHeaderNames({ headers: args.headers, provider: getProvider(connection.provider) });
         if (rejectedHeaders.length > 0) {
-            track({ provider: connection.provider, errorCode: 'invalid_input' });
+            track({ provider: connection.provider, errorCode: 'invalid_input', invalidArguments: ['headers: credential_header'] });
             return Err(
                 new PublicMcpError(
                     `Nango sets these headers itself, so they cannot be passed: ${rejectedHeaders.join(', ')}. The request is authenticated with the session's connection, so drop those headers and call again.`,
@@ -132,6 +149,7 @@ interface ProxyRequestOutcome {
     status?: number | undefined;
     errorCode?: string | undefined;
     providerErrorCode?: string | undefined;
+    invalidArguments?: string[] | undefined;
 }
 
 /**
@@ -147,4 +165,22 @@ function proxyErrorCode({ outcome, result }: McpProxyExecution): string | undefi
 
 function providerErrorCode({ result }: McpProxyExecution): string | undefined {
     return result.isErr() && 'providerCode' in result.error ? result.error.providerCode : undefined;
+}
+
+/**
+ * The top level argument and the zod issue code only. The issue message can quote what the agent sent,
+ * and a deeper path can be a key that carries data, like a query parameter name.
+ */
+function invalidArgumentsOf(error: z.ZodError): string[] {
+    const invalid = error.issues.flatMap((issue) => {
+        if (issue.code === 'unrecognized_keys' && issue.path.length === 0) {
+            return issue.keys.map((key) => `${key}: unrecognized_key`);
+        }
+        return [`${issue.path.length > 0 ? String(issue.path[0]) : 'arguments'}: ${issue.code}`];
+    });
+    return [...new Set(invalid)].slice(0, MAX_TRACKED_INVALID_ARGUMENTS);
+}
+
+function rawString(value: unknown, maxLength?: number): string | undefined {
+    return typeof value === 'string' ? value.slice(0, maxLength) : undefined;
 }

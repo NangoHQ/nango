@@ -58,7 +58,7 @@ export interface AgentSessionMcpTool {
 
 type AgentSessionMcpToolDefinition<TInputSchema extends z.ZodType> = Omit<AgentSessionMcpTool, 'handler' | 'inputSchema'> & {
     inputSchema: TInputSchema;
-    onInvalidArguments?: (context: AgentSessionMcpContext) => void;
+    onInvalidArguments?: (context: AgentSessionMcpContext, invalid: { args: unknown; error: z.ZodError }) => void;
     handler: (context: AgentSessionMcpContext & { args: z.output<TInputSchema> }) => Result<unknown> | Promise<Result<unknown>>;
 };
 
@@ -68,7 +68,7 @@ export function defineAgentSessionMcpTool<TInputSchema extends z.ZodType>(tool: 
         async handler(args, context) {
             const parsedArgs = tool.inputSchema.safeParse(args ?? {});
             if (!parsedArgs.success) {
-                tool.onInvalidArguments?.(context);
+                tool.onInvalidArguments?.(context, { args, error: parsedArgs.error });
                 return Err(
                     new PublicMcpError(`${formatMcpArgumentsError(tool.name, parsedArgs.error)}. Correct the arguments and call it again.`, {
                         code: 'invalid_input'
