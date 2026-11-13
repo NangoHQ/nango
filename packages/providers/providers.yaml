@@ -6958,8 +6958,10 @@ carta-mcp:
             - refresh_token
     token_params:
         grant_type: authorization_code
+        resource: https://mcp.app.carta.com/mcp
     refresh_params:
         grant_type: refresh_token
+        resource: https://mcp.app.carta.com/mcp
     mcp_endpoint: /mcp
     proxy:
         base_url: https://mcp.app.carta.com
