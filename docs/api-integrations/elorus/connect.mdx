@@ -1,0 +1,47 @@
+---
+title: 'Elorus - How do I link my account?'
+sidebarTitle: 'Elorus'
+---
+
+## Overview
+
+To authenticate with Elorus, you need:
+
+1. **API Key** — the API key from your Elorus user profile.
+2. **Organization ID** — the ID of the Elorus organization to connect.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An Elorus account. You can [sign up for free](https://app.elorus.com/register/).
+
+### Step 1: Create an API key
+
+1. Log in to [Elorus](https://app.elorus.com/), click your name in the top right and choose **User profile**.
+2. In the **API settings** section, click **Create new key**.
+
+<img src="/api-integrations/elorus/user_profile_api_settings.png" alt="Elorus User profile page with the Create new key button highlighted in the API settings section"/>
+
+3. Copy the key from the **API key** field with the copy button next to it.
+
+<img src="/api-integrations/elorus/api_key_created.png" alt="Elorus API settings section with the API key field and its copy button highlighted"/>
+
+The key belongs to your Elorus user, so it can do anything your user can do in the organization.
+
+### Step 2: Find your organization ID
+
+1. Switch to the organization you want to connect.
+2. Go to **Settings** > **Organization** and copy the **Organization ID** value.
+
+<img src="/api-integrations/elorus/organization_id.png" alt="Elorus Organization settings page with the Organization ID field highlighted"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Elorus.
+2. Enter your key in the **API Key** field and your organization ID in the **Organization ID** field.
+3. Submit the form. Nango checks the key against your organization and rejects the connection if it is invalid.
+
+<img src="/api-integrations/elorus/form.png" alt="Elorus Connect UI form with the API Key and Organization ID fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Elorus.

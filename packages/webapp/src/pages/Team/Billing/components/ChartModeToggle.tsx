@@ -1,8 +1,6 @@
 import { AreaChart, BarChart3 } from 'lucide-react';
 
-import { SegmentedControl } from '@/components/ui/SegmentedControl';
-
-import type { SegmentedControlOption } from '@/components/ui/SegmentedControl';
+import { SegmentedControl, SegmentedControlItem } from '@nangohq/design-system';
 
 export type ChartMode = 'daily' | 'cumulative';
 
@@ -11,12 +9,14 @@ interface ChartModeToggleProps {
     onChange: (mode: ChartMode) => void;
 }
 
-const OPTIONS: SegmentedControlOption<ChartMode>[] = [
-    { value: 'cumulative', label: 'Cumulative', Icon: AreaChart },
-    { value: 'daily', label: 'Daily', Icon: BarChart3 }
-];
-
 /** Segmented control to switch a counter metric's drill-in between the cumulative and daily views. */
 export const ChartModeToggle: React.FC<ChartModeToggleProps> = ({ mode, onChange }) => (
-    <SegmentedControl aria-label="Chart view" value={mode} onChange={onChange} options={OPTIONS} />
+    <SegmentedControl size="sm" aria-label="Chart view" value={mode} onValueChange={(next) => onChange(next as ChartMode)}>
+        <SegmentedControlItem value="cumulative" icon={<AreaChart />}>
+            Cumulative
+        </SegmentedControlItem>
+        <SegmentedControlItem value="daily" icon={<BarChart3 />}>
+            Daily
+        </SegmentedControlItem>
+    </SegmentedControl>
 );

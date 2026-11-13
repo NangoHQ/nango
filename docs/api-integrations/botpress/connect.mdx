@@ -1,0 +1,46 @@
+---
+title: 'Botpress - How do I link my account?'
+sidebarTitle: 'Botpress'
+---
+
+## Overview
+
+To authenticate with Botpress, you need:
+
+1. **Personal Access Token** — a token from your Botpress account settings.
+
+This guide will show you how to generate it.
+
+Botpress also gives a Bot Access Key to each deployed bot and an Integration Access Key to each deployed integration. They are sent the same way, but neither can pass this integration's connection check, which reads your account from the Admin API. Use a personal access token with this integration.
+
+### Prerequisites
+
+- A Botpress account. If you don't have one, [sign up](https://sso.botpress.cloud/registration).
+
+### Step 1: Generate a personal access token
+
+1. Sign in to [Botpress](https://app.botpress.cloud).
+2. Click your profile picture in the upper-right corner, then select **Account Settings**.
+
+<img src="/api-integrations/botpress/profile_menu_account_settings.png" alt="Botpress profile menu opened from the profile picture with Account Settings highlighted" />
+
+3. Open the **Access Tokens** tab and click **Generate new token**.
+
+<img src="/api-integrations/botpress/access_tokens_generate.png" alt="Botpress Account Settings Access Tokens tab with the Generate new token button" />
+
+4. In the **Note** field, describe what the token is for (for example, `nango`), then click **Generate Token**.
+5. Copy the token (it starts with `bp_pat_`). Botpress won't show it again after you leave the page.
+
+<img src="/api-integrations/botpress/pat_created.png" alt="Botpress Access Tokens tab showing the new personal access token with a reminder to copy it now" />
+
+The token has the same access as your Botpress user.
+
+### Step 2: Enter your personal access token in the Connect UI
+
+1. Open the form where you need to authenticate with Botpress.
+2. Enter your token in the **Personal Access Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/botpress/form.png" alt="Botpress Connect UI form with the Personal Access Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Botpress.

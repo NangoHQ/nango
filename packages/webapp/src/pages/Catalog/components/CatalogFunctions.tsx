@@ -129,14 +129,14 @@ const NoResultsState: React.FC<{ query: string; noun: string; displayName: strin
         <span className="type-text-regular-xs text-text-secondary">
             Try another word. Need something {displayName} doesn&apos;t have here? You can build your own.
         </span>
-        <div className="flex items-center gap-3 pt-1">
+        <div className="flex items-center gap-4 pt-1">
+            <Button variant="link-accent" size="md" onClick={onClear}>
+                Clear search
+            </Button>
             <Button asChild variant="link-accent" size="md">
                 <a href={FUNCTIONS_GUIDE_URL} target="_blank" rel="noreferrer">
                     Build your own <ArrowUpRight />
                 </a>
-            </Button>
-            <Button variant="outline" size="sm" onClick={onClear}>
-                Clear search
             </Button>
         </div>
     </div>

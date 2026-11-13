@@ -12,9 +12,8 @@ import {
     createInstallation,
     deleteInstallation,
     deleteInstallationPreview,
-    getInstallationByUuid,
-    listInstallations,
     requireInstallation,
+    searchInstallations,
     updateInstallation
 } from './installation.service.js';
 
@@ -92,7 +91,7 @@ describe('installations', () => {
         expect(created).toMatchObject({ customer_id: customerId, name: 'eu-prod', mode: 'self_managed', stage: 'staging', telemetry: true, alerts: 'off' });
         expect(created.uuid).toBeUUID();
 
-        expect((await getInstallationByUuid(db, { uuid: created.uuid })).unwrap()).toStrictEqual(created);
+        expect((await searchInstallations(db, { uuid: created.uuid })).unwrap()).toStrictEqual([created]);
     });
 
     it('stores telemetry and alerts when given', async () => {
@@ -240,7 +239,7 @@ describe('customer deletion', () => {
         expect((await deleteCustomer(db, { name: 'leaving' })).unwrap().deleted_at).toBeInstanceOf(Date);
 
         expect((await getCustomerByName(db, { name: 'leaving' })).unwrap()).toBeNull();
-        expect((await listInstallations(db, { customerId })).unwrap()).toStrictEqual([]);
+        expect((await searchInstallations(db, { customerId })).unwrap()).toStrictEqual([]);
         expect((await listInstallationKeys(db, { installationId })).unwrap()).toStrictEqual([]);
         expect((await getActiveLicense(db, { installationId })).unwrap()).toBeNull();
     });
@@ -300,7 +299,7 @@ describe('installation updates and deletion', () => {
         const second = (await createInstallation(db, { customerId, name: 'b', mode: 'byoc', stage: 'production' })).unwrap();
         (await deleteInstallation(db, { id: second.id })).unwrap();
 
-        expect((await listInstallations(db, { customerId })).unwrap().map((i) => i.id)).toStrictEqual([first.id]);
+        expect((await searchInstallations(db, { customerId })).unwrap().map((i) => i.id)).toStrictEqual([first.id]);
     });
 
     it('deleting an installation deactivates its license, deletes its keys and frees its name', async () => {
@@ -312,8 +311,8 @@ describe('installation updates and deletion', () => {
         const deleted = (await deleteInstallation(db, { id: created.id })).unwrap();
 
         expect(deleted.deleted_at).toBeInstanceOf(Date);
-        expect((await getInstallationByUuid(db, { uuid: created.uuid })).unwrap()).toBeNull();
-        expect((await getInstallationByUuid(db, { uuid: created.uuid, includeDeleted: true })).unwrap()?.id).toBe(created.id);
+        expect((await searchInstallations(db, { uuid: created.uuid })).unwrap()).toStrictEqual([]);
+        expect((await searchInstallations(db, { uuid: created.uuid }, { includeDeleted: true })).unwrap().map((i) => i.id)).toStrictEqual([created.id]);
         expect((await getActiveLicense(db, { installationId: created.id })).unwrap()).toBeNull();
         expect((await listInstallationKeys(db, { installationId: created.id })).unwrap()).toStrictEqual([]);
         expect((await deleteInstallationKey(db, { kid: key.kid })).isErr()).toBe(true);
@@ -360,7 +359,7 @@ describe('installation updates and deletion', () => {
             keys: [key.kid],
             activeLicense: licenseInput(created.id).expiresAt
         });
-        expect((await getInstallationByUuid(db, { uuid: created.uuid })).unwrap()).not.toBeNull();
+        expect((await searchInstallations(db, { uuid: created.uuid })).unwrap()).toHaveLength(1);
     });
 });
 
@@ -384,7 +383,7 @@ describe('lists', () => {
             [first.id, false],
             [second.id, true]
         ]);
-        expect((await listInstallations(db, { customerId: dropped.id })).unwrap()).toStrictEqual([]);
+        expect((await searchInstallations(db, { customerId: dropped.id })).unwrap()).toStrictEqual([]);
     });
 
     it('list deleted installations with --all', async () => {
@@ -392,7 +391,7 @@ describe('lists', () => {
         const gone = (await createInstallation(db, { customerId, name: 'gone', mode: 'byoc', stage: 'production' })).unwrap();
         (await deleteInstallation(db, { id: gone.id })).unwrap();
 
-        expect((await listInstallations(db, { customerId })).unwrap()).toStrictEqual([]);
-        expect((await listInstallations(db, { customerId, includeDeleted: true })).unwrap().map((i) => i.id)).toStrictEqual([gone.id]);
+        expect((await searchInstallations(db, { customerId })).unwrap()).toStrictEqual([]);
+        expect((await searchInstallations(db, { customerId }, { includeDeleted: true })).unwrap().map((i) => i.id)).toStrictEqual([gone.id]);
     });
 });

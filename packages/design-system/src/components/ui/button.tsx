@@ -72,6 +72,15 @@ export const buttonVariants = cva(
                     'aria-disabled:bg-interactive-ghost aria-disabled:text-text-disabled',
                     'focus-visible:shadow-focus-outline-default'
                 ],
+                'danger-ghost': [
+                    'bg-interactive-ghost text-text-link-danger border-transparent',
+                    '[&_svg]:text-icon-link-danger',
+                    'hover:bg-status-danger-bg hover:text-text-link-danger-active hover:[&_svg]:text-icon-link-danger-active',
+                    'active:bg-status-danger-bg-hover active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active',
+                    'disabled:bg-interactive-ghost disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
+                    'aria-disabled:bg-interactive-ghost aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
+                    'focus-visible:shadow-focus-outline-danger'
+                ],
                 // interactive/danger → --interactive-danger → bg-interactive-danger
                 danger: [
                     'bg-interactive-danger text-text-on-accent border-transparent',
@@ -271,7 +280,7 @@ Button.displayName = 'Button';
 type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>['variant']>;
 type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>['size']>;
 
-export const ICON_BUTTON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const satisfies readonly ButtonVariant[];
+export const ICON_BUTTON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger-ghost', 'danger'] as const satisfies readonly ButtonVariant[];
 export const ICON_BUTTON_SIZES = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ButtonSize[];
 
 export type IconButtonVariant = (typeof ICON_BUTTON_VARIANTS)[number];

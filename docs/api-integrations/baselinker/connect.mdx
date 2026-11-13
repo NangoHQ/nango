@@ -1,0 +1,46 @@
+---
+title: 'BaseLinker - How do I link my account?'
+sidebarTitle: 'BaseLinker'
+---
+
+## Overview
+
+To authenticate with BaseLinker, you need:
+
+1. **API Token** — an API token of your BaseLinker user account.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A BaseLinker (Base.com) account. If you don't have one, [sign up](https://base.com/en-US/register/); new accounts get a free 14-day trial with all features.
+
+### Step 1: Create an API token
+
+1. [Log in](https://login.baselinker.com/) to the BaseLinker panel.
+2. Open the account menu in the upper right corner and click **My account**.
+
+<img src="/api-integrations/baselinker/account_menu_my_account.png" alt="BaseLinker account menu with My account highlighted"/>
+
+3. Open the **API** tab.
+
+<img src="/api-integrations/baselinker/my_account_api_tab.png" alt="BaseLinker My account page with the API tab highlighted"/>
+
+4. In the **API Tokens** section, click **Add API Token**.
+5. Enter a name for the token, choose the **API permissions** your integration needs (**Read** is enough for read-only access), and click **Save**.
+
+<img src="/api-integrations/baselinker/add_api_token_dialog.png" alt="BaseLinker Add API Token dialog with a name, Read permissions and the Save button"/>
+
+6. Copy the token with the copy icon right away. It is shown only once and can't be viewed again after you close the dialog or refresh the page.
+
+<img src="/api-integrations/baselinker/api_token_created.png" alt="BaseLinker dialog confirming the API token was created, with the copy icon highlighted"/>
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with BaseLinker.
+2. Enter your API token in the **API Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/baselinker/form.png" alt="BaseLinker Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to BaseLinker.
