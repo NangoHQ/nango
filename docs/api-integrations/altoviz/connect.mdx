@@ -1,0 +1,43 @@
+---
+title: 'Altoviz - How do I link my account?'
+sidebarTitle: 'Altoviz'
+---
+
+## Overview
+
+To authenticate with Altoviz, you need:
+
+1. **API key** — a key you create in the settings of your Altoviz account.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- An Altoviz account. If you don't have one, register from the [Altoviz sign-in page](https://app.altoviz.com) and finish the company setup. Altoviz has a free plan, and the API is available on it.
+
+### Step 1: Create an API key
+
+1. Sign in to the [Altoviz app](https://app.altoviz.com).
+2. In the left menu, click **Paramètres** (Settings). Under **Avancé** (Advanced), click **Clés d'API** (API keys).
+
+<img src="/api-integrations/altoviz/settings_api_keys_menu.png" alt="Altoviz settings menu with Clés d'API highlighted under Avancé"/>
+
+3. Click **Nouvelle clé d'API** (New API key) and enter a label, for example `nango`.
+4. Choose the access the key gets for each area (**Ventes**, **Achats**, **Notes de frais**, **Trésorerie**, **Comptabilité**): no access, read-only (**Lecture seule**), or read and write. Give it only the access your integration needs.
+5. Click **Créer** (Create).
+
+<img src="/api-integrations/altoviz/create_api_key_dialog.png" alt="Altoviz Nouvelle clé d'API dialog with a label, read-only access for each area and the Créer button"/>
+
+6. Copy the API key with the copy button before you close the dialog. Altoviz only shows the full key once.
+
+<img src="/api-integrations/altoviz/api_key_created.png" alt="Altoviz dialog showing the new API key with the copy button highlighted"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Altoviz.
+2. Enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/altoviz/form.png" alt="Altoviz Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Altoviz.

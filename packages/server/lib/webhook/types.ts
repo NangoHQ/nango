@@ -395,6 +395,14 @@ export interface FathomWebhookResponse {
     crm_matches?: CRMMatches;
 }
 
+export interface LayloWebhookPayload {
+    type: 'rsvp' | 'opt_out' | (string & {});
+    email?: string;
+    phoneNumber?: string;
+    productId?: string;
+    creatorId?: string;
+}
+
 export interface JobberWebhookPayload {
     data: {
         webHookEvent: {

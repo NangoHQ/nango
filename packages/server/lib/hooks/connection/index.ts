@@ -63,3 +63,4 @@ export { default as bannerbearCredentialsVerification } from './providers/banner
 export { default as enginemailerCredentialsVerification } from './providers/enginemailer/credentials-verification.js';
 export { default as sendsparkPostConnection } from './providers/sendspark/post-connection.js';
 export { default as eventzillaCredentialsVerification } from './providers/eventzilla/credentials-verification.js';
+export { default as baselinkerCredentialsVerification } from './providers/baselinker/credentials-verification.js';

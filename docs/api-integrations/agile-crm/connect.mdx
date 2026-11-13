@@ -1,0 +1,40 @@
+---
+title: 'Agile CRM - How do I link my account?'
+sidebarTitle: 'Agile CRM'
+---
+
+## Overview
+
+To authenticate with Agile CRM, you need:
+
+1. **Agile CRM Domain** — the domain of your Agile CRM account.
+2. **Email** — the email address you sign in to Agile CRM with.
+3. **REST API Key** — the API key Agile CRM uses for REST API calls.
+
+This guide will show you where to find each of them.
+
+### Prerequisites
+
+- An Agile CRM account. [Sign up](https://www.agilecrm.com/signup) for free, no credit card required. The free plan allows 500 API calls per day.
+
+### Step 1: Find your Agile CRM domain
+
+Your domain is the name you chose at signup. It is the part of your Agile CRM URL before `.agilecrm.com`: for `https://acme.agilecrm.com`, enter `acme`.
+
+### Step 2: Copy your REST API key
+
+1. Sign in to your Agile CRM account with the email address you will enter in the **Email** field.
+2. Open **Admin Settings**, then go to **API & Analytics**.
+3. Copy the first key, **API Key** (for REST client). Agile CRM uses this key for all REST API calls.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Agile CRM.
+2. In **Agile CRM Domain**, enter your domain from Step 1 (for example, `acme`).
+3. In **Email**, enter the email address you sign in to Agile CRM with.
+4. In **REST API Key**, paste the API key from Step 2.
+5. Submit the form. Nango checks the credentials with Agile CRM before saving the connection.
+
+<img src="/api-integrations/agile-crm/form.png" alt="Agile CRM Connect UI form with the Agile CRM Domain, Email and REST API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Agile CRM.
