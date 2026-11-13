@@ -34316,6 +34316,9 @@ woocommerce:
                 content-type: application/json
             endpoints:
                 - /wp-json/wc/v3/customers
+    webhook_routing_script: woocommerceWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/integrations/all/woocommerce
     docs_connect: https://nango.dev/docs/integrations/all/woocommerce/connect
     connection_config:

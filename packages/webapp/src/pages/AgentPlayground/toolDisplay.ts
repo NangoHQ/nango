@@ -64,18 +64,48 @@ export function qualifiedToolName(toolName: string, input: unknown): string {
     return toolName === 'nango_execute' && typeof tool === 'string' ? tool : toolName;
 }
 
+interface SearchGroup {
+    matches?: unknown[];
+    related?: unknown[];
+}
+
+/** Chats saved before searches took several queries hold one flat group instead of `results`. */
+export type SearchOutput = { results?: SearchGroup[] } & SearchGroup;
+
+export function searchSummary(output: SearchOutput): string {
+    const results = output.results ?? [output];
+    const matches = results.reduce((total, result) => total + (result.matches?.length ?? 0), 0);
+    const related = results.reduce((total, result) => total + (result.related?.length ?? 0), 0);
+    if (matches > 0) {
+        return matches === 1 ? '1 match' : `${matches} matches`;
+    }
+    if (related > 0) {
+        return related === 1 ? '1 related tool' : `${related} related tools`;
+    }
+    return 'No tool found';
+}
+
 export function describeTool(toolName: string, input: unknown, labels?: IntegrationLabels): ToolDisplay {
     const args = (input ?? {}) as Record<string, unknown>;
     const withIntegration = (integrationId: string | undefined): Pick<ToolDisplay, 'integrationId' | 'integration'> =>
         integrationId ? { integrationId, integration: labelFor(integrationId, labels) } : {};
 
     if (toolName === 'nango_tool_search') {
-        const query = typeof args['query'] === 'string' ? args['query'] : undefined;
-        const named = query && !/\s/.test(query) ? integrationTool(query) : null;
+        const queries = Array.isArray(args['queries'])
+            ? args['queries'].filter((query): query is string => typeof query === 'string')
+            : typeof args['query'] === 'string'
+              ? [args['query']]
+              : [];
+        const [only] = queries.length === 1 ? queries : [];
+        const named = only && !/\s/.test(only) ? integrationTool(only) : null;
         if (named) {
             return { kind: 'search', title: `Checking how to use ${humanize(named.action)}` };
         }
-        return { kind: 'search', title: 'Searching for the right tool', ...(query ? { subtitle: `“${query}”` } : {}) };
+        return {
+            kind: 'search',
+            title: queries.length > 1 ? 'Searching for the right tools' : 'Searching for the right tool',
+            ...(queries.length > 0 ? { subtitle: queries.map((query) => `“${query}”`).join(', ') } : {})
+        };
     }
     if (toolName === 'nango_create_connection') {
         const integrationId = typeof args['integration'] === 'string' ? args['integration'] : undefined;
@@ -105,7 +135,10 @@ export function describeTool(toolName: string, input: unknown, labels?: Integrat
 }
 
 export function toolArguments(toolName: string, input: unknown): unknown {
-    if (toolName === 'nango_execute' && input && typeof input === 'object') {
+    if (!input || typeof input !== 'object') {
+        return input;
+    }
+    if (toolName === 'nango_execute' || (integrationTool(toolName) && 'goal' in input && 'intent' in input)) {
         return 'input' in input ? input.input : {};
     }
     return input;

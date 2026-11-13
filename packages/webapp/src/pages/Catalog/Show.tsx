@@ -28,7 +28,6 @@ import { SearchField } from './components/SearchField';
 import type { CatalogFilter } from './analytics';
 import type { CatalogSort } from './catalog.utils';
 import type { ActiveFilter } from './components/NoMatchesState';
-import type { GetProviders } from '@nangohq/types';
 import type { DebouncedFunc } from 'lodash';
 
 const SORT_LABELS: Record<CatalogSort, string> = { popular: 'Popular first', alphabetical: 'A–Z' };
@@ -106,8 +105,8 @@ export const CatalogShow: React.FC = () => {
         [trackFilter]
     );
 
-    if (error) {
-        return <ErrorPageComponent title="Catalog" error={error.json as GetProviders['Errors']} />;
+    if (error && !providersData) {
+        return <ErrorPageComponent title="Catalog" error={error} />;
     }
 
     const visible = deferredResults.slice(0, visibleCount);

@@ -3,6 +3,7 @@ import React from 'react';
 import { SidebarInset, SidebarProvider } from '@/components/ui/Sidebar';
 import { FunctionPlaygroundDrawer } from '@/features/Playground';
 import { useMeta } from '@/hooks/useMeta';
+import { useViewport } from '@/hooks/useViewport';
 import { AppHeader } from '@/layout/AppHeader';
 import { useStore } from '@/store';
 import { cn } from '@/utils/utils';
@@ -31,6 +32,7 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(
         { children, className, fullWidth = false, actions, pageHeader, hasPageHeading = false, breadcrumbLabel, centered = false, showEnv = true, ...props },
         ref
     ) => {
+        useViewport('desktop');
         const env = useStore((state) => state.env);
         const { data: metaData } = useMeta();
         const currentEnvironment = metaData?.data.environments.find((environment) => environment.name === env);

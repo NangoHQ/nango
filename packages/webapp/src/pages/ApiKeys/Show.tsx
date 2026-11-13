@@ -161,7 +161,7 @@ const DeleteAccountApiKeyButton: React.FC<{
             confirmationKeyword={apiKey.display_name}
             confirmButtonText="Delete Account API key"
             trigger={
-                <IconButton label={`Delete Account API key ${apiKey.display_name}`} variant="ghost" size="2xs" disabled={disabled}>
+                <IconButton label={`Delete Account API key ${apiKey.display_name}`} variant="danger-ghost" size="2xs" disabled={disabled}>
                     <Trash2 size={14} />
                 </IconButton>
             }

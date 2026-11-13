@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { describeTool, integrationLabels, labelFor } from './toolDisplay.js';
+import { describeTool, integrationLabels, labelFor, searchSummary, toolArguments } from './toolDisplay.js';
 
 const labels = integrationLabels([
     { unique_key: 'github-getting-started', provider: 'github', display_name: 'Github (Getting Started)', meta: { displayName: 'GitHub (User OAuth)' } },
@@ -42,6 +42,23 @@ describe('labelFor', () => {
     });
 });
 
+describe('toolArguments', () => {
+    const purpose = { goal: 'summarize my roadmap doc', intent: 'read the roadmap doc' };
+
+    it('shows the input nango_execute passes to the tool', () => {
+        expect(toolArguments('nango_execute', { tool: 'notion__read_doc', input: { id: '1' }, ...purpose })).toStrictEqual({ id: '1' });
+    });
+
+    it('unwraps a direct tool call', () => {
+        expect(toolArguments('notion__read_doc', { input: { id: '1' }, ...purpose })).toStrictEqual({ id: '1' });
+        expect(toolArguments('notion__read_doc', purpose)).toStrictEqual({});
+    });
+
+    it('shows a bare direct tool call as it was sent', () => {
+        expect(toolArguments('notion__read_doc', { id: '1' })).toStrictEqual({ id: '1' });
+    });
+});
+
 describe('describeTool', () => {
     it('names a proxy call after the provider, not the integration id', () => {
         const display = describeTool('nango_proxy', { integration: 'github-getting-started', method: 'get', path: '/user' }, labels);
@@ -69,5 +86,46 @@ describe('describeTool', () => {
 
     it('names the app to connect', () => {
         expect(describeTool('nango_create_connection', { integration: 'github-getting-started' }, labels).title).toBe('Connect GitHub');
+    });
+
+    it('quotes every query of a search', () => {
+        expect(describeTool('nango_tool_search', { queries: ['list calendar events', 'send an email'], goal: 'invite the team' })).toEqual({
+            kind: 'search',
+            title: 'Searching for the right tools',
+            subtitle: '“list calendar events”, “send an email”'
+        });
+    });
+
+    it('reads a search for one exact tool name as checking how to use it', () => {
+        expect(describeTool('nango_tool_search', { queries: ['github__list-repos'], goal: 'list my repos' }).title).toBe('Checking how to use List Repos');
+    });
+
+    it('quotes the single query of a search saved before searches took several', () => {
+        expect(describeTool('nango_tool_search', { query: 'list calendar events', goal: 'invite the team' }).subtitle).toBe('“list calendar events”');
+    });
+});
+
+describe('searchSummary', () => {
+    it('counts matches across every query', () => {
+        expect(
+            searchSummary({
+                results: [
+                    { matches: [1], related: [] },
+                    { matches: [2, 3], related: [4] }
+                ]
+            })
+        ).toBe('3 matches');
+    });
+
+    it('falls back to related tools when nothing matched', () => {
+        expect(searchSummary({ results: [{ matches: [], related: [1] }] })).toBe('1 related tool');
+    });
+
+    it('reads a result saved before searches took several queries', () => {
+        expect(searchSummary({ matches: [1, 2], related: [] })).toBe('2 matches');
+    });
+
+    it('reports an empty search', () => {
+        expect(searchSummary({ results: [{ matches: [], related: [] }] })).toBe('No tool found');
     });
 });

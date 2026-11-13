@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { objectRootedToolInputSchema, rankSessionTools, searchOperationMeta, toolInputOf } from './agentSessionToolSearch.service.js';
+import { rankSessionTools, searchOperationMeta, toolInputOf, withModelDefinitionsHoisted } from './agentSessionToolSearch.service.js';
 
 import type { ToolSlugLookup } from './agentSessionToolSearch.service.js';
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, AgentSessionToolMatch } from '@nangohq/types';
@@ -297,42 +297,26 @@ describe('toolInputOf', () => {
     });
 });
 
-describe('objectRootedToolInputSchema', () => {
-    const defs: Record<string, JSONSchema7> = {
-        UpsertDocInput: { type: 'object', properties: { parent: { $ref: '#/definitions/Page' } } },
-        Page: { type: 'object' }
-    };
-
-    it('inlines the input model at the root and keeps the definitions it points at', () => {
-        expect(objectRootedToolInputSchema({ definitions: defs, $ref: '#/definitions/UpsertDocInput' })).toStrictEqual({
-            $schema: 'http://json-schema.org/draft-07/schema#',
-            type: 'object',
-            properties: { parent: { $ref: '#/definitions/Page' } },
-            definitions: defs
-        });
-    });
-
-    it('keeps definitions nested in the model resolving from the new root', () => {
+describe('withModelDefinitionsHoisted', () => {
+    it('merges definitions nested in the model into the root definitions', () => {
         const model: JSONSchema7 = {
             type: 'object',
             properties: { child: { $ref: '#/definitions/__schema0' } },
             definitions: { __schema0: { type: 'string' } }
         };
 
-        expect(objectRootedToolInputSchema({ definitions: { UpsertDocInput: model }, $ref: '#/definitions/UpsertDocInput' })?.['definitions']).toStrictEqual({
-            UpsertDocInput: model,
-            __schema0: { type: 'string' }
+        expect(withModelDefinitionsHoisted({ definitions: { UpsertDocInput: model }, $ref: '#/definitions/UpsertDocInput' })).toStrictEqual({
+            definitions: { UpsertDocInput: model, __schema0: { type: 'string' } },
+            $ref: '#/definitions/UpsertDocInput'
         });
     });
 
     it.each<JSONSchema7>([
-        { definitions: { UpsertDocInput: { type: 'array' } }, $ref: '#/definitions/UpsertDocInput' },
-        { definitions: { UpsertDocInput: { oneOf: [{ type: 'object' }, { type: 'string' }] } }, $ref: '#/definitions/UpsertDocInput' },
-        { definitions: defs, $ref: '#/definitions/Missing' },
-        { definitions: defs },
+        { definitions: { UpsertDocInput: { type: 'object' } }, $ref: '#/definitions/UpsertDocInput' },
+        { definitions: { UpsertDocInput: { type: 'object' } }, $ref: '#/definitions/Missing' },
         { type: 'object' }
-    ])('has no object form for an input that is not an object model', (schema) => {
-        expect(objectRootedToolInputSchema(schema)).toBeUndefined();
+    ])('leaves a schema with nothing to hoist unchanged', (schema) => {
+        expect(withModelDefinitionsHoisted(schema)).toBe(schema);
     });
 });
 
@@ -350,19 +334,22 @@ describe('searchOperationMeta', () => {
         };
     }
 
-    it('logs the query, the goal and the tool names, without their descriptions or input', () => {
+    it('logs each query with the names of the tools it found, without their descriptions or input', () => {
         expect(
             searchOperationMeta({
-                query: 'send an email',
                 goal: 'email the weekly report to the team',
-                matches: [match('gmail__send_email')],
-                related: [match('gmail__list_labels')]
+                results: [
+                    { query: 'send an email', guidance: '', matches: [match('gmail__send_email')], related: [match('gmail__list_labels')] },
+                    { query: 'list calendar events', guidance: '', matches: [], related: [] }
+                ]
             })
         ).toStrictEqual({
-            query: 'send an email',
+            queries: ['send an email', 'list calendar events'],
             goal: 'email the weekly report to the team',
-            matches: ['gmail__send_email'],
-            related: ['gmail__list_labels']
+            results: [
+                { query: 'send an email', matches: ['gmail__send_email'], related: ['gmail__list_labels'] },
+                { query: 'list calendar events', matches: [], related: [] }
+            ]
         });
     });
 });
