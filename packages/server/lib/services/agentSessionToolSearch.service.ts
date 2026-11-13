@@ -196,7 +196,7 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
     return { best, related };
 }
 
-// A long query scores low however well its top tool fits, so the cutting line follows the top result.
+// Unmatched query words can give even a well-fitting top tool a high score, so the cutting line follows the top result.
 // If there are no matches or the top one is weaker than LEADING_MATCH_SCORE, the cutting line is BEST_MATCH_SCORE.
 // Else it is whichever is greater, BEST_MATCH_SCORE or topScore plus a margin. Lower scores are better matches.
 function bestMatchScoreFor(topScore: number | undefined): number {
