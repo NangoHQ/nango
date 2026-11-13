@@ -71,6 +71,7 @@ jobs:
         runs-on: ubuntu-latest
         outputs:
             status: ${{ steps.cluster-state.outputs.status }}
+            digest: ${{ steps.build.outputs.digest }}
         steps:
             - name: Setup kind
               uses: helm/kind-action@v1
@@ -90,36 +91,91 @@ jobs:
                   fetch-depth: 1
                   persist-credentials: false
 
+            # A dry run without push_candidate pushes nothing, so the image is built
+            # for amd64 only and loaded locally for the kind test.
+            - name: Decide whether to push
+              id: mode
+              run: |
+                  if [ -z "$ACT" ] && { [ "${{ inputs.dry_run }}" != "true" ] || [ "${{ inputs.push_candidate }}" = "true" ]; }; then
+                      echo "push=true" >> "$GITHUB_OUTPUT"
+                  else
+                      echo "push=false" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Login to Docker Hub
+              if: steps.mode.outputs.push == 'true'
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKER_USERNAME }}
+                  password: ${{ secrets.DOCKER_PASSWORD }}
+
+            # Built once for every platform the base image has, and pushed untagged.
+            # finalize-release tags this exact digest, so what the kind test runs below
+            # is what gets released.
             - name: Build managed image
+              id: build
               env:
                   COMMIT_HASH: ${{ needs.manage-versions.outputs.commit_hash }}
                   NANGO_LICENSE_PUBLIC_KEY: ${{ vars.NANGO_LICENSE_PUBLIC_KEY }}
+                  PUSH: ${{ steps.mode.outputs.push }}
               run: |
                   if [ -z "$NANGO_LICENSE_PUBLIC_KEY" ]; then
                       echo "NANGO_LICENSE_PUBLIC_KEY is not set"
                       exit 1
                   fi
 
-                  docker build \
-                      --platform linux/amd64 \
-                      --build-arg BASE_IMAGE_HASH="$COMMIT_HASH" \
-                      --build-arg NANGO_LICENSE_PUBLIC_KEY \
-                      --file Dockerfile.managed \
-                      --tag "nangohq/nango:managed-candidate-$COMMIT_HASH" \
-                      .
+                  CANDIDATE="nangohq/nango:managed-candidate-$COMMIT_HASH"
 
-                  # Fails the release if the image has no license key
-                  docker run --rm --platform linux/amd64 --entrypoint node "nangohq/nango:managed-candidate-$COMMIT_HASH" \
-                      -e "import('/app/nango/packages/license/dist/key.js').then((m) => process.exit(m.licensePublicKey ? 0 : 1))"
+                  if [ "$PUSH" = "true" ]; then
+                      # Commits built before nangohq/nango was multi-arch only have amd64
+                      PLATFORMS=$(docker buildx imagetools inspect --raw "nangohq/nango:$COMMIT_HASH" |
+                          jq -r '[.manifests[]?.platform | "\(.os)/\(.architecture)" | select(. == "linux/amd64" or . == "linux/arm64")] | if length == 0 then "linux/amd64" else join(",") end')
+                      echo "Building for $PLATFORMS"
 
-                  docker save --output managed-image.tar "nangohq/nango:managed-candidate-$COMMIT_HASH"
+                      docker buildx build \
+                          --platform "$PLATFORMS" \
+                          --provenance=false \
+                          --build-arg BASE_IMAGE_HASH="$COMMIT_HASH" \
+                          --build-arg NANGO_LICENSE_PUBLIC_KEY \
+                          --file Dockerfile.managed \
+                          --output type=image,name=nangohq/nango,push-by-digest=true,name-canonical=true,push=true \
+                          --metadata-file "$RUNNER_TEMP/managed-metadata.json" \
+                          .
 
-            - name: Upload managed image
-              uses: actions/upload-artifact@v4
-              with:
-                  name: managed-image
-                  path: managed-image.tar
-                  retention-days: 1
+                      DIGEST=$(jq -r '."containerimage.digest"' "$RUNNER_TEMP/managed-metadata.json")
+                      if [[ "$DIGEST" != sha256:* ]]; then
+                          echo "No digest in $RUNNER_TEMP/managed-metadata.json"
+                          exit 1
+                      fi
+                      echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+                      IMAGE="nangohq/nango@$DIGEST"
+
+                      docker pull --platform linux/amd64 "$IMAGE"
+                      docker tag "$IMAGE" "$CANDIDATE"
+                  else
+                      PLATFORMS="linux/amd64"
+                      docker buildx build \
+                          --platform linux/amd64 \
+                          --build-arg BASE_IMAGE_HASH="$COMMIT_HASH" \
+                          --build-arg NANGO_LICENSE_PUBLIC_KEY \
+                          --file Dockerfile.managed \
+                          --tag "$CANDIDATE" \
+                          --load \
+                          .
+                      IMAGE="$CANDIDATE"
+                  fi
+
+                  # Fails the release if the image has no license key, on any platform
+                  for platform in ${PLATFORMS//,/ }; do
+                      docker run --rm --platform "$platform" --entrypoint node "$IMAGE" \
+                          -e "import('/app/nango/packages/license/dist/key.js').then((m) => process.exit(m.licensePublicKey ? 0 : 1))"
+                  done
 
             - name: Deploy to sandbox
               run: |
@@ -429,26 +485,19 @@ jobs:
               if: ${{ env.ACT }}
               run: |
                   echo "Running in act - would perform Docker operations:"
-                  echo "Would load: nangohq/nango:managed-candidate-${{ needs.manage-versions.outputs.commit_hash }}"
+                  echo "Would tag the image built by test-deployment"
                   if [ "${{ needs.test-deployment.outputs.status }}" = "failure" ]; then
                     echo "Would tag as: nangohq/nango:managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   else
                     echo "Would tag as: nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   fi
 
-            - name: Download managed image
-              if: ${{ !env.ACT }}
-              uses: actions/download-artifact@v4
-              with:
-                  name: managed-image
-                  path: .
-
             - name: Retag and push final image
               id: retag-image
               if: ${{ !env.ACT }}
+              env:
+                  DIGEST: ${{ needs.test-deployment.outputs.digest }}
               run: |
-                  docker load --input managed-image.tar
-
                   if [ "${{ needs.test-deployment.outputs.status }}" = "failure" ]; then
                       echo "Test deployment failed, using bumped major version"
                       IMAGE_TAG="managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
@@ -457,11 +506,18 @@ jobs:
                       IMAGE_TAG="managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   fi
 
-                  docker tag nangohq/nango:managed-candidate-${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:${IMAGE_TAG}
                   if [ "${{ inputs.dry_run }}" != "true" ]; then
-                      docker push nangohq/nango:${IMAGE_TAG}
+                      PUSH_TAG="${IMAGE_TAG}"
                   elif [ "${{ inputs.push_candidate }}" = "true" ]; then
-                      docker push nangohq/nango:managed-candidate-${{ needs.manage-versions.outputs.commit_hash }}
+                      PUSH_TAG="managed-candidate-${{ needs.manage-versions.outputs.commit_hash }}"
+                  fi
+
+                  if [ -n "$PUSH_TAG" ]; then
+                      if [ -z "$DIGEST" ]; then
+                          echo "test-deployment pushed no image"
+                          exit 1
+                      fi
+                      docker buildx imagetools create -t "nangohq/nango:${PUSH_TAG}" "nangohq/nango@${DIGEST}"
                   fi
 
                   echo "tag_name=${IMAGE_TAG}" >> $GITHUB_OUTPUT
