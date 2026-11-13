@@ -46,4 +46,5 @@ export { default as intercomWebhookRouting } from './intercom-webhook-routing.js
 export { default as woocommerceWebhookRouting } from './woocommerce-webhook-routing.js';
 export { default as commandAlkonWebhookRouting } from './command-alkon-webhook-routing.js';
 export { default as docusignWebhookRouting } from './docusign-webhook-routing.js';
+export { default as layloWebhookRouting } from './laylo-webhook-routing.js';
 export type * from './types.js';
