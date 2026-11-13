@@ -173,6 +173,11 @@ jobs:
 
                   # Fails the release if the image has no license key, on any platform
                   for platform in ${PLATFORMS//,/ }; do
+                      # Pull each platform explicitly, so the check never falls back to
+                      # the amd64 image already pulled above
+                      if [ "$PUSH" = "true" ]; then
+                          docker pull --platform "$platform" "$IMAGE"
+                      fi
                       docker run --rm --platform "$platform" --entrypoint node "$IMAGE" \
                           -e "import('/app/nango/packages/license/dist/key.js').then((m) => process.exit(m.licensePublicKey ? 0 : 1))"
                   done
