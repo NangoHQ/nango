@@ -76,6 +76,6 @@ import PreBuiltUseCases from "/snippets/generated/bugsnag/PreBuiltUseCases.mdx"
 
 ## API gotchas
 
-- Nango sends `x-version: 2` on every call. To use another API version, set the `version` connection config field; when it is unset, `2` applies.
+- Nango sends `x-version: 2` on every call. To use another API version, pass `version` under `integrations_config_defaults.<INTEGRATION-ID>.connection_config` when creating a Connect session. This field isn't shown in the Connect UI. When it is unset, `2` applies.
 
 ---

@@ -11,7 +11,7 @@ To authenticate with Botpress, you need:
 
 This guide will show you how to generate it.
 
-Botpress also gives a Bot Access Key to each deployed bot and an Integration Access Key to each deployed integration. They are sent the same way, but a Bot Access Key only reaches the Runtime, Tables and Files APIs and an Integration Access Key only the Runtime and Files APIs, so Nango's connection check, which reads your account from the Admin API, can reject them. Use a personal access token unless you only need those APIs.
+Botpress also gives a Bot Access Key to each deployed bot and an Integration Access Key to each deployed integration. They are sent the same way, but neither can pass this integration's connection check, which reads your account from the Admin API. Use a personal access token with this integration.
 
 ### Prerequisites
 
