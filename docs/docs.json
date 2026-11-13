@@ -1997,6 +1997,7 @@
               "api-integrations/ringover",
               "integrations/all/rippling",
               "integrations/all/rippling-shop-app",
+              "api-integrations/rizamo-mcp",
               "integrations/all/roam-scim",
               "api-integrations/robinhood-mcp",
               "integrations/all/rock-gym-pro",
