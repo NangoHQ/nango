@@ -14,5 +14,6 @@ export const sql = [
     ENGINE = ReplacingMergeTree(received_at)
     PARTITION BY toYYYYMM(ts)
     ORDER BY (installation_id, metric, ts, attributes)
+    TTL toDateTime(ts) + INTERVAL 24 MONTH
     `
 ];
