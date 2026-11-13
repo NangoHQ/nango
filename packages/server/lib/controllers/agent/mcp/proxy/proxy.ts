@@ -22,6 +22,7 @@ import type { Span } from 'dd-trace';
 import type * as z from 'zod/v4';
 
 const MAX_TRACKED_INVALID_ARGUMENTS = 10;
+const PROVIDER_ERROR_CODE = /^[A-Za-z][\w.:-]{0,63}$/;
 
 export const proxyTool = defineAgentSessionMcpTool({
     name: 'nango_proxy',
@@ -156,8 +157,43 @@ function proxyErrorCode({ outcome, result }: McpProxyExecution): string | undefi
     return outcome === 'upstream_error' ? 'upstream_error' : undefined;
 }
 
-function providerErrorCode({ result }: McpProxyExecution): string | undefined {
-    return result.isErr() && 'providerCode' in result.error ? result.error.providerCode : undefined;
+function providerErrorCode({ outcome, result }: McpProxyExecution): string | undefined {
+    if (result.isErr()) {
+        return 'providerCode' in result.error ? result.error.providerCode : undefined;
+    }
+    return outcome === 'upstream_error' ? errorCodeInBody(result.value.body) : undefined;
+}
+
+/**
+ * Reads the code from the error shapes providers commonly answer with, never the message, which can
+ * repeat what the agent sent. Only a value that looks like a code is kept.
+ */
+function errorCodeInBody(body: unknown): string | undefined {
+    const root = Array.isArray(body) ? arrayHead(body) : body;
+    const error = field(root, 'error');
+    const firstError = arrayHead(field(root, 'errors'));
+    const candidates = [
+        field(error, 'code'),
+        field(error, 'status'),
+        field(error, 'type'),
+        error,
+        field(root, 'code'),
+        field(root, 'errorCode'),
+        field(root, 'error_code'),
+        field(root, 'category'),
+        field(firstError, 'code'),
+        field(field(firstError, 'extensions'), 'code'),
+        field(firstError, 'type')
+    ];
+    return candidates.find((candidate): candidate is string => typeof candidate === 'string' && PROVIDER_ERROR_CODE.test(candidate));
+}
+
+function field(value: unknown, key: string): unknown {
+    return typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>)[key] : undefined;
+}
+
+function arrayHead(value: unknown): unknown {
+    return Array.isArray(value) ? value[0] : undefined;
 }
 
 /**

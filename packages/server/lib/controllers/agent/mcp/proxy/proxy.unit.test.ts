@@ -352,6 +352,40 @@ describe('proxyTool analytics', () => {
         expect(onlyEvent().properties).toMatchObject({ http_status: 429, error_code: 'upstream_error' });
     });
 
+    it.each([
+        {
+            provider: 'Notion',
+            body: { object: 'error', status: 400, code: 'validation_error', message: 'body.parent.page_id should be defined' },
+            code: 'validation_error'
+        },
+        {
+            provider: 'Stripe',
+            body: { error: { type: 'invalid_request_error', code: 'resource_missing', message: 'No such customer' } },
+            code: 'resource_missing'
+        },
+        { provider: 'Google', body: { error: { code: 400, status: 'INVALID_ARGUMENT', message: 'Invalid value' } }, code: 'INVALID_ARGUMENT' },
+        { provider: 'Slack', body: { ok: false, error: 'channel_not_found' }, code: 'channel_not_found' },
+        { provider: 'Salesforce', body: [{ errorCode: 'INVALID_FIELD', message: 'No such column' }], code: 'INVALID_FIELD' },
+        { provider: 'HubSpot', body: { status: 'error', category: 'VALIDATION_ERROR', message: 'Property values were not valid' }, code: 'VALIDATION_ERROR' },
+        { provider: 'a GraphQL API', body: { errors: [{ message: 'Argument not valid', extensions: { code: 'INVALID_INPUT' } }] }, code: 'INVALID_INPUT' }
+    ])('records the error code $provider answered with', async ({ body, code }) => {
+        vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse(body, 400, 'upstream_error')) });
+
+        await callProxyInRequest({ integration: 'notion', method: 'POST', path: '/v1/pages' });
+
+        expect(onlyEvent().properties).toMatchObject({ http_status: 400, error_code: 'upstream_error', provider_error_code: code });
+    });
+
+    it('records no provider error code when the provider answered with only a message', async () => {
+        vi.spyOn(proxyService, 'request').mockResolvedValue({
+            result: Ok(jsonResponse({ error: 'Contact jane@acme.com already exists' }, 409, 'upstream_error'))
+        });
+
+        await callProxyInRequest({ integration: 'notion', method: 'POST', path: '/v1/pages' });
+
+        expect(onlyEvent().properties).not.toHaveProperty('provider_error_code');
+    });
+
     // A failure before the provider answered carries Nango's status, so reporting it would read as the provider's.
     it('records a request that never reached the provider without a status', async () => {
         vi.spyOn(proxyService, 'request').mockResolvedValue({
