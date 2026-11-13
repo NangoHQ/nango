@@ -76,8 +76,7 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
 
 export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     if (locals.authType === 'taskToken') {
-        const id = locals.principal?.subject.id;
-        return { type: 'task_token', id: id?.startsWith('task:') ? id : 'unknown' };
+        return { type: 'task_token', id: locals.principal?.subject.id ?? 'unknown' };
     }
     if (locals.authType === 'secretKey') {
         // A secret-key caller stays an api_key. Function runs that present a task token are

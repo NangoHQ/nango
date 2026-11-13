@@ -828,7 +828,7 @@ describe('Account service', () => {
     describe('getTaskTokenAccountContext', () => {
         const secretFields = ['secret_key', 'pending_secret_key', 'hmac_key', 'otlp_settings'] as const;
 
-        it('T14: returns and caches an environment without secret columns', async () => {
+        it('returns and caches an environment without secret columns', async () => {
             const previous = envs.AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED;
             (envs as { AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED: boolean }).AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED = true;
             try {
@@ -852,7 +852,7 @@ describe('Account service', () => {
             }
         });
 
-        it('T14: returns null for a deleted environment and an unknown id', async () => {
+        it('returns null for a deleted environment and an unknown id', async () => {
             const { env } = await seedAccountEnvAndUser();
             await db.knex('_nango_environments').where({ id: env.id }).update({ deleted: true, deleted_at: new Date() });
             expect((await accountService.getTaskTokenAccountContext(env.id)).unwrap()).toBeNull();

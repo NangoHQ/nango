@@ -6,7 +6,7 @@ import { environmentService } from '@nangohq/shared';
 import { principalFor } from '../../authz/principal.js';
 import { resolveAuditAttribution } from '../../middleware/audit/index.js';
 import { trackMcpServer } from '../../services/mcpAnalytics.js';
-import { asyncWrapper, isTaskTokenRequest } from '../../utils/asyncWrapper.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { createManagementMcpServer } from './managementServer.js';
 
 import type { RequestLocals } from '../../utils/express.js';
@@ -167,7 +167,7 @@ function getCustomerApiKeyId(locals: RequestLocals): number | undefined {
 }
 
 function requireApiKeyEnvironment(locals: RequestLocals): DBEnvironment {
-    if (!locals.environment || isTaskTokenRequest(locals)) {
+    if (!locals.environment) {
         throw new Error('Management MCP API-key authentication requires an environment');
     }
     return locals.environment as DBEnvironment;

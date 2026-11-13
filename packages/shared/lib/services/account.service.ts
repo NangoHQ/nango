@@ -143,9 +143,7 @@ const ENVIRONMENT_COLUMNS = [
     'deleted_at'
 ] as const satisfies readonly (keyof EnvironmentWithoutSecrets)[];
 
-type EnvironmentColumnRow = {
-    [K in (typeof ENVIRONMENT_COLUMNS)[number] as `environment_${K}`]: EnvironmentWithoutSecrets[K];
-};
+type TaskTokenEnvironmentColumns = Pick<EnvironmentWithoutSecrets, (typeof ENVIRONMENT_COLUMNS)[number]>;
 
 function planFromRow(plan: DBPlan): DBPlan {
     return {
@@ -159,40 +157,6 @@ function planFromRow(plan: DBPlan): DBPlan {
         orb_future_plan_at: plan.orb_future_plan_at ? new Date(plan.orb_future_plan_at) : plan.orb_future_plan_at,
         growth_features_starts_at: plan.growth_features_starts_at ? new Date(plan.growth_features_starts_at) : plan.growth_features_starts_at,
         growth_features_ends_at: plan.growth_features_ends_at ? new Date(plan.growth_features_ends_at) : plan.growth_features_ends_at
-    };
-}
-
-function taskTokenAccountContextFromRow(row: { account: DBTeam; plan: DBPlan | null } & EnvironmentColumnRow): TaskTokenAccountContext {
-    return {
-        account: {
-            ...row.account,
-            created_at: new Date(row.account.created_at),
-            updated_at: new Date(row.account.updated_at)
-        },
-        environment: {
-            id: row.environment_id,
-            uuid: row.environment_uuid,
-            name: row.environment_name,
-            account_id: row.environment_account_id,
-            public_key: row.environment_public_key,
-            callback_url: row.environment_callback_url,
-            webhook_url: row.environment_webhook_url,
-            webhook_url_secondary: row.environment_webhook_url_secondary,
-            // Not columns. The dashboard environment endpoint fills these in; a raw row does not have them.
-            websockets_path: null,
-            hmac_enabled: row.environment_hmac_enabled,
-            always_send_webhook: row.environment_always_send_webhook,
-            send_auth_webhook: row.environment_send_auth_webhook,
-            ...(row.environment_pending_public_key != null ? { pending_public_key: row.environment_pending_public_key } : {}),
-            slack_notifications: row.environment_slack_notifications,
-            webhook_receive_url: null,
-            is_production: row.environment_is_production,
-            created_at: new Date(row.environment_created_at),
-            updated_at: new Date(row.environment_updated_at),
-            deleted: row.environment_deleted,
-            deleted_at: row.environment_deleted_at ? new Date(row.environment_deleted_at) : null
-        },
-        plan: row.plan ? planFromRow(row.plan) : null
     };
 }
 
@@ -1109,10 +1073,10 @@ class AccountService {
         }
 
         const row = await db.readOnly
-            .select<{ account: DBTeam; plan: DBPlan | null } & EnvironmentColumnRow>(
+            .select<TaskTokenEnvironmentColumns & { account: DBTeam; plan: DBPlan | null }>(
+                ...ENVIRONMENT_COLUMNS.map((column) => `_nango_environments.${column}`),
                 db.knex.raw('row_to_json(_nango_accounts.*) as account'),
-                db.knex.raw('row_to_json(plans.*) as plan'),
-                ...ENVIRONMENT_COLUMNS.map((column) => `_nango_environments.${column} as environment_${column}`)
+                db.knex.raw('row_to_json(plans.*) as plan')
             )
             .from('_nango_environments')
             .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
@@ -1124,7 +1088,25 @@ class AccountService {
             return null;
         }
 
-        const context = taskTokenAccountContextFromRow(row);
+        const { account, plan, pending_public_key: pendingPublicKey, ...columns } = row;
+        const context: TaskTokenAccountContext = {
+            account: {
+                ...account,
+                created_at: new Date(account.created_at),
+                updated_at: new Date(account.updated_at)
+            },
+            environment: {
+                ...columns,
+                // Not columns. The dashboard environment endpoint fills these in; a raw row does not have them.
+                websockets_path: null,
+                webhook_receive_url: null,
+                created_at: new Date(columns.created_at),
+                updated_at: new Date(columns.updated_at),
+                deleted_at: columns.deleted_at ? new Date(columns.deleted_at) : null,
+                ...(pendingPublicKey != null ? { pending_public_key: pendingPublicKey } : {})
+            },
+            plan: plan ? planFromRow(plan) : null
+        };
         taskTokenAuthCache.set(cacheKey, context);
         return context;
     }

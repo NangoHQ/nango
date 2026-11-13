@@ -45,7 +45,7 @@ describe('resolveActor (unit)', () => {
         expect(resolveActor({ authType: 'secretKey', account } as any)).toEqual({ type: 'api_key', id: 'secret_key' });
     });
 
-    it('T13: names a task token by its subject, not the environment secret', () => {
+    it('names a task token by its subject, not the environment secret', () => {
         expect(
             resolveActor({
                 authType: 'taskToken',

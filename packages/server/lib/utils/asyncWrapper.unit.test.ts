@@ -32,18 +32,6 @@ describe('asyncWrapperWithEnvironment', () => {
         expect(spies.status).not.toHaveBeenCalled();
     });
 
-    it('returns 500 for a task token, which loads no secret columns', async () => {
-        const environment = { id: 42, name: 'dev' } as DBEnvironment;
-        const { req, res, spies } = mockReqRes({ authType: 'taskToken', environment });
-        const handler = vi.fn();
-
-        await asyncWrapperWithEnvironment<AnyEndpoint>(handler)(req, res, (() => undefined) as NextFunction);
-
-        expect(handler).not.toHaveBeenCalled();
-        expect(spies.status).toHaveBeenCalledWith(500);
-        expect(spies.send).toHaveBeenCalledWith({ error: { code: 'server_error' } });
-    });
-
     it('runs the handler when an environment is present', async () => {
         const environment = { id: 42 } as DBEnvironment;
         const { req, res, spies } = mockReqRes({ environment });

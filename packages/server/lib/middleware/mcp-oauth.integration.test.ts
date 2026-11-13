@@ -61,7 +61,7 @@ process.env['NANGO_OAUTH_SERVER_JWKS'] = JSON.stringify({
     keys: [{ ...privateKey.export({ format: 'jwk' }), kid: 'mcp-oauth-test', use: 'sig', alg: 'RS256' }]
 });
 
-describe('T15: MCP OAuth access token', () => {
+describe('MCP OAuth access token', () => {
     let api: { server: Server; url: string };
     let issuer: OAuthProvider;
 

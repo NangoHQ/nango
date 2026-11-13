@@ -11,6 +11,8 @@ export interface ApiKeyPrincipal {
     scopes: string[];
     environmentIds: number[];
     keyId?: number;
+    /** Subject id when it is not derived from the key. A task token sets this to `task:<id>`. */
+    subjectId?: string;
     displayName?: string;
 }
 
