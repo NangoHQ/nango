@@ -89,6 +89,9 @@ const STOPWORDS = new Set([
 const BEST_MATCH_SCORE = 0.4;
 const MAX_MATCH_SCORE = 0.85;
 
+const LEADING_MATCH_SCORE = 0.65;
+const LEADING_MATCH_MARGIN = 0.1;
+
 const MAX_BEST_MATCHES = 5;
 const MAX_RELATED_MATCHES = 15;
 
@@ -198,12 +201,13 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
 } {
     const candidates = buildSearchCandidateList({ session, slugOf });
     const scored = scoreCandidates({ candidates, query });
+    const bestMatchScore = bestMatchScoreFor(scored[0]?.score);
 
     const best: ScoredCandidate[] = [];
     const related: ScoredCandidate[] = [];
 
     for (const { candidate, score } of scored) {
-        if (score <= BEST_MATCH_SCORE && best.length < MAX_BEST_MATCHES) {
+        if (score <= bestMatchScore && best.length < MAX_BEST_MATCHES) {
             best.push({ ...candidate, score });
         } else if (related.length < MAX_RELATED_MATCHES) {
             related.push({ ...candidate, score });
@@ -211,6 +215,17 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
     }
 
     return { best, related };
+}
+
+// Unmatched query words can give even a well-fitting top tool a high score, so the cutting line follows the top result.
+// If there are no matches or the top one is weaker than LEADING_MATCH_SCORE, the cutting line is BEST_MATCH_SCORE.
+// Else it is whichever is greater, BEST_MATCH_SCORE or topScore plus a margin. Lower scores are better matches.
+function bestMatchScoreFor(topScore: number | undefined): number {
+    if (topScore === undefined || topScore > LEADING_MATCH_SCORE) {
+        return BEST_MATCH_SCORE;
+    }
+
+    return Math.max(BEST_MATCH_SCORE, topScore + LEADING_MATCH_MARGIN);
 }
 
 /**

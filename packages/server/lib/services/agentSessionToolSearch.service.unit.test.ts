@@ -66,6 +66,19 @@ const mailbox: AgentSessionCompiledToolset = {
     }
 };
 
+const ledger: AgentSessionCompiledToolset = {
+    xero: {
+        provider: 'xero',
+        pinned: [],
+        searchable: [
+            { name: 'list_invoices', description: 'List invoices in the organisation.' },
+            { name: 'create_invoice', description: 'Create a draft invoice for a contact.' },
+            { name: 'list_contacts', description: 'List contacts.' },
+            { name: 'list_accounts', description: 'List the chart of accounts.' }
+        ]
+    }
+};
+
 describe('rankSessionTools', () => {
     it('finds a tool by what it does rather than by its name', () => {
         const { best } = rank({ compiledToolset: mailbox, query: 'send a message to a recipient' });
@@ -124,10 +137,25 @@ describe('rankSessionTools', () => {
     });
 
     it('demotes a weak match to related rather than dropping it', () => {
-        const { best, related } = rank({ compiledToolset: mailbox, query: 'archive an old label from the mailbox' });
+        const { best, related } = rank({ compiledToolset: mailbox, query: 'archive old threads into a folder by label' });
 
         expect(best).toStrictEqual([]);
         expect(related.map((match) => match.action)).toStrictEqual(['list_labels']);
+    });
+
+    it('returns the tool a query phrased as a sentence leads with, though the other words dilute its score', () => {
+        const { best, related } = rank({ compiledToolset: ledger, query: 'list unpaid invoices from xero sorted by amount' });
+
+        expect(best[0]?.action).toBe('list_invoices');
+        expect(best[0]?.score).toBeGreaterThan(0.4);
+        expect(related.map((match) => match.action)).toContain('create_invoice');
+    });
+
+    it('returns every tool tied for the lead, since the query cannot tell them apart', () => {
+        const { best, related } = rank({ compiledToolset: ledger, query: 'list records' });
+
+        expect(best.map((match) => match.action)).toStrictEqual(['list_accounts', 'list_contacts', 'list_invoices']);
+        expect(related).toStrictEqual([]);
     });
 
     it('searches pinned tools too and carries the slug they are listed under', () => {
