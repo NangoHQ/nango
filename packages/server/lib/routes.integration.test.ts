@@ -213,7 +213,7 @@ describe('route', () => {
         });
     });
 
-    describe('T15: existing credentials still authenticate', () => {
+    describe('existing credentials still authenticate', () => {
         it('accepts a customer secret key', async () => {
             const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await fetch(`${api.url}/integrations`, {

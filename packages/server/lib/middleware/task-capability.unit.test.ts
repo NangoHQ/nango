@@ -1,3 +1,4 @@
+import tracer from 'dd-trace';
 import express from 'express';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -94,7 +95,7 @@ describe('task capability on the server', () => {
         captured = undefined;
     });
 
-    it('T11: a task token gets a 401 on /proxy, GET /action/:id, and other routes without withTaskCapability', async () => {
+    it('a task token gets a 401 on /proxy, GET /action/:id, and other routes without withTaskCapability', async () => {
         const bearer = await token(['api:connection:read', 'api:action:trigger', 'api:sync:trigger']);
         const headers = { Authorization: `Bearer ${bearer}` };
         const patch = await fetch(`${url}/connections/abc`, { method: 'PATCH', headers });
@@ -118,17 +119,21 @@ describe('task capability on the server', () => {
         expect(environmentLookup).not.toHaveBeenCalled();
     });
 
-    it('T12: a token without the route scope gets a 401, and a matching token sets taskToken locals', async () => {
+    it('a token without the route scope gets a 403, and a matching token sets taskToken locals', async () => {
         const missing = await fetch(`${probeUrl}/scoped/check`, {
             headers: { Authorization: `Bearer ${await token(['api:action:trigger'])}` }
         });
-        expect(missing.status).toBe(401);
+        expect(missing.status).toBe(403);
+        expect(await missing.json()).toEqual({ error: { code: 'forbidden', message: 'Insufficient scope. Required: api:connection:read' } });
         expect(environmentLookup).not.toHaveBeenCalled();
 
+        const startSpan = vi.spyOn(tracer, 'startSpan');
         const present = await fetch(`${probeUrl}/scoped/check`, {
             headers: { Authorization: `Bearer ${await token(['api:connection:read'])}` }
         });
         expect(present.status).toBe(204);
+        expect(startSpan).toHaveBeenCalledWith('taskCapabilityAuth', expect.any(Object));
+        startSpan.mockRestore();
         expect(captured?.authType).toBe('taskToken');
         expect(captured?.secret).toBeUndefined();
         expect(captured?.apiKeyAuthSource).toBe('task_token');

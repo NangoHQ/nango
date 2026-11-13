@@ -5,7 +5,7 @@ import tracer from 'dd-trace';
 import { metrics, report } from '@nangohq/utils';
 
 import type { RequestLocals, RequestLocalsWithAnyEnvironment, RequestLocalsWithEnvironment } from './express.js';
-import type { DBEnvironment, Endpoint, EnvironmentWithoutSecrets } from '@nangohq/types';
+import type { DBEnvironment, Endpoint } from '@nangohq/types';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
 export function asyncWrapper<TEndpoint extends Endpoint<any>, Locals extends Record<string, any> = RequestLocals>(
@@ -50,7 +50,7 @@ export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>>(
 ): RequestHandler<any, TEndpoint['Reply'], any, any, any> {
     // Must be async so asyncWrapper attaches its .catch(next).
     return asyncWrapper<TEndpoint>(async (req, res, next) => {
-        if (!requireDbEnvironment(req, res)) {
+        if (!requireEnvironment(req, res)) {
             return;
         }
 
@@ -64,20 +64,14 @@ export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>>(
  * No environment means an environment-scoped handler was wired to a route that resolves none, which
  * is a wiring mistake rather than a client error.
  */
-export function requireEnvironment(req: Request, res: Response<any, RequestLocals>): DBEnvironment | EnvironmentWithoutSecrets | null {
+export function requireEnvironment(req: Request, res: Response<any, RequestLocals>): DBEnvironment | null {
     const { environment } = res.locals;
     if (!environment) {
-        report(new Error('handler_requires_environment'), { route: req.route?.path ?? req.originalUrl });
-        res.status(500).send({ error: { code: 'server_error' } });
+        respondMissingEnvironment(req, res);
         return null;
     }
 
-    return environment;
-}
-
-/** A task-token request loads no secret columns. Every other auth path keeps the environment it loaded. */
-export function isTaskTokenRequest(locals: Pick<RequestLocals, 'authType'>): boolean {
-    return locals.authType === 'taskToken';
+    return environment as DBEnvironment;
 }
 
 /**
@@ -92,7 +86,8 @@ export function asyncWrapperWithAnyEnvironment<TEndpoint extends Endpoint<any>>(
     ) => Promise<void> | void
 ): RequestHandler<any, TEndpoint['Reply'], any, any, any> {
     return asyncWrapper<TEndpoint>(async (req, res, next) => {
-        if (!requireEnvironment(req, res)) {
+        if (!res.locals.environment) {
+            respondMissingEnvironment(req, res);
             return;
         }
 
@@ -100,19 +95,7 @@ export function asyncWrapperWithAnyEnvironment<TEndpoint extends Endpoint<any>>(
     });
 }
 
-/**
- * Like `requireEnvironment`, and refuses a task-token request. Those requests load no secret columns.
- * Every other auth path is returned as the environment it loaded.
- */
-export function requireDbEnvironment(req: Request, res: Response<any, RequestLocals>): DBEnvironment | null {
-    const environment = requireEnvironment(req, res);
-    if (!environment) {
-        return null;
-    }
-    if (isTaskTokenRequest(res.locals)) {
-        report(new Error('handler_requires_environment_secrets'), { route: req.route?.path ?? req.originalUrl });
-        res.status(500).send({ error: { code: 'server_error' } });
-        return null;
-    }
-    return environment as DBEnvironment;
+function respondMissingEnvironment(req: Request, res: Response): void {
+    report(new Error('handler_requires_environment'), { route: req.route?.path ?? req.originalUrl });
+    res.status(500).send({ error: { code: 'server_error' } });
 }

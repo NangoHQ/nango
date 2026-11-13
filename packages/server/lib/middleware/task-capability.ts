@@ -1,3 +1,5 @@
+import tracer from 'dd-trace';
+
 import {
     hasScope,
     INTERNAL_SERVICE_AUDIENCE_SERVER,
@@ -12,7 +14,7 @@ import { can } from '../authz/middleware.js';
 import { principalFor } from '../authz/principal.js';
 import { envs } from '../env.js';
 import accessMiddleware, { eddsaBearerToken } from './access.middleware.js';
-import { envAuth } from './env-auth.js';
+import { afterCredentialAuth } from './env-auth.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { Scope } from '@nangohq/authz';
@@ -49,8 +51,7 @@ const jobsRegistry = keyRegistryFromPublicKeys(envs.NANGO_INTERNAL_AUTH_JOBS_PUB
 export function withTaskCapability(scope: ApiTaskScope, opts?: { beforeCan?: RequestHandler[] }): RequestHandler[] {
     const scopes = API_TASK_SCOPES[scope];
     const [required, ...rest] = scopes;
-    // envAuth[0] is secret-key auth. taskOrSecret replaces it and keeps every middleware added after it.
-    return [taskOrSecret(scope), ...envAuth.slice(1), ...(opts?.beforeCan ?? []), can(required, ...rest)];
+    return [taskOrSecret(scope), ...afterCredentialAuth, ...(opts?.beforeCan ?? []), can(required, ...rest)];
 }
 
 function taskOrSecret(scope: ApiTaskScope): RequestHandler {
@@ -71,15 +72,21 @@ async function authenticateTask(
     token: string,
     scope: ApiTaskScope
 ): Promise<void> {
+    const span = tracer.startSpan('taskCapabilityAuth', { childOf: tracer.scope().active() });
     try {
         const auth = await verifyTaskCapabilityToken(token, INTERNAL_SERVICE_AUDIENCE_SERVER, jobsRegistry);
-        if (!auth || !hasScope(auth, scope)) {
+        if (!auth) {
             errorManager.errRes(res, 'unknown_account');
+            return;
+        }
+        if (!hasScope(auth, scope)) {
+            res.status(403).json({ error: { code: 'forbidden', message: `Insufficient scope. Required: ${scope}` } });
             return;
         }
 
         const result = await accountService.getTaskTokenAccountContext(auth.res.environmentId);
         if (result.isErr()) {
+            span.setTag('error', result.error);
             logger.error(`failed_task_token_account_context ${stringifyError(result.error)}`);
             res.status(500).send({ error: { code: 'server_error' } });
             return;
@@ -105,16 +112,17 @@ async function authenticateTask(
             source: 'task_token',
             accountId: context.account.id,
             scopes,
-            environmentIds: [context.environment.id]
+            environmentIds: [context.environment.id],
+            subjectId: auth.sub
         };
-        const principal = principalFor(res.locals);
-        if (principal) {
-            res.locals.principal = { ...principal, subject: { ...principal.subject, id: auth.sub } };
-        }
+        principalFor(res.locals);
         tagTraceUser({ account: context.account, environment: context.environment, plan: context.plan });
         next();
     } catch (err) {
+        span.setTag('error', err);
         logger.error(`failed_task_capability_auth ${stringifyError(err)}`);
         res.status(500).send({ error: { code: 'server_error' } });
+    } finally {
+        span.finish();
     }
 }

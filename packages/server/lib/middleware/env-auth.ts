@@ -5,7 +5,12 @@ import { rateLimiterMiddleware } from './ratelimit.middleware.js';
 
 import type { RequestHandler } from 'express';
 
-export const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const metered: RequestHandler[] = [rateLimiterMiddleware, egressMeterMiddleware];
 
-/** Secret-key auth plus the middleware every environment route runs. Task-token routes reuse everything after the auth handler. */
+export const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), ...metered];
+
+/** Secret-key auth plus environment resolution. */
 export const envAuth: RequestHandler[] = [...apiAuth, resolveEnvironment];
+
+/** Rate limit, egress metering, and environment resolution. Task-token routes run this after their own auth. */
+export const afterCredentialAuth: RequestHandler[] = [...metered, resolveEnvironment];
