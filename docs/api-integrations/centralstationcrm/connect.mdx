@@ -1,0 +1,49 @@
+---
+title: 'CentralStationCRM - How do I link my account?'
+sidebarTitle: 'CentralStationCRM'
+---
+
+## Overview
+
+To authenticate with CentralStationCRM, you need:
+
+1. **API Key** — a CentralStationCRM API key.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A CentralStationCRM account. [Sign up](https://centralstationcrm.com/signup) for free.
+- You must be the owner of the account to create API keys.
+
+### Step 1: Open the API settings
+
+1. Sign in to CentralStationCRM.
+2. Click the gear icon in the upper right corner, then choose **Account settings**.
+
+<img src="/api-integrations/centralstationcrm/settings_menu_account_settings.png" alt="CentralStationCRM settings menu with Account settings"/>
+
+3. Under **Users and access rights**, click **Manage external applications (API)**.
+
+<img src="/api-integrations/centralstationcrm/account_settings_manage_api.png" alt="CentralStationCRM account settings with Manage external applications (API) highlighted"/>
+
+### Step 2: Create an API key
+
+1. Click **Create a new API token** in the top right.
+2. Choose the user the key acts as, enter a description (for example, `nango`) and click **Save**.
+
+<img src="/api-integrations/centralstationcrm/new_api_key_form.png" alt="CentralStationCRM New API key form with the User and Description fields"/>
+
+3. Copy the API key with the copy to clipboard button. It is shown only once.
+
+<img src="/api-integrations/centralstationcrm/api_key_created.png" alt="CentralStationCRM page showing the created API key with a copy button"/>
+
+### Step 3: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with CentralStationCRM.
+2. In **API Key**, paste the API key from Step 2.
+3. Submit the form. Nango checks the API key with CentralStationCRM before saving the connection.
+
+<img src="/api-integrations/centralstationcrm/form.png" alt="CentralStationCRM Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to CentralStationCRM.

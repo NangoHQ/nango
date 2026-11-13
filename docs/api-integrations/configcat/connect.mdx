@@ -1,0 +1,47 @@
+---
+title: 'ConfigCat - How do I link my account?'
+sidebarTitle: 'ConfigCat'
+---
+
+## Overview
+
+To authenticate with ConfigCat, you need:
+
+1. **Basic auth username** — the user name of a ConfigCat Public API credential.
+2. **Basic auth password** — the password generated with that credential.
+
+This guide will show you how to create them.
+
+### Prerequisites
+
+- A [ConfigCat](https://app.configcat.com/) account.
+
+### Step 1: Create your Public API credential
+
+1. Log in to the [ConfigCat Dashboard](https://app.configcat.com/).
+2. Click your organization and user name in the top-left of the sidebar to open the account menu, then select **My API Credentials**.
+
+<img src="/api-integrations/configcat/open_my_api_credentials.png" alt="ConfigCat account menu with the My API Credentials option"/>
+
+3. On the **My API Credentials** page, click **Add credential**.
+
+<img src="/api-integrations/configcat/add_credential.png" alt="ConfigCat My API Credentials page with the Add credential button"/>
+
+4. Enter a name for the credential (for example, `Nango`) and click **Create**.
+
+<img src="/api-integrations/configcat/name_credential.png" alt="ConfigCat Add credential dialog with the name field and Create button"/>
+
+5. Copy the **Basic auth user name** and the **Basic auth password**. Store the password securely before you close the dialog.
+
+<img src="/api-integrations/configcat/credential_created.png" alt="ConfigCat dialog showing the Basic auth user name and Basic auth password with copy buttons"/>
+
+### Step 2: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with ConfigCat.
+2. Enter the **Basic auth user name** in the **Basic auth username** field.
+3. Enter the **Basic auth password** in the **Basic auth password** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/configcat/form.png" alt="ConfigCat Connect UI form with the Basic auth username and Basic auth password fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to ConfigCat.
