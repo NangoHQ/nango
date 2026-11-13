@@ -50,6 +50,14 @@ export {
     DialogTitle,
     DialogTrigger
 } from './components/ui/dialog';
+export {
+    InlineCode,
+    type InlineCodeProps,
+    type InlineCodeSize,
+    type InlineCodeTone,
+    InlineCodeToneProvider,
+    inlineCodeVariants
+} from './components/ui/inline-code';
 export { Input, type InputProps, inputVariants } from './components/ui/input';
 export { Textarea, type TextareaProps } from './components/ui/textarea';
 export {

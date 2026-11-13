@@ -1,6 +1,7 @@
+import { ArrowUpRight, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
-import { FieldLabel } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle, FieldLabel } from '@nangohq/design-system';
 
 import { DocsIconLink } from '@/components/patterns/DocsIconLink';
 import { EditableInput } from '@/components/patterns/EditableInput';
@@ -46,6 +47,19 @@ export const DeprecatedSettings: React.FC = () => {
 
     return (
         <SettingsContent title="Deprecated authorization">
+            <Alert variant="warning">
+                <TriangleAlert />
+                <AlertTitle>Public key and HMAC authorization are deprecated</AlertTitle>
+                <AlertDescription>Move to Connect sessions before these methods are removed.</AlertDescription>
+                <AlertActions>
+                    <AlertButton asChild>
+                        <a href="https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key" target="_blank" rel="noopener noreferrer">
+                            Migration guide
+                            <ArrowUpRight />
+                        </a>
+                    </AlertButton>
+                </AlertActions>
+            </Alert>
             <SettingsGroup
                 label={
                     <div className="flex gap-1.5">

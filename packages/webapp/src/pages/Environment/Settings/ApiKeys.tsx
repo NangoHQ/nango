@@ -1,7 +1,21 @@
-import { ExternalLink, Eye, EyeOff, Key, Pencil, Trash2 } from 'lucide-react';
+import { ExternalLink, Eye, EyeOff, Key, Pencil, Trash2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button, Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, IconButton, Input } from '@nangohq/design-system';
+import {
+    Alert,
+    AlertDescription,
+    Button,
+    Dialog,
+    DialogBody,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    IconButton,
+    InlineCode,
+    Input
+} from '@nangohq/design-system';
 
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -93,6 +107,8 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
         const all = allGroupScopes(group);
         return isGroupWildcardSelected(group) || all.every((s) => selectedScopes.includes(s));
     };
+
+    const hasCredentialsScope = SCOPE_GROUPS.some((group) => group.items.some((item) => item.credentials && isScopeSelected(item.credentials, selectedScopes)));
 
     const hasAnyChildSelected = (group: ScopeGroup) => allGroupScopes(group).some((s) => selectedScopes.includes(s));
 
@@ -218,6 +234,17 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                     </div>
                     {selectedScopes.length === 0 && <p className="text-body-small-regular text-status-danger-text">Select at least one scope to continue</p>}
                 </div>
+            )}
+            {permissionMode === 'custom' && hasCredentialsScope && (
+                <Alert variant="warning" size="compact">
+                    <TriangleAlert />
+                    <AlertDescription>
+                        <span>
+                            Scopes ending in <InlineCode>_credentials</InlineCode> let this key read raw OAuth tokens and API keys. Only grant them to backends
+                            that need them.
+                        </span>
+                    </AlertDescription>
+                </Alert>
             )}
         </div>
     );
@@ -456,7 +483,7 @@ const ManagedSecretKeyView: React.FC<{ secretKey: string; env: string }> = ({ se
         <SettingsContent title="API Keys">
             <div className="flex flex-col gap-4 py-4">
                 <div className="text-body-small-regular text-text-secondary">
-                    This key is managed via the <code className="text-text-strong">NANGO_SECRET_KEY_{env.toUpperCase()}</code> environment variable.
+                    This key is managed via the <InlineCode>NANGO_SECRET_KEY_{env.toUpperCase()}</InlineCode> environment variable.
                 </div>
                 <div>
                     <label className="text-body-small-semi text-text-strong block mb-1.5">Secret Key</label>
