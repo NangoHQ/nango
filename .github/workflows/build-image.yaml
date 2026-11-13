@@ -8,6 +8,11 @@ on:
     pull_request:
     merge_group:
 
+# paths-filter lists a PR's files through the API
+permissions:
+    contents: read
+    pull-requests: read
+
 jobs:
     should-run:
         runs-on: ubuntu-latest
