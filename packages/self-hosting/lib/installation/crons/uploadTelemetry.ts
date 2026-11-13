@@ -71,8 +71,8 @@ export async function uploaderConfig(): Promise<Result<UploaderConfig | null>> {
     const privateKeyPem = normalizePem(envs.NANGO_INSTALLATION_PRIVATE_KEY);
     try {
         await mintInstallationToken(privateKeyPem, { body: new Uint8Array() });
-    } catch {
-        return Err(new Error('NANGO_INSTALLATION_PRIVATE_KEY cannot sign an installation token'));
+    } catch (err) {
+        return Err(new Error(`NANGO_INSTALLATION_PRIVATE_KEY cannot sign an installation token: ${err instanceof Error ? err.message : String(err)}`));
     }
     const knex = hostedTelemetryDb();
     if (!knex) {

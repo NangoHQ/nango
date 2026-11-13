@@ -93,7 +93,7 @@ describe('uploaderConfig', () => {
         [
             'the installation private key cannot sign',
             () => (envs.NANGO_INSTALLATION_PRIVATE_KEY = 'not a key'),
-            'NANGO_INSTALLATION_PRIVATE_KEY cannot sign an installation token'
+            expect.stringMatching(/^NANGO_INSTALLATION_PRIVATE_KEY cannot sign an installation token: .+/)
         ],
         ['the license is not set', () => (envs.NANGO_LICENSE = undefined), 'NANGO_LICENSE is not set'],
         ['the build has no license public key', () => (trusted.publicKeyPem = null), 'this build has no license public key'],
