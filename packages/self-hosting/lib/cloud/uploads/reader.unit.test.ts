@@ -6,9 +6,12 @@ import { TELEMETRY_UPLOAD_MAX_ROWS, TELEMETRY_UPLOAD_MAX_UNCOMPRESSED_BYTES } fr
 import { readUpload } from './reader.js';
 
 const installationId = '5f0d3c0e-6d5b-4a55-9d0c-1f2e3a4b5c6d';
-const header = JSON.stringify({ kind: 'header', installation_id: installationId });
+const metric = 'nango.hosted_metric.connections.count';
+const headerWith = (overrides: Record<string, unknown> = {}) =>
+    JSON.stringify({ kind: 'header', installation_id: installationId, metric, from: '2026-11-08T00:00:00.000Z', to: '2026-11-09T00:00:00.000Z', ...overrides });
+const header = headerWith();
 const row = (overrides: Record<string, unknown> = {}) =>
-    JSON.stringify({ kind: 'row', ts: '2026-11-08T00:00:00.000Z', metric: 'nango.hosted_metric.connections.count', attributes: {}, value: 1, ...overrides });
+    JSON.stringify({ kind: 'row', ts: '2026-11-08T00:00:00.000Z', metric, attributes: {}, value: 1, ...overrides });
 
 const upload = (...lines: string[]) => gzipSync(Buffer.from(lines.join('\n')));
 
@@ -47,7 +50,7 @@ describe('readUpload', () => {
     });
 
     it('reads the installation in lower case', async () => {
-        const res = await readUpload(upload(JSON.stringify({ kind: 'header', installation_id: installationId.toUpperCase() })));
+        const res = await readUpload(upload(headerWith({ installation_id: installationId.toUpperCase() })));
 
         expect(res.unwrap().installationId).toBe(installationId);
     });
@@ -73,12 +76,14 @@ describe('readUpload', () => {
     });
 
     it('accepts timestamps from 366 days ago to one day ahead', async () => {
-        expect(await failure(upload(header, row({ ts: '2025-11-08T12:00:00.000Z' }), row({ ts: '2026-11-10T12:00:00.000Z' })))).toBe('ok');
-        expect(await failure(upload(header, row(), row({ ts: '2025-11-08T11:59:59.999Z' })))).toEqual({
+        const wide = headerWith({ from: '2025-01-01T00:00:00.000Z', to: '2027-01-01T00:00:00.000Z' });
+
+        expect(await failure(upload(wide, row({ ts: '2025-11-08T12:00:00.000Z' }), row({ ts: '2026-11-10T12:00:00.000Z' })))).toBe('ok');
+        expect(await failure(upload(wide, row(), row({ ts: '2025-11-08T11:59:59.999Z' })))).toEqual({
             code: 'invalid_row',
             message: 'line 3 has a timestamp too far in the past or the future'
         });
-        expect(await failure(upload(header, row(), row({ ts: '2026-11-10T12:00:00.001Z' })))).toEqual({
+        expect(await failure(upload(wide, row(), row({ ts: '2026-11-10T12:00:00.001Z' })))).toEqual({
             code: 'invalid_row',
             message: 'line 3 has a timestamp too far in the past or the future'
         });
@@ -87,7 +92,11 @@ describe('readUpload', () => {
     it.each([
         ['no line at all', []],
         ['a row first', [row()]],
-        ['an installation that is not a uuid', [JSON.stringify({ kind: 'header', installation_id: 'byoc-acme' })]],
+        ['an installation that is not a uuid', [headerWith({ installation_id: 'byoc-acme' })]],
+        ['no metric', [headerWith({ metric: undefined })]],
+        ['no range', [headerWith({ from: undefined, to: undefined })]],
+        ['a range that is not in UTC', [headerWith({ from: '2026-11-08T00:00:00.000+01:00' })]],
+        ['a range that ends before it starts', [headerWith({ from: '2026-11-09T00:00:00.000Z', to: '2026-11-08T00:00:00.000Z' })]],
         ['a line that is not JSON', ['header']]
     ])('rejects %s as the header', async (_name, lines) => {
         expect(await failure(upload(...lines))).toMatchObject({ code: 'invalid_header' });
@@ -115,6 +124,22 @@ describe('readUpload', () => {
         ['an empty line', '']
     ])('rejects %s, naming the line', async (_name, line) => {
         expect(await failure(upload(header, row(), line, row()))).toEqual({ code: 'invalid_row', message: 'line 3 is not a valid row' });
+    });
+
+    it('accepts rows of the metric of the header, from the start of its range to its end included', async () => {
+        expect(await failure(upload(header, row({ ts: '2026-11-08T00:00:00.000Z' }), row({ ts: '2026-11-09T00:00:00.000Z' })))).toBe('ok');
+        expect(await failure(upload(header, row(), row({ ts: '2026-11-07T23:59:59.999Z' })))).toEqual({
+            code: 'invalid_row',
+            message: 'line 3 is outside the range of the header'
+        });
+        expect(await failure(upload(header, row(), row({ ts: '2026-11-09T00:00:00.001Z' })))).toEqual({
+            code: 'invalid_row',
+            message: 'line 3 is outside the range of the header'
+        });
+        expect(await failure(upload(header, row(), row({ metric: 'nango.hosted_metric.active_concurrency.max' })))).toEqual({
+            code: 'invalid_row',
+            message: 'line 3 is for another metric than the header'
+        });
     });
 
     it('accepts attributes at the size limit and rejects one byte more', async () => {

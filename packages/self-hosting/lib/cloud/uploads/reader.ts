@@ -19,10 +19,19 @@ import type { Result } from '@nangohq/utils';
 const inflate = promisify(gunzip);
 const utf8 = new TextDecoder('utf-8', { fatal: true });
 
-/** An upload is a gzip file of NDJSON: the first line is the header, every other line is a row. */
+/**
+ * An upload is a gzip file of NDJSON: the first line is the header, every other line is a row.
+ *
+ * The header states what the upload completes: with it, Nango holds every row the installation has for `metric` from
+ * `from` up to `to`, `to` excluded. An upload that had to stop before the end of its scan ends at its last row, so
+ * rows can be at `to` itself and the next upload starts from there.
+ */
 export const telemetryUploadHeaderSchema = z.object({
     kind: z.literal('header'),
-    installation_id: z.uuid().toLowerCase()
+    installation_id: z.uuid().toLowerCase(),
+    metric: z.string().min(1).max(255),
+    from: z.iso.datetime({ precision: 3 }),
+    to: z.iso.datetime({ precision: 3 })
 });
 
 export const telemetryUploadRowSchema = z.object({
@@ -82,7 +91,12 @@ export async function readUpload(body: Buffer): Promise<Result<{ installationId:
 
     const header = telemetryUploadHeaderSchema.safeParse(parseLine(first));
     if (!header.success) {
-        return Err(new UploadError('invalid_header', 'the first line must be a header naming the installation'));
+        return Err(new UploadError('invalid_header', 'the first line must be a header naming the installation, the metric and the range'));
+    }
+    const from = new Date(header.data.from).getTime();
+    const to = new Date(header.data.to).getTime();
+    if (from > to) {
+        return Err(new UploadError('invalid_header', 'the range of the header ends before it starts'));
     }
     if (rest.length > TELEMETRY_UPLOAD_MAX_ROWS) {
         return Err(new UploadError('too_many_rows', `an upload holds at most ${TELEMETRY_UPLOAD_MAX_ROWS} rows`));
@@ -95,7 +109,13 @@ export async function readUpload(body: Buffer): Promise<Result<{ installationId:
         if (!row.success) {
             return Err(new UploadError('invalid_row', `line ${index + 2} is not a valid row`));
         }
+        if (row.data.metric !== header.data.metric) {
+            return Err(new UploadError('invalid_row', `line ${index + 2} is for another metric than the header`));
+        }
         const ts = new Date(row.data.ts);
+        if (ts.getTime() < from || ts.getTime() > to) {
+            return Err(new UploadError('invalid_row', `line ${index + 2} is outside the range of the header`));
+        }
         if (ts.getTime() < now - TELEMETRY_UPLOAD_TS_MAX_AGE_MS || ts.getTime() > now + TELEMETRY_UPLOAD_TS_MAX_AHEAD_MS) {
             return Err(new UploadError('invalid_row', `line ${index + 2} has a timestamp too far in the past or the future`));
         }
