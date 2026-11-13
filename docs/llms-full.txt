@@ -9680,11 +9680,11 @@ const result = nango.auth('<INTEGRATION-ID>', {
           </ResponseField>
 
           <ResponseField name="oauth_client_id_override" type="string">
-            For OAuth 2, override the integration's client ID with a connection-level client ID. This is useful when your users bring their own OAuth 2 app (e.g. Netsuite).
+            For OAuth 2, override the integration's client ID with a connection-level client ID. This is useful when your users bring their own OAuth 2 app (e.g. Netsuite). Pass it together with `oauth_client_secret_override`.
           </ResponseField>
 
           <ResponseField name="oauth_client_secret_override" type="string">
-            For OAuth 2, override the integration's client secret with a connection-level client secret. This is useful when your users bring their own OAuth 2 app (e.g. Netsuite).
+            For OAuth 2, override the integration's client secret with a connection-level client secret. This is useful when your users bring their own OAuth 2 app (e.g. Netsuite). Pass it together with `oauth_client_id_override`. Both are sent to Nango in the query string of the authorization popup URL. Nango stores the secret encrypted with the connection's credentials and only uses it server-side, to exchange and refresh tokens. It is never added to the provider's authorization URL.
           </ResponseField>
         </Expandable>
       </ResponseField>
@@ -11703,7 +11703,7 @@ const { data } = await nango.createConnectSession({
       }
     }
     ```
-    When set to empty strings, Connect UI will display optional input fields for users to enter their own OAuth app credentials.
+    When set to empty strings, Connect UI will display optional input fields for users to enter their own OAuth app credentials. Only set them to empty strings: Connect UI ignores any value, and Nango doesn't use it to build the authorization URL. To pass known credentials, for example in a [headless flow](/reference/frontend/frontend-sdk#connect-using-the-headless-client), pass them to `nango.auth()` in `credentials` instead.
   </ResponseField>
 
   <ResponseField name="webhook_url_override" type="string">
