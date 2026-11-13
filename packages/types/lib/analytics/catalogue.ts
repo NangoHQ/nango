@@ -83,7 +83,7 @@ function defineCatalogue<const C extends Record<string, AnalyticsEventDefinition
 /** Senders add `surface`, and the server adds `is_production` when it knows the environment. `properties` lists the rest. */
 export const analyticsEventCatalogue = defineCatalogue({
     'billing:usage_update': {
-        surface: 'web',
+        surface: 'app',
         insight: 'Which Usage page controls people use, and which metrics and dimensions they break usage down by',
         fires: 'When someone changes the month, a breakdown, a filter or a series on the Usage page',
         properties: z.union([
@@ -94,55 +94,55 @@ export const analyticsEventCatalogue = defineCatalogue({
         ])
     },
     'billing:filter_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often people look for a breakdown filter, and on which metric',
         fires: 'When someone opens the breakdown filter on a usage chart',
         properties: z.object({ metric: usageMetric })
     },
     'billing:copy_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often people copy a breakdown value out of a usage chart, and for which metric and dimension',
         fires: 'When someone copies a breakdown value on a usage chart',
         properties: z.object({ metric: usageMetric, dimension: breakdownDimension })
     },
     'billing:open_link_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often a usage breakdown leads people to the integration or connection behind it',
         fires: 'When someone opens the item behind a breakdown value on a usage chart',
         properties: z.object({ metric: usageMetric, dimension: breakdownDimension })
     },
     'billing:invoice_link_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often accounts open their invoices from Billing & Usage',
         fires: 'When someone opens an invoice from the Billing page',
         properties: none
     },
     'billing:portal_link_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often accounts need the billing portal',
         fires: 'When someone opens the billing portal from the Usage page',
         properties: none
     },
     'billing:upgrade_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts start an upgrade from a plan card, the first step of the upgrade funnel',
         fires: 'When someone clicks to upgrade on a plan card',
         properties: none
     },
     'billing:addon_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts act on the Growth add-on, split by whether they already have it',
         fires: 'When someone clicks the Growth add-on action on the Billing page',
         properties: z.object({ addon_state: stringOf<GrowthAddonState>() })
     },
     'billing:payment_method_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts start adding a payment method',
         fires: 'When someone clicks to add a payment method on the Billing page',
         properties: none
     },
     'billing:overdue_alert_link_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'Whether the overdue-invoice alert gets accounts to look at their invoices',
         fires: 'When someone follows the overdue-invoice alert in the sidebar',
         properties: none
@@ -174,19 +174,19 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
 
     'playground:playground_view': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts open the API Playground each week, and from where',
         fires: 'When the Playground opens',
         properties: z.object({ source: z.enum(['connection', 'integration', 'function']) })
     },
     'playground:run_start': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many Playground runs accounts start, and on which functions',
         fires: 'When someone runs a function in the Playground',
         properties: z.object({ function_type: z.string(), integration: z.string(), is_run_again: z.boolean() })
     },
     'playground:run_complete': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often Playground runs succeed, and how long they take',
         fires: 'When a Playground run returns a result or an error',
         properties: z.object({
@@ -198,19 +198,19 @@ export const analyticsEventCatalogue = defineCatalogue({
         })
     },
     'playground:run_cancel': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often people give up on a Playground run before it finishes',
         fires: 'When someone cancels a running Playground run',
         properties: z.object({ function_type: z.string(), integration: z.string() })
     },
     'playground:approval_view': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many changes the Agent Playground agent asks people to approve, and on which tools',
         fires: 'When an Agent Playground reply finishes waiting for the user to approve a tool call',
         properties: z.object(playgroundApproval)
     },
     'playground:approval_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often people approve or deny the changes the Agent Playground agent asks for',
         fires: 'When someone clicks Approve or Deny on a tool call in the Agent Playground',
         properties: z.object({ ...playgroundApproval, is_approved: z.boolean() })
@@ -254,86 +254,86 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
 
     'onboarding:connect_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts start the Getting Started flow by connecting GitHub',
         fires: 'When someone clicks to connect GitHub on the Getting Started page',
         properties: none
     },
     'onboarding:connection_create': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts that start Getting Started get through the GitHub connect flow',
         fires: 'When the GitHub connection on the Getting Started page is created',
         properties: none
     },
     'onboarding:run_complete': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts run the Getting Started code snippet, and how often it fails',
         fires: 'When the Getting Started code snippet returns a result or an error',
         properties: z.object({ is_success: z.boolean() })
     },
     'onboarding:create_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts finish Getting Started and go on to set up their own integration',
         fires: 'When someone clicks to set up their own integration at the end of Getting Started',
         properties: none
     },
     'onboarding:copy_prompt_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts start adding Nango to their own agent from Getting Started',
         fires: 'When someone copies the install prompt for their agent on the Getting Started page',
         properties: z.object({ has_api_key: z.boolean() })
     },
     'onboarding:copy_api_key_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often people need the API key on its own while installing Nango in their agent',
         fires: 'When someone copies the API key on the Getting Started page',
         properties: none
     },
     'onboarding:playground_link_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts try the Agent Playground before installing Nango in their own agent',
         fires: 'When someone follows the Agent Playground link on the Getting Started page',
         properties: none
     },
     'onboarding:try_prompt_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'Which integrations people try first with their own agent',
         fires: 'When someone copies an example prompt for their agent on the Getting Started page',
         properties: z.object({ integration: z.string() })
     },
     'onboarding:go_further_link_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'Where accounts go after finishing Getting Started',
         fires: 'When someone opens a Go further link on the Getting Started page',
         properties: z.object({ destination: z.enum(['integrations', 'logs', 'catalog', 'syncs_docs']) })
     },
     'onboarding:restart_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often accounts start Getting Started over',
         fires: 'When someone confirms restarting Getting Started',
         properties: none
     },
     'onboarding:dismiss_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts hide Getting Started',
         fires: 'When someone hides Getting Started from the sidebar',
         properties: none
     },
 
     'connections:create_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many people start creating a connection, and for which provider',
         fires: 'When someone starts creating a connection from the dashboard or the Agent Playground',
         properties: z.object({ provider: z.string(), is_playground: z.boolean().optional() })
     },
     'connections:share_link_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often people hand connection setup to an end user instead of doing it themselves',
         fires: 'When someone copies a connect link to share',
         properties: z.object({ provider: z.string() })
     },
     'connections:connection_create': {
-        surface: 'web',
+        surface: 'app',
         insight: 'Which integrations fail most often during auth started from the dashboard or the Agent Playground',
         fires: 'When a connect flow started from the dashboard or the Agent Playground finishes',
         properties: z.union([
@@ -386,13 +386,13 @@ export const analyticsEventCatalogue = defineCatalogue({
         })
     },
     'integrations:filter_update': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often people search their integrations list, and how often the search finds nothing',
         fires: 'When someone stops typing in the integrations list search',
         properties: z.object({ filter: z.enum(['search']), result_count: z.number() })
     },
     'integrations:create_page_view': {
-        surface: 'web',
+        surface: 'app',
         insight:
             "How many accounts open a provider's setup form, and how many leave it without creating an integration, split by whether Nango has a developer app for it",
         fires: "When a provider's create integration form loads",
@@ -444,7 +444,7 @@ export const analyticsEventCatalogue = defineCatalogue({
         properties: z.object({ command: z.enum(['run', 'full_resync', 'pause', 'resume', 'cancel']) })
     },
     'functions:function_view': {
-        surface: 'web',
+        surface: 'app',
         insight: "How many accounts browse an integration's functions, and whether they look at catalog templates or functions they already deployed",
         fires: "When someone opens a function's details from the list on an integration's Functions tab",
         properties: z.object({ provider: z.string(), function_type: z.string(), is_deployed: z.boolean() })
@@ -457,7 +457,7 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
 
     'logs:filter_update': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts search or filter their logs each week, and with which filter',
         fires: 'When someone searches the logs or changes a logs filter',
         properties: z.object({
@@ -465,7 +465,7 @@ export const analyticsEventCatalogue = defineCatalogue({
         })
     },
     'logs:operation_view': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts open a log operation each week',
         fires: 'When someone opens an operation from the logs list',
         properties: none
@@ -497,49 +497,49 @@ export const analyticsEventCatalogue = defineCatalogue({
         properties: z.object({ method: z.enum(['password', 'google']) })
     },
     'auth:join_request_submit': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many new users ask to join an existing account instead of creating their own',
         fires: 'When someone asks to join an account found for their email domain',
         properties: none
     },
     'auth:two_factor_start': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many users start setting up two-factor authentication',
         fires: 'When someone starts setting up two-factor authentication',
         properties: none
     },
     'auth:two_factor_complete': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many users finish two-factor enrolment, and why the code check fails',
         fires: 'When the two-factor code is checked at the end of enrolment',
         properties: z.union([z.object({ is_success: z.literal(true) }), z.object({ is_success: z.literal(false), error_code: z.string() })])
     },
     'auth:two_factor_cancel': {
-        surface: 'web',
+        surface: 'app',
         insight: 'At which step people abandon two-factor enrolment',
         fires: 'When someone closes two-factor enrolment before finishing',
         properties: z.object({ step: z.enum(['scan', 'save']) })
     },
     'auth:two_factor_remove': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many users turn two-factor authentication off again',
         fires: 'After two-factor authentication is turned off',
         properties: none
     },
     'auth:recovery_codes_generate': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often users replace their two-factor recovery codes',
         fires: 'After new recovery codes are generated',
         properties: none
     },
     'auth:download_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'Whether users save their recovery codes by downloading them',
         fires: 'When someone downloads their recovery codes',
         properties: z.object({ flow: z.enum(['enroll', 'regenerate']) })
     },
     'auth:copy_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'Whether users save the secrets the dashboard shows only once: recovery codes and new API keys',
         fires: 'When someone copies recovery codes or a new API key secret',
         properties: z.union([
@@ -548,32 +548,32 @@ export const analyticsEventCatalogue = defineCatalogue({
         ])
     },
     'auth:password_update': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often users change their password',
         fires: 'After a password change is saved',
         properties: none
     },
     'auth:api_keys_link_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How people find account API keys',
         fires: 'When someone opens API keys from the profile menu',
         properties: none
     },
     'auth:api_key_create': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts create account API keys',
         fires: 'After an account API key is created',
         properties: none
     },
     'auth:api_key_delete': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How often account API keys are deleted, as a sign they get rotated',
         fires: 'After an account API key is deleted',
         properties: none
     },
 
     'audit:export_complete': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many accounts export their audit trail, and how often exports hit the row limit',
         fires: 'When an audit trail export finishes or fails',
         properties: z.union([
