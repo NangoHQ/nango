@@ -74,11 +74,4 @@ import PreBuiltUseCases from "/snippets/generated/tiny-erp/PreBuiltUseCases.mdx"
 
 <PreBuiltUseCases />
 
-## API gotchas
-
-- Each Tiny ERP account creates its own private app, so the client ID and secret differ per customer. Create the Connect Session with empty `oauth_client_id_override` and `oauth_client_secret_override` values to let each user enter their own app's credentials in Connect UI.
-- Access tokens last 4 hours and refresh tokens 1 day, and each refresh returns a new refresh token, which Nango stores. Nango refreshes connections that haven't been used for a day, which can be just after the refresh token has expired, so call the connection (for example with a light sync) at least every 12 hours to keep idle connections alive.
-- What the API returns depends on the permissions (modules) ticked on the app. A `401` usually means the module isn't enabled for the app.
-- Limits are per account and per minute and depend on the Tiny ERP plan. When you set `retries` on a proxy call, Nango waits for `X-RateLimit-Reset` (seconds) before retrying a `429`.
-
 ---

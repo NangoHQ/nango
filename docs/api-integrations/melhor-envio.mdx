@@ -76,11 +76,4 @@ import PreBuiltUseCases from "/snippets/generated/melhor-envio/PreBuiltUseCases.
 
 <PreBuiltUseCases />
 
-## API gotchas
-
-- Production and sandbox are separate: each has its own accounts, apps and tokens. Create one Nango integration per environment with the app from that environment, and pick the same environment when connecting.
-- Every request must send a `User-Agent` header with your app's name and a contact email, for example `MyApp (support@myapp.com)`. Pass it in the headers of each proxy call.
-- Access tokens last 30 days and refresh tokens 45 days. Each refresh returns a new refresh token, which Nango stores.
-- The API allows 250 requests per minute per authorized user.
-
 ---

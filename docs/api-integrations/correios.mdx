@@ -74,11 +74,4 @@ import PreBuiltUseCases from "/snippets/generated/correios/PreBuiltUseCases.mdx"
 
 <PreBuiltUseCases />
 
-## API gotchas
-
-- API access needs a company Meu Correios account and a commercial contract with Correios. Each API (Busca CEP, Rastro, Preço, Prazo…) must be enabled on the contract.
-- Nango gets a token from `POST /token/v1/autentica/contrato`. Correios returns the same token until 30 minutes before it expires (24 hours), so Nango asks for it every 20 minutes and always has a valid one.
-- The token endpoint allows 3 requests per second and answers `429` above that.
-- Homologation (`apihom.correios.com.br`) needs its own Meu Correios account, set up through your Correios account representative.
-
 ---

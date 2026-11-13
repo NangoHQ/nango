@@ -75,10 +75,4 @@ import PreBuiltUseCases from "/snippets/generated/bling/PreBuiltUseCases.mdx"
 
 <PreBuiltUseCases />
 
-## API gotchas
-
-- Scopes and the redirect URL are taken from the app's registration in Bling, not from the authorization request. A Bling app has a single redirect URL.
-- Each refresh returns a new refresh token, which Nango stores. Refresh tokens last 30 days.
-- The API allows 3 requests per second and 120,000 per day per account, and answers `429` above that. Bursts of errors or calls to the token endpoint can get the IP blocked for 10 to 60 minutes.
-
 ---

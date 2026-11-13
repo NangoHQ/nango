@@ -74,10 +74,4 @@ import PreBuiltUseCases from "/snippets/generated/promobrands/PreBuiltUseCases.m
 
 <PreBuiltUseCases />
 
-## API gotchas
-
-- The API is called with the ID token from Promobrands' token endpoint, not its access token. Nango sends the ID token and requests a new one before the 60-minute expiry.
-- The API allows 10 requests per second per user.
-- Responses are JSON by default (Nango sends `Accept: application/json`). Send `Accept: application/xml` on a request to get XML.
-
 ---
