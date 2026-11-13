@@ -1,0 +1,38 @@
+---
+title: 'Eventee - How do I link my account?'
+sidebarTitle: 'Eventee'
+---
+
+## Overview
+
+To authenticate with Eventee, you need:
+
+1. **API Token** — the Public API token of your Eventee event.
+
+This guide will show you how to generate it.
+
+### Prerequisites
+
+- An [Eventee](https://eventee.com) account with an event. Every event has its own API token, so the connection gives access to that one event.
+
+### Step 1: Generate an API token
+
+1. Sign in to the [Eventee admin](https://admin.eventee.com/auth/login) and open your event.
+2. Click **Settings** in the top navigation, open the **Features** tab, then select **Public API** under **General features**.
+3. Turn on the **Public API** switch.
+
+<img src="/api-integrations/eventee/public_api_feature_toggle.png" alt="Eventee Settings Features tab with the Public API switch"/>
+
+4. Copy the token shown under **Your API token**. Clicking **Generate new** creates a new token and invalidates the old one, so only use it to rotate the token.
+
+<img src="/api-integrations/eventee/public_api_token_created.png" alt="Eventee Public API page with the Your API token field and the Generate new button"/>
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Eventee.
+2. Paste the token you copied in Step 1 into the **API Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/eventee/form.png" alt="Eventee Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Eventee.

@@ -1,0 +1,77 @@
+---
+title: 'Datagma'
+sidebarTitle: 'Datagma'
+description: 'Integrate your application with the Datagma API'
+---
+
+## 🚀 Quickstart
+
+Connect to Datagma with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Datagma_.
+    </Step>
+    <Step id="authorize-datagma" title="Authorize Datagma">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Datagma API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-datagma-api" title="Call the Datagma API">
+    Let's make your first request to the Datagma API to get your account's credit balance. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/mine" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/mine',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Datagma integration guides
+
+- [How do I link my account?](/api-integrations/datagma/connect)  
+Copy your Datagma API key and connect it in the Connect UI.
+
+Official docs: [Datagma API reference](https://datagmaapi.readme.io/reference/getting-started-with-your-api)
+
+## 🧩 Pre-built syncs & tools for Datagma
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/datagma/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

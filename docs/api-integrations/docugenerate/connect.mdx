@@ -1,0 +1,57 @@
+---
+title: 'DocuGenerate - How do I link my account?'
+sidebarTitle: 'DocuGenerate'
+---
+
+## Overview
+
+To authenticate with DocuGenerate, you need:
+
+1. **Region** — the DocuGenerate API host for the region where your templates and documents are processed.
+2. **API Key** — your DocuGenerate API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A DocuGenerate account. The Free plan includes full API access, and you can [sign up](https://app.docugenerate.com/signup) without a credit card.
+
+### Step 1: Choose your region
+
+DocuGenerate processes templates and documents in the region whose API host you call. Select the value for your region:
+
+| Region | Hosted in | Value to select |
+|--------|-----------|-----------------|
+| United States | San Francisco | `api.docugenerate.com` |
+| European Union | Frankfurt | `api.eu.docugenerate.com` |
+| United Kingdom | London | `api.uk.docugenerate.com` |
+| Australia | Sydney | `api.au.docugenerate.com` |
+
+See [Can I use regional API endpoints?](https://www.docugenerate.com/help/articles/can-i-use-regional-api-endpoints/) for details.
+
+### Step 2: Generate an API key
+
+Your account has a single API key, and generating a new one immediately stops the current key from working. If you already have a key in use, don't generate a new one: open **Settings → Developers** and copy the existing key with the copy icon (step 4).
+
+1. Log in to [DocuGenerate](https://app.docugenerate.com/login).
+2. Open **Settings** and select the **Developers** tab. If you don't have a key yet, click **Generate API Key**.
+
+<img src="/api-integrations/docugenerate/developers_tab_generate_key.png" alt="DocuGenerate Settings page on the Developers tab with the Generate API Key button"/>
+
+3. Click **Yes** to confirm. The dialog warns that the current API key stops working immediately.
+
+<img src="/api-integrations/docugenerate/confirm_generate_key.png" alt="Generate API Key confirmation dialog in DocuGenerate with the Yes button"/>
+
+4. Click the copy icon next to the API key to copy it, and store it in a secure location.
+
+<img src="/api-integrations/docugenerate/copy_api_key.png" alt="DocuGenerate Developers tab with the Copy API Key icon next to the API key"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with DocuGenerate.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/docugenerate/form.png" alt="DocuGenerate connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to DocuGenerate.

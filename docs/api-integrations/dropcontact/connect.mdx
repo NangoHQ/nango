@@ -1,0 +1,43 @@
+---
+title: 'Dropcontact - How do I link my account?'
+sidebarTitle: 'Dropcontact'
+---
+
+## Overview
+
+To authenticate with Dropcontact, you need:
+
+1. **API Key** — an API key from the API page of the Dropcontact app.
+
+This guide will show you how to create it.
+
+### Prerequisites
+
+- A Dropcontact account. If you don't have one, [create one for free](https://app.dropcontact.com/signup).
+- API access on your account. If Dropcontact rejects your key with a message asking you to contact support, email support@dropcontact.com to enable API access.
+
+### Step 1: Create an API key
+
+1. Sign in to [Dropcontact](https://app.dropcontact.com/signin).
+2. In the left sidebar, under **Integrations**, click **API**.
+
+<img src="/api-integrations/dropcontact/open_api_page.png" alt="Dropcontact sidebar with API selected under Integrations" />
+
+3. On the **Tokens** tab, click **Create Token**.
+
+<img src="/api-integrations/dropcontact/create_token.png" alt="Dropcontact API Integration page on the Tokens tab with the Create Token button" />
+
+4. Enter a name for the token, leave **Expiration** as **No expiration**, and click **Create Token**.
+5. Copy the API key from the dialog, then click **Close**. The key is shown only once, so store it somewhere safe.
+
+<img src="/api-integrations/dropcontact/copy_api_key.png" alt="Dropcontact Create Token dialog with the copy button next to the new API key" />
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Dropcontact.
+2. Enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/dropcontact/form.png" alt="Dropcontact Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Dropcontact.
