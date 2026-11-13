@@ -39,7 +39,7 @@ export const proxyTool = defineAgentSessionMcpTool({
         const integrationId = args.integration;
         const purpose = { goal: args.goal, intent: args.intent };
         const track = (outcome: ProxyRequestOutcome) => {
-            trackAgentSessionProxyRequest({ session, integrationId, method: args.method, ...purpose, ...outcome });
+            trackAgentSessionProxyRequest({ session, integrationId, method: args.method, path: args.path, ...purpose, ...outcome });
         };
 
         // Reaching an integration's API is gated on the session declaring it, so a toolset that

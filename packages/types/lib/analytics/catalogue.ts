@@ -657,6 +657,8 @@ export const analyticsEventCatalogue = defineCatalogue({
             ...toolCallResult,
             integration_id: z.string().optional(),
             http_method: stringOf<HTTP_METHOD>().optional(),
+            // The path the agent called, without its query string. Ids in it are kept, since the endpoint is only readable with them.
+            endpoint: z.string().optional(),
             provider: z.string().optional(),
             http_status: z.number().optional(),
             provider_error_code: z.string().optional(),

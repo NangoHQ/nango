@@ -68,6 +68,7 @@ interface ProxyRequestParams extends Outcome {
     session: AgentSession;
     integrationId?: string | undefined;
     method?: HTTP_METHOD | undefined;
+    path?: string | undefined;
     provider?: string | undefined;
     status?: number | undefined;
     /** The provider's own error code, when the failure carried one. */
@@ -184,6 +185,7 @@ export function trackAgentSessionProxyRequest({
     integrationId,
     provider,
     method,
+    path,
     status,
     providerErrorCode,
     goal,
@@ -200,6 +202,7 @@ export function trackAgentSessionProxyRequest({
                 ...measurement,
                 ...(integrationId ? { integration_id: integrationId } : {}),
                 ...(method ? { http_method: method } : {}),
+                ...(path ? { endpoint: path.split('?')[0] } : {}),
                 ...(provider ? { provider } : {}),
                 ...(status === undefined ? {} : { http_status: status }),
                 ...(providerErrorCode ? { provider_error_code: providerErrorCode } : {}),

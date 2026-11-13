@@ -355,6 +355,7 @@ describe('trackAgentSessionProxyRequest', () => {
                 integrationId: 'notion',
                 provider: 'notion',
                 method: 'GET',
+                path: '/v1/pages/1?filter=archived',
                 logOperationId: 'op-2',
                 status: 200
             })
@@ -368,6 +369,7 @@ describe('trackAgentSessionProxyRequest', () => {
             integration_id: 'notion',
             provider: 'notion',
             http_method: 'GET',
+            endpoint: '/v1/pages/1',
             http_status: 200,
             log_operation_id: 'op-2',
             is_success: true
