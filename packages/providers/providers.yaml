@@ -33424,6 +33424,7 @@ teamviewer:
     categories:
         - support
     auth_mode: OAUTH2
+    disable_pkce: true
     authorization_url: https://login.teamviewer.com/oauth2/authorize
     token_url: https://webapi.teamviewer.com/api/v1/oauth2/token
     authorization_params:
