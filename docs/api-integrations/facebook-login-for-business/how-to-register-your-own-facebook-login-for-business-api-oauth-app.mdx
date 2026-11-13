@@ -1,0 +1,51 @@
+---
+title: 'How to register your own Facebook Login for Business app'
+sidebarTitle: 'Facebook Login for Business setup'
+description: 'Register an app with Facebook Login for Business, create a configuration and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Facebook Login for Business to get your OAuth credentials (App ID and App Secret) and a **Configuration ID**. The configuration replaces OAuth scopes: it sets the token type, the token expiration, the assets and the permissions your app asks for.
+
+<Steps>
+  <Step title="Create a Facebook Developer account">
+    If you don't already have one, go to [Meta for Developers](https://developers.facebook.com/) and create a developer account.
+  </Step>
+  <Step title="Create a new app">
+    1. Go to the [Meta Developer Dashboard](https://developers.facebook.com/apps/).
+    2. Click **Create App**, enter your **App name** then click **Next**.
+    3. Select the **Use cases** your app needs, then click **Next**.
+    4. Select the Business portfolio to associate with the app, then click **Next**.
+    5. Review the **Publishing requirements**, then click **Go to dashboard**.
+  </Step>
+  <Step title="Configure OAuth settings">
+    1. In the left sidebar, go to **Facebook Login for Business** > **Settings**.
+    2. In **Valid OAuth Redirect URIs**, add `https://api.nango.dev/oauth/callback`.
+    3. Click **Save Changes**.
+  </Step>
+  <Step title="Obtain your app credentials">
+    1. Go to **App Settings** > **Basic** in the left sidebar.
+    2. Copy your **App ID** (your **Client ID**) and **App Secret** (your **Client Secret**).
+  </Step>
+  <Step title="Create a configuration">
+    1. In the left sidebar, go to **Facebook Login for Business** > **Configurations**, then click **Create configuration**.
+    2. Choose the access token type:
+       - **System-user access token**: a business integration system user token, shared by the business and set to never expire by default. Only available to [Tech Providers](https://developers.facebook.com/docs/development/release/tech-providers).
+       - **User access token**: a token tied to the person who logs in.
+    3. Choose the token expiration, the assets and the [permissions](https://developers.facebook.com/docs/permissions) your app needs.
+    4. Save the configuration and copy its **Configuration ID**.
+    <Note>Some [permissions](https://developers.facebook.com/docs/facebook-login/guides/permissions/review) require App Review before going live.</Note>
+  </Step>
+  <Step title="Create the integration in Nango">
+    Enter the **Client ID**, **Client Secret** and **Configuration ID** when you create the integration. Leave the scopes empty: the configuration sets the permissions.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details, see [Facebook Login for Business](https://developers.facebook.com/docs/facebook-login/facebook-login-for-business) and [the manual login flow](https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow).
+
+## Important notes for Facebook Login for Business
+
+- System-user access tokens don't expire by default, so Nango doesn't refresh them.
+- User access tokens can't be refreshed. When one expires, users must [re-authorize the connection](/guides/primitives/auth#re-authorize-an-existing-connection).
