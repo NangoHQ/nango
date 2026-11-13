@@ -1,6 +1,6 @@
 import { ArrowUpRight, Search, X } from 'lucide-react';
 
-import { Button } from '@nangohq/design-system';
+import { LinkButton } from '@nangohq/design-system';
 
 const REQUEST_API_URL = 'https://nango.dev/docs/integrations/contribute-or-request-api';
 
@@ -39,15 +39,15 @@ export const NoMatchesState: React.FC<{ filters: ActiveFilter[]; onClearAll: () 
         </span>
         <div className="flex items-center gap-4">
             {filters.length > 0 && (
-                <Button variant="link-accent" size="md" onClick={onClearAll}>
+                <LinkButton size="lg" onClick={onClearAll}>
                     Clear all filters
-                </Button>
+                </LinkButton>
             )}
-            <Button asChild variant="link-accent" size="md">
+            <LinkButton asChild size="lg">
                 <a href={REQUEST_API_URL} target="_blank" rel="noreferrer">
                     Build your own <ArrowUpRight />
                 </a>
-            </Button>
+            </LinkButton>
         </div>
     </div>
 );

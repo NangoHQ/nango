@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import z from 'zod';
 
-import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle, Button, InputGroup, InputGroupInput, LinkButton } from '@nangohq/design-system';
 
 import GoogleButton from '@/components/patterns/GoogleButton';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
@@ -139,9 +139,9 @@ export const Signin: React.FC = () => {
                         (hasLocalAuth ? (
                             <span className="text-body-medium-regular text-text-muted">
                                 Don&apos;t have an account?{' '}
-                                <Button asChild variant="link-accent">
+                                <LinkButton asChild size="lg">
                                     <Link to="/signup">Sign up.</Link>
-                                </Button>
+                                </LinkButton>
                             </span>
                         ) : (
                             <span className="text-body-medium-regular text-text-muted">Continue with Google to access your Nango workspace.</span>
@@ -213,9 +213,9 @@ export const Signin: React.FC = () => {
 
                                 {/* Using `order` to show this above the password input, but tabbing from email input goes to password input first*/}
                                 <div className="self-end order-2">
-                                    <Button asChild variant="link-neutral" size="sm">
+                                    <LinkButton asChild tone="neutral" size="sm">
                                         <Link to="/forgot-password">Forgot your password?</Link>
-                                    </Button>
+                                    </LinkButton>
                                 </div>
                             </div>
 
@@ -249,17 +249,17 @@ export const Signin: React.FC = () => {
 
                 <span className="text-center w-full text-body-medium-regular text-text-muted">
                     By signing in, you agree to our <br />{' '}
-                    <Button asChild variant="link-neutral">
+                    <LinkButton asChild tone="neutral" size="lg">
                         <a href="https://www.nango.dev/terms" target="_blank" rel="noopener noreferrer">
                             Terms of Service
                         </a>
-                    </Button>{' '}
+                    </LinkButton>{' '}
                     and{' '}
-                    <Button asChild variant="link-neutral">
+                    <LinkButton asChild tone="neutral" size="lg">
                         <a href="https://www.nango.dev/privacy-policy" target="_blank" rel="noopener noreferrer">
                             Privacy Policy
                         </a>
-                    </Button>
+                    </LinkButton>
                     .
                 </span>
             </div>

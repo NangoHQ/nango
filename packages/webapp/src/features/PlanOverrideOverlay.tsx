@@ -1,7 +1,7 @@
 import { ChevronLeft, X } from 'lucide-react';
 import { Children, createContext, useContext, useId, useMemo } from 'react';
 
-import { Button, IconButton } from '@nangohq/design-system';
+import { IconButton, LinkButton } from '@nangohq/design-system';
 
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
@@ -117,9 +117,9 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                 </div>
                 <div className="flex items-center gap-1">
                     {overrides > 0 && (
-                        <Button variant="link-accent" size="xs" onClick={resetAll}>
+                        <LinkButton size="sm" onClick={resetAll}>
                             Reset
-                        </Button>
+                        </LinkButton>
                     )}
                     <IconButton variant="ghost" size="2xs" label="Close" onClick={onClose}>
                         <X className="size-3.5" />

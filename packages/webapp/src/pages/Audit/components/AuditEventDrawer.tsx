@@ -2,7 +2,7 @@ import { Prism } from '@mantine/prism';
 import { X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { LinkButton } from '@nangohq/design-system';
 
 import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
@@ -18,9 +18,9 @@ const TARGETS_SHOWN_COLLAPSED = 10;
 const JSON_LINES_SHOWN_COLLAPSED = 40;
 
 const ExpandToggle: React.FC<{ expanded: boolean; hidden: number; noun: string; onClick: () => void }> = ({ expanded, hidden, noun, onClick }) => (
-    <Button variant="link-accent" size="sm" aria-expanded={expanded} onClick={onClick}>
+    <LinkButton size="sm" aria-expanded={expanded} onClick={onClick}>
         {expanded ? 'Show less' : `Show ${hidden.toLocaleString()} more ${noun}`}
-    </Button>
+    </LinkButton>
 );
 
 const Meta: React.FC<{ label: string; value: string; mono?: boolean }> = ({ label, value, mono }) => (

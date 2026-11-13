@@ -2,7 +2,7 @@ import { ArrowUpRight, Braces, Check } from 'lucide-react';
 import { parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs';
 import { useState } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { LinkButton } from '@nangohq/design-system';
 
 import { cn } from '@/utils/utils';
 import { SlidingPanelLayout } from '../../Integrations/providerConfigKey/Functions/SlidingPanelLayout';
@@ -130,14 +130,14 @@ const NoResultsState: React.FC<{ query: string; noun: string; displayName: strin
             Try another word. Need something {displayName} doesn&apos;t have here? You can build your own.
         </span>
         <div className="flex items-center gap-4 pt-1">
-            <Button variant="link-accent" size="md" onClick={onClear}>
+            <LinkButton size="lg" onClick={onClear}>
                 Clear search
-            </Button>
-            <Button asChild variant="link-accent" size="md">
+            </LinkButton>
+            <LinkButton asChild size="lg">
                 <a href={FUNCTIONS_GUIDE_URL} target="_blank" rel="noreferrer">
                     Build your own <ArrowUpRight />
                 </a>
-            </Button>
+            </LinkButton>
         </div>
     </div>
 );
@@ -156,16 +156,16 @@ const NoFunctionsState: React.FC<{ displayName: string }> = ({ displayName }) =>
             You can build your own, or call {displayName}&apos;s API directly through the Nango proxy.
         </span>
         <div className="flex items-center gap-4 pt-1">
-            <Button asChild variant="link-accent" size="md">
+            <LinkButton asChild size="lg">
                 <a href={FUNCTIONS_GUIDE_URL} target="_blank" rel="noreferrer">
                     Build your own <ArrowUpRight />
                 </a>
-            </Button>
-            <Button asChild variant="link-accent" size="md">
+            </LinkButton>
+            <LinkButton asChild size="lg">
                 <a href={PROXY_GUIDE_URL} target="_blank" rel="noreferrer">
                     Proxy docs <ArrowUpRight />
                 </a>
-            </Button>
+            </LinkButton>
         </div>
     </EmptyStateCard>
 );
@@ -177,11 +177,11 @@ const McpToolsState: React.FC = () => (
             Nango automatically makes all tools of this MCP server available. You can use it with Agent sessions, or any other Nango feature.
         </span>
         <div className="flex items-center gap-4 pt-1">
-            <Button asChild variant="link-accent" size="md">
+            <LinkButton asChild size="lg">
                 <a href={MCP_TOOLS_GUIDE_URL} target="_blank" rel="noreferrer">
                     Docs <ArrowUpRight />
                 </a>
-            </Button>
+            </LinkButton>
         </div>
     </EmptyStateCard>
 );

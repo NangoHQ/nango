@@ -1,7 +1,7 @@
 import { ArrowUpRight, Pencil } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { Button, Card } from '@nangohq/design-system';
+import { Button, Card, LinkButton } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -84,12 +84,12 @@ export const Payment: React.FC = () => {
                     <Skeleton className="w-27 h-5" />
                 ) : (
                     usage?.data.customer.portalUrl && (
-                        <Button asChild variant="link-accent">
+                        <LinkButton asChild size="lg">
                             <a href={usage.data.customer.portalUrl} target="_blank" rel="noopener noreferrer">
                                 View all invoices
                                 <ArrowUpRight />
                             </a>
-                        </Button>
+                        </LinkButton>
                     )
                 )}
             </div>

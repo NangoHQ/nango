@@ -1,6 +1,6 @@
 import { ArrowUpRight } from 'lucide-react';
 
-import { Button } from '@nangohq/design-system';
+import { LinkButton } from '@nangohq/design-system';
 
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
@@ -36,11 +36,11 @@ export const InvoicesLink: React.FC = () => {
     }
 
     return (
-        <Button asChild variant="link-accent">
+        <LinkButton asChild size="lg">
             <a href={portalUrl} target="_blank" rel="noopener noreferrer" onClick={() => track('billing:invoice_link_click', {})}>
                 All invoices
                 <ArrowUpRight />
             </a>
-        </Button>
+        </LinkButton>
     );
 };

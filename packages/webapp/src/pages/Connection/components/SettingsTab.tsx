@@ -1,7 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, FieldDescription, FieldLabel } from '@nangohq/design-system';
+import { Button, FieldDescription, FieldLabel, LinkButton } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -71,7 +71,7 @@ export const SettingsTab = () => {
                         />
                         <FieldDescription>
                             Overrides the environment-wide webhook URL for local development — see{' '}
-                            <Button asChild variant="link-accent" size="xs">
+                            <LinkButton asChild size="sm">
                                 <a
                                     href="https://nango.dev/docs/guides/platform/environments#engineering-collaboration"
                                     target="_blank"
@@ -79,7 +79,7 @@ export const SettingsTab = () => {
                                 >
                                     engineering collaboration
                                 </a>
-                            </Button>
+                            </LinkButton>
                             .
                         </FieldDescription>
                     </div>

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import { Alert, AlertDescription, Button } from '@nangohq/design-system';
+import { Alert, AlertDescription, Button, LinkButton } from '@nangohq/design-system';
 
 import { useToast } from '@/hooks/useToast';
 import { useEmailByUuid, useResendVerificationEmailByUuid } from '../../hooks/useAuth';
@@ -68,9 +68,9 @@ export function VerifyEmail() {
 
                 <span className="text-body-medium-regular text-text-secondary text-center">
                     Check {data?.email || 'your email'} to verify your account and get started. If you verified your email from a different device,{' '}
-                    <Button asChild variant="link-accent">
+                    <LinkButton asChild size="lg">
                         <Link to="/signin">sign in here</Link>
-                    </Button>
+                    </LinkButton>
                     .
                 </span>
             </div>
