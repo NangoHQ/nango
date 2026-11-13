@@ -54,7 +54,6 @@ export const ShowIntegration: React.FC = () => {
     if (isLoading) {
         return (
             <DashboardLayout
-                fullWidth
                 className="flex flex-col gap-4"
                 pageHeader={
                     <PageHeader
@@ -81,7 +80,6 @@ export const ShowIntegration: React.FC = () => {
 
     return (
         <DashboardLayout
-            fullWidth
             className="flex flex-col gap-4"
             pageHeader={
                 <PageHeader

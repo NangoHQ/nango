@@ -32,6 +32,7 @@ export interface DBSelfHostingInstallationKey {
     created_at: Date;
     /** Set on rotation; the key still verifies files it signed until it is pruned. */
     deleted_at: Date | null;
+    last_used_at: Date | null;
 }
 
 export interface DBSelfHostingInstallationLicense {

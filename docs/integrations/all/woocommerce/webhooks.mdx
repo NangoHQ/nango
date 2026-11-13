@@ -1,0 +1,103 @@
+---
+title: 'How to set up webhooks with WooCommerce on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time WooCommerce store events in your app using Nango webhooks'
+---
+
+## How it works
+
+1. WooCommerce sends a POST request to your Nango webhook URL when a subscribed store event occurs, for example `order.created`.
+2. Nango looks up the connection named by the `nangoConnectionId` query param on the webhook URL and verifies the delivery's `X-WC-Webhook-Signature` against that connection's own webhook secret.
+3. Nango routes the event to that connection, using the `X-WC-Webhook-Topic` header as the webhook type.
+
+Every WooCommerce store is its own connection and sets its own webhook secret, so each connection needs its own webhook in the store and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your WooCommerce integration and copy the **Webhook URL**. Append `?nangoConnectionId=<CONNECTION-ID>` for the connection you are registering the webhook for. URL-encode the connection ID if it contains characters like `/`, `:` or spaces.
+
+### 2. Pick a webhook secret
+
+Generate a random secret for the connection, for example with `openssl rand -hex 32`. You use the same value in the store and in Nango.
+
+### 3. Register the webhook in WooCommerce
+
+<Tabs>
+  <Tab title="WooCommerce admin">
+    1. In the WordPress admin, go to **WooCommerce → Settings → Advanced → Webhooks** and select **Add webhook**.
+    2. Set **Status** to **Active** and pick a **Topic**, for example **Order updated**.
+    3. Set **Delivery URL** to the URL from step 1.
+    4. Set **Secret** to the secret from step 2.
+    5. Save. WooCommerce pings the URL once, and Nango answers it without routing anything.
+
+    Repeat for every topic you want to receive.
+  </Tab>
+  <Tab title="WooCommerce API">
+    Create the webhook with the WooCommerce REST API, through Nango's proxy:
+
+    ```bash
+    curl -X POST "https://api.nango.dev/proxy/wp-json/wc/v3/webhooks" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Nango order updates",
+        "topic": "order.updated",
+        "delivery_url": "<NANGO-WEBHOOK-URL>?nangoConnectionId=<CONNECTION-ID>",
+        "secret": "<WEBHOOK-SECRET>"
+      }'
+    ```
+
+    Save the `id` from the response to delete the webhook later. Creating webhooks needs a consumer key with **Read/Write** permissions.
+  </Tab>
+</Tabs>
+
+### 4. Set the webhook secret in Nango
+
+Store the same secret as `webhookSecret` in the connection's metadata:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": "<WEBHOOK-SECRET>" }
+  }'
+```
+
+See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+
+<Note>
+The webhook secret on the integration's Settings page is not used for WooCommerce. Nango only verifies against the connection's `webhookSecret`.
+</Note>
+
+<Warning>
+WooCommerce disables a webhook after more than 5 consecutive failed deliveries. If the secrets don't match, every delivery is rejected and the webhook ends up disabled. Fix the secret, then set the webhook back to **Active**.
+</Warning>
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to topics like `order.updated` or `product.deleted`. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+## Rollback strategy
+
+Delete the webhook in **WooCommerce → Settings → Advanced → Webhooks**, or with the API:
+
+```bash
+curl -X DELETE "https://api.nango.dev/proxy/wp-json/wc/v3/webhooks/<WEBHOOK-ID>?force=true" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>"
+```
+
+Then clear `webhookSecret` from the connection's metadata.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

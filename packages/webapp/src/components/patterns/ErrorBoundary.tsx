@@ -1,6 +1,10 @@
+import { useViewport } from '@/hooks/useViewport';
+
 import type React from 'react';
 
 export const ErrorBoundary: React.FC = () => {
+    useViewport('device');
+
     return (
         <div className="flex h-screen text-text-strong justify-center items-center">
             <div className="mx-auto">

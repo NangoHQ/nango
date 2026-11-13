@@ -1,0 +1,41 @@
+---
+title: 'BotStar - How do I link my account?'
+sidebarTitle: 'BotStar'
+---
+
+## Overview
+
+To authenticate with BotStar, you need:
+
+1. **API Token** — the API token from your BotStar profile page.
+
+This guide will show you how to generate it.
+
+### Prerequisites
+
+- A BotStar account. If you don't have one, [sign up](https://app.botstar.com/auth/signup).
+
+### Step 1: Generate an API token
+
+1. Sign in to [BotStar](https://app.botstar.com).
+2. Click your avatar in the top-right corner, then choose **Account**.
+
+<img src="/api-integrations/botstar/open_account_menu.png" alt="BotStar account menu opened from the avatar with the Account item highlighted" />
+
+3. On the **Profile** tab, find the **API Token** field. If no token exists, click **Generate Token** and continue to step 4. If one already exists, don't click **Change Token**, since that replaces the current token: click the copy button next to the field and skip step 4.
+
+<img src="/api-integrations/botstar/generate_api_token.png" alt="BotStar Account Profile page with the Generate Token button next to the API Token field" />
+
+4. Confirm the prompt with **Yes**, then click the copy button next to the **API Token** field to copy your token.
+
+<img src="/api-integrations/botstar/copy_api_token.png" alt="BotStar Account Profile page with the copy button next to the API Token field" />
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with BotStar.
+2. Enter your token in the **API Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/botstar/form.png" alt="BotStar Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to BotStar.

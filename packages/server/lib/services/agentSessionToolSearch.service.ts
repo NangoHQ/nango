@@ -15,6 +15,7 @@ import type {
     AgentSessionToolInput,
     AgentSessionToolMatch,
     AgentSessionToolSearchHit,
+    AgentSessionToolSearchQueryResult,
     AgentSessionToolSearchResult,
     DBEnvironment,
     DBTeam
@@ -88,6 +89,9 @@ const STOPWORDS = new Set([
 const BEST_MATCH_SCORE = 0.4;
 const MAX_MATCH_SCORE = 0.85;
 
+const LEADING_MATCH_SCORE = 0.65;
+const LEADING_MATCH_MARGIN = 0.1;
+
 const MAX_BEST_MATCHES = 5;
 const MAX_RELATED_MATCHES = 15;
 
@@ -115,20 +119,20 @@ export async function searchSessionTools({
     account,
     environment,
     session,
-    query,
+    queries,
     goal,
     slugOf
 }: {
     account: DBTeam;
     environment: DBEnvironment;
     session: AgentSession;
-    query: string;
+    queries: string[];
     goal: string;
     slugOf: ToolSlugLookup;
 }): Promise<AgentSessionToolSearchResult> {
     const logCtx = await logContextGetter.create(
         { operation: { type: 'agent_session', action: 'tool_search' } },
-        { account, environment, meta: { query, goal } }
+        { account, environment, meta: { queries, goal } }
     );
     await logCtx.enrichOperation({ actor: { kind: 'session', id: session.id } });
 
@@ -138,34 +142,54 @@ export async function searchSessionTools({
             void logCtx.warn('Could not look up connections created in this session', { error: err });
             return session;
         });
-        const ranked = rankSessionTools({ session: current, query, slugOf });
-        const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
+        const ranked = queries.map((query) => ({ query, ...rankSessionTools({ session: current, query, slugOf }) }));
+        const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.flatMap(({ best }) => best) });
 
-        // It's possible a tool was removed after the session compiled, so we set input as unavailable.
-        const matches = ranked.best.map((candidate) =>
-            toMatch(candidate, candidate.input ?? inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' })
-        );
-        const related = ranked.related.map((candidate) => toMatch(candidate, undefined));
+        const results = ranked.map(({ query, best, related: weaker }): AgentSessionToolSearchQueryResult => {
+            // It's possible a tool was removed after the session compiled, so we set input as unavailable.
+            const matches = best.map((candidate) =>
+                toMatch(candidate, candidate.input ?? inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' })
+            );
+            const related = weaker.map((candidate) => toMatch(candidate, undefined));
 
-        await logCtx.enrichOperation({ meta: searchOperationMeta({ query, goal, matches, related }) });
-        void logCtx.info(`Tool search for '${query}' returned ${matches.length} ${matches.length === 1 ? 'match' : 'matches'}`);
-        await logCtx.success();
-
-        trackAgentSessionToolSearch({
-            session,
-            query,
-            goal,
-            matches: searchHits(ranked.best),
-            related: searchHits(ranked.related),
-            logOperationId: logCtx.id
+            return { query, guidance: guidanceFor({ session, query, matches, related }), matches, related };
         });
 
-        return { guidance: guidanceFor({ session, query, matches, related }), matches, related };
+        await logCtx.enrichOperation({ meta: searchOperationMeta({ goal, results }) });
+        for (const { query, matches } of results) {
+            void logCtx.info(`Tool search for '${query}' returned ${matches.length} ${matches.length === 1 ? 'match' : 'matches'}`);
+        }
+        await logCtx.success();
+
+        for (const { query, best, related } of ranked) {
+            trackAgentSessionToolSearch({
+                session,
+                query,
+                queryCount: queries.length,
+                goal,
+                matches: searchHits(best),
+                related: searchHits(related),
+                logOperationId: logCtx.id
+            });
+        }
+
+        return { results };
     } catch (err) {
         void logCtx.error('Failed to search the session tools', { error: err });
         await logCtx.failed();
 
-        trackAgentSessionToolSearch({ session, query, goal, matches: [], related: [], logOperationId: logCtx.id, errorCode: 'search_failed' });
+        for (const query of queries) {
+            trackAgentSessionToolSearch({
+                session,
+                query,
+                queryCount: queries.length,
+                goal,
+                matches: [],
+                related: [],
+                logOperationId: logCtx.id,
+                errorCode: 'search_failed'
+            });
+        }
 
         throw err;
     }
@@ -177,12 +201,13 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
 } {
     const candidates = buildSearchCandidateList({ session, slugOf });
     const scored = scoreCandidates({ candidates, query });
+    const bestMatchScore = bestMatchScoreFor(scored[0]?.score);
 
     const best: ScoredCandidate[] = [];
     const related: ScoredCandidate[] = [];
 
     for (const { candidate, score } of scored) {
-        if (score <= BEST_MATCH_SCORE && best.length < MAX_BEST_MATCHES) {
+        if (score <= bestMatchScore && best.length < MAX_BEST_MATCHES) {
             best.push({ ...candidate, score });
         } else if (related.length < MAX_RELATED_MATCHES) {
             related.push({ ...candidate, score });
@@ -190,6 +215,17 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
     }
 
     return { best, related };
+}
+
+// Unmatched query words can give even a well-fitting top tool a high score, so the cutting line follows the top result.
+// If there are no matches or the top one is weaker than LEADING_MATCH_SCORE, the cutting line is BEST_MATCH_SCORE.
+// Else it is whichever is greater, BEST_MATCH_SCORE or topScore plus a margin. Lower scores are better matches.
+function bestMatchScoreFor(topScore: number | undefined): number {
+    if (topScore === undefined || topScore > LEADING_MATCH_SCORE) {
+        return BEST_MATCH_SCORE;
+    }
+
+    return Math.max(BEST_MATCH_SCORE, topScore + LEADING_MATCH_MARGIN);
 }
 
 /**
@@ -342,42 +378,34 @@ export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
 }
 
 /**
- * MCP needs an object at the root of a tool's input, so the input model is inlined there with the
- * definitions it points at. Any other root has no object form and is reachable only through
- * nango_execute.
+ * The input model can carry definitions of its own that its $refs point at from the document root,
+ * so they are merged into the root definitions for the schema to resolve when the model is nested.
  */
-export function objectRootedToolInputSchema(schema: JSONSchema7): JSONSchema7 | undefined {
+export function withModelDefinitionsHoisted(schema: JSONSchema7): JSONSchema7 {
     const { $ref, definitions } = schema;
-    if (!$ref?.startsWith(DEFINITIONS_POINTER) || !definitions) {
-        return undefined;
+    const model = $ref?.startsWith(DEFINITIONS_POINTER) ? definitions?.[$ref.slice(DEFINITIONS_POINTER.length)] : undefined;
+    if (typeof model !== 'object' || !model.definitions) {
+        return schema;
     }
 
-    const model = definitions[$ref.slice(DEFINITIONS_POINTER.length)];
-    if (typeof model !== 'object' || model.type !== 'object') {
-        return undefined;
-    }
-
-    return { $schema: JSON_SCHEMA_DRAFT_07, ...model, definitions: { ...definitions, ...model.definitions } };
+    return { ...schema, definitions: { ...definitions, ...model.definitions } };
 }
 
 /** Only what identifies a tool, since a full match carries a description and an input schema. */
-export function searchOperationMeta({
-    query,
-    goal,
-    matches,
-    related
-}: {
-    query: string;
+export function searchOperationMeta({ goal, results }: { goal: string; results: AgentSessionToolSearchQueryResult[] }): {
+    queries: string[];
     goal: string;
-    matches: AgentSessionToolMatch[];
-    related: AgentSessionToolMatch[];
-}): {
-    query: string;
-    goal: string;
-    matches: string[];
-    related: string[];
+    results: { query: string; matches: string[]; related: string[] }[];
 } {
-    return { query, goal, matches: matches.map((match) => match.tool), related: related.map((match) => match.tool) };
+    return {
+        queries: results.map(({ query }) => query),
+        goal,
+        results: results.map(({ query, matches, related }) => ({
+            query,
+            matches: matches.map((match) => match.tool),
+            related: related.map((match) => match.tool)
+        }))
+    };
 }
 
 function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | undefined): AgentSessionToolMatch {

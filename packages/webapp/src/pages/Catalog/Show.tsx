@@ -2,7 +2,7 @@ import Fuse from 'fuse.js';
 import debounce from 'lodash/debounce';
 import { Check, ChevronDown } from 'lucide-react';
 import { parseAsBoolean, parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs';
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
@@ -13,22 +13,23 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Switch } from '@/components/ui/Switch';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { useProviders } from '@/hooks/useProviders';
 import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { trackCatalogFilter } from './analytics';
-import { countIntegrationsByProvider, filterProviders, getCategoryLabel, listCategories, PAGE_SIZE, sortProviders } from './catalog.utils';
+import { countIntegrationsByProvider, filterProviders, getCategoryLabel, listCategories, sortProviders } from './catalog.utils';
 import { CatalogCard } from './components/CatalogCard';
 import { CategoryRail } from './components/CategoryRail';
 import { NoMatchesState } from './components/NoMatchesState';
 import { SearchField } from './components/SearchField';
+import { useCatalogPlace } from './useCatalogPlace';
 
 import type { CatalogFilter } from './analytics';
 import type { CatalogSort } from './catalog.utils';
 import type { ActiveFilter } from './components/NoMatchesState';
-import type { GetProviders } from '@nangohq/types';
 import type { DebouncedFunc } from 'lodash';
 
 const SORT_LABELS: Record<CatalogSort, string> = { popular: 'Popular first', alphabetical: 'A–Z' };
@@ -87,10 +88,18 @@ export const CatalogShow: React.FC = () => {
     }, [filtered, debouncedSearch, sort]);
     const deferredResults = useDeferredValue(results);
 
-    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-    useEffect(() => {
-        setVisibleCount(PAGE_SIZE);
-    }, [category, instantOnly, sort, debouncedSearch]);
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+    const { visibleCount, loadMore, isLoadingMore } = useCatalogPlace({
+        scrollRef,
+        filterKey: JSON.stringify([category, instantOnly, sort, debouncedSearch]),
+        isReady: !isPending && deferredResults === results
+    });
+    const sentinelRef = useInfiniteScroll({
+        hasNextPage: visibleCount < deferredResults.length,
+        isFetchingNextPage: isLoadingMore,
+        fetchNextPage: loadMore,
+        threshold: 600
+    });
 
     const resultCountRef = useRef(0);
     useEffect(() => {
@@ -106,12 +115,11 @@ export const CatalogShow: React.FC = () => {
         [trackFilter]
     );
 
-    if (error) {
-        return <ErrorPageComponent title="Catalog" error={error.json as GetProviders['Errors']} />;
+    if (error && !providersData) {
+        return <ErrorPageComponent title="Catalog" error={error} />;
     }
 
     const visible = deferredResults.slice(0, visibleCount);
-    const remaining = deferredResults.length - visible.length;
 
     const query = debouncedSearch.trim();
     const activeFilters: ActiveFilter[] = [
@@ -126,11 +134,10 @@ export const CatalogShow: React.FC = () => {
     };
 
     return (
-        <DashboardLayout fullWidth className="p-0">
-            <Helmet>
-                <title>Catalog - Nango</title>
-            </Helmet>
-            <div className="flex">
+        <DashboardLayout
+            ref={scrollRef}
+            className="flex flex-col gap-6"
+            secondaryNav={
                 <CategoryRail
                     categories={categories}
                     totalCount={instantCount}
@@ -140,102 +147,97 @@ export const CatalogShow: React.FC = () => {
                         trackFilter.category();
                     }}
                 />
-                <div className="flex min-w-0 flex-1 flex-col gap-6 px-6 pt-6 pb-16">
-                    <SearchField
-                        value={search}
-                        placeholder={`Search ${providers.length.toLocaleString('en-US')} APIs, like GitHub or Salesforce`}
-                        onChange={(value) => {
-                            setSearch(value);
-                            if (value.trim()) {
-                                trackFilter.search();
-                            } else {
-                                trackFilter.search.cancel();
-                            }
-                        }}
-                    />
+            }
+        >
+            <Helmet>
+                <title>Catalog - Nango</title>
+            </Helmet>
+            <SearchField
+                value={search}
+                placeholder={`Search ${providers.length.toLocaleString('en-US')} APIs, like GitHub or Salesforce`}
+                onChange={(value) => {
+                    setSearch(value);
+                    if (value.trim()) {
+                        trackFilter.search();
+                    } else {
+                        trackFilter.search.cancel();
+                    }
+                }}
+            />
 
-                    <div className="flex flex-col gap-3">
-                        <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-2">
-                                <h2 className="type-text-medium-md text-text-strong">{getResultsTitle(query, category)}</h2>
-                                {!isPending && <CountBadge count={results.length} total={results.length === scopeCount ? undefined : scopeCount} />}
-                            </div>
-                            <div className="flex items-center gap-4">
-                                {isSearching ? (
-                                    <span className="type-text-regular-sm text-text-muted">Sorted by best match</span>
-                                ) : (
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="md">
-                                                <span className="text-text-muted">Sort</span>
-                                                {SORT_LABELS[sort]}
-                                                <ChevronDown />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="w-40">
-                                            {(Object.keys(SORT_LABELS) as CatalogSort[]).map((option) => (
-                                                <DropdownMenuItem
-                                                    key={option}
-                                                    className="h-7 gap-2 text-body-medium-regular text-text-secondary"
-                                                    onSelect={() => {
-                                                        if (option === sort) {
-                                                            return;
-                                                        }
-                                                        void setSort(option === 'alphabetical' ? 'alphabetical' : null);
-                                                        trackFilter.sort();
-                                                    }}
-                                                >
-                                                    {SORT_LABELS[option]}
-                                                    {option === sort && <Check className="ml-auto size-3.5 text-text-muted" />}
-                                                </DropdownMenuItem>
-                                            ))}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                )}
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <label className="flex cursor-pointer items-center gap-2 type-text-regular-sm text-text-default">
-                                            <Switch
-                                                checked={instantOnly}
-                                                onCheckedChange={(checked) => {
-                                                    void setInstantOnly(checked || null);
-                                                    trackFilter.instant_setup();
-                                                }}
-                                            />
-                                            Instant setup only
-                                        </label>
-                                    </TooltipTrigger>
-                                    <TooltipContent>No developer app to register: Nango-managed OAuth, API key, basic auth and similar</TooltipContent>
-                                </Tooltip>
-                            </div>
-                        </div>
-
-                        {isPending ? (
-                            <div className={GRID_CLASSES}>
-                                {Array.from({ length: 12 }, (_, index) => (
-                                    <Skeleton key={index} className="h-16 rounded-ds-md" />
-                                ))}
-                            </div>
-                        ) : visible.length === 0 ? (
-                            <NoMatchesState filters={activeFilters} onClearAll={clearAllFilters} />
+            <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                        <h2 className="type-text-medium-md text-text-strong">{getResultsTitle(query, category)}</h2>
+                        {!isPending && <CountBadge count={results.length} total={results.length === scopeCount ? undefined : scopeCount} />}
+                    </div>
+                    <div className="flex items-center gap-4">
+                        {isSearching ? (
+                            <span className="type-text-regular-sm text-text-muted">Sorted by best match</span>
                         ) : (
-                            <div className={GRID_CLASSES}>
-                                {visible.map((provider) => (
-                                    <CatalogCard key={provider.name} provider={provider} env={env} isConfigured={integrationCounts.has(provider.name)} />
-                                ))}
-                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="md">
+                                        <span className="text-text-muted">Sort</span>
+                                        {SORT_LABELS[sort]}
+                                        <ChevronDown />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-40">
+                                    {(Object.keys(SORT_LABELS) as CatalogSort[]).map((option) => (
+                                        <DropdownMenuItem
+                                            key={option}
+                                            className="h-7 gap-2 text-body-medium-regular text-text-secondary"
+                                            onSelect={() => {
+                                                if (option === sort) {
+                                                    return;
+                                                }
+                                                void setSort(option === 'alphabetical' ? 'alphabetical' : null);
+                                                trackFilter.sort();
+                                            }}
+                                        >
+                                            {SORT_LABELS[option]}
+                                            {option === sort && <Check className="ml-auto size-3.5 text-text-muted" />}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         )}
-
-                        {remaining > 0 && (
-                            <div className="flex justify-center pt-3">
-                                <Button variant="outline" size="md" onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}>
-                                    Show more
-                                    <span className="type-code-regular-xs text-text-muted">{remaining.toLocaleString('en-US')} left</span>
-                                </Button>
-                            </div>
-                        )}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <label className="flex cursor-pointer items-center gap-2 type-text-regular-sm text-text-default">
+                                    <Switch
+                                        checked={instantOnly}
+                                        onCheckedChange={(checked) => {
+                                            void setInstantOnly(checked || null);
+                                            trackFilter.instant_setup();
+                                        }}
+                                    />
+                                    Instant setup only
+                                </label>
+                            </TooltipTrigger>
+                            <TooltipContent>No developer app to register: Nango-managed OAuth, API key, basic auth and similar</TooltipContent>
+                        </Tooltip>
                     </div>
                 </div>
+
+                {isPending ? (
+                    <div className={GRID_CLASSES}>
+                        {Array.from({ length: 12 }, (_, index) => (
+                            <Skeleton key={index} className="h-16 rounded-ds-md" />
+                        ))}
+                    </div>
+                ) : visible.length === 0 ? (
+                    <NoMatchesState filters={activeFilters} onClearAll={clearAllFilters} />
+                ) : (
+                    <div className={GRID_CLASSES}>
+                        {visible.map((provider) => (
+                            <CatalogCard key={provider.name} provider={provider} env={env} isConfigured={integrationCounts.has(provider.name)} />
+                        ))}
+                    </div>
+                )}
+
+                <div ref={sentinelRef} aria-hidden />
             </div>
         </DashboardLayout>
     );

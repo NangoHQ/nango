@@ -102,7 +102,7 @@ export const ConnectionCreate: React.FC = () => {
 
     if (isLoading) {
         return (
-            <DashboardLayout fullWidth className={'max-w-[1250px]'}>
+            <DashboardLayout width="wide">
                 <Helmet>
                     <title>Create Test Connection - Nango</title>
                 </Helmet>
@@ -120,7 +120,7 @@ export const ConnectionCreate: React.FC = () => {
     }
 
     return (
-        <DashboardLayout fullWidth className={'max-w-[1250px]'}>
+        <DashboardLayout width="wide">
             <Helmet>
                 <title>Create Test Connection - Nango</title>
             </Helmet>

@@ -1,0 +1,87 @@
+---
+title: 'Push by Techulus'
+sidebarTitle: 'Push by Techulus'
+description: 'Integrate your application with the Push by Techulus API'
+---
+
+## 🚀 Quickstart
+
+Connect to Push by Techulus with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Push by Techulus_.
+    </Step>
+    <Step id="authorize-push-by-techulus" title="Authorize Push by Techulus">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Push API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-push-by-techulus-api" title="Call the Push by Techulus API">
+    Let's make your first request to the Push API to send a notification to the devices of the account (or team) that owns the key. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/api/v1/notify" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"title": "Hello", "body": "Sent from Nango"}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/api/v1/notify',
+            data: {
+                title: 'Hello',
+                body: 'Sent from Nango'
+            },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Push by Techulus integration guides
+
+- [How do I link my account?](/api-integrations/push-by-techulus/connect)  
+Copy your account or team API key from the Push console to connect your account.
+
+Official docs: [Push API documentation](https://docs.push.techulus.com/api-documentation)
+
+## 🧩 Pre-built syncs & tools for Push by Techulus
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/push-by-techulus/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango does not check the key when a connection is created, so a wrong or revoked key still connects and fails on its first call.
+
+---

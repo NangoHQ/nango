@@ -1,0 +1,55 @@
+---
+title: 'Doppler - How do I link my account?'
+sidebarTitle: 'Doppler'
+---
+
+## Overview
+
+To authenticate with Doppler, you need:
+
+1. **API Token** — a Doppler Personal, Service or Service Account token.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Doppler account. API access is included on the free Developer plan. You can [sign up here](https://dashboard.doppler.com/register?plan=developer).
+
+### Step 1: Generate a Doppler token
+
+Use a **Personal Token** to give the connection your own access to every project, or a **Service Token** to limit it to one config.
+
+**Personal Token** (starts with `dp.pt.`):
+
+1. Sign in to the [Doppler dashboard](https://dashboard.doppler.com).
+2. Click **Tokens** in the left sidebar, open the **Personal** tab, and click **Create a personal token**. Then click **Create** in the dialog.
+
+<img src="/api-integrations/doppler/personal_tokens_tab.png" alt="Doppler Tokens page on the Personal tab with the Create a personal token button"/>
+
+3. Copy the new token with the copy button. It is only shown once.
+
+<img src="/api-integrations/doppler/personal_token_created.png" alt="Doppler Copy Token dialog with the copy button next to the new personal token"/>
+
+A Personal Token has the same read and write access as your Doppler account.
+
+**Service Token** (starts with `dp.st.`):
+
+1. Open the project and select the config you want to connect.
+2. Go to the **Access** tab and generate a service token. Name it, and enable write access only if your integration needs it.
+3. Copy the token. It is only shown once.
+
+<img src="/api-integrations/doppler/service_token_created.png" alt="Doppler Copy Service Token dialog with the copy button next to the new service token"/>
+
+A Service Token gives read-only access to that one config, unless you enabled write access. See [Service tokens](https://docs.doppler.com/docs/service-tokens).
+
+**Service Account token** (starts with `dp.sa.`, Team and Enterprise plans): go to **Team** -> **Service Accounts**, open the service account and click **+** next to **Service Account API Tokens**. See [Service accounts](https://docs.doppler.com/docs/service-accounts).
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Doppler.
+2. Enter your **API Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/doppler/form.png" alt="Doppler connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Doppler.

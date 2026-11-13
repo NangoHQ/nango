@@ -1,0 +1,34 @@
+---
+title: 'Radar - How do I link my account?'
+sidebarTitle: 'Radar'
+---
+
+## Overview
+
+To authenticate with Radar, you need:
+
+1. **API Key** - A Secret or Publishable key from your Radar dashboard.
+
+This guide will show you where to find it.
+
+### Prerequisites
+
+- A Radar account. Radar does not offer a free tier, and every plan starts with a quote: [contact Radar](https://radar.com/contact) to get access.
+
+### Step 1: Copy your API key
+
+1. Log in to the [Radar dashboard](https://dashboard.radar.com/login).
+2. Open the [Settings](https://dashboard.radar.com/settings) page.
+3. Copy the key you need. Use a Live key for production and a Test key for testing and non-production environments:
+   - **Live Secret** or **Test Secret** key (starts with `prj_live_sk_` or `prj_test_sk_`). Endpoints with the `Secret` authentication level, such as listing users, are only safe to call server-side with a Secret key.
+   - **Live Publishable** or **Test Publishable** key (starts with `prj_live_pk_` or `prj_test_pk_`). Use it for endpoints with the `Publishable` authentication level.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Radar.
+2. Paste your key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/radar/form.png" alt="Radar Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Radar.

@@ -318,6 +318,22 @@ describe('trackAgentSessionToolCall', () => {
         expect(onlyEvent().properties).not.toHaveProperty('is_mcp_tool');
     });
 
+    it.each([
+        { functionSource: 'catalog', expected: 'catalog' },
+        { functionSource: 'repo', expected: 'custom' },
+        { functionSource: 'standalone', expected: 'custom' }
+    ] as const)('reports a $functionSource function as $expected', ({ functionSource, expected }) => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc', functionSource }));
+
+        expect(onlyEvent().properties).toMatchObject({ function_source: expected });
+    });
+
+    it('leaves the function source off for an MCP tool', () => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'linear-mcp', toolName: 'list_issues', mcpTool: true }));
+
+        expect(onlyEvent().properties).not.toHaveProperty('function_source');
+    });
+
     it('leaves pinned out when the call site cannot say', () => {
         inRequest(() => trackAgentSessionToolCall({ metaTool: 'nango_execute', session, toolName: 'made_up', errorCode: 'tool_not_in_session' }));
 
@@ -378,6 +394,21 @@ describe('trackAgentSessionProxyRequest', () => {
         });
     });
 
+    it('carries the goal and the intent the agent gave', () => {
+        inRequest(() =>
+            trackAgentSessionProxyRequest({
+                session,
+                integrationId: 'notion',
+                method: 'GET',
+                status: 200,
+                goal: 'find the roadmap doc',
+                intent: 'no tool reads a page, a read page tool would'
+            })
+        );
+
+        expect(onlyEvent().properties).toMatchObject({ goal: 'find the roadmap doc', intent: 'no tool reads a page, a read page tool would' });
+    });
+
     it('reports a call rejected before its arguments could be read', () => {
         inRequest(() => trackAgentSessionProxyRequest({ session, errorCode: 'invalid_input' }));
 
@@ -410,6 +441,7 @@ describe('trackAgentSessionToolSearch', () => {
             trackAgentSessionToolSearch({
                 session,
                 query: 'email a customer',
+                queryCount: 2,
                 goal: 'reply to the customer about their refund',
                 matches,
                 related,
@@ -423,6 +455,7 @@ describe('trackAgentSessionToolSearch', () => {
             agent_session_id: 'session-1',
             meta_tool: 'nango_tool_search',
             query: 'email a customer',
+            query_count: 2,
             goal: 'reply to the customer about their refund',
             match_count: 2,
             related_count: 1,
@@ -439,6 +472,7 @@ describe('trackAgentSessionToolSearch', () => {
 
         const { properties } = onlyEvent();
         expect(properties).not.toHaveProperty('query');
+        expect(properties).not.toHaveProperty('query_count');
         expect(properties).toMatchObject({ is_success: false, error_code: 'invalid_input' });
     });
 

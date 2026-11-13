@@ -14,7 +14,7 @@ import { globalEnv } from '@/utils/env';
 import { useSignout } from '@/utils/user';
 import { cn } from '@/utils/utils';
 import { navigationMenuContentClassName, navigationMenuItemClassName, navigationMenuSeparatorClassName } from './navigationMenu';
-import { ThemeToggle } from './ThemeToggle';
+import { ThemeSwitcher } from './ThemeSwitcher';
 
 import type { LucideIcon } from 'lucide-react';
 
@@ -131,7 +131,7 @@ export const ProfileDropdown: React.FC = () => {
                 <div className="flex h-9 items-center gap-2 pr-1 pl-2">
                     <Contrast className="size-4 shrink-0 text-icon-secondary" />
                     <span className="type-text-regular-sm flex-1 text-text-default">Theme</span>
-                    <ThemeToggle />
+                    <ThemeSwitcher />
                 </div>
                 <DropdownMenuSeparator className={navigationMenuSeparatorClassName} />
                 <DropdownMenuItem onSelect={() => void signout()} className={navigationMenuItemClassName}>

@@ -25,8 +25,6 @@ import { track } from '@/utils/analytics';
 import { AuthBadge } from './components/AuthBadge';
 import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 
-import type { GetIntegrations } from '@nangohq/types';
-
 export const IntegrationsList = () => {
     const navigate = useNavigate();
 
@@ -99,12 +97,12 @@ export const IntegrationsList = () => {
         }
     };
 
-    if (error) {
-        return <ErrorPageComponent title="Integrations" error={error.json as GetIntegrations['Errors']} />;
+    if (error && !data) {
+        return <ErrorPageComponent title="Integrations" error={error} />;
     }
 
     return (
-        <DashboardLayout fullWidth className="flex flex-col gap-3">
+        <DashboardLayout className="flex flex-col gap-3">
             <Helmet>
                 <title>Integrations - Nango</title>
             </Helmet>

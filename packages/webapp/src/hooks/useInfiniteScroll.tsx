@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 
+import { findScrollParent } from '@/utils/scroll';
+
 import type { MutableRefObject } from 'react';
 
 interface UseInfiniteScrollArgs {
@@ -35,7 +37,8 @@ export function useInfiniteScroll({
                     fetchNextPageRef.current();
                 }
             },
-            { rootMargin: `0px 0px ${threshold}px 0px` }
+            // With the viewport as root, the scroll container clips the margin and `threshold` does nothing.
+            { root: findScrollParent(node), rootMargin: `0px 0px ${threshold}px 0px` }
         );
 
         observer.observe(node);

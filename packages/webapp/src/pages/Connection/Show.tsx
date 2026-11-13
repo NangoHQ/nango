@@ -48,7 +48,7 @@ export const ConnectionShow = () => {
 
     if (connectionError || integrationError) {
         return (
-            <DashboardLayout>
+            <DashboardLayout width="wide">
                 <Helmet>
                     <title>Connection - Nango</title>
                 </Helmet>
@@ -59,7 +59,7 @@ export const ConnectionShow = () => {
 
     if (connectionLoading || providerLoading || !connectionResponse || !integrationResponse) {
         return (
-            <DashboardLayout>
+            <DashboardLayout width="wide">
                 <Helmet>
                     <title>Connection - Nango</title>
                 </Helmet>
@@ -103,7 +103,7 @@ export const ConnectionShow = () => {
     };
 
     return (
-        <DashboardLayout hasPageHeading>
+        <DashboardLayout width="wide" hasPageHeading>
             <Helmet>
                 <title>{connectionResponse.endUser?.email || connectionResponse.connection.connection_id} - Connection - Nango</title>
             </Helmet>

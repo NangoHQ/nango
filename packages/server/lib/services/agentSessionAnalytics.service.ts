@@ -12,6 +12,7 @@ import type {
     AgentSessionToolSearchHit,
     AgentSessionToolsetPolicy,
     AnalyticsEventProperties,
+    FunctionSource,
     HTTP_METHOD,
     PostAgentSessionsBody
 } from '@nangohq/types';
@@ -50,6 +51,7 @@ interface ToolCallParams extends Outcome {
     underlyingErrorCode?: string | undefined;
     /** Set when the tool ran on the integration's MCP server rather than as a deployed action. */
     mcpTool?: boolean | undefined;
+    functionSource?: FunctionSource | undefined;
     goal?: string | undefined;
     intent?: string | undefined;
 }
@@ -57,6 +59,8 @@ interface ToolCallParams extends Outcome {
 interface ToolSearchParams extends Outcome {
     session: AgentSession;
     query?: string | undefined;
+    /** How many queries the call carried. Each query sends its own event, and they share the log operation id. */
+    queryCount?: number | undefined;
     goal?: string | undefined;
     matches: AgentSessionToolSearchHit[];
     related: AgentSessionToolSearchHit[];
@@ -70,6 +74,9 @@ interface ProxyRequestParams extends Outcome {
     status?: number | undefined;
     /** The provider's own error code, when the failure carried one. */
     providerErrorCode?: string | undefined;
+    goal?: string | undefined;
+    /** Why no tool fit and which one would have, so gaps in the catalog show up. */
+    intent?: string | undefined;
 }
 
 /**
@@ -148,6 +155,7 @@ export function trackAgentSessionToolCall({
     pinned,
     underlyingErrorCode,
     mcpTool,
+    functionSource,
     goal,
     intent,
     ...outcome
@@ -165,6 +173,7 @@ export function trackAgentSessionToolCall({
                 ...(integrationId ? { integration_id: integrationId } : {}),
                 ...(underlyingErrorCode ? { underlying_error_code: underlyingErrorCode } : {}),
                 ...(mcpTool ? { is_mcp_tool: true } : {}),
+                ...(functionSource ? { function_source: functionSource === 'catalog' ? 'catalog' : 'custom' } : {}),
                 ...(goal ? { goal } : {}),
                 ...(intent ? { intent } : {})
             }
@@ -172,7 +181,17 @@ export function trackAgentSessionToolCall({
     );
 }
 
-export function trackAgentSessionProxyRequest({ session, integrationId, provider, method, status, providerErrorCode, ...outcome }: ProxyRequestParams): void {
+export function trackAgentSessionProxyRequest({
+    session,
+    integrationId,
+    provider,
+    method,
+    status,
+    providerErrorCode,
+    goal,
+    intent,
+    ...outcome
+}: ProxyRequestParams): void {
     sendMeasured((measurement) =>
         productTracking.track({
             name: 'agents:proxy_request_complete',
@@ -185,7 +204,9 @@ export function trackAgentSessionProxyRequest({ session, integrationId, provider
                 ...(method ? { http_method: method } : {}),
                 ...(provider ? { provider } : {}),
                 ...(status === undefined ? {} : { http_status: status }),
-                ...(providerErrorCode ? { provider_error_code: providerErrorCode } : {})
+                ...(providerErrorCode ? { provider_error_code: providerErrorCode } : {}),
+                ...(goal ? { goal } : {}),
+                ...(intent ? { intent } : {})
             }
         })
     );
@@ -196,7 +217,7 @@ export function trackAgentSessionProxyRequest({ session, integrationId, provider
  * results ride along so a query can be read next to what it returned, which is the exception the
  * taxonomy grants this event: everywhere else a property is a primitive.
  */
-export function trackAgentSessionToolSearch({ session, query, goal, matches, related, ...outcome }: ToolSearchParams): void {
+export function trackAgentSessionToolSearch({ session, query, queryCount, goal, matches, related, ...outcome }: ToolSearchParams): void {
     sendMeasured((measurement) =>
         productTracking.track({
             name: 'agents:tool_search_complete',
@@ -204,6 +225,7 @@ export function trackAgentSessionToolSearch({ session, query, goal, matches, rel
                 ...sessionProperties(session),
                 meta_tool: 'nango_tool_search',
                 ...(query === undefined ? {} : { query }),
+                ...(queryCount === undefined ? {} : { query_count: queryCount }),
                 ...(goal === undefined ? {} : { goal }),
                 match_count: matches.length,
                 related_count: related.length,

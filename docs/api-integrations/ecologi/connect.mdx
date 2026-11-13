@@ -1,0 +1,40 @@
+---
+title: 'Ecologi - How do I link my account?'
+sidebarTitle: 'Ecologi'
+---
+
+## Overview
+
+To authenticate with Ecologi, you need:
+
+1. **API Key** — an Ecologi Impact API key.
+
+This guide will show you how to generate it.
+
+### Prerequisites
+
+- An Ecologi account. If you don't have one, create it on the [onboarding page](https://app.ecologi.com/onboarding).
+
+### Step 1: Generate an API key
+
+1. Log in to [Ecologi](https://app.ecologi.com) and select **Integrations** in the left-hand menu.
+
+<img src="/api-integrations/ecologi/integrations_menu.png" alt="Ecologi left-hand menu with Integrations selected"/>
+
+2. Open the **API keys** tab, enter a name for the key, and click **Save**.
+
+<img src="/api-integrations/ecologi/create_api_key.png" alt="Ecologi API keys tab with the key name field and the Save button"/>
+
+3. Click **Copy** next to your new key to copy the full API key. The list only shows part of it.
+
+<img src="/api-integrations/ecologi/api_key_created.png" alt="Ecologi API keys list with the Copy button next to the new key"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Ecologi.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form. The connection is saved without checking the key: if the key is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/ecologi/form.png" alt="Ecologi Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Ecologi.
