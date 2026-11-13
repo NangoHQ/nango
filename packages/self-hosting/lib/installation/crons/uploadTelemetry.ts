@@ -3,11 +3,11 @@ import * as cron from 'node-cron';
 
 import { hostedTelemetryDb, storedMetricNames } from '@nangohq/hosted-telemetry';
 import { getLocking } from '@nangohq/kvstore';
-import { licensePublicKey, verifyLicense } from '@nangohq/license';
-import { Err, flags, getLogger, normalizePem, Ok } from '@nangohq/utils';
+import { Err, flags, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
-import { mintInstallationToken } from '../token.js';
+import { DAY_SETTLE_MINUTES } from '../constants.js';
+import { installationLicense, installationPrivateKey } from '../identity.js';
 import { uploadQueuedDays } from '../uploader.js';
 
 import type { UploaderConfig } from '../uploader.js';
@@ -22,8 +22,7 @@ const lockTtlMs = 30 * 60 * 1000;
 // A run must stop before its lock expires. Otherwise another run could start while this one is still uploading.
 const RUN_BUDGET_MS = lockTtlMs - 10 * 60 * 1000;
 
-// We start at minute 15 so that yesterday's telemetry is fully written before we send it.
-const FIRST_MINUTE = 15;
+const FIRST_MINUTE = DAY_SETTLE_MINUTES;
 
 export async function uploadTelemetryCron(): Promise<void> {
     if (!flags.hasHostedTelemetryUpload) {
@@ -52,27 +51,16 @@ export async function uploadTelemetryCron(): Promise<void> {
 
 /** Returns no configuration when the license does not ask for telemetry. */
 export async function uploaderConfig(): Promise<Result<UploaderConfig | null>> {
-    if (!envs.NANGO_LICENSE) {
-        return Err(new Error('NANGO_LICENSE is not set'));
-    }
-    if (!licensePublicKey) {
-        return Err(new Error('this build has no license public key'));
-    }
-    const license = await verifyLicense(envs.NANGO_LICENSE, licensePublicKey);
+    const license = await installationLicense();
     if (license.isErr()) {
-        return Err(new Error(`the license does not verify: ${license.error.message}`));
+        return Err(license.error);
     }
     if (!license.value.telemetry) {
         return Ok(null);
     }
-    if (!envs.NANGO_INSTALLATION_PRIVATE_KEY) {
-        return Err(new Error('NANGO_INSTALLATION_PRIVATE_KEY is not set'));
-    }
-    const privateKeyPem = normalizePem(envs.NANGO_INSTALLATION_PRIVATE_KEY);
-    try {
-        await mintInstallationToken(privateKeyPem, { body: new Uint8Array() });
-    } catch (err) {
-        return Err(new Error(`NANGO_INSTALLATION_PRIVATE_KEY cannot sign an installation token: ${err instanceof Error ? err.message : String(err)}`));
+    const privateKeyPem = await installationPrivateKey();
+    if (privateKeyPem.isErr()) {
+        return Err(privateKeyPem.error);
     }
     if (!envs.NANGO_INSTALLATIONS_API_URL) {
         return Err(new Error('NANGO_INSTALLATIONS_API_URL is not set'));
@@ -84,7 +72,7 @@ export async function uploaderConfig(): Promise<Result<UploaderConfig | null>> {
     return Ok({
         knex,
         installationId: license.value.installation_id,
-        privateKeyPem,
+        privateKeyPem: privateKeyPem.value,
         url: envs.NANGO_INSTALLATIONS_API_URL,
         backfillDays: envs.NANGO_HOSTED_TELEMETRY_UPLOAD_BACKFILL_DAYS,
         metrics: storedMetricNames(),

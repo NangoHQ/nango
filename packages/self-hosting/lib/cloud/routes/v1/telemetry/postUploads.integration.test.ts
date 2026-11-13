@@ -299,7 +299,7 @@ describe('POST /v1/telemetry/uploads', () => {
     });
 
     it('is not served on the installation side', async () => {
-        const installationSide = await listen(createInstallationServer());
+        const installationSide = await listen(createInstallationServer({ manualTelemetryExport: null }));
         try {
             const res = await post(upload(randomUUID(), [row()]), { token: 'any', to: address(installationSide) });
 

@@ -891,6 +891,8 @@ const ENVS_SHAPE = z.object({
     NANGO_INSTALLATIONS_API_URL: z.url().optional(),
     // We only upload the most recent days. Older data has to be requested manually.
     NANGO_HOSTED_TELEMETRY_UPLOAD_BACKFILL_DAYS: z.coerce.number().int().positive().optional().default(30),
+    // Internal auth key used for the manual export endpoint.
+    NANGO_HOSTED_TELEMETRY_MANUAL_EXPORT_KEY: z.string().optional(),
 
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
