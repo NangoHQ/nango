@@ -38,17 +38,26 @@ const installation = (name: string, options?: { licensed?: boolean }) => seedIns
 
 const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
 
+const today = new Date().toISOString().slice(0, 10);
+const metric = 'nango.hosted_metric.active_concurrency.max';
+
 const row = (overrides: Record<string, unknown> = {}) => ({
     kind: 'row',
     ts: `${yesterday}T00:00:00.000Z`,
-    metric: 'nango.hosted_metric.active_concurrency.max',
+    metric,
     attributes: {},
     value: 1,
     ...overrides
 });
 
 const upload = (installationId: string, rows: Record<string, unknown>[]) =>
-    gzipSync(Buffer.from([{ kind: 'header', installation_id: installationId }, ...rows].map((line) => JSON.stringify(line)).join('\n')));
+    gzipSync(
+        Buffer.from(
+            [{ kind: 'header', installation_id: installationId, metric, from: `${yesterday}T00:00:00.000Z`, to: `${today}T00:00:00.000Z` }, ...rows]
+                .map((line) => JSON.stringify(line))
+                .join('\n')
+        )
+    );
 
 async function post(
     body: Buffer,
