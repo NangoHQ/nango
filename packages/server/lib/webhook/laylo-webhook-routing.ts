@@ -32,6 +32,7 @@ const route: WebhookHandler<LayloWebhookPayload> = async (nango, headers, body, 
     }
 
     const connection = await nango.getConnectionForWebhook(nangoConnectionId);
+    // TODO: NAN-6927 move off metadata
     const connectionSecret = connection?.metadata?.['webhookSecret'];
     if (!connection || !connectionSecret) {
         return Err(new NangoError('webhook_invalid_secret', { reason: 'No webhook secret configured to validate this request' }));

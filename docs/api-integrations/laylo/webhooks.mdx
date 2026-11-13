@@ -18,11 +18,13 @@ Repeat these steps for each connection.
 
 ### 1. Build the webhook URL
 
-In the Nango dashboard, open your Laylo integration and copy the **Webhook URL**. Append the connection ID:
+In the Nango dashboard, open your Laylo integration and copy the **Webhook URL**. Append the URL-encoded connection ID:
 
 ```
-<NANGO-WEBHOOK-URL>?nangoConnectionId=<CONNECTION-ID>
+<NANGO-WEBHOOK-URL>?nangoConnectionId=<URL-ENCODED-CONNECTION-ID>
 ```
+
+Connection IDs can contain characters such as `&`, `#`, `+` or spaces, which break the query string if pasted as-is. Encode the ID first, for example with `encodeURIComponent(connectionId)` in JavaScript.
 
 ### 2. Register the webhook in Laylo
 
