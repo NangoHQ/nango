@@ -5504,6 +5504,25 @@ boldsign:
         base_url: https://api.boldsign.com
     docs: https://nango.dev/docs/integrations/all/boldsign
 
+bling:
+    display_name: Bling
+    categories:
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://www.bling.com.br/Api/v3/oauth/authorize
+    token_url: https://www.bling.com.br/Api/v3/oauth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.bling.com.br
+    docs: https://nango.dev/docs/api-integrations/bling
+    setup_guide_url: https://nango.dev/docs/api-integrations/bling/how-to-register-your-own-bling-oauth-app
+
 bluebeam:
     display_name: Bluebeam
     categories:
@@ -8723,6 +8742,56 @@ conductorone:
             description: Your ConductorOne Client Secret
             example: 'secret-token:conductorone.com:v1:eyJrdHkiOiJPS1AiLCJjcnYiOiJFZDI1NTE5IiwieCI6IkMySEx5Y0d6eUhfZDQwcjJvejZoNkpqdndvRVFBZ0FTRVc2eDB6emh6Y2MiLCJkIjoiLTgzVkxXUVUtZVhQY0ZCWVhDb2NpU29XVmhrYnRXUm9zdkZUZ3JqcXNVbyJ9'
             doc_section: '#step-1-obtaining-your-client-credentials'
+
+correios:
+    display_name: Correios
+    categories:
+        - e-commerce
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.environment}/token/v1/autentica/contrato
+    token_headers:
+        authorization: Basic ${base64(${credentials.username}:${credentials.password})}
+        content-type: application/json
+        accept: application/json
+    token_params:
+        numero: ${connectionConfig.contractNumber}
+    token_response:
+        token: token
+    token_expires_in_ms: 1200000
+    proxy:
+        base_url: https://${connectionConfig.environment}
+    docs: https://nango.dev/docs/api-integrations/correios
+    docs_connect: https://nango.dev/docs/api-integrations/correios/connect
+    credentials:
+        username:
+            type: string
+            title: Meu Correios Username
+            description: The username of your company's Meu Correios account.
+            doc_section: '#step-1-create-an-api-access-code'
+        password:
+            type: string
+            title: API Access Code
+            description: The API access code generated in Correios Web Services (CWS).
+            secret: true
+            doc_section: '#step-1-create-an-api-access-code'
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: Production or homologation (test) environment.
+            enum:
+                - api.correios.com.br
+                - apihom.correios.com.br
+            default_value: api.correios.com.br
+            order: 1
+            doc_section: '#step-2-find-your-contract-number'
+        contractNumber:
+            type: string
+            title: Contract Number
+            description: Your commercial contract number with Correios.
+            pattern: '^\d+$'
+            order: 2
+            doc_section: '#step-2-find-your-contract-number'
 
 copper:
     display_name: Copper (OAuth)
@@ -20807,6 +20876,36 @@ metaview-mcp:
             accept: application/json,text/event-stream
     docs: https://nango.dev/docs/api-integrations/metaview-mcp
 
+melhor-envio:
+    display_name: Melhor Envio
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.environment}/oauth/authorize
+    token_url: https://${connectionConfig.environment}/oauth/token
+    body_format: json
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.environment}
+        headers:
+            accept: application/json
+    docs: https://nango.dev/docs/api-integrations/melhor-envio
+    setup_guide_url: https://nango.dev/docs/api-integrations/melhor-envio/how-to-register-your-own-melhor-envio-oauth-app
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: Production or sandbox. Use the integration whose app was created in the same environment.
+            enum:
+                - melhorenvio.com.br
+                - sandbox.melhorenvio.com.br
+            default_value: melhorenvio.com.br
+
 mercury:
     display_name: Mercury
     categories:
@@ -26632,6 +26731,50 @@ procore:
             optional: true
             example: '598134325779301'
             pattern: '^[0-9]+$'
+
+promobrands:
+    display_name: Promobrands
+    categories:
+        - e-commerce
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://promobrandrestapi.auth.ap-southeast-2.amazoncognito.com/oauth2/token
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    token_params:
+        grant_type: refresh_token
+        client_id: ${credentials.clientId}
+        refresh_token: ${credentials.refreshToken}
+    token_response:
+        token: id_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://api.promobrands.com.au
+        headers:
+            accept: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /category
+    docs: https://nango.dev/docs/api-integrations/promobrands
+    docs_connect: https://nango.dev/docs/api-integrations/promobrands/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID Promobrands issued for your API access.
+            example: 3ojk******************avww
+            pattern: '^[a-z0-9]+$'
+            doc_section: '#step-1-get-your-api-credentials'
+        refreshToken:
+            type: string
+            title: Refresh Token
+            description: The Refresh Token Promobrands issued for your API access.
+            example: eyJjdHkiOi******************************X1YK
+            pattern: '^eyJ[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]*)+$'
+            secret: true
+            doc_section: '#step-1-get-your-api-credentials'
 
 provenexpert:
     display_name: ProvenExpert
@@ -32913,6 +33056,30 @@ ticktick:
     proxy:
         base_url: https://api.ticktick.com
     docs: https://nango.dev/docs/integrations/all/ticktick
+
+tiny-erp:
+    display_name: Tiny ERP
+    categories:
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.tiny.com.br/realms/tiny/protocol/openid-connect/auth
+    token_url: https://accounts.tiny.com.br/realms/tiny/protocol/openid-connect/token
+    default_scopes:
+        - openid
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.tiny.com.br/public-api
+        retry:
+            after:
+                - 'x-ratelimit-reset'
+            remaining: 'x-ratelimit-remaining'
+    docs: https://nango.dev/docs/api-integrations/tiny-erp
+    setup_guide_url: https://nango.dev/docs/api-integrations/tiny-erp/how-to-register-your-own-tiny-erp-oauth-app
 
 tiktok-accounts:
     display_name: TikTok Accounts
