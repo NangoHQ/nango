@@ -374,6 +374,35 @@ describe('trackAgentSessionProxyRequest', () => {
         });
     });
 
+    it.each([
+        { path: '/v1/pages/1?filter=archived', endpoint: '/v1/pages/{id}' },
+        { path: '/v1/pages/59833787-2cf9-4fdf-8782-e53db20768a5', endpoint: '/v1/pages/{id}' },
+        { path: '/gmail/v1/users/me/messages/18c2f3a9b0e1d4c7', endpoint: '/gmail/v1/users/me/messages/{id}' },
+        { path: '/services/data/v59.0/sobjects/Account/0015g00000XyZabAAF', endpoint: '/services/data/v59.0/sobjects/Account/{id}' },
+        { path: '/users/jane%40acme.com/calendar', endpoint: '/users/{id}/calendar' },
+        { path: '/api/conversations.history', endpoint: '/api/conversations.history' },
+        { path: '/oauth2/v3/userinfo#me', endpoint: '/oauth2/v3/userinfo' }
+    ])('reports $path as the endpoint $endpoint', ({ path, endpoint }) => {
+        inRequest(() => trackAgentSessionProxyRequest({ session, integrationId: 'notion', method: 'GET', path }));
+
+        expect(onlyEvent().properties).toMatchObject({ endpoint });
+    });
+
+    it('reports which arguments made the request invalid', () => {
+        inRequest(() =>
+            trackAgentSessionProxyRequest({
+                session,
+                errorCode: 'invalid_input',
+                invalidArguments: ['path: invalid_format', 'connection_id: unrecognized_key']
+            })
+        );
+
+        expect(onlyEvent().properties).toMatchObject({
+            error_code: 'invalid_input',
+            invalid_arguments: 'path: invalid_format, connection_id: unrecognized_key'
+        });
+    });
+
     it('reports the provider error code of a failed request', () => {
         inRequest(() =>
             trackAgentSessionProxyRequest({
