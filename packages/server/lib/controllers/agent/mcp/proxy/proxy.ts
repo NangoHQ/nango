@@ -20,7 +20,7 @@ import type { ProxyRequestOutput } from '../../../../services/mcpProxySchema.js'
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
-const PROVIDER_ERROR_CODE = /^[A-Za-z][\w.:-]{0,63}$/;
+const PROVIDER_ERROR_CODE = /^[A-Za-z0-9][\w.:-]{0,63}$/;
 
 export const proxyTool = defineAgentSessionMcpTool({
     name: 'nango_proxy',
@@ -155,18 +155,18 @@ function proxyErrorCode({ outcome, result }: McpProxyExecution): string | undefi
     return outcome === 'upstream_error' ? 'upstream_error' : undefined;
 }
 
-function providerErrorCode({ outcome, result }: McpProxyExecution): string | undefined {
+function providerErrorCode({ outcome, result, status }: McpProxyExecution): string | undefined {
     if (result.isErr()) {
         return 'providerCode' in result.error ? result.error.providerCode : undefined;
     }
-    return outcome === 'upstream_error' ? errorCodeInBody(result.value.body) : undefined;
+    return outcome === 'upstream_error' ? errorCodeInBody(result.value.body, status) : undefined;
 }
 
 /**
  * Reads the code from the error shapes providers commonly answer with, never the message, which can
  * repeat what the agent sent. Only a value that looks like a code is kept.
  */
-function errorCodeInBody(body: unknown): string | undefined {
+function errorCodeInBody(body: unknown, status: number | undefined): string | undefined {
     const root = Array.isArray(body) ? arrayHead(body) : body;
     const error = field(root, 'error');
     const firstError = arrayHead(field(root, 'errors'));
@@ -183,7 +183,15 @@ function errorCodeInBody(body: unknown): string | undefined {
         field(field(firstError, 'extensions'), 'code'),
         field(firstError, 'type')
     ];
-    return candidates.find((candidate): candidate is string => typeof candidate === 'string' && PROVIDER_ERROR_CODE.test(candidate));
+    return candidates.map((candidate) => asErrorCode(candidate, status)).find((code) => code !== undefined);
+}
+
+/** A numeric code is kept unless it only repeats the HTTP status, as Google's error.code does. */
+function asErrorCode(candidate: unknown, status: number | undefined): string | undefined {
+    if (typeof candidate === 'number') {
+        return Number.isInteger(candidate) && candidate !== status ? String(candidate) : undefined;
+    }
+    return typeof candidate === 'string' && PROVIDER_ERROR_CODE.test(candidate) ? candidate : undefined;
 }
 
 function field(value: unknown, key: string): unknown {
