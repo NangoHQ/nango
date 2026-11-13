@@ -1,0 +1,36 @@
+---
+title: 'Checkvist - How do I link my account?'
+sidebarTitle: 'Checkvist'
+---
+
+## Overview
+
+To authenticate with Checkvist, you need:
+
+1. **Email** — the email you sign in to Checkvist with.
+2. **Remote API key** — the Open API key from your Checkvist profile.
+
+This guide will show you where to find both.
+
+### Prerequisites
+
+- A Checkvist account. The Open API is included in the [free plan](https://checkvist.com/pricing).
+
+### Step 1: Find your email and Open API key
+
+1. Sign in to [Checkvist](https://checkvist.com).
+2. Click the person icon in the top-right toolbar, or go to your [Profile](https://checkvist.com/auth/profile#status) page.
+3. Note the address in the **Email** field: this is your login email.
+4. Scroll to the **Open API key** section and click **See your OpenAPI key**.
+5. Click **Copy to clipboard** next to the key. Do not click **Generate a new key…**: it replaces your current key, and anything using the old key stops working.
+
+### Step 2: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Checkvist.
+2. Enter your login email in the **Email** field.
+3. Paste your Open API key in the **Remote API key** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/checkvist/form.png" alt="Checkvist Connect UI form with the Email and Remote API key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Checkvist.

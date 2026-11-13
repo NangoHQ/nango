@@ -1,0 +1,56 @@
+---
+title: 'Connecteam - How do I link my account?'
+sidebarTitle: 'Connecteam'
+---
+
+## Overview
+
+To authenticate with Connecteam, you need:
+
+1. **Region** — the Connecteam API host for the data location of your account.
+2. **API Key** — a Connecteam API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Connecteam account on the Expert plan or higher, with API access. See [API access](https://developer.connecteam.com/docs/api-access).
+- You must be the account owner: only account owners can create and manage API keys.
+
+### Step 1: Find your region
+
+Check the address of the Connecteam app you log in to and select the matching value:
+
+| Region | App you log in to | Value to select |
+|--------|-------------------|-----------------|
+| Global | `app.connecteam.com` | `api.connecteam.com` |
+| Australia | `app-au.connecteam.com` | `api-au.connecteam.com` |
+
+See [Australian clients](https://developer.connecteam.com/docs/australian-clients) for details.
+
+### Step 2: Create an API key
+
+1. Log in to Connecteam as the account owner.
+2. Click your admin name in the top-right corner and select **Integrations**.
+
+<img src="/api-integrations/connecteam/admin_menu_integrations.png" alt="Connecteam admin menu open with the Integrations option highlighted"/>
+
+3. In the **Integration center**, open the **API keys** tab and click **Add API key**.
+
+<img src="/api-integrations/connecteam/api_keys_tab.png" alt="Connecteam Integration center on the API keys tab with the Add API key button highlighted"/>
+
+4. Enter a **Key name**. The expiry date and time are optional.
+5. Click **Create key**.
+6. Your new key appears in the list. Click the copy icon next to it to copy the API key.
+
+<img src="/api-integrations/connecteam/api_key_created.png" alt="Connecteam API keys list with the new key and its copy icon highlighted"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Connecteam.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/connecteam/form.png" alt="Connecteam connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Connecteam.
