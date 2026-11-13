@@ -88,6 +88,12 @@ const STOPWORDS = new Set([
 const BEST_MATCH_SCORE = 0.4;
 const MAX_MATCH_SCORE = 0.85;
 
+// Every query word counts toward the score, so a longer query scores lower however well its top tool
+// fits, and a cutoff on the score alone turns away the obvious tool for a query phrased as a sentence.
+// The top result and the ones close behind it are a match too, unless even the top one is this weak.
+const LEADING_MATCH_SCORE = 0.65;
+const LEADING_MATCH_MARGIN = 0.1;
+
 const MAX_BEST_MATCHES = 5;
 const MAX_RELATED_MATCHES = 15;
 
@@ -177,12 +183,13 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
 } {
     const candidates = buildSearchCandidateList({ session, slugOf });
     const scored = scoreCandidates({ candidates, query });
+    const bestMatchScore = bestMatchScoreFor(scored[0]?.score);
 
     const best: ScoredCandidate[] = [];
     const related: ScoredCandidate[] = [];
 
     for (const { candidate, score } of scored) {
-        if (score <= BEST_MATCH_SCORE && best.length < MAX_BEST_MATCHES) {
+        if (score <= bestMatchScore && best.length < MAX_BEST_MATCHES) {
             best.push({ ...candidate, score });
         } else if (related.length < MAX_RELATED_MATCHES) {
             related.push({ ...candidate, score });
@@ -190,6 +197,14 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
     }
 
     return { best, related };
+}
+
+function bestMatchScoreFor(topScore: number | undefined): number {
+    if (topScore === undefined || topScore > LEADING_MATCH_SCORE) {
+        return BEST_MATCH_SCORE;
+    }
+
+    return Math.max(BEST_MATCH_SCORE, topScore + LEADING_MATCH_MARGIN);
 }
 
 /**
