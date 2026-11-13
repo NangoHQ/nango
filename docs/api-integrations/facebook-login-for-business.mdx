@@ -1,0 +1,89 @@
+---
+title: 'Facebook (Login for Business)'
+sidebarTitle: 'Facebook (Login for Business)'
+description: 'Integrate your application with the Facebook API using Facebook Login for Business configurations'
+---
+
+## 🚀 Quickstart
+
+Connect to Facebook through a [Facebook Login for Business](https://developers.facebook.com/docs/facebook-login/facebook-login-for-business) configuration. Use it when you need a system-user access token that belongs to your business rather than to one person.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Facebook (Login for Business)_. Enter your app's credentials and the **Configuration ID** of your Facebook Login for Business configuration.
+
+    <Note>
+      There is no Nango-managed OAuth app for this integration. Follow the setup guide linked below to get your App ID, App Secret and Configuration ID.
+    </Note>
+    </Step>
+    <Step title="Authorize Facebook">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Facebook and pick the assets to share. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Facebook API">
+    Let's make your first request to the Facebook API. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v22.0/me?fields=id,name" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v22.0/me',
+            params: {
+              fields: 'id,name'
+            },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Facebook (Login for Business) integration guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own Facebook (Login for Business) app](/api-integrations/facebook-login-for-business/how-to-register-your-own-facebook-login-for-business-api-oauth-app)  
+Register an app with Facebook Login for Business, create a configuration and connect it to Nango
+
+Official docs: [Facebook Login for Business](https://developers.facebook.com/docs/facebook-login/facebook-login-for-business)
+
+## 🧩 Pre-built syncs & tools for Facebook (Login for Business)
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/facebook-login-for-business/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
