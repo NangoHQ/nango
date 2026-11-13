@@ -47,6 +47,13 @@ export const linkButtonVariants = cva(
                     'active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active',
                     'focus-visible:shadow-focus-outline-danger'
                 ],
+                'neutral-danger': [
+                    'text-text-link-neutral [&_svg]:text-icon-link-neutral',
+                    'not-disabled:not-aria-disabled:hover:text-text-link-danger not-disabled:not-aria-disabled:hover:[&_svg]:text-icon-link-danger',
+                    'not-disabled:not-aria-disabled:focus-visible:text-text-link-danger not-disabled:not-aria-disabled:focus-visible:[&_svg]:text-icon-link-danger',
+                    'not-disabled:not-aria-disabled:active:text-text-link-danger-active not-disabled:not-aria-disabled:active:[&_svg]:text-icon-link-danger-active',
+                    'focus-visible:shadow-focus-outline-danger'
+                ],
                 // No text/link-info token yet, so info shares accent's text/link tokens.
                 info: [
                     'text-text-link [&_svg]:text-icon-link',

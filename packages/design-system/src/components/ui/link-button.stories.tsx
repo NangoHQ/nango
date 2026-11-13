@@ -12,7 +12,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const TONES = ['accent', 'neutral', 'danger', 'info', 'success', 'warning'] as const;
+const TONES = ['accent', 'neutral', 'danger', 'neutral-danger', 'info', 'success', 'warning'] as const;
 const SIZES = ['sm', 'md', 'lg'] as const;
 
 const SIZE_SPEC: Record<(typeof SIZES)[number], string> = {
@@ -66,6 +66,7 @@ const matrixStory = (tone: (typeof TONES)[number]): Story => ({
 export const Accent = matrixStory('accent');
 export const Neutral = matrixStory('neutral');
 export const Danger = matrixStory('danger');
+export const NeutralDanger = matrixStory('neutral-danger');
 export const Info = matrixStory('info');
 export const Success = matrixStory('success');
 export const Warning = matrixStory('warning');
