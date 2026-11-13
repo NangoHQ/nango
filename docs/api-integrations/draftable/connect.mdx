@@ -1,0 +1,37 @@
+---
+title: 'Draftable - How do I link my account?'
+sidebarTitle: 'Draftable'
+---
+
+## Overview
+
+To authenticate with Draftable, you need:
+
+1. **Auth Token** — the auth token of your Draftable API account.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Draftable API account. You can [sign up](https://api.draftable.com/account/login?signup=true) for full access to the Draftable API for 30 days, with no credit card required.
+
+### Step 1: Copy your auth token
+
+1. Sign in to your [Draftable API account](https://api.draftable.com/account/login).
+2. Click **API Credentials** in the left-hand menu.
+
+<img src="/api-integrations/draftable/api_credentials_menu.png" alt="Draftable account page with API Credentials in the left-hand menu"/>
+
+3. Under **Auth Token**, copy the token from the **Testing** row (for development) or the **Live** row (for production). Both are sent the same way. To generate a new token, click **Reset** on that row.
+
+<img src="/api-integrations/draftable/auth_token_testing.png" alt="Draftable API Credentials page with the Testing and Live auth tokens and their Reset buttons"/>
+
+### Step 2: Enter your auth token in the Connect UI
+
+1. Open the form where you need to authenticate with Draftable.
+2. Enter your **Auth Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/draftable/form.png" alt="Draftable connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Draftable.

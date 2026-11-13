@@ -62,3 +62,4 @@ export { default as serpapiCredentialsVerification } from './providers/serpapi/c
 export { default as bannerbearCredentialsVerification } from './providers/bannerbear/credentials-verification.js';
 export { default as enginemailerCredentialsVerification } from './providers/enginemailer/credentials-verification.js';
 export { default as sendsparkPostConnection } from './providers/sendspark/post-connection.js';
+export { default as eventzillaCredentialsVerification } from './providers/eventzilla/credentials-verification.js';

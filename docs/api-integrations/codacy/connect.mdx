@@ -1,0 +1,42 @@
+---
+title: 'Codacy - How do I link my account?'
+sidebarTitle: 'Codacy'
+---
+
+## Overview
+
+To authenticate with Codacy, you need:
+
+1. **Account API Token** — an account API token from the Access management tab of your Codacy account.
+
+This guide will show you how to create it.
+
+### Prerequisites
+
+- A Codacy account. If you don't have one, [sign up](https://www.codacy.com/) with your Git provider (GitHub, GitLab or Bitbucket).
+
+### Step 1: Create an account API token
+
+1. Sign in to [Codacy](https://app.codacy.com/login).
+2. Open your account from the avatar menu and go to the **Access management** tab.
+3. Under **Account API tokens**, click **Create API token**.
+
+<img src="/api-integrations/codacy/access_management_create_token.png" alt="Codacy Access management tab with the Create API token button under Account API tokens" />
+
+4. Choose an expiration: 7, 30 or 90 days, or a custom date up to one year from creation. Then click **Create API token**.
+
+<img src="/api-integrations/codacy/set_token_expiration.png" alt="Codacy Set token expiration dialog with the expiration options and the Create API token button" />
+
+5. The new token appears in the **Account API tokens** table. Click the token to copy it to your clipboard. Codacy shows the token value only once, right after you create it.
+
+<img src="/api-integrations/codacy/copy_api_token.png" alt="Codacy Account API tokens table with the new token to click and copy" />
+
+### Step 2: Enter your account API token in the Connect UI
+
+1. Open the form where you need to authenticate with Codacy.
+2. Enter your token in the **Account API Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/codacy/form.png" alt="Codacy Connect UI form with the Account API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Codacy.
