@@ -52,6 +52,8 @@ interface ToolCallParams extends Outcome {
     /** Set when the tool ran on the integration's MCP server rather than as a deployed action. */
     mcpTool?: boolean | undefined;
     functionSource?: FunctionSource | undefined;
+    /** Each as `argument: reason`, when the call was rejected as invalid input. */
+    invalidArguments?: string[] | undefined;
     goal?: string | undefined;
     intent?: string | undefined;
 }
@@ -62,6 +64,8 @@ interface ToolSearchParams extends Outcome {
     /** How many queries the call carried. Each query sends its own event, and they share the log operation id. */
     queryCount?: number | undefined;
     goal?: string | undefined;
+    /** Each as `argument: reason`, when the call was rejected as invalid input. */
+    invalidArguments?: string[] | undefined;
     matches: AgentSessionToolSearchHit[];
     related: AgentSessionToolSearchHit[];
 }
@@ -70,10 +74,14 @@ interface ProxyRequestParams extends Outcome {
     session: AgentSession;
     integrationId?: string | undefined;
     method?: HTTP_METHOD | undefined;
+    /** As the agent sent it. Tracked without its query string. */
+    path?: string | undefined;
     provider?: string | undefined;
     status?: number | undefined;
     /** The provider's own error code, when the failure carried one. */
     providerErrorCode?: string | undefined;
+    /** Each as `argument: reason`, when the request was rejected as invalid input. */
+    invalidArguments?: string[] | undefined;
     goal?: string | undefined;
     /** Why no tool fit and which one would have, so gaps in the catalog show up. */
     intent?: string | undefined;
@@ -156,6 +164,7 @@ export function trackAgentSessionToolCall({
     underlyingErrorCode,
     mcpTool,
     functionSource,
+    invalidArguments,
     goal,
     intent,
     ...outcome
@@ -174,6 +183,7 @@ export function trackAgentSessionToolCall({
                 ...(underlyingErrorCode ? { underlying_error_code: underlyingErrorCode } : {}),
                 ...(mcpTool ? { is_mcp_tool: true } : {}),
                 ...(functionSource ? { function_source: functionSource === 'catalog' ? 'catalog' : 'custom' } : {}),
+                ...invalidArgumentsProperty(invalidArguments),
                 ...(goal ? { goal } : {}),
                 ...(intent ? { intent } : {})
             }
@@ -186,8 +196,10 @@ export function trackAgentSessionProxyRequest({
     integrationId,
     provider,
     method,
+    path,
     status,
     providerErrorCode,
+    invalidArguments,
     goal,
     intent,
     ...outcome
@@ -202,9 +214,11 @@ export function trackAgentSessionProxyRequest({
                 ...measurement,
                 ...(integrationId ? { integration_id: integrationId } : {}),
                 ...(method ? { http_method: method } : {}),
+                ...(path ? { endpoint: path.split(/[?#]/)[0] } : {}),
                 ...(provider ? { provider } : {}),
                 ...(status === undefined ? {} : { http_status: status }),
                 ...(providerErrorCode ? { provider_error_code: providerErrorCode } : {}),
+                ...invalidArgumentsProperty(invalidArguments),
                 ...(goal ? { goal } : {}),
                 ...(intent ? { intent } : {})
             }
@@ -217,7 +231,7 @@ export function trackAgentSessionProxyRequest({
  * results ride along so a query can be read next to what it returned, which is the exception the
  * taxonomy grants this event: everywhere else a property is a primitive.
  */
-export function trackAgentSessionToolSearch({ session, query, queryCount, goal, matches, related, ...outcome }: ToolSearchParams): void {
+export function trackAgentSessionToolSearch({ session, query, queryCount, goal, invalidArguments, matches, related, ...outcome }: ToolSearchParams): void {
     sendMeasured((measurement) =>
         productTracking.track({
             name: 'agents:tool_search_complete',
@@ -231,12 +245,17 @@ export function trackAgentSessionToolSearch({ session, query, queryCount, goal, 
                 related_count: related.length,
                 ...(matches[0] ? { top_match_confidence: matches[0].confidence } : {}),
                 ...outcomeProperties(outcome),
+                ...invalidArgumentsProperty(invalidArguments),
                 ...measurement,
                 matches,
                 related
             }
         })
     );
+}
+
+function invalidArgumentsProperty(invalidArguments: string[] | undefined): { invalid_arguments?: string } {
+    return invalidArguments && invalidArguments.length > 0 ? { invalid_arguments: invalidArguments.join(', ') } : {};
 }
 
 function sanitizeRequest(body: PostAgentSessionsBody): { request: TrackedRequest; isTruncated: boolean } {

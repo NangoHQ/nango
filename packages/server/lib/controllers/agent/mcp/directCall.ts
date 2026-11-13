@@ -4,6 +4,7 @@ import { trackAgentSessionToolCall } from '../../../services/agentSessionAnalyti
 import { formatMcpArgumentsError, PublicMcpError } from '../../mcp/utils.js';
 import { directCallSchema } from './directCallSchema.js';
 import { executeSessionTool } from './execute/execute.js';
+import { invalidArgumentsOf } from './sessionTool.js';
 
 import type { AgentSessionCallableTool, AgentSessionMcpContext } from './sessionTool.js';
 import type { Result } from '@nangohq/utils';
@@ -39,7 +40,8 @@ export async function executeDirectToolCall({
             integrationId: tool.integrationId,
             toolName: tool.name,
             pinned: tool.pinned,
-            errorCode: 'invalid_input'
+            errorCode: 'invalid_input',
+            invalidArguments: invalidArgumentsOf(parsed.error)
         });
         return Err(
             new PublicMcpError(`${formatMcpArgumentsError(name, parsed.error)}. Correct the arguments and call it again.`, {

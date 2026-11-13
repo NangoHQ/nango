@@ -11,6 +11,8 @@ import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 import type * as z from 'zod/v4';
 
+const MAX_TRACKED_INVALID_ARGUMENTS = 10;
+
 /** The MCP limit on a tool name, which is what a session tool's slug is clipped to fit. */
 export const MAX_TOOL_NAME_LENGTH = 64;
 
@@ -58,7 +60,7 @@ export interface AgentSessionMcpTool {
 
 type AgentSessionMcpToolDefinition<TInputSchema extends z.ZodType> = Omit<AgentSessionMcpTool, 'handler' | 'inputSchema'> & {
     inputSchema: TInputSchema;
-    onInvalidArguments?: (context: AgentSessionMcpContext) => void;
+    onInvalidArguments?: (context: AgentSessionMcpContext, invalid: { args: unknown; error: z.ZodError }) => void;
     handler: (context: AgentSessionMcpContext & { args: z.output<TInputSchema> }) => Result<unknown> | Promise<Result<unknown>>;
 };
 
@@ -68,7 +70,7 @@ export function defineAgentSessionMcpTool<TInputSchema extends z.ZodType>(tool: 
         async handler(args, context) {
             const parsedArgs = tool.inputSchema.safeParse(args ?? {});
             if (!parsedArgs.success) {
-                tool.onInvalidArguments?.(context);
+                tool.onInvalidArguments?.(context, { args, error: parsedArgs.error });
                 return Err(
                     new PublicMcpError(`${formatMcpArgumentsError(tool.name, parsedArgs.error)}. Correct the arguments and call it again.`, {
                         code: 'invalid_input'
@@ -79,6 +81,20 @@ export function defineAgentSessionMcpTool<TInputSchema extends z.ZodType>(tool: 
             return await tool.handler({ ...context, args: parsedArgs.data });
         }
     };
+}
+
+/**
+ * The top level argument and the zod issue code only. The issue message can quote what the agent sent,
+ * and a deeper path can be a key that carries data, like a query parameter name.
+ */
+export function invalidArgumentsOf(error: z.ZodError): string[] {
+    const invalid = error.issues.flatMap((issue) => {
+        if (issue.code === 'unrecognized_keys' && issue.path.length === 0) {
+            return issue.keys.map((key) => `${key}: unrecognized_key`);
+        }
+        return [`${issue.path.length > 0 ? String(issue.path[0]) : 'arguments'}: ${issue.code}`];
+    });
+    return [...new Set(invalid)].slice(0, MAX_TRACKED_INVALID_ARGUMENTS);
 }
 
 interface AgentSessionToolCall {
