@@ -1218499,7 +1218499,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getcustomobjectdefinition", "ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getcustomobjectdefinition": {
@@ -1218575,7 +1218575,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getjobrequisition"],
                 "scopes": ["r_recruiting"],
                 "usedModels": ["ActionInput_workday_refresh_token_getjobrequisition", "ActionOutput_workday_refresh_token_getjobrequisition"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getjobrequisition": {
@@ -1218757,7 +1218757,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getorganization"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getorganization", "ActionOutput_workday_refresh_token_getorganization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getorganization": {
@@ -1218805,7 +1218805,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getsupervisoryorganization"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getsupervisoryorganization", "ActionOutput_workday_refresh_token_getsupervisoryorganization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getsupervisoryorganization": {
@@ -1218814,10 +1218814,6 @@
                                 "id": {
                                     "type": "string",
                                     "description": "The Workday identifier of the supervisory organization. Example: \"36a6f7a8e1eb1000df0164ce90640000\""
-                                },
-                                "tenant": {
-                                    "description": "The Workday tenant name. When omitted, read from the connection configuration.",
-                                    "type": "string"
                                 }
                             },
                             "required": ["id"],
@@ -1218888,7 +1218884,7 @@
                 "output": ["ActionOutput_workday_refresh_token_gettimeoffdetail"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_gettimeoffdetail", "ActionOutput_workday_refresh_token_gettimeoffdetail"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_gettimeoffdetail": {
@@ -1219019,7 +1219015,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getworkercompensation"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getworkercompensation", "ActionOutput_workday_refresh_token_getworkercompensation"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getworkercompensation": {
@@ -1219151,7 +1219147,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getworker"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getworker", "ActionOutput_workday_refresh_token_getworker"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getworker": {
@@ -1219592,7 +1219588,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listorganizations"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listorganizations", "ActionOutput_workday_refresh_token_listorganizations"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listorganizations": {
@@ -1219653,7 +1219649,7 @@
                     "ActionInput_workday_refresh_token_listsupervisoryorganizations",
                     "ActionOutput_workday_refresh_token_listsupervisoryorganizations"
                 ],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listsupervisoryorganizations": {
@@ -1219718,7 +1219714,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listworkerabsencebalances"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listworkerabsencebalances", "ActionOutput_workday_refresh_token_listworkerabsencebalances"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listworkerabsencebalances": {
@@ -1219896,7 +1219892,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listworkers"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listworkers", "ActionOutput_workday_refresh_token_listworkers"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listworkers": {
@@ -1220008,7 +1220004,7 @@
                 "output": ["ActionOutput_workday_refresh_token_submittimeoffrequest"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_submittimeoffrequest", "ActionOutput_workday_refresh_token_submittimeoffrequest"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_submittimeoffrequest": {
@@ -1220147,7 +1220143,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Organization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -1220188,7 +1220184,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Worker"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -1220336,7 +1220332,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getcustomobjectdefinition", "ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getcustomobjectdefinition": {
@@ -1220412,7 +1220408,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getjobrequisition"],
                 "scopes": ["r_recruiting"],
                 "usedModels": ["ActionInput_workday_refresh_token_getjobrequisition", "ActionOutput_workday_refresh_token_getjobrequisition"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getjobrequisition": {
@@ -1220594,7 +1220590,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getorganization"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getorganization", "ActionOutput_workday_refresh_token_getorganization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getorganization": {
@@ -1220642,7 +1220638,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getsupervisoryorganization"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getsupervisoryorganization", "ActionOutput_workday_refresh_token_getsupervisoryorganization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getsupervisoryorganization": {
@@ -1220651,10 +1220647,6 @@
                                 "id": {
                                     "type": "string",
                                     "description": "The Workday identifier of the supervisory organization. Example: \"36a6f7a8e1eb1000df0164ce90640000\""
-                                },
-                                "tenant": {
-                                    "description": "The Workday tenant name. When omitted, read from the connection configuration.",
-                                    "type": "string"
                                 }
                             },
                             "required": ["id"],
@@ -1220725,7 +1220717,7 @@
                 "output": ["ActionOutput_workday_refresh_token_gettimeoffdetail"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_gettimeoffdetail", "ActionOutput_workday_refresh_token_gettimeoffdetail"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_gettimeoffdetail": {
@@ -1220856,7 +1220848,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getworkercompensation"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getworkercompensation", "ActionOutput_workday_refresh_token_getworkercompensation"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getworkercompensation": {
@@ -1220988,7 +1220980,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getworker"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getworker", "ActionOutput_workday_refresh_token_getworker"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getworker": {
@@ -1221429,7 +1221421,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listorganizations"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listorganizations", "ActionOutput_workday_refresh_token_listorganizations"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listorganizations": {
@@ -1221490,7 +1221482,7 @@
                     "ActionInput_workday_refresh_token_listsupervisoryorganizations",
                     "ActionOutput_workday_refresh_token_listsupervisoryorganizations"
                 ],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listsupervisoryorganizations": {
@@ -1221555,7 +1221547,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listworkerabsencebalances"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listworkerabsencebalances", "ActionOutput_workday_refresh_token_listworkerabsencebalances"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listworkerabsencebalances": {
@@ -1221733,7 +1221725,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listworkers"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listworkers", "ActionOutput_workday_refresh_token_listworkers"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listworkers": {
@@ -1221845,7 +1221837,7 @@
                 "output": ["ActionOutput_workday_refresh_token_submittimeoffrequest"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_submittimeoffrequest", "ActionOutput_workday_refresh_token_submittimeoffrequest"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_submittimeoffrequest": {
@@ -1221984,7 +1221976,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Organization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -1222025,7 +1222017,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Worker"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -1222173,7 +1222165,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getcustomobjectdefinition", "ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getcustomobjectdefinition": {
@@ -1222249,7 +1222241,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getjobrequisition"],
                 "scopes": ["r_recruiting"],
                 "usedModels": ["ActionInput_workday_refresh_token_getjobrequisition", "ActionOutput_workday_refresh_token_getjobrequisition"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getjobrequisition": {
@@ -1222431,7 +1222423,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getorganization"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getorganization", "ActionOutput_workday_refresh_token_getorganization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getorganization": {
@@ -1222479,7 +1222471,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getsupervisoryorganization"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getsupervisoryorganization", "ActionOutput_workday_refresh_token_getsupervisoryorganization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getsupervisoryorganization": {
@@ -1222488,10 +1222480,6 @@
                                 "id": {
                                     "type": "string",
                                     "description": "The Workday identifier of the supervisory organization. Example: \"36a6f7a8e1eb1000df0164ce90640000\""
-                                },
-                                "tenant": {
-                                    "description": "The Workday tenant name. When omitted, read from the connection configuration.",
-                                    "type": "string"
                                 }
                             },
                             "required": ["id"],
@@ -1222562,7 +1222550,7 @@
                 "output": ["ActionOutput_workday_refresh_token_gettimeoffdetail"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_gettimeoffdetail", "ActionOutput_workday_refresh_token_gettimeoffdetail"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_gettimeoffdetail": {
@@ -1222693,7 +1222681,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getworkercompensation"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getworkercompensation", "ActionOutput_workday_refresh_token_getworkercompensation"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getworkercompensation": {
@@ -1222825,7 +1222813,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getworker"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getworker", "ActionOutput_workday_refresh_token_getworker"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getworker": {
@@ -1223266,7 +1223254,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listorganizations"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listorganizations", "ActionOutput_workday_refresh_token_listorganizations"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listorganizations": {
@@ -1223327,7 +1223315,7 @@
                     "ActionInput_workday_refresh_token_listsupervisoryorganizations",
                     "ActionOutput_workday_refresh_token_listsupervisoryorganizations"
                 ],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listsupervisoryorganizations": {
@@ -1223392,7 +1223380,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listworkerabsencebalances"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listworkerabsencebalances", "ActionOutput_workday_refresh_token_listworkerabsencebalances"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listworkerabsencebalances": {
@@ -1223570,7 +1223558,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listworkers"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listworkers", "ActionOutput_workday_refresh_token_listworkers"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listworkers": {
@@ -1223682,7 +1223670,7 @@
                 "output": ["ActionOutput_workday_refresh_token_submittimeoffrequest"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_submittimeoffrequest", "ActionOutput_workday_refresh_token_submittimeoffrequest"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_submittimeoffrequest": {
@@ -1223821,7 +1223809,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Organization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -1223862,7 +1223850,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Worker"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
