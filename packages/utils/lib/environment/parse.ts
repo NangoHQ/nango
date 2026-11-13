@@ -491,6 +491,7 @@ const ENVS_SHAPE = z.object({
 
     // Self-hosting
     NANGO_SELF_HOSTING_PORT: z.coerce.number().optional().default(3010),
+    NANGO_SELF_HOSTING_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional().default(61_000),
     NANGO_SELF_HOSTING_DATABASE_URL: z.url().optional(),
     NANGO_SELF_HOSTING_DATABASE_SSL: z.stringbool().optional().default(false),
     NANGO_SELF_HOSTING_DB_POOL_MAX: z.coerce.number().int().positive().optional().default(5),
