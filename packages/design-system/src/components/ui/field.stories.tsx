@@ -1,8 +1,11 @@
 import { Controller, useForm } from 'react-hook-form';
 
 import { Button } from './button';
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet } from './field';
+import { CopyInput } from './copy-input';
+import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet } from './field';
 import { Input } from './input';
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupSwatch } from './input-group';
+import { SecretInput } from './secret-input';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -34,12 +37,12 @@ export const States: Story = {
                 </Field>
             </div>
             <div className="flex flex-col gap-1">
-                <span className="story-section-heading">Required</span>
+                {/* Don't mark required fields with * — mark the optional ones. */}
+                <span className="story-section-heading">Optional</span>
                 <Field>
-                    <FieldLabel htmlFor="field-required">
-                        Required field <span className="text-text-danger">*</span>
-                    </FieldLabel>
-                    <Input id="field-required" placeholder="Can't be empty" />
+                    <FieldLabel optional>Secondary URL</FieldLabel>
+                    <Input mono placeholder="https://staging.example.com/webhooks/nango" />
+                    <FieldDescription>For staging or a backup receiver.</FieldDescription>
                 </Field>
             </div>
             <div className="flex w-48 flex-col gap-1">
@@ -53,19 +56,133 @@ export const States: Story = {
             </div>
             <div className="flex flex-col gap-1">
                 <span className="story-section-heading">Invalid (with error)</span>
-                <Field data-invalid="true">
-                    <FieldLabel htmlFor="field-invalid">Username</FieldLabel>
-                    <Input id="field-invalid" defaultValue="bad value" aria-invalid />
-                    <FieldError errors={[{ message: 'This field is required.' }]} />
+                {/* data-invalid on Field sets aria-invalid on the control and wires the error into aria-describedby */}
+                <Field data-invalid>
+                    <FieldLabel>Name</FieldLabel>
+                    <Input mono defaultValue="Dev Env" />
+                    <FieldError>Use 1–32 lowercase letters, numbers or hyphens.</FieldError>
                 </Field>
             </div>
             <div className="flex flex-col gap-1">
                 <span className="story-section-heading">Disabled</span>
-                <Field>
-                    <FieldLabel htmlFor="field-disabled">Disabled</FieldLabel>
-                    <Input id="field-disabled" placeholder="Disabled" disabled />
+                <Field data-disabled>
+                    <FieldLabel>Callback URL</FieldLabel>
+                    <Input mono defaultValue="https://api.nango.dev/oauth/callback" disabled />
+                    <FieldDescription>Only admins can change this.</FieldDescription>
                 </Field>
             </div>
+        </div>
+    )
+};
+
+const ENV_ID = 'a0583184-a6ef-40e5-b716-2d7aeacf84b3';
+
+// vertical (default) and horizontal (settings rows) × default / error / disabled.
+export const Orientation: Story = {
+    render: () => (
+        <div className="flex flex-col gap-10">
+            <div className="grid w-[960px] grid-cols-3 gap-8">
+                <div className="flex flex-col gap-1">
+                    <span className="story-section-heading">Vertical · default</span>
+                    <Field>
+                        <FieldLabel>Name</FieldLabel>
+                        <Input mono defaultValue="dev" />
+                        <FieldDescription>Lowercase, used in URLs and env variable names.</FieldDescription>
+                    </Field>
+                </div>
+                <div className="flex flex-col gap-1">
+                    <span className="story-section-heading">Vertical · error</span>
+                    <Field data-invalid>
+                        <FieldLabel>Name</FieldLabel>
+                        <Input mono defaultValue="Dev Env" />
+                        <FieldError>Use 1–32 lowercase letters, numbers or hyphens.</FieldError>
+                    </Field>
+                </div>
+                <div className="flex flex-col gap-1">
+                    <span className="story-section-heading">Vertical · disabled</span>
+                    <Field data-disabled>
+                        <FieldLabel>Name</FieldLabel>
+                        <Input mono defaultValue="dev" disabled />
+                        <FieldDescription>Lowercase, used in URLs and env variable names.</FieldDescription>
+                    </Field>
+                </div>
+            </div>
+            <div className="flex w-[720px] flex-col gap-6">
+                <span className="story-section-heading">Horizontal · default / error / disabled</span>
+                <Field orientation="horizontal">
+                    <FieldContent>
+                        <FieldLabel>Environment ID</FieldLabel>
+                        <FieldDescription>Use it in API calls and when you contact support.</FieldDescription>
+                    </FieldContent>
+                    <CopyInput value={ENV_ID} />
+                </Field>
+                <Field orientation="horizontal" data-invalid>
+                    <FieldContent>
+                        <FieldLabel>Name</FieldLabel>
+                        <FieldDescription>Lowercase, used in URLs and env variable names.</FieldDescription>
+                    </FieldContent>
+                    <Input mono defaultValue="Dev Env" />
+                    <FieldError>Use 1–32 lowercase letters, numbers or hyphens.</FieldError>
+                </Field>
+                <Field orientation="horizontal" data-disabled>
+                    <FieldContent>
+                        <FieldLabel>Callback URL</FieldLabel>
+                        <FieldDescription>Only admins can change this.</FieldDescription>
+                    </FieldContent>
+                    <Input mono defaultValue="https://api.nango.dev/oauth/callback" disabled />
+                </Field>
+            </div>
+        </div>
+    )
+};
+
+// orientation="inline": label beside a small control, e.g. a checkbox row. (Before the Dharma refresh this was `horizontal`.)
+export const Inline: Story = {
+    render: () => (
+        <Field orientation="inline">
+            <input type="checkbox" id="field-inline" />
+            <FieldLabel htmlFor="field-inline">Show "Secured by Nango"</FieldLabel>
+        </Field>
+    )
+};
+
+// The Figma review frame (Dharma 2588:319), rebuilt from components.
+export const ReviewFrame: Story = {
+    render: () => (
+        <div className="flex w-[400px] flex-col gap-6">
+            <Field>
+                <FieldLabel>Name</FieldLabel>
+                <Input mono defaultValue="dev" />
+                <FieldDescription>Lowercase, used in URLs and env variable names.</FieldDescription>
+            </Field>
+            <Field>
+                <FieldLabel>Environment ID</FieldLabel>
+                <CopyInput value={ENV_ID} />
+                <FieldDescription>Use it in API calls and when you contact support.</FieldDescription>
+            </Field>
+            <Field>
+                <FieldLabel>Secret key</FieldLabel>
+                <SecretInput value="nango_sk_dev_7f2a9e1b3c5d8f0a2b4c6d8e0f1a34c9" />
+            </Field>
+            <Field>
+                <FieldLabel optional>Secondary URL</FieldLabel>
+                <Input mono placeholder="https://staging.example.com/webhooks/nango" />
+                <FieldDescription>For staging or a backup receiver.</FieldDescription>
+            </Field>
+            <Field>
+                <FieldLabel>Brand color</FieldLabel>
+                <InputGroup>
+                    <InputGroupAddon>
+                        <InputGroupSwatch color="#007CA0" />
+                    </InputGroupAddon>
+                    <InputGroupInput mono defaultValue="#007CA0" />
+                </InputGroup>
+            </Field>
+            <Field data-invalid>
+                <FieldLabel>Name</FieldLabel>
+                <Input mono defaultValue="Dev Env" />
+                <FieldError>Use 1–32 lowercase letters, numbers or hyphens.</FieldError>
+            </Field>
         </div>
     )
 };

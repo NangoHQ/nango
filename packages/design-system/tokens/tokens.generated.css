@@ -318,8 +318,8 @@
     --border-default: #e0e0e0;
     --border-strong: #c4c4c8;
     --border-stronger: #a1a2a5;
-    --border-input: #8b8c8f;
-    --border-input-hover: #505155;
+    --border-input: #c4c4c8;
+    --border-input-hover: #8b8c8f;
     --border-selected: #009cc8;
     --border-danger: #ee4242;
     --border-input-danger: #ee4242;
@@ -397,6 +397,8 @@
     --control-switch-track-off: #a1a2a5;
     --control-switch-track-off-danger: #a1a2a5;
     --control-switch-thumb-off: #ffffff;
+    --control-checkbox-border: #8b8c8f;
+    --control-checkbox-border-hover: #505155;
     --dialog-footer-bg: #fafafa;
 }
 
@@ -463,8 +465,8 @@
     --border-default: #ffffff1a;
     --border-strong: #ffffff29;
     --border-stronger: #ffffff3d;
-    --border-input: #ffffff66;
-    --border-input-hover: #ffffffa3;
+    --border-input: #ffffff29;
+    --border-input-hover: #ffffff66;
     --border-selected: #00b2e3;
     --border-danger: #ee4242;
     --border-input-danger: #ee4242;
@@ -542,6 +544,8 @@
     --control-switch-track-off: #18191b;
     --control-switch-track-off-danger: #18191b;
     --control-switch-thumb-off: #ffffff;
+    --control-checkbox-border: #ffffff66;
+    --control-checkbox-border-hover: #ffffffa3;
     --dialog-footer-bg: #121212;
 }
 
@@ -686,6 +690,8 @@
     --color-control-switch-track-off: var(--control-switch-track-off);
     --color-control-switch-track-off-danger: var(--control-switch-track-off-danger);
     --color-control-switch-thumb-off: var(--control-switch-thumb-off);
+    --color-control-checkbox-border: var(--control-checkbox-border);
+    --color-control-checkbox-border-hover: var(--control-checkbox-border-hover);
     --color-dialog-footer-bg: var(--dialog-footer-bg);
 }
 @theme inline {

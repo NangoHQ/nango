@@ -54,7 +54,7 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
 const WatermarkToggle: React.FC<{ disabled: boolean; form: any }> = ({ disabled, form }) => (
     <form.Field name="showWatermark">
         {(field: any) => (
-            <Field orientation="horizontal" className="gap-5">
+            <Field orientation="inline" className="gap-5">
                 <FieldLabel htmlFor={field.name} className={disabled ? 'text-text-muted' : undefined}>
                     Show &quot;Secured by Nango&quot;
                 </FieldLabel>

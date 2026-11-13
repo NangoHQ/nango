@@ -18,7 +18,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import { Button, copyText } from '@nangohq/design-system';
 
 import { ChecklistRow } from '@/components/patterns/ChecklistRow';
 import { PromptCard } from '@/components/patterns/PromptCard';
@@ -36,7 +36,6 @@ import { useUser } from '@/hooks/useUser';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
-import { copyText } from '@/utils/clipboard';
 import { globalEnv } from '@/utils/env';
 import { deriveAgentProgress } from './agentProgress';
 import { getInstallPrompt, pickPromptApiKey } from './agentPrompt';
