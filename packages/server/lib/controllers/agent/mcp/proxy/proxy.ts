@@ -10,7 +10,7 @@ import { proxyRequestOutputSchema } from '../../../../services/mcpProxySchema.js
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { notConnectedGuidance } from '../notConnectedGuidance.js';
 import { resolveSessionConnection } from '../sessionConnection.js';
-import { defineAgentSessionMcpTool } from '../sessionTool.js';
+import { defineAgentSessionMcpTool, invalidArgumentsOf } from '../sessionTool.js';
 import { proxyErrorToMcp } from './errors.js';
 import { rejectedHeaderNames } from './headers.js';
 import { proxyInputSchema } from './schema.js';
@@ -19,9 +19,7 @@ import type { McpProxyExecution } from '../../../../services/mcpProxy.service.js
 import type { ProxyRequestOutput } from '../../../../services/mcpProxySchema.js';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
-import type * as z from 'zod/v4';
 
-const MAX_TRACKED_INVALID_ARGUMENTS = 10;
 const PROVIDER_ERROR_CODE = /^[A-Za-z][\w.:-]{0,63}$/;
 
 export const proxyTool = defineAgentSessionMcpTool({
@@ -194,18 +192,4 @@ function field(value: unknown, key: string): unknown {
 
 function arrayHead(value: unknown): unknown {
     return Array.isArray(value) ? value[0] : undefined;
-}
-
-/**
- * The top level argument and the zod issue code only. The issue message can quote what the agent sent,
- * and a deeper path can be a key that carries data, like a query parameter name.
- */
-function invalidArgumentsOf(error: z.ZodError): string[] {
-    const invalid = error.issues.flatMap((issue) => {
-        if (issue.code === 'unrecognized_keys' && issue.path.length === 0) {
-            return issue.keys.map((key) => `${key}: unrecognized_key`);
-        }
-        return [`${issue.path.length > 0 ? String(issue.path[0]) : 'arguments'}: ${issue.code}`];
-    });
-    return [...new Set(invalid)].slice(0, MAX_TRACKED_INVALID_ARGUMENTS);
 }

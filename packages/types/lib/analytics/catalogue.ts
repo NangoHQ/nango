@@ -642,6 +642,7 @@ export const analyticsEventCatalogue = defineCatalogue({
             is_mcp_tool: z.boolean().optional(),
             // Catalog is a function Nango ships, custom is one the customer wrote. Unset for MCP tools and calls that failed before the tool resolved.
             function_source: z.enum(['catalog', 'custom']).optional(),
+            invalid_arguments: z.string().optional(),
             goal: z.string().optional(),
             intent: z.string().optional()
         })
@@ -682,6 +683,7 @@ export const analyticsEventCatalogue = defineCatalogue({
             match_count: z.number(),
             related_count: z.number(),
             top_match_confidence: z.number().optional(),
+            invalid_arguments: z.string().optional(),
             // Arrays on purpose: search quality is judged by reading a query next to its results. The search limit caps both.
             matches: z.array(z.custom<AgentSessionToolSearchHit>()),
             related: z.array(z.custom<AgentSessionToolSearchHit>())
