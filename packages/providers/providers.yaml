@@ -6914,6 +6914,77 @@ carbone:
             example: test_k9Pq********************************************************************************************************************************************************************************************************************************************************************************************************************************x2Vm
             doc_section: '#step-1-copy-your-api-key'
 
+carta:
+    display_name: Carta
+    categories:
+        - accounting
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://login.app.carta.com/o/authorize/
+    token_url: https://login.app.carta.com/o/access_token/
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.carta.com
+    docs: https://nango.dev/docs/api-integrations/carta
+    setup_guide_url: https://nango.dev/docs/api-integrations/carta/how-to-register-your-own-carta-api-oauth-app
+carta-mcp:
+    display_name: Carta (MCP)
+    categories:
+        - accounting
+        - legal
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.app.carta.com/authorize
+    token_url: https://mcp.app.carta.com/token
+    registration_url: https://mcp.app.carta.com/register
+    default_scopes:
+        - openid
+        - cuid
+    authorization_params:
+        response_type: code
+        resource: https://mcp.app.carta.com/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://mcp.app.carta.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/carta-mcp
+carta-sandbox:
+    display_name: Carta (Sandbox)
+    categories:
+        - accounting
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://login.playground.carta.team/o/authorize/
+    token_url: https://login.playground.carta.team/o/access_token/
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.playground.carta.team
+    docs: https://nango.dev/docs/api-integrations/carta-sandbox
+    setup_guide_url: https://nango.dev/docs/api-integrations/carta/how-to-register-your-own-carta-api-oauth-app
 cch-axcess:
     display_name: CCH Axcess
     categories:

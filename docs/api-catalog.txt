@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1266
+Provider count: 1269
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -238,6 +238,9 @@ URL patterns:
 | `canva-scim` | Canva (SCIM API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/canva-scim.md) | [connect](https://nango.dev/docs/integrations/all/canva-scim/connect.md) |  | design, dev-tools |
 | `canvas-lms` | Canvas LMS | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/canvas-lms.md) | [connect](https://nango.dev/docs/api-integrations/canvas-lms/connect.md) | [setup](https://nango.dev/docs/api-integrations/canvas-lms/how-to-register-your-own-canvas-lms-oauth-app.md) | productivity |
 | `carbone` | Carbone | API_KEY | [docs](https://nango.dev/docs/api-integrations/carbone.md) | [connect](https://nango.dev/docs/api-integrations/carbone/connect.md) |  | productivity |
+| `carta` | Carta | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/carta.md) |  | [setup](https://nango.dev/docs/api-integrations/carta/how-to-register-your-own-carta-api-oauth-app.md) | accounting, legal |
+| `carta-mcp` | Carta (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/carta-mcp.md) |  |  | accounting, legal, mcp |
+| `carta-sandbox` | Carta (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/carta-sandbox.md) |  | [setup](https://nango.dev/docs/api-integrations/carta/how-to-register-your-own-carta-api-oauth-app.md) | accounting, legal |
 | `cch-axcess` | CCH Axcess | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/cch-axcess.md) |  | [setup](https://nango.dev/docs/api-integrations/cch-axcess/how-to-register-your-own-cch-axcess-oauth-app.md) | accounting |
 | `cdw` | CDW | API_KEY | [docs](https://nango.dev/docs/api-integrations/cdw.md) | [connect](https://nango.dev/docs/api-integrations/cdw/connect.md) |  | erp, e-commerce |
 | `cerby` | Cerby | API_KEY | [docs](https://nango.dev/docs/api-integrations/cerby.md) | [connect](https://nango.dev/docs/api-integrations/cerby/connect.md) |  | iam |

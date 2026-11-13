@@ -1,0 +1,37 @@
+---
+title: 'How to register your own Carta OAuth app'
+sidebarTitle: 'Carta setup'
+description: 'Register an OAuth app in the Carta developer portal and connect it to Nango'
+---
+
+This guide shows you how to register an app in the Carta developer portal to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Carta account.
+
+<Steps>
+  <Step id="create-developer-account" title="Create a developer account">
+    Go to the [Carta developer portal registration page](https://developers.app.carta.com/user/registration), verify your email, and activate your account. If you already have a Carta login, click **Login** at the bottom of the page instead.
+  </Step>
+  <Step id="create-app" title="Create an app">
+    In the [developer portal](https://developers.app.carta.com), click **Create App** and fill in the form:
+    1. **Icon**, **Name**, **Description**, **Company name**, and **Homepage URL**.
+    2. **Grant type**: select the authorization code grant.
+    3. **Callbacks**: add `https://api.nango.dev/oauth/callback`.
+    4. **Scopes**: select the scopes your use case needs (for example `read_user_info` to call `GET /v1alpha1/user`).
+
+    Click **Submit**.
+  </Step>
+  <Step id="copy-credentials" title="Copy your credentials">
+    Click **View app details** and copy the **client_id** and **client_secret**. Enter them, along with the same scopes, when you create the integration in Nango.
+  </Step>
+  <Step id="choose-environment" title="Pick the matching Nango integration">
+    New apps run in Carta's Playground environment. Create a [Carta (Sandbox)](/api-integrations/carta-sandbox) integration in Nango to test them. Once Carta approves your app for production, use the [Carta](/api-integrations/carta) integration.
+  </Step>
+  <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+Carta only grants scopes that are enabled on your app. Requesting a scope that isn't enabled makes authorization fail. Carta access tokens expire after one hour; Nango refreshes them automatically.
+
+For more details, see [Carta's authorization docs](https://docs.carta.com/api-platform/guides/guides/authorization/) and the [scopes reference](https://docs.carta.com/api-platform/guides/references/scopes/).
+
+---
