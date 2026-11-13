@@ -22976,6 +22976,10 @@ microsoft-entra-id:
     categories:
         - iam
     alias: microsoft
+    webhook_routing_script: microsoftEntraIdWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - validationToken
     docs: https://nango.dev/docs/integrations/all/microsoft-entra-id
 
 microsoft-power-bi:
