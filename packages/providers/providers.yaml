@@ -31885,6 +31885,25 @@ teamleader:
         base_url: https://api.focus.teamleader.eu
     docs: https://nango.dev/docs/integrations/all/teamleader
 
+teamviewer:
+    display_name: TeamViewer
+    categories:
+        - support
+    auth_mode: OAUTH2
+    authorization_url: https://login.teamviewer.com/oauth2/authorize
+    token_url: https://webapi.teamviewer.com/api/v1/oauth2/token
+    authorization_params:
+        response_type: code
+        display: popup
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://webapi.teamviewer.com
+    docs: https://nango.dev/docs/api-integrations/teamviewer
+    setup_guide_url: https://nango.dev/docs/api-integrations/teamviewer/how-to-register-your-own-teamviewer-oauth-app
+
 teamwork:
     display_name: Teamwork
     categories:

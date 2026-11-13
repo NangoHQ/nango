@@ -2174,6 +2174,7 @@
               "api-integrations/tavily",
               "integrations/all/teamleader",
               "integrations/all/teamtailor",
+              "api-integrations/teamviewer",
               "integrations/all/teamwork",
               "api-integrations/telegram",
               "api-integrations/telnyx",

@@ -1,0 +1,32 @@
+---
+title: 'How to register your own TeamViewer OAuth app'
+sidebarTitle: 'TeamViewer Setup'
+description: 'Create a TeamViewer app and connect its credentials to Nango'
+---
+
+This guide shows you how to create a TeamViewer app to get your OAuth credentials (client ID & secret). Your users then authorize your app to access their TeamViewer account through the TeamViewer API.
+
+<Steps>
+  <Step title="Create a TeamViewer account">
+    If you don't have a TeamViewer account, [sign up](https://login.teamviewer.com/) for one.
+  </Step>
+  <Step title="Create an app">
+    1. Log in to the [TeamViewer Management Console](https://login.teamviewer.com/), click your user icon and select **Edit profile**.
+    2. Select **Apps**, then click **Create App**.
+    3. Enter a name and a description for your app.
+    4. Choose whether the app is for your own account or for your company. If it's for company use, only TeamViewer company administrators can authorize it.
+    5. Set the redirect URI to `https://api.nango.dev/oauth/callback` (or your own [custom callback URL](/guides/auth/auth-guide#custom-oauth-callback-url-optional)). It must match exactly.
+    6. Choose the permissions your integration needs, for example the permission to read account data (`Account.Read`) to read the connected account.
+    7. Click **Create**, then copy the **Client ID** and **Client Secret**.
+  </Step>
+  <Step title="Add the credentials in Nango">
+    In your TeamViewer integration in Nango, paste the client ID and secret. Leave scopes empty: TeamViewer applies the permissions chosen on the app.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details, see the [TeamViewer API documentation](https://dl.teamviewer.com/integrate/TeamViewer_API_Documentation.pdf) and [Build a TeamViewer integration](https://www.teamviewer.com/en/global/support/knowledge-base/teamviewer-remote/for-developers/build-a-teamviewer-integration/).
+
+---
