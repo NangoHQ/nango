@@ -1,8 +1,12 @@
+export { storedMetricNames } from './catalog.js';
 export type { HostedMetricName } from './catalog.js';
 export { PostgresMetricExporter, PRODUCER_ID_ATTRIBUTE } from './exporter.js';
+export type { MetricRow } from './exporter.js';
 export { destroyHostedTelemetryDb, hostedTelemetryDb, migrateHostedTelemetryDb, startHostedTelemetryPartitions } from './postgres/db.js';
 export { migrate } from './postgres/migrate.js';
 export { startPartitionDaemon } from './postgres/partitions.js';
-export { HOSTED_TELEMETRY_SCHEMA, HOSTED_TELEMETRY_TABLE } from './postgres/schema.js';
+export { HOSTED_TELEMETRY_SCHEMA, HOSTED_TELEMETRY_TABLE, HOSTED_TELEMETRY_UPLOADS_TABLE } from './postgres/schema.js';
+export { enqueueUploads, failExpiredUploads, failUpload, listQueuedUploads, readUploadPage, saveUploadProgress } from './postgres/uploads.js';
+export type { QueuedUpload, UploadCursor } from './postgres/uploads.js';
 export { createHostedTelemetry, hostedTelemetry, initHostedTelemetry, producerId } from './telemetry.js';
 export type { HostedTelemetry } from './telemetry.js';

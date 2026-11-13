@@ -1,5 +1,8 @@
 import './tracer.js';
 
+import * as cron from 'node-cron';
+
+import { destroyHostedTelemetryDb } from '@nangohq/hosted-telemetry';
 import { metrics, once, report } from '@nangohq/utils';
 
 import { boot as bootCloud } from './cloud/boot.js';
@@ -54,10 +57,12 @@ try {
 
 const close = once(() => {
     logger.info('Closing...');
+    cron.getTasks().forEach((task) => void task.stop());
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     api.close(async () => {
         await destroyCloudDb();
         await clickhouse?.close();
+        await destroyHostedTelemetryDb();
 
         logger.close();
 

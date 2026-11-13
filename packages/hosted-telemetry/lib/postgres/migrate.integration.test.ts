@@ -41,7 +41,7 @@ afterAll(async () => {
 describe('hosted telemetry postgres migrate', () => {
     it('creates the schema and applies only the hosted telemetry set', async () => {
         const applied = await knex.raw<{ rows: { name: string }[] }>(`SELECT name FROM ??.migrations ORDER BY name`, [schema]);
-        expect(applied.rows.map((r) => r.name)).toEqual(['20261014000001_create_metrics']);
+        expect(applied.rows.map((r) => r.name)).toEqual(['20261014000001_create_metrics', '20261110000001_create_uploads']);
     });
 
     it('keeps one value per metric, ts and attributes, comparing attributes by value', async () => {

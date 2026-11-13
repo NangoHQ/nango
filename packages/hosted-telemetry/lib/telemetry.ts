@@ -21,9 +21,9 @@ const DEFAULT_SHUTDOWN_TIMEOUT_MS = 5_000;
 const TIMED_OUT = Symbol('timed out');
 
 export interface HostedTelemetry {
-    increment(name: HostedMetricName, value?: number, attributes?: Attributes): void;
-    gauge(name: HostedMetricName, value: number, attributes?: Attributes): void;
-    histogram(name: HostedMetricName, value: number, attributes?: Attributes): void;
+    increment(name: HostedMetricName<'counter'>, value?: number, attributes?: Attributes): void;
+    gauge(name: HostedMetricName<'gauge'>, value: number, attributes?: Attributes): void;
+    histogram(name: HostedMetricName<'histogram'>, value: number, attributes?: Attributes): void;
     /**
      * Exports what the current window holds before the process goes, so a rollout does not lose the last minute.
      * It stops waiting after `timeoutMs` (5s by default), and whatever was not written by then may be lost.

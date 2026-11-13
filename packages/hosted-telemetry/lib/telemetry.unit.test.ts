@@ -11,6 +11,20 @@ vi.mock('@nangohq/utils', async () => {
     return { ...actual, getLogger: () => logger };
 });
 
+describe('hosted telemetry', () => {
+    it('only records a metric with the kind of instrument the catalog gives it', () => {
+        const telemetry = createHostedTelemetry();
+
+        telemetry.histogram('nango.hosted_metric.active_concurrency', 3);
+        // @ts-expect-error a histogram is not a counter
+        telemetry.increment('nango.hosted_metric.active_concurrency');
+        // @ts-expect-error a histogram is not a gauge
+        telemetry.gauge('nango.hosted_metric.active_concurrency', 3);
+        // @ts-expect-error not in the catalog
+        telemetry.histogram('nango.hosted_metric.active_concurency', 3);
+    });
+});
+
 describe('hosted telemetry shutdown', () => {
     it('stops waiting on a store that never answers once the timeout passes, and says the window may be lost', async () => {
         const hanging = { transaction: () => new Promise(() => {}) } as unknown as Knex;
