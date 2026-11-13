@@ -158,6 +158,24 @@ describe('trackPlaygroundTurn', () => {
         expect(payload?.properties).not.toHaveProperty('cost_usd');
     });
 
+    it('carries what the first message asked for', () => {
+        trackPlaygroundTurn({
+            ctx: { account: { id: 42 } as DBTeam, environment: { id: 7 } as DBEnvironment, plan: null, user: { id: 3 } as DBUser },
+            sessionId: 'session-1',
+            turn: { isFirstTurn: true, request: { intent: 'summarize unread emails', providers: ['google-mail'], hasUnsupportedProvider: true } },
+            outcome: 'complete',
+            steps: []
+        });
+
+        const [payload] = capture.mock.calls[0] ?? [];
+        expect(payload?.properties).toMatchObject({
+            intent: 'summarize unread emails',
+            requested_providers: ['google-mail'],
+            requested_provider_count: 1,
+            has_unsupported_provider: true
+        });
+    });
+
     it('names the provider failure behind a failed turn', () => {
         trackPlaygroundTurn({
             ctx: { account: { id: 42 } as DBTeam, environment: { id: 7 } as DBEnvironment, plan: null, user: { id: 3 } as DBUser },
