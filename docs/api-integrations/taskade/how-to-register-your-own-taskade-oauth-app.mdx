@@ -1,0 +1,31 @@
+---
+title: 'How to register your own Taskade OAuth app'
+sidebarTitle: 'Taskade Setup'
+description: 'Create a Taskade OAuth app and connect its credentials to Nango'
+---
+
+This guide shows you how to create a Taskade OAuth app to get your OAuth credentials (client ID & secret). Your users then authorize your app to access their Taskade account through the API.
+
+<Steps>
+  <Step title="Create a Taskade account">
+    If you don't have a Taskade account, [sign up](https://www.taskade.com/signup) for one. Verify your email address: Taskade does not create an OAuth app for an unverified account.
+  </Step>
+  <Step title="Create an OAuth app">
+    1. Go to [taskade.com/settings/api](https://www.taskade.com/settings/api) and open **OAuth2 Applications**.
+    2. Click **Create application** and fill in the app details.
+    3. Set the redirect URI to `https://api.nango.dev/oauth/callback` (or your own [custom callback URL](/guides/auth/auth-guide#custom-oauth-callback-url-optional)).
+    4. Save, then copy the **Client ID** and **Client Secret**.
+  </Step>
+  <Step title="Add the credentials in Nango">
+    In your Taskade integration in Nango, paste the client ID and secret. Leave scopes empty: the Taskade REST API ignores scopes.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+Access tokens expire after 1 hour. Nango refreshes them with the refresh token, and Taskade returns a new refresh token on each refresh.
+
+For more details, see [Taskade's API authentication documentation](https://www.taskade.com/docs/getting-started/authentication).
+
+---
