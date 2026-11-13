@@ -88,9 +88,6 @@ const STOPWORDS = new Set([
 const BEST_MATCH_SCORE = 0.4;
 const MAX_MATCH_SCORE = 0.85;
 
-// Every query word counts toward the score, so a longer query scores lower however well its top tool
-// fits, and a cutoff on the score alone turns away the obvious tool for a query phrased as a sentence.
-// The top result and the ones close behind it are a match too, unless even the top one is this weak.
 const LEADING_MATCH_SCORE = 0.65;
 const LEADING_MATCH_MARGIN = 0.1;
 
@@ -199,6 +196,9 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
     return { best, related };
 }
 
+// A long query scores low however well its top tool fits, so the cutting line follows the top result.
+// If there are no matches or the top one is weaker than LEADING_MATCH_SCORE, the cutting line is BEST_MATCH_SCORE.
+// Else it is whichever is greater, BEST_MATCH_SCORE or topScore plus a margin. Lower scores are better matches.
 function bestMatchScoreFor(topScore: number | undefined): number {
     if (topScore === undefined || topScore > LEADING_MATCH_SCORE) {
         return BEST_MATCH_SCORE;
