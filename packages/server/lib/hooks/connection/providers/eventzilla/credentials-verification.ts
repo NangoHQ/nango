@@ -25,8 +25,13 @@ export default async function execute(nango: Nango) {
         throw err;
     }
 
-    if (isNotAuthorized(parseBody(data))) {
+    const body = parseBody(data);
+    if (isNotAuthorized(body)) {
         throw new Error('Invalid credentials');
+    }
+    // A successful check must return the category list; anything else (non-JSON, an unexpected shape) is not a pass.
+    if (body === null || body.categories === undefined) {
+        throw new Error('Unexpected response from Eventzilla while verifying credentials');
     }
 }
 
