@@ -194,6 +194,9 @@ export enum Types {
     AUDIT_CONSUMER_BATCH_SIZE = 'nango.audit.consumer.batch.size',
     AUDIT_CONSUMER_REJECTED = 'nango.audit.consumer.rejected',
 
+    SELF_HOSTING_CLICKHOUSE_INSERT_DURATION_MS = 'nango.self_hosting.clickhouse.insert.duration_ms',
+    SELF_HOSTING_CLICKHOUSE_INSERT_ROWS = 'nango.self_hosting.clickhouse.insert.rows',
+
     FEATURE_FLAGS_CLIENT_UNAVAILABLE = 'nango.feature_flags.client.unavailable',
     FEATURE_FLAGS_CLIENT_RECONNECTED = 'nango.feature_flags.client.reconnected',
     FEATURE_FLAGS_EVALUATED = 'nango.feature_flags.evaluated'
