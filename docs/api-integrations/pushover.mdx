@@ -1,0 +1,81 @@
+---
+title: 'Pushover'
+sidebarTitle: 'Pushover'
+description: 'Integrate your application with the Pushover API'
+---
+
+## 🚀 Quickstart
+
+Connect to Pushover with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Pushover_.
+    </Step>
+    <Step id="authorize-pushover" title="Authorize Pushover">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your API token and user key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-pushover-api" title="Call the Pushover API">
+    Let's make your first request to the Pushover API to get your account's monthly message limits. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/1/apps/limits.json" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/1/apps/limits.json',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Pushover integration guides
+
+- [How do I link my account?](/api-integrations/pushover/connect)  
+Create an application API token and copy your user key to connect your Pushover account.
+
+Official docs: [Pushover API](https://pushover.net/api)
+
+## 🧩 Pre-built syncs & tools for Pushover
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/pushover/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango stores the user or group key in the `userKey` connection config field but adds it to no request: read it from the connection's `connection_config` and send it as the `user` parameter where the Pushover docs show it, for example when sending messages.
+
+---
