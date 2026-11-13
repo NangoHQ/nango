@@ -1,7 +1,21 @@
-import { ExternalLink, Eye, EyeOff, Key, Pencil, Trash2 } from 'lucide-react';
+import { ExternalLink, Eye, EyeOff, Key, Pencil, Trash2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button, Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, IconButton, Input } from '@nangohq/design-system';
+import {
+    Alert,
+    AlertDescription,
+    Button,
+    Dialog,
+    DialogBody,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    IconButton,
+    InlineCode,
+    Input
+} from '@nangohq/design-system';
 
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -19,6 +33,7 @@ import {
     allGroupScopes,
     groupWildcard,
     isScopeSelected,
+    renameLegacyScopes,
     SCOPE_GROUPS,
     toggleCredential as toggleCredentialFn,
     toggleGroup as toggleGroupFn,
@@ -92,6 +107,8 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
         const all = allGroupScopes(group);
         return isGroupWildcardSelected(group) || all.every((s) => selectedScopes.includes(s));
     };
+
+    const hasCredentialsScope = SCOPE_GROUPS.some((group) => group.items.some((item) => item.credentials && isScopeSelected(item.credentials, selectedScopes)));
 
     const hasAnyChildSelected = (group: ScopeGroup) => allGroupScopes(group).some((s) => selectedScopes.includes(s));
 
@@ -218,6 +235,17 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                     {selectedScopes.length === 0 && <p className="text-body-small-regular text-status-danger-text">Select at least one scope to continue</p>}
                 </div>
             )}
+            {permissionMode === 'custom' && hasCredentialsScope && (
+                <Alert variant="warning" size="compact">
+                    <TriangleAlert />
+                    <AlertDescription>
+                        <span>
+                            Scopes ending in <InlineCode>_credentials</InlineCode> let this key read raw OAuth tokens and API keys. Only grant them to backends
+                            that need them.
+                        </span>
+                    </AlertDescription>
+                </Alert>
+            )}
         </div>
     );
 };
@@ -319,13 +347,13 @@ interface KeyConfigProps {
 }
 
 const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecret, canManageKeys }) => {
-    const [editedScopes, setEditedScopes] = useState<string[]>(apiKey.scopes);
+    const [editedScopes, setEditedScopes] = useState<string[]>(() => renameLegacyScopes(apiKey.scopes));
     const [editedName, setEditedName] = useState<string>(apiKey.display_name);
     const [secretRevealed, setSecretRevealed] = useState(false);
     const { mutateAsync: updateApiKey, isPending } = useUpdateApiKey(env);
     const { toast } = useToast();
 
-    const scopesChanged = JSON.stringify(editedScopes.slice().sort()) !== JSON.stringify(apiKey.scopes.slice().sort());
+    const scopesChanged = JSON.stringify(editedScopes.slice().sort()) !== JSON.stringify(renameLegacyScopes(apiKey.scopes).sort());
     const nameChanged = editedName.trim() !== apiKey.display_name;
     const hasChanges = scopesChanged || nameChanged;
     const hasNoScopes = editedScopes.length === 0;
@@ -434,7 +462,7 @@ const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }
             confirmationKeyword={displayName}
             confirmButtonText="Delete API Key"
             trigger={
-                <IconButton label="Delete API key" variant="ghost" size="2xs" className="text-text-muted hover:text-status-danger-text">
+                <IconButton label="Delete API key" variant="danger-ghost" size="2xs">
                     <Trash2 className="size-3.5" />
                 </IconButton>
             }
@@ -455,7 +483,7 @@ const ManagedSecretKeyView: React.FC<{ secretKey: string; env: string }> = ({ se
         <SettingsContent title="API Keys">
             <div className="flex flex-col gap-4 py-4">
                 <div className="text-body-small-regular text-text-secondary">
-                    This key is managed via the <code className="text-text-strong">NANGO_SECRET_KEY_{env.toUpperCase()}</code> environment variable.
+                    This key is managed via the <InlineCode>NANGO_SECRET_KEY_{env.toUpperCase()}</InlineCode> environment variable.
                 </div>
                 <div>
                     <label className="text-body-small-semi text-text-strong block mb-1.5">Secret Key</label>
@@ -552,7 +580,7 @@ export const ApiKeys: React.FC = () => {
                                     <span className="text-body-small-semi text-text-strong">{key.display_name}</span>
                                 </TableCell>
                                 <TableCell>
-                                    <span className="text-body-small-regular text-text-secondary">{countSelectedScopes(key.scopes)}</span>
+                                    <span className="text-body-small-regular text-text-secondary">{countSelectedScopes(renameLegacyScopes(key.scopes))}</span>
                                 </TableCell>
                                 <TableCell>
                                     <span className="text-text-secondary cursor-default" title={formatFullDate(key.created_at)}>

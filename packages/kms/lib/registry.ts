@@ -23,6 +23,7 @@ export interface DekEnvs {
     NANGO_ENCRYPTION_KEY_WRAPPED?: string | undefined;
     NANGO_KMS_KEY_ARN?: string | undefined;
     NANGO_GCP_KMS_KEY_NAME?: string | undefined;
+    NANGO_AZURE_KMS_KEY_ID?: string | undefined;
 }
 
 export class DekRegistry {
@@ -54,16 +55,17 @@ function resolveDek(envs: DekEnvs): Promise<string> {
         NANGO_ENCRYPTION_KEY: plaintext,
         NANGO_ENCRYPTION_KEY_WRAPPED: wrapped,
         NANGO_KMS_KEY_ARN: kmsKeyArn,
-        NANGO_GCP_KMS_KEY_NAME: gcpKmsKeyName
+        NANGO_GCP_KMS_KEY_NAME: gcpKmsKeyName,
+        NANGO_AZURE_KMS_KEY_ID: azureKmsKeyId
     } = envs;
 
-    const cacheKey = JSON.stringify([plaintext, wrapped, kmsKeyArn, gcpKmsKeyName]);
+    const cacheKey = JSON.stringify([plaintext, wrapped, kmsKeyArn, gcpKmsKeyName, azureKmsKeyId]);
     const cached = resolved.get(cacheKey);
     if (cached !== undefined) {
         return cached;
     }
 
-    const promise = resolveFromEnvs({ plaintext, wrapped, kmsKeyArn, gcpKmsKeyName }).catch((err: unknown) => {
+    const promise = resolveFromEnvs({ plaintext, wrapped, kmsKeyArn, gcpKmsKeyName, azureKmsKeyId }).catch((err: unknown) => {
         // Don't cache failures: a transient KMS error must not poison every future caller.
         resolved.delete(cacheKey);
         throw err;
@@ -76,12 +78,14 @@ async function resolveFromEnvs({
     plaintext,
     wrapped,
     kmsKeyArn,
-    gcpKmsKeyName
+    gcpKmsKeyName,
+    azureKmsKeyId
 }: {
     plaintext?: string | undefined;
     wrapped?: string | undefined;
     kmsKeyArn?: string | undefined;
     gcpKmsKeyName?: string | undefined;
+    azureKmsKeyId?: string | undefined;
 }): Promise<string> {
     // Wrapped and plaintext keys are mutually exclusive: fail fast rather than silently picking one.
     if (wrapped && plaintext) {
@@ -92,10 +96,13 @@ async function resolveFromEnvs({
     // Fallback to the plaintext key (dev/self hosted) or '' (encryption disabled) when neither is set.
     // Unwrap failures are fatal: we must not silently start up with the wrong key.
     if (wrapped) {
-        const wrappingKey = resolveWrappingKey(kmsKeyArn, gcpKmsKeyName, {
-            both: 'NANGO_KMS_KEY_ARN and NANGO_GCP_KMS_KEY_NAME are mutually exclusive: set only one',
-            neither: 'one of NANGO_KMS_KEY_ARN or NANGO_GCP_KMS_KEY_NAME is required when NANGO_ENCRYPTION_KEY_WRAPPED is set'
-        });
+        const wrappingKey = resolveWrappingKey(
+            { kmsKeyArn, gcpKmsKeyName, azureKmsKeyId },
+            {
+                multiple: 'NANGO_KMS_KEY_ARN, NANGO_GCP_KMS_KEY_NAME and NANGO_AZURE_KMS_KEY_ID are mutually exclusive: set only one',
+                none: 'one of NANGO_KMS_KEY_ARN, NANGO_GCP_KMS_KEY_NAME or NANGO_AZURE_KMS_KEY_ID is required when NANGO_ENCRYPTION_KEY_WRAPPED is set'
+            }
+        );
         const dek = await unwrapDek({ wrapped, expectedContext: GLOBAL_DEK_CONTEXT, ...wrappingKey });
         logger.info('Loaded encryption key (source=wrapped)');
         return dek;

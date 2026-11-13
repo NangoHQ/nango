@@ -2,6 +2,7 @@ import tracer from 'dd-trace';
 
 import { Err, metrics } from '@nangohq/utils';
 
+import { measureAgentSessionToolCall } from '../../../services/agentSessionAnalytics.service.js';
 import { formatMcpArgumentsError, InternalMcpError, jsonContent, jsonStructuredContent, mcpToolError, PublicMcpError } from '../../mcp/utils.js';
 
 import type { CallToolResult, ToolAnnotations } from '@modelcontextprotocol/server';
@@ -26,6 +27,14 @@ export interface AgentSessionCallableTool {
  * resolves a name without rebuilding the session's naming.
  */
 export type AgentSessionCallableTools = ReadonlyMap<string, AgentSessionCallableTool>;
+
+/**
+ * What an MCP server tool returned, already a valid tool result, so it reaches the agent as the
+ * server shaped it instead of being serialised again as JSON.
+ */
+export class RemoteToolResult {
+    constructor(public readonly result: CallToolResult) {}
+}
 
 export interface AgentSessionMcpContext {
     account: DBTeam;
@@ -72,17 +81,18 @@ export function defineAgentSessionMcpTool<TInputSchema extends z.ZodType>(tool: 
     };
 }
 
-export async function callAgentSessionTool({
-    metric,
-    accountId,
-    structured = false,
-    run
-}: {
+interface AgentSessionToolCall {
     metric: string;
     accountId: number;
     structured?: boolean;
     run: () => Promise<Result<unknown>>;
-}): Promise<CallToolResult> {
+}
+
+export async function callAgentSessionTool(call: AgentSessionToolCall): Promise<CallToolResult> {
+    return await measureAgentSessionToolCall(async () => await runAgentSessionTool(call));
+}
+
+async function runAgentSessionTool({ metric, accountId, structured = false, run }: AgentSessionToolCall): Promise<CallToolResult> {
     return await tracer.trace<Promise<CallToolResult>>('server.mcp.agentSession.tool', async (span: Span) => {
         span.setTag('nango.accountId', accountId).setTag('nango.toolName', metric);
 
@@ -94,15 +104,20 @@ export async function callAgentSessionTool({
             return handleAgentSessionToolError(err, span);
         }
 
+        const failed = result.isErr() || (result.value instanceof RemoteToolResult && result.value.result.isError === true);
         metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
             accountId,
             mcp_type: 'agent_session',
             tool: metric,
-            outcome: result.isOk() ? 'success' : 'error'
+            outcome: failed ? 'error' : 'success'
         });
 
         if (result.isErr()) {
             return handleAgentSessionToolError(result.error, span);
+        }
+
+        if (result.value instanceof RemoteToolResult) {
+            return result.value.result;
         }
 
         // structuredContent has to be a JSON object, and only a tool that declared an output schema

@@ -1,3 +1,48 @@
-_No pre-built syncs or actions available yet._
+### Others
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>
+| Function name | Description | Type |
+| - | - | - |
+| `create-folder` | Create a new folder or project under a parent folder or space. | [Tool](/guides/functions/tools) |
+| `create-task-comment` | Post a new comment on a task. | [Tool](/guides/functions/tools) |
+| `create-task-dependency` | Create a predecessor/successor dependency link between two tasks. | [Tool](/guides/functions/tools) |
+| `create-task` | Create a task inside a folder or project, optionally as a subtask of an existing task. | [Tool](/guides/functions/tools) |
+| `create-timelog` | Log a time entry (hours worked) against a task. | [Tool](/guides/functions/tools) |
+| `delete-comment` | Permanently delete a comment. | [Tool](/guides/functions/tools) |
+| `delete-folder-safely` | Safely delete a folder, blocking the cascading delete of its tasks unless explicitly confirmed. | [Tool](/guides/functions/tools) |
+| `delete-folder` | Soft-delete a folder by moving it to the Recycle Bin. | [Tool](/guides/functions/tools) |
+| `delete-task-dependency` | Remove a dependency link between two tasks (does not affect either task itself). | [Tool](/guides/functions/tools) |
+| `delete-task` | Move a task to the Recycle Bin (soft delete). Does not cascade to its subtasks. | [Tool](/guides/functions/tools) |
+| `delete-timelog` | Permanently delete a timelog (time entry). | [Tool](/guides/functions/tools) |
+| `find-or-create-folder-and-create-task` | Composite: create a task inside a folder/project named by title under a parent, creating that folder first if it does not exist. | [Tool](/guides/functions/tools) |
+| `get-attachment` | Retrieve a single attachment's metadata by ID (not its binary content). | [Tool](/guides/functions/tools) |
+| `get-contact` | Retrieve a single contact (user, group, or bot) by ID. | [Tool](/guides/functions/tools) |
+| `get-current-user` | Get the contact record of the user/connection currently authenticated, including their account ID, admin/owner flags, and timezone. | [Tool](/guides/functions/tools) |
+| `get-custom-field` | Retrieve a single custom field definition by ID, including its configured dropdown options, currency, and numeric settings. | [Tool](/guides/functions/tools) |
+| `get-folder` | Retrieve a single folder (or Project, if it has a project sub-object) by ID. | [Tool](/guides/functions/tools) |
+| `get-task-full-context` | COMPOSITE: get a single task full picture in one call - its own fields, every comment on it, every logged timelog entry, and its parent folder/project metadata - merged into one response. | [Tool](/guides/functions/tools) |
+| `get-task` | Retrieve a single Wrike task by ID, including its status, dates, assignees, hierarchy IDs and custom field values. | [Tool](/guides/functions/tools) |
+| `list-attachments` | List attachment metadata (filename, size, content type, dimensions) across the account. Does not download file contents - metadata only, per this registry's convention of excluding binary upload/download actions. | [Tool](/guides/functions/tools) |
+| `list-contacts` | List all contacts (users, groups, and bot/robot accounts) visible to this account. | [Tool](/guides/functions/tools) |
+| `list-custom-fields` | List custom field definitions configured on this account (account- or space-specific, not a global Wrike concept). | [Tool](/guides/functions/tools) |
+| `list-folder-subtree` | List a folder plus every folder/project nested beneath it. | [Tool](/guides/functions/tools) |
+| `list-folder-tasks` | List only the tasks that live directly inside a specific folder or project. | [Tool](/guides/functions/tools) |
+| `list-folders` | List folders in the account, including Projects (Projects are Folders with a `project` sub-object attached, not a separate resource). | [Tool](/guides/functions/tools) |
+| `list-spaces` | List the account Spaces (top-level containers for folders and projects, each with its own default workflows and access type). | [Tool](/guides/functions/tools) |
+| `list-task-attachments` | List attachment metadata for files attached to a specific task. | [Tool](/guides/functions/tools) |
+| `list-task-comments` | List comments posted on a task. | [Tool](/guides/functions/tools) |
+| `list-task-dependencies` | List the dependency relationships (predecessor/successor links) involving a task. | [Tool](/guides/functions/tools) |
+| `list-task-timelogs` | List time-tracking entries logged against a specific task. | [Tool](/guides/functions/tools) |
+| `list-tasks` | List tasks across the whole account, optionally filtered by an updated/created date range. | [Tool](/guides/functions/tools) |
+| `list-timelogs` | List time-tracking entries across the whole account. | [Tool](/guides/functions/tools) |
+| `list-workflows` | List the account's workflow(s) and each one's custom statuses (read-only). | [Tool](/guides/functions/tools) |
+| `restore-folder` | Restore a previously soft-deleted folder, together with the child folders and tasks cascade-deleted with it, back to its original location. | [Tool](/guides/functions/tools) |
+| `set-task-custom-field` | Set (or clear) a custom field's value on a specific task. | [Tool](/guides/functions/tools) |
+| `update-comment` | Update the text of an existing comment. | [Tool](/guides/functions/tools) |
+| `update-folder` | Update a folder or project (title, description, dates, custom status, owners). Partial merge: only the provided fields change. | [Tool](/guides/functions/tools) |
+| `update-task` | Update a task's fields (status, dates, title, description, assignees, importance) with a partial merge. | [Tool](/guides/functions/tools) |
+| `update-timelog` | Edit an existing time entry's hours, date, or comment. | [Tool](/guides/functions/tools) |
+| `comments` | Sync every comment across the account. | [Sync](/guides/functions/syncs/sync-functions) |
+| `contacts` | Sync every contact (user, group, bot) visible to the account. | [Sync](/guides/functions/syncs/sync-functions) |
+| `folders` | Sync every active folder and project (a Project is a Folder with a project sub-object) in the Wrike account, and remove folders moved to the Recycle Bin. | [Sync](/guides/functions/syncs/sync-functions) |
+| `tasks` | Sync every active (non-trashed) task in the account, including subtask/supertask/dependency relationships and custom field values, and remove tasks moved to the Recycle Bin. | [Sync](/guides/functions/syncs/sync-functions) |
+| `timelogs` | Sync time-tracking entries across the account. | [Sync](/guides/functions/syncs/sync-functions) |

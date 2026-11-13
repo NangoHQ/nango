@@ -54,7 +54,11 @@ export const columns: ColumnDef<SearchMessagesData>[] = [
             canGrow: true
         },
         cell: ({ row }) => {
-            return <div className="truncate">{row.original.message}</div>;
+            return (
+                <div className="truncate" data-ph-mask>
+                    {row.original.message}
+                </div>
+            );
         }
     },
     {

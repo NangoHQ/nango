@@ -14,11 +14,14 @@ import { Spinner } from '../utils/spinner.js';
 import { compileAllFunctions } from '../zeroYaml/compile.js';
 import { parseIntegrationDefinitions } from '../zeroYaml/definitions.js';
 
+import type { FunctionConfig } from '../zeroYaml/definitions.js';
+
 const execAsync = promisify(exec);
 
 export interface IntegrationDefinition {
     syncs: Record<string, { output: string | string[] }>;
     actions: Record<string, { output: string | null }>;
+    functions?: Record<string, FunctionConfig>;
 }
 
 export interface ValidateFiltersResult {
@@ -139,6 +142,7 @@ const VITE_CONFIG_TEMPLATE = path.resolve(__dirname, '../templates/vite.config.e
 const VITEST_SETUP_TEMPLATE = path.resolve(__dirname, '../templates/vitest.setup.ejs');
 const SYNC_TEMPLATE_PATH = path.resolve(__dirname, '../templates/sync-test-template.ejs');
 const ACTION_TEMPLATE_PATH = path.resolve(__dirname, '../templates/action-test-template.ejs');
+const FUNCTION_TEMPLATE_PATH = path.resolve(__dirname, '../templates/function-test-template.ejs');
 
 function askQuestion(query: string): Promise<boolean> {
     const rl = readline.createInterface({
@@ -390,6 +394,28 @@ export async function generateActionTest({
     return outputPath;
 }
 
+export async function generateFunctionTest({
+    fn,
+    writePath
+}: {
+    fn: Pick<FunctionConfig, 'name' | 'integrationId' | 'filePath'>;
+    writePath: string;
+}): Promise<string> {
+    const testDir = path.resolve(writePath, fn.integrationId, 'tests');
+    const sourcePath = path.resolve(writePath, fn.filePath.replace(/\.ts$/, '.js'));
+    const importPath = path.relative(testDir, sourcePath).split(path.sep).join('/');
+    const templateSource = await fs.readFile(FUNCTION_TEMPLATE_PATH, 'utf8');
+    const result = ejs.render(templateSource, {
+        importPath: JSON.stringify(importPath.startsWith('.') ? importPath : `./${importPath}`),
+        testName: JSON.stringify(`${fn.integrationId} ${fn.name} replays the saved fixture`),
+        functionName: JSON.stringify(fn.name)
+    });
+    await fs.mkdir(testDir, { recursive: true });
+    const outputPath = path.join(testDir, `${fn.integrationId}-${fn.name}.test.ts`);
+    await fs.writeFile(outputPath, result);
+    return outputPath;
+}
+
 async function generateTestConfigs({ debug, force = false }: { debug: boolean; force?: boolean }): Promise<boolean> {
     try {
         const rootPath = await getProjectRoot();
@@ -509,7 +535,8 @@ export async function generateTests({
         for (const integration of parsed.integrations) {
             integrationsToProcess[integration.providerConfigKey] = {
                 syncs: {},
-                actions: {}
+                actions: {},
+                functions: {}
             };
 
             for (const sync of integration.syncs) {
@@ -523,6 +550,10 @@ export async function generateTests({
                     output: action.output
                 };
             }
+        }
+
+        for (const fn of parsed.functions) {
+            integrationsToProcess[fn.integrationId].functions[fn.name] = fn;
         }
 
         const filterResult = validateAndFilterIntegrations({
@@ -546,7 +577,19 @@ export async function generateTests({
                 printDebug(`Processing integration: ${integration}`);
             }
 
-            const { syncs, actions } = integrationsToProcess[integration];
+            const { syncs, actions, functions } = integrationsToProcess[integration];
+
+            if (!syncName && !actionName) {
+                for (const fn of Object.values(functions ?? {}) as FunctionConfig[]) {
+                    const mockPath = await firstExistingPath([
+                        path.resolve(absolutePath, integration, 'tests', `${fn.name}.test.json`),
+                        path.resolve(absolutePath, integration, 'tests', `${integration}-${fn.name}.test.json`)
+                    ]);
+                    if (mockPath) {
+                        generatedFiles.push(await generateFunctionTest({ fn, writePath: absolutePath }));
+                    }
+                }
+            }
 
             for (const currentSyncName of Object.keys(syncs || {})) {
                 if (!shouldProcessSync({ currentSyncName, syncName, actionName })) {

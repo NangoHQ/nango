@@ -1,11 +1,13 @@
+import { CircleAlert, Lock } from 'lucide-react';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { Badge } from '@nangohq/design-system';
+import { Alert, AlertDescription, AlertTitle } from '@nangohq/design-system';
 
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useTeam } from '../../../hooks/useTeam';
 import DashboardLayout from '../../../layout/DashboardLayout';
@@ -31,18 +33,34 @@ const EnvironmentSettingsContent: React.FC<{ value: string; children: ReactNode 
 };
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { data: teamData } = useTeam(env);
+    const { data: teamData, isError: isTeamError } = useTeam(env);
     const team = teamData?.data;
 
-    const { data } = useEnvironment(env);
+    const { data, isError: isEnvironmentError } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
-    const isProd = environmentAndAccount?.environment?.is_production || false;
     const [activeTab, setActiveTab] = useHashNavigation('general');
     const [apiKeysResetKey, setApiKeysResetKey] = useState(0);
+    const { can } = usePermissions();
+    const canEditEnvironment = can('environment:settings:update');
+
+    if ((isEnvironmentError && !environmentAndAccount) || (isTeamError && !team)) {
+        return (
+            <DashboardLayout fullWidth className="flex flex-col gap-8">
+                <Helmet>
+                    <title>Environment Settings - Nango</title>
+                </Helmet>
+                <Alert variant="danger">
+                    <CircleAlert />
+                    <AlertTitle>Couldn&apos;t load environment settings</AlertTitle>
+                    <AlertDescription>Refresh the page to try again.</AlertDescription>
+                </Alert>
+            </DashboardLayout>
+        );
+    }
 
     if (!environmentAndAccount || !team) {
         return (
-            <DashboardLayout fullWidth title="Environment settings" className="flex flex-col gap-8">
+            <DashboardLayout fullWidth className="flex flex-col gap-8">
                 <Helmet>
                     <title>Environment Settings - Nango</title>
                 </Helmet>
@@ -56,15 +74,17 @@ export const EnvironmentSettings: React.FC = () => {
     const canSeeDeprecatedAuthorization = new Date(team.account.created_at) <= new Date('2025-08-25');
 
     return (
-        <DashboardLayout
-            fullWidth
-            title="Environment settings"
-            titleBadge={isProd ? <Badge variant="brand">Prod</Badge> : <Badge variant="secondary">{env}</Badge>}
-            className="flex flex-col gap-8"
-        >
+        <DashboardLayout fullWidth className="flex flex-col gap-8">
             <Helmet>
                 <title>Environment Settings - Nango</title>
             </Helmet>
+
+            {!canEditEnvironment && (
+                <Alert variant="neutral">
+                    <Lock />
+                    <AlertDescription>You have read-only access to this environment. Ask an admin to change its settings.</AlertDescription>
+                </Alert>
+            )}
 
             <div className="flex h-fit justify-center" key={env}>
                 <Navigation value={activeTab} onValueChange={setActiveTab}>

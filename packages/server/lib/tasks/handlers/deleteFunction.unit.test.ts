@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Ok } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 
 import { DeletionBudgetExceeded } from '../../deletion/batchDelete.js';
 
@@ -15,7 +15,14 @@ vi.mock('../../deletion/deleteSyncConfigData.js', () => ({
 
 // null = config is soft-deleted (getSyncConfigById only returns live rows), the normal teardown precondition.
 const getSyncConfigById = vi.fn().mockResolvedValue(null);
+const search = vi.fn();
+const deleteFunctionConfigData = vi.fn();
+vi.mock('@nangohq/database', () => ({ default: { knex: {} } }));
+vi.mock('../../deletion/deleteFunctionConfigData.js', () => ({
+    deleteFunctionConfigData: (...args: unknown[]) => deleteFunctionConfigData(...args)
+}));
 vi.mock('@nangohq/shared', () => ({
+    functionConfigService: { search: (...args: unknown[]) => search(...args) },
     getSyncConfigById: (...args: unknown[]) => getSyncConfigById(...args)
 }));
 
@@ -32,8 +39,42 @@ describe('deleteFunction task', () => {
         enqueue.mockClear().mockResolvedValue(Ok({ taskId: 'task-id' }));
         deleteSyncConfigData.mockReset().mockResolvedValue(undefined);
         getSyncConfigById.mockReset().mockResolvedValue(null);
+        search.mockReset().mockResolvedValue(Ok([{ config: { id: 2, environment_id: 10, deleted_at: new Date() } }]));
+        deleteFunctionConfigData.mockReset().mockResolvedValue(undefined);
     });
     afterEach(() => vi.clearAllMocks());
+
+    const nativePayload = { functionConfigId: 2, environmentId: 10 };
+
+    it('cleans up a soft-deleted native config using an environment-scoped lookup', async () => {
+        const res = await deleteFunctionTask.handle(nativePayload, ctx);
+        expect(res.isOk()).toBe(true);
+        expect(search).toHaveBeenCalledWith({}, { environmentId: 10, filter: { id: 2 } }, { includeDeleted: true });
+        expect(deleteFunctionConfigData).toHaveBeenCalledWith(
+            expect.objectContaining({ id: 2, environment_id: 10 }),
+            expect.objectContaining({ sleepMs: 0, deadline: expect.any(Date) })
+        );
+        expect(deleteSyncConfigData).not.toHaveBeenCalled();
+    });
+
+    it.each([{ rows: [] }, { rows: [{ config: { id: 2, deleted_at: null } }] }])('skips missing or live native configs ($rows)', async ({ rows }) => {
+        search.mockResolvedValue(Ok(rows));
+        const res = await deleteFunctionTask.handle(nativePayload, ctx);
+        expect(res.isOk()).toBe(true);
+        expect(deleteFunctionConfigData).not.toHaveBeenCalled();
+    });
+
+    it('continues native cleanup with the same payload when the budget expires', async () => {
+        deleteFunctionConfigData.mockRejectedValue(new DeletionBudgetExceeded());
+        expect((await deleteFunctionTask.handle(nativePayload, ctx)).isOk()).toBe(true);
+        expect(enqueue).toHaveBeenCalledExactlyOnceWith('deleteFunction', nativePayload);
+    });
+
+    it('returns native lookup errors without starting cleanup', async () => {
+        search.mockResolvedValue(Err(new Error('lookup failed')));
+        expect((await deleteFunctionTask.handle(nativePayload, ctx)).isErr()).toBe(true);
+        expect(deleteFunctionConfigData).not.toHaveBeenCalled();
+    });
 
     it('no-ops when the config is still live (soft-delete rolled back after enqueue committed)', async () => {
         getSyncConfigById.mockResolvedValue({ id: 1, deleted: false });

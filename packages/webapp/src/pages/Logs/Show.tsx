@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
+import { track } from '../../utils/analytics';
 import { globalEnv } from '../../utils/env';
 import { OperationDrawer } from './components/OperationDrawer';
 import { SearchAllOperations } from './components/SearchAllOperations';
@@ -14,12 +15,15 @@ export const LogsShow: React.FC = () => {
 
     // Operation select
     const onSelectOperation = (open: boolean, operationId: string) => {
+        if (open) {
+            track('logs:operation_view', {});
+        }
         setOperationId(open ? operationId : null);
     };
 
     if (!globalEnv.features.logs) {
         return (
-            <DashboardLayout fullWidth title="Logs">
+            <DashboardLayout fullWidth>
                 <Helmet>
                     <title>Logs - Nango</title>
                 </Helmet>
@@ -38,7 +42,7 @@ export const LogsShow: React.FC = () => {
     }
 
     return (
-        <DashboardLayout fullWidth title="Logs" className="h-full">
+        <DashboardLayout fullWidth className="h-full">
             <Helmet>
                 <title>Logs - Nango</title>
             </Helmet>

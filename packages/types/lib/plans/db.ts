@@ -1,3 +1,4 @@
+import type { AuditTrailDataPlaneScope } from '../audit-trail/event.js';
 import type { Timestamps } from '../db.js';
 
 type FunctionRuntime = 'runner' | 'lambda';
@@ -180,6 +181,12 @@ export interface DBPlan extends Timestamps {
     has_audit_trail_access: boolean;
 
     /**
+     * Data-plane events recorded on top of the control plane
+     * @default []
+     */
+    audit_trail_data_plane_scopes: AuditTrailDataPlaneScope[];
+
+    /**
      * Enable or disable the ability to override the docs connect url from the connect session
      * @default false
      */
@@ -196,6 +203,9 @@ export interface DBPlan extends Timestamps {
      * @default false
      */
     can_disable_connect_ui_watermark: boolean;
+
+    /** @default true */
+    has_overdue_invoices_banner: boolean;
 
     /**
      * Sync Function Runtime

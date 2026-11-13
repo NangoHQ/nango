@@ -46,12 +46,12 @@ The audit trail covers the main control-plane operations related to connections,
 
 | Resource | Actions |
 |----------|---------|
-| `connection` | `created`, `updated`, `metadata_updated`, `refreshed`, `deleted` |
-| `integration` | `created`, `updated`, `deleted` |
-| `function` | `deployed`, `upgraded`, `deleted` |
+| `connection` | `created`, `updated`, `metadata_updated`, `refreshed`, `deleted`, `credentials_read` |
+| `integration` | `created`, `updated`, `deleted`, `credentials_read` |
+| `function` | `deployed`, `upgraded`, `updated`, `deleted`, `variant_created`, `variant_deleted`, `variant_updated` |
 | `sync` | `enabled`, `disabled`, `paused`, `started`, `triggered`, `cancelled`, `frequency_changed`, `variant_created`, `variant_deleted` |
-| `api_key` | `created`, `updated`, `deleted` |
-| `environment` | `created`, `updated`, `variables_changed`, `webhook_urls_changed`, `webhook_signing_key_rotated`, `deleted` |
+| `api_key` | `created`, `updated`, `deleted`, `credentials_read` |
+| `environment` | `created`, `updated`, `variables_changed`, ~~`webhook_urls_changed`~~ *(historical only)*, `webhook_signing_key_rotated`, `deleted`, `credentials_read` |
 | `member` | `invited`, `invite_accepted`, `invite_declined`, `invite_revoked`, `removed`, `role_changed` |
 | `team` | `updated` |
 | `user` | `updated` |
@@ -60,11 +60,24 @@ The audit trail covers the main control-plane operations related to connections,
 | `billing` | `plan_changed`, `trial_extended`, `details_changed`, `payment_method_added`, `payment_method_removed`, `spend_alert_changed`, `spend_alert_removed` |
 | `audit_trail` | `queried`, `exported` |
 
+`environment.updated` includes changes to environment settings and webhook configuration, including URLs and event subscriptions. Webhook fields appear in `metadata.changedFields` with the `webhooks.*` prefix, such as `webhooks.primary_url`. The former `environment.webhook_urls_changed` event is no longer emitted; existing entries remain available until their retention period ends. To review webhook changes across historical and current records, include both actions in your filters.
+
 `connection.metadata_updated` and `sync.triggered` are recorded for actions taken in the dashboard. The equivalent API endpoints — `POST` / `PATCH /connection/metadata` and `POST /sync/trigger` — are data plane operations and are not recorded; see [Limitations](#limitations).
+
+`function.variant_updated` records the requested `enabled` and `frequency` settings in its metadata. A `frequency` of `null` means the frequency override was reset. Omitted settings are not included.
 
 Secrets, such as API keys and passwords, are stripped from audit log entries.
 
-Reads are generally not recorded. Listing connections, fetching an integration, or opening a page in the dashboard leaves no entry. Our audit trail is designed to answer "what changed", not "what was looked at". Queries to the audit trail are an exception and logged with the actions listed above.
+Two kinds of reads are recorded: queries to the audit trail itself, and reads that return credentials. A credentials read is recorded as `credentials_read`, so you can see who accessed a secret.
+
+Only control plane credential reads are recorded: those made from the dashboard or through the API endpoints that manage integrations, API keys, and environments. Data plane reads, such as fetching a connection's credentials with `GET /connections/{connectionId}`, are not. Control plane credential reads cover:
+
+| Resource | Credentials |
+|----------|-------------|
+| `connection` | Connection credentials |
+| `integration` | Integration credentials, such as the client secret |
+| `api_key` | API key secrets |
+| `environment` | Environment secrets, such as the webhook signing key |
 
 <Note>
 The audit trail currently does not cover data plane operations, such as reading connection credentials or fetching sync records. See [Limitations](#limitations) for details.
@@ -98,11 +111,12 @@ For example, the following activities are not covered:
 
 | Not recorded | Example |
 |--------------|----------|
-| Reading connection credentials | `GET /connection/{connectionId}` |
+| Reading connection credentials via the API | `GET /connections/{connectionId}` |
 | Reading records from Nango | `GET /records` |
 | Deleting/pruning records in Nango | `PATCH /records` pruning |
 | Setting or updating connection metadata via the API | `POST` / `PATCH /connection/metadata` |
 | Triggering a sync via the API | `POST /sync/trigger` |
 | Proxy requests | Every call through `/proxy` |
-| Action executions | `POST /action/trigger` |
-| Reading configuration | Listing or fetching connections, integrations, or functions |
+| Tool calls | `POST /connections/:connectionId/tools/:name/calls` |
+| Legacy action executions (deprecated) | `POST /action/trigger` |
+| Reading configuration without secrets | Listing or fetching connections, integrations, or functions |

@@ -113,7 +113,7 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
     const filterLabelValues = filterLabelQuery.data?.pages.flatMap((p) => p.data.values) ?? null;
     // Non-env dimensions already store a readable value. For environment_id, resolve the id to the
     // env name once loaded; `null` means it's still loading, which renders a skeleton in the chip.
-    let filterLabel: string | null = filter ? filter.value : '';
+    let filterLabel: string | null = filter ? formatDimensionValue(filter.dimension, filter.value) : '';
     if (filter && filterNeedsLabel) {
         filterLabel = filterLabelValues ? (filterLabelValues.find((v) => v.id === filter.value)?.label ?? filter.value) : null;
     }
@@ -142,7 +142,7 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
                 onClear={
                     breakdownDimension
                         ? () => {
-                              track('web:usage:group_cleared', { metric });
+                              track('billing:usage_update', { change: 'group_clear', metric });
                               onSetBreakdown(null);
                           }
                         : undefined
@@ -168,7 +168,7 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
                             <DropdownMenuItem
                                 key={d}
                                 onSelect={() => {
-                                    track('web:usage:grouped', { metric, dimension: d });
+                                    track('billing:usage_update', { change: 'group', metric, dimension: d });
                                     onSetBreakdown(d);
                                 }}
                                 className={DIM_ITEM}
@@ -188,7 +188,7 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
                     onOpenChange={(next) => {
                         setFilterOpen(next);
                         if (next) {
-                            track('web:usage:filter_opened', { metric });
+                            track('billing:filter_button_click', { metric });
                             prefetchValues(dimensions);
                         }
                     }}

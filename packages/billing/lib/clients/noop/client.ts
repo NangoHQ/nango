@@ -108,8 +108,8 @@ export class NoopBillingClient implements BillingClient {
         return Promise.resolve(Ok({ pendingChangeId: 'local-pending-change', amountInCents: null }));
     }
 
-    downgrade(_opts: PlanChangeRequest): Promise<Result<void>> {
-        return Promise.resolve(Ok(undefined));
+    downgrade(_opts: PlanChangeRequest): Promise<Result<{ changeAt: Date | null }>> {
+        return Promise.resolve(Ok({ changeAt: null }));
     }
 
     applyPendingChanges(_opts: {

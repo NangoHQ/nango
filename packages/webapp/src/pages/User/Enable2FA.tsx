@@ -13,6 +13,7 @@ import { useMFA } from '@/hooks/useMFA';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { track } from '@/utils/analytics';
+import { apiErrorCode } from '@/utils/api';
 import { getMFAErrorMessage } from '@/utils/mfaErrors';
 import { MfaStepper } from './components/MfaStepper';
 import { RecoveryCodes } from './components/RecoveryCodes';
@@ -44,7 +45,7 @@ export const Enable2FA: React.FC = () => {
     const goToSettings = () => navigate('/user-settings');
 
     const cancel = (fromStep: 'scan' | 'save') => {
-        track('web:2fa:enable_cancelled', { step: fromStep });
+        track('auth:two_factor_cancel', { step: fromStep });
         goToSettings();
     };
 
@@ -58,7 +59,7 @@ export const Enable2FA: React.FC = () => {
             try {
                 const result = await enroll.mutateAsync();
                 setOtpauthUri(result.data.otpauthUri);
-                track('web:2fa:enable_started', {});
+                track('auth:two_factor_start', {});
             } catch (err) {
                 toast({ title: getMFAErrorMessage(err), variant: 'error' });
                 goToSettings();
@@ -70,10 +71,11 @@ export const Enable2FA: React.FC = () => {
     const verifyAndContinue = async () => {
         try {
             const result = await activate.mutateAsync({ code });
-            track('web:2fa:enabled', {});
+            track('auth:two_factor_complete', { is_success: true });
             setRecoveryCodes(result.data.recoveryCodes);
             setStep('save');
         } catch (err) {
+            track('auth:two_factor_complete', { is_success: false, error_code: apiErrorCode(err) });
             setCode('');
             toast({ title: getMFAErrorMessage(err), variant: 'error' });
         }
@@ -103,13 +105,16 @@ export const Enable2FA: React.FC = () => {
 
                                 {otpauthUri ? (
                                     <>
-                                        <div className="rounded-ds-xs border-ds-hairline border-border-default bg-white p-3">
+                                        <div className="ph-no-capture rounded-ds-xs border-ds-hairline border-border-default bg-white p-3">
                                             <QRCodeSVG value={otpauthUri} size={160} bgColor="#ffffff" fgColor="#000000" />
                                         </div>
                                         <div className="flex flex-col items-center gap-2">
                                             <span className="text-body-small-regular text-text-secondary">Can&apos;t scan? Enter this key manually:</span>
                                             {secret && (
-                                                <div className="flex items-center gap-1 rounded-ds-xs bg-surface-input px-2 py-1 font-mono text-ds-sm text-text-default">
+                                                <div
+                                                    className="flex items-center gap-1 rounded-ds-xs bg-surface-input px-2 py-1 font-mono text-ds-sm text-text-default"
+                                                    data-ph-mask
+                                                >
                                                     <span>{secret}</span>
                                                     <CopyButton text={secret.replace(/\s/g, '')} />
                                                 </div>

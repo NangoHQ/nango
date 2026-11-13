@@ -379,11 +379,11 @@ export async function deleteSyncConfig(id: number, trx: Knex | Knex.Transaction 
 }
 
 export async function disableScriptConfig({ id, environmentId }: { id: number; environmentId: number }): Promise<number> {
-    return await db.knex.from<DBSyncConfig>(TABLE).where({ id, environment_id: environmentId }).update({ enabled: false });
+    return await db.knex.from<DBSyncConfig>(TABLE).where({ id, environment_id: environmentId, deleted: false }).update({ enabled: false });
 }
 
 export async function enableScriptConfig({ id, environmentId }: { id: number; environmentId: number }): Promise<number> {
-    return await db.knex.from<DBSyncConfig>(TABLE).where({ id, environment_id: environmentId }).update({ enabled: true });
+    return await db.knex.from<DBSyncConfig>(TABLE).where({ id, environment_id: environmentId, deleted: false }).update({ enabled: true });
 }
 
 export async function deleteByConfigId(nango_config_id: number): Promise<void> {
@@ -748,6 +748,7 @@ export async function getSyncConfigsByConfigIdForWebhook(environment_id: number,
             environment_id,
             nango_config_id,
             active: true,
+            enabled: true,
             deleted: false
         })
         .whereRaw('webhook_subscriptions IS NOT NULL and array_length(webhook_subscriptions, 1) > 0');

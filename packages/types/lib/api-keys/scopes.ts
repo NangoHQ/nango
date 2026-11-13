@@ -44,8 +44,8 @@ export const API_KEY_SCOPES = [
     'environment:records:write',
     // Logs
     'environment:logs:read',
-    // Actions
-    'environment:actions:execute',
+    // Tools
+    'environment:tools:call',
     // Proxy
     'environment:proxy',
     // Variables
@@ -64,12 +64,16 @@ export type ApiKeyScope = ConcreteApiKeyScope | WildcardsFor<'environment'>;
 export const ACCOUNT_API_KEY_SCOPES = [
     // Environments
     'account:environments:list',
+    'account:environments:read',
+    'account:environments:read_secret',
+    'account:environments:update',
     'account:environments:create',
     'account:environments:delete',
     'account:environments:set_production',
     'account:environments:api_keys:list',
     'account:environments:api_keys:read',
     'account:environments:api_keys:create',
+    'account:environments:api_keys:update',
     'account:environments:api_keys:delete'
 ] as const;
 

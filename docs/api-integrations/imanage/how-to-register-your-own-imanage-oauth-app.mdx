@@ -1,0 +1,30 @@
+---
+title: 'How to register your own iManage Work OAuth app'
+sidebarTitle: 'iManage Work setup'
+description: 'Obtain OAuth credentials from iManage and connect them to Nango'
+---
+
+This guide shows you how to obtain your OAuth credentials (Client ID & Client Secret) from iManage. These are required to let your users grant your app access to their iManage Work account.
+
+<Note>
+iManage issues OAuth credentials itself — there's no self-serve developer portal. Each firm's administrator then enables your app for their own iManage Work environment.
+</Note>
+
+<Steps>
+    <Step id="request-credentials" title="Request OAuth credentials from iManage">
+    Request a Client ID and Client Secret from iManage, through the iManage Technology Partner program or iManage's OAuth application request form. When asked for a redirect URI, use `https://api.nango.dev/oauth/callback`.
+    </Step>
+    <Step id="enable-app-for-firm" title="Have each firm's administrator enable the app">
+    For each firm that connects, its iManage administrator enables your app in **Control Center** > **Settings** > **Applications**.
+
+    So connections stay active, ask them to set **Allow Refresh Token** to **Yes** on the app. It defaults to **No**, and without it the access token expires after 30 idle minutes and the user must reconnect.
+    </Step>
+    <Step id="add-credentials-to-nango" title="Add your credentials to Nango">
+    In Nango, open your iManage Work integration's **Settings** tab and enter your **Client ID** and **Client Secret**.
+    </Step>
+    <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+    </Step>
+</Steps>
+
+---

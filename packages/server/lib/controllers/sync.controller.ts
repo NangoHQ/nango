@@ -1,15 +1,32 @@
 import { logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, errorManager, getSyncConfigRaw, syncCommandToOperation, verifyOwnership } from '@nangohq/shared';
+import {
+    configService,
+    connectionService,
+    errorManager,
+    getSyncConfigRaw,
+    productTracking,
+    SyncCommand,
+    syncCommandToOperation,
+    verifyOwnership
+} from '@nangohq/shared';
 
 import { requireEnvironment } from '../utils/asyncWrapper.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { LogContextOrigin } from '@nangohq/logs';
-import type { SyncCommand } from '@nangohq/shared';
+import type { AnalyticsEventProperties } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
+
+const trackedSyncCommand: Record<SyncCommand, AnalyticsEventProperties<'functions:sync_command_submit'>['command']> = {
+    [SyncCommand.RUN]: 'run',
+    [SyncCommand.RUN_FULL]: 'full_resync',
+    [SyncCommand.PAUSE]: 'pause',
+    [SyncCommand.UNPAUSE]: 'resume',
+    [SyncCommand.CANCEL]: 'cancel'
+};
 
 class SyncController {
     public async syncCommand(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
@@ -22,7 +39,7 @@ class SyncController {
                 return;
             }
 
-            const { command, nango_connection_id, sync_id, sync_name, sync_variant, delete_records } = req.body;
+            const { command, nango_connection_id, sync_id, sync_name, sync_variant, delete_records, is_playground } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
             if (!connection) {
                 res.status(404).json({ error: { code: 'not_found' } });
@@ -83,6 +100,9 @@ class SyncController {
                 return;
             }
 
+            if (is_playground !== true) {
+                productTracking.track({ name: 'functions:sync_command_submit', eventProperties: { command: trackedSyncCommand[command as SyncCommand] } });
+            }
             void logCtx.info(`Sync command run successfully "${command}"`, { command, syncId: sync_id });
             await logCtx.success();
 

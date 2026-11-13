@@ -1,3 +1,139 @@
-_No pre-built syncs or actions available yet._
+### Others
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>
+| Function name | Description | Type |
+| - | - | - |
+| `add-host-tags` | Add tags to a host | [Tool](/guides/functions/tools) |
+| `add-team-membership` | Add a user to a team with a given role | [Tool](/guides/functions/tools) |
+| `cancel-downtime` | Cancel a scheduled or active downtime. | [Tool](/guides/functions/tools) |
+| `create-api-key` | Create a new API key for this account. | [Tool](/guides/functions/tools) |
+| `create-case-project` | Create a new case-management project. | [Tool](/guides/functions/tools) |
+| `create-case` | Create a new case within a project. | [Tool](/guides/functions/tools) |
+| `create-dashboard` | Create a new dashboard with a widget layout. | [Tool](/guides/functions/tools) |
+| `create-downtime` | Schedule a downtime (maintenance window) that suppresses monitor notifications for a scope/time range. | [Tool](/guides/functions/tools) |
+| `create-escalation-policy` | Create a new On-Call escalation policy | [Tool](/guides/functions/tools) |
+| `create-incident` | Create a new incident. | [Tool](/guides/functions/tools) |
+| `create-monitor` | Create a new monitor | [Tool](/guides/functions/tools) |
+| `create-notebook` | Create a new notebook | [Tool](/guides/functions/tools) |
+| `create-on-call-page` | Trigger a new On-Call page (alert a specific person or escalation policy immediately, independent of a monitor firing). | [Tool](/guides/functions/tools) |
+| `create-on-call-schedule` | Create a new On-Call rotation schedule | [Tool](/guides/functions/tools) |
+| `create-personal-access-token` | Create a new personal access token. | [Tool](/guides/functions/tools) |
+| `create-role` | Create a new role. | [Tool](/guides/functions/tools) |
+| `create-rum-application` | Create a new RUM application (registers a client_token for browser/mobile SDK instrumentation). | [Tool](/guides/functions/tools) |
+| `create-sensitive-data-scanner-group` | Create a new scanning group (a named collection of scanning rules with a shared filter) | [Tool](/guides/functions/tools) |
+| `create-sensitive-data-scanner-rule` | Create a new scanning rule within a group (a pattern to detect and optionally redact). | [Tool](/guides/functions/tools) |
+| `create-service-account-access-token` | Create an OAuth-style access token for a service account. | [Tool](/guides/functions/tools) |
+| `create-service-account-application-key` | Create an application key owned by a service account. | [Tool](/guides/functions/tools) |
+| `create-service-account` | Create a new service account (a non-human user identity for machine-to-machine API access). | [Tool](/guides/functions/tools) |
+| `create-service-definition` | Create or update a service definition (also used for updates — same endpoint upserts by service name). | [Tool](/guides/functions/tools) |
+| `create-slo-correction` | Create a new SLO correction window. | [Tool](/guides/functions/tools) |
+| `create-slo` | Create a new metric-based or monitor-based Service Level Objective. | [Tool](/guides/functions/tools) |
+| `create-synthetic-api-test` | Create a new Synthetic API (HTTP) test | [Tool](/guides/functions/tools) |
+| `create-synthetic-global-variable` | Create a reusable global variable for use across Synthetic tests. | [Tool](/guides/functions/tools) |
+| `create-team` | Create a new team. | [Tool](/guides/functions/tools) |
+| `create-user` | Create a new user (invited by email) in this account. | [Tool](/guides/functions/tools) |
+| `delete-api-key` | Delete an API key | [Tool](/guides/functions/tools) |
+| `delete-dashboard` | Delete a dashboard. | [Tool](/guides/functions/tools) |
+| `delete-host-tags` | Remove all tags from a host | [Tool](/guides/functions/tools) |
+| `delete-monitor` | Delete a monitor. | [Tool](/guides/functions/tools) |
+| `delete-notebook` | Delete a notebook. | [Tool](/guides/functions/tools) |
+| `delete-restriction-policy` | Remove the restriction policy from a resource (reverting to default account-wide access rules). | [Tool](/guides/functions/tools) |
+| `delete-role` | Delete a role. | [Tool](/guides/functions/tools) |
+| `delete-rum-application` | Delete a RUM application. | [Tool](/guides/functions/tools) |
+| `delete-sensitive-data-scanner-rule` | Delete a scanning rule. | [Tool](/guides/functions/tools) |
+| `delete-slo-correction` | Permanently delete an SLO correction. | [Tool](/guides/functions/tools) |
+| `delete-slo` | Delete an SLO. | [Tool](/guides/functions/tools) |
+| `delete-synthetic-tests` | Delete one or more Synthetic tests. | [Tool](/guides/functions/tools) |
+| `delete-team` | Delete a team. | [Tool](/guides/functions/tools) |
+| `delete-user-invitations` | Revoke/delete all pending invitations for a user. | [Tool](/guides/functions/tools) |
+| `disable-user` | Disable (deactivate) a user, preventing further login. | [Tool](/guides/functions/tools) |
+| `get-api-key` | Get a single API key's metadata by id. | [Tool](/guides/functions/tools) |
+| `get-current-user` | Get the profile of the user this connection authenticates as, including org/role relationships. | [Tool](/guides/functions/tools) |
+| `get-dashboard` | Get a single dashboard by id, including its full widget layout. | [Tool](/guides/functions/tools) |
+| `get-host-tags` | Get tags assigned to a specific host. | [Tool](/guides/functions/tools) |
+| `get-hourly-usage` | Get hourly usage broken down by product family — the current recommended usage endpoint (most per-product v1 hourly endpoints are deprecated in favor of this one). | [Tool](/guides/functions/tools) |
+| `get-monitor` | Get a single monitor by id | [Tool](/guides/functions/tools) |
+| `get-notebook` | Get a single notebook by id. | [Tool](/guides/functions/tools) |
+| `get-on-call-schedule` | Get a single On-Call schedule by id. | [Tool](/guides/functions/tools) |
+| `get-organization` | Get details of a single organization. | [Tool](/guides/functions/tools) |
+| `get-restriction-policy` | Get the restriction policy (fine-grained access bindings) for a specific resource. | [Tool](/guides/functions/tools) |
+| `get-role` | Get a single role by id. | [Tool](/guides/functions/tools) |
+| `get-rum-application` | Get a single RUM application by id. | [Tool](/guides/functions/tools) |
+| `get-sensitive-data-scanner-config` | Get the full Sensitive Data Scanner configuration tree (scanning groups and rules). | [Tool](/guides/functions/tools) |
+| `get-slo-correction` | Get a single SLO correction by id. | [Tool](/guides/functions/tools) |
+| `get-slo-history` | Get the historical SLI value for an SLO over a time range. | [Tool](/guides/functions/tools) |
+| `get-slo` | Get a single SLO by id. | [Tool](/guides/functions/tools) |
+| `get-synthetic-api-test` | Get a single Synthetic API test's configuration. | [Tool](/guides/functions/tools) |
+| `get-team` | Get a single team by id. | [Tool](/guides/functions/tools) |
+| `get-usage-summary` | Get a summary of billable usage across all Datadog products for a given month range. | [Tool](/guides/functions/tools) |
+| `get-user-invitation` | Get the status/details of a single user invitation. | [Tool](/guides/functions/tools) |
+| `get-user` | Get a single user by id. | [Tool](/guides/functions/tools) |
+| `list-api-keys` | List API keys configured for this account (metadata only, not secret values). | [Tool](/guides/functions/tools) |
+| `list-application-keys` | List application keys for this account. | [Tool](/guides/functions/tools) |
+| `list-case-projects` | List case-management projects (containers for cases, similar in spirit to a Jira project). | [Tool](/guides/functions/tools) |
+| `list-cases` | List or search cases across projects. | [Tool](/guides/functions/tools) |
+| `list-catalog-entities` | List Software Catalog entities | [Tool](/guides/functions/tools) |
+| `list-container-images` | List container images observed in this account, optionally enriched with security scan data. | [Tool](/guides/functions/tools) |
+| `list-containers` | List containers reported by hosts running the Datadog Agent. | [Tool](/guides/functions/tools) |
+| `list-dashboards` | List dashboards in this account. | [Tool](/guides/functions/tools) |
+| `list-downtimes` | List scheduled and active downtimes. | [Tool](/guides/functions/tools) |
+| `list-events` | List events (deployments, alerts, custom annotations) within a time range. | [Tool](/guides/functions/tools) |
+| `list-hosts` | List hosts reporting into this account. | [Tool](/guides/functions/tools) |
+| `list-incidents` | List incidents tracked via Datadog Incident Management. | [Tool](/guides/functions/tools) |
+| `list-metrics` | List active metric names reporting in this account since a given time. | [Tool](/guides/functions/tools) |
+| `list-monitors` | List monitors (alerting rules) configured in this Datadog account. | [Tool](/guides/functions/tools) |
+| `list-notebooks` | List notebooks in this account. | [Tool](/guides/functions/tools) |
+| `list-organizations` | List organizations manageable by this account (relevant for multi-org/MSP setups). | [Tool](/guides/functions/tools) |
+| `list-personal-access-tokens` | List personal access tokens | [Tool](/guides/functions/tools) |
+| `list-processes` | List processes reported by hosts running the Datadog Agent's live process collection. | [Tool](/guides/functions/tools) |
+| `list-role-permissions` | List the permissions granted to a role. | [Tool](/guides/functions/tools) |
+| `list-roles` | List roles (permission bundles assignable to users) in this account. | [Tool](/guides/functions/tools) |
+| `list-rum-applications` | List Real User Monitoring (RUM) applications configured in this account. | [Tool](/guides/functions/tools) |
+| `list-rum-metrics` | List custom metrics derived from RUM events. | [Tool](/guides/functions/tools) |
+| `list-security-rules` | List Cloud SIEM / Security Monitoring detection rules. | [Tool](/guides/functions/tools) |
+| `list-service-account-access-tokens` | List access tokens issued to a service account. | [Tool](/guides/functions/tools) |
+| `list-service-account-application-keys` | List application keys owned by a service account. | [Tool](/guides/functions/tools) |
+| `list-service-definitions` | List service definitions in the Service Catalog. | [Tool](/guides/functions/tools) |
+| `list-slo-corrections` | List SLO corrections (time windows excluded from an SLO's error-budget calculation, e.g. for planned maintenance). | [Tool](/guides/functions/tools) |
+| `list-slos` | List Service Level Objectives. | [Tool](/guides/functions/tools) |
+| `list-synthetic-locations` | List available public and private Synthetic test locations. | [Tool](/guides/functions/tools) |
+| `list-synthetic-tests` | List Synthetic API/browser/mobile tests. | [Tool](/guides/functions/tools) |
+| `list-team-memberships` | List users who are members of a team. | [Tool](/guides/functions/tools) |
+| `list-teams` | List teams in this organization. | [Tool](/guides/functions/tools) |
+| `list-user-identity-providers` | Get identity-provider (SSO) overrides configured for a specific user. | [Tool](/guides/functions/tools) |
+| `list-user-permissions` | List the effective permissions a user has (aggregated from their assigned roles). | [Tool](/guides/functions/tools) |
+| `list-user-team-memberships` | List the teams a specific user belongs to (the inverse view of list-team-memberships, which lists users for a given team). | [Tool](/guides/functions/tools) |
+| `list-users` | List users in this account. | [Tool](/guides/functions/tools) |
+| `mute-monitor` | Mute (silence) a monitor's notifications. | [Tool](/guides/functions/tools) |
+| `post-event` | Create a custom event (annotation) on the Datadog event stream. | [Tool](/guides/functions/tools) |
+| `query-metrics` | Query a metric time series data points over a time range. | [Tool](/guides/functions/tools) |
+| `search-logs` | Search ingested log events within a time range. | [Tool](/guides/functions/tools) |
+| `send-user-invitation` | (Re-)send an invitation email to one or more pending users. | [Tool](/guides/functions/tools) |
+| `submit-logs` | Ingest raw log lines. | [Tool](/guides/functions/tools) |
+| `submit-metrics` | Ingest custom metric data points | [Tool](/guides/functions/tools) |
+| `unmute-monitor` | Unmute a previously muted monitor. | [Tool](/guides/functions/tools) |
+| `update-api-key` | Rename an API key. | [Tool](/guides/functions/tools) |
+| `update-current-user` | Update the profile of the user this connection authenticates as (name/title). | [Tool](/guides/functions/tools) |
+| `update-dashboard` | Update a dashboard's title, layout, or widgets. | [Tool](/guides/functions/tools) |
+| `update-monitor` | Update a monitor's name, query, message, or options. | [Tool](/guides/functions/tools) |
+| `update-notebook` | Update a notebook's name, cells, or time range. | [Tool](/guides/functions/tools) |
+| `update-organization` | Update organization settings (name, billing, SAML config). | [Tool](/guides/functions/tools) |
+| `update-restriction-policy` | Set or replace the restriction policy (access bindings) for a resource. | [Tool](/guides/functions/tools) |
+| `update-role` | Update a role's name. | [Tool](/guides/functions/tools) |
+| `update-rum-application` | Update a RUM application's name or settings. | [Tool](/guides/functions/tools) |
+| `update-synthetic-api-test` | Edit an existing Synthetic API test configuration. | [Tool](/guides/functions/tools) |
+| `update-team` | Update a team's name, handle, or description. | [Tool](/guides/functions/tools) |
+| `update-user` | Update a user's name, email, title, or disabled status. | [Tool](/guides/functions/tools) |
+| `validate-monitor` | Validate a monitor definition (type + query) without creating it. | [Tool](/guides/functions/tools) |
+| `case_projects` | Sync case-management projects. | [Sync](/guides/functions/syncs/sync-functions) |
+| `dashboards` | Sync dashboards in this account. | [Sync](/guides/functions/syncs/sync-functions) |
+| `events` | Sync events (deployments, alerts, custom annotations) in a time window | [Sync](/guides/functions/syncs/sync-functions) |
+| `hosts` | Sync hosts reporting into this account. | [Sync](/guides/functions/syncs/sync-functions) |
+| `monitors` | Sync monitors (alerting rules) configured in this account. | [Sync](/guides/functions/syncs/sync-functions) |
+| `notebooks` | Sync notebooks in this account. | [Sync](/guides/functions/syncs/sync-functions) |
+| `roles` | Sync roles (permission bundles) configured in this account. | [Sync](/guides/functions/syncs/sync-functions) |
+| `rum_applications` | Sync Real User Monitoring (RUM) applications configured in this account. | [Sync](/guides/functions/syncs/sync-functions) |
+| `service_definitions` | Sync Service Catalog service definitions. | [Sync](/guides/functions/syncs/sync-functions) |
+| `slos` | Sync Service Level Objectives. | [Sync](/guides/functions/syncs/sync-functions) |
+| `synthetic_tests` | Sync Synthetic API/browser/mobile tests. | [Sync](/guides/functions/syncs/sync-functions) |
+| `teams` | Sync teams in this organization. | [Sync](/guides/functions/syncs/sync-functions) |
+| `users` | Sync users in this account. | [Sync](/guides/functions/syncs/sync-functions) |

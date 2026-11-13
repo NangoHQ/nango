@@ -134,7 +134,7 @@ function nativeFunction({
 }: { subscriptions?: string[]; inputSchemaRef?: string | null } = {}) {
     return {
         integration: { id: 3, unique_key: 'github-dev', provider: 'github' },
-        config: { id: 31, name: 'native-webhook', enabled: true },
+        config: { id: 31, uuid: '11111111-1111-4111-8111-111111111111', name: 'native-webhook', enabled: true },
         currentVersion: {
             id: 32,
             trigger: { kind: 'http', subscriptions },
@@ -273,11 +273,16 @@ describe('webhook dispatch', () => {
         mocks.functionConfigSearch.mockResolvedValue({ isErr: () => false, value: [nativeFunction()] });
         const publisher = { publish: vi.fn().mockResolvedValue({ enqueued: 2, failed: 0, failedActivityLogIds: [] }) };
         mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
-        const nango = makeInternalNango([createLogCtx('log-1'), createLogCtx('log-2')]);
+        const create = vi.fn().mockReturnValueOnce(createLogCtx('log-1')).mockReturnValueOnce(createLogCtx('log-2'));
+        const nango = makeInternalNango([], { create });
 
         await nango.executeScriptForWebhooks({ payload: { event: 'x' }, webhookTypeValue: 'push' });
 
         expect(mocks.invokeFunction).not.toHaveBeenCalled();
+        expect(create).toHaveBeenCalledTimes(2);
+        for (const [options] of create.mock.calls) {
+            expect(options.operation).toEqual({ type: 'webhook', action: 'incoming' });
+        }
         expect(publisher.publish).toHaveBeenCalledOnce();
         const messages = publisher.publish.mock.calls[0]![0].map((prepared: any) => prepared.message);
         expect(messages).toHaveLength(2);
@@ -285,7 +290,7 @@ describe('webhook dispatch', () => {
             expect.arrayContaining([
                 expect.objectContaining({
                     kind: 'function',
-                    functionName: 'native-webhook',
+                    functionUuid: '11111111-1111-4111-8111-111111111111',
                     idempotencyKey: expect.stringMatching(/^function:env:2:connection:/),
                     maxConcurrency: 1,
                     trigger: expect.objectContaining({ kind: 'http', subscriptions: ['push'] })

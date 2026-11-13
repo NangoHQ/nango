@@ -137,12 +137,15 @@ await nango.getIntegration(<INTEGRATION-ID>);
         "provider": "slack",
         "logo": "http://localhost:3003/images/template-logos/slack.svg",
         "forward_webhooks": true,
+        "missing_fields": [],
         "created_at": "2023-10-16T08:45:26.241Z",
         "updated_at": "2023-10-16T08:45:26.241Z"
     }
 }
 ```
 </Expandable>
+
+`missing_fields` lists the credential fields the integration may need before connections can be created, for example `oauth_client_id`. It is empty once the integration is fully configured, when it uses a Nango-provided developer app, or when the auth mode collects everything at connection time.
 
 ### Create an integration
 
@@ -168,7 +171,9 @@ await nango.createIntegration({ provider: '<PROVIDER-ID>', unique_key: '<UNIQUE_
     </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
-        The credentials to include depend on the specific integration that you want to create.
+        For `OAUTH1`, `OAUTH2`, `TBA`, `APP`, and `CUSTOM` credentials, you can create an integration without credentials or with partial credentials, then provide missing credentials with an update call or as per-connection overrides.
+
+        Pass `{ type: 'NANGO_MANAGED' }` to use a [Nango-managed developer app](/guides/auth/auth-guide#nango-managed-oauth-apps) instead of your own credentials. Only works for `OAUTH1`, `OAUTH2`, and `APP` providers that Nango has a managed app for. Can't be combined with `integration_config`, and the credentials can't be updated later.
     </ResponseField>
 
     <ResponseField name="integration_config" type="Record<string, string>">
@@ -224,7 +229,7 @@ await nango.updateIntegration({ uniqueKey: '<UNIQUE_KEY>' }, { display_name: 'Ne
     </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
-        The credentials to include depend on the specific integration that you want to update.
+        The credentials to include depend on the specific integration that you want to update. Only the fields you pass are updated; the ones you leave out keep their current value.
     </ResponseField>
 
     <ResponseField name="integration_config" type="Record<string, string>">
@@ -867,9 +872,13 @@ This method polls for a connection every 2 seconds for up to 60 seconds (30 atte
 
 ## Integration functions
 
+<Note>
+  The `action` type and `actions` arrays in existing API responses describe deprecated action definitions. Use tools for new on-demand functions. Catalog tools may still return a legacy action-format definition; preserve these literal API values when reading responses.
+</Note>
+
 ### List functions
 
-Returns the functions deployed to an integration, with pagination.
+Returns the functions available to an integration, with pagination.
 
 ```ts
 await nango.listFunctions({ uniqueKey: 'github' });
@@ -878,7 +887,7 @@ await nango.listFunctions({ uniqueKey: 'github' });
 Filter by function type, name, or page:
 
 ```ts
-await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'issue', page: 0, limit: 20 });
+await nango.listFunctions({ uniqueKey: 'github' }, { type: 'tool', search: 'issue', page: 0, limit: 20 });
 ```
 
 **Parameters**
@@ -888,7 +897,7 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
         The integration ID.
     </ResponseField>
     <ResponseField name="type" type="string">
-        Filter by function type: `sync`, `action`, or `on-event`.
+        Filter by function type: `sync`, `tool`, or `on-event`.
     </ResponseField>
     <ResponseField name="search" type="string">
         Case-insensitive filter on the function name.
@@ -900,6 +909,8 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
         Results per page (1-100, default `20`).
     </ResponseField>
 </Expandable>
+
+Catalog tools have `id: null`, `last_deployed: null`, `enabled: true`, and `source: "tools-catalog"`.
 
 **Example Response**
 
@@ -930,10 +941,21 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
             "enabled": true,
             "last_deployed": "2024-03-28T14:00:00.000Z",
             "source": "repo"
+        },
+        {
+            "type": "action",
+            "name": "get-repository",
+            "description": "Get a GitHub repository",
+            "returns": ["GithubRepository"],
+            "json_schema": null,
+            "id": null,
+            "enabled": true,
+            "last_deployed": null,
+            "source": "tools-catalog"
         }
     ],
     "pagination": {
-        "total": 2,
+        "total": 3,
         "page": 0,
         "limit": 20
     }
@@ -943,13 +965,13 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
 
 ### Get a function
 
-Retrieves a deployed function of an integration.
+Retrieves a function available to an integration. This can be a deployed function or a Nango catalog tool.
 
 ```ts
 await nango.getFunction({ uniqueKey: 'github', name: 'create-issue' });
 ```
 
-Pass `type` to disambiguate when a sync and an action share the same name:
+Use `type` to filter by function type:
 
 ```ts
 await nango.getFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' });
@@ -965,7 +987,7 @@ await nango.getFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' 
         The function name.
     </ResponseField>
     <ResponseField name="type" type="string">
-        Disambiguates when functions share a name: `sync`, `action`, or `on-event`.
+        The function type: `sync`, `tool`, or `on-event`. When omitted and several functions share the name, tools are returned first, then on-event and sync functions.
     </ResponseField>
 </Expandable>
 
@@ -991,10 +1013,10 @@ await nango.getFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' 
 
 ### Get function code
 
-Retrieves the source code of a deployed function.
+Retrieves the source code of a function. The example below fetches a deployed tool. For a Nango catalog tool, the response contains the current catalog source even though the function has not been deployed.
 
 ```ts
-await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { type: 'action' });
+await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { type: 'tool' });
 ```
 
 **Parameters**
@@ -1007,7 +1029,7 @@ await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { typ
         The function name.
     </ResponseField>
     <ResponseField name="type" type="string">
-        Disambiguates when functions share a name: `sync`, `action`, or `on-event`.
+        The function type: `sync`, `tool`, or `on-event`. When omitted and several functions share the name, tools are returned first, then on-event and sync functions.
     </ResponseField>
 </Expandable>
 
@@ -1016,8 +1038,8 @@ await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { typ
 <Expandable>
 ```json
 {
-    "type": "action",
-    "code": "export default createAction({ /* ... */ });"
+    "type": "tool",
+    "code": "export default createTool({ /* ... */ });"
 }
 ```
 </Expandable>
@@ -1027,7 +1049,7 @@ await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { typ
 Deletes a deployed function of an integration. The `type` is required.
 
 ```ts
-await nango.deleteFunction({ uniqueKey: 'github', name: 'create-issue' }, { type: 'action' });
+await nango.deleteFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' });
 ```
 
 **Parameters**
@@ -1040,7 +1062,7 @@ await nango.deleteFunction({ uniqueKey: 'github', name: 'create-issue' }, { type
         The function name.
     </ResponseField>
     <ResponseField name="type" type="string" required>
-        The function type: `sync` or `action`.
+        The function type: `sync` or deprecated `action`.
     </ResponseField>
 </Expandable>
 
@@ -1058,7 +1080,7 @@ await nango.deleteFunction({ uniqueKey: 'github', name: 'create-issue' }, { type
 
 ### Get integration functions config
 
-Return the configuration for all integration functions
+Returns legacy deployed sync configuration and deprecated action definitions. For tools and catalog discovery, use [List functions](#list-functions).
 
 ```ts
 const scriptsConfig = await nango.getScriptsConfig();
@@ -2056,11 +2078,40 @@ No parameters.
 ```
 </Expandable>
 
-## Actions
+## Tools
 
-### Trigger an action
+### Call a tool
 
-Triggers an action for a connection.
+Calls an enabled tool synchronously for a connection and returns its output directly.
+
+```typescript
+const result = await nango.callTool(
+    { connectionId: '<CONNECTION-ID>', name: 'create-issue' },
+    { input: { owner: 'NangoHQ', repo: 'interactive-demo', title: 'Bug report' } },
+    { 'provider-config-key': 'github' }
+);
+```
+
+| Argument | Description |
+| --- | --- |
+| `{ connectionId, name }` | Connection ID and tool name. |
+| `{ input? }` | Tool input. Send `{}` for a tool that takes no input. |
+| `headers?` | Optional `{ 'provider-config-key': integrationId }`; required when multiple integrations share the connection ID. |
+
+Use a Nango Environment API key with `environment:tools:call`.
+
+See [Tools](/guides/functions/tools) and the [HTTP reference](/reference/backend/http-api/tools/call).
+
+## Actions (deprecated)
+
+<Warning>
+  Use [`callTool`](#call-a-tool) for new code. These deprecated methods remain documented for existing users. See [Actions (deprecated)](/guides/functions/action-functions) and [migration guidance](/guides/platform/migrations/migrate-from-actions).
+</Warning>
+
+<a id="trigger-an-action"></a>
+### Trigger an action (deprecated)
+
+Triggers a deprecated action for a connection.
 
 ```js
 await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>', { 'custom_key1': 'custom_value1' });
@@ -2094,12 +2145,13 @@ await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>'
 </Expandable>
 
 <Warning>
-The output of an action cannot exceed 10MB.
+Deprecated actions have a maximum output payload size of 2 MB.
 </Warning>
 
-### Trigger an action asynchronously
+<a id="trigger-an-action-asynchronously"></a>
+### Trigger an action asynchronously (deprecated)
 
-Triggers an action asynchronously for a connection. This allows you to start an action and retrieve the results later.
+Triggers a deprecated action asynchronously for a connection and retrieves its result later.
 
 ```js
 const { id, statusUrl } = await nango.triggerActionAsync('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>', { 'custom_key1': 'custom_value1' });
@@ -2133,9 +2185,10 @@ const { id, statusUrl } = await nango.triggerActionAsync('<INTEGRATION-ID>', '<C
 ```
 </Expandable>
 
-### Get async action result
+<a id="get-async-action-result"></a>
+### Get async action result (deprecated)
 
-Retrieves the result of an asynchronous action.
+Retrieves the result of a deprecated asynchronous action.
 
 ```js
 // Using the id

@@ -86,6 +86,39 @@ export const getSyncJobByRunId = async (run_id: string): Promise<SyncJob | null>
     return result ? normalizeSyncJobId(result) : null;
 };
 
+/**
+ * True when this job row is that sync, on that connection, in that environment.
+ * A missing id and a job from another sync or tenant are both false.
+ * Reads the primary: the job row is inserted there immediately before the first records write.
+ */
+export async function syncJobBelongsTo({
+    syncJobId,
+    syncId,
+    nangoConnectionId,
+    environmentId
+}: {
+    syncJobId: number;
+    syncId: string;
+    nangoConnectionId: number;
+    environmentId: number;
+}): Promise<boolean> {
+    const result = await db.knex
+        .select(`${SYNC_JOB_TABLE}.id`)
+        .from<{ id: number }>(SYNC_JOB_TABLE)
+        .join('_nango_syncs', '_nango_syncs.id', `${SYNC_JOB_TABLE}.sync_id`)
+        .join('_nango_connections', '_nango_connections.id', '_nango_syncs.nango_connection_id')
+        .where({
+            [`${SYNC_JOB_TABLE}.id`]: syncJobId,
+            [`${SYNC_JOB_TABLE}.sync_id`]: syncId,
+            '_nango_syncs.nango_connection_id': nangoConnectionId,
+            '_nango_connections.environment_id': environmentId,
+            '_nango_syncs.deleted': false,
+            '_nango_connections.deleted': false
+        });
+
+    return result.length > 0;
+}
+
 export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promise<SyncJob | null> => {
     const [job] = await db.knex
         .from<SyncJob>(SYNC_JOB_TABLE)

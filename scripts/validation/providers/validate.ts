@@ -52,8 +52,14 @@ if (validator.errors) {
 const invalidInterpolation = /(?<!(\$|]))\{(?!\s*})/g;
 for (const [providerKey, provider] of Object.entries(providersJson)) {
     // Skip validation for 'sage-intacct' provider, we need this so that we can specify the element attribute
-    // Skip validation for 'semble', its token_params.query is a literal GraphQL mutation string
-    if (providerKey === 'sage-intacct' || providerKey === 'supabase-mcp' || providerKey === 'semble') {
+    // Skip validation for 'semble', 'monday-api-key' and 'laylo', their query/data fields are literal GraphQL bodies
+    if (
+        providerKey === 'sage-intacct' ||
+        providerKey === 'supabase-mcp' ||
+        providerKey === 'semble' ||
+        providerKey === 'monday-api-key' ||
+        providerKey === 'laylo'
+    ) {
         continue;
     }
 
@@ -287,6 +293,14 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
             chalk.red('error'),
             chalk.blue(providerKey),
             `"cannot contain both "proxy.verification" and "credentials_verification_script". Only one should be defined.`
+        );
+        error = true;
+    }
+    if (provider.token_request_auth_method === 'none' && 'authorization_method' in provider && provider.authorization_method) {
+        console.error(
+            chalk.red('error'),
+            chalk.blue(providerKey),
+            `cannot contain both "token_request_auth_method: none" and "authorization_method". A public client sends its client_id in the body.`
         );
         error = true;
     }

@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useThemeStore } from '@/lib/theme';
 import { track } from '@/utils/analytics';
+import { globalEnv } from '@/utils/env';
 import { getMFAErrorMessage } from '@/utils/mfaErrors';
 import { useMFA } from '../../hooks/useMFA';
 import { useToast } from '../../hooks/useToast';
@@ -71,7 +72,7 @@ export const UserSettings: React.FC = () => {
 
     if (loading) {
         return (
-            <DashboardLayout fullWidth title="Profile settings">
+            <DashboardLayout fullWidth>
                 <Helmet>
                     <title>Profile Settings - Nango</title>
                 </Helmet>
@@ -92,7 +93,7 @@ export const UserSettings: React.FC = () => {
     }
 
     return (
-        <DashboardLayout fullWidth title="Profile settings">
+        <DashboardLayout fullWidth>
             <Helmet>
                 <title>Profile Settings - Nango</title>
             </Helmet>
@@ -162,7 +163,7 @@ const MFASettings: React.FC = () => {
         setDisableError(null);
         try {
             await disable.mutateAsync(credential);
-            track('web:2fa:disabled', {});
+            track('auth:two_factor_remove', {});
             toast({ title: 'Two-factor authentication is disabled', variant: 'success' });
             closeDisable();
         } catch (err) {
@@ -173,7 +174,7 @@ const MFASettings: React.FC = () => {
     const confirmRegen = async () => {
         try {
             const result = await regenerateRecoveryCodes.mutateAsync({ code });
-            track('web:2fa:recovery_codes_regenerated', {});
+            track('auth:recovery_codes_generate', {});
             closeRegen();
             setNewCodes(result.data.recoveryCodes);
         } catch (err) {
@@ -201,8 +202,10 @@ const MFASettings: React.FC = () => {
                                 Generate recovery codes
                             </Button>
                         </div>
-                    ) : (
+                    ) : globalEnv.features.mfa ? (
                         <Button onClick={() => navigate('/user-settings/enable-2fa')}>Enable 2FA</Button>
+                    ) : (
+                        <p className="text-body-small-regular text-text-secondary">Two-factor authentication requires Nango Cloud or an enterprise license.</p>
                     )}
                 </div>
             </div>

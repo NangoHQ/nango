@@ -2,11 +2,15 @@ export { auditAgentSessionCreated, auditAgentSessionTerminated } from './agentSe
 export {
     auditAccountApiKeyCreated,
     auditAccountApiKeyDeleted,
+    auditAccountApiKeysCredentialsRead,
     auditApiKeyCreated,
     auditApiKeyDeleted,
+    auditApiKeysCredentialsRead,
     auditApiKeyUpdated,
     auditPublicApiKeyCreated,
-    auditPublicApiKeyDeleted
+    auditPublicApiKeyCredentialsRead,
+    auditPublicApiKeyDeleted,
+    auditPublicApiKeyUpdated
 } from './apiKey.middleware.js';
 export {
     auditAppAuthPasswordChanged,
@@ -30,6 +34,7 @@ export {
 } from './billing.middleware.js';
 export {
     auditConnectionCreated,
+    auditConnectionCredentialsRead,
     auditConnectionDeleted,
     auditConnectionMetadataUpdated,
     auditConnectionRefreshed,
@@ -41,9 +46,11 @@ export {
     auditEnvironmentCreated,
     auditEnvironmentDeleted,
     auditEnvironmentUpdated,
+    auditEnvironmentWebhooksUpdated,
+    auditPublicEnvironmentUpdated,
     auditEnvironmentVariablesChanged,
-    auditEnvironmentWebhookUrlsChanged,
     auditPublicEnvironmentCreated,
+    auditPublicEnvironmentCredentialsRead,
     auditPublicEnvironmentDeleted,
     auditPublicWebhookSigningKeyRotated,
     auditWebhookSigningKeyRotated
@@ -54,15 +61,21 @@ export {
     auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
     auditFunctionUpdated,
+    auditFunctionVariantCreated,
+    auditFunctionVariantDeleted,
+    auditFunctionVariantUpdated,
     auditFunctionUpgraded,
     auditPreBuiltDeployed,
     auditPublicFunctionDeleted
 } from './function.middleware.js';
 export {
+    auditDeprecatedProviderConfigCredentialsRead,
     auditIntegrationCreated,
+    auditIntegrationCredentialsRead,
     auditIntegrationDeleted,
     auditIntegrationUpdated,
     auditPublicIntegrationCreated,
+    auditPublicIntegrationCredentialsRead,
     auditPublicIntegrationDeleted,
     auditPublicIntegrationUpdated,
     auditPublicQuickstartIntegrationCreated

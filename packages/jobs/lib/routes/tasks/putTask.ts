@@ -12,12 +12,15 @@ import type { JsonValue } from 'type-fest';
 const jsonLiteralSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 export const jsonSchema: z.ZodType<JsonValue> = z.lazy(() => z.union([jsonLiteralSchema, z.array(jsonSchema), z.record(z.string(), jsonSchema)]));
 
-const bodySchema = z.object({
+export const bodySchema = z.object({
     nangoProps: nangoPropsSchema,
     error: z
         .object({
             type: z.string(),
-            payload: z.record(z.string(), z.unknown()).or(z.unknown().transform((v) => ({ message: v }))),
+            payload: z
+                .record(z.string(), z.unknown())
+                .or(z.unknown().transform((v) => ({ message: v })))
+                .default({}),
             status: z.number(),
             additional_properties: z.record(z.string(), z.unknown()).optional()
         })

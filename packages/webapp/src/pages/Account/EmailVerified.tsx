@@ -6,7 +6,6 @@ import { Alert, AlertDescription, Button } from '@nangohq/design-system';
 
 import { useToast } from '@/hooks/useToast';
 import DefaultLayout from '@/layout/DefaultLayout';
-import { track } from '../../utils/analytics';
 import { apiFetch } from '../../utils/api';
 
 import type { ConfirmEmail } from '@nangohq/types';
@@ -53,7 +52,6 @@ export const EmailVerified: React.FC = () => {
             }
 
             const confirmation: ConfirmEmail['Success'] = response;
-            track('web:account_signup', { user_id: confirmation.user.id, accountId: confirmation.user.accountId });
             toast({ title: 'Email verified successfully!', variant: 'success' });
 
             navigate(`/signin?next=${encodeURIComponent('/onboarding/account-discovery')}`, {

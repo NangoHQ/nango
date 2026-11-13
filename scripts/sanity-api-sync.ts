@@ -148,6 +148,16 @@ async function buildDocument(slug: string, provider: Provider): Promise<SanityDo
     };
 }
 
+async function getTemplateIdsReferencingApis(apiIds: string[]): Promise<string[]> {
+    if (apiIds.length === 0) {
+        return [];
+    }
+    const templates = await sanity.fetch<{ _id: string }[]>(`*[_type == "apiTemplate" && api._ref in $apiIds && !(_id in path("drafts.**"))]{ _id }`, {
+        apiIds
+    });
+    return templates.map((t) => t._id);
+}
+
 let created = 0;
 let updated = 0;
 let skipped = 0;
@@ -172,19 +182,32 @@ if (forceUpdate) {
     const toDelete = existingApis.filter((api) => !seenSlugs.has(api.slug));
     deleted = toDelete.length;
 
+    const templateIdsToDelete = await getTemplateIdsReferencingApis(toDelete.map((api) => api._id));
+    if (templateIdsToDelete.length > 0) {
+        console.log(`Found ${templateIdsToDelete.length} template(s) referencing api(s) being deleted; deleting them first`);
+    }
+
     if (!dryRun) {
         const tx = sanity.transaction();
         for (const doc of documents) {
             tx.createOrReplace(doc);
         }
+        for (const templateId of templateIdsToDelete) {
+            tx.delete(templateId);
+        }
         for (const api of toDelete) {
             tx.delete(api._id);
         }
         await tx.commit();
-        console.log(`Batch committed ${documents.length} upsert(s), ${toDelete.length} delete(s)`);
+        console.log(
+            `Batch committed ${documents.length} upsert(s), ${templateIdsToDelete.length} orphaned template delete(s), ${toDelete.length} api delete(s)`
+        );
     } else {
         for (const doc of documents) {
             console.log(`${existingBySlug[doc.slug] ? 'Updated' : 'Created'} ${doc.slug} (dry run)`);
+        }
+        for (const templateId of templateIdsToDelete) {
+            console.log(`Deleted orphaned template ${templateId} (dry run)`);
         }
         for (const api of toDelete) {
             console.log(`Deleted ${api.slug} (dry run)`);
@@ -225,11 +248,18 @@ if (forceUpdate) {
     }
 
     const seenSlugs = new Set(Object.keys(neededProviders));
-    for (const api of existingApis) {
-        if (seenSlugs.has(api.slug)) {
-            continue;
-        }
+    const apisToDelete = existingApis.filter((api) => !seenSlugs.has(api.slug));
 
+    const templateIdsToDelete = await getTemplateIdsReferencingApis(apisToDelete.map((api) => api._id));
+    for (const templateId of templateIdsToDelete) {
+        if (!dryRun) {
+            await sanity.delete(templateId);
+            await setTimeout(rateLimitSleep);
+        }
+        console.log(`Deleted orphaned template ${templateId}${dryRun ? ' (dry run)' : ''}`);
+    }
+
+    for (const api of apisToDelete) {
         if (!dryRun) {
             await sanity.delete(api._id);
             await setTimeout(rateLimitSleep);

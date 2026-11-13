@@ -1,0 +1,38 @@
+export interface ChatErrorDisplay {
+    title: string;
+    detail?: string;
+    action: 'retry' | 'new-chat' | 'none';
+}
+
+// A failed request carries the response body as its message, so the API's error code is inside it.
+export function describeChatError(message: string): ChatErrorDisplay {
+    let code: string | undefined;
+    let detail = message;
+    let retryable = true;
+    try {
+        const body = JSON.parse(message) as { error?: { code?: unknown; message?: unknown; retryable?: unknown } };
+        code = typeof body.error?.code === 'string' ? body.error.code : undefined;
+        detail = typeof body.error?.message === 'string' ? body.error.message : code ? '' : detail;
+        retryable = body.error?.retryable !== false;
+    } catch {
+        // Not JSON: an error sent mid-reply, as plain text.
+    }
+
+    switch (code) {
+        case 'model_unavailable':
+            return {
+                title: 'The Agent Playground is temporarily unavailable.',
+                ...(retryable ? { detail: 'Try again in a few minutes.', action: 'retry' } : { detail: 'Please check back later.', action: 'none' })
+            };
+        case 'feature_disabled':
+            return { title: 'The Agent Playground is not enabled for this account.', action: 'none' };
+        case 'session_creation_failed':
+            return { title: "Couldn't start the agent.", ...(detail ? { detail } : {}), action: 'retry' };
+        case 'too_many_request':
+            return { title: 'Too many messages in a short time.', detail: 'Wait a minute, then try again.', action: 'retry' };
+        case 'invalid_body':
+            return { title: "This chat can't continue.", ...(detail ? { detail } : {}), action: 'new-chat' };
+        default:
+            return { title: 'The agent ran into a problem.', ...(detail ? { detail } : {}), action: 'retry' };
+    }
+}

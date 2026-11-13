@@ -114,6 +114,20 @@ describe('route', () => {
         });
     });
 
+    describe('Malformed URI', () => {
+        it('should return 400 for a path that cannot be percent-decoded', async () => {
+            const res = await fetch(`${api.url}/%%32%65env`);
+
+            expect(res.status).toBe(400);
+            expect(await res.json()).toStrictEqual({
+                error: {
+                    code: 'invalid_uri',
+                    message: "Failed to decode param '%%32%65env'"
+                }
+            });
+        });
+    });
+
     describe('POST /internal/shared-credentials', () => {
         it('should report a sub-mb limit in kb, not as a rounded-to-zero mb value', async () => {
             // The internal API's body limit (100kb) is below 1mb, so a naive bytes/1024/1024

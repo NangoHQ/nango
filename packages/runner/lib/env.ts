@@ -1,7 +1,8 @@
 import { getJobsUrl, getPersistAPIUrl } from '@nangohq/shared';
 import { ENVS, parseEnvs } from '@nangohq/utils';
 
-export const envs = parseEnvs(ENVS.required({ RUNNER_NODE_ID: true }));
+//TODO: re-add .required({ RUNNER_NODE_ID: true }) when other changes are ready
+export const envs = parseEnvs(ENVS);
 
 export const heartbeatIntervalMs = envs.RUNNER_HEARTBEAT_INTERVAL_MS;
 export const abortCheckIntervalMs = envs.RUNNER_ABORT_CHECK_INTERVAL_MS;

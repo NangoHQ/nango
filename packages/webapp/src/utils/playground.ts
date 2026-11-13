@@ -1,40 +1,46 @@
 import { trackPlaygroundOpened } from '@/features/Playground/analytics';
-import { usePlaygroundStore } from '@/store/playground';
+import { usePermissions } from '@/hooks/usePermissions';
+import { defaultPlaygroundState, usePlaygroundStore } from '@/store/playground';
 
 import type { PlaygroundOpenSource } from '@/features/Playground/analytics';
-import type { PlaygroundFunctionType, PlaygroundState } from '@/store/playground';
+import type { PlaygroundFunctionType } from '@/store/playground';
 
 export interface PlaygroundContextOverride {
     source: PlaygroundOpenSource;
-    integration?: string | null;
+    integration: string;
     connection?: string | null;
     functionName?: string | null;
     functionType?: PlaygroundFunctionType;
-    inputValues?: Record<string, string>;
 }
 
-/**
- * Opens the Playground and overwrites its selection state.
- *
- * Intended for future contextual "Open Playground" buttons on
- * integration/connection/sync/action pages
- */
+export function useCanRunFunctions(): boolean {
+    return usePermissions().can('environment:syncs:execute');
+}
+
+function isRunInFlightFor(override: PlaygroundContextOverride): boolean {
+    const current = usePlaygroundStore.getState();
+    return (
+        (current.running || current.pendingOperationId != null) &&
+        current.integration === override.integration &&
+        (!override.connection || override.connection === current.connection) &&
+        (!override.functionName || (override.functionName === current.function && override.functionType === current.functionType))
+    );
+}
+
 export function openPlaygroundWithContext(override: PlaygroundContextOverride) {
-    const next: PlaygroundState = {
+    trackPlaygroundOpened(override.source);
+    const current = usePlaygroundStore.getState();
+    if (isRunInFlightFor(override)) {
+        current.setOpen(true);
+        return;
+    }
+    current.abortActiveRun?.();
+    current.setState({
+        ...defaultPlaygroundState,
         isOpen: true,
-        integration: override.integration ?? null,
+        integration: override.integration,
         connection: override.connection ?? null,
         function: override.functionName ?? null,
-        functionType: override.functionType ?? null,
-        inputValues: override.inputValues ?? {},
-        result: null,
-        pendingOperationId: null,
-        running: false,
-        inputErrors: {},
-        connectionSearch: ''
-    };
-
-    usePlaygroundStore.getState().setState(next);
-
-    trackPlaygroundOpened(override.source);
+        functionType: override.functionType ?? null
+    });
 }

@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
-import { connectionService, pubsub } from '@nangohq/shared';
+import { connectionService, productTracking, pubsub } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
@@ -67,6 +67,7 @@ export const deleteConnection = asyncWrapperWithEnvironment<DeleteConnection>(as
     });
 
     if (deleted > 0) {
+        productTracking.track({ name: 'connections:connection_delete' });
         void connectionDeleted({
             connection,
             environment,

@@ -6,8 +6,9 @@ declare global {
          */
         /**
          * Facts only a handler can know, for the audit middleware to act on at finish: whether a managed
-         * callback created the user or logged one back in, whether this request established a session, and
-         * what a connection upsert did. One namespace rather than an attribute per scenario.
+         * callback created the user or logged one back in, whether this request established a session, what
+         * a connection upsert did, and which entities a read returned the credentials of. One namespace rather than an
+         * attribute per scenario.
          *
          * On the request rather than `res.locals` for two reasons: the connection controllers shadow `res`
          * with the upsert response, so the response is not reachable where the fact is known; and two
@@ -15,6 +16,7 @@ declare global {
          */
         interface AuditFacts {
             managedSignup?: boolean;
+            credentialsRead?: { targets: { id: string; display?: string | undefined }[]; environment?: { uuid: string; name: string } };
             authSucceeded?: boolean;
             authPendingMfa?: { userId: number };
             connectionUpsert?: {

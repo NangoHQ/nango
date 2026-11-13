@@ -1,6 +1,6 @@
 ---
-title: 'GSheet'
-sidebarTitle: 'GSheet'
+title: 'Google Sheets'
+sidebarTitle: 'Google Sheets'
 description: 'Integrate your application with the Google Sheets API'
 ---
 
@@ -10,15 +10,15 @@ Connect to Google Sheets with Nango and see data flow in 2 minutes.
 
 <Steps>
     <Step title="Create an integration">
-    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _GSheet_.
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google Sheets_.
 
     <Note>
-      Nango has credentials you can use for testing. Activate them in the dashboard.
+      Nango has a [Nango-managed OAuth app](/guides/auth/auth-guide#nango-managed-oauth-apps) you can use in development and production. Select it when you create the integration.
     </Note>
 
     </Step>
-    <Step title="Authorize GSheet">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to GSheet. Later, you'll let your users do the same directly from your app.
+    <Step title="Authorize Google Sheets">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Google Sheets. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Google Sheets API">
     Let's make your first request to the Google Sheets API (fetch a specific spreadsheet). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
@@ -56,7 +56,7 @@ Connect to Google Sheets with Nango and see data flow in 2 minutes.
 
     </Tabs>
 
-    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
 
     <Note>
      The `{sheetId}` in the URL represents the `ID` of the spreadsheet to retrieve.
@@ -68,7 +68,7 @@ Connect to Google Sheets with Nango and see data flow in 2 minutes.
     <Step title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
 
-        To obtain your own production credentials, follow the setup guide linked below.
+        To use your own OAuth app instead of the Nango-managed one, follow the setup guide linked below.
     </Step>
 </Steps>
 
@@ -80,13 +80,13 @@ Nango maintained guides for common use cases.
 Register an OAuth app with Google and obtain credentials to connect it to Nango
 
 - [Google App & Security Review](/api-integrations/google-shared/google-security-review)
-Pass Google's OAuth app verification to go to production
+Pass Google's OAuth app verification to go to production with your own OAuth app (not needed with the Nango-managed app)
 
 Official docs: [Google Sheets API](https://developers.google.com/sheets/api/reference/rest)
 
-## 🧩 Pre-built syncs & actions for Google Sheets
+## 🧩 Pre-built syncs & tools for Google Sheets
 
-Enable them in your dashboard. Extend and customize to fit your needs.
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/google-sheet/PreBuiltUseCases.mdx"
 

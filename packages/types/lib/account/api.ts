@@ -3,6 +3,7 @@ import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { MFACredential } from '../mfa/credential.js';
 import type { ApiUser } from '../user/api.js';
+import type { SignupAcquisition } from './acquisition.js';
 
 export interface AccountApiKey {
     id: number;
@@ -15,7 +16,7 @@ export interface AccountApiKey {
 }
 
 export type ListAccountApiKeys = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'api_key', 'credentials_read', 'account'>;
     Method: 'GET';
     Path: '/api/v1/account/api-keys';
     Success: { data: AccountApiKey[] };
@@ -51,6 +52,7 @@ export type PostSignup = ApiEndpoint<{
         password: string;
         token?: string | undefined;
         foundUs?: string | undefined;
+        acquisition?: SignupAcquisition | undefined;
     };
     Error:
         | ApiError<'email_already_verified'>
@@ -58,7 +60,8 @@ export type PostSignup = ApiEndpoint<{
         | ApiError<'user_already_exists'>
         | ApiError<'error_creating_account'>
         | ApiError<'not_found'>
-        | ApiError<'email_not_verified'>;
+        | ApiError<'email_not_verified'>
+        | ApiError<'disposable_email'>;
     Success: {
         data: {
             uuid: string;
@@ -182,6 +185,7 @@ export type PostManagedSignup = ApiEndpoint<{
     Path: '/api/v1/account/managed/signup';
     Body: {
         provider: 'GoogleOAuth';
+        acquisition?: SignupAcquisition | undefined;
         token?: string | undefined;
         returnTo?: string | undefined;
     };

@@ -17,6 +17,8 @@ import type {
     FunctionDeployedMetadata,
     FunctionUpdatedMetadata,
     FunctionUpgradedMetadata,
+    FunctionVariantMetadata,
+    FunctionVariantSettingsMetadata,
     IntegrationProviderMetadata,
     IntegrationUpdatedMetadata,
     MemberInvitedMetadata,
@@ -48,6 +50,7 @@ interface AuditEventTable {
         metadata_updated: ConnectionMetadata;
         refreshed: ConnectionMetadata;
         deleted: ConnectionMetadata;
+        credentials_read: ConnectionMetadata;
     };
     sync: {
         enabled: SyncBaseMetadata;
@@ -65,16 +68,21 @@ interface AuditEventTable {
         upgraded: FunctionUpgradedMetadata;
         updated: FunctionUpdatedMetadata;
         deleted: FunctionDeletedMetadata;
+        variant_created: FunctionVariantMetadata;
+        variant_deleted: FunctionVariantMetadata;
+        variant_updated: FunctionVariantSettingsMetadata;
     };
     integration: {
         created: IntegrationProviderMetadata;
         updated: IntegrationProviderMetadata & IntegrationUpdatedMetadata;
         deleted: IntegrationProviderMetadata;
+        credentials_read: never;
     };
     api_key: {
         created: ApiKeyUpdatedMetadata;
         updated: ApiKeyUpdatedMetadata;
         deleted: never;
+        credentials_read: never;
     };
     member: {
         invited: MemberInvitedMetadata;
@@ -97,6 +105,7 @@ interface AuditEventTable {
         webhook_urls_changed: EnvironmentWebhookMetadata;
         webhook_signing_key_rotated: never;
         deleted: never;
+        credentials_read: never;
     };
     app_auth: {
         login: AppAuthLoginMetadata;
@@ -143,6 +152,8 @@ export type AuditEventKey = { [R in AuditResource]: `${R}.${AuditActionOf<R>}` }
 export type AuditMetadataFor<R extends AuditResource, A> = A extends keyof AuditEventTable[R] ? AuditEventTable[R][A] : never;
 
 export type AuditScope = 'account' | 'environment';
+
+export type AuditTrailDataPlaneScope = 'read_credentials';
 
 export type AuditTargetType = 'connection' | 'sync' | 'function' | 'integration' | 'api_key' | 'member' | 'team' | 'user' | 'environment' | 'agent_session';
 

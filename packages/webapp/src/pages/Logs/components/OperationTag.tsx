@@ -1,4 +1,4 @@
-import { Ban, Bot, Forward, Layers, Link, Lock, Pause, Play, Plus, RefreshCw, Settings, Settings2, Trash2, User, X } from 'lucide-react';
+import { Ban, Bot, Forward, Layers, Link, Lock, Pause, Play, Plus, RefreshCw, Search, Settings, Settings2, Trash2, User, X } from 'lucide-react';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
@@ -8,7 +8,8 @@ import type { SearchOperationsData } from '@nangohq/types';
 
 // shortening agent session to prevent column overflow
 const typeLabels: Partial<Record<SearchOperationsData['operation']['type'], string>> = {
-    agent_session: 'session'
+    agent_session: 'session',
+    action: 'tool'
 };
 
 const actorIcons: Record<NonNullable<SearchOperationsData['actor']>['kind'], React.ReactNode> = {
@@ -52,6 +53,7 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                         <Tag>
                             {operation.action === 'create' && <Plus className="w-3.5 h-3.5" />}
                             {operation.action === 'terminate' && <Ban className="w-3.5 h-3.5" />}
+                            {operation.action === 'tool_search' && <Search className="w-3.5 h-3.5" />}
                         </Tag>
                     )}
 
@@ -74,7 +76,7 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                 </div>
             </TooltipTrigger>
             <TooltipContent align="start">
-                <p>{message}</p>
+                <p>{operation.type === 'action' ? 'Tool called' : message}</p>
             </TooltipContent>
         </Tooltip>
     );

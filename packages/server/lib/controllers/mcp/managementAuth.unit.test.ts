@@ -141,6 +141,23 @@ describe('Management MCP OAuth authentication', () => {
         expect(tagTraceUserMock).toHaveBeenCalledWith({ account, plan });
     });
 
+    it('authenticates the zero-valued user used by local no-auth mode', async () => {
+        const localUser = { ...user, id: 0, account_id: 0 };
+        const localAccount = { ...account, id: 0 };
+        accessTokenFindMock.mockResolvedValue({ ...validAccessToken, accountId: '0' });
+        grantFindMock.mockResolvedValue(validGrant({ accountId: '0' }));
+        userGetMock.mockResolvedValue(localUser);
+        accountGetMock.mockResolvedValue(localAccount);
+        const { res } = response();
+        const next = vi.fn() as NextFunction;
+
+        await managementMcpAuth(request('oauth-access-token'), res, next);
+
+        expect(userGetMock).toHaveBeenCalledWith(0);
+        expect(next).toHaveBeenCalledOnce();
+        expect(res.locals).toMatchObject({ authType: 'mcpOAuth', user: localUser, account: localAccount });
+    });
+
     it.each(['bearer', 'BEARER'])('accepts the %s authorization scheme case-insensitively', async (scheme) => {
         const req = request('oauth-access-token', scheme);
         const { res } = response();

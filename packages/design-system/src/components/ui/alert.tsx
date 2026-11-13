@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { forwardRef } from 'react';
 
 import { cn } from '../../lib/cn';
+import { InlineCodeToneProvider } from './inline-code';
 
 import type { VariantProps } from 'class-variance-authority';
 
@@ -15,12 +16,12 @@ import type { VariantProps } from 'class-variance-authority';
 export const alertVariants = cva(
     [
         'relative grid w-full items-start gap-y-0.5',
-        'rounded-ds-sm border-ds-hairline',
+        'rounded-ds-md border-ds-hairline',
         // 16px icon, top-aligned so it stays on the first line when the description wraps. Each size nudges
         // it down to sit optically centred on that line — see the size variants for the amounts.
         // Figma colours the icon from status/{s}/icon, a more vibrant stop than the status text colour, so it
         // takes --alert-icon rather than inheriting currentColor.
-        '[&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:size-4 [&>svg]:text-[var(--alert-icon)] [&>svg]:mr-2'
+        '[&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:size-4 [&>svg]:text-[var(--alert-icon)] [&>svg]:mr-2.5'
     ],
     {
         variants: {
@@ -47,45 +48,39 @@ export const alertVariants = cva(
                     '[--alert-link:var(--color-text-link-danger)] [--alert-link-active:var(--color-text-link-danger-active)]'
                 ],
                 neutral: [
-                    'bg-status-neutral-bg border-status-neutral-border text-status-neutral-text',
+                    'bg-status-neutral-bg border-border-default text-status-neutral-text',
                     '[--alert-icon:var(--color-status-neutral-icon)]',
                     '[--alert-link:var(--color-text-link-neutral)] [--alert-link-active:var(--color-text-link-neutral-active)]'
                 ]
             },
+            // `status` follows the variant; `success` recolours only the icon.
+            icon: {
+                status: '',
+                success: '[--alert-icon:var(--color-icon-success)]'
+            },
             // Figma "Size". Each size owns where the trailing slots sit.
             size: {
                 wide: [
-                    'grid-cols-[auto_1fr_auto_auto] px-2 py-2',
+                    'grid-cols-[auto_1fr_auto_auto] px-3 py-2.5',
                     // 1px centres the 16px icon on a 12px description line (18px box); a 13px title line
                     // (19.5px box) needs 2px. Nudged rather than centred so it stays on the first line.
                     '[&>svg]:translate-y-px has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
-                    '[&>[data-slot=alert-title]]:pr-3 [&>[data-slot=alert-description]]:pr-3',
-                    '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-center [&>[data-slot=alert-actions]]:ml-4',
-                    // Figma leaves 16px between the trailing slot and the right border, 8px more than the root
-                    // padding, so whichever slot comes last takes the extra 8px.
-                    '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-center [&>[data-slot=alert-close]]:ml-4 [&>[data-slot=alert-close]]:mr-2',
-                    'not-has-[>[data-slot=alert-close]]:[&>[data-slot=alert-actions]]:mr-2',
-                    // With a title *and* a description the alert is two rows tall; the trailing slots span both so they
-                    // centre on the banner. Start and span go in one `grid-row` declaration — a separate `row-span-2`
-                    // emits the shorthand, which resets the `row-start-1` above and drops them into the second row.
-                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-actions]]:row-[1/span_2]',
-                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-close]]:row-[1/span_2]'
+                    '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-start [&>[data-slot=alert-actions]]:gap-3 [&>[data-slot=alert-actions]]:ml-2.5',
+                    '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-start [&>[data-slot=alert-close]]:ml-3',
+                    '[&>[data-slot=alert-close]]:translate-y-px has-[>[data-slot=alert-title]]:[&>[data-slot=alert-close]]:translate-y-0.5'
                 ],
                 // actions drop to their own row, aligned right under the text column; close stays top-right
                 compact: [
-                    'grid-cols-[auto_1fr_auto] px-2 py-2',
+                    'grid-cols-[auto_1fr_auto] px-3 py-2.5',
                     // 1px centres a 16px glyph on a 12px description line (18px box); a 13px title line
                     // (19.5px box) needs 2px. Nudged rather than centred so it stays on the first line.
                     '[&>svg]:translate-y-px has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
                     '[&>[data-slot=alert-close]]:translate-y-px has-[>[data-slot=alert-title]]:[&>[data-slot=alert-close]]:translate-y-0.5',
-                    // Actions sit left-aligned under the text, 8px apart — tighter than wide's 16px.
-                    '[&>[data-slot=alert-actions]]:col-start-2 [&>[data-slot=alert-actions]]:gap-2 [&>[data-slot=alert-actions]]:mt-1',
+                    '[&>[data-slot=alert-actions]]:col-start-2 [&>[data-slot=alert-actions]]:gap-3 [&>[data-slot=alert-actions]]:mt-1',
                     '[&>[data-slot=alert-close]]:col-start-3 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-start [&>[data-slot=alert-close]]:ml-2'
                 ],
                 toast: [
-                    'grid-cols-[auto_1fr_auto_auto] px-2 py-2',
-                    // Figma tightens the toast to 4px as soon as it carries a title; description-only keeps the standard 8px.
-                    'has-[>[data-slot=alert-title]]:py-1',
+                    'grid-cols-[auto_1fr_auto_auto] px-3 py-2.5',
                     // Figma "CTA": the action sits inline at the end of the description row, or beneath it when
                     // there is a title.
                     '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-start [&>[data-slot=alert-actions]]:gap-2 [&>[data-slot=alert-actions]]:ml-2',
@@ -97,43 +92,70 @@ export const alertVariants = cva(
                     'has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5 has-[>[data-slot=alert-title]]:[&>[data-slot=alert-close]]:translate-y-0.5',
                     'has-[>[data-slot=alert-actions]]:[&>svg]:translate-y-0.5 has-[>[data-slot=alert-actions]]:[&>[data-slot=alert-close]]:translate-y-0.5'
                 ]
+            },
+            // Renders no Button itself: the call site passes a primary <Button size="md"> in AlertActions.
+            cta: {
+                button: ''
             }
         },
+        compoundVariants: [
+            {
+                variant: 'neutral',
+                size: 'wide',
+                cta: 'button',
+                className: [
+                    'rounded-ds-md bg-surface-panel border-border-default',
+                    '[&>svg[data-filled]]:fill-current [&>svg[data-filled]]:stroke-none [&>svg[data-filled]]:text-icon-link'
+                ]
+            }
+        ],
         defaultVariants: {
             variant: 'success',
-            size: 'wide'
+            size: 'wide',
+            icon: 'status'
         }
     }
 );
 
-export interface AlertProps extends React.ComponentProps<'div'>, VariantProps<typeof alertVariants> {
-    /** Renders the dismiss affordance. Omit for an alert that can't be dismissed. */
-    onDismiss?: () => void;
-    /** Accessible label for the dismiss button. */
-    dismissLabel?: string;
-}
+type AlertVariantProps = VariantProps<typeof alertVariants>;
 
-export const Alert = forwardRef<HTMLDivElement, AlertProps>(({ className, variant, size, onDismiss, dismissLabel = 'Dismiss', children, ...props }, ref) => (
-    <div ref={ref} data-slot="alert" role="alert" className={cn(alertVariants({ variant, size }), className)} {...props}>
-        {children}
-        {onDismiss && (
-            <button
-                type="button"
-                data-slot="alert-close"
-                aria-label={dismissLabel}
-                onClick={onDismiss}
-                className="cursor-pointer rounded-ds-xs text-[var(--alert-icon)] outline-none focus-visible:shadow-focus-outline-default"
-            >
-                <X className="size-4" />
-            </button>
-        )}
-    </div>
-));
+type AlertStyleProps = (Omit<AlertVariantProps, 'cta'> & { cta?: never }) | { variant: 'neutral'; size?: 'wide'; cta: 'button'; icon?: never };
+
+export type AlertProps = React.ComponentProps<'div'> &
+    AlertStyleProps & {
+        /** Renders the dismiss affordance. Omit for an alert that can't be dismissed. */
+        onDismiss?: () => void;
+        /** Accessible label for the dismiss button. */
+        dismissLabel?: string;
+    };
+
+export const Alert = forwardRef<HTMLDivElement, AlertProps>(
+    ({ className, variant, size, cta, icon, onDismiss, dismissLabel = 'Dismiss', children, ...props }, ref) => (
+        <div ref={ref} data-slot="alert" role="alert" className={cn(alertVariants({ variant, size, cta, icon }), className)} {...props}>
+            <InlineCodeToneProvider value={variant ?? 'success'}>{children}</InlineCodeToneProvider>
+            {onDismiss && (
+                <button
+                    type="button"
+                    data-slot="alert-close"
+                    aria-label={dismissLabel}
+                    onClick={onDismiss}
+                    className="cursor-pointer rounded-ds-xs text-[var(--alert-icon)] outline-none focus-visible:shadow-focus-outline-default"
+                >
+                    <X className="size-4" />
+                </button>
+            )}
+        </div>
+    )
+);
 Alert.displayName = 'Alert';
 
-// Figma text/regular/sm (13px/400) in the status colour, truncated to one line.
 export const AlertTitle = forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => (
-    <div ref={ref} data-slot="alert-title" className={cn('type-text-regular-sm col-start-2 row-start-1 line-clamp-1 min-h-4', className)} {...props} />
+    <div
+        ref={ref}
+        data-slot="alert-title"
+        className={cn('type-text-medium-sm col-start-2 row-start-1 line-clamp-1 min-h-4 text-text-strong', className)}
+        {...props}
+    />
 ));
 AlertTitle.displayName = 'AlertTitle';
 

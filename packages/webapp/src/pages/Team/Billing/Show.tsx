@@ -1,5 +1,5 @@
-import { ArrowUpRight, ExternalLink } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { ArrowUpRight } from 'lucide-react';
+import { useRef } from 'react';
 import { Helmet } from 'react-helmet';
 
 import { AlertButton, Button } from '@nangohq/design-system';
@@ -16,7 +16,6 @@ import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { billedUsageMetrics, getAggregateUsageState } from '@/utils/usage';
 import DashboardLayout from '../../../layout/DashboardLayout';
-import { BillingHeaderAction } from './components/BillingHeaderAction';
 import { Payment } from './components/Payment';
 import { PaymentMethodDialog } from './components/PaymentMethodDialog';
 import { Plans } from './components/Plans';
@@ -69,26 +68,17 @@ export const TeamBilling: React.FC = () => {
     const overdueBanner = overdue?.data.hasOverdue && (
         <OverdueInvoiceAlert size="wide" canManageBilling={canManageBilling}>
             {overdue.data.portalUrl && (
-                <AlertButtonLink
-                    to={overdue.data.portalUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => track('web:usage:invoice_details_clicked', {})}
-                >
-                    View invoices <ExternalLink />
+                <AlertButtonLink to={overdue.data.portalUrl} target="_blank" rel="noopener noreferrer" onClick={() => track('billing:invoice_link_click', {})}>
+                    View invoices <ArrowUpRight />
                 </AlertButtonLink>
             )}
             <PaymentMethodDialog replace>
-                <AlertButton onClick={() => track('web:usage:edit_payment_method_clicked', { source: 'billing_page' })}>
+                <AlertButton onClick={() => track('billing:payment_method_button_click', {})}>
                     Edit payment method <ArrowUpRight />
                 </AlertButton>
             </PaymentMethodDialog>
         </OverdueInvoiceAlert>
     );
-
-    useEffect(() => {
-        track('web:usage:viewed', {});
-    }, []);
 
     const scrollRef = useRef<HTMLDivElement>(null);
     // The banners and summary strip sit above the anchors, `Payment` below all of them, so every
@@ -105,7 +95,7 @@ export const TeamBilling: React.FC = () => {
     // caps the content: the usage charts have a fixed height, so unbounded width stretches them to an
     // unreadable aspect ratio on wide screens.
     return (
-        <DashboardLayout ref={scrollRef} fullWidth centered title="Billing & usage" titleActions={<BillingHeaderAction />}>
+        <DashboardLayout ref={scrollRef} fullWidth centered>
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>
@@ -125,7 +115,7 @@ export const TeamBilling: React.FC = () => {
                     </>
                 )}
                 <div id="usage">
-                    <Usage />
+                    <Usage showInvoicesLink={!showSummary} />
                 </div>
                 {showSpendAlerts && (
                     <>
@@ -142,7 +132,7 @@ export const TeamBilling: React.FC = () => {
                         <Button asChild variant="link-accent">
                             <a href="https://nango.dev/pricing" target="_blank" rel="noopener noreferrer">
                                 View full pricing detail
-                                <ExternalLink />
+                                <ArrowUpRight />
                             </a>
                         </Button>
                     </div>

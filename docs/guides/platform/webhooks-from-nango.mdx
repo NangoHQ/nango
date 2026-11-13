@@ -4,7 +4,7 @@ sidebarTitle: 'Webhooks from Nango'
 description: 'Reference for the webhooks Nango sends to your app — setup, types, payloads, signature verification, and retries.'
 ---
 
-Nango POSTs webhooks to your app to notify it of important events: a new connection was created, a sync run finished, an async action completed, or an external webhook was forwarded. This page covers how to receive and verify webhooks from Nango, plus the payloads for auth, sync, and async action webhooks.
+Nango POSTs webhooks to your app to notify it of important events: a new connection was created, a sync run finished, a deprecated async action completed, or an external webhook was forwarded. This page covers how to receive and verify webhooks from Nango, plus the payloads for auth, sync, and deprecated async action webhooks.
 
 <Info>
 To process webhooks coming **from external APIs** (not from Nango), see [Process external webhooks](/getting-started/use-cases/webhooks-from-external-apis). To forward external API webhooks through Nango to your app, see [Webhook forwarding](/guides/platform/webhook-forwarding).
@@ -77,6 +77,8 @@ You can also set or edit `webhook_url_override` from:
 Validate webhooks from Nango by looking at the `X-Nango-Hmac-Sha256` header.
 
 It's an HMAC-SHA256 hash of the webhook payload, using the webhook signing key found in **Environment Settings > Webhooks > Signing key** in the Nango UI.
+
+Nango generates the key for each environment. To choose your own, pass a UUID as `webhooks.signing_key` when you [create the environment](/reference/backend/http-api/environments/create) with the API.
 
 <Warning>
 Nango webhook requests include an `X-Nango-Hmac-Sha256` header for secure verification. A legacy `X-Nango-Signature` header (using plain SHA-256) is also sent for backwards compatibility but should not be used. If you're currently using `X-Nango-Signature`, migrate to `X-Nango-Hmac-Sha256` for improved security.
@@ -211,6 +213,12 @@ Verify the signature with the **webhook signing key** from **Environment Setting
 </Tabs>
 
 Only accept a webhook if the `X-Nango-Hmac-Sha256` header value matches the webhook signature.
+
+### Rotating the webhook signing key
+
+Rotate the key from **Environment Settings > Webhooks > Signing key** with **Rotate key**, or with the [rotate webhook signing key](/reference/backend/http-api/environments/rotate-webhook-signing-key) API.
+
+For up to 5 minutes after a rotation, webhooks are signed with either the old or the new key. Accept both during that window, then drop the old key.
 
 ## Types of Nango webhooks
 
@@ -417,6 +425,10 @@ Payload received following a failed sync execution:
     }
 }
 ```
+
+### Async action webhooks (deprecated)
+
+Existing users of deprecated async actions can enable **Async action completed** in **Environment Settings**. The webhook identifies the execution to poll; see the [legacy completion webhook contract](/guides/functions/action-functions#completion-webhook).
 
 ### External webhook forwarding
 

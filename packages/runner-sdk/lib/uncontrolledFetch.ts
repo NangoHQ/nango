@@ -11,10 +11,6 @@ import type { Dispatcher } from 'undici';
 
 const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
 
-const makeActionError = (code: string, message: string) => {
-    return new ActionError({ code, message });
-};
-
 const safeDispatchers = new WeakMap<OutboundUrlPolicy, Dispatcher>();
 
 function getSafeDispatcher(policy: OutboundUrlPolicy): Dispatcher {
@@ -26,18 +22,30 @@ function getSafeDispatcher(policy: OutboundUrlPolicy): Dispatcher {
     return dispatcher;
 }
 
+export type UncontrolledFetchRedirect = 'follow' | 'error';
+
 export interface UncontrolledFetchOptions {
     url: URL;
     method?: HTTP_METHOD;
     headers?: Record<string, string> | undefined;
     body?: string | null;
+    redirect?: UncontrolledFetchRedirect | undefined;
 }
 
 export async function executeUncontrolledFetch(
     options: UncontrolledFetchOptions,
-    onBytes: (params: { bytesSent: number; bytesReceived: number }) => void,
-    outboundPolicy?: OutboundUrlPolicy
+    {
+        onBytes,
+        outboundPolicy,
+        ErrorClass = ActionError
+    }: {
+        onBytes: (params: { bytesSent: number; bytesReceived: number }) => void;
+        outboundPolicy?: OutboundUrlPolicy | undefined;
+        ErrorClass?: typeof ActionError | undefined;
+    }
 ): Promise<Response> {
+    const makeError = (code: string, message: string) => new ErrorClass({ code, message });
+
     const recordTransfer = (params: { bytesSent: number; bytesReceived: number }) => {
         if (params.bytesSent > 0 || params.bytesReceived > 0) onBytes(params);
     };
@@ -48,7 +56,7 @@ export async function executeUncontrolledFetch(
     const assertOutboundUrlAllowed = async (absoluteUrl: string): Promise<void> => {
         const result = await validateOutboundUrlAsync(absoluteUrl, policy, { context: 'uncontrolled_fetch' });
         if (!result.ok) {
-            throw makeActionError('url_not_allowed', 'This URL is not allowed by server configuration.');
+            throw makeError('url_not_allowed', 'This URL is not allowed by server configuration.');
         }
     };
 
@@ -75,6 +83,12 @@ export async function executeUncontrolledFetch(
 
         const bytesSent = countRequestBytes(props.headers as Headers, body);
         const bytesReceived = countHeaderBytes(response.headers);
+
+        if (REDIRECT_STATUS_CODES.has(response.status) && options.redirect === 'error') {
+            recordTransfer({ bytesSent, bytesReceived });
+            void response.body?.cancel().catch(() => {});
+            throw makeError('redirect_error', 'The server responded with a redirect. The request was not followed.');
+        }
 
         if (!REDIRECT_STATUS_CODES.has(response.status)) {
             if (response.body === null) {
@@ -115,19 +129,19 @@ export async function executeUncontrolledFetch(
         void response.body?.cancel();
 
         if (redirectsFollowed >= policy.maxRedirects) {
-            throw makeActionError('too_many_redirects', `Exceeded maximum of ${policy.maxRedirects} redirects.`);
+            throw makeError('too_many_redirects', `Exceeded maximum of ${policy.maxRedirects} redirects.`);
         }
 
         let nextUrl: URL;
         try {
             nextUrl = new URL(location, currentUrl);
         } catch {
-            throw makeActionError('invalid_redirect', 'Redirect Location could not be parsed as a URL.');
+            throw makeError('invalid_redirect', 'Redirect Location could not be parsed as a URL.');
         }
 
         // Reject redirects to schemes not permitted by the policy (defaults to http/https).
         if (!policy.allowedSchemes.has(nextUrl.protocol)) {
-            throw makeActionError('invalid_redirect', 'Redirect Location must use http: or https:.');
+            throw makeError('invalid_redirect', 'Redirect Location must use http: or https:.');
         }
 
         await assertOutboundUrlAllowed(nextUrl.toString());

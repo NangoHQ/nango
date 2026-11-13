@@ -95,18 +95,20 @@ export async function validate(
 
 const route: WebhookHandler = async (nango, headers, body) => {
     const authHeader = headers['authorization'];
-    const allowUnauthorized = await getFlags().allowUnauthorizedGmailWebhook(nango.team.uuid);
+    const outcome = authHeader ? null : await nango.unverifiedOutcome((accountUuid) => getFlags().allowUnauthorizedGmailWebhook(accountUuid));
 
-    // Counted before validation on purpose. With the flag off an unsigned push is rejected below,
-    // and those are exactly the accounts still to be migrated, so they have to show up here.
-    if (!authHeader) {
-        nango.markUnverified({
-            reason: 'gmail_missing_authorization',
-            remediation: 'Recreate the Pub/Sub push subscription with an OIDC token'
-        });
+    // Counted before validation on purpose, so unsigned pushes that get rejected still show up.
+    if (outcome) {
+        nango.markUnverified(
+            {
+                reason: 'gmail_missing_authorization',
+                remediation: 'Recreate the Pub/Sub push subscription with an OIDC token'
+            },
+            outcome
+        );
     }
 
-    const valid = await validate(nango.integration, headers, { allowUnauthorized });
+    const valid = await validate(nango.integration, headers, { allowUnauthorized: outcome !== null && outcome !== 'rejected' });
 
     if (!valid) {
         logger.error('webhook signature invalid');

@@ -105,10 +105,11 @@ export function useDeleteIntegration(env: string, integrationId: string) {
     });
 }
 
-export function useDeleteIntegrationFunction(env: string, integrationId: string, functionName: string, type: 'sync' | 'action') {
+export function useDeleteIntegrationFunction(env: string, integrationId: string, functionName: string, type: 'sync' | 'action' | undefined) {
     const queryClient = useQueryClient();
     return useMutation<DeleteIntegrationFunction['Success'], APIError>({
         mutationFn: async () => {
+            if (!type) throw new Error('This function cannot be deleted from the dashboard');
             const res = await apiFetch(
                 `/api/v1/integrations/${encodeURIComponent(integrationId)}/functions/${encodeURIComponent(functionName)}?env=${encodeURIComponent(env)}&type=${type}`,
                 {

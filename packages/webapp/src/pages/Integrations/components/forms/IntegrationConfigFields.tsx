@@ -45,12 +45,12 @@ export function buildIntegrationConfigSchema(fields: IntegrationConfigFieldEntry
             const value = values[name] ?? '';
             if (!value) {
                 if (!def.optional) {
-                    ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: 'This field is required' });
+                    ctx.addIssue({ code: 'custom', path: [name], message: 'This field is required' });
                 }
                 continue;
             }
             if (def.enum && def.enum.length > 0 && !def.enum.includes(value)) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: `Must be one of: ${def.enum.join(', ')}` });
+                ctx.addIssue({ code: 'custom', path: [name], message: `Must be one of: ${def.enum.join(', ')}` });
                 continue;
             }
             if (def.format === 'uri') {
@@ -58,30 +58,30 @@ export function buildIntegrationConfigSchema(fields: IntegrationConfigFieldEntry
                 try {
                     protocol = new URL(value).protocol;
                 } catch {
-                    ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: 'Must be a valid URL' });
+                    ctx.addIssue({ code: 'custom', path: [name], message: 'Must be a valid URL' });
                     continue;
                 }
                 if (protocol !== 'http:' && protocol !== 'https:') {
-                    ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: 'Must be an http(s) URL' });
+                    ctx.addIssue({ code: 'custom', path: [name], message: 'Must be an http(s) URL' });
                     continue;
                 }
             }
             if (def.format === 'hostname' && !/^[a-zA-Z0-9.-]+$/.test(value)) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: 'Must be a valid hostname' });
+                ctx.addIssue({ code: 'custom', path: [name], message: 'Must be a valid hostname' });
                 continue;
             }
-            if (def.format === 'uuid' && !z.string().uuid().safeParse(value).success) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: 'Must be a valid UUID' });
+            if (def.format === 'uuid' && !z.guid().safeParse(value).success) {
+                ctx.addIssue({ code: 'custom', path: [name], message: 'Must be a valid UUID' });
                 continue;
             }
             if (def.format === 'email' && !z.string().email().safeParse(value).success) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: 'Must be a valid email' });
+                ctx.addIssue({ code: 'custom', path: [name], message: 'Must be a valid email' });
                 continue;
             }
             if (def.pattern) {
                 try {
                     if (!new RegExp(def.pattern).test(value)) {
-                        ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: `Invalid ${def.title}` });
+                        ctx.addIssue({ code: 'custom', path: [name], message: `Invalid ${def.title}` });
                     }
                 } catch {
                     // Ignore an invalid pattern in the provider schema.

@@ -2,15 +2,28 @@ import { Client } from '@modelcontextprotocol/client';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import { seeders, toolService } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
-import { buildSessionTools, createAgentSessionMcpServer, listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
+import { directCallInputSchema } from './directCallSchema.js';
+import { actionInputSchemaOf, buildSessionTools, createAgentSessionMcpServer, listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
 
-import type { AgentSession, AgentSessionCompiledToolset, AgentSessionMetaTools } from '@nangohq/types';
+import type * as ToolSearchService from '../../../services/agentSessionToolSearch.service.js';
+import type { AgentSession, AgentSessionCompiledToolset, AgentSessionMetaTools, AgentSessionToolInput } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 
 const executeAction = vi.hoisted(() => vi.fn());
 vi.mock('../../../services/action.service.js', () => ({ executeAction }));
+
+const findActionInputs = vi.hoisted(() => vi.fn());
+vi.mock('../../../services/agentSessionToolSearch.service.js', async (importOriginal) => ({
+    ...(await importOriginal<typeof ToolSearchService>()),
+    findActionInputs
+}));
+
+const DRAFT_07 = 'http://json-schema.org/draft-07/schema#';
+
+const OPEN_INPUT_SCHEMA = directCallInputSchema(undefined);
 
 function session({
     compiledToolset = {},
@@ -43,6 +56,68 @@ function tool(name: string) {
 describe('createAgentSessionMcpServer', () => {
     beforeEach(() => {
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
+        findActionInputs.mockReset().mockResolvedValue(new Map());
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
+    });
+
+    async function listTools(compiledToolset: AgentSessionCompiledToolset) {
+        const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+        const server = createAgentSessionMcpServer({
+            account: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: null,
+            session: session({ compiledToolset })
+        });
+        const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+        await server.connect(serverTransport);
+        await client.connect(clientTransport);
+
+        try {
+            return (await client.listTools()).tools;
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    }
+
+    it('lists a pinned deployed action with the input schema it was deployed with', async () => {
+        const model = { type: 'object', properties: { title: { type: 'string' } }, required: ['title'] };
+        findActionInputs.mockResolvedValue(
+            new Map([
+                ['notion', new Map([['read_doc', { kind: 'schema', schema: { definitions: { ReadDocInput: model }, $ref: '#/definitions/ReadDocInput' } }]])]
+            ])
+        );
+
+        const tools = await listTools({
+            notion: { provider: 'notion', pinned: [tool('read_doc'), { ...tool('search'), mcp: { inputSchema: { type: 'object' } } }], searchable: [] }
+        });
+
+        expect(findActionInputs).toHaveBeenCalledWith({ environmentId: 1, actions: [{ integrationId: 'notion', name: 'read_doc' }] });
+        expect(tools.find((listed) => listed.name === 'notion__read_doc')?.inputSchema).toMatchObject({
+            properties: { input: { $ref: '#/definitions/ReadDocInput' } },
+            definitions: { ReadDocInput: model }
+        });
+    });
+
+    it('keeps the free-form schema for an action that is no longer deployed', async () => {
+        const tools = await listTools({ notion: { provider: 'notion', pinned: [tool('read_doc')], searchable: [] } });
+
+        expect(tools.find((listed) => listed.name === 'notion__read_doc')?.inputSchema).toStrictEqual(OPEN_INPUT_SCHEMA);
+    });
+
+    it('still lists tools when the schema lookup fails', async () => {
+        findActionInputs.mockRejectedValue(new Error('db down'));
+
+        const tools = await listTools({ notion: { provider: 'notion', pinned: [tool('read_doc')], searchable: [] } });
+
+        expect(tools.find((listed) => listed.name === 'notion__read_doc')?.inputSchema).toStrictEqual(OPEN_INPUT_SCHEMA);
+    });
+
+    it('skips the lookup when no deployed action is listed', async () => {
+        await listTools({ notion: { provider: 'notion', pinned: [], searchable: [tool('read_doc')] } });
+
+        expect(findActionInputs).not.toHaveBeenCalled();
     });
 
     it('advertises that its tool list does not change during a connection', async () => {
@@ -60,6 +135,27 @@ describe('createAgentSessionMcpServer', () => {
 
         try {
             expect(client.getServerCapabilities()?.tools?.listChanged).toBe(false);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it("sends the session's instructions on initialize", async () => {
+        const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+        const server = createAgentSessionMcpServer({
+            account: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: null,
+            session: session({ compiledToolset: { notion: { provider: 'notion', pinned: [], searchable: [tool('read_doc')] } } })
+        });
+        const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+        await server.connect(serverTransport);
+        await client.connect(clientTransport);
+
+        try {
+            expect(client.getInstructions()).toContain('- notion (notion): not connected');
         } finally {
             await client.close();
             await server.close();
@@ -107,6 +203,79 @@ describe('createAgentSessionMcpServer', () => {
             await client.close();
             await server.close();
         }
+    });
+});
+
+describe('direct tool calls', () => {
+    const PURPOSE = { goal: 'summarize my roadmap doc', intent: 'read the roadmap doc' };
+
+    beforeEach(() => {
+        executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
+    });
+
+    async function callTool(args: Record<string, unknown>) {
+        const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+        const server = createAgentSessionMcpServer({
+            account: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: null,
+            session: session({
+                compiledToolset: { notion: { provider: 'notion', pinned: [tool('read_doc')], searchable: [] } },
+                resolvedConnections: {
+                    notion: { integrationId: 'notion', provider: 'notion', connectionId: 'notion-acme', internalConnectionId: 10, configId: 20 }
+                }
+            })
+        });
+        const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+        await server.connect(serverTransport);
+        await client.connect(clientTransport);
+
+        try {
+            return await client.callTool({ name: 'notion__read_doc', arguments: args });
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    }
+
+    it('unwraps the input and records the goal and the intent', async () => {
+        await callTool({ input: { id: 'doc-1' }, ...PURPOSE });
+
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ input: { id: 'doc-1' }, logMeta: PURPOSE }));
+    });
+
+    it('passes no input when a wrapped call leaves it out', async () => {
+        await callTool(PURPOSE);
+
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ input: undefined, logMeta: PURPOSE }));
+    });
+
+    it('passes an input that is not an object', async () => {
+        await callTool({ input: ['doc-1', 'doc-2'], ...PURPOSE });
+
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ input: ['doc-1', 'doc-2'] }));
+    });
+
+    it('still accepts the bare input of a session created before the wrapper', async () => {
+        await callTool({ id: 'doc-1' });
+
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ input: { id: 'doc-1' }, logMeta: undefined }));
+    });
+
+    it("treats a tool's own goal field as its input when the intent is missing", async () => {
+        await callTool({ goal: 'ship v2' });
+
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ input: { goal: 'ship v2' } }));
+    });
+
+    it('rejects a wrapped call with an empty intent', async () => {
+        const result = await callTool({ input: { id: 'doc-1' }, goal: PURPOSE.goal, intent: ' ' });
+
+        expect(result.isError).toBe(true);
+        expect(JSON.stringify(result.content)).toContain('intent');
+        expect(executeAction).not.toHaveBeenCalled();
     });
 });
 
@@ -161,14 +330,40 @@ describe('listSessionTools', () => {
             {
                 name: 'discord__send_message',
                 description: 'send_message description',
-                inputSchema: { $schema: 'https://json-schema.org/draft/2020-12/schema', type: 'object', properties: {}, additionalProperties: true },
+                inputSchema: OPEN_INPUT_SCHEMA,
                 _meta: { 'nango/integration': 'discord', 'nango/tool': 'send_message' }
             },
             {
                 name: 'slack__send_message',
                 description: 'send_message description',
-                inputSchema: { $schema: 'https://json-schema.org/draft/2020-12/schema', type: 'object', properties: {}, additionalProperties: true },
+                inputSchema: OPEN_INPUT_SCHEMA,
                 _meta: { 'nango/integration': 'slack', 'nango/tool': 'send_message' }
+            }
+        ]);
+    });
+
+    it('lists a pinned MCP server tool with the schema and annotations its server gave', () => {
+        const inputSchema = { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] };
+        const tools = listSessionTools(
+            session({
+                compiledToolset: {
+                    'linear-mcp': {
+                        provider: 'linear-mcp',
+                        pinned: [{ name: 'list_issues', description: 'List issues', mcp: { inputSchema, annotations: { readOnlyHint: true } } }],
+                        searchable: [],
+                        mcpServer: 'available'
+                    }
+                }
+            })
+        );
+
+        expect(tools.slice(2)).toStrictEqual([
+            {
+                name: 'linear-mcp__list_issues',
+                description: 'List issues',
+                inputSchema: directCallInputSchema(inputSchema),
+                annotations: { readOnlyHint: true },
+                _meta: { 'nango/integration': 'linear-mcp', 'nango/tool': 'list_issues' }
             }
         ]);
     });
@@ -219,6 +414,56 @@ describe('listSessionTools', () => {
 
         for (const listed of tools) {
             expect(listed.name).toMatch(/^[a-zA-Z0-9_-]{1,64}$/);
+        }
+    });
+
+    it('keeps long names up to 64 characters', () => {
+        const integrationId = 'i'.repeat(31);
+        const toolName = 't'.repeat(31);
+        const tools = listSessionTools(session({ compiledToolset: { [integrationId]: { provider: 'notion', pinned: [tool(toolName)], searchable: [] } } }));
+
+        expect(tools[2]?.name).toBe(`${integrationId}__${toolName}`);
+    });
+
+    it('gives a short tool name the room a long integration id cannot have', () => {
+        const tools = listSessionTools(session({ compiledToolset: { ['i'.repeat(100)]: { provider: 'notion', pinned: [tool('get_task')], searchable: [] } } }));
+
+        expect(tools[2]?.name).toBe(`${'i'.repeat(54)}__get_task`);
+    });
+
+    it('gives a short integration id room for a long tool name', () => {
+        const tools = listSessionTools(session({ compiledToolset: { asana: { provider: 'asana', pinned: [tool('t'.repeat(100))], searchable: [] } } }));
+
+        expect(tools[2]?.name).toBe(`asana__${'t'.repeat(57)}`);
+    });
+
+    it('splits the room when both parts are long', () => {
+        const tools = listSessionTools(
+            session({ compiledToolset: { ['i'.repeat(100)]: { provider: 'notion', pinned: [tool('t'.repeat(100))], searchable: [] } } })
+        );
+
+        expect(tools[2]?.name).toBe(`${'i'.repeat(31)}__${'t'.repeat(31)}`);
+    });
+
+    it('numbers names that collide after clipping within 64 characters', () => {
+        const prefix = 't'.repeat(70);
+        const tools = listSessionTools(
+            session({
+                compiledToolset: {
+                    ['i'.repeat(100)]: {
+                        provider: 'notion',
+                        pinned: [tool(`${prefix}_read`), tool(`${prefix}_write`), tool(`${prefix}_delete`)],
+                        searchable: []
+                    }
+                }
+            })
+        );
+
+        const names = tools.slice(2).map((listed) => listed.name);
+        const base = `${'i'.repeat(31)}__${'t'.repeat(31)}`;
+        expect(names).toStrictEqual([base, `${base.slice(0, 62)}_2`, `${base.slice(0, 62)}_3`]);
+        for (const name of names) {
+            expect(name.length).toBeLessThanOrEqual(64);
         }
     });
 
@@ -296,5 +541,44 @@ describe('listSessionTools', () => {
         const tools = listSessionTools(session({ compiledToolset: { notion: { provider: 'notion', pinned, searchable: [] } } }));
 
         expect(tools).toHaveLength(TOOLS_PAGE_SIZE * 2 + 2);
+    });
+});
+
+describe('actionInputSchemaOf', () => {
+    const model: JSONSchema7 = { type: 'object', properties: { title: { type: 'string' } } };
+
+    it('nests the input model under input, with its definitions at the root', () => {
+        expect(
+            actionInputSchemaOf({
+                kind: 'schema',
+                schema: { $schema: DRAFT_07, definitions: { ReadDocInput: model }, $ref: '#/definitions/ReadDocInput' }
+            })
+        ).toMatchObject({ $schema: DRAFT_07, properties: { input: { $ref: '#/definitions/ReadDocInput' } }, definitions: { ReadDocInput: model } });
+    });
+
+    it('hoists definitions nested in the input model so its refs resolve', () => {
+        const nested: JSONSchema7 = {
+            type: 'object',
+            properties: { child: { $ref: '#/definitions/__schema0' } },
+            definitions: { __schema0: { type: 'string' } }
+        };
+
+        expect(
+            actionInputSchemaOf({ kind: 'schema', schema: { $schema: DRAFT_07, definitions: { ReadDocInput: nested }, $ref: '#/definitions/ReadDocInput' } })
+        ).toMatchObject({ definitions: { ReadDocInput: nested, __schema0: { type: 'string' } } });
+    });
+
+    it('lists an input that is not an object, which the wrapper makes callable directly', () => {
+        const schema: JSONSchema7 = { $schema: DRAFT_07, definitions: { ReadDocInput: { type: 'array' } }, $ref: '#/definitions/ReadDocInput' };
+
+        expect(actionInputSchemaOf({ kind: 'schema', schema })).toMatchObject({ properties: { input: { $ref: '#/definitions/ReadDocInput' } } });
+    });
+
+    it('lists an action with no input as taking only the goal and the intent', () => {
+        expect(actionInputSchemaOf({ kind: 'none' })).toStrictEqual(directCallInputSchema('none'));
+    });
+
+    it('accepts any input when the input could not be read', () => {
+        expect(actionInputSchemaOf({ kind: 'unavailable' } satisfies AgentSessionToolInput)).toStrictEqual(OPEN_INPUT_SCHEMA);
     });
 });

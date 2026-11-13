@@ -8,7 +8,7 @@ import proxyService from './proxy.service.js';
 import type { ProxyQueryParams, ProxyRequestOutput } from './mcpProxySchema.js';
 import type { ProxyServiceError, ProxyServiceResponse } from './proxy.service.js';
 import type { LogContext } from '@nangohq/logs';
-import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, OperationActor } from '@nangohq/types';
+import type { ApiKeyPrincipal, DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, OperationActor } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Server.MCP.Proxy');
@@ -27,11 +27,13 @@ export interface McpProxyRequest {
     headers?: Record<string, string> | undefined;
     body?: unknown;
     baseUrlOverride?: string | undefined;
+    apiKey?: ApiKeyPrincipal | undefined;
     retries?: number | undefined;
     decompress?: boolean | undefined;
     retryOn?: number[] | undefined;
     forwardHeadersOnRedirect?: boolean | undefined;
     actor?: OperationActor | undefined;
+    logMeta?: Record<string, unknown> | undefined;
 }
 
 export interface McpProxyExecution {
@@ -60,6 +62,7 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<M
         account,
         environment,
         plan: params.plan,
+        ...(params.apiKey ? { apiKey: params.apiKey } : {}),
         method: params.method,
         endpoint: appendQueryParams(params.path, params.queryParams),
         integrationId,
@@ -71,7 +74,8 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<M
         decompress: params.decompress,
         retryOn: params.retryOn,
         forwardHeadersOnRedirect: params.forwardHeadersOnRedirect,
-        actor: params.actor
+        actor: params.actor,
+        logMeta: params.logMeta
     });
 
     if (execution.result.isErr()) {
@@ -105,7 +109,7 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<M
     }
 }
 
-function completeProxyResponse(response: Pick<ProxyServiceResponse, 'complete'>, error?: Error): void {
+export function completeProxyResponse(response: Pick<ProxyServiceResponse, 'complete'>, error?: Error): void {
     void response.complete(error).catch((err: unknown) => {
         const completionError = err instanceof Error ? err : new Error('Failed to complete MCP proxy response');
         logger.error('Failed to complete MCP proxy response', { error: completionError });

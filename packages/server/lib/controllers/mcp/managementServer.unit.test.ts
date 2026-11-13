@@ -11,6 +11,7 @@ import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
 import { createConnectSessionTool } from './connectSessions/create.js';
 import { deployFunctionTool } from './functions/deployFunction.js';
+import { deployTemplateTool } from './functions/deployTemplate.js';
 import { getDeploymentStatusTool } from './functions/getDeploymentStatus.js';
 import { listFunctionsTool } from './functions/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
@@ -23,6 +24,7 @@ import { proxyRequestTool } from './proxy/request.js';
 import { setSyncsStateTool } from './syncs/setState.js';
 import { triggerSyncsTool } from './syncs/trigger.js';
 import { withoutUnscopedTools } from './testUtils.js';
+import { callToolsTool } from './tools/call.js';
 import { PublicMcpError } from './utils.js';
 
 import type { McpServer } from '@modelcontextprotocol/server';
@@ -86,7 +88,7 @@ describe('createManagementMcpServer', () => {
                 { name: 'connections_list', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
                 {
                     name: 'connections_get',
-                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
+                    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
                 },
                 {
                     name: 'syncs_set_state',
@@ -116,6 +118,10 @@ describe('createManagementMcpServer', () => {
                 {
                     name: 'get_deployment_status',
                     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+                },
+                {
+                    name: 'tools_call',
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 { name: 'logs_list_operations', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
                 { name: 'logs_get_operation', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } }
@@ -392,6 +398,73 @@ describe('createManagementMcpServer', () => {
         }
     });
 
+    it('elicits confirmation before deleting an integration', async () => {
+        const response = { success: true as const };
+        const handlerSpy = vi.spyOn(deleteIntegrationsTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const elicitationHandler = vi.fn(() => ({ action: 'accept' as const, content: {} }));
+        const { client, server } = await createTestClient(['environment:integrations:delete'], { elicitationHandler });
+
+        try {
+            const result = await client.callTool({ name: 'integrations_delete', arguments: { integration_id: 'github' } });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(elicitationHandler).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    message: 'Delete integration "github" from environment "dev"? This action cannot be undone.',
+                    requestedSchema: { type: 'object', properties: {} }
+                })
+            );
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('does not delete an integration when confirmation is declined', async () => {
+        const handlerSpy = vi.spyOn(deleteIntegrationsTool, 'handler');
+        const { client, server } = await createTestClient(['environment:integrations:delete'], {
+            elicitationHandler: () => ({ action: 'decline' })
+        });
+
+        try {
+            const result = await client.callTool({ name: 'integrations_delete', arguments: { integration_id: 'github' } });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: 'Operation cancelled; no changes were made.' }],
+                isError: true
+            });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('does not delete an integration when the client cannot elicit confirmation', async () => {
+        const handlerSpy = vi.spyOn(deleteIntegrationsTool, 'handler');
+        const { client, server } = await createTestClient(['environment:integrations:delete']);
+
+        try {
+            const result = await client.callTool({ name: 'integrations_delete', arguments: { integration_id: 'github' } });
+
+            expect(result).toMatchObject({
+                content: [{ type: 'text', text: expect.stringContaining('did not declare the required capability') }],
+                isError: true
+            });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
     it.each(['environment:connections:list', 'environment:connections:list_credentials'])(
         'exposes the read-only connections list tool with %s',
         async (scope) => {
@@ -458,52 +531,55 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it('exposes and authorizes non-idempotent action triggering', async () => {
-        const authorized = await createTestClient(['environment:actions:execute']);
-        try {
-            const result = await authorized.client.listTools();
-            const scopedTools = withoutUnscopedTools(result.tools);
-            expect(scopedTools).toHaveLength(1);
-            expect(scopedTools[0]).toMatchObject({
-                name: 'actions_trigger',
-                description: expect.stringContaining('time out within 90 seconds'),
-                inputSchema: {
-                    type: 'object',
-                    required: ['action_name', 'integration_id', 'connection_id'],
-                    additionalProperties: false
-                },
-                outputSchema: { type: 'object', required: ['data'], additionalProperties: false },
-                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
-            });
-            expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('async');
-            expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('max_retries');
-            expect(scopedTools[0]?.inputSchema.properties?.['input']).toMatchObject({ type: ['object', 'array', 'string', 'number', 'boolean', 'null'] });
-        } finally {
-            await authorized.client.close();
-            await authorized.server.close();
-        }
+    it.each(['environment:tools:call', 'environment:actions:execute', 'environment:actions:*'])(
+        'exposes and authorizes non-idempotent action triggering with %s',
+        async (scope) => {
+            const authorized = await createTestClient([scope]);
+            try {
+                const result = await authorized.client.listTools();
+                const scopedTools = withoutUnscopedTools(result.tools);
+                expect(scopedTools.map((tool) => tool.name)).toStrictEqual(['actions_trigger', 'tools_call']);
+                expect(scopedTools[0]).toMatchObject({
+                    name: 'actions_trigger',
+                    description: expect.stringContaining('time out within 90 seconds'),
+                    inputSchema: {
+                        type: 'object',
+                        required: ['action_name', 'integration_id', 'connection_id'],
+                        additionalProperties: false
+                    },
+                    outputSchema: { type: 'object', required: ['data'], additionalProperties: false },
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
+                });
+                expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('async');
+                expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('max_retries');
+                expect(scopedTools[0]?.inputSchema.properties?.['input']).toMatchObject({ type: ['object', 'array', 'string', 'number', 'boolean', 'null'] });
+            } finally {
+                await authorized.client.close();
+                await authorized.server.close();
+            }
 
-        const handlerSpy = vi.spyOn(triggerActionTool, 'handler');
-        const unauthorized = await createTestClient(['environment:mcp']);
-        try {
-            await expectDisabledTool(unauthorized.client, 'actions_trigger', {
-                action_name: 'create-issue',
-                input: {},
-                integration_id: 'github',
-                connection_id: 'connection-id'
-            });
-            expect(handlerSpy).not.toHaveBeenCalled();
-        } finally {
-            handlerSpy.mockRestore();
-            await unauthorized.client.close();
-            await unauthorized.server.close();
+            const handlerSpy = vi.spyOn(triggerActionTool, 'handler');
+            const unauthorized = await createTestClient(['environment:mcp']);
+            try {
+                await expectDisabledTool(unauthorized.client, 'actions_trigger', {
+                    action_name: 'create-issue',
+                    input: {},
+                    integration_id: 'github',
+                    connection_id: 'connection-id'
+                });
+                expect(handlerSpy).not.toHaveBeenCalled();
+            } finally {
+                handlerSpy.mockRestore();
+                await unauthorized.client.close();
+                await unauthorized.server.close();
+            }
         }
-    });
+    );
 
     it('returns action responses as JSON text and structured content', async () => {
         const response = { data: 'created' };
         const handlerSpy = vi.spyOn(triggerActionTool, 'handler').mockResolvedValueOnce(Ok(response));
-        const { client, server } = await createTestClient(['environment:actions:execute']);
+        const { client, server } = await createTestClient(['environment:tools:call']);
 
         try {
             const result = await client.callTool({
@@ -533,7 +609,7 @@ describe('createManagementMcpServer', () => {
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'connections_get',
-                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
+                annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
             });
         } finally {
             await client.close();
@@ -561,7 +637,6 @@ describe('createManagementMcpServer', () => {
             connection_id: 'connection-id',
             provider_config_key: 'github',
             provider: 'github',
-            connection_config: {},
             webhook_url_override: null,
             created_at: '2026-01-01T00:00:00.000Z',
             updated_at: '2026-01-02T00:00:00.000Z',
@@ -655,8 +730,8 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it.each(['environment:functions:list', 'environment:functions:*'])('exposes the read-only functions list tool with %s', async (scope) => {
-        const { client, server } = await createTestClient([scope]);
+    it('exposes the read-only functions_list with environment:functions:list', async () => {
+        const { client, server } = await createTestClient(['environment:functions:list']);
 
         try {
             const result = await client.listTools();
@@ -673,12 +748,54 @@ describe('createManagementMcpServer', () => {
         }
     });
 
+    it('exposes the read-only functions tools with environment:functions:*', async () => {
+        const { client, server } = await createTestClient(['environment:functions:*']);
+
+        try {
+            const result = await client.listTools();
+            const scopedTools = withoutUnscopedTools(result.tools);
+
+            expect(scopedTools.map((tool) => tool.name)).toStrictEqual(['functions_list']);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
     it('authorizes function listing before invoking the tool', async () => {
         const handlerSpy = vi.spyOn(listFunctionsTool, 'handler');
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
             await expectDisabledTool(client, 'functions_list', { integration_id: 'github' });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it.each(['environment:tools:call', 'environment:actions:execute'])('exposes tools_call with %s', async (scope) => {
+        const { client, server } = await createTestClient([scope]);
+
+        try {
+            const result = await client.listTools();
+            const scopedTools = withoutUnscopedTools(result.tools);
+
+            expect(scopedTools.map((tool) => tool.name)).toStrictEqual(['actions_trigger', 'tools_call']);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('authorizes tool calls before invoking the tool', async () => {
+        const handlerSpy = vi.spyOn(callToolsTool, 'handler');
+        const { client, server } = await createTestClient(['environment:functions:invocations']);
+
+        try {
+            await expectDisabledTool(client, 'tools_call', { integration_id: 'github', connection_id: 'connection-id', name: 'fetchIssue' });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -846,12 +963,42 @@ describe('createManagementMcpServer', () => {
     it('returns syncs_trigger results as JSON text and structured content', async () => {
         const response = { success: true as const };
         const handlerSpy = vi.spyOn(triggerSyncsTool, 'handler').mockResolvedValueOnce(Ok(response));
-        const { client, server } = await createTestClient(['environment:syncs:execute']);
+        const elicitationHandler = vi.fn(() => ({ action: 'accept' as const, content: {} }));
+        const { client, server } = await createTestClient(['environment:syncs:execute'], { elicitationHandler });
 
         try {
             const result = await client.callTool({
                 name: 'syncs_trigger',
                 arguments: { integration_id: 'github', syncs: ['issues'], reset: true, empty_cache: true }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+            expect(elicitationHandler).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    message:
+                        'Trigger the requested syncs for integration "github" in environment "dev" with a full reset and deletion of existing synced records?'
+                })
+            );
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('does not elicit confirmation when empty_cache is ignored without reset', async () => {
+        const response = { success: true as const };
+        const handlerSpy = vi.spyOn(triggerSyncsTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:syncs:execute']);
+
+        try {
+            const result = await client.callTool({
+                name: 'syncs_trigger',
+                arguments: { integration_id: 'github', syncs: ['issues'], empty_cache: true }
             });
 
             expect(result).toStrictEqual({
@@ -954,6 +1101,40 @@ describe('createManagementMcpServer', () => {
                 content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
                 structuredContent: response
             });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('elicits confirmation before deploying a template that may overwrite a function', async () => {
+        const response = {
+            id: '3c66291f-6247-47a6-a100-f4d621d751f7',
+            status: 'success' as const,
+            created_at: '2026-01-01T00:00:00.000Z'
+        };
+        const handlerSpy = vi.spyOn(deployTemplateTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const elicitationHandler = vi.fn(() => ({ action: 'accept' as const, content: {} }));
+        const { client, server } = await createTestClient(['environment:deploy'], { elicitationHandler });
+
+        try {
+            const result = await client.callTool({
+                name: 'deploy_template',
+                arguments: { integration_id: 'github', template: 'issues' }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(elicitationHandler).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    message:
+                        'Deploy template "issues" to integration "github" in environment "dev"? Any same-named non-catalog function configuration will be replaced.'
+                })
+            );
             expect(handlerSpy).toHaveBeenCalledOnce();
         } finally {
             handlerSpy.mockRestore();
@@ -1182,6 +1363,7 @@ describe('createManagementMcpServer', () => {
                 display_name: 'Algolia MCP',
                 logo: 'https://example.com/algolia.svg',
                 forward_webhooks: true,
+                missing_fields: [],
                 created_at: '2026-01-01T00:00:00.000Z',
                 updated_at: '2026-01-01T00:00:00.000Z'
             }
@@ -1344,13 +1526,25 @@ async function expectDisabledTool(client: Client, name: string, args: Record<str
     });
 }
 
-async function createTestClient(grantedScopes: string[]): Promise<{ client: Client; server: McpServer }> {
+async function createTestClient(
+    grantedScopes: string[],
+    options: {
+        elicitationHandler?: ((params: { message: string }) => { action: 'accept'; content: Record<string, never> } | { action: 'decline' }) | undefined;
+    } = {}
+): Promise<{ client: Client; server: McpServer }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     const server = await createManagementMcpServer({
         type: 'apiKey',
         context: { account: fakeAccount(), environment: fakeEnvironment(), plan: null, grantedScopes }
     });
-    const client = new Client({ name: 'test-client', version: '1.0.0' });
+    const client = new Client(
+        { name: 'test-client', version: '1.0.0' },
+        options.elicitationHandler ? { capabilities: { elicitation: { form: {} } } } : undefined
+    );
+    const elicitationHandler = options.elicitationHandler;
+    if (elicitationHandler) {
+        client.setRequestHandler('elicitation/create', (request) => elicitationHandler(request.params));
+    }
 
     await server.connect(serverTransport);
     await client.connect(clientTransport);
@@ -1365,6 +1559,7 @@ function fakeAccount(): DBTeam {
         name: 'Test Account',
         uuid: 'test-account',
         found_us: null,
+        has_baa: false,
         created_at: now,
         updated_at: now
     };

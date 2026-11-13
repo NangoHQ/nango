@@ -1,0 +1,57 @@
+---
+title: 'How to register your own CCH Axcess OAuth app'
+sidebarTitle: 'CCH Axcess setup'
+description: 'Register an Open Integration Platform app in CCH Axcess and connect it to Nango'
+---
+
+This guide shows you how to register an OAuth app in CCH Axcess to get your client ID and client secret, and where to find the integrator key that CCH Axcess requires on every API request.
+
+CCH Axcess API access is part of the Open Integration Platform (OIP). You need a CCH Axcess account licensed for Open Integration.
+
+<Steps>
+  <Step id="open-developer-tools" title="Open Developer Tools in CCH Axcess">
+    1. Log in to the CCH Axcess Dashboard with an account number licensed for Open Integration and a user that can view firm settings.
+    2. Go to **Dashboard** > **Application Links** > **Firm** > **Developer Tools**.
+    3. Click **Add Application**.
+  </Step>
+  <Step id="register-application" title="Register your application">
+    Fill in:
+    - **Application Name** — users see this name when they approve access.
+    - **Application Type** — select **Authorization Code**.
+    - **Description** — a short description of your app.
+    - **Access token lifetime** and **Refresh token lifetime** — how long each token lasts. Nango refreshes the access token automatically. If the refresh token expires, the user has to reconnect.
+    - **Scopes** — select the scopes your app needs:
+      - `CCHAxcess_data_writeaccess` — read and write CCH Axcess data, limited by the user's licenses and security groups.
+      - `CCHAxcess_Profile` — adds the user's name and email to the ID token.
+      - `IDInfo` — returns an ID token.
+      - `offline_access` — returns a refresh token. Required for Nango to refresh tokens.
+      - `openid` — adds the `sub` claim.
+    - **Redirect URL** — `https://api.nango.dev/oauth/callback`
+  </Step>
+  <Step id="copy-credentials" title="Copy your credentials">
+    Copy the **Client ID** and **Client Secret** and enter them in your CCH Axcess integration in Nango. In the integration settings, add the same scopes you selected when registering the app.
+  </Step>
+  <Step id="get-integrator-key" title="Get your integrator key">
+    CCH Axcess requires an `IntegratorKey` header on every API request. This is your API subscription key.
+
+    1. Log in to the [CCH Axcess Developer Portal](https://developers.cchaxcess.com/) as your firm's default administrator.
+    2. Click **Profile** in the menu bar.
+    3. Copy your subscription key.
+  </Step>
+  <Step id="set-integrator-key" title="Add your integrator key in Nango">
+    The integrator key belongs to your app, not to the users who connect, so you set it once on the integration. In your CCH Axcess integration settings in Nango, paste it into **Integrator Key**.
+
+    Nango copies it to each new connection and sends it as the `IntegratorKey` header on every proxied request. Users never see it in the Connect UI.
+
+    <Note>Nango copies the key when a connection is created. If you change it later, existing connections keep the old key until they reconnect.</Note>
+
+    <Accordion title="For agents">
+      Set the key with the [create integration](/reference/backend/http-api/integration/create) or [update integration](/reference/backend/http-api/integration/update) API by passing `"integration_config": { "integratorKey": "<YOUR-INTEGRATOR-KEY>" }` in the request body.
+    </Accordion>
+  </Step>
+  <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account. When users connect, CCH Axcess asks for their firm's account number, then their login, then their approval.
+  </Step>
+</Steps>
+
+For more details, see CCH's guides on [registering an OIP application](https://support.cch.com/oss/ml/kb/solution/000106244) and [implementing OAuth 2.0 token authentication](https://support.cch.com/oss/ml/kb/solution/000106245).

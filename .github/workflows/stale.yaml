@@ -14,6 +14,8 @@ jobs:
             - uses: actions/stale@v9
               with:
                   repo-token: ${{ secrets.GITHUB_TOKEN }}
+                  operations-per-run: 200
+                  ascending: true
                   # issues
                   days-before-issue-stale: 30
                   days-before-issue-close: 14

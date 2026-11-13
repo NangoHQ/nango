@@ -10,9 +10,6 @@
         "serve:unsafe": "serve -s dist -p ${NANGO_CONNECT_UI_PORT:-3009}",
         "test": "vitest run"
     },
-    "dependencies": {
-        "serve": "14.2.6"
-    },
     "devDependencies": {
         "@hookform/resolvers": "5.1.1",
         "@nangohq/frontend": "file:../frontend",
@@ -27,7 +24,7 @@
         "@types/react": "18.3.3",
         "@types/react-dom": "18.3.0",
         "@vitejs/plugin-react-swc": "4.3.1",
-        "@vitest/browser-playwright": "4.1.10",
+        "@vitest/browser-playwright": "4.1.11",
         "axe-core": "4.12.0",
         "class-variance-authority": "0.7.1",
         "clsx": "2.1.1",
@@ -35,7 +32,7 @@
         "globals": "15.14.0",
         "lucide-react": "0.542.0",
         "playwright": "1.61.0",
-        "postcss": "8.5.26",
+        "postcss": "8.5.31",
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-error-boundary": "4.0.13",
@@ -45,11 +42,14 @@
         "tailwindcss": "4.1.13",
         "tailwindcss-animate": "1.0.7",
         "typescript": "5.8.3",
-        "vite": "8.0.16",
+        "vite": "8.3.5",
         "vite-plugin-svgr": "5.2.0",
-        "vitest": "4.1.10",
+        "vitest": "4.1.11",
         "vitest-browser-react": "2.2.0",
-        "zod": "4.3.6",
+        "zod": "4.6.7",
         "zustand": "5.0.3"
+    },
+    "dependencies": {
+        "serve": "14.2.6"
     }
 }

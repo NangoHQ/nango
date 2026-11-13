@@ -1,0 +1,12 @@
+import { it } from 'vitest';
+import { replayFunction } from 'nango/test';
+
+import definition from <%- importPath %>;
+
+it(<%- testName %>, async () => {
+    await replayFunction({
+        dirname: __dirname,
+        name: <%- functionName %>,
+        definition
+    });
+});

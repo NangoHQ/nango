@@ -27,9 +27,14 @@ function errType(result: unknown) {
 function makeNango({
     connectionSecret,
     connectionExists = true,
-    integrationSecret
-}: { connectionSecret?: unknown; connectionExists?: boolean; integrationSecret?: string } = {}) {
-    const integration = getTestConfig({ provider: 'salesforce', ...(integrationSecret ? { custom: { webhookSecret: integrationSecret } } : {}) });
+    integrationSecret,
+    allowUnverified = false
+}: { connectionSecret?: unknown; connectionExists?: boolean; integrationSecret?: string; allowUnverified?: boolean } = {}) {
+    const integration = getTestConfig({
+        provider: 'salesforce',
+        allow_unverified_webhooks: allowUnverified,
+        ...(integrationSecret ? { custom: { webhookSecret: integrationSecret } } : {})
+    });
     const nango = new InternalNango({
         team: seeders.getTestTeam(),
         environment: seeders.getTestEnvironment(),
@@ -148,7 +153,26 @@ describe('salesforce-webhook-routing', () => {
         const result = await SalesforceWebhookRouting.default(nango, {}, body, rawBody);
 
         expect(result.isOk()).toBe(true);
-        expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'salesforce_missing_webhook_secret' }));
+        expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'salesforce_missing_webhook_secret' }), 'flag');
         expect(execute).toHaveBeenCalledOnce();
+    });
+
+    it('routes an unverified webhook when the integration allows unverified webhooks', async () => {
+        const { nango, execute, markUnverified } = makeNango({ allowUnverified: true });
+
+        const result = await SalesforceWebhookRouting.default(nango, {}, body, rawBody);
+
+        expect(result.isOk()).toBe(true);
+        expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'salesforce_missing_webhook_secret' }), 'setting');
+        expect(execute).toHaveBeenCalledOnce();
+    });
+
+    it('rejects a wrong secret when the integration allows unverified webhooks', async () => {
+        const { nango, execute } = makeNango({ connectionSecret: CONNECTION_SECRET, allowUnverified: true });
+
+        const result = await SalesforceWebhookRouting.default(nango, { 'x-nango-webhook-secret': 'wrong' }, body, rawBody);
+
+        expect(errType(result)).toBe('webhook_invalid_signature');
+        expect(execute).not.toHaveBeenCalled();
     });
 });

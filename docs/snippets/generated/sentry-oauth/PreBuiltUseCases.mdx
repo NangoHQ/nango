@@ -1,3 +1,82 @@
-_No pre-built syncs or actions available yet._
+### Others
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>
+| Function name | Description | Type |
+| - | - | - |
+| `add-member-to-team` | Add an organization member to a team. | [Tool](/guides/functions/tools) |
+| `add-team-to-project` | Assign an additional team to a project. | [Tool](/guides/functions/tools) |
+| `bulk-delete-issues` | Permanently delete a set of issues by their IDs. | [Tool](/guides/functions/tools) |
+| `bulk-update-issues` | Update the given field(s) on up to 1000 issues at once, selected by id or by the current search query. | [Tool](/guides/functions/tools) |
+| `create-alert-rule` | Create a new alert rule. | [Tool](/guides/functions/tools) |
+| `create-monitor` | Create a new cron monitor for a project. | [Tool](/guides/functions/tools) |
+| `create-project-key` | Create an additional client key (DSN) for a project. | [Tool](/guides/functions/tools) |
+| `create-project` | Create a new project bound to a team | [Tool](/guides/functions/tools) |
+| `create-release-deploy` | Record a new deploy of a release to an environment. | [Tool](/guides/functions/tools) |
+| `create-release` | Create a new release, optionally attaching commits | [Tool](/guides/functions/tools) |
+| `create-team` | Create a new team in a Sentry organization. | [Tool](/guides/functions/tools) |
+| `delete-alert-rule` | Delete an alert rule. | [Tool](/guides/functions/tools) |
+| `delete-issue` | Permanently delete an issue. | [Tool](/guides/functions/tools) |
+| `delete-monitor` | Delete a monitor. | [Tool](/guides/functions/tools) |
+| `delete-project-key` | Delete a project key (DSN). | [Tool](/guides/functions/tools) |
+| `delete-project` | Delete a project. | [Tool](/guides/functions/tools) |
+| `delete-release` | Delete a release. | [Tool](/guides/functions/tools) |
+| `delete-team` | Delete a team | [Tool](/guides/functions/tools) |
+| `get-alert-rule` | Retrieve a single alert rule. | [Tool](/guides/functions/tools) |
+| `get-issue-event` | Retrieve a single event belonging to an issue, with full payload (message, exception, stacktrace, tags, user, contexts). | [Tool](/guides/functions/tools) |
+| `get-issue-tag` | Get aggregate info for one tag key on an issue (unique/total value counts, top values). | [Tool](/guides/functions/tools) |
+| `get-issue` | Retrieve details of a single Sentry issue, including its stats, comment/user-report counts and latest event context. | [Tool](/guides/functions/tools) |
+| `get-monitor` | Retrieve a single monitor's details. | [Tool](/guides/functions/tools) |
+| `get-organization-event-counts` | Get event counts for the organization grouped and time-bucketed by an arbitrary dimension (category, project, outcome, etc.). | [Tool](/guides/functions/tools) |
+| `get-organization-member` | Retrieve a single organization member. | [Tool](/guides/functions/tools) |
+| `get-organization-stats-summary` | Get accepted, filtered, and dropped event counts per project for the organization over a time window. | [Tool](/guides/functions/tools) |
+| `get-organization` | Retrieve details for the connected Sentry organization. | [Tool](/guides/functions/tools) |
+| `get-project-environment` | Retrieve a single project environment by name | [Tool](/guides/functions/tools) |
+| `get-project-event` | Retrieve a single event's full payload by project and event ID | [Tool](/guides/functions/tools) |
+| `get-project-key` | Retrieve a single project key (DSN). | [Tool](/guides/functions/tools) |
+| `get-project` | Retrieve details of a single Sentry project | [Tool](/guides/functions/tools) |
+| `get-release` | Retrieve a single release's details. | [Tool](/guides/functions/tools) |
+| `get-team` | Retrieve a single team's details. | [Tool](/guides/functions/tools) |
+| `invite-organization-member` | Invite a new member to a Sentry organization by email | [Tool](/guides/functions/tools) |
+| `list-alert-rules` | List the organization's alert rules (Sentry's current public API models these as "alerts"/"workflows"). | [Tool](/guides/functions/tools) |
+| `list-issue-events` | List the individual events that make up an issue (group). | [Tool](/guides/functions/tools) |
+| `list-issue-tag-values` | List the distinct values seen for one tag key on an issue, with cursor pagination. | [Tool](/guides/functions/tools) |
+| `list-monitor-checkins` | List check-in events recorded for a monitor. | [Tool](/guides/functions/tools) |
+| `list-monitors` | List cron monitors for the organization, optionally filtered by project or environment. | [Tool](/guides/functions/tools) |
+| `list-organization-environments` | List environment names known to the organization | [Tool](/guides/functions/tools) |
+| `list-organization-issues` | List issues across a Sentry organization, optionally filtered by projects, environments, time window, or search query. | [Tool](/guides/functions/tools) |
+| `list-organization-members` | List members of the organization. | [Tool](/guides/functions/tools) |
+| `list-organizations` | List organizations accessible to the connected account. | [Tool](/guides/functions/tools) |
+| `list-project-environments` | List a project's environments (including hidden ones only when requested). | [Tool](/guides/functions/tools) |
+| `list-project-events` | List events ingested for a project, optionally windowed by time. | [Tool](/guides/functions/tools) |
+| `list-project-issues` | List issues bound to a single project, with optional search query, sorting, and cursor pagination. | [Tool](/guides/functions/tools) |
+| `list-project-keys` | List a project's client keys (DSNs). | [Tool](/guides/functions/tools) |
+| `list-project-releases` | List releases associated with a single project. | [Tool](/guides/functions/tools) |
+| `list-project-teams` | List the teams a project is assigned to. | [Tool](/guides/functions/tools) |
+| `list-projects` | List all projects in a Sentry organization. | [Tool](/guides/functions/tools) |
+| `list-release-commits` | List commits associated with a release. | [Tool](/guides/functions/tools) |
+| `list-release-deploys` | List the deploys recorded for a release. | [Tool](/guides/functions/tools) |
+| `list-release-files` | List source/asset files uploaded for a release. | [Tool](/guides/functions/tools) |
+| `list-releases` | List releases for the organization. | [Tool](/guides/functions/tools) |
+| `list-team-members` | List the members of a team. | [Tool](/guides/functions/tools) |
+| `list-team-projects` | List a team's projects | [Tool](/guides/functions/tools) |
+| `list-teams` | List all teams in a Sentry organization | [Tool](/guides/functions/tools) |
+| `remove-member-from-team` | Remove an organization member from a team. | [Tool](/guides/functions/tools) |
+| `remove-organization-member` | Remove a member from the organization. | [Tool](/guides/functions/tools) |
+| `remove-team-from-project` | Unassign a team from a project, revoking its access | [Tool](/guides/functions/tools) |
+| `update-alert-rule` | Update an alert rule's name, enabled state, config, or trigger/action wiring. | [Tool](/guides/functions/tools) |
+| `update-issue` | Update an issue's status, assignment, bookmark, or subscription state. | [Tool](/guides/functions/tools) |
+| `update-monitor` | Update a monitor's name, slug, or schedule config. | [Tool](/guides/functions/tools) |
+| `update-organization-member` | Update a member's organization-level role and/or per-team roles. | [Tool](/guides/functions/tools) |
+| `update-project-environment` | Hide or unhide a project environment. | [Tool](/guides/functions/tools) |
+| `update-project-key` | Update a project key's name, rate limit, or active state. | [Tool](/guides/functions/tools) |
+| `update-project` | Update a project's settings (name, slug, platform, bookmarked flag, digest delays, and more). Only submitted fields are changed. | [Tool](/guides/functions/tools) |
+| `update-release` | Update a release's ref/url/dateReleased or commit list. | [Tool](/guides/functions/tools) |
+| `update-team` | Update the slug, name, or other settings of a team. | [Tool](/guides/functions/tools) |
+| `alert-rules` | Sync the organization's alert rules (workflows in Sentry's current public API) | [Sync](/guides/functions/syncs/sync-functions) |
+| `events` | Sync events ingested per project, using time-window pagination | [Sync](/guides/functions/syncs/sync-functions) |
+| `issues` | Sync issues (error groups) across all projects in the organization. | [Sync](/guides/functions/syncs/sync-functions) |
+| `members` | Sync organization members. | [Sync](/guides/functions/syncs/sync-functions) |
+| `monitors` | Sync cron monitors for a Sentry organization, including schedule configuration and nested monitor environments. | [Sync](/guides/functions/syncs/sync-functions) |
+| `project-keys` | Sync all client keys (DSNs) across every project in the Sentry organization | [Sync](/guides/functions/syncs/sync-functions) |
+| `projects` | Sync all projects in a Sentry organization, including their teams and environments. Full refresh; projects deleted in Sentry are removed from the cache. | [Sync](/guides/functions/syncs/sync-functions) |
+| `releases` | Sync releases for the organization. | [Sync](/guides/functions/syncs/sync-functions) |
+| `teams` | Sync all teams in the Sentry organization. | [Sync](/guides/functions/syncs/sync-functions) |

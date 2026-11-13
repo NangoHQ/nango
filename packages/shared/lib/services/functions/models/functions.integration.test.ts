@@ -15,6 +15,7 @@ function functionVersion(
 ): Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> {
     return {
         description: `Function ${version}`,
+        tags: {},
         file_location: `functions/${version}`,
         version,
         source: 'repo',
@@ -36,6 +37,33 @@ describe(search, () => {
         await multipleMigrations();
     });
 
+    it('includes soft-deleted configs, versions and integrations only when explicitly requested', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const integration = await createConfigSeed(environment, 'github', 'github');
+        const [fn] = (
+            await upsert(db.knex, [
+                { environmentId: environment.id, integrationId: integration.unique_key, name: 'deleted', version: functionVersion('deleted') }
+            ])
+        ).unwrap();
+        await upsert(db.knex, [{ environmentId: environment.id, integrationId: integration.unique_key, name: 'live', version: functionVersion('live') }]);
+        (await softDelete(db.knex, { environmentId: environment.id, ids: [fn!.config.id] })).unwrap();
+        const scope = { environmentId: environment.id, filter: { integrationKey: integration.unique_key } };
+        expect((await search(db.knex, scope)).unwrap().map((row) => row.config.name)).toEqual(['live']);
+        expect((await search(db.knex, scope, { includeDeleted: false })).unwrap().map((row) => row.config.name)).toEqual(['live']);
+        const all = (await search(db.knex, scope, { includeDeleted: true })).unwrap();
+        expect(all).toHaveLength(2);
+        const deleted = all.find((row) => row.config.id === fn!.config.id);
+        expect(deleted?.config.deleted_at).toBeInstanceOf(Date);
+        expect(deleted?.currentVersion.deleted_at).toBeInstanceOf(Date);
+
+        await db.knex.from('_nango_configs').where({ id: integration.id }).update({ deleted: true, deleted_at: new Date() });
+        expect((await search(db.knex, scope)).unwrap()).toEqual([]);
+        expect((await search(db.knex, scope, { includeDeleted: true })).unwrap().map((row) => row.config.name)).toEqual(
+            expect.arrayContaining(['deleted', 'live'])
+        );
+    });
+
     it('filters functions by integration unique key', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
@@ -47,7 +75,7 @@ describe(search, () => {
                 environmentId: environment.id,
                 integrationId: firstIntegration.unique_key,
                 name: 'firstFunction',
-                version: functionVersion('first-version')
+                version: { ...functionVersion('first-version'), tags: { category: 'crm', entities: ['contacts', 'companies'] } }
             }
         ]);
         await upsert(db.knex, [
@@ -70,7 +98,7 @@ describe(search, () => {
         expect(functions[0]).toMatchObject({
             integration: { id: firstIntegration.id, unique_key: firstIntegration.unique_key, provider: firstIntegration.provider },
             config: { nango_config_id: firstIntegration.id, name: 'firstFunction' },
-            currentVersion: { version: 'first-version' }
+            currentVersion: { version: 'first-version', tags: { category: 'crm', entities: ['contacts', 'companies'] } }
         });
     });
 
@@ -183,19 +211,19 @@ describe(search, () => {
         const subscribed = (
             await search(db.knex, {
                 environmentId: environment.id,
-                filter: { integrationKey: github.unique_key, enabled: true, trigger: { kind: 'http', hasSubscriptions: true } }
+                filter: { integrationKey: github.unique_key, enabled: true, trigger: { kind: 'http', subscriptions: 'some' } }
             })
         ).unwrap();
         const withoutSubscriptions = (
             await search(db.knex, {
                 environmentId: environment.id,
-                filter: { integrationKey: github.unique_key, enabled: true, trigger: { kind: 'http', hasSubscriptions: false } }
+                filter: { integrationKey: github.unique_key, enabled: true, trigger: { kind: 'http', subscriptions: 'none' } }
             })
         ).unwrap();
         const disabledSubscribed = (
             await search(db.knex, {
                 environmentId: environment.id,
-                filter: { integrationKey: github.unique_key, enabled: false, trigger: { kind: 'http', hasSubscriptions: true } }
+                filter: { integrationKey: github.unique_key, enabled: false, trigger: { kind: 'http', subscriptions: 'some' } }
             })
         ).unwrap();
 

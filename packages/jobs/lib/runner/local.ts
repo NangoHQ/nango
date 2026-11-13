@@ -43,7 +43,7 @@ export const localNodeProvider: NodeProvider = {
             const childProcess = spawn(cmd, cmdOptions, {
                 stdio: [null, null, null],
                 env: {
-                    ...envForRunnerProcess(node.id),
+                    ...(await envForRunnerProcess(node.id)),
                     RUNNER_NODE_ID: node.id.toString(),
                     RUNNER_URL: `http://localhost:${port}`,
                     IDLE_MAX_DURATION_MS: '0',
@@ -104,9 +104,20 @@ export const localNodeProvider: NodeProvider = {
     }
 };
 
-export function envForRunnerProcess(nodeId: number, parentEnv: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+const RUNNER_STRIPPED_ENV = [
+    'NANGO_INTERNAL_AUTH_TOKEN',
+    'NANGO_INTERNAL_AUTH_SIGNING_KEY',
+    'NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY',
+    'NANGO_INTERNAL_AUTH_JOBS_KEY_ID',
+    'NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY',
+    'NANGO_INTERNAL_AUTH_SERVER_KEY_ID',
+    'NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS'
+] as const;
+
+export async function envForRunnerProcess(nodeId: number, parentEnv: NodeJS.ProcessEnv = process.env): Promise<NodeJS.ProcessEnv> {
     const env = { ...parentEnv };
-    delete env['NANGO_INTERNAL_AUTH_TOKEN'];
-    delete env['NANGO_INTERNAL_AUTH_SIGNING_KEY'];
-    return { ...env, ...mintRunnerAuthEnv(nodeId) };
+    for (const key of RUNNER_STRIPPED_ENV) {
+        delete env[key];
+    }
+    return { ...env, ...(await mintRunnerAuthEnv(nodeId)) };
 }

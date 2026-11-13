@@ -99,6 +99,7 @@ export const integrationBaseBodySchema = z
         webhookSecret: z.union([z.string().min(0).max(255), publicKeySchema]).optional(),
         displayName: integrationDisplayNameSchema.optional(),
         forward_webhooks: integrationForwardWebhooksSchema,
+        allow_unverified_webhooks: z.boolean().optional(),
         integrationConfig: z.record(z.string(), z.string().max(8192)).optional()
     })
     .strict();
@@ -107,7 +108,7 @@ export const integrationBaseBodySchema = z
 export const patchIntegrationBodySchema = integrationBaseBodySchema.or(integrationAuthTypeSchema);
 
 // Schema for POST integration body (extends base with provider and useSharedCredentials)
-export const postIntegrationBodySchema = integrationBaseBodySchema.extend({
+export const postIntegrationBodySchema = integrationBaseBodySchema.omit({ allow_unverified_webhooks: true }).extend({
     provider: providerSchema,
     useSharedCredentials: z.boolean(),
     auth: integrationAuthTypeSchema.optional()

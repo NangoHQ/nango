@@ -1,10 +1,12 @@
 import './tracer.js';
 
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
+import { destroyHostedTelemetryDb, hostedTelemetry, hostedTelemetryDb, initHostedTelemetry } from '@nangohq/hosted-telemetry';
 import { DatabaseClient, defaultDatabaseClientOptions, Scheduler } from '@nangohq/scheduler';
 import { metrics, once, report, stringifyError } from '@nangohq/utils';
 
 import { BackpressureMonitor } from './backpressure-monitor.js';
+import { ConcurrencySampler } from './concurrency-sampler.js';
 import { envs } from './env.js';
 import { TaskEventsHandler } from './events.js';
 import { createImmediateRateLimiter } from './rateLimiter.js';
@@ -33,6 +35,11 @@ const databaseUrl =
 try {
     await initializeFeatureFlags();
 
+    const telemetryDb = hostedTelemetryDb();
+    if (telemetryDb) {
+        initHostedTelemetry({ knex: telemetryDb });
+    }
+
     const immediateRateLimiter = await createImmediateRateLimiter(envs.ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN);
 
     const dbClient = new DatabaseClient({
@@ -54,12 +61,18 @@ try {
         onError: async (err) => {
             report(err);
             logger.error(`Scheduler error: ${stringifyError(err)}`);
-            await immediateRateLimiter.destroy();
-            await destroyFeatureFlags();
-            await dbClient.destroy();
-            logger.close();
-
-            process.exit(1); // scheduler error is critical, we exit the process
+            try {
+                await immediateRateLimiter.destroy();
+                await destroyFeatureFlags();
+                await dbClient.destroy();
+                await hostedTelemetry.shutdown();
+                await destroyHostedTelemetryDb();
+            } catch (cleanupErr) {
+                logger.error(`Failed to clean up after scheduler error: ${stringifyError(cleanupErr)}`);
+            } finally {
+                logger.close();
+                process.exit(1); // scheduler error is critical, we exit the process
+            }
         },
         config: buildSchedulerConfig(envs),
         onEvent: handleSchedulerEvent,
@@ -77,6 +90,20 @@ try {
         }
     });
     backpressureMonitor.start();
+
+    const concurrencySampler =
+        envs.ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS > 0
+            ? new ConcurrencySampler({
+                  scheduler,
+                  tickIntervalMs: envs.ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS,
+                  queryTimeoutMs: envs.ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS,
+                  onError: (err) => {
+                      report(err);
+                      logger.error(`ConcurrencySampler error: ${stringifyError(err)}`);
+                  }
+              })
+            : null;
+    concurrencySampler?.start();
 
     // default max listener is 10
     // but we need more listeners
@@ -97,12 +124,19 @@ try {
         logger.info('Closing...');
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         api.close(async () => {
-            await backpressureMonitor.stop();
+            const stoppedDaemons = await Promise.allSettled([backpressureMonitor.stop(), concurrencySampler?.stop()]);
+            for (const res of stoppedDaemons) {
+                if (res.status === 'rejected') {
+                    logger.error(`Failed to stop a daemon: ${stringifyError(res.reason)}`);
+                }
+            }
             await scheduler.stop();
             await eventsHandler.disconnect();
             await immediateRateLimiter.destroy();
             await destroyFeatureFlags();
             await dbClient.destroy();
+            await hostedTelemetry.shutdown();
+            await destroyHostedTelemetryDb();
 
             logger.close();
 

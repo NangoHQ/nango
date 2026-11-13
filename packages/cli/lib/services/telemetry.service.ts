@@ -2,16 +2,13 @@ import { getDeviceId } from '../state.js';
 import { cliFetch } from '../tls.js';
 import { getCliHeaders, isCliDebugEnabled, isTelemetryDisabled, printDebug, resolveHostport } from '../utils.js';
 
-import type { CliTelemetryEvent, PostCliTelemetry } from '@nangohq/types';
+import type { CliTelemetryCommand, PostCliTelemetry } from '@nangohq/types';
 
 const TELEMETRY_TIMEOUT_MS = 2000;
 
 export { isTelemetryDisabled };
 
-/**
- * Send an anonymous CLI usage event. Fire-and-forget
- */
-export function trackCliEvent(event: CliTelemetryEvent): void {
+export function trackCliCommand(command: CliTelemetryCommand): void {
     if (isTelemetryDisabled()) {
         return;
     }
@@ -20,7 +17,7 @@ export function trackCliEvent(event: CliTelemetryEvent): void {
     const timeout = setTimeout(() => controller.abort(), TELEMETRY_TIMEOUT_MS);
 
     const { deviceId, ephemeral } = getDeviceId();
-    const body: PostCliTelemetry['Body'] = { deviceId, event, ephemeral };
+    const body: PostCliTelemetry['Body'] = { deviceId, command, ephemeral };
     void cliFetch(new URL('/cli/telemetry', resolveHostport()), {
         method: 'POST',
         body: JSON.stringify(body),

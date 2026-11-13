@@ -1,3 +1,74 @@
-_No pre-built syncs or actions available yet._
+### Unified HRIS API
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>
+| Function name | Description | Type |
+| - | - | - |
+| `unified-employees` | Fetches employees from BambooHR and maps them to the standard HRIS employee model. | [Sync](/guides/functions/syncs/sync-functions) |
+
+### Others
+
+| Function name | Description | Type |
+| - | - | - |
+| `create-applicant` | Create a new candidate application for a job opening in the BambooHR ATS. | [Tool](/guides/functions/tools) |
+| `create-employee-goal` | Create a performance goal for an employee in BambooHR. | [Tool](/guides/functions/tools) |
+| `create-employee-table-row` | Create an employee table row in BambooHR. | [Tool](/guides/functions/tools) |
+| `create-employee-training` | Create a training record for an employee in BambooHR. | [Tool](/guides/functions/tools) |
+| `create-employee` | Create an employee in BambooHR | [Tool](/guides/functions/tools) |
+| `create-time-off-request` | Create a time off request in BambooHR. | [Tool](/guides/functions/tools) |
+| `create-webhook` | Create a webhook subscription in BambooHR. | [Tool](/guides/functions/tools) |
+| `delete-company-file` | Permanently delete a company file in BambooHR. | [Tool](/guides/functions/tools) |
+| `delete-employee-file` | Delete a file from an employee record in BambooHR. | [Tool](/guides/functions/tools) |
+| `delete-employee-goal` | Delete a performance goal from an employee record in BambooHR. | [Tool](/guides/functions/tools) |
+| `delete-employee-table-row` | Delete or archive an employee table row in BambooHR. | [Tool](/guides/functions/tools) |
+| `delete-employee-training` | Delete a training record from an employee in BambooHR. | [Tool](/guides/functions/tools) |
+| `delete-employee` | Delete or archive an employee in BambooHR. | [Tool](/guides/functions/tools) |
+| `delete-time-off-request` | Delete or archive a time off request in BambooHR by canceling it. | [Tool](/guides/functions/tools) |
+| `delete-time-tracking-entry` | Delete a time tracking entry for an employee in BambooHR. | [Tool](/guides/functions/tools) |
+| `delete-webhook` | Delete a webhook subscription in BambooHR. | [Tool](/guides/functions/tools) |
+| `get-applicant` | Retrieve a single applicant from the BambooHR ATS. | [Tool](/guides/functions/tools) |
+| `get-company-file` | Retrieve a single company file from BambooHR. | [Tool](/guides/functions/tools) |
+| `get-company-report` | Run a BambooHR custom company report. | [Tool](/guides/functions/tools) |
+| `get-employee-file` | Retrieve a single file from an employee record in BambooHR. | [Tool](/guides/functions/tools) |
+| `get-employee-table-row` | Retrieve a single employee table row from BambooHR. | [Tool](/guides/functions/tools) |
+| `get-employee` | Retrieve a single employee from BambooHR. | [Tool](/guides/functions/tools) |
+| `get-saved-report` | Run a saved BambooHR report by ID. | [Tool](/guides/functions/tools) |
+| `get-time-off-balance` | Retrieve the time off balance for an employee in BambooHR. | [Tool](/guides/functions/tools) |
+| `get-time-off-request` | Retrieve a single time off request from BambooHR. | [Tool](/guides/functions/tools) |
+| `get-user` | Retrieve a single BambooHR user account. | [Tool](/guides/functions/tools) |
+| `list-applicants` | List applicants from the BambooHR ATS. | [Tool](/guides/functions/tools) |
+| `list-company-files` | List company files from BambooHR. | [Tool](/guides/functions/tools) |
+| `list-departments` | List departments configured in BambooHR. | [Tool](/guides/functions/tools) |
+| `list-dataset-fields` | List available fields for a BambooHR v2 dataset (e.g. "employee"). Use this to discover valid field names before configuring the employees sync. | [Tool](/guides/functions/tools) |
+| `list-employee-fields` | List available BambooHR employee fields. | [Tool](/guides/functions/tools) |
+| `list-employee-files` | List files attached to an employee record in BambooHR. | [Tool](/guides/functions/tools) |
+| `list-employee-goals` | List performance goals for an employee in BambooHR. | [Tool](/guides/functions/tools) |
+| `list-employee-table-rows` | List employee table rows from BambooHR. | [Tool](/guides/functions/tools) |
+| `list-employee-training` | List training records for an employee in BambooHR. | [Tool](/guides/functions/tools) |
+| `list-employees` | List employees from BambooHR. | [Tool](/guides/functions/tools) |
+| `list-job-openings` | List job openings from the BambooHR ATS. | [Tool](/guides/functions/tools) |
+| `list-job-titles` | List job titles configured in BambooHR. | [Tool](/guides/functions/tools) |
+| `list-locations` | List office locations configured in BambooHR. | [Tool](/guides/functions/tools) |
+| `list-time-off-requests` | List time off requests from BambooHR. | [Tool](/guides/functions/tools) |
+| `list-time-off-types` | List time off types configured in BambooHR. | [Tool](/guides/functions/tools) |
+| `list-time-tracking-entries` | List time tracking entries for an employee in BambooHR. | [Tool](/guides/functions/tools) |
+| `list-training-types` | List training types configured in BambooHR. | [Tool](/guides/functions/tools) |
+| `list-users` | List BambooHR user accounts. | [Tool](/guides/functions/tools) |
+| `list-webhooks` | List webhook subscriptions in BambooHR. | [Tool](/guides/functions/tools) |
+| `update-employee-goal` | Update a performance goal for an employee in BambooHR. | [Tool](/guides/functions/tools) |
+| `update-employee-table-row` | Update an employee table row in BambooHR. | [Tool](/guides/functions/tools) |
+| `update-employee-training` | Update a training record for an employee in BambooHR. | [Tool](/guides/functions/tools) |
+| `update-employee` | Update an employee in BambooHR. | [Tool](/guides/functions/tools) |
+| `update-time-off-request-status` | Approve, deny, or cancel a time off request in BambooHR. | [Tool](/guides/functions/tools) |
+| `applicants` | Sync applicants from the BambooHR ATS. | [Sync](/guides/functions/syncs/sync-functions) |
+| `company-files` | Sync company files from BambooHR | [Sync](/guides/functions/syncs/sync-functions) |
+| `departments` | Sync department list values from BambooHR | [Sync](/guides/functions/syncs/sync-functions) |
+| `employee-files` | Sync employee file metadata from BambooHR. | [Sync](/guides/functions/syncs/sync-functions) |
+| `employee-table-rows` | Sync employee table rows from BambooHR. | [Sync](/guides/functions/syncs/sync-functions) |
+| `employees` | Sync employees from BambooHR using the v2 datasets API with incremental updates via lastChanged. | [Sync](/guides/functions/syncs/sync-functions) |
+| `goals` | Sync employee performance goals from BambooHR | [Sync](/guides/functions/syncs/sync-functions) |
+| `job-openings` | Sync job openings from the BambooHR ATS. | [Sync](/guides/functions/syncs/sync-functions) |
+| `locations` | Sync office location list values from BambooHR. | [Sync](/guides/functions/syncs/sync-functions) |
+| `time-off-requests` | Sync time off requests from BambooHR | [Sync](/guides/functions/syncs/sync-functions) |
+| `time-off-types` | Sync time off types configured in BambooHR. | [Sync](/guides/functions/syncs/sync-functions) |
+| `time-tracking` | Sync time tracking entries from BambooHR | [Sync](/guides/functions/syncs/sync-functions) |
+| `training-records` | Sync employee training records from BambooHR. | [Sync](/guides/functions/syncs/sync-functions) |
+| `users` | Sync BambooHR user accounts. | [Sync](/guides/functions/syncs/sync-functions) |

@@ -1,14 +1,16 @@
 import { exec as execCb } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import vm from 'node:vm';
 
-import { assert, describe, expect, it } from 'vitest';
+import { assert, describe, expect, it, vi } from 'vitest';
 import * as z from 'zod';
 
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
-import { bundleFile, compileAllFunctions, detectFeatures } from './compile.js';
-import { getIntegrationId, validateFunction } from './definitions.js';
+import { bundleFile, compileAllFunctions, compileFunction, detectFeatures } from './compile.js';
+import { getIntegrationId, parseIntegrationDefinitions, validateFunction } from './definitions.js';
 import { CompileError } from './utils.js';
 
 import type { FunctionTriggerDefinition } from '@nangohq/types';
@@ -39,7 +41,7 @@ describe('compileAll', () => {
         const indexContent = await fs.promises.readFile(indexPath, 'utf8');
         await fs.promises.writeFile(indexPath, indexContent.replace('./github/functions/fetchIssues.js', './github/nested/../functions/fetchIssues.js'));
 
-        const pkg = { name: 'test', type: 'module', dependencies: { nango: `file:${path.resolve(path.join(fixturesPath, '..'))}`, zod: '4.3.6' } };
+        const pkg = { name: 'test', type: 'module', dependencies: { nango: `file:${path.resolve(path.join(fixturesPath, '..'))}`, zod: '4.6.7' } };
 
         const dottedIntegrationFunctionsPath = path.join(dir, 'github.js', 'functions');
         await fs.promises.mkdir(dottedIntegrationFunctionsPath, { recursive: true });
@@ -61,7 +63,7 @@ describe('compileAll', () => {
         expect(github).not.toHaveProperty('functions');
 
         const functionsJson = JSON.parse(await fs.promises.readFile(path.join(dir, '.nango', 'functions.json'), 'utf8'));
-        expect(functionsJson).toHaveLength(2);
+        expect(functionsJson).toHaveLength(3);
         expect(functionsJson[0]).toMatchObject({
             name: 'fetchIssues',
             integrationId: 'github',
@@ -80,11 +82,39 @@ describe('compileAll', () => {
         expect(functionsJson[0].json_schema.definitions).toHaveProperty('FunctionInput_github_fetchIssues');
         expect(functionsJson[0].json_schema.definitions).toHaveProperty('FunctionOutput_github_fetchIssues');
         expect(functionsJson[1]).toMatchObject({
+            name: 'get_issue',
+            integrationId: 'github',
+            filePath: './github/tools/getIssue.ts',
+            description: 'Get a GitHub issue',
+            tags: {
+                domain: 'issues',
+                instructions: 'Use it to read a single issue. Search first when you only know the title.',
+                required_scopes: { all: ['repo'] }
+            },
+            trigger: { kind: 'http' },
+            requires: { connection: true, outbound: true, invoke: false },
+            capabilities: { usesRecords: false, usesOutbound: true, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+            input_schema_ref: '#/definitions/FunctionInput_github_getissue',
+            output_schema_ref: '#/definitions/FunctionOutput_github_getissue',
+            metadata_schema_ref: null,
+            checkpoint_schema_ref: null
+        });
+        expect(functionsJson[2]).toMatchObject({
             name: 'fetchIssues',
             integrationId: 'github.js',
             filePath: './github.js/functions/fetchIssues.ts'
         });
         expect(fs.existsSync(path.join(dir, 'build', 'github.js_functions_fetchIssues.cjs'))).toBe(true);
+
+        const parsed = (await parseIntegrationDefinitions({ fullPath: dir, debug: false })).unwrap();
+        expect(parsed.entryPoints).toStrictEqual([
+            { filePath: './github/syncs/fetchIssues.ts', integrationId: 'github', type: 'sync', name: 'fetchIssues' },
+            { filePath: './github/actions/createIssue.ts', integrationId: 'github', type: 'action', name: 'createIssue' },
+            { filePath: './github/on-events/pre-connection-deletion.ts', integrationId: 'github', type: 'on-event', name: 'pre-connection-deletion' },
+            { filePath: './github/functions/fetchIssues.ts', integrationId: 'github', type: 'function', name: 'fetchIssues' },
+            { filePath: './github/tools/getIssue.ts', integrationId: 'github', type: 'function', name: 'get_issue' },
+            { filePath: './github.js/functions/fetchIssues.ts', integrationId: 'github.js', type: 'function', name: 'fetchIssues' }
+        ]);
     });
 });
 
@@ -127,6 +157,332 @@ describe('experimental functions', () => {
         expect(result.isOk()).toBe(true);
         // the nango/experimental import must not trip the disallowed-import guard
         expect(result.value).not.toContain('disallowed_import');
+    });
+});
+
+describe('tools', () => {
+    async function createToolProject(name: string): Promise<string> {
+        const dir = await getTestDirectory(name);
+        await fs.promises.mkdir(path.join(dir, 'github', 'tools'), { recursive: true });
+        await fs.promises.mkdir(path.join(dir, 'node_modules'));
+        await fs.promises.symlink(path.dirname(fileURLToPath(import.meta.resolve('zod'))), path.join(dir, 'node_modules', 'zod'), 'dir');
+        return dir;
+    }
+
+    async function compileAndParseTool(dir: string, filename: string, source: string) {
+        const filePath = path.join(dir, 'github', 'tools', `${filename}.js`);
+        await fs.promises.writeFile(path.join(dir, 'index.ts'), `import './github/tools/${filename}.js';`);
+        await fs.promises.writeFile(filePath.replace(/\.js$/, '.ts'), source);
+        (await compileFunction({ entryPoint: filePath, projectRootPath: dir })).unwrap();
+        return parseIntegrationDefinitions({ fullPath: dir, debug: false });
+    }
+
+    it.each([
+        { declaration: "scopes.all('repo', 'read:org')", expected: { all: ['read:org', 'repo'] } },
+        { declaration: "scopes.any('repo', 'public_repo')", expected: { any: ['public_repo', 'repo'] } },
+        { declaration: 'scopes.none()', expected: { none: true } }
+    ])('preserves required scopes declared with $declaration through compilation', async ({ declaration, expected }) => {
+        const dir = await createToolProject(`tool_required_scopes_${Object.keys(expected)[0]}`);
+        try {
+            const parsed = (
+                await compileAndParseTool(
+                    dir,
+                    'getIssue',
+                    `import { scopes, createTool } from 'nango';
+                    import * as z from 'zod';
+                    export default createTool({
+                        description: 'Get an issue',
+                        input: z.object({}),
+                        output: z.object({}),
+                        meta: { requiredScopes: ${declaration} },
+                        exec: async () => ({})
+                    });`
+                )
+            ).unwrap();
+            expect(parsed.functions[0]?.tags).toEqual({ required_scopes: expected });
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it.each(['all', 'any'] as const)('rejects duplicate scopes declared with scopes.%s', async (operator) => {
+        const dir = await createToolProject(`tool_duplicate_scopes_${operator}`);
+        try {
+            const parsed = await compileAndParseTool(
+                dir,
+                'getIssue',
+                `import { scopes, createTool } from 'nango';
+                import * as z from 'zod';
+                export default createTool({
+                    description: 'Get an issue',
+                    input: z.object({}),
+                    output: z.object({}),
+                    meta: { requiredScopes: scopes.${operator}('repo', 'read:org', 'repo') },
+                    exec: async () => ({})
+                });`
+            );
+            assert(parsed.isErr(), 'Should be an error');
+            expect(parsed.error.message).toContain('Duplicate scopes are not allowed');
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it.each([
+        { style: 'combined', imports: "import { scopes as s, createTool } from 'nango';" },
+        { style: 'split', imports: "import { scopes as s } from 'nango'; import { createTool } from 'nango';" }
+    ])('rewrites scope helper calls into plain requirements with $style imports', async ({ style, imports }) => {
+        const dir = await createToolProject(`tool_scopes_rewrite_${style}`);
+        try {
+            const filePath = path.join(dir, 'github', 'tools', 'getIssue.js');
+            await fs.promises.writeFile(
+                filePath.replace(/\.js$/, '.ts'),
+                `${imports}
+                import * as z from 'zod';
+                const optional = ['public_repo'] as const;
+                export default createTool({
+                    description: 'Get an issue',
+                    input: z.object({}),
+                    output: z.object({}),
+                    meta: { requiredScopes: s.any('repo', ...optional) },
+                    exec: async () => ({})
+                });`
+            );
+            const code = (await bundleFile({ entryPoint: filePath, projectRootPath: dir })).unwrap();
+            expect(code).not.toContain('require("nango")');
+            const module: { exports: { default?: { meta?: unknown } } } = { exports: {} };
+            vm.runInNewContext(code, { module, exports: module.exports, require: () => z });
+            expect(module.exports.default?.meta).toEqual({ requiredScopes: { any: ['repo', 'public_repo'] } });
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it.each([
+        { reason: 'aliased into a variable', usage: 'const helpers = scopes; const requiredScopes = helpers.all("repo");' },
+        { reason: 'accessed with a computed key', usage: 'const requiredScopes = scopes["all"]("repo");' },
+        { reason: 'called with an unknown operator', usage: 'const requiredScopes = scopes.some("repo");' },
+        { reason: 'referenced without a call', usage: 'const all = scopes.all; const requiredScopes = all("repo");' }
+    ])('rejects scope helpers $reason', async ({ usage }) => {
+        const dir = await createToolProject(`tool_scopes_unsupported_${usage.length}`);
+        try {
+            const filePath = path.join(dir, 'github', 'tools', 'getIssue.js');
+            await fs.promises.writeFile(
+                filePath.replace(/\.js$/, '.ts'),
+                `import { scopes, createTool } from 'nango';
+                import * as z from 'zod';
+                ${usage}
+                export default createTool({
+                    description: 'Get an issue',
+                    input: z.object({}),
+                    output: z.object({}),
+                    meta: { requiredScopes },
+                    exec: async () => ({})
+                });`
+            );
+            const result = await bundleFile({ entryPoint: filePath, projectRootPath: dir });
+            assert(result.isErr(), 'Should be an error');
+            assert(result.error instanceof CompileError, 'Should be a compile error');
+            expect(result.error.type).toBe('unsupported_scopes_usage');
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it('preserves metadata and checkpoint schemas when loading a compiled tool', async () => {
+        const dir = await createToolProject('tool_data_schemas');
+        try {
+            const parsed = (
+                await compileAndParseTool(
+                    dir,
+                    'getIssue',
+                    `import { createTool } from 'nango';
+                    import * as z from 'zod';
+                    export default createTool({
+                        description: 'Fetch issues',
+                        input: z.object({}),
+                        output: z.object({}),
+                        data: {
+                            metadata: z.object({ organization: z.string() }),
+                            checkpoint: z.object({ cursor: z.string() })
+                        },
+                        exec: async () => ({})
+                    });`
+                )
+            ).unwrap();
+
+            expect(parsed.hasExperimentalFunctions).toBe(false);
+            expect(parsed.functions).toHaveLength(1);
+            const fn = parsed.functions[0]!;
+            expect(fn).toMatchObject({
+                name: 'getIssue',
+                trigger: { kind: 'http' },
+                capabilities: { usesMetadata: true, usesCheckpoints: true, usesRecords: false },
+                model_schema_refs: [],
+                metadata_schema_ref: '#/definitions/FunctionMetadata_github_getIssue',
+                checkpoint_schema_ref: '#/definitions/FunctionCheckpoint_github_getIssue'
+            });
+            expect(fn.json_schema.definitions).toMatchObject({
+                FunctionMetadata_github_getIssue: { properties: { organization: { type: 'string' } } },
+                FunctionCheckpoint_github_getIssue: { properties: { cursor: { type: 'string' } } }
+            });
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it('should bundle a createTool into a function', async () => {
+        const result = await bundleFile({
+            entryPoint: path.join(fixturesPath, 'zero/cases/createTool.valid.js'),
+            projectRootPath: fixturesPath
+        });
+        if (result.isErr()) {
+            throw result.error;
+        }
+        expect(result.value).not.toContain('toolToFunctionProps');
+        expect(result.value).not.toContain('require("nango")');
+        const module = { exports: {} as Record<string, any> };
+        vm.runInNewContext(result.value, { module, exports: module.exports, require: () => z });
+        const tool = module.exports['default'];
+        expect(tool).toMatchObject({
+            type: 'function',
+            _nangoFactory: 'tool',
+            meta: { instructions: 'Use it to check an issue', requiredScopes: { all: ['repo'] } }
+        });
+        expect(tool).not.toHaveProperty('tool');
+        expect(tool).not.toHaveProperty('trigger');
+        expect(tool).not.toHaveProperty('tags');
+        expect(module.exports).not.toHaveProperty('__nangoToolDefinition');
+        const log = vi.fn();
+        expect(await tool.exec({ log }, { kind: 'http', input: { id: '123' } })).toEqual({ ok: true });
+        expect(log).toHaveBeenCalledWith('running for 123');
+    });
+
+    it.each([
+        { reason: 'no metadata', meta: undefined },
+        { reason: 'empty metadata', meta: {} },
+        { reason: 'custom tags', meta: { tags: { domain: 'issues', owners: ['platform'] } } },
+        { reason: 'instructions and all scopes', meta: { instructions: 'Use this tool', requiredScopes: { all: ['repo'] }, tags: { domain: 'issues' } } },
+        { reason: 'any scopes', meta: { requiredScopes: { any: ['repo', 'public_repo'] } } },
+        { reason: 'explicitly no scopes', meta: { requiredScopes: { none: true } } },
+        { reason: 'empty instructions', meta: { instructions: '' } }
+    ])('preserves original metadata with $reason', async ({ meta }) => {
+        const dir = await getTestDirectory('tool_metadata');
+        await fs.promises.mkdir(dir, { recursive: true });
+        const filePath = path.join(dir, 'tool.js');
+        try {
+            await fs.promises.writeFile(
+                filePath.replace(/\.js$/, '.ts'),
+                `import { createTool } from 'nango'; import * as z from 'zod'; export default createTool({ description: 'Get an issue', input: z.object({ id: z.string() }), output: z.object({}), meta: ${JSON.stringify(meta)}, exec: async () => ({}) });`
+            );
+            const code = (await bundleFile({ entryPoint: filePath, projectRootPath: dir })).unwrap();
+            const module = { exports: {} as Record<string, any> };
+            vm.runInNewContext(code, { module, exports: module.exports, require: () => z });
+            const tool = module.exports['default'];
+            expect(tool).toMatchObject({ type: 'function', _nangoFactory: 'tool' });
+            expect(tool.meta).toEqual(meta);
+            expect(tool).not.toHaveProperty('tags');
+            expect(code).not.toContain('require("nango")');
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it.each([false, true])('preserves declaration order and named exports (named export: %s)', async (namedExport) => {
+        const dir = await getTestDirectory(`normalized_tool_evaluation_${namedExport}`);
+        await fs.promises.mkdir(dir, { recursive: true });
+        const filePath = path.join(dir, 'tool.js');
+        try {
+            await fs.promises.writeFile(
+                filePath.replace(/\.js$/, '.ts'),
+                `
+                import { createTool } from 'nango';
+                import * as z from 'zod';
+                let calls = 0;
+                const order = [];
+                ${namedExport ? 'export ' : ''}const createAction = (order.push('before'), 'Get an issue'), createFunction = createTool({
+                    description: createAction,
+                    input: z.object({}),
+                    output: z.object({ calls: z.number(), order: z.array(z.string()) }),
+                    meta: (() => { calls += 1; order.push('meta'); return { tags: { domain: 'issues' } }; })(),
+                    exec: async () => ({ calls, order })
+                }), createSync = (order.push('after'), createFunction.description);
+                export default createFunction;
+            `
+            );
+            const code = (await bundleFile({ entryPoint: filePath, projectRootPath: dir })).unwrap();
+            const module = { exports: {} as Record<string, any> };
+            vm.runInNewContext(code, { module, exports: module.exports, require: () => z });
+            expect(module.exports['default'].description).toBe('Get an issue');
+            expect(await module.exports['default'].exec()).toEqual({ calls: 1, order: ['before', 'meta', 'after'] });
+            if (namedExport) {
+                expect(module.exports['createFunction']).toBe(module.exports['default']);
+                expect(module.exports['createAction']).toBe('Get an issue');
+                expect(module.exports['createSync']).toBe('Get an issue');
+            }
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it.each([false, true])('normalizes tools despite conflicting markers (constant export: %s)', async (constantExport) => {
+        const dir = await createToolProject(`normalized_tool_${constantExport}`);
+        const meta = { instructions: 'a'.repeat(1024), requiredScopes: { all: ['repo'] }, tags: { domain: 'issues' } };
+        const definition = `createTool({ ...{ _nangoFactory: 'other' }, name: ${constantExport ? 'name' : "'get_issue'"}, description: 'Get an issue', input: z.object({}), output: z.object({}), meta: ${JSON.stringify(meta)}, exec: async () => ({}) })`;
+        try {
+            const parsed = (
+                await compileAndParseTool(
+                    dir,
+                    'getIssue',
+                    `import { createTool } from 'nango'; import * as z from 'zod'; ${constantExport ? `const name = 'get_issue', tool = ${definition}; export default tool;` : `export default ${definition};`}`
+                )
+            ).unwrap();
+            expect(parsed.hasExperimentalFunctions).toBe(false);
+            expect(parsed.functions[0]).toMatchObject({
+                name: 'get_issue',
+                trigger: { kind: 'http' },
+                tags: { instructions: 'a'.repeat(1024), required_scopes: { all: ['repo'] }, domain: 'issues' }
+            });
+            expect(parsed.functions[0]).not.toHaveProperty('tool');
+            expect(parsed.functions[0]).not.toHaveProperty('meta');
+
+            // Use a different filename so Node does not reuse the imported bundle.
+            const invalid = await compileAndParseTool(
+                dir,
+                'invalid',
+                "import { createTool } from 'nango'; import * as z from 'zod'; export default createTool({ description: 'Invalid', input: z.object({}), output: z.object({}), meta: { tags: { instructions: 'reserved' } }, exec: async () => ({}) });"
+            );
+            expect(invalid.isErr()).toBe(true);
+            if (invalid.isErr()) {
+                expect(invalid.error.message).toContain('reserved');
+            }
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it.each([
+        { filename: 'get_issue', name: undefined, valid: true },
+        { filename: 'get.issue', name: undefined, valid: false },
+        { filename: 'a'.repeat(65), name: undefined, valid: false },
+        { filename: 'get.issue', name: 'get_issue', valid: true }
+    ])('validates the resolved tool name ($filename, explicit name: $name)', async ({ filename, name, valid }) => {
+        const dir = await createToolProject(`resolved_tool_name_${filename}_${name}`);
+        try {
+            const parsed = await compileAndParseTool(
+                dir,
+                filename,
+                `import { createTool } from 'nango'; import * as z from 'zod'; export default createTool({ ${name === undefined ? '' : `name: '${name}',`} description: 'Get an issue', input: z.object({}), output: z.object({}), exec: async () => ({}) });`
+            );
+            expect(parsed.isOk()).toBe(valid);
+            if (parsed.isErr()) {
+                expect(parsed.error.message).toContain('invalid name');
+            } else {
+                expect(parsed.value.functions[0]?.name).toBe(name ?? filename);
+            }
+        } finally {
+            await fs.promises.rm(dir, { recursive: true, force: true });
+        }
     });
 });
 
@@ -267,5 +623,9 @@ describe('detectFeatures', () => {
     it('should not detect features if none', () => {
         const features = detectFeatures({ entryPoint: path.join(fixturesPath, 'zero/cases/features.none.ts') }).unwrap();
         expect(features).toEqual([]);
+    });
+    it('should detect features used only inside a locally imported helper file', () => {
+        const features = detectFeatures({ entryPoint: path.join(fixturesPath, 'zero/cases/features.helper.ts') }).unwrap();
+        expect(features).toEqual(['checkpoints']);
     });
 });

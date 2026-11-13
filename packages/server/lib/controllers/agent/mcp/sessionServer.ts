@@ -1,15 +1,21 @@
 import { fromJsonSchema, McpServer, ProtocolError, ProtocolErrorCode } from '@modelcontextprotocol/server';
 
+import { report } from '@nangohq/utils';
+
+import { findActionInputs, withModelDefinitionsHoisted } from '../../../services/agentSessionToolSearch.service.js';
 import { toJsonSchema202012 } from '../../mcp/utils.js';
 import { createConnectionTool } from './createConnection/createConnection.js';
-import { executeSessionTool, executeTool } from './execute/execute.js';
+import { executeDirectToolCall } from './directCall.js';
+import { directCallInputSchema } from './directCallSchema.js';
+import { executeTool } from './execute/execute.js';
 import { proxyTool } from './proxy/proxy.js';
+import { buildSessionInstructions } from './sessionInstructions.js';
 import { callAgentSessionTool, MAX_TOOL_NAME_LENGTH } from './sessionTool.js';
 import { toolSearchTool } from './toolSearch/search.js';
 
 import type { AgentSessionCallableTool, AgentSessionMcpContext, AgentSessionMcpTool } from './sessionTool.js';
-import type { RegisteredTool, RequestId, Tool } from '@modelcontextprotocol/server';
-import type { AgentSession } from '@nangohq/types';
+import type { RegisteredTool, RequestId, Tool, ToolAnnotations } from '@modelcontextprotocol/server';
+import type { AgentSession, AgentSessionCompiledTool, AgentSessionCompiledToolset, AgentSessionToolInput } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export const TOOLS_PAGE_SIZE = 50;
@@ -24,25 +30,17 @@ export const TOOL_NAME_SEPARATOR = '__';
 export const INTEGRATION_META_KEY = 'nango/integration';
 export const TOOL_META_KEY = 'nango/tool';
 
-const MAX_NAME_PART_LENGTH = 30;
 const UNSAFE_NAME_CHARACTERS = /[^a-zA-Z0-9_-]/g;
-
-const JSON_SCHEMA_2020_12 = 'https://json-schema.org/draft/2020-12/schema';
 
 type SessionTool = Tool & { description: string };
 
 const META_TOOLS: AgentSessionMcpTool[] = [toolSearchTool, executeTool, proxyTool, createConnectionTool];
 
 /**
- * The compiled toolset stores a name and a description per tool, not an argument schema, so a
- * pinned tool is listed as accepting a free-form object.
+ * The compiled toolset stores no argument schema for a deployed action, so tools/list reads the one it
+ * was deployed with. Any input is accepted when that schema can't be read.
  */
-const PINNED_TOOL_INPUT_SCHEMA: Tool['inputSchema'] = {
-    $schema: JSON_SCHEMA_2020_12,
-    type: 'object',
-    properties: {},
-    additionalProperties: true
-};
+const PINNED_TOOL_INPUT_SCHEMA = directCallInputSchema(undefined);
 
 /**
  * Without a declared input schema registerTool hands the callback its request extra, not the tool's
@@ -69,11 +67,12 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
         {
             capabilities: {
                 tools: { listChanged: false }
-            }
+            },
+            instructions: buildSessionInstructions(session)
         }
     );
 
-    const { listed, callable } = buildSessionTools(session);
+    const { listed, callable, actions } = buildSessionTools(session);
     const context: AgentSessionMcpContext = { ...params, callable };
 
     for (const tool of META_TOOLS) {
@@ -95,10 +94,6 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
      * Registering a tool is what makes it callable by name, listing it is only what makes a client
      * discover it. So a searchable tool answers to its name even though tools/list never offers it,
      * and a client that calls only what it listed reaches it through nango_execute instead.
-     *
-     * A tool whose input is an array, string, number or boolean is reachable only through
-     * nango_execute either way, because MCP requires tool arguments to be an object and there the
-     * input is a nested field. A null-root input is fine here, called with no arguments at all.
      */
     for (const [name, tool] of callable) {
         register({
@@ -109,14 +104,8 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
                 // MCP SDK v2 normalizes an omitted params.arguments to {} before invoking a tool.
                 // Use the untouched JSON-RPC body so no-input Nango actions still receive undefined;
                 // an explicit {} remains {} and is validated as provided input.
-                const input = originalToolArgumentsByRequestId.has(requestId) ? originalToolArgumentsByRequestId.get(requestId) : args;
-                return await executeSessionTool({
-                    integrationId: tool.integrationId,
-                    toolName: tool.name,
-                    pinned: tool.pinned,
-                    input,
-                    context
-                });
+                const original = originalToolArgumentsByRequestId.has(requestId) ? originalToolArgumentsByRequestId.get(requestId) : args;
+                return await executeDirectToolCall({ name, tool, args: original, context });
             }
         });
     }
@@ -139,18 +128,56 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
         );
     }
 
-    server.server.setRequestHandler('tools/list', (request) => {
+    server.server.setRequestHandler('tools/list', async (request) => {
         const offset = decodeCursor(request.params?.cursor);
         const page = listed.slice(offset, offset + TOOLS_PAGE_SIZE);
         const next = offset + page.length;
+        const tools = await withActionInputSchemas({ page, actions, environmentId: session.environmentId });
 
         return {
-            tools: page.map((tool) => ({ ...tool, execution: { taskSupport: 'forbidden' as const } })),
+            tools: tools.map((tool) => ({ ...tool, execution: { taskSupport: 'forbidden' as const } })),
             ...(next < listed.length ? { nextCursor: encodeCursor(next) } : {})
         };
     });
 
     return server;
+}
+
+/** A lookup that fails leaves the page with the free-form schema it was built with, so tools/list still answers. */
+async function withActionInputSchemas({
+    page,
+    actions,
+    environmentId
+}: {
+    page: SessionTool[];
+    actions: SessionTools['actions'];
+    environmentId: number;
+}): Promise<SessionTool[]> {
+    const onPage = page.flatMap((tool) => actions.get(tool.name) ?? []);
+    if (onPage.length === 0) {
+        return page;
+    }
+
+    try {
+        const inputs = await findActionInputs({ environmentId, actions: onPage });
+
+        return page.map((tool) => {
+            const action = actions.get(tool.name);
+            const input = action ? inputs.get(action.integrationId)?.get(action.name) : undefined;
+            return input ? { ...tool, inputSchema: actionInputSchemaOf(input) } : tool;
+        });
+    } catch (err) {
+        report(err);
+        return page;
+    }
+}
+
+export function actionInputSchemaOf(input: AgentSessionToolInput): Tool['inputSchema'] {
+    if (input.kind === 'none') {
+        return directCallInputSchema('none');
+    }
+
+    return input.kind === 'schema' ? directCallInputSchema(withModelDefinitionsHoisted(input.schema) as Record<string, unknown>) : PINNED_TOOL_INPUT_SCHEMA;
 }
 
 /**
@@ -197,11 +224,14 @@ interface SessionTools {
     listed: SessionTool[];
     /** Every integration tool, searchable ones included, so being listed and being callable stay separate. */
     callable: Map<string, AgentSessionCallableTool>;
+    /** Listed deployed actions by name, whose input schema is read when they are listed. */
+    actions: Map<string, { integrationId: string; name: string }>;
 }
 
 /** Names are claimed in one pass so no tool can take a name an earlier one answers to, and the stable order keeps an offset cursor valid. */
 export function buildSessionTools(session: AgentSession): SessionTools {
-    const taken = new Set<string>();
+    // Stored names were picked around every other name, so reserving them first leaves the rest unchanged.
+    const taken = new Set<string>(storedSlugs(session.compiledToolset));
 
     const listed = META_TOOLS.filter((tool) => tool.isEnabled(session.metaTools)).map(
         (tool): SessionTool => ({
@@ -215,15 +245,20 @@ export function buildSessionTools(session: AgentSession): SessionTools {
 
     const integrations = Object.entries(session.compiledToolset).sort(([a], [b]) => a.localeCompare(b));
     const callable: SessionTools['callable'] = new Map();
+    const actions: SessionTools['actions'] = new Map();
 
     for (const [integrationId, integration] of integrations) {
         for (const tool of integration.pinned) {
-            const name = claimToolName(qualifiedToolName(integrationId, tool.name), taken);
+            const name = tool.slug ?? claimToolName(qualifiedToolName(integrationId, tool.name), taken);
             callable.set(name, { integrationId, name: tool.name, description: tool.description, pinned: true });
+            if (!tool.mcp) {
+                actions.set(name, { integrationId, name: tool.name });
+            }
             listed.push({
                 name,
                 description: tool.description,
-                inputSchema: PINNED_TOOL_INPUT_SCHEMA,
+                inputSchema: tool.mcp ? directCallInputSchema(tool.mcp.inputSchema) : PINNED_TOOL_INPUT_SCHEMA,
+                ...(tool.mcp?.annotations ? { annotations: tool.mcp.annotations as ToolAnnotations } : {}),
                 _meta: { [INTEGRATION_META_KEY]: integrationId, [TOOL_META_KEY]: tool.name }
             });
         }
@@ -231,24 +266,59 @@ export function buildSessionTools(session: AgentSession): SessionTools {
 
     for (const [integrationId, integration] of integrations) {
         for (const tool of integration.searchable) {
-            const name = claimToolName(qualifiedToolName(integrationId, tool.name), taken);
+            const name = tool.slug ?? claimToolName(qualifiedToolName(integrationId, tool.name), taken);
             callable.set(name, { integrationId, name: tool.name, description: tool.description, pinned: false });
         }
     }
 
-    return { listed, callable };
+    return { listed, callable, actions };
 }
 
 export function listSessionTools(session: AgentSession): SessionTool[] {
     return buildSessionTools(session).listed;
 }
 
+/**
+ * Names the tools an integration gained after the session was created, around every name the session
+ * already answers to, so a name an agent was already given keeps pointing at the same tool.
+ */
+export function withAddedToolSlugs({ session, added }: { session: AgentSession; added: AgentSessionCompiledToolset }): AgentSessionCompiledToolset {
+    const { listed, callable } = buildSessionTools(session);
+    const taken = new Set([...listed.map((tool) => tool.name), ...callable.keys()]);
+
+    return Object.fromEntries(
+        Object.entries(added)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([integrationId, integration]) => {
+                const existing = session.compiledToolset[integrationId];
+                const named = new Set([...(existing?.pinned ?? []), ...(existing?.searchable ?? [])].map((tool) => tool.name));
+                const withSlug = (tool: AgentSessionCompiledTool): AgentSessionCompiledTool =>
+                    named.has(tool.name) || tool.slug ? tool : { ...tool, slug: claimToolName(qualifiedToolName(integrationId, tool.name), taken) };
+
+                return [integrationId, { ...integration, pinned: integration.pinned.map(withSlug), searchable: integration.searchable.map(withSlug) }];
+            })
+    );
+}
+
+function storedSlugs(toolset: AgentSessionCompiledToolset): string[] {
+    return Object.values(toolset).flatMap((integration) =>
+        [...integration.pinned, ...integration.searchable].flatMap((tool) => (tool.slug ? [tool.slug] : []))
+    );
+}
+
+/**
+ * Clipping only the tail would let a long integration id wipe out the tool name, so a short
+ * part leaves its unused room to the other and two long parts each keep about half.
+ */
 function qualifiedToolName(integrationId: string, toolName: string): string {
-    return `${sanitizeNamePart(integrationId)}${TOOL_NAME_SEPARATOR}${sanitizeNamePart(toolName)}`;
+    const budget = MAX_TOOL_NAME_LENGTH - TOOL_NAME_SEPARATOR.length;
+    const tool = sanitizeNamePart(toolName);
+    const integration = sanitizeNamePart(integrationId).slice(0, Math.max(Math.ceil(budget / 2), budget - tool.length));
+    return `${integration}${TOOL_NAME_SEPARATOR}${tool.slice(0, budget - integration.length)}`;
 }
 
 function sanitizeNamePart(part: string): string {
-    return part.replace(UNSAFE_NAME_CHARACTERS, '_').slice(0, MAX_NAME_PART_LENGTH);
+    return part.replace(UNSAFE_NAME_CHARACTERS, '_');
 }
 
 /**

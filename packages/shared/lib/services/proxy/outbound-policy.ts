@@ -1,10 +1,14 @@
+import https from 'node:https';
+
 import {
     absoluteUrlFromRedirectRequestOptions,
     assertSafeOutboundUrl,
     createAsyncRedirectValidator,
     createRedirectValidator,
     getSafeHttpAgents,
+    getSafeLookup,
     getSafeUndiciDispatcher,
+    resolvePolicyForMcp,
     resolvePolicyForOAuth,
     resolvePolicyForServer
 } from '@nangohq/egress';
@@ -14,7 +18,6 @@ import { envs } from '../../env.js';
 import type { OutboundUrlPolicy, ValidateOutboundUrlContext } from '@nangohq/egress';
 import type { AxiosRequestConfig } from 'axios';
 import type http from 'node:http';
-import type https from 'node:https';
 import type { buildConnector, Agent as UndiciAgent } from 'undici';
 
 export {
@@ -64,14 +67,65 @@ export function getOAuthOutboundUrlPolicy(): OutboundUrlPolicy {
 
 export function resetOAuthOutboundUrlPolicyForTests(): void {
     memoizedOAuthPolicy = null;
+    memoizedMcpOAuthPolicy = null;
 }
 
 export async function assertSafeOAuthUrl(url: string, ctx?: ValidateOutboundUrlContext): Promise<URL> {
     return assertSafeOutboundUrl(url, getOAuthOutboundUrlPolicy(), { context: 'oauth', ...ctx });
 }
 
+let memoizedMcpOAuthPolicy: OutboundUrlPolicy | null = null;
+
+export function getMcpOAuthOutboundUrlPolicy(): OutboundUrlPolicy {
+    if (memoizedMcpOAuthPolicy) {
+        return memoizedMcpOAuthPolicy;
+    }
+    memoizedMcpOAuthPolicy = resolvePolicyForMcp({
+        proxyBaseUrlOverrideDenylist: envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
+        outboundUrlPolicy: envs.NANGO_OUTBOUND_URL_POLICY,
+        outboundUrlPolicyOAuth: envs.NANGO_OUTBOUND_URL_POLICY_OAUTH,
+        outboundUrlPolicyMcp: envs.NANGO_OUTBOUND_URL_POLICY_MCP
+    });
+    return memoizedMcpOAuthPolicy;
+}
+
+export async function assertSafeMcpOAuthUrl(url: string, ctx?: ValidateOutboundUrlContext): Promise<URL> {
+    return assertSafeOutboundUrl(url, getMcpOAuthOutboundUrlPolicy(), { context: 'oauth', ...ctx });
+}
+
+export function getMcpOAuthSafeUndiciDispatcher(): UndiciAgent {
+    return getSafeUndiciDispatcher(getMcpOAuthOutboundUrlPolicy());
+}
+
 export function getOAuthSafeHttpAgents(): { httpAgent: http.Agent; httpsAgent: https.Agent } {
     return getSafeHttpAgents(getOAuthOutboundUrlPolicy());
+}
+
+const unverifiedHttpsAgentCache = new WeakMap<OutboundUrlPolicy, https.Agent>();
+
+export function buildUnverifiedHttpsAgent({
+    policy,
+    allowSelfSignedCert
+}: {
+    policy: OutboundUrlPolicy;
+    allowSelfSignedCert?: boolean | undefined;
+}): https.Agent | undefined {
+    if (!allowSelfSignedCert) {
+        return undefined;
+    }
+
+    const cached = unverifiedHttpsAgentCache.get(policy);
+    if (cached) {
+        return cached;
+    }
+
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
+        lookup: getSafeLookup(policy),
+        keepAlive: true
+    });
+    unverifiedHttpsAgentCache.set(policy, agent);
+    return agent;
 }
 
 /** Headers that may be retained on OAuth token redirects; everything else is treated as credential material. */

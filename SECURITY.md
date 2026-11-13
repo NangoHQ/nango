@@ -2,40 +2,57 @@
 
 ## Reporting a Vulnerability
 
-If you believe you have found a security vulnerability in Nango, please report it responsibly.
+Report vulnerabilities **only** through a private GitHub Security Advisory:
 
-Please do not open a public GitHub issue for security vulnerabilities.
+**[Report a vulnerability](https://github.com/NangoHQ/nango/security/advisories/new)**
 
-You can report security issues by either:
+We do not accept security reports by email or any other channel, and we will not triage them. Do not open public GitHub issues, discussions, or pull requests for security vulnerabilities.
 
-- Emailing us at security@nango.dev
-- Opening a private [GitHub Security Advisory](https://github.com/NangoHQ/nango/security/advisories)
+Each report should include:
 
-Please include as much detail as possible, including:
-
-- a description of the issue
-- steps to reproduce
-- affected component, endpoint, or version
-- proof-of-concept details, if available
-- potential impact
+- a description of the issue and its root cause
+- the affected component, endpoint, and version or commit
+- step-by-step reproduction against a supported configuration (see Scope)
+- proof-of-concept details
+- the impact you have demonstrated, kept separate from impact you are inferring
 - whether any data was accessed
 
-## Coordinated Disclosure
-
-We ask that you do not publicly disclose the issue until we have had a reasonable opportunity to investigate and remediate it.
-
-We will acknowledge receipt, investigate the report, and coordinate with you on remediation and disclosure where appropriate.
-
-## Bug Bounty
-
-Nango does not currently operate a formal bug bounty program.
-
-We may, at our discretion, offer recognition or rewards for significant valid findings.
+Submit one report per root cause.
 
 ## Scope
 
-Reports related to Nango Cloud, Nango Enterprise deployments, and the open source Nango repository are welcome.
+In scope:
 
-## Security Contact
+- Nango Cloud
+- Nango Enterprise deployments configured according to our documentation
+- The latest release of the open source Nango repository, deployed according to our documentation
 
-security@nango.dev
+## Out of Scope
+
+We will close the following without further review:
+
+- **Self-hosted misconfiguration.** Issues that only arise when a deployment does not follow our documentation. Examples: required secrets left unset, left at default values, or set to weak values (such as `NANGO_ADMIN_KEY` or `NANGO_ENCRYPTION_KEY`), default credentials, services exposed publicly when the documentation says they should not be, or missing TLS.
+- **Unsupported or unlicensed configurations.** Issues that depend on running features or deployment modes outside their licensed or supported use. For example, functions on free self-hosted Nango, or the local runner in production.
+- **Trusted-operator actions.** Issues that require privileges that already grant equivalent access, such as the ability to deploy code, change instance configuration, or access the host.
+- **Known or duplicate issues.** Issues already reported, already publicly documented, or already covered by a published advisory.
+- Reports from automated scanners without a demonstrated, exploitable impact.
+- Missing security headers, cookie flags, or best-practice recommendations without a demonstrated exploit.
+- Denial of service, volumetric attacks, or rate-limiting findings.
+- Social engineering, phishing, or physical attacks.
+- Vulnerabilities in third-party dependencies without a demonstrated exploit path in Nango.
+
+## Testing Rules
+
+- Test only against your own local instance or your own accounts.
+- Do not access, modify, or delete data that does not belong to you.
+- Do not run automated scanning or load testing against Nango Cloud.
+
+## Coordinated Disclosure
+
+Do not disclose the issue publicly until we have had a reasonable opportunity to investigate and fix it. We will acknowledge valid reports through the advisory, and coordinate remediation and disclosure there.
+
+## Rewards and Recognition
+
+Nango does not operate a bug bounty program and does not offer monetary rewards.
+
+If a valid, in-scope report leads to a published advisory, we will credit the reporter as a finder unless they ask us not to.

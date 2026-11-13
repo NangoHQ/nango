@@ -5,7 +5,7 @@ import type { InternalNango as Nango } from '../../internal-nango.js';
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();
     const response = await nango.proxy({
-        endpoint: '/account-info/v3/details',
+        endpoint: '/account-info/2026-09/details',
         providerConfigKey: connection.provider_config_key
     });
 

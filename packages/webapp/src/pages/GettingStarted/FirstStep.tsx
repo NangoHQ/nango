@@ -14,6 +14,7 @@ import { GetUsageQueryKey } from '../../hooks/usePlan';
 import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import { queryClient, useStore } from '../../store';
+import { track } from '../../utils/analytics';
 import { globalEnv } from '../../utils/env';
 
 import type { ConnectUI, OnConnectEvent } from '@nangohq/frontend';
@@ -22,12 +23,11 @@ import type { GettingStartedOutput } from '@nangohq/types';
 interface FirstStepProps {
     connection: GettingStartedOutput['connection'] | null;
     integration: GettingStartedOutput['meta']['integration'] | null;
-    onConnectClicked: () => void;
     onConnected: (connectionId: string) => void;
     onDisconnected: () => void;
 }
 
-export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, onConnectClicked, onConnected, onDisconnected }) => {
+export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, onConnected, onDisconnected }) => {
     const env = useStore((state) => state.env);
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
@@ -43,7 +43,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
             return;
         }
 
-        onConnectClicked();
+        track('onboarding:connect_button_click');
 
         const nango = new Nango({
             host: globalEnv.apiUrl,
@@ -84,6 +84,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
     const onEvent: OnConnectEvent = useCallback(
         (event) => {
             if (event.type === 'connect') {
+                track('onboarding:connection_create');
                 queryClient.invalidateQueries({ queryKey: GetUsageQueryKey });
                 onConnected(event.payload.connectionId);
             }

@@ -4,6 +4,7 @@ import {
     baseUrl,
     connectUrl,
     dashboardApiUrl,
+    env,
     flagHasAuth,
     flagHasManagedAuth,
     flagHasPlan,
@@ -26,6 +27,7 @@ export const getEnvJs: RequestHandler = (_, res) => {
         publicUrl: basePublicUrl,
         connectUrl: connectUrl,
         gitHash: envs.GIT_HASH,
+        environment: env,
         publicSentryKey: envs.PUBLIC_SENTRY_KEY || '',
         publicPosthogKey: envs.PUBLIC_POSTHOG_KEY || '',
         publicPosthogHost: envs.PUBLIC_POSTHOG_HOST || '',
@@ -44,7 +46,8 @@ export const getEnvJs: RequestHandler = (_, res) => {
             gettingStarted: true,
             slack: flagHasSlack,
             plan: flagHasPlan,
-            authRoles: flags.hasAuthRoles
+            authRoles: flags.hasAuthRoles,
+            mfa: flags.hasMFA
         }
     };
     res.setHeader('content-type', 'text/javascript');

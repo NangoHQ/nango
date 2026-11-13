@@ -17,6 +17,7 @@ import { badExportCompilerError, CompileError, fileErrorToText, ReadableError, t
 
 // import type { BabelErrorType } from './constants.js';
 import type { SourcemapOption } from '../types.js';
+import type { scopes } from '@nangohq/runner-sdk';
 import type { Feature, Result } from '@nangohq/types';
 
 /**
@@ -113,7 +114,7 @@ export async function compileAllFunctions({
             }
         }
 
-        if (def.value.functions.length > 0) {
+        if (def.value.hasExperimentalFunctions) {
             console.warn(
                 chalk.yellow(
                     `Warning: createFunction is experimental and not production ready. Do NOT use it in production, its API may change or be removed without notice.`
@@ -434,31 +435,132 @@ export function tsToJsPath(filePath: string) {
     return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace(/\.js$/, '.cjs');
 }
 
+const FEATURE_NANGO_METHODS: Record<Feature, string[]> = {
+    checkpoints: ['getCheckpoint', 'saveCheckpoint', 'clearCheckpoint']
+};
+
 /**
  * Detects which features are used in function code
- */
+ * */
 export function detectFeatures({ entryPoint }: { entryPoint: string }): Result<Feature[]> {
     try {
-        const source = fs.readFileSync(entryPoint, { encoding: 'utf8' });
-        const { plugin, bag } = nangoPlugin({ entryPoint });
-        babel.transformSync(source, {
-            filename: entryPoint,
-            plugins: [plugin],
-            parserOpts: { sourceType: 'module', plugins: ['typescript'] },
-            generatorOpts: { decoratorsBeforeExport: true }
-        });
-        const features: Feature[] = [];
-        if (bag.checkpointsLines.length > 0) {
-            features.push('checkpoints');
-        }
+        fs.readFileSync(entryPoint, { encoding: 'utf8' });
+
+        const features = (Object.keys(FEATURE_NANGO_METHODS) as Feature[]).filter((feature) =>
+            usesNangoMethod(entryPoint, new Set(), FEATURE_NANGO_METHODS[feature])
+        );
         return Ok(features);
     } catch (err) {
         return Err(new Error('failed_to_detect_features', { cause: err }));
     }
 }
 
+// Scans filePath and its local helper imports for nango calls matching methodNames.
+function usesNangoMethod(filePath: string, visited: Set<string>, methodNames: string[]): boolean {
+    const resolved = path.resolve(filePath);
+    if (visited.has(resolved)) {
+        return false;
+    }
+    visited.add(resolved);
+
+    let source: string;
+    try {
+        source = fs.readFileSync(resolved, { encoding: 'utf8' });
+    } catch {
+        return false;
+    }
+
+    let foundMatch = false;
+    const localImportSources: string[] = [];
+
+    babel.transformSync(source, {
+        filename: resolved,
+        parserOpts: { sourceType: 'module', plugins: ['typescript'] },
+        generatorOpts: { decoratorsBeforeExport: true },
+        plugins: [
+            () => ({
+                visitor: {
+                    ImportDeclaration(astPath: babel.NodePath<babel.types.ImportDeclaration>) {
+                        const importSource = astPath.node.source.value;
+                        if (typeof importSource === 'string' && (importSource.startsWith('./') || importSource.startsWith('../'))) {
+                            localImportSources.push(importSource);
+                        }
+                    },
+                    CallExpression(astPath: babel.NodePath<babel.types.CallExpression>) {
+                        const callee = astPath.node.callee;
+                        if (!('object' in callee) || !('property' in callee)) {
+                            return;
+                        }
+                        if (callee.object.type !== 'Identifier' || callee.object.name !== 'nango' || callee.property?.type !== 'Identifier') {
+                            return;
+                        }
+                        if (methodNames.includes(callee.property.name)) {
+                            foundMatch = true;
+                        }
+                    }
+                }
+            })
+        ]
+    });
+
+    if (foundMatch) {
+        return true;
+    }
+
+    return localImportSources.some((importSource) => {
+        const resolvedImport = resolveLocalImport(path.dirname(resolved), importSource);
+        return resolvedImport && usesNangoMethod(resolvedImport, visited, methodNames);
+    });
+}
+
+function resolveLocalImport(baseDir: string, importSource: string): string | null {
+    const base = path.resolve(baseDir, importSource);
+    const candidates = [base];
+    if (base.endsWith('.js')) {
+        candidates.push(`${base.slice(0, -3)}.ts`, `${base.slice(0, -3)}.tsx`);
+    }
+    candidates.push(`${base}.ts`, `${base}.tsx`, `${base}.js`, path.join(base, 'index.ts'), path.join(base, 'index.js'));
+    for (const candidate of candidates) {
+        try {
+            if (fs.statSync(candidate).isFile()) {
+                return candidate;
+            }
+        } catch {}
+    }
+    return null;
+}
+
 type AugmentedExport = babel.types.ExportNamedDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
 type AugmentedExportDefault = babel.types.ExportDefaultDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
+
+type ScopesOperator = keyof typeof scopes;
+type ScopesArgument = babel.types.Expression | babel.types.SpreadElement;
+
+const scopesRequirementValue: { [K in ScopesOperator]: (values: ScopesArgument[]) => babel.types.Expression } = {
+    all: (values) => babel.types.arrayExpression(values),
+    any: (values) => babel.types.arrayExpression(values),
+    none: () => babel.types.booleanLiteral(true)
+};
+
+function isScopesOperator(name: string): name is ScopesOperator {
+    return Object.hasOwn(scopesRequirementValue, name);
+}
+
+function resolveScopesCall(reference: babel.NodePath): { call: babel.NodePath<babel.types.CallExpression>; operator: ScopesOperator } | null {
+    const member = reference.parentPath;
+    if (!member?.isMemberExpression() || member.node.object !== reference.node || member.node.computed || !babel.types.isIdentifier(member.node.property)) {
+        return null;
+    }
+    const operator = member.node.property.name;
+    if (!isScopesOperator(operator)) {
+        return null;
+    }
+    const call = member.parentPath;
+    if (!call?.isCallExpression() || call.node.callee !== member.node) {
+        return null;
+    }
+    return { call, operator };
+}
 
 /**
  * This plugin is used to remove the create wrappers from the exports.
@@ -491,7 +593,8 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         createAction: { type: 'action', varName: 'action' },
         createSync: { type: 'sync', varName: 'sync' },
         createOnEvent: { type: 'onEvent', varName: 'onEvent' },
-        createFunction: { type: 'function', varName: 'func' }
+        createFunction: { type: 'function', varName: 'func' },
+        createTool: { type: 'function', varName: 'tool' }
     } as const satisfies Record<string, { type: string; varName: string }>;
 
     type AllowedExportName = keyof typeof allowedExports;
@@ -501,13 +604,23 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         return Object.hasOwn(allowedExports, name);
     }
 
+    function addDefinitionProperties(arg: babel.types.ObjectExpression, calleeName: AllowedExportName, t: typeof babel.types): void {
+        arg.properties = [
+            t.objectProperty(t.identifier('type'), t.stringLiteral(allowedExports[calleeName].type)),
+            ...arg.properties,
+            ...(calleeName === 'createTool' ? [t.objectProperty(t.identifier('_nangoFactory'), t.stringLiteral('tool'))] : [])
+        ];
+    }
+
     const needsAwait = [
         'batchDelete',
         'batchSave',
         'batchSend',
+        'clearCheckpoint',
         'delete',
         'deleteRecordsFromPreviousExecutions',
         'get',
+        'getCheckpoint',
         'getConnection',
         'getEnvironmentVariables',
         'getFieldMapping',
@@ -517,12 +630,14 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         'post',
         'proxy',
         'put',
+        'saveCheckpoint',
         'setFieldMapping',
         'setMergingStrategy',
         'setMetadata',
         'trackDeletesEnd',
         'trackDeletesStart',
-        'triggerAction'
+        'triggerAction',
+        'updateMetadata'
     ];
     const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
     const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
@@ -538,6 +653,44 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                         const kind = path.node.importKind;
                         if (typeof source !== 'string') {
                             return;
+                        }
+
+                        if (source === 'nango' && kind !== 'type') {
+                            for (const specifier of path.get('specifiers')) {
+                                if (
+                                    !specifier.isImportSpecifier() ||
+                                    specifier.node.importKind === 'type' ||
+                                    !t.isIdentifier(specifier.node.imported, { name: 'scopes' })
+                                ) {
+                                    continue;
+                                }
+                                const localName = specifier.node.local.name;
+                                for (const reference of path.scope.getBinding(localName)?.referencePaths ?? []) {
+                                    if (reference.findParent((parent) => parent.isTSType())) {
+                                        continue;
+                                    }
+                                    const resolved = resolveScopesCall(reference);
+                                    if (!resolved) {
+                                        throw new CompileError(
+                                            'unsupported_scopes_usage',
+                                            reference.node.loc?.start.line || lineNumber,
+                                            `'${localName}' must be called directly as one of: ${Object.keys(scopesRequirementValue)
+                                                .map((operator) => `${localName}.${operator}()`)
+                                                .join(', ')}`
+                                        );
+                                    }
+                                    const { call, operator } = resolved;
+                                    const values = call.node.arguments.filter(
+                                        (argument): argument is ScopesArgument => t.isExpression(argument) || t.isSpreadElement(argument)
+                                    );
+                                    call.replaceWith(t.objectExpression([t.objectProperty(t.identifier(operator), scopesRequirementValue[operator](values))]));
+                                }
+                                specifier.remove();
+                                if (path.node.specifiers.length === 0) {
+                                    path.remove();
+                                    return;
+                                }
+                            }
                         }
 
                         // Allow relative path imports (./path or ../path)
@@ -750,8 +903,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             const mapping = allowedExports[calleeName];
                             const varName = mapping.varName;
 
-                            // Inject type property
-                            arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(mapping.type)), ...arg.properties];
+                            addDefinitionProperties(arg, calleeName, t);
                             // Insert: export const <varName> = <arg>;
                             const exportConst = t.exportNamedDeclaration(
                                 t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), arg)]),
@@ -781,9 +933,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                 throw new CompileError('nango_invalid_function_param', lineNumber, 'Invalid function parameter, should be an object');
                             }
 
-                            // Inject type property (mutate the object literal)
-                            arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(allowedExports[calleeName].type)), ...arg.properties];
-                            // Replace the variable's initializer with the object literal
+                            addDefinitionProperties(arg, calleeName, t);
                             binding.path.get('init').replaceWith(arg);
                             return;
                         } else {

@@ -7,7 +7,7 @@ import { getOrchestrator } from '../utils/utils.js';
 
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { NangoError } from '@nangohq/shared';
-import type { AsyncActionResponse, DBEnvironment, DBTeam, OperationActor, Result } from '@nangohq/types';
+import type { AsyncActionResponse, DBEnvironment, DBTeam, FunctionSource, OperationActor, Result } from '@nangohq/types';
 import type { Span } from 'dd-trace';
 
 export type ActionExecutionSuccess = AsyncActionResponse | { data: unknown };
@@ -30,6 +30,7 @@ export class ActionExecutionError extends Error {
 export interface ActionExecution {
     /** Created once the action is known to exist, so callers can enrich the operation afterwards. */
     logCtx: LogContextOrigin | undefined;
+    functionSource?: FunctionSource | undefined;
     result: Result<ActionExecutionSuccess, ActionExecutionError>;
 }
 
@@ -49,7 +50,8 @@ export async function executeAction({
     isAsync,
     retryMax,
     span,
-    actor
+    actor,
+    logMeta
 }: {
     account: DBTeam;
     environment: DBEnvironment;
@@ -61,8 +63,11 @@ export async function executeAction({
     retryMax: number;
     span: Span;
     actor?: OperationActor | undefined;
+    /** Added to the operation's meta, next to the input. */
+    logMeta?: Record<string, unknown> | undefined;
 }): Promise<ActionExecution> {
     let logCtx: LogContextOrigin | undefined;
+    let functionSource: FunctionSource | undefined;
     try {
         const { success, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
         if (!success || !connection) {
@@ -79,8 +84,10 @@ export async function executeAction({
             return { logCtx, result: Err(new ActionExecutionError({ code: 'unknown_action', message: 'Action not found' })) };
         }
 
+        functionSource = resolved.kind === 'deployed' ? resolved.config.source : 'catalog';
+
         if (resolved.kind === 'deployed' && !resolved.config.enabled) {
-            return { logCtx, result: Err(new ActionExecutionError({ code: 'disabled_action', message: 'The action is disabled' })) };
+            return { logCtx, functionSource, result: Err(new ActionExecutionError({ code: 'disabled_action', message: 'The action is disabled' })) };
         }
 
         const loggedSyncConfig = resolved.kind === 'deployed' ? { id: resolved.config.id, name: resolved.config.sync_name } : { name: resolved.tool.name };
@@ -88,7 +95,8 @@ export async function executeAction({
         span.setTag('nango.actionName', actionName)
             .setTag('nango.connectionId', connectionId)
             .setTag('nango.environmentId', environment.id)
-            .setTag('nango.providerConfigKey', providerConfigKey);
+            .setTag('nango.providerConfigKey', providerConfigKey)
+            .setTag('nango.actionKind', resolved.kind);
 
         logCtx = await logContextGetter.create(
             { operation: { type: 'action', action: 'run' }, expiresAt: defaultOperationExpiration.action(), actor },
@@ -98,7 +106,7 @@ export async function executeAction({
                 integration: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
                 connection: { id: connection.id, name: connection.connection_id },
                 syncConfig: loggedSyncConfig,
-                meta: truncateJson({ input })
+                meta: { ...logMeta, ...truncateJson({ input: envs.NANGO_LOG_FUNCTION_INPUT ? input : 'REDACTED' }) }
             }
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation));
@@ -119,6 +127,7 @@ export async function executeAction({
             await logCtx.failed();
             return {
                 logCtx,
+                functionSource,
                 result: Err(new ActionExecutionError({ code: 'action_failed', message: actionResponse.error.message, nangoError: actionResponse.error }))
             };
         }
@@ -140,13 +149,13 @@ export async function executeAction({
             }
         });
 
-        return { logCtx, result: Ok(actionResponse.value) };
+        return { logCtx, functionSource, result: Ok(actionResponse.value) };
     } catch (err) {
         span.setTag('nango.error', err);
         if (logCtx) {
             void logCtx.error('Failed to run action', { error: err });
             await logCtx.failed();
         }
-        return { logCtx, result: Err(new ActionExecutionError({ code: 'internal_error', message: 'Failed to run action' })) };
+        return { logCtx, functionSource, result: Err(new ActionExecutionError({ code: 'internal_error', message: 'Failed to run action' })) };
     }
 }

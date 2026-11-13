@@ -1,5 +1,6 @@
 import * as z from 'zod/v4';
 
+import { goalSchema, intentSchema } from '../purposeSchema.js';
 import { MAX_TOOL_NAME_LENGTH } from '../sessionTool.js';
 
 export const executeInputSchema = z
@@ -11,6 +12,8 @@ export const executeInputSchema = z
             .regex(/^[a-zA-Z0-9_-]+$/)
             .describe('The tool name, as listed in tools/list or returned by nango_tool_search.'),
         // A tool's input is validated against its own deployed schema, which can have any JSON root.
-        input: z.json().optional().describe('The input to pass to the tool.')
+        input: z.json().optional().describe('The input to pass to the tool.'),
+        goal: goalSchema,
+        intent: intentSchema
     })
     .strict();

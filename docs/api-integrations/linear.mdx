@@ -10,7 +10,11 @@ Connect to Linear with Nango and see data flow in 2 minutes.
 
 <Steps>
     <Step title="Create the integration">
-    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Linear_. Nango doesn't provide a test OAuth app for Linear yet. You'll need to set up your own by following the [setup guide](/api-integrations/linear/how-to-register-your-own-linear-api-oauth-app). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Linear_.
+
+    <Note>
+      Nango has a [Nango-managed OAuth app](/guides/auth/auth-guide#nango-managed-oauth-apps) you can use in development and production. Select it when you create the integration.
+    </Note>
     </Step>
     <Step title="Authorize Linear">
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Linear. Later, you'll let your users do the same directly from your app.
@@ -58,7 +62,7 @@ Connect to Linear with Nango and see data flow in 2 minutes.
 
     </Tabs>
 
-    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
 
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
@@ -66,9 +70,13 @@ Connect to Linear with Nango and see data flow in 2 minutes.
     <Step title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
 
-        To obtain your own production credentials, follow the setup guide linked below.
+        To use your own OAuth app instead of the Nango-managed one, follow the setup guide linked below.
     </Step>
 </Steps>
+
+<Note>
+**Deleting a connection revokes its Linear access token by default.** If multiple Nango connections share the same Linear authorization, deleting one of them would revoke it for all connections using it. To opt out of this for a given connection, set `skipTokenRevocation: true` in that connection's metadata using the [update connection metadata endpoint](/reference/backend/http-api/connections/update-metadata) before deleting it.
+</Note>
 
 ## 📚 Linear Integration Guides
 
@@ -79,9 +87,9 @@ Register an OAuth app with Linear and obtain credentials to connect it to Nango
 
 Official docs: [Linear API docs](https://linear.app/developers)
 
-## 🧩 Pre-built syncs & actions for Linear
+## 🧩 Pre-built syncs & tools for Linear
 
-Enable them in your dashboard. Extend and customize to fit your needs.
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/linear/PreBuiltUseCases.mdx"
 

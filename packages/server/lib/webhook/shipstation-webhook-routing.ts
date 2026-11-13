@@ -1,12 +1,14 @@
 import { connectionService, NangoError } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
-import { connectionsWithValidSecret, rejectUnverifiedWebhook } from './nango-webhook-secret.js';
+import { connectionsToRoute, rejectUnverifiedWebhook } from './nango-webhook-secret.js';
 
 import type { ShipStationWebhook, WebhookHandler } from './types.js';
 import type { Metadata } from '@nangohq/types';
 
 const logger = getLogger('Webhook.Shipstation');
+
+const MISSING_SECRET = { reason: 'shipstation_missing_webhook_secret', remediation: 'Set webhookSecret in the connection metadata' };
 
 // ShipStation v1 does not sign webhooks and only takes a URL, v2 can send custom headers. Either way
 // the request carries the Nango webhook secret of the connection it is routed to.
@@ -56,13 +58,13 @@ const route: WebhookHandler<ShipStationWebhook> = async (nango, headers, body, _
     }
 
     // A store id can match several connections, each is checked against its own secret.
-    const verified = connectionsWithValidSecret(candidates, headers, query);
-    if (verified.length === 0) {
+    const routed = await connectionsToRoute({ nango, connections: candidates, headers, query, unverified: MISSING_SECRET });
+    if (routed.length === 0) {
         return rejectUnverifiedWebhook(headers, query);
     }
 
     const connectionIds: string[] = [];
-    for (const { connectionId } of verified) {
+    for (const { connectionId } of routed) {
         const response = await nango.executeScriptForWebhooks({
             payload: body,
             webhookType: 'resource_type',
