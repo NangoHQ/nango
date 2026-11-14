@@ -129,6 +129,58 @@ describe.each([
     });
 });
 
+describe('pullFunction native tools', () => {
+    beforeEach(() => {
+        stubSecretKeys({ NANGO_SECRET_KEY_DEV: 'secret-dev' });
+        vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+        vi.restoreAllMocks();
+        fetchMock.mockReset();
+    });
+
+    it('writes native tool source verbatim under its public name and imports it', async () => {
+        const code = "import { helper } from '../helpers.js';\nexport default helper;\n";
+        mockResponse(200, { type: 'tool', code });
+        const writeSpy = mockFsForWriting();
+
+        const success = await pullFunction({ ...baseOptions, name: 'get_issue' });
+
+        expect(success).toBe(true);
+        expect(requestedUrl().pathname).toBe('/integrations/github/functions/get_issue/code');
+        expect(requestedUrl().search).toBe('');
+        expect(writeSpy.mock.calls).toEqual([
+            ['/project/github/tools/get_issue.ts', code, 'utf-8'],
+            ['/project/index.ts', "\nimport './github/tools/get_issue.js';\n", 'utf-8']
+        ]);
+    });
+
+    it('refuses to overwrite an existing tool without confirmation', async () => {
+        mockResponse(200, { type: 'tool', code: 'new source' });
+        const writeSpy = mockFsForWriting();
+        vi.mocked(fs.existsSync).mockReturnValue(true);
+
+        const success = await pullFunction({ ...baseOptions, autoConfirm: false });
+
+        expect(success).toBe(false);
+        expect(writeSpy).not.toHaveBeenCalled();
+    });
+
+    it('overwrites with force without duplicating the index import', async () => {
+        mockResponse(200, { type: 'tool', code: 'new source' });
+        const writeSpy = mockFsForWriting();
+        vi.mocked(fs.existsSync).mockReturnValue(true);
+        vi.mocked(fs.promises.readFile).mockResolvedValue("import './github/tools/list-repos.js';\n");
+
+        const success = await pullFunction({ ...baseOptions, force: true, autoConfirm: false });
+
+        expect(success).toBe(true);
+        expect(writeSpy.mock.calls).toEqual([['/project/github/tools/list-repos.ts', 'new source', 'utf-8']]);
+    });
+});
+
 describe('pullFromCatalog', () => {
     let consoleSpy: ReturnType<typeof vi.spyOn>;
 

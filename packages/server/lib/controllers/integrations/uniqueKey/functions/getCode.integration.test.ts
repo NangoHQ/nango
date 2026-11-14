@@ -61,7 +61,7 @@ async function insertOnEventScript({ config_id, name }: { config_id: number; nam
     });
 }
 
-async function insertNativeTool({ environmentId, name }: { environmentId: number; name: string }) {
+async function insertNativeTool({ environmentId, name, fileLocation = '_LOCAL_FILE_' }: { environmentId: number; name: string; fileLocation?: string }) {
     (
         await functionConfigService.upsert(db.knex, [
             {
@@ -71,7 +71,7 @@ async function insertNativeTool({ environmentId, name }: { environmentId: number
                 version: {
                     description: 'Native tool',
                     tags: {},
-                    file_location: '_LOCAL_FILE_',
+                    file_location: fileLocation,
                     version: 'test',
                     source: 'repo',
                     trigger: { kind: 'http' },
@@ -229,6 +229,27 @@ describe(`GET ${endpoint}`, () => {
         expect(res.res.status).toBe(200);
         expect(res.json).toEqual({ type: 'tool', code: 'export default nativeTool;' });
         expect(lookup).toHaveBeenCalledWith('github/functions/native.ts');
+    });
+
+    it.each([{}, { type: 'tool' as const }])('returns remote native tool source (query %o)', async (query) => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const artifactPath = `dev/account/${env.account_id}/environment/${env.id}/config/github/functions/get_issue/test`;
+        await insertNativeTool({ environmentId: env.id, name: 'get_issue', fileLocation: `${artifactPath}.js` });
+        const getFile = vi.spyOn(remoteFileService, 'getFile').mockResolvedValue('export default remoteTool;');
+        const localLookup = vi.spyOn(localFileService, 'checkForIntegrationSourceFile');
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github', name: 'get_issue' },
+            query
+        });
+
+        expect(res.res.status).toBe(200);
+        expect(res.json).toEqual({ type: 'tool', code: 'export default remoteTool;' });
+        expect(getFile).toHaveBeenCalledWith(`${artifactPath}.ts`);
+        expect(localLookup).not.toHaveBeenCalled();
     });
 
     it('disambiguates with --type and returns the matching function', async () => {

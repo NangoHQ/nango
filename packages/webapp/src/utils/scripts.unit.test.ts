@@ -15,6 +15,12 @@ describe('buildPullCommand', () => {
         );
     });
 
+    it('pulls a native tool without a type selector', () => {
+        expect(buildPullCommand({ integration: 'my-github', name: 'get_issue', type: 'tool', source: { env: 'dev' } })).toBe(
+            'nango pull my-github get_issue --env dev'
+        );
+    });
+
     it('pulls a deployed function by integration', () => {
         expect(buildPullCommand({ integration: 'my-github', name: 'on-create', type: 'on-event', source: { env: 'dev' } })).toBe(
             'nango pull my-github on-create --env dev --on-event'

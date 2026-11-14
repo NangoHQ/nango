@@ -8,12 +8,13 @@ import { parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { checkExistingFiles, updateIndexFile } from '../utils/integrationFiles.js';
 import { Spinner } from '../utils/spinner.js';
 
-import type { ScriptTypeLiteral } from '@nangohq/types';
+import type { FunctionListType, ScriptTypeLiteral } from '@nangohq/types';
 
-const scriptTypeToFolder: Record<ScriptTypeLiteral, 'syncs' | 'actions' | 'on-events'> = {
+const scriptTypeToFolder: Record<FunctionListType, 'syncs' | 'actions' | 'on-events' | 'tools'> = {
     sync: 'syncs',
     action: 'actions',
-    'on-event': 'on-events'
+    'on-event': 'on-events',
+    tool: 'tools'
 };
 
 export function isUnsafeName(segment: string): boolean {
@@ -127,7 +128,7 @@ async function pullCode(
             return false;
         }
 
-        const body = (await res.json().catch(() => null)) as { type: ScriptTypeLiteral; code: string } | { error: { code: string; message?: string } } | null;
+        const body = (await res.json().catch(() => null)) as { type: FunctionListType; code: string } | { error: { code: string; message?: string } } | null;
 
         if (!res.ok || !body || 'error' in body) {
             const errCode = body && 'error' in body ? body.error.code : String(res.status);
