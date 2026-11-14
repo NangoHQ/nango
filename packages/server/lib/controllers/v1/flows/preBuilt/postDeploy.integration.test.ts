@@ -44,6 +44,25 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
+    it('fails to deploy an action when the account has no active legacy actions', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const template = vi.spyOn(flowService, 'getFlowByIntegrationAndName').mockReturnValue(seeders.getTestStdSyncConfig({ type: 'action' }));
+        try {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                query: { env: 'dev' },
+                token: apiKey.secret,
+                body: { providerConfigKey: 'github', scriptName: 'legacy', type: 'action' }
+            });
+            expect(res.res.status).toBe(403);
+            expect(res.json).toEqual({ error: { code: 'legacy_actions_deprecated', message: 'Actions are deprecated. Use createTool instead.' } });
+            expect(await db.knex('_nango_sync_configs').where({ environment_id: env.id })).toHaveLength(0);
+        } finally {
+            template.mockRestore();
+        }
+    });
+
     it('should deploy a template', async () => {
         vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();

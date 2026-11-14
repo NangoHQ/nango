@@ -94,6 +94,10 @@ export const FunctionSwitch: React.FC<{
         } catch (err) {
             if (err instanceof APIError) {
                 const { code, message } = (err.json as ApiError<string>).error;
+                if (code === 'legacy_actions_deprecated') {
+                    toast({ title: 'Actions are deprecated and can no longer be enabled. Use tools instead.', variant: 'error' });
+                    return;
+                }
                 if (code === 'resource_capped' || code === 'plan_limit') {
                     toast({ title: message, variant: 'error' });
                     return;
