@@ -1,6 +1,6 @@
 import { Slot, Slottable } from '@radix-ui/react-slot';
 import { cva } from 'class-variance-authority';
-import { forwardRef } from 'react';
+import { forwardRef, Fragment } from 'react';
 
 import { cn } from '../../lib/cn';
 import { Spinner } from './spinner';
@@ -105,34 +105,13 @@ export const LinkButton = forwardRef<HTMLButtonElement, LinkButtonProps>(
         const showSpinner = loading && !asChild;
         const swapsLeftIcon = showSpinner && Boolean(leftIcon);
         const spinner = <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} />;
-
-        let content: React.ReactNode = (
-            <>
-                {swapsLeftIcon ? spinner : leftIcon}
-                <Slottable>{children}</Slottable>
-                {rightIcon}
-            </>
-        );
-        if (showSpinner && !swapsLeftIcon) {
-            content = (
-                <>
-                    {/* display:contents keeps the children as flex items (same width); visibility is inherited */}
-                    <span className="contents invisible">{content}</span>
-                    <span className="absolute inset-0 flex items-center justify-center">{spinner}</span>
-                </>
-            );
-        }
+        const overlaysSpinner = showSpinner && !swapsLeftIcon;
 
         return (
             <Comp
                 ref={ref}
                 type={asChild ? undefined : 'button'}
-                className={cn(
-                    linkButtonVariants({ tone, size }),
-                    showSpinner && !swapsLeftIcon && 'relative',
-                    isDisabled && asChild && 'pointer-events-none',
-                    className
-                )}
+                className={cn(linkButtonVariants({ tone, size }), overlaysSpinner && 'relative', isDisabled && asChild && 'pointer-events-none', className)}
                 // `disabled` does nothing on a non-form element, so with asChild the state is carried by aria-disabled
                 // plus pointer/tab removal. The handler is swallowed too: pointer-events and tabIndex don't stop a
                 // programmatic click, or an Enter press on an anchor something else has focused.
@@ -150,7 +129,24 @@ export const LinkButton = forwardRef<HTMLButtonElement, LinkButtonProps>(
                 }
                 {...props}
             >
-                {content}
+                {overlaysSpinner ? (
+                    <>
+                        {/* display:contents keeps the children as flex items (same width); visibility is inherited */}
+                        <span className="contents invisible">
+                            {leftIcon}
+                            {children}
+                            {rightIcon}
+                        </span>
+                        <span className="absolute inset-0 flex items-center justify-center">{spinner}</span>
+                    </>
+                ) : (
+                    [
+                        <Fragment key="left">{swapsLeftIcon ? spinner : leftIcon}</Fragment>,
+                        // Slot only finds Slottable among its direct children, so it can't sit inside a fragment.
+                        <Slottable key="label">{children}</Slottable>,
+                        <Fragment key="right">{rightIcon}</Fragment>
+                    ]
+                )}
             </Comp>
         );
     }
