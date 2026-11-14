@@ -1,12 +1,19 @@
+import * as childProcess from 'child_process';
 import fs from 'fs';
+import { EventEmitter } from 'node:events';
 import path from 'path';
 
 import axios from 'axios';
+import promptly from 'promptly';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { state } from './state.js';
 import { detectPackageManager, getConfig, getConnection, http, upgradeAction } from './utils.js';
+import { restartCliAfterUpgrade } from './utils/restart.js';
 import { NANGO_VERSION } from './version.js';
+
+vi.mock('child_process', async (importOriginal) => ({ ...(await importOriginal<typeof childProcess>()), spawn: vi.fn() }));
+vi.mock('./utils/restart.js', () => ({ restartCliAfterUpgrade: vi.fn() }));
 
 describe('detectPackageManager', () => {
     afterEach(() => {
@@ -216,6 +223,67 @@ describe('upgradeAction', () => {
     afterEach(() => {
         vi.unstubAllEnvs();
         vi.restoreAllMocks();
+        vi.clearAllMocks();
+    });
+
+    beforeEach(() => {
+        vi.stubEnv('NANGO_CLI_UPGRADE_MODE', 'auto');
+        vi.spyOn(state, 'get').mockReturnValue(undefined);
+        vi.spyOn(axios, 'get').mockResolvedValue({ data: { 'dist-tags': { latest: '99.0.0' } } });
+        vi.mocked(childProcess.spawn).mockImplementation(() => {
+            const child = new EventEmitter();
+            queueMicrotask(() => child.emit('exit', 0));
+            return child as ReturnType<typeof childProcess.spawn>;
+        });
+        vi.mocked(restartCliAfterUpgrade).mockReset();
+    });
+
+    it('exits after handing off to the upgraded CLI', async () => {
+        vi.mocked(restartCliAfterUpgrade).mockResolvedValue(17);
+        const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
+            throw new Error('parent exited');
+        });
+        await expect(upgradeAction()).rejects.toThrow('parent exited');
+        expect(restartCliAfterUpgrade).toHaveBeenCalledWith({ locallyInstalled: expect.any(Boolean), version: '99.0.0' });
+        expect(exit).toHaveBeenCalledWith(17);
+    });
+
+    it('exits with a rerun instruction if restarting fails', async () => {
+        vi.mocked(restartCliAfterUpgrade).mockRejectedValue(new Error('missing executable'));
+        const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
+            throw new Error('parent exited');
+        });
+        await expect(upgradeAction()).rejects.toThrow('parent exited');
+        expect(exit).toHaveBeenCalledWith(1);
+        expect(error).toHaveBeenCalledWith(expect.stringContaining('Please rerun your command'));
+    });
+
+    it('does not restart when the upgrade is declined', async () => {
+        vi.stubEnv('NANGO_CLI_UPGRADE_MODE', 'prompt');
+        vi.spyOn(promptly, 'confirm').mockResolvedValue(false);
+        vi.spyOn(state, 'set').mockImplementation(() => undefined);
+        await upgradeAction();
+        expect(restartCliAfterUpgrade).not.toHaveBeenCalled();
+        expect(childProcess.spawn).not.toHaveBeenCalled();
+    });
+
+    it('does not restart when installing fails', async () => {
+        vi.mocked(childProcess.spawn).mockImplementation(() => {
+            const child = new EventEmitter();
+            queueMicrotask(() => child.emit('exit', 1));
+            return child as ReturnType<typeof childProcess.spawn>;
+        });
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        await upgradeAction();
+        expect(restartCliAfterUpgrade).not.toHaveBeenCalled();
+    });
+
+    it('skips the registry check in the restarted invocation', async () => {
+        vi.stubEnv('NANGO_CLI_UPGRADE_MODE', 'ignore');
+        await upgradeAction();
+        expect(axios.get).not.toHaveBeenCalled();
+        expect(restartCliAfterUpgrade).not.toHaveBeenCalled();
     });
 
     it('checks the npm registry without the Nango API client', async () => {
@@ -228,5 +296,6 @@ describe('upgradeAction', () => {
 
         expect(registryGet).toHaveBeenCalledWith(expect.stringContaining('registry.npmjs.org/nango'));
         expect(nangoHttpGet).not.toHaveBeenCalled();
+        expect(restartCliAfterUpgrade).not.toHaveBeenCalled();
     });
 });
