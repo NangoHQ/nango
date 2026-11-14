@@ -1,17 +1,5 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
-/**
- * Validate that no removed design tokens are still referenced in the webapp.
- *
- * Used two ways:
- *
- *   1. As a module — imported by tokens-fetch.mjs to emit a local warning after
- *      rebuilding CSS.  The caller decides whether to exit non-zero (--strict flag).
- *
- *   2. As a CLI (npm run tokens:check) — CI entry point.  Reads the merge-base
- *      version of tokens.generated.css from git, compares it to the working-tree
- *      version, and exits 1 if any removed tokens are still referenced.
- */
 import { execFileSync } from 'child_process';
 import { existsSync, readFileSync } from 'fs';
 import { readdir } from 'fs/promises';

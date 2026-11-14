@@ -52,7 +52,7 @@ This writes the file to `src/components/ui/<component-name>.tsx`. The generated 
 
 ### Step 2: Replace shadcn CSS variables with design tokens
 
-shadcn's variables (`border-input`, `ring`, `bg-primary`, ...) don't exist in this package. Every colour, radius, spacing, and motion value must come from `tokens/tokens.generated.css` — via a token utility (preferred) or `var(--token-name)` when no utility exists.
+shadcn's variables (`border-input`, `ring`, `bg-primary`, ...) don't exist in this package. Every colour, radius, spacing, and motion value must come from the design tokens (`tokens/tokens.json`, built into `tokens/tokens.generated.css`) — via a token utility (preferred) or `var(--token-name)` when no utility exists.
 
 **Tailwind v4 syntax for token values:**
 
@@ -256,10 +256,14 @@ src/
   index.css                CSS entry (imports tokens.generated.css)
 stories/                   MDX guides, plus stories for the webapp's own components (not this package's)
 tokens/
-  tokens.generated.css     compiled CSS custom properties (source of truth for tokens)
-  tokens.json              Tokens Studio export
+  tokens.json              source of truth for tokens
+  tokens.generated.css     build output of tokens.json — never edit by hand
 components.json            shadcn CLI config
 ```
+
+## Changing a token
+
+The repo is the only place tokens change: edit `tokens/tokens.json`, never `tokens.generated.css`. Figma pulls from `master`, and nothing flows back from it. For the build and commit steps, see [Changing a token](README.md#changing-a-token) in the README.
 
 ## cn() helper
 

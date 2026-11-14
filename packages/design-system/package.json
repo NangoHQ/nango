@@ -4,8 +4,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "tokens:fetch": "node scripts/tokens-fetch.mjs",
-        "tokens:build": "node scripts/tokens-fetch.mjs --build-only",
+        "tokens:build": "node scripts/tokens-build.mjs",
         "tokens:check": "node scripts/tokens-check-removed.mjs",
         "test": "vitest run --config vitest.config.mjs",
         "storybook": "NODE_PATH=./node_modules storybook dev -p 6006 --ci",

@@ -47,46 +47,34 @@ This stores the config in `.claude/settings.local.json` (gitignored). Then start
 
 ## Tokens
 
-Design tokens are authored in Figma via [Tokens Studio](https://tokens.studio/) and compiled to CSS custom properties.
-
-Tokens Studio is configured with **GitHub sync** pointing at the `design/tokens` branch in this repo. This means the designer can push token changes directly from the Figma plugin, and any Figma file connected to the same sync config shares the same token set.
+`tokens/tokens.json` is the source of truth for design tokens. It is compiled to CSS custom properties in `tokens/tokens.generated.css`. Figma follows the repo: the Dharma library pulls `tokens.json` from `master`, one way.
 
 ### Structure
 
 ```
 tokens/
-  tokens.json           Tokens Studio export (source of truth, committed to git)
-  tokens.generated.css  generated CSS custom properties (committed to git)
+  tokens.json           source of truth, edited in PRs
+  tokens.generated.css  build output — never edit by hand
 scripts/
-  tokens-fetch.mjs     token pipeline script
+  tokens-build.mjs      builds the CSS from tokens.json
 ```
 
-### Sync workflow
+### Changing a token
 
-**Designer → code:**
+Designers and developers change tokens the same way, in a PR:
 
-1. Edit tokens in Figma via the Tokens Studio plugin
-2. Push changes to the `design/tokens` branch (plugin Settings → Sync provider → GitHub)
-3. Notify a developer to run `npm run tokens:fetch`
+1. Edit `tokens/tokens.json`.
+2. Rebuild the CSS:
 
-**Developer picking up latest tokens:**
+    ```bash
+    npm run tokens:build --workspace=@nangohq/design-system
+    ```
 
-```bash
-cd packages/design-system
-npm run tokens:fetch
-git add tokens/
-git commit -m "chore(design-system): update tokens"
-```
+3. Commit both `tokens.json` and `tokens.generated.css` in the same PR.
 
-**Rebuild CSS without fetching (e.g. after resolving merge conflicts in tokens.json):**
+The build fails if an alias doesn't resolve. CI also rebuilds the CSS and fails if it differs from the committed file, or if a token you removed is still used in the webapp.
 
-```bash
-npm run tokens:build
-```
-
-### Canonical direction
-
-Token changes should always originate in Figma — the designer owns the source of truth. Editing `tokens.json` directly and pushing to `design/tokens` is technically possible (the GitHub sync is bidirectional) but not the intended workflow, and risks diverging from the Figma file.
+After the PR merges, pull it into Figma. Don't edit tokens in Figma: nothing flows back to the repo, so the change would be overwritten on the next pull.
 
 ### Generated CSS structure
 
@@ -168,22 +156,3 @@ The consumer must also import the token CSS once at the app root (see above). Co
 ### Focus rings
 
 Components apply focus rings via `box-shadow` using `--focus-outline-default` (or `--focus-outline-danger` for destructive actions) and suppress the native outline themselves with `focus-visible:outline-none`. No global `*:focus-visible` reset is needed — the webapp scopes the same behaviour per-component via its `focus-default` utility.
-
----
-
-## Tokens Studio GitHub sync config
-
-| Field | Value |
-|---|---|
-| Repository | `NangoHQ/nango` |
-| Branch | `design/tokens` |
-| File path | `packages/design-system/tokens/tokens.json` |
-
-### Figma plugin setup (first time)
-
-1. Install the [Tokens Studio for Figma](https://tokens.studio/) plugin
-2. Plugin should detect existing GitHub sync and pre-fill all fields except for the access token
-3. For the **Personal Access Token** field, retrieve it from 1Password:
-   - Vault: **Eng**
-   - Item: **GitHub PAT - Figma Tokens Studio Sync**
-4. Click **Save** — the plugin will load the existing tokens from the `design/tokens` branch

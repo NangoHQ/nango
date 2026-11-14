@@ -13,7 +13,7 @@ import {
     buildTypographyBlock,
     formatTokenValue,
     resolveTokens
-} from './tokens-fetch.mjs';
+} from './tokens-build.mjs';
 
 // ─── formatTokenValue ──────────────────────────────────────────────────────────
 
@@ -268,8 +268,6 @@ describe('buildTypographyBlock', () => {
 
 describe('buildCss', () => {
     it('throws if required token sets are missing', async () => {
-        // Guards the pipeline against writing tokens.json when the Figma export
-        // is missing one of the expected sets — the on-disk state stays consistent.
         await expect(buildCss({ Primitives: {} })).rejects.toThrow(/Expected Primitives, Semantic\/Light, and Semantic\/Dark/);
     });
 
