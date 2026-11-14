@@ -78,6 +78,65 @@ describe('getTwoStepCredentials', () => {
         );
     });
 
+    describe('integration_config fields', () => {
+        function scopesProvider(baseUrl: string): ProviderTwoStep {
+            return {
+                display_name: 'Two Step',
+                docs: 'https://docs.example.com',
+                auth_mode: 'TWO_STEP',
+                token_url: `${baseUrl}/token`,
+                token_params: { scope: '${scopes}' },
+                token_response: { token: 'access_token' },
+                integration_config: { scopes: { type: 'string', title: 'Scopes', description: 'Scopes', optional: true, order: 1, automated: false } }
+            };
+        }
+
+        // Echoes the requested scope back as the token, so each test can see which value was sent.
+        function echoScope(req: http.IncomingMessage, res: http.ServerResponse) {
+            let body = '';
+            req.on('data', (chunk) => (body += chunk));
+            req.on('end', () => {
+                const scope = new URLSearchParams(body).get('scope') ?? JSON.parse(body || '{}').scope;
+                res.writeHead(200, { 'content-type': 'application/json' });
+                res.end(JSON.stringify({ access_token: `token-for:${scope}` }));
+            });
+        }
+
+        it('uses the integration value without persisting it on the connection', async () => {
+            await withServer(echoScope, async (baseUrl) => {
+                const result = await connectionService.getTwoStepCredentials('test', scopesProvider(baseUrl), {}, {}, false, { scopes: 'integration-scope' });
+
+                expect(result.response?.token).toBe('token-for:integration-scope');
+                expect(result.response).not.toHaveProperty('scopes');
+            });
+        });
+
+        it("keeps the connection's own value while the integration value is used", async () => {
+            await withServer(echoScope, async (baseUrl) => {
+                const result = await connectionService.getTwoStepCredentials('test', scopesProvider(baseUrl), { scopes: 'connection-scope' }, {}, true, {
+                    scopes: 'integration-scope'
+                });
+
+                expect(result.response?.token).toBe('token-for:integration-scope');
+                expect(result.response?.['scopes']).toBe('connection-scope');
+            });
+        });
+
+        it("falls back to the connection's own value once the integration value is cleared", async () => {
+            await withServer(echoScope, async (baseUrl) => {
+                const withPreset = await connectionService.getTwoStepCredentials('test', scopesProvider(baseUrl), { scopes: 'connection-scope' }, {}, true, {
+                    scopes: 'integration-scope'
+                });
+                const { token: _token, raw: _raw, type: _type, ...stored } = withPreset.response!;
+
+                const cleared = await connectionService.getTwoStepCredentials('test', scopesProvider(baseUrl), stored, {}, true, { scopes: '' });
+
+                expect(cleared.response?.token).toBe('token-for:connection-scope');
+                expect(cleared.response?.['scopes']).toBe('connection-scope');
+            });
+        });
+    });
+
     it('refreshes against the refresh_url when a refresh token is present', async () => {
         await withServer(
             (req, res) => {
