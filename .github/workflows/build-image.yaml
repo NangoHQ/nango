@@ -8,11 +8,17 @@ on:
     pull_request:
     merge_group:
 
+# paths-filter lists a PR's files through the API
+permissions:
+    contents: read
+    pull-requests: read
+
 jobs:
     should-run:
         runs-on: ubuntu-latest
         outputs:
             should_skip: ${{ steps.check.outputs.should_skip }}
+            can_push: ${{ steps.check.outputs.can_push }}
         steps:
             - uses: actions/checkout@v4
             - uses: dorny/paths-filter@v4
@@ -46,49 +52,114 @@ jobs:
                   fi
 
                   echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
-    build-image:
+                  # An output because `secrets` can't be read in a job-level `if`
+                  echo "can_push=${{ secrets.DOCKER_PASSWORD != '' && secrets.DOCKER_USERNAME != '' }}" >> $GITHUB_OUTPUT
+    # Each platform builds on a runner of its own architecture so neither is
+    # emulated, and is pushed untagged. build-image tags both digests together
+    # as nangohq/nango:$SHA, so only that one tag is published.
+    build-amd64:
         needs: should-run
+        if: needs.should-run.outputs.should_skip != 'true'
         runs-on: ubuntu-latest
-        env:
-            CAN_PUSH: "${{ secrets.DOCKER_PASSWORD != '' && secrets.DOCKER_USERNAME != '' }}"
-            SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-
+        outputs:
+            digest: ${{ steps.build.outputs.digest }}
         steps:
             - name: Check out
-              if: needs.should-run.outputs.should_skip != 'true'
               uses: actions/checkout@v4
 
-            - name: Set up QEMU
-              if: needs.should-run.outputs.should_skip != 'true'
-              uses: docker/setup-qemu-action@v3
+            - name: Build
+              id: build
+              uses: ./.github/actions/build-image-platform
+              with:
+                  platform: linux/amd64
+                  sha: ${{ github.event.pull_request.head.sha || github.sha }}
+                  can-push: ${{ needs.should-run.outputs.can_push }}
+                  docker-username: '${{ secrets.DOCKER_USERNAME }}'
+                  docker-password: '${{ secrets.DOCKER_PASSWORD }}'
 
-            - name: Set up Docker Buildx
-              if: needs.should-run.outputs.should_skip != 'true'
-              uses: docker/setup-buildx-action@v3
+    build-arm64:
+        needs: should-run
+        if: needs.should-run.outputs.should_skip != 'true'
+        runs-on: ubuntu-24.04-arm
+        outputs:
+            digest: ${{ steps.build.outputs.digest }}
+        steps:
+            - name: Check out
+              uses: actions/checkout@v4
+
+            - name: Build
+              id: build
+              uses: ./.github/actions/build-image-platform
+              with:
+                  platform: linux/arm64
+                  sha: ${{ github.event.pull_request.head.sha || github.sha }}
+                  can-push: ${{ needs.should-run.outputs.can_push }}
+                  docker-username: '${{ secrets.DOCKER_USERNAME }}'
+                  docker-password: '${{ secrets.DOCKER_PASSWORD }}'
+
+    # Keeps the `build-image` check name that branch protection requires, and always
+    # reports (skipped legs included) so docs-only PRs aren't left waiting on it.
+    build-image:
+        needs: [should-run, build-amd64, build-arm64]
+        if: ${{ !cancelled() }}
+        runs-on: ubuntu-latest
+        env:
+            CAN_PUSH: ${{ needs.should-run.outputs.can_push }}
+            SHOULD_SKIP: ${{ needs.should-run.outputs.should_skip }}
+            SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+            AMD64_DIGEST: ${{ needs.build-amd64.outputs.digest }}
+            ARM64_DIGEST: ${{ needs.build-arm64.outputs.digest }}
+
+        steps:
+            - name: Check builds
+              run: |
+                  if [[ "${{ needs.should-run.result }}" != 'success' ]]; then
+                    echo "should-run did not succeed"
+                    exit 1
+                  fi
+                  if [[ "$SHOULD_SKIP" != 'true' && "${{ needs.build-amd64.result }}" != 'success' ]]; then
+                    echo "build-amd64 did not succeed"
+                    exit 1
+                  fi
+                  if [[ "$SHOULD_SKIP" != 'true' && "${{ needs.build-arm64.result }}" != 'success' ]]; then
+                    echo "build-arm64 did not succeed"
+                    exit 1
+                  fi
+
+            - name: Check out
+              if: env.SHOULD_SKIP != 'true' && env.CAN_PUSH == 'true'
+              uses: actions/checkout@v4
 
             - name: Log in to Docker Hub
               uses: docker/login-action@v3
-              if: needs.should-run.outputs.should_skip != 'true' && env.CAN_PUSH == 'true'
+              if: env.SHOULD_SKIP != 'true' && env.CAN_PUSH == 'true'
               with:
                   username: '${{ secrets.DOCKER_USERNAME }}'
                   password: '${{ secrets.DOCKER_PASSWORD }}'
 
-            # Needed for buildx gha cache to work
-            - name: Expose GitHub Runtime
-              if: needs.should-run.outputs.should_skip != 'true'
+            - name: Push multi-platform tag
+              id: merge
+              if: env.SHOULD_SKIP != 'true' && env.CAN_PUSH == 'true'
+              run: |
+                  docker buildx imagetools create -t "nangohq/nango:$SHA" \
+                    "nangohq/nango@$AMD64_DIGEST" \
+                    "nangohq/nango@$ARM64_DIGEST"
+
+            # Emulates the non-native platform, which is cheap here: the image is a
+            # few `rm -rf`s on top of nangohq/nango.
+            - name: (self-hosted) Set up QEMU
+              if: steps.merge.outcome == 'success' && github.event_name != 'pull_request'
+              uses: docker/setup-qemu-action@v3
+
+            - name: (self-hosted) Set up Docker Buildx
+              if: steps.merge.outcome == 'success' && github.event_name != 'pull_request'
+              uses: docker/setup-buildx-action@v3
+
+            - name: (self-hosted) Expose GitHub Runtime
+              if: steps.merge.outcome == 'success' && github.event_name != 'pull_request'
               uses: crazy-max/ghaction-github-runtime@v2
 
-            - name: Build image
-              if: needs.should-run.outputs.should_skip != 'true'
-              run: |
-                  ./scripts/build_docker.sh build ${{ env.SHA }}
-
-            - name: Push image
-              if: needs.should-run.outputs.should_skip != 'true' && env.CAN_PUSH == 'true'
-              run: |
-                  docker push nangohq/nango:${{ env.SHA }}
-
             - name: (self-hosted) Build and push
-              if: needs.should-run.outputs.should_skip != 'true' && github.event_name != 'pull_request'
+              if: steps.merge.outcome == 'success' && github.event_name != 'pull_request'
               run: |
-                  ./scripts/build_docker_self_hosted.sh ${{ env.SHA }} ${{ env.CAN_PUSH }}
+                  ./scripts/build_docker_self_hosted.sh "$SHA" true linux/amd64,linux/arm64
