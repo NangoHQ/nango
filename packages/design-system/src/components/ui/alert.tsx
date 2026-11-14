@@ -9,14 +9,11 @@ import { LinkButton } from './link-button';
 import type { LinkButtonProps } from './link-button';
 import type { VariantProps } from 'class-variance-authority';
 
-/**
- * Children are placed by column/row rather than wrapped, so call sites keep passing the icon,
- * `AlertTitle`, `AlertDescription` and `AlertActions` as flat siblings. Horizontal spacing lives on
- * the children (not `gap-x`) so that empty `auto` tracks collapse instead of leaving a gap behind.
- */
 // Shared by the cva default and the status context so an Alert without `variant` styles and tones its actions alike.
 const DEFAULT_ALERT_VARIANT = 'success';
 
+// Call sites pass the icon, title, description and actions as flat siblings placed by grid column. Spacing lives on
+// the children, not `gap-x`, so an empty `auto` track collapses instead of leaving a gap.
 export const alertVariants = cva(
     [
         'relative grid w-full items-start gap-y-0.5',

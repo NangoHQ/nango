@@ -45,7 +45,6 @@ interface Shape {
     dismissible?: boolean;
     /** Defaults to true. */
     icon?: boolean;
-    /** Only the first group of each story runs every status — the rest vary shape, not colour. */
     allVariants?: boolean;
 }
 
