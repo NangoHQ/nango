@@ -101,8 +101,8 @@ export interface LinkButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 export const LinkButton = forwardRef<HTMLButtonElement, LinkButtonProps>(
     ({ className, tone, size, asChild = false, loading = false, leftIcon, rightIcon, disabled, onClick, children, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
-        const isDisabled = disabled || loading;
         const showSpinner = loading && !asChild;
+        const isDisabled = disabled || showSpinner;
         const swapsLeftIcon = showSpinner && Boolean(leftIcon);
         const spinner = <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} />;
         const overlaysSpinner = showSpinner && !swapsLeftIcon;
@@ -117,7 +117,7 @@ export const LinkButton = forwardRef<HTMLButtonElement, LinkButtonProps>(
                 // programmatic click, or an Enter press on an anchor something else has focused.
                 disabled={asChild ? undefined : isDisabled}
                 aria-disabled={isDisabled || undefined}
-                aria-busy={loading || undefined}
+                aria-busy={showSpinner || undefined}
                 tabIndex={isDisabled && asChild ? -1 : undefined}
                 onClick={
                     isDisabled
