@@ -10,12 +10,9 @@ const STATE_LABEL: Record<StepCardState, string> = {
     done: 'Done'
 };
 
-/**
- * Numbered flow of step cards joined by a progress rail. The rail is solid up to the current step.
- */
 export const StepList: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => {
     return (
-        <ol aria-label={label} className="flex flex-col gap-3 pl-6 max-sm:pl-4">
+        <ol aria-label={label} className="flex flex-col gap-3">
             {children}
         </ol>
     );
@@ -85,21 +82,7 @@ export const CompactStepCard: React.FC<{ icon: LucideIcon; title: React.ReactNod
 };
 
 const StepItem: React.FC<{ state: StepCardState; children: React.ReactNode }> = ({ state, children }) => {
-    return (
-        <li
-            aria-current={state === 'current' ? 'step' : undefined}
-            className={cn(
-                'relative',
-                // The rail: a line from this card down to the next one, solid where the flow has reached.
-                'before:absolute before:top-0 before:-bottom-3 before:-left-6 before:w-px last:before:bottom-0 max-sm:before:-left-4',
-                state === 'upcoming' ? 'before:bg-border-default' : 'before:bg-text-secondary',
-                state === 'current' &&
-                    'before:bottom-1/2 last:before:bottom-1/2 after:absolute after:top-1/2 after:-bottom-3 after:-left-6 after:w-px after:bg-border-default last:after:bottom-0 max-sm:after:-left-4'
-            )}
-        >
-            {children}
-        </li>
-    );
+    return <li aria-current={state === 'current' ? 'step' : undefined}>{children}</li>;
 };
 
 const StepTile: React.FC<{ state: StepCardState; icon: LucideIcon }> = ({ state, icon: Icon }) => {
