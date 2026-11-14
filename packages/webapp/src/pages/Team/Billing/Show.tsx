@@ -2,7 +2,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { useRef } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { AlertButton, Button } from '@nangohq/design-system';
+import { AlertButton, LinkButton } from '@nangohq/design-system';
 
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { Separator } from '@/components/ui/Separator';
@@ -127,12 +127,12 @@ export const TeamBilling: React.FC = () => {
                 <div id="plans" className="flex flex-col gap-4">
                     <div className="flex items-center justify-between gap-4">
                         <span className="text-text-strong text-body-medium-medium">Plans</span>
-                        <Button asChild variant="link-accent">
+                        <LinkButton asChild size="lg">
                             <a href="https://nango.dev/pricing" target="_blank" rel="noopener noreferrer">
                                 View full pricing detail
                                 <ArrowUpRight />
                             </a>
-                        </Button>
+                        </LinkButton>
                     </div>
                     {/* Outside the scroll container below, so the full-width alert doesn't scroll with the plan cards. */}
                     {transition ? <PlanTransitionNotice transition={transition} /> : <ScheduledPlanChangeAlert />}

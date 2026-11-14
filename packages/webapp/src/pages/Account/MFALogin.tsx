@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { Alert, AlertDescription, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertDescription, Button, InputGroup, InputGroupInput, LinkButton } from '@nangohq/design-system';
 
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
 import { useMFALoginVerification } from '@/hooks/useAuth';
@@ -108,9 +108,9 @@ export const MFALogin: React.FC = () => {
                     {useRecoveryCode ? 'Use an authenticator code' : 'Use a recovery code'}
                 </button>
                 {' or '}
-                <Button asChild variant="link-accent">
+                <LinkButton asChild size="lg">
                     <Link to="/signin">start over</Link>
-                </Button>
+                </LinkButton>
                 .
             </span>
         </DefaultLayout>

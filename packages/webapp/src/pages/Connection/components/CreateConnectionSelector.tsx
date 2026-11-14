@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParam, useUnmount } from 'react-use';
 
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@nangohq/design-system';
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LinkButton } from '@nangohq/design-system';
 import Nango from '@nangohq/frontend';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -267,9 +267,9 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             return (
                 <p className="text-body-small-regular text-text-secondary">
                     Connection limit reached.{' '}
-                    <Button asChild variant="link-accent" size="xs">
+                    <LinkButton asChild size="sm">
                         <Link to="/team/billing#plans">Upgrade your plan</Link>
-                    </Button>{' '}
+                    </LinkButton>{' '}
                     for unlimited connections.
                 </p>
             );
@@ -278,9 +278,9 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             return (
                 <p className="text-body-small-regular text-text-secondary">
                     This integration is not fully configured. Fill in the missing fields in the{' '}
-                    <Button asChild variant="link-accent" size="xs">
+                    <LinkButton asChild size="sm">
                         <Link to={`/${env}/integrations/${integration?.unique_key}/settings`}>integration settings</Link>
-                    </Button>
+                    </LinkButton>
                     .
                 </p>
             );

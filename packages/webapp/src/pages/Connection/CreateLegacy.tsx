@@ -5,7 +5,7 @@ import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParam } from 'react-use';
 
-import { Button, FieldDescription } from '@nangohq/design-system';
+import { FieldDescription, LinkButton } from '@nangohq/design-system';
 import Nango, { AuthError } from '@nangohq/frontend';
 
 import { SecretInput } from '@/components/patterns/SecretInput';
@@ -881,7 +881,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     </div>
                                     <FieldDescription className="mt-1">
                                         Some integrations require extra configuration — see{' '}
-                                        <Button asChild variant="link-accent" size="xs">
+                                        <LinkButton asChild size="sm">
                                             <a
                                                 href="https://nango.dev/docs/guides/auth/customize-connect-ui#handle-apis-requiring-connection-specific-configuration-for-authorization"
                                                 target="_blank"
@@ -889,7 +889,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             >
                                                 connection-specific configuration
                                             </a>
-                                        </Button>
+                                        </LinkButton>
                                         .
                                     </FieldDescription>
                                 </div>

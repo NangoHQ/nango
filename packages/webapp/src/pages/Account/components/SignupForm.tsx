@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import z from 'zod';
 
-import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle, Button, InputGroup, InputGroupInput, LinkButton } from '@nangohq/design-system';
 
 import GoogleButton from '@/components/patterns/GoogleButton';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
@@ -108,9 +108,9 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                         <CircleX />
                         <AlertDescription>
                             An account with this email already exists.{' '}
-                            <Button asChild variant="link-accent" size="xs">
+                            <LinkButton asChild size="sm">
                                 <Link to={`/signin?next=/signup/${token}`}>Log in</Link>
-                            </Button>{' '}
+                            </LinkButton>{' '}
                             to accept the invitation.
                         </AlertDescription>
                     </Alert>
@@ -198,17 +198,17 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
 
                 <span className="text-center w-full text-body-medium-regular text-text-muted">
                     By signing up, you agree to our <br />{' '}
-                    <Button asChild variant="link-neutral">
+                    <LinkButton asChild tone="neutral" size="lg">
                         <a href="https://www.nango.dev/terms" target="_blank" rel="noopener noreferrer">
                             Terms of Service
                         </a>
-                    </Button>{' '}
+                    </LinkButton>{' '}
                     and{' '}
-                    <Button asChild variant="link-neutral">
+                    <LinkButton asChild tone="neutral" size="lg">
                         <a href="https://www.nango.dev/privacy-policy" target="_blank" rel="noopener noreferrer">
                             Privacy Policy
                         </a>
-                    </Button>
+                    </LinkButton>
                     .
                 </span>
             </div>
