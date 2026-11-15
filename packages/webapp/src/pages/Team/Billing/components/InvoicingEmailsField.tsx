@@ -176,7 +176,7 @@ export const InvoicingEmailsField: React.FC = () => {
                             <ComboboxChips
                                 onKeyDown={handleUndoShortcut}
                                 onMouseDown={handleContainerMouseDown}
-                                className="min-h-8 rounded-ds-xs border-ds-hairline bg-surface-input border-border-interactive
+                                className="min-h-8 rounded-ds-xs border-ds-hairline bg-surface-input border-border-input
                                 has-[input:focus]:border-[var(--focus-ring-default)]
                                 has-[input:focus]:shadow-[0_0_0_0.5px_var(--focus-ring-default),inset_0_0_0_0.5px_var(--focus-ring-default)]"
                             >

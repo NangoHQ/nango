@@ -20,6 +20,7 @@
     "dependencies": {
         "@nangohq/database": "file:../database",
         "@nangohq/feature-flags": "file:../feature-flags",
+        "@nangohq/internal-auth": "file:../internal-auth",
         "@nangohq/kms": "file:../kms",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/logs": "file:../logs",

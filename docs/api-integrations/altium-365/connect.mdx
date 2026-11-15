@@ -1,0 +1,56 @@
+---
+title: 'Altium 365 - How do I link my account?'
+sidebarTitle: 'Altium 365'
+---
+
+## Overview
+
+To authenticate with Altium 365, you need:
+
+1. **Region** — the Altium 365 region your Workspace is hosted in.
+2. **Realm** — the Altium Identity server for your Workspace: Altium 365 or Altium 365 GovCloud.
+3. **Client ID**, **Client Secret** and **Refresh Token** — refresh token credentials created in your Workspace.
+
+This guide will show you how to find them.
+
+### Prerequisites
+
+- An Altium 365 Workspace with access to the Altium 365 API. The API is in [Closed Beta](https://www.altium.com/documentation/altium-developer-center/quick-starts/365-api) and available only to selected early-access customers.
+- A Workspace administrator account. Only Workspace administrators can create tokens.
+
+### Step 1: Select your region and realm
+
+Select the **Region** your Workspace is hosted in. If you're not sure, ask your Altium 365 administrator.
+
+| Region | Value |
+| - | - |
+| Europe | `eur.365.altium.com` |
+| US West | `usw.365.altium.com` |
+| US East | `use.365.altium.com` |
+| Asia Pacific | `asp.365.altium.com` |
+| GovCloud | `use.365-gov.altium.com` |
+
+Then select the **Realm** that matches it:
+
+| Realm | Value |
+| - | - |
+| Altium 365 (Europe, US West, US East, Asia Pacific) | `auth.altium.com` |
+| Altium 365 GovCloud | `auth.365-gov.altium.com` |
+
+### Step 2: Create a refresh token
+
+1. In your Workspace, go to **Admin** → **Developer**.
+2. Create a token and select the **refresh token** option. Set its lifetime (up to 1 year).
+3. Copy the **Client ID**, **Client Secret** and **Refresh Token**. They are shown only once, and Altium can't show them again after you leave the page.
+
+Nango exchanges the refresh token for short-lived access tokens and gets a new one when each expires. When the refresh token itself expires, create new credentials in **Admin** → **Developer** and update your connection. See [Using a Refresh Token](https://www.altium.com/documentation/altium-developer-center/altium-365/key-concepts/tokens/refresh) for details.
+
+### Step 3: Enter your details in the Connect UI
+
+1. Open the form where you need to authenticate with Altium 365.
+2. Select your **Region** and **Realm**, then enter your **Client ID**, **Client Secret** and **Refresh Token**.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/altium-365/form.png" alt="Altium 365 Connect UI form with the Region, Realm, Client ID, Client Secret and Refresh Token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Altium 365.

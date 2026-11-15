@@ -723,6 +723,22 @@ describe('Account service', () => {
             expect(result).toBeNull();
         });
 
+        it('should return null for a deleted environment', async () => {
+            const { env, secret } = await seedAccountEnvAndUser();
+            await db.knex('_nango_environments').where({ id: env.id }).update({ deleted: true, deleted_at: new Date() });
+
+            const result = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
+            expect(result).toBeNull();
+        });
+
+        it('should return null for a non-default secret', async () => {
+            const { env } = await seedAccountEnvAndUser();
+            const pending = (await secretService.createSecret(db.knex, { environmentId: env.id, isDefault: false })).unwrap();
+
+            const result = (await accountService.getPersistAuthContext(pending.secret)).unwrap();
+            expect(result).toBeNull();
+        });
+
         it('should resolve env-var keys before the DB lookup', async () => {
             const account = await createTestAccount();
             const envName = uuid();
@@ -779,6 +795,33 @@ describe('Account service', () => {
             const second = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
             expect(second).toBeNull();
             expect(incrementSpy).not.toHaveBeenCalledWith(metrics.Types.AUTH_CONTEXT_CACHE, 1, expect.anything());
+        });
+    });
+
+    describe('getPersistAuthContextByEnvironmentId', () => {
+        it('should return exactly the narrow context fields', async () => {
+            const { account, env, plan } = await seedAccountEnvAndUser();
+
+            const result = (await accountService.getPersistAuthContextByEnvironmentId(env.id)).unwrap();
+
+            expect(result).toStrictEqual({
+                account: { id: account.id },
+                environment: { id: env.id, name: env.name },
+                plan: { id: plan.id, name: 'free', records_store: plan.records_store }
+            });
+        });
+
+        it('should return null for a deleted environment', async () => {
+            const { env } = await seedAccountEnvAndUser();
+            await db.knex('_nango_environments').where({ id: env.id }).update({ deleted: true, deleted_at: new Date() });
+
+            const result = (await accountService.getPersistAuthContextByEnvironmentId(env.id)).unwrap();
+            expect(result).toBeNull();
+        });
+
+        it('should return null for an unknown id', async () => {
+            const result = (await accountService.getPersistAuthContextByEnvironmentId(2147483647)).unwrap();
+            expect(result).toBeNull();
         });
     });
 

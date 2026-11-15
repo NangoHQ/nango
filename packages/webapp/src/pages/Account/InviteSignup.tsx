@@ -9,7 +9,8 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    Button
+    Button,
+    LinkButton
 } from '@nangohq/design-system';
 
 import { ButtonLink } from '@/components/ui/ButtonLink';
@@ -180,9 +181,9 @@ export const InviteSignup: React.FC = () => {
                 <SignupForm invitation={inviteData.invitation} token={token} />
                 <span className="text-body-medium-regular text-text-muted">
                     Already have an account?{' '}
-                    <Button asChild variant="link-accent">
+                    <LinkButton asChild size="lg">
                         <Link to={`/signin?next=/signup/${token}`}>Log in.</Link>
-                    </Button>
+                    </LinkButton>
                 </span>
             </div>
         </DefaultLayout>

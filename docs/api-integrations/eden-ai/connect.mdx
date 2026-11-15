@@ -1,0 +1,53 @@
+---
+title: 'Eden AI - How do I link my account?'
+sidebarTitle: 'Eden AI'
+---
+
+## Overview
+
+To authenticate with Eden AI, you need:
+
+1. **Region** — the Eden AI API endpoint to send requests to.
+2. **API Key** — an Eden AI API key, production or sandbox.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An Eden AI account. You can [sign up for free](https://app.edenai.run/user/register).
+
+### Step 1: Choose your region
+
+Eden AI has two API endpoints, and the same API key works on both. Pick the one your requests should go through:
+
+| Region | Value to select |
+|--------|-----------------|
+| Global (default) | `api.edenai.run` |
+| EU data residency | `api.eu.edenai.run` |
+
+If you have no EU data residency requirement, use `api.edenai.run`. See [EU Data Residency Endpoint](https://www.edenai.co/docs/v3/data-governance/eu-endpoint) for details.
+
+### Step 2: Create an API key
+
+1. Sign in to [Eden AI](https://app.edenai.run/).
+2. Go to **Settings** > **My API Keys**, then click **Create API Key**.
+
+<img src="/api-integrations/eden-ai/api_keys_page.png" alt="My API Keys page in the Eden AI settings with the Create API Key button"/>
+
+3. Enter a name for the key and choose the **Environment**: **Production** for real model calls, or **Sandbox** for mock responses at no cost. Spending limit, expiry and default tags are optional. Click **Create API Key**.
+
+<img src="/api-integrations/eden-ai/create_api_key_dialog.png" alt="Create API Key dialog in Eden AI with the Name field and the Production and Sandbox environment options"/>
+
+4. Copy the key (it starts with `sk-eden-`). Eden AI shows it only once.
+
+<img src="/api-integrations/eden-ai/api_key_created.png" alt="Copy Your API Key dialog in Eden AI with the copy button next to the new key"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Eden AI.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/eden-ai/form.png" alt="Eden AI connection form in the Nango Connect UI with the Region and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Eden AI.

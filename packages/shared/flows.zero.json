@@ -246415,6 +246415,100 @@
             },
             {
                 "type": "action",
+                "description": "Configure a DocuSign Connect webhook that fires when any recipient opens or views a document, without needing to know the underlying \"recipient-delivered\" event name.",
+                "endpoint": null,
+                "input": "ActionInput_docusign_createdocumentopenedtrigger",
+                "name": "create-document-opened-trigger",
+                "output": ["ActionOutput_docusign_createdocumentopenedtrigger"],
+                "scopes": ["signature"],
+                "usedModels": ["ActionInput_docusign_createdocumentopenedtrigger", "ActionOutput_docusign_createdocumentopenedtrigger"],
+                "version": "2.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_docusign_createdocumentopenedtrigger": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Display name for the DocuSign Connect configuration. Example: \"Document opened trigger\""
+                                },
+                                "urlToPublishTo": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "pattern": "^https:\\/\\/.*",
+                                    "description": "HTTPS URL that DocuSign posts recipient-open events to. Example: \"https://example.com/webhooks/docusign\""
+                                },
+                                "allowEnvelopePublish": {
+                                    "description": "When true (default), the configuration is enabled immediately. When false, DocuSign creates it disabled until it is enabled in the Connect console.",
+                                    "type": "boolean"
+                                },
+                                "includeHMAC": {
+                                    "description": "When true (default), notifications are signed with the account Connect HMAC keys so the receiver can verify them. Nango webhook routing rejects unsigned DocuSign events, so keep this true when publishing to a Nango webhook URL.",
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": ["name", "urlToPublishTo"],
+                            "additionalProperties": false,
+                            "description": "Input for creating a DocuSign Connect webhook that fires when a recipient opens or views an envelope document."
+                        },
+                        "ActionOutput_docusign_createdocumentopenedtrigger": {
+                            "type": "object",
+                            "properties": {
+                                "connectId": {
+                                    "type": "string",
+                                    "description": "DocuSign-generated ID of the created Connect configuration. Example: \"22399727\""
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "Name of the created Connect configuration."
+                                },
+                                "urlToPublishTo": {
+                                    "type": "string",
+                                    "description": "URL that DocuSign publishes document-open events to."
+                                },
+                                "configurationType": {
+                                    "description": "Connect configuration scope, for example \"custom\" for an account-level configuration.",
+                                    "type": "string"
+                                },
+                                "deliveryMode": {
+                                    "description": "Delivery mode used by DocuSign. Always \"sim\" (one notification per event) for this action.",
+                                    "type": "string"
+                                },
+                                "events": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Events that trigger the webhook. This action fixes them to [\"recipient-delivered\"]."
+                                },
+                                "allUsers": {
+                                    "description": "Whether the configuration publishes events for all account users.",
+                                    "type": "boolean"
+                                },
+                                "allowEnvelopePublish": {
+                                    "description": "Whether the configuration is enabled to publish events.",
+                                    "type": "boolean"
+                                },
+                                "includeHMAC": {
+                                    "description": "Whether notifications are HMAC-signed.",
+                                    "type": "boolean"
+                                },
+                                "eventDataVersion": {
+                                    "description": "Event payload version configured for the webhook. Example: \"restv2.1\"",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["connectId", "name", "urlToPublishTo", "events"],
+                            "additionalProperties": false,
+                            "description": "Details of the DocuSign Connect webhook configuration that was created."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
                 "description": "Create an envelope using a template, supplying role assignments and pre-fill data.",
                 "endpoint": null,
                 "input": "ActionInput_docusign_createenvelopefromtemplate",
@@ -246657,6 +246751,233 @@
                             },
                             "required": ["envelopeId"],
                             "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Create a DocuSign Connect webhook that publishes JSON notifications for any chosen set of envelope, recipient, template or other events.",
+                "endpoint": null,
+                "input": "ActionInput_docusign_createeventsubscription",
+                "name": "create-event-subscription",
+                "output": ["ActionOutput_docusign_createeventsubscription"],
+                "scopes": ["signature"],
+                "usedModels": ["ActionInput_docusign_createeventsubscription", "ActionOutput_docusign_createeventsubscription"],
+                "version": "2.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_docusign_createeventsubscription": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Display name for the DocuSign Connect configuration. Example: \"Envelope completed webhook\""
+                                },
+                                "urlToPublishTo": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "pattern": "^https:\\/\\/.*",
+                                    "description": "HTTPS URL that DocuSign posts event notifications to. Example: \"https://example.com/webhooks/docusign\""
+                                },
+                                "events": {
+                                    "minItems": 1,
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "envelope-created",
+                                            "envelope-sent",
+                                            "envelope-resent",
+                                            "envelope-delivered",
+                                            "envelope-completed",
+                                            "envelope-declined",
+                                            "envelope-voided",
+                                            "envelope-corrected",
+                                            "envelope-removed",
+                                            "envelope-purge",
+                                            "envelope-deleted",
+                                            "envelope-discard",
+                                            "envelope-reminder-sent",
+                                            "recipient-sent",
+                                            "recipient-resent",
+                                            "recipient-autoresponded",
+                                            "recipient-delivered",
+                                            "recipient-completed",
+                                            "recipient-declined",
+                                            "recipient-authenticationfailed",
+                                            "recipient-delegate",
+                                            "recipient-reassign",
+                                            "recipient-finish-later",
+                                            "template-created",
+                                            "template-modified",
+                                            "template-deleted",
+                                            "click-agreed",
+                                            "click-declined",
+                                            "sms-opt-in",
+                                            "sms-opt-out",
+                                            "identity-verification-pending",
+                                            "identity-verification-completed",
+                                            "workflow-started",
+                                            "workflow-failed",
+                                            "workflow-completed",
+                                            "extension-executed",
+                                            "notary-session-completed",
+                                            "notary-session-terminated",
+                                            "notary-session-signer-locked",
+                                            "notary-session-signer-unlocked",
+                                            "notary-session-authentication-failed",
+                                            "notary-session-paused",
+                                            "notary-session-status-updated",
+                                            "notary-session-notary-assigned",
+                                            "notary-session-notary-removed",
+                                            "notary-session-ondemand-witness-joined",
+                                            "workspace-upload-request-created",
+                                            "workspace-upload-request-sent",
+                                            "workspace-upload-request-completed"
+                                        ]
+                                    },
+                                    "description": "Events that trigger the webhook. Common choices: \"recipient-delivered\" (a recipient opened/viewed the envelope), \"recipient-completed\" (a recipient signed), \"envelope-sent\", \"envelope-completed\" (all recipients finished), \"envelope-declined\", \"envelope-voided\". Example: [\"recipient-delivered\", \"envelope-completed\"]"
+                                },
+                                "includeData": {
+                                    "description": "Extra envelope data to embed in each notification payload. By default only envelope summary data is sent. Example: [\"recipients\", \"custom_fields\"]",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "attachments",
+                                            "custom_fields",
+                                            "documents",
+                                            "document_fields",
+                                            "extensions",
+                                            "folders",
+                                            "payment_tabs",
+                                            "powerform",
+                                            "prefill_tabs",
+                                            "recipients",
+                                            "tabs",
+                                            "templates"
+                                        ]
+                                    }
+                                },
+                                "allUsers": {
+                                    "description": "When true (default), events from all current and future account users are published. When false, userIds is required.",
+                                    "type": "boolean"
+                                },
+                                "userIds": {
+                                    "description": "DocuSign user IDs whose envelopes trigger the webhook. Required when allUsers is false, and rejected otherwise.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "allowEnvelopePublish": {
+                                    "description": "When true (default), the configuration is enabled immediately. When false, it is created disabled.",
+                                    "type": "boolean"
+                                },
+                                "requiresAcknowledgement": {
+                                    "description": "When true (default), DocuSign expects a 2xx response from urlToPublishTo and retries failed deliveries.",
+                                    "type": "boolean"
+                                },
+                                "includeHMAC": {
+                                    "description": "When true (default), notifications are signed with the account Connect HMAC keys so the receiver can verify them. Nango webhook routing rejects unsigned DocuSign events, so keep this true when publishing to a Nango webhook URL.",
+                                    "type": "boolean"
+                                },
+                                "includeTimeZoneInformation": {
+                                    "description": "When true, notifications include the envelope time zone information. Default false.",
+                                    "type": "boolean"
+                                },
+                                "includeEnvelopeVoidReason": {
+                                    "description": "When true, envelope-voided notifications include the void reason. Default false.",
+                                    "type": "boolean"
+                                },
+                                "includeCertificateOfCompletion": {
+                                    "description": "When true, the Certificate of Completion is included with completed envelopes. Default false.",
+                                    "type": "boolean"
+                                },
+                                "includeDocumentFields": {
+                                    "description": "When true, document fields are included in notifications. Default false.",
+                                    "type": "boolean"
+                                },
+                                "includeSenderAccountasCustomField": {
+                                    "description": "When true, the sender account is included as a custom field in notifications. Default false.",
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": ["name", "urlToPublishTo", "events"],
+                            "additionalProperties": false,
+                            "description": "Input for creating a DocuSign Connect webhook subscribed to any set of events."
+                        },
+                        "ActionOutput_docusign_createeventsubscription": {
+                            "type": "object",
+                            "properties": {
+                                "connectId": {
+                                    "type": "string",
+                                    "description": "DocuSign-generated ID of the created Connect configuration. Example: \"22399798\""
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "Name of the created Connect configuration."
+                                },
+                                "urlToPublishTo": {
+                                    "type": "string",
+                                    "description": "URL that DocuSign publishes event notifications to."
+                                },
+                                "events": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Events the webhook is subscribed to."
+                                },
+                                "includeData": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Extra envelope data embedded in each notification payload."
+                                },
+                                "configurationType": {
+                                    "description": "Connect configuration scope, for example \"custom\" for an account-level configuration.",
+                                    "type": "string"
+                                },
+                                "deliveryMode": {
+                                    "description": "Delivery mode used by DocuSign. Always \"sim\" (one notification per event) for this action.",
+                                    "type": "string"
+                                },
+                                "allUsers": {
+                                    "description": "Whether the configuration publishes events for all account users.",
+                                    "type": "boolean"
+                                },
+                                "userIds": {
+                                    "description": "User IDs the configuration is scoped to when allUsers is false.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "allowEnvelopePublish": {
+                                    "description": "Whether the configuration is enabled to publish events.",
+                                    "type": "boolean"
+                                },
+                                "requiresAcknowledgement": {
+                                    "description": "Whether DocuSign expects a 2xx acknowledgement and retries failed deliveries.",
+                                    "type": "boolean"
+                                },
+                                "includeHMAC": {
+                                    "description": "Whether notifications are HMAC-signed.",
+                                    "type": "boolean"
+                                },
+                                "eventDataVersion": {
+                                    "description": "Event payload version configured for the webhook. Example: \"restv2.1\"",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["connectId", "name", "urlToPublishTo", "events", "includeData"],
+                            "additionalProperties": false,
+                            "description": "Details of the DocuSign Connect webhook configuration that was created."
                         }
                     }
                 },
@@ -254554,6 +254875,100 @@
             },
             {
                 "type": "action",
+                "description": "Configure a DocuSign Connect webhook that fires when any recipient opens or views a document, without needing to know the underlying \"recipient-delivered\" event name.",
+                "endpoint": null,
+                "input": "ActionInput_docusign_createdocumentopenedtrigger",
+                "name": "create-document-opened-trigger",
+                "output": ["ActionOutput_docusign_createdocumentopenedtrigger"],
+                "scopes": ["signature"],
+                "usedModels": ["ActionInput_docusign_createdocumentopenedtrigger", "ActionOutput_docusign_createdocumentopenedtrigger"],
+                "version": "2.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_docusign_createdocumentopenedtrigger": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Display name for the DocuSign Connect configuration. Example: \"Document opened trigger\""
+                                },
+                                "urlToPublishTo": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "pattern": "^https:\\/\\/.*",
+                                    "description": "HTTPS URL that DocuSign posts recipient-open events to. Example: \"https://example.com/webhooks/docusign\""
+                                },
+                                "allowEnvelopePublish": {
+                                    "description": "When true (default), the configuration is enabled immediately. When false, DocuSign creates it disabled until it is enabled in the Connect console.",
+                                    "type": "boolean"
+                                },
+                                "includeHMAC": {
+                                    "description": "When true (default), notifications are signed with the account Connect HMAC keys so the receiver can verify them. Nango webhook routing rejects unsigned DocuSign events, so keep this true when publishing to a Nango webhook URL.",
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": ["name", "urlToPublishTo"],
+                            "additionalProperties": false,
+                            "description": "Input for creating a DocuSign Connect webhook that fires when a recipient opens or views an envelope document."
+                        },
+                        "ActionOutput_docusign_createdocumentopenedtrigger": {
+                            "type": "object",
+                            "properties": {
+                                "connectId": {
+                                    "type": "string",
+                                    "description": "DocuSign-generated ID of the created Connect configuration. Example: \"22399727\""
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "Name of the created Connect configuration."
+                                },
+                                "urlToPublishTo": {
+                                    "type": "string",
+                                    "description": "URL that DocuSign publishes document-open events to."
+                                },
+                                "configurationType": {
+                                    "description": "Connect configuration scope, for example \"custom\" for an account-level configuration.",
+                                    "type": "string"
+                                },
+                                "deliveryMode": {
+                                    "description": "Delivery mode used by DocuSign. Always \"sim\" (one notification per event) for this action.",
+                                    "type": "string"
+                                },
+                                "events": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Events that trigger the webhook. This action fixes them to [\"recipient-delivered\"]."
+                                },
+                                "allUsers": {
+                                    "description": "Whether the configuration publishes events for all account users.",
+                                    "type": "boolean"
+                                },
+                                "allowEnvelopePublish": {
+                                    "description": "Whether the configuration is enabled to publish events.",
+                                    "type": "boolean"
+                                },
+                                "includeHMAC": {
+                                    "description": "Whether notifications are HMAC-signed.",
+                                    "type": "boolean"
+                                },
+                                "eventDataVersion": {
+                                    "description": "Event payload version configured for the webhook. Example: \"restv2.1\"",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["connectId", "name", "urlToPublishTo", "events"],
+                            "additionalProperties": false,
+                            "description": "Details of the DocuSign Connect webhook configuration that was created."
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
                 "description": "Create an envelope using a template, supplying role assignments and pre-fill data.",
                 "endpoint": null,
                 "input": "ActionInput_docusign_createenvelopefromtemplate",
@@ -254796,6 +255211,233 @@
                             },
                             "required": ["envelopeId"],
                             "additionalProperties": false
+                        }
+                    }
+                },
+                "features": []
+            },
+            {
+                "type": "action",
+                "description": "Create a DocuSign Connect webhook that publishes JSON notifications for any chosen set of envelope, recipient, template or other events.",
+                "endpoint": null,
+                "input": "ActionInput_docusign_createeventsubscription",
+                "name": "create-event-subscription",
+                "output": ["ActionOutput_docusign_createeventsubscription"],
+                "scopes": ["signature"],
+                "usedModels": ["ActionInput_docusign_createeventsubscription", "ActionOutput_docusign_createeventsubscription"],
+                "version": "2.0.0",
+                "json_schema": {
+                    "definitions": {
+                        "ActionInput_docusign_createeventsubscription": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Display name for the DocuSign Connect configuration. Example: \"Envelope completed webhook\""
+                                },
+                                "urlToPublishTo": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "pattern": "^https:\\/\\/.*",
+                                    "description": "HTTPS URL that DocuSign posts event notifications to. Example: \"https://example.com/webhooks/docusign\""
+                                },
+                                "events": {
+                                    "minItems": 1,
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "envelope-created",
+                                            "envelope-sent",
+                                            "envelope-resent",
+                                            "envelope-delivered",
+                                            "envelope-completed",
+                                            "envelope-declined",
+                                            "envelope-voided",
+                                            "envelope-corrected",
+                                            "envelope-removed",
+                                            "envelope-purge",
+                                            "envelope-deleted",
+                                            "envelope-discard",
+                                            "envelope-reminder-sent",
+                                            "recipient-sent",
+                                            "recipient-resent",
+                                            "recipient-autoresponded",
+                                            "recipient-delivered",
+                                            "recipient-completed",
+                                            "recipient-declined",
+                                            "recipient-authenticationfailed",
+                                            "recipient-delegate",
+                                            "recipient-reassign",
+                                            "recipient-finish-later",
+                                            "template-created",
+                                            "template-modified",
+                                            "template-deleted",
+                                            "click-agreed",
+                                            "click-declined",
+                                            "sms-opt-in",
+                                            "sms-opt-out",
+                                            "identity-verification-pending",
+                                            "identity-verification-completed",
+                                            "workflow-started",
+                                            "workflow-failed",
+                                            "workflow-completed",
+                                            "extension-executed",
+                                            "notary-session-completed",
+                                            "notary-session-terminated",
+                                            "notary-session-signer-locked",
+                                            "notary-session-signer-unlocked",
+                                            "notary-session-authentication-failed",
+                                            "notary-session-paused",
+                                            "notary-session-status-updated",
+                                            "notary-session-notary-assigned",
+                                            "notary-session-notary-removed",
+                                            "notary-session-ondemand-witness-joined",
+                                            "workspace-upload-request-created",
+                                            "workspace-upload-request-sent",
+                                            "workspace-upload-request-completed"
+                                        ]
+                                    },
+                                    "description": "Events that trigger the webhook. Common choices: \"recipient-delivered\" (a recipient opened/viewed the envelope), \"recipient-completed\" (a recipient signed), \"envelope-sent\", \"envelope-completed\" (all recipients finished), \"envelope-declined\", \"envelope-voided\". Example: [\"recipient-delivered\", \"envelope-completed\"]"
+                                },
+                                "includeData": {
+                                    "description": "Extra envelope data to embed in each notification payload. By default only envelope summary data is sent. Example: [\"recipients\", \"custom_fields\"]",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "attachments",
+                                            "custom_fields",
+                                            "documents",
+                                            "document_fields",
+                                            "extensions",
+                                            "folders",
+                                            "payment_tabs",
+                                            "powerform",
+                                            "prefill_tabs",
+                                            "recipients",
+                                            "tabs",
+                                            "templates"
+                                        ]
+                                    }
+                                },
+                                "allUsers": {
+                                    "description": "When true (default), events from all current and future account users are published. When false, userIds is required.",
+                                    "type": "boolean"
+                                },
+                                "userIds": {
+                                    "description": "DocuSign user IDs whose envelopes trigger the webhook. Required when allUsers is false, and rejected otherwise.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "allowEnvelopePublish": {
+                                    "description": "When true (default), the configuration is enabled immediately. When false, it is created disabled.",
+                                    "type": "boolean"
+                                },
+                                "requiresAcknowledgement": {
+                                    "description": "When true (default), DocuSign expects a 2xx response from urlToPublishTo and retries failed deliveries.",
+                                    "type": "boolean"
+                                },
+                                "includeHMAC": {
+                                    "description": "When true (default), notifications are signed with the account Connect HMAC keys so the receiver can verify them. Nango webhook routing rejects unsigned DocuSign events, so keep this true when publishing to a Nango webhook URL.",
+                                    "type": "boolean"
+                                },
+                                "includeTimeZoneInformation": {
+                                    "description": "When true, notifications include the envelope time zone information. Default false.",
+                                    "type": "boolean"
+                                },
+                                "includeEnvelopeVoidReason": {
+                                    "description": "When true, envelope-voided notifications include the void reason. Default false.",
+                                    "type": "boolean"
+                                },
+                                "includeCertificateOfCompletion": {
+                                    "description": "When true, the Certificate of Completion is included with completed envelopes. Default false.",
+                                    "type": "boolean"
+                                },
+                                "includeDocumentFields": {
+                                    "description": "When true, document fields are included in notifications. Default false.",
+                                    "type": "boolean"
+                                },
+                                "includeSenderAccountasCustomField": {
+                                    "description": "When true, the sender account is included as a custom field in notifications. Default false.",
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": ["name", "urlToPublishTo", "events"],
+                            "additionalProperties": false,
+                            "description": "Input for creating a DocuSign Connect webhook subscribed to any set of events."
+                        },
+                        "ActionOutput_docusign_createeventsubscription": {
+                            "type": "object",
+                            "properties": {
+                                "connectId": {
+                                    "type": "string",
+                                    "description": "DocuSign-generated ID of the created Connect configuration. Example: \"22399798\""
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "Name of the created Connect configuration."
+                                },
+                                "urlToPublishTo": {
+                                    "type": "string",
+                                    "description": "URL that DocuSign publishes event notifications to."
+                                },
+                                "events": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Events the webhook is subscribed to."
+                                },
+                                "includeData": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Extra envelope data embedded in each notification payload."
+                                },
+                                "configurationType": {
+                                    "description": "Connect configuration scope, for example \"custom\" for an account-level configuration.",
+                                    "type": "string"
+                                },
+                                "deliveryMode": {
+                                    "description": "Delivery mode used by DocuSign. Always \"sim\" (one notification per event) for this action.",
+                                    "type": "string"
+                                },
+                                "allUsers": {
+                                    "description": "Whether the configuration publishes events for all account users.",
+                                    "type": "boolean"
+                                },
+                                "userIds": {
+                                    "description": "User IDs the configuration is scoped to when allUsers is false.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "allowEnvelopePublish": {
+                                    "description": "Whether the configuration is enabled to publish events.",
+                                    "type": "boolean"
+                                },
+                                "requiresAcknowledgement": {
+                                    "description": "Whether DocuSign expects a 2xx acknowledgement and retries failed deliveries.",
+                                    "type": "boolean"
+                                },
+                                "includeHMAC": {
+                                    "description": "Whether notifications are HMAC-signed.",
+                                    "type": "boolean"
+                                },
+                                "eventDataVersion": {
+                                    "description": "Event payload version configured for the webhook. Example: \"restv2.1\"",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["connectId", "name", "urlToPublishTo", "events", "includeData"],
+                            "additionalProperties": false,
+                            "description": "Details of the DocuSign Connect webhook configuration that was created."
                         }
                     }
                 },
@@ -826225,7 +826867,7 @@
                 "output": ["ActionOutput_quickbooks_createinvoice"],
                 "scopes": ["com.intuit.quickbooks.accounting"],
                 "usedModels": ["ActionInput_quickbooks_createinvoice", "ActionOutput_quickbooks_createinvoice"],
-                "version": "2.0.1",
+                "version": "2.1.0",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_quickbooks_createinvoice": {
@@ -826244,8 +826886,17 @@
                                     "description": "Reference to the customer"
                                 },
                                 "txnDate": {
+                                    "description": "Transaction date in YYYY-MM-DD format. Defaults to the current date if omitted. Example: \"2024-01-15\"",
+                                    "type": "string"
+                                },
+                                "dueDate": {
+                                    "description": "Due date in YYYY-MM-DD format. Defaults to the transaction date plus the sales terms if omitted. Example: \"2024-02-14\"",
+                                    "type": "string"
+                                },
+                                "docNumber": {
+                                    "description": "Invoice number. If omitted, QuickBooks assigns the next number when automatic numbering is on. Example: \"INV-1001\"",
                                     "type": "string",
-                                    "description": "Transaction date in YYYY-MM-DD format. Example: \"2024-01-15\""
+                                    "maxLength": 21
                                 },
                                 "line": {
                                     "type": "array",
@@ -826291,9 +826942,31 @@
                                         "additionalProperties": false
                                     },
                                     "description": "Invoice line items"
+                                },
+                                "currencyRef": {
+                                    "description": "Currency of the invoice. Only needed when multicurrency is enabled; defaults to the home currency. Example: { \"value\": \"USD\" }",
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": false
+                                },
+                                "projectRef": {
+                                    "description": "Project to assign the invoice to. Only for companies with Projects enabled. The value must be a project ID, not a customer ID; omit it when the invoice is not part of a project.",
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": false
                                 }
                             },
-                            "required": ["customerRef", "txnDate", "line"],
+                            "required": ["customerRef", "line"],
                             "additionalProperties": false
                         },
                         "ActionOutput_quickbooks_createinvoice": {
@@ -826321,6 +826994,18 @@
                                 },
                                 "docNumber": {
                                     "description": "Document number",
+                                    "type": "string"
+                                },
+                                "dueDate": {
+                                    "description": "Due date",
+                                    "type": "string"
+                                },
+                                "currency": {
+                                    "description": "Currency code",
+                                    "type": "string"
+                                },
+                                "projectId": {
+                                    "description": "Project ID",
                                     "type": "string"
                                 },
                                 "lineItems": {
@@ -831943,7 +832628,7 @@
                 "output": ["ActionOutput_quickbooks_updateinvoice"],
                 "scopes": ["com.intuit.quickbooks.accounting"],
                 "usedModels": ["ActionInput_quickbooks_updateinvoice", "ActionOutput_quickbooks_updateinvoice"],
-                "version": "2.0.1",
+                "version": "2.1.0",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_quickbooks_updateinvoice": {
@@ -832027,6 +832712,22 @@
                                 "TxnDate": {
                                     "description": "Transaction date (YYYY-MM-DD)",
                                     "type": "string"
+                                },
+                                "DocNumber": {
+                                    "description": "Invoice number. Example: \"INV-1001\"",
+                                    "type": "string",
+                                    "maxLength": 21
+                                },
+                                "ProjectRef": {
+                                    "description": "Project to assign the invoice to. Only for companies with Projects enabled. The value must be a project ID, not a customer ID; when omitted, the project is left unchanged only for sparse updates (a full update with sparse: false clears it).",
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": false
                                 },
                                 "DueDate": {
                                     "description": "Due date (YYYY-MM-DD)",
@@ -832200,6 +832901,12 @@
                                         }
                                     },
                                     "additionalProperties": false
+                                },
+                                "currency": {
+                                    "type": "string"
+                                },
+                                "projectId": {
+                                    "type": "string"
                                 },
                                 "lineItems": {
                                     "type": "array",
@@ -836043,7 +836750,7 @@
                 "output": ["ActionOutput_quickbooks_createinvoice"],
                 "scopes": ["com.intuit.quickbooks.accounting"],
                 "usedModels": ["ActionInput_quickbooks_createinvoice", "ActionOutput_quickbooks_createinvoice"],
-                "version": "2.0.1",
+                "version": "2.1.0",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_quickbooks_createinvoice": {
@@ -836062,8 +836769,17 @@
                                     "description": "Reference to the customer"
                                 },
                                 "txnDate": {
+                                    "description": "Transaction date in YYYY-MM-DD format. Defaults to the current date if omitted. Example: \"2024-01-15\"",
+                                    "type": "string"
+                                },
+                                "dueDate": {
+                                    "description": "Due date in YYYY-MM-DD format. Defaults to the transaction date plus the sales terms if omitted. Example: \"2024-02-14\"",
+                                    "type": "string"
+                                },
+                                "docNumber": {
+                                    "description": "Invoice number. If omitted, QuickBooks assigns the next number when automatic numbering is on. Example: \"INV-1001\"",
                                     "type": "string",
-                                    "description": "Transaction date in YYYY-MM-DD format. Example: \"2024-01-15\""
+                                    "maxLength": 21
                                 },
                                 "line": {
                                     "type": "array",
@@ -836109,9 +836825,31 @@
                                         "additionalProperties": false
                                     },
                                     "description": "Invoice line items"
+                                },
+                                "currencyRef": {
+                                    "description": "Currency of the invoice. Only needed when multicurrency is enabled; defaults to the home currency. Example: { \"value\": \"USD\" }",
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": false
+                                },
+                                "projectRef": {
+                                    "description": "Project to assign the invoice to. Only for companies with Projects enabled. The value must be a project ID, not a customer ID; omit it when the invoice is not part of a project.",
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": false
                                 }
                             },
-                            "required": ["customerRef", "txnDate", "line"],
+                            "required": ["customerRef", "line"],
                             "additionalProperties": false
                         },
                         "ActionOutput_quickbooks_createinvoice": {
@@ -836139,6 +836877,18 @@
                                 },
                                 "docNumber": {
                                     "description": "Document number",
+                                    "type": "string"
+                                },
+                                "dueDate": {
+                                    "description": "Due date",
+                                    "type": "string"
+                                },
+                                "currency": {
+                                    "description": "Currency code",
+                                    "type": "string"
+                                },
+                                "projectId": {
+                                    "description": "Project ID",
                                     "type": "string"
                                 },
                                 "lineItems": {
@@ -841761,7 +842511,7 @@
                 "output": ["ActionOutput_quickbooks_updateinvoice"],
                 "scopes": ["com.intuit.quickbooks.accounting"],
                 "usedModels": ["ActionInput_quickbooks_updateinvoice", "ActionOutput_quickbooks_updateinvoice"],
-                "version": "2.0.1",
+                "version": "2.1.0",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_quickbooks_updateinvoice": {
@@ -841845,6 +842595,22 @@
                                 "TxnDate": {
                                     "description": "Transaction date (YYYY-MM-DD)",
                                     "type": "string"
+                                },
+                                "DocNumber": {
+                                    "description": "Invoice number. Example: \"INV-1001\"",
+                                    "type": "string",
+                                    "maxLength": 21
+                                },
+                                "ProjectRef": {
+                                    "description": "Project to assign the invoice to. Only for companies with Projects enabled. The value must be a project ID, not a customer ID; when omitted, the project is left unchanged only for sparse updates (a full update with sparse: false clears it).",
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": false
                                 },
                                 "DueDate": {
                                     "description": "Due date (YYYY-MM-DD)",
@@ -842018,6 +842784,12 @@
                                         }
                                     },
                                     "additionalProperties": false
+                                },
+                                "currency": {
+                                    "type": "string"
+                                },
+                                "projectId": {
+                                    "type": "string"
                                 },
                                 "lineItems": {
                                     "type": "array",
@@ -1217727,7 +1218499,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getcustomobjectdefinition", "ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getcustomobjectdefinition": {
@@ -1217803,7 +1218575,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getjobrequisition"],
                 "scopes": ["r_recruiting"],
                 "usedModels": ["ActionInput_workday_refresh_token_getjobrequisition", "ActionOutput_workday_refresh_token_getjobrequisition"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getjobrequisition": {
@@ -1217985,7 +1218757,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getorganization"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getorganization", "ActionOutput_workday_refresh_token_getorganization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getorganization": {
@@ -1218033,7 +1218805,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getsupervisoryorganization"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getsupervisoryorganization", "ActionOutput_workday_refresh_token_getsupervisoryorganization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getsupervisoryorganization": {
@@ -1218042,10 +1218814,6 @@
                                 "id": {
                                     "type": "string",
                                     "description": "The Workday identifier of the supervisory organization. Example: \"36a6f7a8e1eb1000df0164ce90640000\""
-                                },
-                                "tenant": {
-                                    "description": "The Workday tenant name. When omitted, read from the connection configuration.",
-                                    "type": "string"
                                 }
                             },
                             "required": ["id"],
@@ -1218116,7 +1218884,7 @@
                 "output": ["ActionOutput_workday_refresh_token_gettimeoffdetail"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_gettimeoffdetail", "ActionOutput_workday_refresh_token_gettimeoffdetail"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_gettimeoffdetail": {
@@ -1218247,7 +1219015,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getworkercompensation"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getworkercompensation", "ActionOutput_workday_refresh_token_getworkercompensation"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getworkercompensation": {
@@ -1218379,7 +1219147,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getworker"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getworker", "ActionOutput_workday_refresh_token_getworker"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getworker": {
@@ -1218820,7 +1219588,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listorganizations"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listorganizations", "ActionOutput_workday_refresh_token_listorganizations"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listorganizations": {
@@ -1218881,7 +1219649,7 @@
                     "ActionInput_workday_refresh_token_listsupervisoryorganizations",
                     "ActionOutput_workday_refresh_token_listsupervisoryorganizations"
                 ],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listsupervisoryorganizations": {
@@ -1218946,7 +1219714,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listworkerabsencebalances"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listworkerabsencebalances", "ActionOutput_workday_refresh_token_listworkerabsencebalances"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listworkerabsencebalances": {
@@ -1219124,7 +1219892,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listworkers"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listworkers", "ActionOutput_workday_refresh_token_listworkers"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listworkers": {
@@ -1219236,7 +1220004,7 @@
                 "output": ["ActionOutput_workday_refresh_token_submittimeoffrequest"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_submittimeoffrequest", "ActionOutput_workday_refresh_token_submittimeoffrequest"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_submittimeoffrequest": {
@@ -1219375,7 +1220143,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Organization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -1219416,7 +1220184,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Worker"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -1219564,7 +1220332,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getcustomobjectdefinition", "ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getcustomobjectdefinition": {
@@ -1219640,7 +1220408,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getjobrequisition"],
                 "scopes": ["r_recruiting"],
                 "usedModels": ["ActionInput_workday_refresh_token_getjobrequisition", "ActionOutput_workday_refresh_token_getjobrequisition"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getjobrequisition": {
@@ -1219822,7 +1220590,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getorganization"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getorganization", "ActionOutput_workday_refresh_token_getorganization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getorganization": {
@@ -1219870,7 +1220638,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getsupervisoryorganization"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getsupervisoryorganization", "ActionOutput_workday_refresh_token_getsupervisoryorganization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getsupervisoryorganization": {
@@ -1219879,10 +1220647,6 @@
                                 "id": {
                                     "type": "string",
                                     "description": "The Workday identifier of the supervisory organization. Example: \"36a6f7a8e1eb1000df0164ce90640000\""
-                                },
-                                "tenant": {
-                                    "description": "The Workday tenant name. When omitted, read from the connection configuration.",
-                                    "type": "string"
                                 }
                             },
                             "required": ["id"],
@@ -1219953,7 +1220717,7 @@
                 "output": ["ActionOutput_workday_refresh_token_gettimeoffdetail"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_gettimeoffdetail", "ActionOutput_workday_refresh_token_gettimeoffdetail"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_gettimeoffdetail": {
@@ -1220084,7 +1220848,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getworkercompensation"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getworkercompensation", "ActionOutput_workday_refresh_token_getworkercompensation"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getworkercompensation": {
@@ -1220216,7 +1220980,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getworker"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getworker", "ActionOutput_workday_refresh_token_getworker"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getworker": {
@@ -1220657,7 +1221421,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listorganizations"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listorganizations", "ActionOutput_workday_refresh_token_listorganizations"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listorganizations": {
@@ -1220718,7 +1221482,7 @@
                     "ActionInput_workday_refresh_token_listsupervisoryorganizations",
                     "ActionOutput_workday_refresh_token_listsupervisoryorganizations"
                 ],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listsupervisoryorganizations": {
@@ -1220783,7 +1221547,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listworkerabsencebalances"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listworkerabsencebalances", "ActionOutput_workday_refresh_token_listworkerabsencebalances"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listworkerabsencebalances": {
@@ -1220961,7 +1221725,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listworkers"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listworkers", "ActionOutput_workday_refresh_token_listworkers"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listworkers": {
@@ -1221073,7 +1221837,7 @@
                 "output": ["ActionOutput_workday_refresh_token_submittimeoffrequest"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_submittimeoffrequest", "ActionOutput_workday_refresh_token_submittimeoffrequest"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_submittimeoffrequest": {
@@ -1221212,7 +1221976,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Organization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -1221253,7 +1222017,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Worker"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -1221401,7 +1222165,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getcustomobjectdefinition", "ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getcustomobjectdefinition": {
@@ -1221477,7 +1222241,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getjobrequisition"],
                 "scopes": ["r_recruiting"],
                 "usedModels": ["ActionInput_workday_refresh_token_getjobrequisition", "ActionOutput_workday_refresh_token_getjobrequisition"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getjobrequisition": {
@@ -1221659,7 +1222423,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getorganization"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getorganization", "ActionOutput_workday_refresh_token_getorganization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getorganization": {
@@ -1221707,7 +1222471,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getsupervisoryorganization"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getsupervisoryorganization", "ActionOutput_workday_refresh_token_getsupervisoryorganization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getsupervisoryorganization": {
@@ -1221716,10 +1222480,6 @@
                                 "id": {
                                     "type": "string",
                                     "description": "The Workday identifier of the supervisory organization. Example: \"36a6f7a8e1eb1000df0164ce90640000\""
-                                },
-                                "tenant": {
-                                    "description": "The Workday tenant name. When omitted, read from the connection configuration.",
-                                    "type": "string"
                                 }
                             },
                             "required": ["id"],
@@ -1221790,7 +1222550,7 @@
                 "output": ["ActionOutput_workday_refresh_token_gettimeoffdetail"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_gettimeoffdetail", "ActionOutput_workday_refresh_token_gettimeoffdetail"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_gettimeoffdetail": {
@@ -1221921,7 +1222681,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getworkercompensation"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getworkercompensation", "ActionOutput_workday_refresh_token_getworkercompensation"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getworkercompensation": {
@@ -1222053,7 +1222813,7 @@
                 "output": ["ActionOutput_workday_refresh_token_getworker"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_getworker", "ActionOutput_workday_refresh_token_getworker"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_getworker": {
@@ -1222494,7 +1223254,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listorganizations"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listorganizations", "ActionOutput_workday_refresh_token_listorganizations"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listorganizations": {
@@ -1222555,7 +1223315,7 @@
                     "ActionInput_workday_refresh_token_listsupervisoryorganizations",
                     "ActionOutput_workday_refresh_token_listsupervisoryorganizations"
                 ],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listsupervisoryorganizations": {
@@ -1222620,7 +1223380,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listworkerabsencebalances"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listworkerabsencebalances", "ActionOutput_workday_refresh_token_listworkerabsencebalances"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listworkerabsencebalances": {
@@ -1222798,7 +1223558,7 @@
                 "output": ["ActionOutput_workday_refresh_token_listworkers"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_listworkers", "ActionOutput_workday_refresh_token_listworkers"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_listworkers": {
@@ -1222910,7 +1223670,7 @@
                 "output": ["ActionOutput_workday_refresh_token_submittimeoffrequest"],
                 "scopes": [],
                 "usedModels": ["ActionInput_workday_refresh_token_submittimeoffrequest", "ActionOutput_workday_refresh_token_submittimeoffrequest"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_workday_refresh_token_submittimeoffrequest": {
@@ -1223049,7 +1223809,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Organization"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -1223090,7 +1223850,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Worker"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {

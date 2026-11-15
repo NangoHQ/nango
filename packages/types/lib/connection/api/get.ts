@@ -65,7 +65,7 @@ export type ApiPublicConnection = Pick<DBConnection, 'id' | 'connection_id'> & {
     tags: Tags;
 };
 export type GetPublicConnections = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'no credentials returned' };
     Method: 'GET';
     Querystring: {
         connectionId?: string | undefined;
@@ -100,7 +100,8 @@ export type PostPublicConnection = ApiEndpoint<{
             | Omit<ApiKeyCredentials, 'raw'>
             | Omit<BasicApiCredentials, 'raw'>
             | Omit<TbaCredentials, 'raw'>
-            | { type: 'APP'; app_id: string; installation_id: string }
+            | { type: 'APP'; app_id: string; installation_id: string; private_key?: never; webhook_secret?: never }
+            | { type: 'APP'; app_id: string; installation_id: string; private_key: string; webhook_secret: string }
             | { type: 'CUSTOM'; app_id: string; installation_id: string }
             | { type: 'NONE' };
         end_user?: EndUserInput | undefined;
@@ -125,7 +126,7 @@ export type GetConnection = ApiEndpoint<{
     };
     Path: '/api/v1/connections/:connectionId';
     Error: ApiError<'unknown_provider_config'>;
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'connection', 'credentials_read', 'environment'>;
     Success: {
         data: {
             provider: string;

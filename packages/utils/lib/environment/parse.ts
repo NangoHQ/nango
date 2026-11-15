@@ -333,6 +333,8 @@ const ENVS_SHAPE = z.object({
     // Outbound URL policy overlay for OAuth/token flows. Applied on top of NANGO_OUTBOUND_URL_POLICY,
     // but RFC1918 blocking defaults off (configurable) so self-hosted token endpoints keep working.
     NANGO_OUTBOUND_URL_POLICY_OAUTH: outboundUrlPolicySchema('NANGO_OUTBOUND_URL_POLICY_OAUTH'),
+    // Outbound URL policy overlay for MCP OAuth flows. Applied on top of the OAuth policy, always https only.
+    NANGO_OUTBOUND_URL_POLICY_MCP: outboundUrlPolicySchema('NANGO_OUTBOUND_URL_POLICY_MCP'),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),

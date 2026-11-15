@@ -48,7 +48,7 @@ export const ConnectionShow = () => {
 
     if (connectionError || integrationError) {
         return (
-            <DashboardLayout>
+            <DashboardLayout width="wide">
                 <Helmet>
                     <title>Connection - Nango</title>
                 </Helmet>
@@ -59,7 +59,7 @@ export const ConnectionShow = () => {
 
     if (connectionLoading || providerLoading || !connectionResponse || !integrationResponse) {
         return (
-            <DashboardLayout>
+            <DashboardLayout width="wide">
                 <Helmet>
                     <title>Connection - Nango</title>
                 </Helmet>
@@ -103,7 +103,7 @@ export const ConnectionShow = () => {
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout width="wide" hasPageHeading>
             <Helmet>
                 <title>{connectionResponse.endUser?.email || connectionResponse.connection.connection_id} - Connection - Nango</title>
             </Helmet>
@@ -113,9 +113,9 @@ export const ConnectionShow = () => {
                     <div className="flex gap-4 items-center">
                         <IntegrationLogoWithProfile providerConfigKey={providerKey} provider={connectionResponse.provider} profile={displayName} />
                         <div className="flex flex-col">
-                            <span className="text-body-large-semi text-text-strong">
+                            <h1 className="text-body-large-semi text-text-strong">
                                 {integrationData.integration.display_name || integrationData.template.display_name} x {displayName}
-                            </span>
+                            </h1>
                             <span className="text-body-medium-regular text-text-secondary">{email ?? connectionResponse.connection.connection_id}</span>
                         </div>
                     </div>

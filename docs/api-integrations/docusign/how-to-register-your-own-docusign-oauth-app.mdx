@@ -1,0 +1,44 @@
+---
+title: 'How to register your own DocuSign OAuth app'
+sidebarTitle: 'DocuSign setup'
+description: 'Register an OAuth app with DocuSign and connect it to Nango'
+---
+
+This guide shows you how to register an app with DocuSign to get your OAuth credentials (integration key and secret key). Your users need them to grant your app access to their DocuSign account.
+
+DocuSign apps are created in the developer environment and then promoted to production. To test first, follow the [DocuSign (Sandbox) setup guide](/api-integrations/docusign-sandbox/how-to-register-your-own-docusign-sandbox-oauth-app).
+
+<Steps>
+  <Step id="create-app" title="Create the app in your developer account">
+    Open [Apps and Keys](https://apps-d.docusign.com/admin/apps-and-keys) in your DocuSign developer account and click **Add App and Integration Key**. No developer account yet? Create one for free at [go.docusign.com/o/sandbox](https://go.docusign.com/o/sandbox/).
+
+    The **Integration Key** shown on the app page is your client ID.
+  </Step>
+  <Step id="choose-integration-type" title="Choose the integration type">
+    Under **Integration Type**, pick **Public integration** if your app connects your customers' DocuSign accounts. Launching a public integration requires joining the [DocuSign Partner Program](https://partners.docusign.com/s/).
+  </Step>
+  <Step id="configure-authentication" title="Configure authentication">
+    Under **User Application**, answer **Yes** to "Is your application able to securely store a client secret?" and select **Authorization Code Grant**. **Require Proof Key for Code Exchange (PKCE)** is optional: Nango sends a PKCE challenge either way.
+  </Step>
+  <Step id="go-live" title="Go live">
+    Submit the app for [go-live](https://developers.docusign.com/platform/go-live/). Once approved, DocuSign copies the integration key to production, but not its secret keys or redirect URIs.
+  </Step>
+  <Step id="add-production-credentials" title="Add the secret key and callback URL in production">
+    Open [Apps and Keys](https://apps.docusign.com/admin/apps-and-keys) in your production account and open the app:
+
+    1. Click **Add Secret Key** and copy it right away: DocuSign only shows it in full once. This is your client secret.
+    2. Under **Additional settings > Redirect URIs**, click **Add URI** and enter `https://api.nango.dev/oauth/callback`. Then click **Save**.
+
+    <img src="/api-integrations/docusign/docusign_secret.png" style={{maxWidth: "450px" }} />
+  </Step>
+  <Step id="add-credentials-to-nango" title="Add the credentials to Nango">
+    In Nango, open your DocuSign integration and enter the integration key as the client ID and the production secret key as the client secret.
+  </Step>
+  <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [DocuSign's authorization code grant guide](https://developers.docusign.com/platform/auth/authcode/).
+
+---

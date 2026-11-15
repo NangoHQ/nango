@@ -1,0 +1,42 @@
+---
+title: 'Flyte - How do I link my account?'
+sidebarTitle: 'Flyte'
+---
+
+## Overview
+
+To authenticate with Flyte, you need:
+
+1. **Flyte Host** — the host of your Flyte instance.
+2. **Token Endpoint** — the OAuth 2.0 token endpoint of the identity provider your instance uses.
+3. **Client ID** and **Client Secret** — a service application registered in that identity provider.
+
+Flyte delegates authentication to an external OIDC identity provider (Okta, Keycloak, Microsoft Entra ID, Google and others), so these come from whoever administers your Flyte instance.
+
+### Prerequisites
+
+- A Flyte instance that accepts `Authorization: Bearer` tokens on its API.
+
+### Step 1: Find your Flyte host and token endpoint
+
+1. Your Flyte host is the endpoint in your Flyte config, without `dns:///` or `https://`. For example, enter `flyte.example.com` for `endpoint: dns:///flyte.example.com`.
+2. Open `https://<your-flyte-host>/.well-known/oauth-authorization-server` in a browser. If your administrator has configured it, Flyte serves your identity provider's authorization server metadata there.
+3. Copy the `token_endpoint` value without `https://`, for example `my-company.okta.com/oauth2/default/v1/token`. Nango adds `https://` itself.
+4. If that page returns an error, ask your Flyte administrator for the token endpoint of your identity provider. It usually looks like one of these:
+    - Okta: `<your-org>.okta.com/oauth2/default/v1/token`
+    - Keycloak: `<your-keycloak-host>/realms/<realm>/protocol/openid-connect/token`
+    - Microsoft Entra ID: `login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token`
+
+### Step 2: Get client credentials
+
+Ask the administrator of your Flyte instance for the **client ID** and **client secret** of a service application authorized to use the Flyte API. Client credentials applications are created in your identity provider, not in Flyte.
+
+### Step 3: Enter your details in the Connect UI
+
+1. Open the form where you need to authenticate with Flyte.
+2. Enter your **Flyte Host**, **Token Endpoint**, **Client ID** and **Client Secret**.
+3. Submit the form, and you should be connected.
+
+<img src="/api-integrations/flyte/form.png" alt="Flyte Connect UI form with the Flyte Host, Token Endpoint, Client ID and Client Secret fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Flyte.

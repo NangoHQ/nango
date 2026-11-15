@@ -1,6 +1,7 @@
 import { changedFields, makeAuditTarget as makeTarget } from '../../audit.js';
 import { connectionCreatedActor } from '../../hooks/auditConnection.js';
 import { Audit, auditable, maybeAuditable, resolveActor } from './auditable.js';
+import { callerSubject, credentialsReadTargets, skipUnlessCredentialsRead } from './credentialsRead.js';
 import { bodyField, nonEmptyString, omitUndefined, param, query } from './input.js';
 
 import type {
@@ -8,6 +9,7 @@ import type {
     DeleteConnection,
     DeletePublicConnection,
     Endpoint,
+    GetConnection,
     PatchConnection,
     PatchPublicConnection,
     PostConnectionMetadata,
@@ -84,6 +86,13 @@ export const auditPublicConnectionDeleted = auditable<DeletePublicConnection>({
     policy: Audit.auditable({ resource: 'connection', action: 'deleted', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),
     metadata: (req) => providerConfigKeyMeta(req.query.provider_config_key)
+});
+
+export const auditConnectionCredentialsRead = maybeAuditable<GetConnection>({
+    policy: Audit.auditable({ resource: 'connection', action: 'credentials_read', scope: 'environment' }),
+    skipWhen: skipUnlessCredentialsRead(),
+    subject: callerSubject,
+    atFinish: (req) => ({ ...credentialsReadTargets('connection', req), metadata: providerConfigKeyMeta(query(req, 'provider_config_key')) })
 });
 
 function providerConfigKeyMeta(value: unknown): Record<string, unknown> | undefined {
