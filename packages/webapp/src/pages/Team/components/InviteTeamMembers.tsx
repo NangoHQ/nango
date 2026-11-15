@@ -4,7 +4,19 @@ import { useEffect, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useSearchParams } from 'react-router-dom';
 
-import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle, FieldLabel, IconButton, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import {
+    Button,
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+    FieldLabel,
+    IconButton,
+    InputGroup,
+    InputGroupInput,
+    LinkButton
+} from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
@@ -146,12 +158,12 @@ export const InviteTeamMembers = () => {
             <CardFooter>
                 <div className="flex w-full items-center justify-between gap-4">
                     <div className="flex items-center gap-1.5">
-                        <Button asChild variant="link-neutral">
+                        <LinkButton asChild tone="neutral" size="lg">
                             <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
                                 Learn more about team access roles.
                                 <ExternalLink />
                             </a>
-                        </Button>
+                        </LinkButton>
                     </div>
                     <PermissionGate condition={canManageTeam}>
                         {(allowed) => (

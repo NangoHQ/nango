@@ -16,9 +16,11 @@ import {
     Field,
     FieldLabel,
     IconButton,
-    Input
+    Input,
+    LinkButton
 } from '@nangohq/design-system';
 
+import { DocsIconLink } from '@/components/patterns/DocsIconLink';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Dot } from '@/components/ui/Dot';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
@@ -66,12 +68,12 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                     <DialogTitle>Edit role</DialogTitle>
                     <DialogDescription>
                         Manage access level and permissions.{' '}
-                        <Button asChild variant="link-neutral">
+                        <LinkButton asChild tone="neutral" size="lg">
                             <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
                                 Learn more
                                 <ExternalLink />
                             </a>
-                        </Button>
+                        </LinkButton>
                     </DialogDescription>
                 </DialogHeader>
 
@@ -157,11 +159,10 @@ export const TeamMembers: React.FC = () => {
                         <TableHead>
                             <div className="inline-flex items-center gap-0.5">
                                 <span>Role</span>
-                                <IconButton asChild variant="link-accent" size="xs" label="Team roles and permissions documentation">
-                                    <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
-                                        <ExternalLink />
-                                    </a>
-                                </IconButton>
+                                <DocsIconLink
+                                    href="https://nango.dev/docs/guides/platform/security#team-and-roles"
+                                    label="Team roles and permissions documentation"
+                                />
                             </div>
                         </TableHead>
                         <TableHead>2FA</TableHead>
@@ -204,9 +205,9 @@ export const TeamMembers: React.FC = () => {
                                                 </div>
                                                 <p className="text-body-small-regular text-text-secondary">
                                                     This role is treated as Full access.{' '}
-                                                    <Button asChild variant="link-accent" size="xs">
+                                                    <LinkButton asChild size="sm">
                                                         <Link to="/team/billing#plans">Add the Growth add-on</Link>
-                                                    </Button>{' '}
+                                                    </LinkButton>{' '}
                                                     to apply this role.
                                                 </p>
                                             </PopoverContent>

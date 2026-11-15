@@ -18,12 +18,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import { Button, LinkButton } from '@nangohq/design-system';
 
 import { ChecklistRow } from '@/components/patterns/ChecklistRow';
 import { PromptCard } from '@/components/patterns/PromptCard';
 import { CompactStepCard, StepCard, StepList } from '@/components/patterns/StepCard';
-import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useAgentGettingStarted, useRestartAgentGettingStarted } from '@/hooks/useAgentGettingStarted';
 import { useApiKeys } from '@/hooks/useApiKeys';
@@ -203,15 +202,12 @@ export const AgentGettingStarted: React.FC = () => {
                                 {showPlaygroundLink && (
                                     <p className="type-text-regular-xs text-text-muted">
                                         Not ready? Try it first in the{' '}
-                                        <ButtonLink
-                                            to={`/${env}/playground`}
-                                            variant="link-accent"
-                                            size="xs"
-                                            onClick={() => track('onboarding:playground_link_click')}
-                                        >
-                                            Agent Playground
-                                            <ArrowRight />
-                                        </ButtonLink>
+                                        <LinkButton asChild size="sm">
+                                            <Link to={`/${env}/playground`} onClick={() => track('onboarding:playground_link_click')}>
+                                                Agent Playground
+                                                <ArrowRight />
+                                            </Link>
+                                        </LinkButton>
                                     </p>
                                 )}
                             </StepCard>
@@ -269,10 +265,12 @@ const TryIntegrationsStep: React.FC<{
             done: progress.hasConnection,
             label: progress.hasConnection ? 'Account connected' : 'Connect an account',
             trailing: progress.hasConnection ? (
-                <ButtonLink to={`/${env}/connections`} variant="link-neutral" size="xs">
-                    View connection
-                    <ArrowRight />
-                </ButtonLink>
+                <LinkButton asChild tone="neutral" size="sm">
+                    <Link to={`/${env}/connections`}>
+                        View connection
+                        <ArrowRight />
+                    </Link>
+                </LinkButton>
             ) : null
         },
         { done: progress.hasToolCall, label: progress.hasToolCall ? 'First tool call ran' : 'Run your first tool call', trailing: null }
