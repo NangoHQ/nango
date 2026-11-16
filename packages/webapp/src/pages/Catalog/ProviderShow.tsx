@@ -35,7 +35,7 @@ export const CatalogProviderShow: React.FC = () => {
     const env = useStore((state) => state.env);
     const { provider: providerName = '' } = useParams();
     const { data: providersData, isPending, error } = useProviders(env);
-    const { data: integrationsData, isSuccess: integrationsLoaded } = useListIntegrations(env);
+    const { data: integrationsData, isPending: integrationsPending } = useListIntegrations(env);
     const { can } = usePermissions();
     const canSetUp = can('environment:integrations:update');
     const canUseAgentPlayground = useCanUseAgentPlayground();
@@ -48,10 +48,10 @@ export const CatalogProviderShow: React.FC = () => {
     const provider = providersData?.data.find((item) => item.name === providerName);
     const configuredIntegrationIds = useMemo(
         () =>
-            integrationsLoaded
-                ? (integrationsData?.data ?? []).filter((integration) => integration.provider === providerName).map((integration) => integration.unique_key)
-                : null,
-        [integrationsLoaded, integrationsData, providerName]
+            integrationsPending
+                ? null
+                : (integrationsData?.data ?? []).filter((integration) => integration.provider === providerName).map((integration) => integration.unique_key),
+        [integrationsPending, integrationsData, providerName]
     );
 
     if (error && !providersData) {
