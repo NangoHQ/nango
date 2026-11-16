@@ -64,7 +64,8 @@ describe('manualTelemetryExportConfig', () => {
             installationId: 'f4a2c0e1-7b3d-4e2a-9c1f-0a6d5e8b2c44',
             privateKeyPem: installationKey.trim(),
             metrics: ['nango.hosted_metric.active_concurrency.max'],
-            retentionDays: 90
+            retentionDays: 90,
+            licenseGraceUntil: new Date('2028-01-30T00:00:00.000Z')
         });
     });
 

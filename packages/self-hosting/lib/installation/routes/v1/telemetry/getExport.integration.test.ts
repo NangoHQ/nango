@@ -25,7 +25,13 @@ const connections = 'nango.hosted_metric.connections.count';
 const now = new Date('2026-11-10T08:00:00Z');
 
 const { publicKey, privateKey } = generateKeyPairSync('ed25519');
-const privateKeyPem = privateKey.export({ type: 'pkcs8', format: 'pem' }).toString();
+const installation = {
+    installationId,
+    privateKeyPem: privateKey.export({ type: 'pkcs8', format: 'pem' }).toString(),
+    metrics: [concurrency, connections],
+    retentionDays: 90,
+    licenseGraceUntil: new Date('2028-01-30T00:00:00Z')
+};
 
 let knex: Knex;
 let api: Server;
@@ -90,7 +96,7 @@ beforeAll(async () => {
         })
     ).unwrap();
 
-    api = await listen({ key, knex, schema, installationId, privateKeyPem, metrics: [concurrency, connections], retentionDays: 90 });
+    api = await listen({ key, knex, schema, ...installation });
     url = address(api);
 });
 
@@ -218,20 +224,23 @@ describe('GET /v1/telemetry/export', () => {
     });
 
     it('answers 500 before sending anything when the telemetry cannot be read', async () => {
-        const broken = await listen({
-            key,
-            knex,
-            schema: 'a_schema_that_does_not_exist',
-            installationId,
-            privateKeyPem,
-            metrics: [concurrency, connections],
-            retentionDays: 90
-        });
+        const broken = await listen({ key, knex, schema: 'a_schema_that_does_not_exist', ...installation });
 
         const res = await download({ from: '2026-11-08', to: '2026-11-09' }, { to: address(broken) });
 
         expect(res.status).toBe(500);
         expect(await res.json()).toEqual({ error: { code: 'server_error', message: 'the telemetry could not be read' } });
+    });
+
+    it('rejects the export once the grace period of the license has ended', async () => {
+        const expired = await listen({ key, knex, schema, ...installation, licenseGraceUntil: new Date('2026-11-10T07:59:59Z') });
+
+        const res = await download({ from: '2026-11-08', to: '2026-11-09' }, { to: address(expired) });
+
+        expect(res.status).toBe(403);
+        expect(await res.json()).toEqual({
+            error: { code: 'license_expired', message: 'the grace period of the license ended on 2026-11-10T07:59:59.000Z' }
+        });
     });
 
     it('does not exist on an installation without an export key', async () => {

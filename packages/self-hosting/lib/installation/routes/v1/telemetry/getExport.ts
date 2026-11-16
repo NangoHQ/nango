@@ -24,7 +24,7 @@ type GetExport = Endpoint<{
     Method: typeof method;
     Path: typeof path;
     Querystring: { from: string; to: string };
-    Error: ApiError<'server_error'>;
+    Error: ApiError<'server_error' | 'license_expired'>;
     Success: never;
 }>;
 
@@ -66,8 +66,12 @@ async function primed(chunks: AsyncGenerator<string>): Promise<AsyncGenerator<st
     })();
 }
 
-const handler = ({ knex, schema, installationId, privateKeyPem, metrics }: ManualTelemetryExportConfig) => {
+const handler = ({ knex, schema, installationId, privateKeyPem, metrics, licenseGraceUntil }: ManualTelemetryExportConfig) => {
     return async (_req: EndpointRequest, res: EndpointResponse<GetExport>): Promise<void> => {
+        if (licenseGraceUntil <= new Date()) {
+            sendError(res, { status: 403, code: 'license_expired', message: `the grace period of the license ended on ${licenseGraceUntil.toISOString()}` });
+            return;
+        }
         const { from, to } = res.locals.parsedQuery;
         const range = { from: startOf(from), to: startOf(to) };
         const span = tracer.scope().active();

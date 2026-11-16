@@ -39,6 +39,7 @@ export interface ManualTelemetryExportConfig {
     privateKeyPem: string;
     metrics: string[];
     retentionDays: number;
+    licenseGraceUntil: Date;
 }
 
 /** Returns no configuration when the installation has no export key, which is how the export is turned off. */
@@ -65,7 +66,8 @@ export async function manualTelemetryExportConfig(): Promise<Result<ManualTeleme
         installationId: license.value.installation_id,
         privateKeyPem: privateKeyPem.value,
         metrics: storedMetricNames(),
-        retentionDays: envs.NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS
+        retentionDays: envs.NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS,
+        licenseGraceUntil: new Date(license.value.grace_until)
     });
 }
 
