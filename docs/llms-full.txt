@@ -2819,6 +2819,14 @@ A tool called directly by its name takes its input under `input`, next to the ta
 }
 ```
 
+### Tool changes
+
+Tools are not a stable contract. The tools available in a session, their inputs and their output schemas [may change at any time](https://modelcontextprotocol.io/specification/2026-07-28/server/tools#capabilities). This includes Nango's meta tools.
+
+Your agent is expected to adjust to changes dynamically:
+- Use the tool definitions the session's MCP server returns, and [re-fetch them](https://modelcontextprotocol.io/specification/2026-07-28/server/utilities/caching#time-to-live-ttl-field) when a call fails. Don't hard-code them.
+- Pass tool errors back to the model, so it can [self-correct](https://modelcontextprotocol.io/specification/2026-07-28/server/tools#error-handling) and retry with the updated definition.
+
 ### Terminating a session
 
 Sessions are immutable and cannot be extended. They expire on their own once `expires_in` is up, and you can end one early with `DELETE /sessions/{session_id}`:
