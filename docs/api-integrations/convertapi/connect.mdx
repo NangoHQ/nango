@@ -1,0 +1,64 @@
+---
+title: 'ConvertAPI - How do I link my account?'
+sidebarTitle: 'ConvertAPI'
+---
+
+## Overview
+
+To authenticate with ConvertAPI, you need:
+
+1. **Region** — the ConvertAPI server location your requests go to.
+2. **API Token** — a ConvertAPI API Token. A JWT token or the Master Token also works.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A ConvertAPI account. You can [sign up](https://www.convertapi.com/a/signup) for a free trial with 250 conversions and no credit card.
+
+### Step 1: Choose your region
+
+ConvertAPI serves its API from these hosts:
+
+| Location | Host |
+|----------|------|
+| World Wide (default, routes to the nearest data center) | `v2.convertapi.com` |
+| Europe EU – Amsterdam / Frankfurt | `eu-v2.convertapi.com` |
+| Europe – London, UK | `uk-v2.convertapi.com` |
+| US East – Washington DC / US West – San Jose | `us-v2.convertapi.com` |
+| North America – Toronto | `ca-v2.convertapi.com` |
+| Southeast Asia – Singapore | `as-v2.convertapi.com` |
+| East Asia – Tokyo | `jp-v2.convertapi.com` |
+| Oceania – Sydney | `au-v2.convertapi.com` |
+
+Pick `v2.convertapi.com` unless your files must be processed in a specific location. See [ConvertAPI Server Locations and Regional Endpoints](https://www.convertapi.com/docs/servers-location).
+
+### Step 2: Create an API token
+
+1. Sign in to the [ConvertAPI dashboard](https://www.convertapi.com/a/signin).
+2. In the left sidebar, open **Integration** → **Authentication**.
+3. Click **Create New Token**, enter a **Title**, and click **Generate API Token**. Leave **Usage Limit** and **Expiration Date** empty for an unlimited token that never expires.
+
+<img src="/api-integrations/convertapi/generate_api_token.png" alt="ConvertAPI API Authentication page with the token form and the Generate API Token button"/>
+
+4. Your new token appears in the **Your API Tokens** list. Click its copy icon to copy the API Token.
+
+<img src="/api-integrations/convertapi/copy_api_token.png" alt="Your API Tokens list in the ConvertAPI dashboard with the copy icon of the new token highlighted"/>
+
+**Use a JWT token instead (optional).** In the **Your API Tokens** list, click **JWT** next to your token, set a **Lifetime in seconds** (and optionally an IP address), and click **Generate JWT Token**. Copy the JWT shown below the form. A JWT token expires after its lifetime, so the connection stops working when it does.
+
+<img src="/api-integrations/convertapi/jwt_token_created.png" alt="ConvertAPI JWT token form with the Generate JWT Token button and the generated token below it"/>
+
+**Use the Master Token instead (optional).** Owners and Administrators can click **Manage Master Token** on the **API Authentication** page and copy the Master Token with the copy icon. ConvertAPI uses it for administrative endpoints, such as user information and statistics.
+
+<img src="/api-integrations/convertapi/master_token_created.png" alt="ConvertAPI Master Token page with the copy icon next to the token"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with ConvertAPI.
+2. Select your **Region** and enter your **API Token** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/convertapi/form.png" alt="ConvertAPI connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to ConvertAPI.

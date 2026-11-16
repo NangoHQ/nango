@@ -36,7 +36,8 @@ export type CompileErrorType =
     | 'failed_to_build_unknown'
     | 'method_need_await'
     | 'retryon_need_retries'
-    | 'disallowed_import';
+    | 'disallowed_import'
+    | 'unsupported_scopes_usage';
 
 // createFunction intentionally omitted from this message while experimental. Add on GA
 export const badExportCompilerError = 'Invalid default export: should be createAction(), createSync(), createOnEvent() or createTool()';

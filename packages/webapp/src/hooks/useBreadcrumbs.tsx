@@ -1,7 +1,7 @@
 import { useMatches, useSearchParams } from 'react-router-dom';
 
 export interface BreadcrumbHandle {
-    breadcrumb?: string | ((params: Record<string, string | undefined>, searchParams: URLSearchParams) => string);
+    breadcrumb?: string | ((params: Record<string, string | undefined>, searchParams: URLSearchParams) => string | undefined);
 }
 
 export interface BreadcrumbItem {

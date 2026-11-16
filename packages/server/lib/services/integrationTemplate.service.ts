@@ -5,7 +5,7 @@ import { configService, deployTemplate, startTrial, syncManager } from '@nangohq
 import { getOrchestrator } from '../utils/utils.js';
 import flowService from './flow.service.js';
 
-import type { DBEnvironment, DBPlan, DBTeam, RunnableFunctionType, ScriptTypeLiteral, SyncDeploymentResult } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam, ScriptTypeLiteral, SyncDeploymentResult } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
@@ -19,7 +19,7 @@ export type DeployIntegrationTemplateReason =
     | 'failed_to_deploy';
 
 export type DeployIntegrationTemplateOutcome =
-    | { ok: true; result: SyncDeploymentResult; type: RunnableFunctionType }
+    | { ok: true; result: SyncDeploymentResult; type: 'action' | 'sync' }
     | { ok: false; reason: DeployIntegrationTemplateReason; cause?: Error };
 
 /**

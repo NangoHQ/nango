@@ -1,4 +1,5 @@
 import { ExternalLink, Play, Plus } from 'lucide-react';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
@@ -16,6 +17,7 @@ import { useGetIntegration } from '@/hooks/useIntegration';
 import { usePathNavigation } from '@/hooks/usePathNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
+import { PageHeader } from '@/layout/PageHeader';
 import { useStore } from '@/store';
 import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
 import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
@@ -30,6 +32,8 @@ export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
     const env = useStore((state) => state.env);
     const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
+    const [functionOpen, setFunctionOpen] = useState(false);
+    const functionDrawerOpen = activeTab === 'functions' && functionOpen;
 
     const { data: environmentData, isLoading: loadingEnvironment, error: environmentError } = useEnvironment(env);
     const environmentAndAccount = environmentData?.environmentAndAccount;
@@ -50,11 +54,18 @@ export const ShowIntegration: React.FC = () => {
     if (isLoading) {
         return (
             <DashboardLayout
-                fullWidth
                 className="flex flex-col gap-4"
-                title=" "
-                titleLeading={<Skeleton className="size-6" />}
-                titleActions={<Skeleton className="h-8 w-44" />}
+                pageHeader={
+                    <PageHeader
+                        leading={
+                            <>
+                                <Skeleton className="size-6" />
+                                <Skeleton className="h-6 w-40" />
+                            </>
+                        }
+                        actions={<Skeleton className="h-8 w-44" />}
+                    />
+                }
             >
                 <Helmet>
                     <title>Integration - Nango</title>
@@ -69,19 +80,26 @@ export const ShowIntegration: React.FC = () => {
 
     return (
         <DashboardLayout
-            fullWidth
             className="flex flex-col gap-4"
-            title={displayName}
-            titleLeading={<IntegrationLogo provider={integration.integration.provider} className="size-6 rounded-[10px] p-0.5" />}
-            titleActions={
-                <PermissionGate condition={canCreateTestConnection} asChild>
-                    {(allowed) => (
-                        <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="md" disabled={!allowed}>
-                            <Plus />
-                            Add test connection
-                        </ButtonLink>
-                    )}
-                </PermissionGate>
+            pageHeader={
+                <PageHeader
+                    title={displayName}
+                    leading={<IntegrationLogo provider={integration.integration.provider} className="size-6 rounded-[10px] p-0.5" />}
+                    actions={
+                        <PermissionGate condition={canCreateTestConnection} asChild>
+                            {(allowed) => (
+                                <ButtonLink
+                                    to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`}
+                                    size="md"
+                                    disabled={!allowed}
+                                >
+                                    <Plus />
+                                    Add test connection
+                                </ButtonLink>
+                            )}
+                        </PermissionGate>
+                    }
+                />
             }
         >
             <Helmet>
@@ -113,7 +131,7 @@ export const ShowIntegration: React.FC = () => {
                             Docs
                             <ExternalLink className="size-3.5" />
                         </Link>
-                        {canRunFunctions && (
+                        {canRunFunctions && !functionDrawerOpen && (
                             <div className="ml-3">
                                 <Button
                                     variant="outline"
@@ -128,7 +146,7 @@ export const ShowIntegration: React.FC = () => {
                     </div>
                 </div>
                 <TabsContent value="functions">
-                    <FunctionsTab integration={integration.integration} />
+                    <FunctionsTab integration={integration.integration} onFunctionOpenChange={setFunctionOpen} />
                 </TabsContent>
                 <TabsContent value="settings">
                     <SettingsTab

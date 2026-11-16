@@ -1,0 +1,38 @@
+---
+title: 'Short.io - How do I link my account?'
+sidebarTitle: 'Short.io'
+---
+
+## Overview
+
+To authenticate with Short.io, you need:
+
+1. **API Key** — a private API key from your Short.io account.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Short.io account. The API is available on every plan, including Free: [sign up](https://app.short.io/public/register).
+
+### Step 1: Create a private API key
+
+1. Sign in to [Short.io](https://app.short.io/).
+2. In the left sidebar, click **Integrations & API**, then open the **API** tab, or go straight to the [API key page](https://app.short.io/settings/integrations/api-key).
+3. Click **Create API key**.
+4. Under **Key basics**, leave **Private key** selected and enter a **Key description**. The expiration date is optional. Expired keys are rejected, so leave it empty unless you want the connection to stop working on that date.
+5. Under **Access restriction**, choose **All domains (no restriction)**, **Restrict for team** or **Restrict for domain**.
+6. Click **Create**.
+7. In the **Created key** dialog, click **Copy to clipboard**. The key starts with `sk_` and is shown only once, so store it somewhere safe.
+
+<Note>Public keys can only create links. Use a private key so your integration can call the rest of the API.</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Short.io.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/short-io/form.png" alt="The Short.io connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Short.io.

@@ -42,7 +42,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
     }, [operation]);
 
     const sessionId = operation?.actor?.kind === 'session' ? operation.actor.id : null;
-    const isAgentToolCall = sessionId !== null && operation?.operation.type === 'action';
+    const isToolCall = operation?.operation.type === 'action' || operation?.operation.type === 'tool';
 
     const payload = useMemo(() => {
         if (!operation?.meta && !operation?.request && !operation?.response) {
@@ -170,7 +170,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                 </div>
                 <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
                 <div className="flex gap-2 items-center max-w-[30%]">
-                    <div className="font-semibold text-sm">{isAgentToolCall ? 'Tool' : 'Script'}</div>
+                    <div className="font-semibold text-sm">{isToolCall ? 'Tool' : 'Script'}</div>
                     <div className="text-text-muted text-s pt-px truncate">{operation.syncConfigName ? operation.syncConfigName : 'n/a'}</div>
                 </div>
                 {sessionId && (

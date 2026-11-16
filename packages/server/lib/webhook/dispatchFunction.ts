@@ -126,7 +126,7 @@ async function prepareFunctionExecution({
 
     try {
         logCtx = await context.logContextGetter.create(
-            { operation: { type: 'function', action: 'invoke' }, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() },
+            { operation: { type: 'webhook', action: 'incoming' }, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() },
             {
                 account: context.team,
                 environment: context.environment,

@@ -25,7 +25,7 @@ export async function findTool({
 }): Promise<Result<CurrentFunctionConfig | null>> {
     const functions = await search(db.knex, {
         environmentId,
-        filter: { integrationKey, name, trigger: { kind: 'http' } }
+        filter: { integrationKey, name, trigger: { kind: 'http', subscriptions: 'none' } }
     });
     if (functions.isErr()) {
         return Err(functions.error);

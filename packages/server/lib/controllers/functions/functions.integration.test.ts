@@ -675,7 +675,7 @@ describe('functions public API', () => {
             },
             body: JSON.stringify({
                 status: 'success',
-                output: 'Successfully deployed the functions:\n- syncIssues@1.0.0',
+                output: 'Successfully deployed:\n- syncIssues@v1.0.0',
                 duration_ms: 123
             })
         });
@@ -699,7 +699,7 @@ describe('functions public API', () => {
             duration_ms: 123,
             deployed: true,
             deployed_functions: [{ name: 'syncIssues', version: '1.0.0' }],
-            output: 'Successfully deployed the functions:\n- syncIssues@1.0.0'
+            output: 'Successfully deployed:\n- syncIssues@v1.0.0'
         });
         expect(getRes.json).not.toHaveProperty('status_url');
         expect(getRes.json).not.toHaveProperty('execution_timeout_at');

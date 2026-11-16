@@ -53,6 +53,19 @@ describe('managed authentication continuation state', () => {
         expect(parseManagedAuthState(Buffer.from(JSON.stringify(state)).toString('base64'))).toEqual(state);
     });
 
+    it("carries the browser's analytics session through Google signup", () => {
+        const analyticsSessionId = '01a158ca-f1ba-7194-bcc8-9ecfef568776';
+        expect(parseManagedAuthState(encodeManagedAuthState({ returnTo: '/onboarding', analyticsSessionId }))).toEqual({
+            returnTo: '/onboarding',
+            analyticsSessionId
+        });
+    });
+
+    it('drops an analytics session that is not a UUID', () => {
+        const state = { returnTo: '/onboarding', analyticsSessionId: 'not-a-session' };
+        expect(parseManagedAuthState(Buffer.from(JSON.stringify(state)).toString('base64'))).toEqual({ returnTo: '/onboarding' });
+    });
+
     it('keeps the continuation when optional analytics are malformed', () => {
         const state = { returnTo: '/onboarding', acquisition: { acquisition_utm_source: 42 } };
         expect(parseManagedAuthState(Buffer.from(JSON.stringify(state)).toString('base64'))).toEqual({ returnTo: '/onboarding' });

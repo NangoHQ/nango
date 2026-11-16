@@ -395,6 +395,14 @@ export interface FathomWebhookResponse {
     crm_matches?: CRMMatches;
 }
 
+export interface LayloWebhookPayload {
+    type: 'rsvp' | 'opt_out' | (string & {});
+    email?: string;
+    phoneNumber?: string;
+    productId?: string;
+    creatorId?: string;
+}
+
 export interface JobberWebhookPayload {
     data: {
         webHookEvent: {
@@ -425,5 +433,33 @@ export interface ZoomWebhookPayload {
         // Only present on the `endpoint.url_validation` handshake.
         plainToken?: string;
         object?: Record<string, any>;
+    };
+}
+
+export interface CommandAlkonWebhookEvent {
+    entityRef?: string;
+    itemRef?: string;
+    itemTypeId?: string;
+    changeType?: string;
+    timestamp?: string;
+    detail?: Record<string, unknown>;
+    metaData?: Record<string, unknown>;
+    payload?: Record<string, unknown>;
+}
+
+// https://developers.docusign.com/platform/webhooks/connect/json-sim-event-model
+export interface DocusignWebhookEvent {
+    event?: string;
+    apiVersion?: string;
+    uri?: string;
+    retryCount?: number;
+    configurationId?: number;
+    generatedDateTime?: string;
+    data?: {
+        accountId?: string;
+        userId?: string;
+        envelopeId?: string;
+        recipientId?: string;
+        envelopeSummary?: Record<string, unknown>;
     };
 }

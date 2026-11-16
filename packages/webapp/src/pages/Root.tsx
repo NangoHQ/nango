@@ -33,7 +33,7 @@ export const Root: React.FC = () => {
             return;
         }
 
-        if (env === 'dev' && showGettingStarted && !meta.gettingStartedClosed) {
+        if (env === 'dev' && showGettingStarted && !meta.gettingStartedDismissed) {
             if (!hasDev) {
                 const randomEnv = meta.environments[0]?.name;
                 navigate(`/${randomEnv}`, { replace: true });

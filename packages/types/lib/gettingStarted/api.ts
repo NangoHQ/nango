@@ -21,3 +21,36 @@ export type PatchGettingStarted = ApiEndpoint<{
     Body: PatchGettingStartedProgressInput;
     Error: ApiError<'connection_not_found' | 'getting_started_progress_not_found' | 'failed_to_update_getting_started_progress'>;
 }>;
+
+export interface ApiAgentGettingStarted {
+    first_agent_connection_at: string | null;
+    first_tool_call_at: string | null;
+    dismissed_at: string | null;
+}
+
+export type GetAgentGettingStarted = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/agent-getting-started';
+    Success: {
+        data: ApiAgentGettingStarted;
+    };
+}>;
+
+export type PostAgentGettingStartedRestart = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'POST';
+    Path: '/api/v1/agent-getting-started/restart';
+    Success: {
+        data: ApiAgentGettingStarted;
+    };
+}>;
+
+export type PostAgentGettingStartedDismiss = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'POST';
+    Path: '/api/v1/agent-getting-started/dismiss';
+    Success: {
+        data: ApiAgentGettingStarted;
+    };
+}>;

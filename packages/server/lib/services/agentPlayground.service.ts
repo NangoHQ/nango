@@ -252,7 +252,7 @@ async function getOrCreateSession(
     if (!parsed.success) {
         return Err(new AgentPlaygroundError('session_creation_failed', parsed.error.message, { cause: parsed.error }));
     }
-    const created = await agentSessionService.createAgentSession({
+    const params = {
         account: ctx.account,
         environment: ctx.environment,
         plan: ctx.plan,
@@ -261,12 +261,13 @@ async function getOrCreateSession(
         pinnedTools: parsed.data.pinned_tools,
         metaTools: parsed.data.meta_tools?.metaTools,
         expiresInMs: parsed.data.expires_in
-    });
+    };
+    const created = await agentSessionService.createAgentSession(params);
 
     if (created.isErr()) {
         return Err(new AgentPlaygroundError('session_creation_failed', created.error.message, { cause: created.error }));
     }
-    trackAgentSessionCreated(created.value.session);
+    trackAgentSessionCreated(created.value.session, params, request);
     return Ok({ session: created.value.session, created: { request, ...(reason ? { reason } : {}) } });
 }
 

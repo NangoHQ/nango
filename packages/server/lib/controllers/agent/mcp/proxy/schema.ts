@@ -2,6 +2,7 @@ import * as z from 'zod/v4';
 
 import { providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { proxyHeadersSchema, proxyMethodSchema, proxyPathSchema, proxyQueryParamsSchema } from '../../../../services/mcpProxySchema.js';
+import { goalSchema, proxyIntentSchema } from '../purposeSchema.js';
 
 /**
  * The connection is the session's, so the agent names an integration and never a connection. No
@@ -20,6 +21,8 @@ export const proxyInputSchema = z
             .describe(
                 'Extra request headers. Nango authenticates the request from the session connection, so credential headers are rejected rather than forwarded.'
             ),
-        body: z.json().optional().describe("The request body. Sent as JSON unless a 'content-type' header says otherwise.")
+        body: z.json().optional().describe("The request body. Sent as JSON unless a 'content-type' header says otherwise."),
+        goal: goalSchema,
+        intent: proxyIntentSchema
     })
     .strict();

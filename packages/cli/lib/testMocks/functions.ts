@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import { expect, vi } from 'vitest';
 
-import { BASE_VARIANT } from '@nangohq/runner-sdk';
+import { BASE_VARIANT, FunctionError } from '@nangohq/runner-sdk';
 
 import { NangoSyncMock } from './utils.js';
 
@@ -56,6 +56,7 @@ export async function replayFunction({
     const unsupported = (method: string) =>
         vi.fn(() => Promise.reject(new Error(`${method} is not recorded in dryrun fixtures. Add an explicit mock to the test.`)));
     const sdk: Record<string, unknown> = {
+        Error: FunctionError,
         log: mock.log,
         setLogger: vi.fn(),
         getEnvironmentVariables: unsupported('getEnvironmentVariables')

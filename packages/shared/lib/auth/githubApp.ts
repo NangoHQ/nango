@@ -4,7 +4,15 @@ import { AuthCredentialsError } from '../utils/error.js';
 import { interpolateStringFromObject } from '../utils/utils.js';
 import * as jwtClient from './jwt.js';
 
-import type { AppCredentials, ConnectionConfig, DBConnectionDecrypted, IntegrationConfig, ProviderCustom, ProviderGithubApp } from '@nangohq/types';
+import type {
+    AppCredentials,
+    ConnectionConfig,
+    DBConnectionDecrypted,
+    GithubAppConfigOverride,
+    IntegrationConfig,
+    ProviderCustom,
+    ProviderGithubApp
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 /**
@@ -15,18 +23,21 @@ export async function createCredentials({
     provider,
     integration,
     connectionConfig,
-    refreshGithubAppJwtToken
+    refreshGithubAppJwtToken,
+    configOverride
 }: {
     connection?: DBConnectionDecrypted;
     provider: ProviderGithubApp | ProviderCustom;
     integration: IntegrationConfig;
     connectionConfig: ConnectionConfig;
     refreshGithubAppJwtToken?: boolean | undefined;
+    configOverride?: GithubAppConfigOverride | undefined;
 }): Promise<Result<AppCredentials, AuthCredentialsError>> {
     try {
         const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : provider.token_url.APP;
         const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
-        const privateKeyBase64 = integration.custom ? integration.custom['private_key'] : integration.oauth_client_secret;
+        const override = configOverride ?? (connection?.credentials.type === 'APP' ? connection.credentials.config_override : undefined);
+        const privateKeyBase64 = override ? override.private_key : integration.custom ? integration.custom['private_key'] : integration.oauth_client_secret;
 
         const privateKey = Buffer.from(privateKeyBase64 as string, 'base64').toString('utf8');
 
@@ -40,7 +51,7 @@ export async function createCredentials({
         const payload: Record<string, string | number> = {
             iat: now,
             exp: expiration,
-            iss: (integration.custom ? integration.custom['app_id'] : integration.oauth_client_id) as string
+            iss: override ? '' : ((integration.custom ? integration.custom['app_id'] : integration.oauth_client_id) as string)
         };
 
         if (!payload['iss'] && connectionConfig['app_id']) {
@@ -77,7 +88,8 @@ export async function createCredentials({
                 access_token: connection.credentials['access_token'],
                 expires_at: connection.credentials['expires_at'],
                 raw: connection.credentials.raw,
-                jwtToken
+                jwtToken,
+                ...(override && { config_override: override })
             });
         }
 
@@ -100,7 +112,8 @@ export async function createCredentials({
             access_token: tokenResponse.token!,
             expires_at: tokenResponse.expires_at,
             raw: tokenResponse,
-            jwtToken
+            jwtToken,
+            ...(override && { config_override: override })
         };
 
         return Ok(credentials);

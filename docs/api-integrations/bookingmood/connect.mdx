@@ -1,0 +1,44 @@
+---
+title: 'Bookingmood - How do I link my account?'
+sidebarTitle: 'Bookingmood'
+---
+
+## Overview
+
+To authenticate with Bookingmood, you need:
+
+1. **API Key** — a Bookingmood API key for your organization.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A Bookingmood account. You can [sign up](https://www.bookingmood.com/en-US/auth/sign-up) for a free 14-day trial, no credit card required.
+
+### Step 1: Create an API key
+
+1. Sign in to the [Bookingmood admin dashboard](https://www.bookingmood.com/admin).
+2. Click **Settings** in the left navigation, then click **API keys** in the settings menu.
+
+<img src="/api-integrations/bookingmood/settings_api_keys_nav.png" alt="Bookingmood admin dashboard with API keys selected in the Settings menu"/>
+
+3. Click **+ API key** and enter a description, for example the name of your integration.
+4. Leave **Full access** ticked, or untick it and choose **None**, **Read** or **Write** for each area (Bookings, Channels, Messages, Organization, Products and Reviews) your integration needs. Then click **Confirm**.
+
+<img src="/api-integrations/bookingmood/create_api_key_form.png" alt="Bookingmood new API key form with a description and access per area"/>
+
+5. In the **API key created** dialog, copy the key with the copy button, then click **Done**.
+
+<img src="/api-integrations/bookingmood/api_key_created.png" alt="Bookingmood API key created dialog with the copy button"/>
+
+<Tip>Bookingmood shows the key only once. Store it securely; if you lose it, create a new one.</Tip>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Bookingmood.
+2. Enter your key in the **API Key** field.
+3. Submit the form. The connection is saved without checking the key: if the key is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/bookingmood/form.png" alt="Bookingmood Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Bookingmood.

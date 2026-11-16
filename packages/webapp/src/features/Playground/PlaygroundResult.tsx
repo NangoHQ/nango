@@ -86,7 +86,7 @@ export const PlaygroundResultStatus: React.FC<Props> = ({ env, isSync }) => {
                             ...(result.operationId ? { operationId: result.operationId } : {}),
                             integrations: playgroundIntegration,
                             connections: playgroundConnection,
-                            types: playgroundFunctionType === 'tool' ? 'function:invoke' : undefined,
+                            types: playgroundFunctionType === 'tool' ? 'tool:call' : undefined,
                             syncs: isSync || playgroundFunctionType === 'tool' ? playgroundFunction : undefined,
                             live: true
                         })}

@@ -1,0 +1,47 @@
+---
+title: 'GIPHY - How do I link my account?'
+sidebarTitle: 'GIPHY'
+---
+
+## Overview
+
+To authenticate with GIPHY, you need:
+
+1. **API Key** — a key created in the GIPHY Developer Dashboard.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A GIPHY account. API keys are free. If you don't have an account, [sign up](https://giphy.com/join).
+
+### Step 1: Create an API key
+
+1. Log in to the [GIPHY Developer Dashboard](https://developers.giphy.com/dashboard/).
+2. Click **Create an API Key**.
+
+<img src="/api-integrations/giphy/dashboard_create_api_key.png" alt="GIPHY Developer Dashboard with the Create an API Key button"/>
+
+3. Click **Select API** to choose the **API** key type, then click **Next Step**.
+
+<img src="/api-integrations/giphy/select_api_key_type.png" alt="GIPHY Create A New API Key dialog with the API key type selected and the Next Step button"/>
+
+4. Enter an app name, choose a platform, add an app description, accept the GIPHY API Terms, then click **Create API Key**.
+
+<img src="/api-integrations/giphy/fill_app_details.png" alt="GIPHY Create A New API Key dialog with the app name, platform, description and terms fields"/>
+
+5. Your new app appears under **Your API Keys**. Copy the value in its **API Key** field.
+
+<img src="/api-integrations/giphy/api_key_created.png" alt="GIPHY Developer Dashboard showing the new app under Your API Keys with its API Key field"/>
+
+<Note>New keys are beta keys, limited to 100 API calls per hour. To raise the limit, apply to upgrade the key from the dashboard.</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with GIPHY.
+2. Enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/giphy/form.png" alt="GIPHY Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to GIPHY.

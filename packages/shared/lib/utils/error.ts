@@ -624,6 +624,11 @@ export class NangoError extends NangoInternalError {
                 this.message = `The on-event script failed with an error: ${stringifyError(this.payload)}`;
                 break;
 
+            case 'function_runtime_error':
+                this.status = 500;
+                this.message = 'The function failed with a runtime error';
+                break;
+
             case 'action_script_runtime_error':
                 this.status = 500;
                 this.message = 'The action script failed with a runtime error';

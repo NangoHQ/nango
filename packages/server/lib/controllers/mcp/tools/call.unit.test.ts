@@ -40,6 +40,7 @@ describe('callToolsTool', () => {
 
         expect(toolService.resolveTool).toHaveBeenCalledWith({ accountUuid, environmentId: 42, integration, name: 'fetchIssue' });
         expect(mocks.invokeFunction).toHaveBeenCalledWith({
+            operation: { type: 'tool', action: 'call' },
             account: context.account,
             environment: context.environment,
             connectionId: 'connection-id',

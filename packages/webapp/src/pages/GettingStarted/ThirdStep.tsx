@@ -24,7 +24,7 @@ export const ThirdStep = () => {
                 <p className="text-text-strong">Now that you’ve had a glimpse of Nango, you can go ahead and configure your first integration!</p>
             </div>
 
-            <ButtonLink to={`/${env}/integrations/create`} onClick={() => track('onboarding:create_button_click')} variant="primary" size="lg">
+            <ButtonLink to={`/${env}/catalog`} onClick={() => track('onboarding:create_button_click')} variant="primary" size="lg">
                 Set up your own integrations
             </ButtonLink>
         </div>

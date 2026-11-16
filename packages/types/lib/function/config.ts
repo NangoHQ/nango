@@ -1,6 +1,7 @@
 import type { OnEventType } from '../scripts/on-events/api.js';
 
-export type FunctionTags = Record<string, string | string[]>;
+export type FunctionTagValue = string | string[];
+export type FunctionTags = Record<string, FunctionTagValue>;
 
 export interface FunctionCapabilities {
     usesRecords: boolean;

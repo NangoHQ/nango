@@ -18,7 +18,8 @@ const artifact = {
     metadata_schema_ref: null,
     checkpoint_schema_ref: null,
     json_schema: { type: 'object', properties: { issue: { type: 'string', description: 'Issue' } } },
-    fileBody: { js: 'export default async function run() {}', ts: 'export default async function run(): Promise<void> {}' }
+    fileBody: { js: 'export default async function run() {}', ts: 'export default async function run(): Promise<void> {}' },
+    source: 'repo'
 } satisfies FunctionDeploymentArtifact;
 
 describe(functionVersionHash, () => {
@@ -62,6 +63,10 @@ describe(functionVersionHash, () => {
         expect(functionVersionHash({ ...artifact, fileBody: { ...artifact.fileBody, ts: `${artifact.fileBody.ts}\n// changed` } }).unwrap()).not.toBe(
             functionVersionHash(artifact).unwrap()
         );
+    });
+
+    it('changes when the source changes', () => {
+        expect(functionVersionHash({ ...artifact, source: 'standalone' }).unwrap()).not.toBe(functionVersionHash(artifact).unwrap());
     });
 
     it('changes when the trigger changes', () => {

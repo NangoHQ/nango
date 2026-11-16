@@ -94,13 +94,14 @@ function bodyOf(params: ProxyServiceRequest): unknown {
     return typeof params.body === 'string' ? JSON.parse(params.body) : undefined;
 }
 
-async function execute(input?: unknown): Promise<Result<unknown>> {
+async function execute(input?: unknown, purpose?: { goal: string; intent: string }): Promise<Result<unknown>> {
     return await executeSessionTool({
         metaTool: 'nango_execute',
         integrationId: 'linear-mcp',
         toolName: 'list_issues',
         pinned: false,
         input,
+        purpose,
         context: context()
     });
 }
@@ -137,6 +138,15 @@ describe('executeSessionTool on an MCP server tool', () => {
         });
         expect(call && bodyOf(call)).toMatchObject({ method: 'tools/call', params: { name: 'list_issues', arguments: { team: 'ENG' } } });
         expect(request.mock.calls.at(-1)?.[0]).toMatchObject({ method: 'DELETE' });
+    });
+
+    it('logs the goal and the intent on the operation the first proxy call creates', async () => {
+        const purpose = { goal: 'triage the open bugs in Linear', intent: 'list the open issues' };
+        mcpServer((message) => response({ body: JSON.stringify({ jsonrpc: '2.0', id: message.id, result: { content: [] } }) }));
+
+        await execute({ team: 'ENG' }, purpose);
+
+        expect(request.mock.calls[0]?.[0]).toMatchObject({ logMeta: purpose, activityLogId: undefined });
     });
 
     it('reads a result sent as an event stream', async () => {

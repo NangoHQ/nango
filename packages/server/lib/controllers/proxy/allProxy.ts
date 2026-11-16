@@ -125,6 +125,7 @@ export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async 
             account,
             environment,
             plan,
+            ...(res.locals.apiKeyPrincipal ? { apiKey: res.locals.apiKeyPrincipal } : {}),
             method,
             endpoint,
             integrationId: providerConfigKey,

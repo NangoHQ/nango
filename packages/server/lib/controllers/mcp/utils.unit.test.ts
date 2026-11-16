@@ -5,6 +5,13 @@ import { NangoError } from '@nangohq/shared';
 import { safeFailureDetail } from './utils.js';
 
 describe('safeFailureDetail', () => {
+    it('formats function runtime errors with the caller-provided message', () => {
+        const error = new NangoError('function_runtime_error', { message: 'channel_not_found' });
+
+        expect(error.status).toBe(500);
+        expect(safeFailureDetail(error)).toBe('The function failed with a runtime error: channel_not_found');
+    });
+
     it('falls back to top-level payload.type and payload.message when payload.error is absent', () => {
         const error = new NangoError('action_script_runtime_error', { type: 'slack_error', message: 'channel_not_found', channel_id: 'C123' });
 

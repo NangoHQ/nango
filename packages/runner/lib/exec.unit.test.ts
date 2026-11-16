@@ -176,6 +176,33 @@ describe('Exec', () => {
         });
     });
 
+    it('returns a formatted error when a function throws nango.Error', async () => {
+        const nangoProps = {
+            ...getNangoProps(),
+            scriptType: 'function' as const,
+            syncId: undefined,
+            syncJobId: undefined
+        };
+        const code = `
+        exports.default = {
+            type: 'function',
+            exec: async (nango) => {
+                throw new nango.Error({ code: 'invalid_input', message: 'A value is missing' });
+            }
+        };
+        `;
+        const res = await exec({ nangoProps, code });
+        if (res.isOk()) {
+            throw new Error('Expected an error');
+        }
+        expect(res.error.toJSON()).toEqual({
+            payload: { code: 'invalid_input', message: 'A value is missing' },
+            status: 500,
+            type: 'function_runtime_error',
+            additional_properties: undefined
+        });
+    });
+
     it('should return a formatted error when receiving an ActionError', async () => {
         const nangoProps = getNangoProps();
         const code = `

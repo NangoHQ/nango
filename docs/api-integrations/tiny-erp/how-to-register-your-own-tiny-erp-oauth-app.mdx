@@ -1,0 +1,34 @@
+---
+title: 'How to register your own Tiny ERP OAuth app'
+sidebarTitle: 'Tiny ERP Setup'
+description: 'Create a Tiny ERP app and connect its credentials to Nango'
+---
+
+This guide shows you how to create an app in a Tiny ERP account to get OAuth credentials (client ID & secret). Tiny ERP apps are private: each Tiny ERP account creates its own app.
+
+<Steps>
+  <Step title="Check the requirements">
+    Apps are available from the **Construa** plan, with the **Gestão de Aplicativos** extension installed in the Tiny ERP account. An account can have up to 5 apps.
+  </Step>
+  <Step title="Create an app">
+    1. In Tiny ERP, open **Menu > Configurações > Geral > Aplicativos**.
+    2. Click **+ novo aplicativo** and enter a name for the app.
+    3. Under **URLs de Redirecionamento**, add `https://api.nango.dev/oauth/callback` (or your own [custom callback URL](/guides/auth/auth-guide#custom-oauth-callback-url-optional)).
+    4. Tick the permissions (modules) your integration needs, for example account information to call `GET /v3/info`.
+    5. Save, then open the app again and copy the **Client ID** and **Client Secret** under **Chaves de acesso**. Renew the client secret whenever you change the permissions.
+  </Step>
+  <Step title="Add the credentials in Nango">
+    In your Tiny ERP integration in Nango, paste the client ID and secret. Nango requests the `openid` scope; the permissions come from the app.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+<Note>
+Because every Tiny ERP account has its own app, you will usually let each user bring their own credentials. Create the Connect Session with empty `oauth_client_id_override` and `oauth_client_secret_override` values: Connect UI then shows Client ID and Client Secret as fields the user fills in. See [Create a connect session](/reference/backend/backend-sdk/node#create-a-connect-session) for the exact syntax.
+</Note>
+
+For more details, see [Tiny ERP authentication](https://api-docs.erp.olist.com/documentacao/comecando/autenticacao) and [creating an app](https://api-docs.erp.olist.com/documentacao/comecando/criando-um-aplicativo).
+
+---

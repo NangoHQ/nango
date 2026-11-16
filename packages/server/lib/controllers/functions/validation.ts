@@ -1,12 +1,10 @@
 import { z } from 'zod';
 
-import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../helpers/validation.js';
+import { connectionIdSchema, providerConfigKeySchema, runnableFunctionTypeSchema, syncNameSchema } from '../../helpers/validation.js';
 
 export const functionIntegrationIdSchema = providerConfigKeySchema.refine((value) => value !== '.' && value !== '..', {
     message: 'Integration id cannot be "." or ".."'
 });
-
-export const runnableFunctionTypeSchema = z.enum(['action', 'sync']);
 
 export const functionCompileBodySchema = z
     .object({

@@ -5,8 +5,10 @@ import type { AccountInfo, UserInfoResponse } from './types.js';
 
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();
+    const integration = await nango.getIntegration();
 
-    const rootUrl = connection.provider_config_key.includes('sandbox') ? 'account-d.docusign.com' : 'account.docusign.com';
+    // The integration ID is user-chosen, so the environment comes from the provider.
+    const rootUrl = integration?.provider === 'docusign-sandbox' ? 'account-d.docusign.com' : 'account.docusign.com';
 
     const response = await nango.proxy<UserInfoResponse>({
         baseUrlOverride: `https://${rootUrl}`,

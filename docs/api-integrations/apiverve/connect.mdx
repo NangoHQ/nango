@@ -1,0 +1,39 @@
+---
+title: 'APIVerve - How do I link my account?'
+sidebarTitle: 'APIVerve'
+---
+
+## Overview
+
+To authenticate with APIVerve, you need:
+
+1. **API Key** — your APIVerve primary key or a scoped sub-key.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- An APIVerve account. You can [sign up for free](https://dashboard.apiverve.com/signup) without a credit card; your primary key is created with the account.
+
+### Step 1: Copy your API key
+
+1. Log in to the [APIVerve dashboard](https://dashboard.apiverve.com) and click **API keys** under **Build** in the left sidebar.
+2. Your **Primary key** is already there. Click **Reveal key** to show it.
+
+<img src="/api-integrations/apiverve/api_keys_page_reveal.png" alt="APIVerve API keys page with the Reveal key button on the Primary key card"/>
+
+3. Click **Copy key** to copy the key.
+
+<img src="/api-integrations/apiverve/api_key_copy.png" alt="APIVerve API keys page with the Copy key button on the Primary key card"/>
+
+To use a narrower key instead, create a scoped sub-key under **Sub-keys** on the same page and copy it. Sub-keys start with `apv_sbk` and are only available on plans that include them.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with APIVerve.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/apiverve/form.png" alt="APIVerve connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to APIVerve.

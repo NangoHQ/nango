@@ -1,0 +1,44 @@
+---
+title: 'BigMailer - How do I link my account?'
+sidebarTitle: 'BigMailer'
+---
+
+## Overview
+
+To authenticate with BigMailer, you need:
+
+1. **API Key** — a BigMailer API key.
+
+This guide will show you how to create it.
+
+### Prerequisites
+
+- A BigMailer account. You can [sign up](https://app.bigmailer.io/console/signup) for free on the Startup plan.
+- An activated account: click the activation link in the email BigMailer sends after signup. Until then, you cannot create API keys.
+- The Account Administrator role. The account owner has it by default.
+
+### Step 1: Create an API key
+
+1. [Sign in](https://app.bigmailer.io/console/login) to the BigMailer console.
+2. Open **Account** -> **API** ([API key management page](https://app.bigmailer.io/console/accounts/api)) and click **Create Key**.
+
+<img src="/api-integrations/bigmailer/api_keys_page.png" alt="BigMailer API tab with the Create Key button highlighted"/>
+
+3. Enter a **Name** that tells you which application uses the key.
+4. Under **Brands** and **Actions**, limit the key to what your integration needs (for example `brands/list` and `brands/get`), then click **Create**.
+
+<img src="/api-integrations/bigmailer/create_api_key_dialog.png" alt="BigMailer Create API Key dialog with a name, All Brands, and the brands/list and brands/get actions selected, and the Create button highlighted"/>
+
+5. Click **Copy to clipboard** to copy the API key, then click **OK**.
+
+<img src="/api-integrations/bigmailer/api_key_created.png" alt="BigMailer dialog showing the new API key with the Copy to clipboard button highlighted"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with BigMailer.
+2. Enter your **API Key** in the designated field.
+3. Click **Connect**.
+
+<img src="/api-integrations/bigmailer/form.png" alt="Nango Connect UI form for entering the BigMailer API Key" style={{maxWidth: "450px" }}/>
+
+You are now connected to BigMailer.

@@ -34,7 +34,7 @@ export interface CatalogTool {
 const toolsByProvider = new Map<string, CatalogTool[]>();
 const toolByProviderAndName = new Map<string, Map<string, CatalogTool>>();
 
-function getFlowsJson(): FlowsZeroJson {
+export function getFlowsJson(): FlowsZeroJson {
     flowsJson ??= nodeRequire('../../../flows.zero.json') as FlowsZeroJson;
     return flowsJson;
 }

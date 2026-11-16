@@ -63,7 +63,8 @@ router.use(staticSite);
 
 // -------
 // Error handling.
-router.use((err: any, req: Request, res: Response<ApiError<'invalid_json'> | ApiError<'request_too_large'> | ApiError<'unsupported_content_type'>>, _: any) => {
+type ErrorHandlerResponse = ApiError<'invalid_json'> | ApiError<'request_too_large'> | ApiError<'unsupported_content_type'> | ApiError<'invalid_uri'>;
+router.use((err: any, req: Request, res: Response<ErrorHandlerResponse>, _: any) => {
     if (err instanceof SyntaxError && 'body' in err && 'type' in err && err.type === 'entity.parse.failed') {
         res.status(400).send({ error: { code: 'invalid_json', message: err.message } });
         return;
@@ -72,6 +73,11 @@ router.use((err: any, req: Request, res: Response<ApiError<'invalid_json'> | Api
     if (err instanceof Error && 'type' in err && err.type === 'entity.too.large') {
         const limit = 'limit' in err && typeof err.limit === 'number' ? formatByteLimit(err.limit) : undefined;
         res.status(413).send({ error: { code: 'request_too_large', message: `Request entity too large${limit ? ` (limit: ${limit})` : ''}` } });
+        return;
+    }
+
+    if (err instanceof URIError && 'status' in err && err.status === 400) {
+        res.status(400).send({ error: { code: 'invalid_uri', message: err.message } });
         return;
     }
 

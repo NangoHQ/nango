@@ -1,0 +1,42 @@
+---
+title: 'PDF Vector - How do I link my account?'
+sidebarTitle: 'PDF Vector'
+---
+
+## Overview
+
+To authenticate with PDF Vector, you need:
+
+1. **API Key** — an API key from your PDF Vector instance settings.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A PDF Vector account. You can [sign up for free](https://app.pdfvector.com/auth/sign-up), no credit card required.
+
+### Step 1: Create an API key
+
+1. Log in to the [PDF Vector dashboard](https://app.pdfvector.com/auth/sign-in).
+2. In the left sidebar, click **Instances**, then click **General Instance** (`global.pdfvector.com`).
+3. Open the **Settings** tab and, in the **API Keys** section, click **Create Key**.
+
+<img src="/api-integrations/pdf-vector/instance_settings_create_key.png" alt="PDF Vector General Instance Settings tab with the Create Key button highlighted in the API Keys section"/>
+
+4. Enter a name for the key (for example, `nango`) and click **Create**.
+
+<img src="/api-integrations/pdf-vector/create_api_key_dialog.png" alt="PDF Vector Create API Key dialog with a key name entered and the Create button highlighted"/>
+
+5. The new key appears in the **API Keys** list. Click the copy button next to it to copy the key.
+
+<img src="/api-integrations/pdf-vector/api_key_created.png" alt="PDF Vector API Keys list showing the new key with its copy button highlighted"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with PDF Vector.
+2. Enter your key in the **API Key** field.
+3. Submit the form. The connection is saved without checking the key: if the key is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/pdf-vector/form.png" alt="PDF Vector Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to PDF Vector.

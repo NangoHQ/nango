@@ -1,0 +1,55 @@
+---
+title: 'Telnyx - How do I link my account?'
+sidebarTitle: 'Telnyx'
+---
+
+## Overview
+
+To authenticate with Telnyx, you need:
+
+1. **Region** — the Telnyx regional API host to send requests to.
+2. **API Key** — a Telnyx API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Telnyx account. You can sign up at [telnyx.com/sign-up](https://telnyx.com/sign-up). New accounts come with free testing credits.
+
+### Step 1: Choose your region
+
+Regional endpoints work with the same API key, so pick the one you want your requests to go through. If you are not sure, choose `api.telnyx.com`.
+
+| Region | Location | Value to select |
+|--------|----------|-----------------|
+| North America | United States (Ashburn, Chicago, San Jose) | `api.telnyx.com` |
+| Europe | Frankfurt, Germany | `api.telnyx.eu` |
+| APAC | Sydney, Australia | `api.telnyx.com.au` |
+| Canada | Toronto | `api.telnyx.ca` |
+| Middle East | Dubai, UAE | `api.telnyx.me` |
+
+See [Regional endpoints](https://developers.telnyx.com/docs/account-setup/regional-endpoints) for details.
+
+### Step 2: Create an API key
+
+1. Sign in to the [Telnyx Mission Control Portal](https://portal.telnyx.com) and open **Account settings** → **API Keys**. Click **Create API Key**.
+
+<img src="/api-integrations/telnyx/api_keys_page.png" alt="API Keys page in the Telnyx Mission Control Portal with the Create API Key button"/>
+
+2. Under **Tags**, add a descriptive label for the key. Under expiration, choose **No Expiration** or **Set Expiration Date**, then click **Create**.
+
+<img src="/api-integrations/telnyx/create_api_key_dialog.png" alt="Create API Key dialog in Telnyx with the Tags field, expiration options and the Create button"/>
+
+3. In the **API Key Created** dialog, copy the key right away. It is shown only once.
+
+<img src="/api-integrations/telnyx/api_key_created.png" alt="API Key Created dialog in Telnyx with the copy to clipboard button"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Telnyx.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/telnyx/form.png" alt="Telnyx connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Telnyx.

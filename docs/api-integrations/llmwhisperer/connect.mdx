@@ -1,0 +1,47 @@
+---
+title: 'LLMWhisperer - How do I link my account?'
+sidebarTitle: 'LLMWhisperer'
+---
+
+## Overview
+
+To authenticate with LLMWhisperer, you need:
+
+1. **Region** — the LLMWhisperer API host your account uses.
+2. **API Key** — your LLMWhisperer API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An LLMWhisperer account. You can sign up on the [Unstract portal](https://us-central.unstract.com/), choose **LLMWhisperer** and click **Get Started** to start the free plan.
+
+### Step 1: Find your region
+
+1. Sign in to the [Unstract portal](https://us-central.unstract.com/) and open LLMWhisperer.
+2. Click **API Keys** in the left sidebar.
+
+<img src="/api-integrations/llmwhisperer/sidebar_api_keys.png" alt="LLMWhisperer dashboard with API Keys highlighted in the left sidebar"/>
+
+3. At the top of the **API Keys** page, look at the LLMWhisperer API URL. Its host is your region:
+
+| Region | Value to select |
+|--------|-----------------|
+| US | `llmwhisperer-api.us-central.unstract.com` |
+| EU | `llmwhisperer-api.eu-west.unstract.com` |
+
+### Step 2: Copy your API key
+
+On the same **API Keys** page, click the copy icon next to your API key.
+
+<img src="/api-integrations/llmwhisperer/copy_api_key.png" alt="LLMWhisperer API Keys page showing the API URL and the copy icon next to the API key"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with LLMWhisperer.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/llmwhisperer/form.png" alt="LLMWhisperer connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to LLMWhisperer.

@@ -1,0 +1,52 @@
+---
+title: 'CraftMyPDF - How do I link my account?'
+sidebarTitle: 'CraftMyPDF'
+---
+
+## Overview
+
+To authenticate with CraftMyPDF, you need:
+
+1. **Region** — the CraftMyPDF API host where your documents are processed and stored.
+2. **API Key** — your CraftMyPDF account API key, or the API key of a team.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A CraftMyPDF account. The Free plan includes the REST API; [sign up](https://app.craftmypdf.com/accounts/signup/) if you don't have one.
+- To use a team API key, a team, which needs the Professional plan or above.
+
+### Step 1: Choose your region
+
+CraftMyPDF has no region setting in the web console: the region is the API host you call, and your request data and generated PDFs are processed and stored in that region. Pick the host for the region where your documents should be processed. If you don't need a specific region, use the default `api.craftmypdf.com`.
+
+| Region                 | Region (select in Nango)      |
+|------------------------|-------------------------------|
+| Default (Singapore)    | `api.craftmypdf.com`          |
+| Europe (Frankfurt)     | `api-de.craftmypdf.com`       |
+| US East (N. Virginia)  | `api-us.craftmypdf.com`       |
+| Australia (Sydney)     | `api-au.craftmypdf.com`       |
+| Alternative: Singapore | `api-alt.craftmypdf.com`      |
+| Alternative: Frankfurt | `api-alt-de.craftmypdf.com`   |
+| Alternative: N. Virginia | `api-alt-us.craftmypdf.com` |
+
+See [Regional API endpoints](https://craftmypdf.com/docs/#section/Regional-API-endpoints) for each host's timeout and payload limits.
+
+### Step 2: Copy your API key
+
+1. Sign in to the [CraftMyPDF web console](https://app.craftmypdf.com/accounts/login/). To use a team API key, switch to the team in the workspace menu first.
+2. Click the **API Integration** tab and stay on the **API Key** tab. An API key is created automatically when you sign up, and each team has its own key.
+3. Click **Copy to Clipboard** next to the **API Key** field. Only click **Reset API Key** if you want a new key.
+
+<img src="/api-integrations/craftmypdf/api_integration_api_key.png" alt="CraftMyPDF API Integration tab with the Copy to Clipboard button next to the API key"/>
+
+### Step 3: Enter your region and API key in the Connect UI
+
+1. Open the form where you need to authenticate with CraftMyPDF.
+2. Select your **Region** and enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/craftmypdf/form.png" alt="CraftMyPDF Connect UI form with the Region and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to CraftMyPDF.

@@ -1,0 +1,48 @@
+---
+title: 'Cardly - How do I link my account?'
+sidebarTitle: 'Cardly'
+---
+
+## Overview
+
+To authenticate with Cardly, you need:
+
+1. **API Key** — a test (`test_`) or live (`live_`) API key from your Cardly business portal.
+
+This guide will show you how to create it.
+
+### Prerequisites
+
+- A Cardly business account. If you don't have one, [sign up](https://www.cardly.net/business/signup) and confirm your email address. Standard business accounts have no mandatory paid subscription.
+
+### Step 1: Create an API key
+
+1. Log in to your Cardly business portal.
+2. In the menu bar, open **Integrate** and click **API Keys**.
+
+<img src="/api-integrations/cardly/integrate_api_keys_menu.png" alt="Cardly business portal with the Integrate menu open and API Keys highlighted" />
+
+3. On **Manage API Keys**, click **New API Key**.
+
+<img src="/api-integrations/cardly/manage_api_keys_new.png" alt="Cardly Manage API Keys page with the New API Key button" />
+
+4. A new key row appears with two keys:
+    - **Development**: the test key, prefixed with `test_`. It can do everything a live key can but never performs mutations, so it never places real orders.
+    - **Production**: the live key, prefixed with `live_`. It has no restrictions and places real orders.
+5. To use the test key, click the copy icon next to **Development**.
+
+<img src="/api-integrations/cardly/api_key_created.png" alt="Cardly API key row with the copy icon next to the Development key" />
+
+6. To use the live key, open **Actions** > **Reveal** on the key row, then click the copy icon next to **Production**.
+
+<img src="/api-integrations/cardly/live_api_key_created.png" alt="Cardly API key row with the copy icon next to the Production key" />
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Cardly.
+2. Enter your test or live key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/cardly/form.png" alt="Cardly Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Cardly.

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UncontrolledFetchOptions } from './uncontrolledFetch.js';
 import type { HTTP_METHOD, NangoProps } from '@nangohq/types';
 
-function makeProps(): NangoProps {
+function makeProps(scriptType: NangoProps['scriptType'] = 'action'): NangoProps {
     // Only the fields used by the base constructor are required for these tests.
     return {
         connectionId: 'connection-id',
@@ -12,7 +12,7 @@ function makeProps(): NangoProps {
         providerConfigKey: 'provider-config-key',
         activityLogId: 'activity-log-id',
         runnerFlags: {},
-        scriptType: 'action',
+        scriptType,
         isCLI: false
     } as unknown as NangoProps;
 }
@@ -22,7 +22,7 @@ interface TransferRecord {
     bytesReceived: number;
 }
 
-async function makeActionInstance() {
+async function makeActionInstance(scriptType: NangoProps['scriptType'] = 'action') {
     const mod = await import('./action.js');
     const uncontrolledFetchMod = await import('./uncontrolledFetch.js');
     const { NangoActionBase } = mod;
@@ -35,7 +35,10 @@ async function makeActionInstance() {
         nango = { userAgent: 'runner-sdk-test' } as any;
 
         async uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response> {
-            return executeUncontrolledFetch(options, (p) => transfers.push(p));
+            return executeUncontrolledFetch(options, {
+                onBytes: (p) => transfers.push(p),
+                ErrorClass: this.scriptType === 'function' ? this.Error : this.ActionError
+            });
         }
 
         proxy(): Promise<any> {
@@ -79,7 +82,7 @@ async function makeActionInstance() {
         }
     }
 
-    return { action: new TestAction(makeProps()), transfers };
+    return { action: new TestAction(makeProps(scriptType)), transfers };
 }
 
 describe('uncontrolledFetch', () => {
@@ -102,6 +105,21 @@ describe('uncontrolledFetch', () => {
 
         await expect(action.uncontrolledFetch({ url: new URL('https://example.com/start') })).rejects.toMatchObject({
             type: 'action_script_runtime_error',
+            payload: { code: 'invalid_redirect' }
+        });
+    });
+
+    it('throws function errors when running a function', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 302, headers: { Location: 'data:text/plain,hello' } }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { FunctionError } = await import('./errors.js');
+        const { action } = await makeActionInstance('function');
+
+        const result = action.uncontrolledFetch({ url: new URL('https://example.com/start') });
+        await expect(result).rejects.toBeInstanceOf(FunctionError);
+        await expect(result).rejects.toMatchObject({
+            type: 'function_runtime_error',
             payload: { code: 'invalid_redirect' }
         });
     });
@@ -711,7 +729,7 @@ describe('uncontrolledFetch transfer metering', () => {
         class NoOpTestAction extends NangoActionBase {
             nango = { userAgent: 'test' } as any;
             async uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response> {
-                return executeUncontrolledFetch(options, () => {});
+                return executeUncontrolledFetch(options, { onBytes: () => {} });
             }
             proxy(): Promise<any> {
                 throw new Error('not implemented');

@@ -113,6 +113,9 @@ function sendDeployTemplateError(res: DeploymentResponse, error: DeployTemplateS
         case 'template_already_deployed':
             res.status(409).send({ error: { code: error.code, message: error.message } });
             return;
+        case 'invalid_request':
+            res.status(400).send({ error: { code: 'invalid_request', message: error.message } });
+            return;
         case 'plan_limit':
             res.status(400).send({ error: { code: error.code, message: error.message } });
             return;

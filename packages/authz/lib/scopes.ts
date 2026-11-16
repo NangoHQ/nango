@@ -69,6 +69,7 @@ export const PUBLIC_ACCOUNT_SCOPES = [
     'account:environments:list',
     'account:environments:read',
     'account:environments:read_secret',
+    'account:environments:update',
     'account:environments:create', // any environment
     'account:environments:delete',
     'account:environments:set_production',

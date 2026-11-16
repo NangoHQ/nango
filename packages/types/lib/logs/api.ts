@@ -92,7 +92,7 @@ export type PostInsights = ApiEndpoint<{
     Path: '/api/v1/logs/insights';
     Querystring: { env: string };
     Body: {
-        type: PickFromUnion<ConcatOperationListWithGroup, 'action' | 'sync:run' | 'proxy' | 'webhook:incoming' | 'auth:create_connection'>;
+        type: PickFromUnion<ConcatOperationListWithGroup, 'action' | 'tool' | 'sync:run' | 'proxy' | 'webhook:incoming' | 'auth:create_connection'>;
     };
     Success: {
         data: {

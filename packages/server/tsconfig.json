@@ -36,6 +36,9 @@
             "path": "../kms"
         },
         {
+            "path": "../license"
+        },
+        {
             "path": "../logs"
         },
         {

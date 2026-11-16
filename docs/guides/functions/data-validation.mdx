@@ -32,7 +32,7 @@ export default createSync({
 
 ### TypeScript types (compile-time)
 
-Use `z.infer` to derive TypeScript types from your Zod schemas and export them from your sync/action files:
+Use `z.infer` to derive TypeScript types from your Zod schemas and export them from your function files:
 
 ```ts
 // In: github/syncs/fetchIssues.ts (Nango function)
@@ -49,7 +49,7 @@ const issues = await nango.listRecords<GithubIssue>({ ... });
 
 ### JSON Schema (runtime, language-agnostic)
 
-When you run `nango compile` or `nango deploy`, Nango generates a `nango.json` file in the `.nango` folder. Each sync/action entry includes a `json_schema` property with the JSON Schema for its models:
+When you run `nango compile` or `nango deploy`, Nango generates a `nango.json` file in the `.nango` folder. Each sync entry includes a `json_schema` property with the JSON Schema for its models:
 
 ```json
 // .nango/nango.json (simplified)
@@ -80,9 +80,9 @@ When you run `nango compile` or `nango deploy`, Nango generates a `nango.json` f
 ]
 ```
 
-You can extract the `json_schema` object for a given sync or action and use it with any JSON Schema validator in your language of choice (e.g., `ajv` in TypeScript, `jsonschema` in Python, `jsonschema` in Rust, `santhosh-tekuri/jsonschema` in Go).
+You can extract a sync's `json_schema` object and use it with any JSON Schema validator in your language of choice (e.g., `ajv` in TypeScript, `jsonschema` in Python, `jsonschema` in Rust, `santhosh-tekuri/jsonschema` in Go).
 
-Alternatively, Zod v4 supports JSON Schema conversion natively with [`z.toJSONSchema()`](https://zod.dev/json-schema?id=ztojsonschema):
+For tools, convert the input and output Zod schemas directly. Zod v4 supports JSON Schema conversion natively with [`z.toJSONSchema()`](https://zod.dev/json-schema?id=ztojsonschema):
 
 ```ts
 import { z } from 'zod';
@@ -93,7 +93,7 @@ const jsonSchema = z.toJSONSchema(issueSchema);
 
 ## Related guides
 
-- [Action functions](/guides/functions/action-functions) - validate action inputs and outputs.
+- [Tools](/guides/functions/tools) - validate tool inputs and outputs.
 - [Sync functions](/guides/functions/syncs/sync-functions) - validate synced record models.
 - [Unified APIs](/guides/functions/unified-apis) - normalize provider data behind stable schemas.
 - [Testing](/guides/functions/testing) - cover validation behavior in tests.

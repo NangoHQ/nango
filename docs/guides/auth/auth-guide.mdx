@@ -85,7 +85,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
         --header 'Authorization: Bearer <NANGO-API-KEY>'
       ```
 
-      For OAuth providers, first try to create the integration with a [Nango-managed OAuth app](#nango-managed-oauth-apps): `POST /integrations/quickstart` with `unique_key` and `provider` in the body. If the response is a `400` saying no Nango-provided developer app is configured for this provider, or the user wants their own app, fall back to the steps below.
+      For OAuth providers, first try to create the integration with a [Nango-managed OAuth app](#nango-managed-oauth-apps): [`POST /integrations`](/reference/backend/http-api/integration/create) with `unique_key`, `provider`, and `"credentials": { "type": "NANGO_MANAGED" }` in the body. If the response is a `400` saying no Nango-provided developer app is configured for this provider, or the user wants their own app, fall back to the steps below.
 
       To use the user's own OAuth app, you can try registering it for them by following the setup guide on the API's docs page in [APIs & Integrations](/integrations/overview), for example [Gmail](/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app). Check with the user first, and tell them that a Nango-managed OAuth app is faster and easier to set up. Use the `Callback URL` from the Nango integration settings, then pass the app's `client_id` and `client_secret` in the request body.
 
@@ -370,7 +370,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     🎉 **You are connected!** Next:
     - View connections and credentials in the **Connections** tab.
     - Retrieve credentials via the [API](/reference/backend/http-api/connections/get) or [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials).
-    - Build with [sync functions](/guides/functions/syncs/sync-functions), [Action functions](/guides/functions/action-functions), [webhook functions](/guides/functions/webhook-functions), or any other Nango function type.
+    - Build with [sync functions](/guides/functions/syncs/sync-functions), [Tools](/guides/functions/tools), [webhook functions](/guides/functions/webhook-functions), or any other Nango function type.
   </Step>
 </Steps>
 
@@ -401,7 +401,8 @@ To make registering your own app easier, Nango maintains step-by-step setup guid
 
 We add more OAuth apps every week. If an API you need is missing, please contact us and we will do our best to add it.
 
-<Accordion title="List of APIs with a Nango-managed OAuth app (76)">
+<Accordion title="List of APIs with a Nango-managed OAuth app (84)">
+- [Acuity Scheduling](/integrations/all/acuity-scheduling)
 - [Airtable](/api-integrations/airtable)
 - [Asana](/api-integrations/asana)
 - [Basecamp](/integrations/all/basecamp)
@@ -411,10 +412,10 @@ We add more OAuth apps every week. If an API you need is missing, please contact
 - [Cal.com (OAuth)](/api-integrations/cal-com-oauth)
 - [Calendly](/api-integrations/calendly)
 - [ClickUp](/api-integrations/clickup)
+- [Close](/integrations/all/close)
 - [Confluence](/api-integrations/confluence)
 - [Contentful](/integrations/all/contentful)
 - [Discord](/api-integrations/discord)
-- [Dropbox](/api-integrations/dropbox)
 - [Eventbrite](/integrations/all/eventbrite)
 - [Exist](/integrations/all/exist)
 - [Facebook](/api-integrations/facebook)
@@ -423,11 +424,10 @@ We add more OAuth apps every week. If an API you need is missing, please contact
 - [GitLab](/integrations/all/gitlab)
 - [Gmail](/api-integrations/google-mail)
 - [Google Ads](/api-integrations/google-ads)
-- [Google Analytics](/api-integrations/google-analytics)
 - [Google Calendar](/api-integrations/google-calendar)
-- [Google Docs](/api-integrations/google-docs)
 - [Google Drive](/api-integrations/google-drive)
 - [Google Sheets](/api-integrations/google-sheet)
+- [Google Tasks](/api-integrations/google-tasks)
 - [Gumroad](/integrations/all/gumroad)
 - [HubSpot](/api-integrations/hubspot)
 - [Hubstaff](/api-integrations/hubstaff)
@@ -438,7 +438,11 @@ We add more OAuth apps every week. If an API you need is missing, please contact
 - [LinkHut](/integrations/all/linkhut)
 - [Mailchimp](/integrations/all/mailchimp)
 - [Microsoft](/api-integrations/microsoft)
+- [Microsoft Entra ID](/integrations/all/microsoft-entra-id)
 - [Microsoft Excel](/integrations/all/microsoft-excel)
+- [Microsoft People](/api-integrations/microsoft-people)
+- [Microsoft Power BI](/integrations/all/microsoft-power-bi)
+- [Microsoft PowerPoint](/api-integrations/microsoft-powerpoint)
 - [Microsoft Teams](/api-integrations/microsoft-teams)
 - [Microsoft Word](/api-integrations/microsoft-word)
 - [Miro](/integrations/all/miro)
@@ -448,6 +452,8 @@ We add more OAuth apps every week. If an API you need is missing, please contact
 - [Notion](/api-integrations/notion)
 - [OneDrive for Business](/api-integrations/one-drive)
 - [OneDrive Personal](/integrations/all/one-drive-personal)
+- [OneNote](/integrations/all/one-note)
+- [Outline](/api-integrations/outline)
 - [Outlook](/api-integrations/outlook)
 - [Pinterest](/integrations/all/pinterest)
 - [Pipedrive](/api-integrations/pipedrive)
@@ -456,28 +462,30 @@ We add more OAuth apps every week. If an API you need is missing, please contact
 - [Salesforce](/api-integrations/salesforce)
 - [SharePoint Online (v2)](/api-integrations/sharepoint-online)
 - [Slack](/api-integrations/slack)
+- [Smartsheet](/api-integrations/smartsheet)
 - [Splitwise](/integrations/all/splitwise)
 - [Stack Exchange](/integrations/all/stackexchange)
 - [Strava (Web)](/integrations/all/strava-web)
 - [TickTick](/integrations/all/ticktick)
 - [Timely](/integrations/all/timely)
 - [Todoist](/integrations/all/todoist)
+- [Twitch](/integrations/all/twitch)
 - [Typeform](/api-integrations/typeform)
 - [Wakatime](/integrations/all/wakatime)
+- [Webex](/integrations/all/webex)
 - [Wrike](/integrations/all/wrike)
-- [Xero](/api-integrations/xero)
 - [YouTube](/api-integrations/youtube)
 - [Zendesk](/api-integrations/zendesk)
 - [Zoho](/integrations/all/zoho)
 - [Zoho Bigin](/integrations/all/zoho-bigin)
 - [Zoho Books](/integrations/all/zoho-books)
+- [Zoho Calendar](/integrations/all/zoho-calendar)
 - [Zoho CRM](/api-integrations/zoho-crm)
 - [Zoho Desk](/integrations/all/zoho-desk)
 - [Zoho Inventory](/integrations/all/zoho-inventory)
 - [Zoho Invoice](/integrations/all/zoho-invoice)
 - [Zoho Mail](/integrations/all/zoho-mail)
 - [Zoho People](/integrations/all/zoho-people)
-- [Zoom](/api-integrations/zoom)
 </Accordion>
 
 ## Related guides

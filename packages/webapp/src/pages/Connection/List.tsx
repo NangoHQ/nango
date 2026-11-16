@@ -6,7 +6,7 @@ import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
-import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupAddon, InputGroupInput, LinkButton } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
@@ -21,6 +21,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useConnections } from '@/hooks/useConnections';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
@@ -28,7 +29,7 @@ import { formatDateToInternationalFormat } from '@/utils/utils';
 import { ConnectionCount } from './components/ConnectionCount';
 
 import type { ComboboxOption } from '@/components/ui/Combobox';
-import type { ApiConnectionSimple, ApiIntegrationList, GetConnections } from '@nangohq/types';
+import type { ApiConnectionSimple, ApiIntegrationList } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
 type ConnectionRow = ApiConnectionSimple & { integration?: ApiIntegrationList };
@@ -49,7 +50,6 @@ const statusOptions: ComboboxOption<StatusFilterValue>[] = [
     { label: 'Paused syncs', value: 'paused' }
 ];
 
-const parseSearch = parseAsString.withDefault('');
 const parseIntegrations = parseAsArrayOf(parseAsString, ',').withDefault([]);
 const parseStatusFilters = parseAsArrayOf(parseAsString, ',').withDefault([]);
 
@@ -170,7 +170,7 @@ export const ConnectionList = () => {
 
     const navigate = useNavigate();
 
-    const [search, setSearch] = useQueryState('search', parseSearch);
+    const [search, setSearch] = useSearchQueryState();
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
     const [selectedIntegrations, setSelectedIntegrations] = useQueryState('integrations', parseIntegrations);
     const [rawStatusFilters, setSelectedStatusFilters] = useQueryState('status', parseStatusFilters);
@@ -272,12 +272,12 @@ export const ConnectionList = () => {
         }));
     }, [listIntegrationData?.data]);
 
-    if (connectionsError) {
-        return <ErrorPageComponent title="Connections" error={connectionsError.json as GetConnections['Errors']} />;
+    if (connectionsError && !connectionsData) {
+        return <ErrorPageComponent title="Connections" error={connectionsError} />;
     }
 
     return (
-        <DashboardLayout fullWidth title="Connections">
+        <DashboardLayout>
             <Helmet>
                 <title>Connections - Nango</title>
             </Helmet>
@@ -320,7 +320,7 @@ export const ConnectionList = () => {
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => {
-                                                    navigate(`/${env}/integrations/create`);
+                                                    navigate(`/${env}/catalog`);
                                                 }}
                                             >
                                                 <Plus className="size-4" /> Add
@@ -431,12 +431,12 @@ export const ConnectionList = () => {
                             <h3 className="text-title-body text-text-strong">Connect to an external API</h3>
                             <p className="text-text-secondary text-body-medium-regular">
                                 Connections can be created by using{' '}
-                                <Button asChild variant="link-accent">
+                                <LinkButton asChild size="lg">
                                     <a href="https://nango.dev/docs/guides/auth/auth-guide" target="_blank" rel="noopener noreferrer">
                                         Nango Connect
                                         <ExternalLink />
                                     </a>
-                                </Button>
+                                </LinkButton>
                                 , or manually here.
                             </p>
                             <ButtonLink to={`/${env}/connections/create`} size="lg">

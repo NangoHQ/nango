@@ -4,6 +4,7 @@ import { invokeFunction, NangoError, toolService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { executeAction } from '../../../../services/action.service.js';
+import * as agentGettingStartedService from '../../../../services/agentGettingStarted.service.js';
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
 import { callRemoteTool, withRemoteMcpSession } from '../../../../services/remoteMcp.service.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
@@ -15,7 +16,7 @@ import { actionExecutionErrorToMcp, functionInvokeErrorToMcp, remoteMcpErrorToMc
 import { executeInputSchema } from './schema.js';
 
 import type { AgentSessionMcpContext } from '../sessionTool.js';
-import type { AgentSession, AgentSessionMetaTool, AgentSessionResolvedConnection } from '@nangohq/types';
+import type { AgentSession, AgentSessionMetaTool, AgentSessionResolvedConnection, FunctionSource } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
@@ -25,7 +26,7 @@ const RETRY_MAX = 0;
 export const executeTool = defineAgentSessionMcpTool({
     name: 'nango_execute',
     description:
-        "Run one of this session's tools, named as it is listed in tools/list or returned by nango_tool_search, on the connection the session resolved for it. Reaches tools that are not listed, and tools whose input is not an object.",
+        "Run one of this session's tools, named as it is listed in tools/list or returned by nango_tool_search, on the connection the session resolved for it. Reaches tools that are not listed.",
     inputSchema: executeInputSchema,
     annotations: {
         readOnlyHint: false,
@@ -42,7 +43,14 @@ export const executeTool = defineAgentSessionMcpTool({
 
         const tool = callable.get(args.tool);
         if (!tool) {
-            trackAgentSessionToolCall({ metaTool: 'nango_execute', session, toolName: args.tool, errorCode: 'tool_not_in_session' });
+            trackAgentSessionToolCall({
+                metaTool: 'nango_execute',
+                session,
+                toolName: args.tool,
+                goal: args.goal,
+                intent: args.intent,
+                errorCode: 'tool_not_in_session'
+            });
             return Err(new PublicMcpError(unknownToolMessage(args.tool, session), { code: 'tool_not_in_session' }));
         }
 
@@ -52,6 +60,7 @@ export const executeTool = defineAgentSessionMcpTool({
             toolName: tool.name,
             pinned: tool.pinned,
             input: args.input,
+            purpose: { goal: args.goal, intent: args.intent },
             context
         });
     }
@@ -76,6 +85,7 @@ export async function executeSessionTool({
     toolName,
     pinned,
     input,
+    purpose,
     context
 }: {
     metaTool?: AgentSessionMetaTool | undefined;
@@ -83,12 +93,14 @@ export async function executeSessionTool({
     toolName: string;
     pinned: boolean;
     input?: unknown;
+    purpose?: ToolCallPurpose | undefined;
     context: AgentSessionMcpContext;
 }): Promise<Result<unknown>> {
     const { account, environment, session } = context;
 
     const track = (properties: ToolCallOutcome) => {
-        trackAgentSessionToolCall({ metaTool, session, integrationId, toolName, pinned, ...properties });
+        trackAgentSessionToolCall({ metaTool, session, integrationId, toolName, pinned, ...purpose, ...properties });
+        void agentGettingStartedService.recordToolCall({ accountId: account.id, session, succeeded: !properties.errorCode });
     };
 
     const integration = Object.hasOwn(session.compiledToolset, integrationId) ? session.compiledToolset[integrationId] : undefined;
@@ -128,7 +140,15 @@ export async function executeSessionTool({
     }
 
     if (compiledTool.mcp) {
-        return await executeRemoteTool({ integrationId, toolName, input, connection, context, track: (properties) => track({ ...properties, mcpTool: true }) });
+        return await executeRemoteTool({
+            integrationId,
+            toolName,
+            input,
+            purpose,
+            connection,
+            context,
+            track: (properties) => track({ ...properties, mcpTool: true })
+        });
     }
 
     return await tracer.trace<Promise<Result<unknown>>>('server.mcp.agentSession.execute', async (span: Span) => {
@@ -147,13 +167,15 @@ export async function executeSessionTool({
             return Err(tool.error);
         }
 
-        if (tool.value && !tool.value.config.enabled) {
-            track({ errorCode: 'tool_not_in_session' });
-            return Err(toolUnavailableError({ integrationId, toolName }));
-        }
-
         if (tool.value) {
+            const functionSource = tool.value.currentVersion.source;
+            if (!tool.value.config.enabled) {
+                track({ errorCode: 'tool_not_in_session', functionSource });
+                return Err(toolUnavailableError({ integrationId, toolName }));
+            }
+
             const { logCtx, result } = await invokeFunction({
+                operation: { type: 'tool', action: 'call' },
                 account,
                 environment,
                 connectionId: connection.connectionId,
@@ -162,24 +184,26 @@ export async function executeSessionTool({
                 request: { method: 'POST', path: '/mcp', headers: {}, query: {} },
                 invocationType: 'wait',
                 orchestrator: getOrchestrator(),
-                actor: { kind: 'session', id: session.id }
+                actor: { kind: 'session', id: session.id },
+                logMeta: purpose
             });
 
             if (result.isErr()) {
                 span.setTag('nango.error', result.error);
                 track({
                     logOperationId: logCtx?.id,
+                    functionSource,
                     errorCode: result.error.code,
                     underlyingErrorCode: result.error.cause instanceof NangoError ? result.error.cause.type : undefined
                 });
                 return Err(functionInvokeErrorToMcp({ error: result.error, integrationId, toolName }));
             }
 
-            track({ logOperationId: logCtx?.id });
+            track({ logOperationId: logCtx?.id, functionSource });
             return Ok('data' in result.value ? result.value.data : null);
         }
 
-        const { logCtx, result } = await executeAction({
+        const { logCtx, functionSource, result } = await executeAction({
             account,
             environment,
             connectionId: connection.connectionId,
@@ -189,31 +213,39 @@ export async function executeSessionTool({
             isAsync: false,
             retryMax: RETRY_MAX,
             span,
-            actor: { kind: 'session', id: session.id }
+            actor: { kind: 'session', id: session.id },
+            logMeta: purpose
         });
 
         if (result.isErr()) {
             span.setTag('nango.error', result.error);
-            track({ logOperationId: logCtx?.id, errorCode: result.error.code, underlyingErrorCode: result.error.nangoError?.type });
+            track({ logOperationId: logCtx?.id, functionSource, errorCode: result.error.code, underlyingErrorCode: result.error.nangoError?.type });
             return Err(actionExecutionErrorToMcp({ error: result.error, integrationId, toolName }));
         }
 
-        track({ logOperationId: logCtx?.id });
+        track({ logOperationId: logCtx?.id, functionSource });
         return Ok('data' in result.value ? result.value.data : null);
     });
 }
+
+type ToolCallPurpose = {
+    goal: string;
+    intent: string;
+};
 
 interface ToolCallOutcome {
     logOperationId?: string | undefined;
     errorCode?: string | undefined;
     underlyingErrorCode?: string | undefined;
     mcpTool?: boolean | undefined;
+    functionSource?: FunctionSource | undefined;
 }
 
 async function executeRemoteTool({
     integrationId,
     toolName,
     input,
+    purpose,
     connection,
     context,
     track
@@ -221,6 +253,7 @@ async function executeRemoteTool({
     integrationId: string;
     toolName: string;
     input: unknown;
+    purpose: ToolCallPurpose | undefined;
     connection: AgentSessionResolvedConnection;
     context: AgentSessionMcpContext;
     track: (properties: ToolCallOutcome) => void;
@@ -253,7 +286,8 @@ async function executeRemoteTool({
                 integrationId,
                 connectionId: connection.connectionId,
                 provider: connection.provider,
-                actor: { kind: 'session', id: session.id }
+                actor: { kind: 'session', id: session.id },
+                logMeta: purpose
             },
             async (mcp) => await callRemoteTool(mcp, { name: toolName, args: (input as Record<string, unknown> | undefined) ?? {} })
         );

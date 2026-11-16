@@ -36,6 +36,7 @@ import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
 import { envs } from './env.js';
 import { migrateFleets, stopFleets } from './fleet.js';
+import { checkEnterpriseLicense } from './license.js';
 import { beginShutdown } from './ready.js';
 import { router } from './routes.js';
 import { tasks } from './tasks/index.js';
@@ -58,6 +59,9 @@ process.on('uncaughtException', (err) => {
     report(err);
     // not closing on purpose
 });
+
+// no-op in cloud and in the community image
+await checkEnterpriseLicense();
 
 const app = express();
 

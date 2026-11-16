@@ -82,12 +82,10 @@ describe('sandboxed function dryrun client', () => {
                 NANGO_DRYRUN_CALLBACK_URL: 'https://api.example.test/functions/dryruns/7b539769-6d39-4442-89fc-33fbac96ea66/result',
                 NANGO_DRYRUN_ARGS: JSON.stringify([
                     'dryrun',
-                    'listRepos',
+                    'github/actions/listRepos.ts',
                     'conn-1',
                     '--environment',
                     'dev',
-                    '--integration-id',
-                    'github',
                     '--auto-confirm',
                     '--no-interactive',
                     '--input',

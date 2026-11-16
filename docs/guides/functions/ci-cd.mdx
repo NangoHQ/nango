@@ -4,7 +4,7 @@ sidebarTitle: 'CI/CD'
 description: 'How to integrate Nango Function deployments into your CI/CD pipeline.'
 ---
 
-CI/CD for Nango is about keeping your [Functions](/guides/functions/functions-guide) — sync functions, action functions, webhook functions, and event functions — in sync with your application across environments.
+CI/CD for Nango is about keeping your [Functions](/guides/functions/functions-guide) — sync functions, tools, webhook functions, and event functions — in sync with your application across environments.
 
 The core principle: **deploy to Nango as part of the same pipeline step as your application**. Deploying them separately risks your app and your Functions going out of sync, which can cause subtle bugs that are hard to trace.
 
@@ -66,7 +66,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.22.2'
 
       - name: Install dependencies
         run: npm ci
@@ -120,7 +120,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.22.2'
 
       - name: Install dependencies
         run: npm ci
@@ -146,7 +146,7 @@ jobs:
             destructive_flag="--allow-destructive"
           fi
 
-          npx nango@latest deploy "$stage" --secret-key "$secret_key" --no-dependency-update $destructive_flag
+          npx nango@latest deploy "$stage" --auto-confirm --no-dependency-update $destructive_flag
 ```
 </Accordion>
 </AccordionGroup>
@@ -154,9 +154,9 @@ jobs:
 <Warning>
   **Destructive Changes**
 
-  A destructive change removes an integration, sync function, or action function. To prevent accidental deletions, `nango deploy` will prompt for confirmation when it detects one.
+  Deleting a sync function with existing connections, removing a sync or tool record model, or deleting any other function requires confirmation.
 
-  In CI, use `--auto-confirm` or `--allow-destructive` to bypass the prompt. We recommend only doing this on a manual trigger, as shown above.
+  In CI, use both `--auto-confirm` and `--allow-destructive` to approve destructive changes. We recommend only doing this on a manual trigger, as shown above.
 </Warning>
 
 ## Testing in CI

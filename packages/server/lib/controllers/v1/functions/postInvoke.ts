@@ -53,7 +53,7 @@ export const postInvokeFunction = asyncWrapperWithEnvironment<PostInternalInvoke
     if (type === 'tool') {
         const functions = await functionConfigService.search(db.knex, {
             environmentId: environment.id,
-            filter: { integrationKey: provider_config_key, name: function_name, trigger: { kind: 'http' } }
+            filter: { integrationKey: provider_config_key, name: function_name, trigger: { kind: 'http', subscriptions: 'none' } }
         });
         if (functions.isErr()) {
             report(functions.error);
@@ -66,6 +66,7 @@ export const postInvokeFunction = asyncWrapperWithEnvironment<PostInternalInvoke
             return;
         }
         const { result } = await invokeFunction({
+            operation: { type: 'tool', action: 'call' },
             account,
             environment,
             connectionId: connection_id,

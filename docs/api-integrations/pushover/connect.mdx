@@ -1,0 +1,46 @@
+---
+title: 'Pushover - How do I link my account?'
+sidebarTitle: 'Pushover'
+---
+
+## Overview
+
+To authenticate with Pushover, you need:
+
+1. **API Token** — the API token of a Pushover application you register, or a Team API token.
+2. **User or Group Key** — your Pushover user key, or the key of a delivery group.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Pushover account. [Sign up](https://pushover.net/signup) if you don't have one.
+
+### Step 1: Create an application
+
+1. Log in to Pushover and open [Create New Application](https://pushover.net/apps/build), or click **Create an Application/API Token** under **Your Applications** on your dashboard.
+2. Enter a **Name** for the application. **Description**, **URL** and **Icon** are optional.
+3. Tick the box to accept the Terms of Service and the API guidelines, then click **Create Application**.
+
+<img src="/api-integrations/pushover/create_application.png" alt="Pushover Create New Application form with a name entered, the terms accepted and the Create Application button highlighted"/>
+
+4. Copy the **API Token** shown on the application page.
+
+<img src="/api-integrations/pushover/api_token_created.png" alt="Pushover application page with the API Token field highlighted"/>
+
+<Tip>If you administer a Pushover for Teams team and want to call the Teams API, use your team's **Team API Token** instead, found on your [team settings page](https://pushover.net/team/edit).</Tip>
+
+### Step 2: Copy your user key
+
+1. Open your [Pushover dashboard](https://pushover.net/dashboard).
+2. Copy the key in the **Your User Key** box. To send messages to a delivery group instead, use that group's key.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Pushover.
+2. Enter your **API Token** in the **API Token** field and your user or group key in the **User or Group Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/pushover/form.png" alt="Pushover Connect UI form with the API Token and User or Group Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Pushover.

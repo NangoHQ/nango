@@ -18,7 +18,7 @@ export const Homepage: React.FC = () => {
 
     if (!globalEnv.features.logs) {
         return (
-            <DashboardLayout>
+            <DashboardLayout width="wide">
                 <Helmet>
                     <title>Homepage - Nango</title>
                 </Helmet>
@@ -43,7 +43,7 @@ export const Homepage: React.FC = () => {
     }
 
     return (
-        <DashboardLayout>
+        <DashboardLayout width="wide">
             <Helmet>
                 <title>Homepage - Nango</title>
             </Helmet>
@@ -75,12 +75,12 @@ export const Homepage: React.FC = () => {
                 )}
                 {globalEnv.features.scripts && (
                     <InsightChart
-                        title="Action Executions"
-                        type="action"
+                        title="Tool Executions"
+                        type="tool"
                         desc=""
                         help={
                             <div>
-                                No action executions in the last 14 days.{' '}
+                                No tool executions in the last 14 days.{' '}
                                 <Link to="https://nango.dev/docs/guides/functions/action-functions" className="underline text-text-strong">
                                     Learn more
                                 </Link>
