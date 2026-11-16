@@ -149,7 +149,7 @@ class ConfigService {
 
     async createProviderConfig(config: DBCreateIntegration, provider: Provider): Promise<IntegrationConfig | null> {
         const configToInsert = getEncryptionManager().encryptProviderConfig(config as ProviderConfig);
-        configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config as ProviderConfig);
+        configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config as ProviderConfig, provider);
         if (!configToInsert.oauth_scopes && provider.default_scopes?.length) {
             configToInsert.oauth_scopes = provider.default_scopes.join(',');
         }
@@ -262,7 +262,7 @@ class ConfigService {
 
     async editProviderConfig(config: ProviderConfig, provider: Provider): Promise<DBIntegrationCrypted> {
         const encrypted = getEncryptionManager().encryptProviderConfig(config);
-        encrypted.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
+        encrypted.missing_fields = this.validateProviderConfig(provider.auth_mode, config, provider);
         encrypted.updated_at = new Date();
 
         const res = await db.knex
@@ -363,11 +363,15 @@ class ConfigService {
         }
     ];
 
-    validateProviderConfig(authMode: AuthModeType, providerConfig: ProviderConfig): string[] {
+    validateProviderConfig(authMode: AuthModeType, providerConfig: ProviderConfig, provider?: Provider): string[] {
         if (providerConfig.shared_credentials_id) {
             return [];
         }
-        return this.VALIDATION_RULES.flatMap((rule) => (rule.modes.includes(authMode) && !rule.isValid(providerConfig) ? [rule.field] : []));
+        // Public OAuth clients (token_request_auth_method: none) authenticate with the client ID alone.
+        const publicClient = provider && 'token_request_auth_method' in provider && provider.token_request_auth_method === 'none';
+        return this.VALIDATION_RULES.flatMap((rule) =>
+            rule.modes.includes(authMode) && !(publicClient && rule.field === 'oauth_client_secret') && !rule.isValid(providerConfig) ? [rule.field] : []
+        );
     }
 }
 
