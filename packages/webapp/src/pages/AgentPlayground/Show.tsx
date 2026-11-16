@@ -4,7 +4,7 @@ import { ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, Plus, Rotate
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import {
     Alert,
@@ -41,6 +41,7 @@ import { describeChatError } from './chatError';
 import { HeroIllustration } from './components/HeroIllustration';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
+import { readPlaygroundDraft } from './draft';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize, integrationLabels, labelFor } from './toolDisplay';
@@ -69,6 +70,15 @@ export const AgentPlayground: React.FC = () => {
     const { can } = usePermissions();
     const [toolbarSlot, setToolbarSlot] = useState<HTMLDivElement | null>(null);
     const [chatKey, setChatKey] = useState(0);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [draft] = useState(() => readPlaygroundDraft(location.state));
+    useEffect(() => {
+        if (readPlaygroundDraft(location.state) !== undefined) {
+            // Clears the draft, so a reload doesn't open another new chat with it.
+            void navigate(location.pathname + location.search, { replace: true, state: null });
+        }
+    }, [location, navigate]);
 
     if (!meta) {
         return null;
@@ -93,16 +103,27 @@ export const AgentPlayground: React.FC = () => {
             <Helmet>
                 <title>Agent Playground - Nango</title>
             </Helmet>
-            <Chat key={`${env}-${chatKey}`} env={env} toolbarSlot={toolbarSlot} onNewChat={() => setChatKey((key) => key + 1)} />
+            <Chat
+                key={`${env}-${chatKey}`}
+                env={env}
+                draft={chatKey === 0 ? draft : undefined}
+                toolbarSlot={toolbarSlot}
+                onNewChat={() => setChatKey((key) => key + 1)}
+            />
         </DashboardLayout>
     );
 };
 
-const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({ env, toolbarSlot, onNewChat }) => {
+const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({
+    env,
+    draft,
+    toolbarSlot,
+    onNewChat
+}) => {
     const { user } = useUser();
     const userId = user?.uuid;
     const [{ chatId, messages: storedMessages }] = useState(() =>
-        userId ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
+        userId && draft === undefined ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
     );
 
     const sessionId = useRef<string | undefined>(undefined);
@@ -286,12 +307,15 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
 
     const firstSessionMessageId = messages.find((message) => message.metadata?.sessionCreated)?.id;
 
-    const composer = <Composer busy={busy} awaitingApproval={awaitingApproval} onSend={send} onStop={() => void stop()} />;
+    // The composer remounts when the first message appears, so passing the draft after that would refill it.
+    const composer = (
+        <Composer draft={messages.length === 0 ? draft : undefined} busy={busy} awaitingApproval={awaitingApproval} onSend={send} onStop={() => void stop()} />
+    );
 
     if (messages.length === 0) {
         return (
             <div className="flex h-full flex-col">
-                <EmptyState composer={composer} onPick={send} />
+                <EmptyState composer={composer} suggested={draft !== undefined} onPick={send} />
             </div>
         );
     }
@@ -382,16 +406,40 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
     );
 };
 
+function prefersReducedMotion(): boolean {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 // Holds the draft itself, so typing doesn't re-render the message list.
-const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (text: string) => boolean; onStop: () => void }> = ({
+const Composer: React.FC<{ draft: string | undefined; busy: boolean; awaitingApproval: boolean; onSend: (text: string) => boolean; onStop: () => void }> = ({
+    draft,
     busy,
     awaitingApproval,
     onSend,
     onStop
 }) => {
-    const [input, setInput] = useState('');
+    const [input, setInput] = useState(() => (draft !== undefined && prefersReducedMotion() ? draft : ''));
+    const [typing, setTyping] = useState(() => draft !== undefined && !prefersReducedMotion());
+    const stopTyping = useRef<() => void>(() => {});
+    useEffect(() => {
+        if (draft === undefined || prefersReducedMotion()) {
+            return;
+        }
+        let typed = 0;
+        const step = Math.max(8, Math.min(20, 450 / draft.length));
+        const interval = window.setInterval(() => {
+            typed += 1;
+            setInput(draft.slice(0, typed));
+            if (typed >= draft.length) {
+                window.clearInterval(interval);
+                setTyping(false);
+            }
+        }, step);
+        stopTyping.current = () => window.clearInterval(interval);
+        return () => stopTyping.current();
+    }, [draft]);
     const submit = () => {
-        if (onSend(input)) {
+        if (!typing && onSend(input)) {
             setInput('');
         }
     };
@@ -407,9 +455,18 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
             <InputGroup size="composer">
                 <InputGroupTextarea
                     value={input}
+                    autoFocus={draft !== undefined}
+                    onFocus={(e) => {
+                        const end = e.currentTarget.value.length;
+                        e.currentTarget.setSelectionRange(end, end);
+                    }}
                     rows={1}
                     placeholder={awaitingApproval ? 'Approve or deny the change to continue…' : 'Ask the agent to do something…'}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={(e) => {
+                        stopTyping.current();
+                        setTyping(false);
+                        setInput(e.target.value);
+                    }}
                     onKeyDown={(e) => {
                         // Safari sends the key that ends an IME composition with isComposing false and keyCode 229.
                         const composing = e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229;
@@ -434,7 +491,14 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
                             <Square className="size-3 fill-current" />
                         </InputGroupButton>
                     ) : (
-                        <InputGroupButton key="send" label="Send" type="submit" variant="primary" size="icon-sm" disabled={!input.trim() || awaitingApproval}>
+                        <InputGroupButton
+                            key="send"
+                            label="Send"
+                            type="submit"
+                            variant="primary"
+                            size="icon-sm"
+                            disabled={!input.trim() || awaitingApproval || typing}
+                        >
                             <ArrowUp />
                         </InputGroupButton>
                     )}
@@ -632,18 +696,23 @@ const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced
     );
 };
 
-const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string, provider: string) => void }> = ({ composer, onPick }) => {
+const EmptyState: React.FC<{ composer: React.ReactNode; suggested: boolean; onPick: (prompt: string, provider: string) => void }> = ({
+    composer,
+    suggested,
+    onPick
+}) => {
     return (
         <div className="flex flex-1 flex-col items-center text-center">
             <div className="flex w-full flex-[3] flex-col items-center justify-end gap-12 pb-6">
-                <HeroIllustration />
+                <HeroIllustration animated={!suggested} />
                 <h2 className="text-heading-medium text-text-strong">Explore how Nango works with an agent</h2>
             </div>
             {composer}
             <div className="grid w-full flex-[4] auto-rows-min grid-cols-2 gap-3 pt-6">
-                {STARTER_PROMPTS.map(({ prompt, provider, name }) => (
-                    <PromptCard key={prompt} prompt={prompt} provider={provider} name={name} action="send" onClick={() => onPick(prompt, provider)} />
-                ))}
+                {!suggested &&
+                    STARTER_PROMPTS.map(({ prompt, provider, name }) => (
+                        <PromptCard key={prompt} prompt={prompt} provider={provider} name={name} action="send" onClick={() => onPick(prompt, provider)} />
+                    ))}
             </div>
         </div>
     );
