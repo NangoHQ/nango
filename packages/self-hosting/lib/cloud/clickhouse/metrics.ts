@@ -24,11 +24,6 @@ export async function insertMetricsBatch(
     }
     return await tracer.trace('nango.self_hosting.clickhouse.insert', async (span) => {
         span?.addTags({ 'nango.installationId': installationId, rows: rows.length });
-        const start = process.hrtime.bigint();
-        const observe = (success: boolean) =>
-            metrics.distribution(metrics.Types.SELF_HOSTING_CLICKHOUSE_INSERT_DURATION_MS, Number(process.hrtime.bigint() - start) / 1e6, {
-                success: String(success)
-            });
         try {
             await client.insert({
                 table: METRICS_TABLE,
@@ -41,11 +36,9 @@ export async function insertMetricsBatch(
                     value: row.value
                 }))
             });
-            observe(true);
             metrics.distribution(metrics.Types.SELF_HOSTING_CLICKHOUSE_INSERT_ROWS, rows.length);
             return Ok(undefined);
         } catch (err) {
-            observe(false);
             span?.setTag('error', err);
             return Err(err);
         }

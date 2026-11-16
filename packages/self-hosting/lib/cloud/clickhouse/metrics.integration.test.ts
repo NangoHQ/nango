@@ -56,7 +56,7 @@ function observed() {
     const span = { addTags: vi.fn(), setTag: vi.fn() };
     vi.spyOn(tracer, 'trace').mockImplementation(((_name: string, fn: (span: unknown) => unknown) => fn(span)) as typeof tracer.trace);
     const distribution = vi.spyOn(tracer.dogstatsd, 'distribution');
-    return { span, measured: () => distribution.mock.calls.map(([name, value, tags]) => [name, typeof value, tags]) };
+    return { span, measured: () => distribution.mock.calls.map(([name, value]) => [name, value]) };
 }
 
 const day = (minute: number) => new Date(Date.UTC(2026, 10, 8, 0, minute));
@@ -128,10 +128,7 @@ describe('insertMetricsBatch', () => {
 
         expect(span.addTags).toHaveBeenCalledExactlyOnceWith({ 'nango.installationId': installationId, rows: 1 });
         expect(span.setTag).not.toHaveBeenCalled();
-        expect(measured()).toEqual([
-            [metrics.Types.SELF_HOSTING_CLICKHOUSE_INSERT_DURATION_MS, 'number', { success: 'true' }],
-            [metrics.Types.SELF_HOSTING_CLICKHOUSE_INSERT_ROWS, 'number', {}]
-        ]);
+        expect(measured()).toEqual([[metrics.Types.SELF_HOSTING_CLICKHOUSE_INSERT_ROWS, 1]]);
     });
 
     it('an empty batch writes nothing and succeeds', async () => {
@@ -147,7 +144,7 @@ describe('insertMetricsBatch', () => {
 
             expect(res.isErr()).toBe(true);
             expect(span.setTag).toHaveBeenCalledExactlyOnceWith('error', res.isErr() && res.error);
-            expect(measured()).toEqual([[metrics.Types.SELF_HOSTING_CLICKHOUSE_INSERT_DURATION_MS, 'number', { success: 'false' }]]);
+            expect(measured()).toEqual([]);
         } finally {
             await broken.close();
         }
