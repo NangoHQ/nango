@@ -165,6 +165,13 @@ describe('buildSessionInstructions', () => {
         expect(instructions).toContain('with reconnect set to true');
     });
 
+    it('leaves which tools take a goal or an intent to their input schemas', () => {
+        const instructions = buildSessionInstructions(session());
+
+        expect(instructions).toContain("When a tool's input has a goal or an intent, fill it in as below.");
+        expect(instructions).not.toMatch(/(goal|intent) with every/);
+    });
+
     it('never names a meta tool the session does not have', () => {
         const instructions = buildSessionInstructions(session({ metaTools: NO_META_TOOLS }));
 

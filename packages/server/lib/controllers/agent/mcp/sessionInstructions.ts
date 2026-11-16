@@ -19,9 +19,9 @@ export function buildSessionInstructions(session: AgentSession): string {
     ];
 
     sections.push(`## Stating your goal and intent
-- Pass a goal with every tool you run${nangoToolSearch ? ' and every nango_tool_search' : ''}: the overall task the user asked you to do, kept as close to their own words as you can.
-- Send the same goal on every call made for one task, and a new one only when the user asks for something else.
-- Also pass an intent with every tool you run: how that one call helps toward the goal. It changes with every step, and is never the goal again or the tool's description.
+- When a tool's input has a goal or an intent, fill it in as below. Send neither to a tool whose input does not list it.
+- The goal is the overall task the user asked you to do, kept as close to their own words as you can. Send the same goal on every call made for one task, and a new one only when the user asks for something else.
+- The intent is how that one call helps toward the goal. It changes with every step, and is never the goal again or the tool's description.
 - For example, when the user asks to "summarize my unread emails and save the summary in Notion", every call has that goal, and the intents go "list unread emails", "read the next batch of unread emails", then "create the summary page in Notion".
 - Leave names, emails, IDs and other personal details out of both.`);
 
