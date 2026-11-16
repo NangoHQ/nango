@@ -12,7 +12,7 @@ const LOGOS_DIR = 'packages/webapp/public/images/template-logos/';
 const HOOKS_DIR = 'packages/server/lib/hooks/connection/providers/';
 const HOOK_SCRIPTS = ['post-connection', 'credentials-verification'];
 // Provider keys come from the PR and end up in GITHUB_OUTPUT and the review message, so only plain slugs qualify.
-const PROVIDER_KEY = /^[a-z0-9][a-z0-9_-]*$/;
+const PROVIDER_KEY = /^[a-z0-9][a-z0-9-]*$/;
 const HOOK_FILES = new Set([...HOOK_SCRIPTS.map((name) => `${name}.ts`), 'types.ts']);
 const HOOK_EXPORT = new RegExp(`^export \\{ default as \\w+ \\} from '\\./providers/([a-z0-9-]+)/(${HOOK_SCRIPTS.join('|')})\\.js';$`);
 
@@ -84,7 +84,7 @@ export function compareProviderMaps(baseText, headText, label) {
     const added = Object.keys(head).filter((key) => !Object.hasOwn(base, key));
     for (const key of added) {
         if (!PROVIDER_KEY.test(key)) {
-            reasons.push(`${label}: new provider key ${JSON.stringify(key)} must be lowercase letters, digits, "-" or "_"`);
+            reasons.push(`${label}: new provider key ${JSON.stringify(key)} must be lowercase letters, digits or "-"`);
         }
     }
     return { added: added.filter((key) => PROVIDER_KEY.test(key)), reasons };

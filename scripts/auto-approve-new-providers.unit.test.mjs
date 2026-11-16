@@ -277,7 +277,14 @@ describe('provider key validation', () => {
     });
 
     it('accepts plain slugs', () => {
-        const head = `${BASE_PROVIDERS}acme-v2_beta:\n    auth_mode: API_KEY\n`;
-        expect(compareProviderMaps(BASE_PROVIDERS, head, 'providers')).toEqual({ added: ['acme-v2_beta'], reasons: [] });
+        const head = `${BASE_PROVIDERS}acme-v2-beta:\n    auth_mode: API_KEY\n`;
+        expect(compareProviderMaps(BASE_PROVIDERS, head, 'providers')).toEqual({ added: ['acme-v2-beta'], reasons: [] });
+    });
+
+    it('rejects underscores, matching the hook export pattern', () => {
+        const head = `${BASE_PROVIDERS}acme_beta:\n    auth_mode: API_KEY\n`;
+        const result = compareProviderMaps(BASE_PROVIDERS, head, 'providers');
+        expect(result.added).toEqual([]);
+        expect(result.reasons).toHaveLength(1);
     });
 });

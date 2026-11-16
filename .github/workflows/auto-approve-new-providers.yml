@@ -7,6 +7,9 @@ on:
 permissions:
     contents: read
     pull-requests: read
+concurrency:
+    group: auto-approve-new-providers-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
 jobs:
     auto-approve:
         runs-on: ubuntu-latest
@@ -17,9 +20,8 @@ jobs:
               with:
                   script: |
                       const login = context.payload.pull_request.user.login;
-                      const org = context.repo.owner;
 
-                      // Collaborators (write and admin)
+                      // Effective repo permission, which includes access granted through org teams
                       try {
                         const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
                           owner: context.repo.owner,
@@ -28,19 +30,6 @@ jobs:
                         });
                         if (['write', 'admin'].includes(data.permission)) {
                           console.log(`Trusted: collaborator ${login} (${data.permission})`);
-                          return true;
-                        }
-                      } catch (err) { if (err.status !== 404) throw err; }
-
-                      // Engineers team
-                      try {
-                        const { data: teamMembership } = await github.rest.teams.getMembershipForUserInOrg({
-                          org,
-                          team_slug: 'engineers',
-                          username: login,
-                        });
-                        if (teamMembership.state === 'active') {
-                          console.log(`Trusted: engineers team member ${login}`);
                           return true;
                         }
                       } catch (err) { if (err.status !== 404) throw err; }
@@ -81,8 +70,27 @@ jobs:
                   app-id: ${{ secrets.GH_APP_PUSHER_ID }}
                   private-key: ${{ secrets.GH_APP_PUSHER_PRIVATE_KEY }}
 
-            - name: Approve PR
+            - name: Check the PR head is unchanged
               if: steps.providers_check.outputs.approve == 'true'
+              id: head_check
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const { data: pr } = await github.rest.pulls.get({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        pull_number: context.payload.pull_request.number,
+                      });
+                      const checked = context.payload.pull_request.head.sha;
+                      if (pr.head.sha !== checked) {
+                        console.log(`PR head moved from ${checked} to ${pr.head.sha}; skipping approval`);
+                        return false;
+                      }
+                      return true;
+                  result-encoding: string
+
+            - name: Approve PR
+              if: steps.providers_check.outputs.approve == 'true' && steps.head_check.outputs.result == 'true'
               uses: hmarr/auto-approve-action@v4
               with:
                   github-token: ${{ steps.app-token.outputs.token }}
