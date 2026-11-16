@@ -8,6 +8,7 @@ import {
     getCategoryLabel,
     getInitials,
     getInstantSetup,
+    getOneClickSetupBody,
     listCategories,
     sortProviders
 } from './catalog.utils';
@@ -42,6 +43,40 @@ describe('getInstantSetup', () => {
     it('is not instant for MCP OAuth with a static client', () => {
         expect(getInstantSetup(provider({ name: 'x', authMode: 'MCP_OAUTH2', clientRegistration: 'static' }))).toBeNull();
         expect(getInstantSetup(provider({ name: 'x', authMode: 'MCP_OAUTH2', clientRegistration: 'dynamic' }))).toBe('no-dev-app');
+    });
+});
+
+describe('getOneClickSetupBody', () => {
+    it('uses Nango’s credentials when the provider is managed', () => {
+        expect(getOneClickSetupBody(provider({ name: 'hubspot', preConfigured: true }))).toEqual({ provider: 'hubspot', useSharedCredentials: true });
+    });
+
+    it.each(['API_KEY', 'BASIC', 'OAUTH2_CC', 'JWT', 'NONE'] as const)('creates a %s integration without credentials', (authMode) => {
+        expect(getOneClickSetupBody(provider({ name: 'x', authMode }))).toEqual({ provider: 'x', useSharedCredentials: false });
+    });
+
+    it.each(['MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'] as const)('creates a %s integration with default auth settings', (authMode) => {
+        expect(getOneClickSetupBody(provider({ name: 'x', authMode }))).toEqual({ provider: 'x', useSharedCredentials: false, auth: { authType: authMode } });
+    });
+
+    it('needs the setup form for MCP servers that require your own client', () => {
+        expect(getOneClickSetupBody(provider({ name: 'x', authMode: 'MCP_OAUTH2', clientRegistration: 'static' }))).toBeNull();
+    });
+
+    it.each(['OAUTH2', 'TBA', 'INSTALL_PLUGIN'] as const)('needs the setup form for %s', (authMode) => {
+        expect(getOneClickSetupBody(provider({ name: 'x', authMode }))).toBeNull();
+    });
+
+    it('needs the setup form when the provider has integration config', () => {
+        expect(
+            getOneClickSetupBody(
+                provider({
+                    name: 'x',
+                    authMode: 'API_KEY',
+                    integration_config: { region: { type: 'string', title: 'Region', description: '', order: 0, automated: false } }
+                })
+            )
+        ).toBeNull();
     });
 });
 
