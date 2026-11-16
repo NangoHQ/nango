@@ -2,12 +2,11 @@ import { Prism } from '@mantine/prism';
 import { Check, Edit, Eye, EyeOff, Loader, Play, X } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { Badge, Button, IconButton, Textarea } from '@nangohq/design-system';
+import { Badge, Button, CopyButton, IconButton, Textarea } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { cn } from '../../utils/utils.js';
-import { CopyButton } from './CopyButton.js';
 
 import type { PrismProps } from '@mantine/prism';
 import type { MaybePromise } from '@nangohq/types';
@@ -219,7 +218,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                             </IconButton>
                         </>
                     )}
-                    {!editing && copyable && <CopyButton text={copyText} />}
+                    {!editing && copyable && <CopyButton value={copyText} size="xs" />}
                 </div>
             </header>
             <div className={cn(constrainHeight && 'max-h-128 overflow-auto')}>

@@ -1,10 +1,9 @@
 import { ExternalLink, Play, Trash2 } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 
-import { Badge, LinkButton } from '@nangohq/design-system';
+import { Badge, CopyButton, LinkButton } from '@nangohq/design-system';
 
 import { CodeBlock } from '@/components/ui/CodeBlock';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { Separator } from '@/components/ui/Separator';
 import { Spinner } from '@/components/ui/Spinner';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
@@ -145,7 +144,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                             <span className="min-w-0 flex-1 type-code-medium-xs text-text-secondary">
                                 {pullCommand ?? 'Pulling tools is not supported yet.'}
                             </span>
-                            {pullCommand && <CopyButton text={pullCommand} />}
+                            {pullCommand && <CopyButton size="xs" value={pullCommand} />}
                         </div>
                     </div>
                 </div>

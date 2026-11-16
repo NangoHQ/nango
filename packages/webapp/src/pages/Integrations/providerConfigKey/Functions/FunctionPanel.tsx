@@ -1,4 +1,5 @@
-import { CopyButton } from '@/components/ui/CopyButton';
+import { CopyButton } from '@nangohq/design-system';
+
 import { CountBadge } from '@/components/ui/CountBadge';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
@@ -28,7 +29,7 @@ export const FunctionPanelHeader: React.FC<FunctionPanelHeaderProps> = ({ name, 
                 <h2 data-panel-title tabIndex={-1} className="truncate type-code-medium-sm text-text-default outline-none">
                     {name}
                 </h2>
-                <CopyButton text={name} className="size-4 p-0" />
+                <CopyButton size="xs" value={name} />
             </div>
             {description && <p className="type-text-regular-xs text-text-secondary">{description}</p>}
             {children}

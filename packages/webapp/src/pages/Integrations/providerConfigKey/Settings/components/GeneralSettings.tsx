@@ -2,11 +2,10 @@ import { AlertTriangle, Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Alert, AlertDescription, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertDescription, CopyButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
@@ -193,7 +192,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                         <InputGroup>
                             <InputGroupInput disabled value={webhookUrl} />
                             <InputGroupAddon align="inline-end">
-                                <CopyButton text={webhookUrl} />
+                                <CopyButton size="xs" value={webhookUrl} />
                             </InputGroupAddon>
                         </InputGroup>
                     </SettingsField>
@@ -210,7 +209,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                             <InputGroup>
                                 <InputGroupInput disabled value={meta.webhookSecret} />
                                 <InputGroupAddon align="inline-end">
-                                    <CopyButton text={meta.webhookSecret} />
+                                    <CopyButton size="xs" value={meta.webhookSecret} />
                                 </InputGroupAddon>
                             </InputGroup>
                         </SettingsField>

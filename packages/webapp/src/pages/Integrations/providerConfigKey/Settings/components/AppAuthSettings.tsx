@@ -1,7 +1,6 @@
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { CopyButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
@@ -54,7 +53,7 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
                 <InputGroup>
                     <InputGroupInput disabled value={setupUrl} />
                     <InputGroupAddon align="inline-end">
-                        <CopyButton text={setupUrl} />
+                        <CopyButton size="xs" value={setupUrl} />
                     </InputGroupAddon>
                 </InputGroup>
             </SettingsField>

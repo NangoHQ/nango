@@ -2,11 +2,10 @@ import { Prism } from '@mantine/prism';
 import { Loader, Play } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { Button, CopyButton } from '@nangohq/design-system';
 
 import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { cn } from '../../utils/utils.js';
-import { CopyButton } from './CopyButton.js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './Select.js';
 import { Tag } from './Tag.js';
 
@@ -92,7 +91,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                             )}
                         </Button>
                     )}
-                    <CopyButton text={snippets[selectedSnippetIndex].code} />
+                    <CopyButton value={snippets[selectedSnippetIndex].code} size="xs" />
                 </div>
             </header>
             <div className="overflow-x-auto">

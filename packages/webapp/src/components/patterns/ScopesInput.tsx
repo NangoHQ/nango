@@ -1,7 +1,7 @@
 import { CornerDownLeft, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { Badge, IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
+import { Badge, CopyButton, IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { cn } from '@/utils/utils';
 import {
@@ -15,7 +15,6 @@ import {
     ComboboxList,
     ComboboxValue
 } from '../ui/Combobox.js';
-import { CopyButton } from '../ui/CopyButton.js';
 
 interface ScopesInputProps {
     scopesString?: string | undefined;
@@ -131,7 +130,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <span>
-                                    <CopyButton text={scopes.join(',')} />
+                                    <CopyButton value={scopes.join(',')} size="xs" />
                                 </span>
                             </TooltipTrigger>
                             <TooltipContent side="top">Copy all</TooltipContent>
@@ -177,7 +176,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span>
-                                            <CopyButton text={scopes.join(',')} />
+                                            <CopyButton value={scopes.join(',')} size="xs" />
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent side="top">Copy all</TooltipContent>

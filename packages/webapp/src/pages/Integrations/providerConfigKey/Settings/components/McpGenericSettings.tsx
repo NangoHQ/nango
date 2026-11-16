@@ -1,8 +1,7 @@
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { CopyButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { ScopesInput } from '@/components/patterns/ScopesInput';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
@@ -69,7 +68,7 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
                 <InputGroup>
                     <InputGroupInput disabled value={callbackUrl} />
                     <InputGroupAddon align="inline-end">
-                        <CopyButton text={callbackUrl} />
+                        <CopyButton size="xs" value={callbackUrl} />
                     </InputGroupAddon>
                 </InputGroup>
             </SettingsField>

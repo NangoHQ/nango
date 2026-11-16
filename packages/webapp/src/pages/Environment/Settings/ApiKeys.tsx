@@ -5,6 +5,7 @@ import {
     Alert,
     AlertDescription,
     Button,
+    CopyButton,
     Dialog,
     DialogBody,
     DialogContent,
@@ -19,7 +20,6 @@ import {
 
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -399,7 +399,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                     <div className="relative">
                         <Input value={apiKey.uuid} disabled className="font-mono bg-surface-canvas text-text-muted pr-10" />
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                            <CopyButton text={apiKey.uuid} />
+                            <CopyButton size="xs" value={apiKey.uuid} />
                         </div>
                     </div>
 
@@ -421,7 +421,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                                 >
                                     {secretRevealed ? <EyeOff strokeWidth={1} size={16} /> : <Eye strokeWidth={1} size={16} />}
                                 </IconButton>
-                                <CopyButton text={apiKey.secret} />
+                                <CopyButton size="xs" value={apiKey.secret} />
                             </div>
                         )}
                     </div>
@@ -499,7 +499,7 @@ const ManagedSecretKeyView: React.FC<{ secretKey: string; env: string }> = ({ se
                             >
                                 {revealed ? <EyeOff strokeWidth={1} size={16} /> : <Eye strokeWidth={1} size={16} />}
                             </IconButton>
-                            <CopyButton text={secretKey} />
+                            <CopyButton size="xs" value={secretKey} />
                         </div>
                     </div>
                 </div>
@@ -595,7 +595,7 @@ export const ApiKeys: React.FC = () => {
                                 {canMakeActions && (
                                     <TableCell>
                                         <div className="flex items-center gap-1">
-                                            {canReadSecret && <CopyButton text={key.secret} />}
+                                            {canReadSecret && <CopyButton size="xs" value={key.secret} />}
                                             {canManageKeys && (
                                                 <IconButton
                                                     label="Edit"

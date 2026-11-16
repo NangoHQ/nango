@@ -6,7 +6,7 @@ import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
-import { Button, InputGroup, InputGroupAddon, InputGroupInput, LinkButton } from '@nangohq/design-system';
+import { Button, CopyButton, InputGroup, InputGroupAddon, InputGroupInput, LinkButton } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
@@ -14,7 +14,6 @@ import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Avatar } from '@/components/ui/Avatar';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ComboboxSelect } from '@/components/ui/Combobox';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
@@ -100,7 +99,7 @@ const columns: ColumnDef<ConnectionRow>[] = [
             return (
                 <div className="flex gap-1.5 items-center min-w-0">
                     <span className="text-body-extra-small-medium text-text-secondary truncate flex-1 min-w-0">{connection_id}</span>
-                    <CopyButton text={connection_id} />
+                    <CopyButton value={connection_id} size="xs" />
                 </div>
             );
         }

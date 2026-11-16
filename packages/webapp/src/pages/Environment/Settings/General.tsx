@@ -2,13 +2,12 @@ import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Alert, AlertDescription, InlineCode, Input } from '@nangohq/design-system';
+import { Alert, AlertDescription, CopyButton, InlineCode, Input } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { DocsIconLink } from '@/components/patterns/DocsIconLink';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -107,7 +106,7 @@ export const General: React.FC = () => {
                 <div className="relative">
                     <Input value={environmentAndAccount?.environment.uuid ?? ''} disabled className="font-mono bg-surface-canvas text-text-muted pr-10" />
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                        <CopyButton text={environmentAndAccount?.environment.uuid ?? ''} />
+                        <CopyButton size="xs" value={environmentAndAccount?.environment.uuid ?? ''} />
                     </div>
                 </div>
             </SettingsGroup>

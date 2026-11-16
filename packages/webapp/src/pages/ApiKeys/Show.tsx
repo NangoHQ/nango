@@ -9,6 +9,7 @@ import {
     AlertDescription,
     AlertTitle,
     Button,
+    CopyButton,
     Dialog,
     DialogBody,
     DialogContent,
@@ -25,7 +26,6 @@ import {
 
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
@@ -301,7 +301,8 @@ export const AccountApiKeysShow: React.FC = () => {
                                     <TableCell>
                                         <div className="flex items-center gap-1">
                                             <CopyButton
-                                                text={apiKey.secret}
+                                                value={apiKey.secret}
+                                                size="xs"
                                                 onCopy={() => track('auth:copy_button_click', { copied_item: 'api_key_secret' })}
                                             />
                                             <DeleteAccountApiKeyButton apiKey={apiKey} disabled={isDeleting || !canDeleteAccountKeys} onDelete={handleDelete} />
