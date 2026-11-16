@@ -210,7 +210,13 @@ class ProviderClient {
             case 'shopline-oauth':
                 return this.createShoplineToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'deputy':
-                return this.createDeputyToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
+                return this.deputyTokenRequest(tokenUrl, {
+                    ...(provider.token_params as Record<string, string>),
+                    client_id: config.oauth_client_id,
+                    client_secret: config.oauth_client_secret,
+                    redirect_uri: callBackUrl,
+                    code
+                });
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -404,9 +410,15 @@ class ProviderClient {
                 return this.refreshScrollstashMcpToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
             case 'deputy':
                 if (!interpolatedRefreshUrl) {
-                    throw new NangoError('deputy_refresh_token_request_error', { message: 'Missing the Deputy install endpoint in the connection config' });
+                    throw new NangoError('deputy_token_request_error', { message: 'Missing the Deputy install endpoint in the connection config' });
                 }
-                return this.refreshDeputyToken(interpolatedRefreshUrl.href, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret, callbackUrl);
+                return this.deputyTokenRequest(interpolatedRefreshUrl.href, {
+                    ...(provider.refresh_params as Record<string, string>),
+                    client_id: config.oauth_client_id,
+                    client_secret: config.oauth_client_secret,
+                    ...(callbackUrl ? { redirect_uri: callbackUrl } : {}),
+                    refresh_token: credentials.refresh_token!
+                });
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -1805,57 +1817,17 @@ class ProviderClient {
         }
     }
 
-    // Deputy issues tokens on once.deputy.com but refreshes them on the install the user picked, returned as "endpoint".
-    // The endpoint is stored without its scheme so the base and refresh URLs can be built from it.
-    private async createDeputyToken(
-        tokenUrl: string,
-        code: string,
-        clientId: string,
-        clientSecret: string,
-        redirectUri: string
-    ): Promise<AuthorizationTokenResponse> {
+    // Deputy exchanges the code on once.deputy.com but only refreshes on the install the user picked (refresh_url, from the
+    // "endpoint" in the token response). The generic OAuth2 client always refreshes on token_url.
+    private async deputyTokenRequest(url: string, params: Record<string, string>): Promise<RefreshTokenResponse> {
         try {
-            const body = new URLSearchParams({
-                client_id: clientId,
-                client_secret: clientSecret,
-                redirect_uri: redirectUri,
-                grant_type: 'authorization_code',
-                code,
-                scope: 'longlife_refresh_token'
-            });
-            const response = await axios.post(tokenUrl, body.toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-            if (response.status === 200 && response.data?.access_token && typeof response.data.endpoint === 'string') {
-                return { ...response.data, endpoint: response.data.endpoint.replace(/^https?:\/\//, '').replace(/\/+$/, '') };
+            const response = await axios.post(url, new URLSearchParams(params).toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+            if (response.status === 200 && response.data?.access_token) {
+                return { ...response.data };
             }
             throw new NangoError('deputy_token_request_error', response.data);
         } catch (err: any) {
             throw new NangoError('deputy_token_request_error', stringifyError(err));
-        }
-    }
-
-    private async refreshDeputyToken(
-        refreshUrl: string,
-        refreshToken: string,
-        clientId: string,
-        clientSecret: string,
-        redirectUri?: string | null
-    ): Promise<RefreshTokenResponse> {
-        try {
-            const body = new URLSearchParams({
-                client_id: clientId,
-                client_secret: clientSecret,
-                ...(redirectUri ? { redirect_uri: redirectUri } : {}),
-                grant_type: 'refresh_token',
-                refresh_token: refreshToken,
-                scope: 'longlife_refresh_token'
-            });
-            const response = await axios.post(refreshUrl, body.toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-            if (response.status === 200 && response.data?.access_token) {
-                return { ...response.data };
-            }
-            throw new NangoError('deputy_refresh_token_request_error', response.data);
-        } catch (err: any) {
-            throw new NangoError('deputy_refresh_token_request_error', stringifyError(err));
         }
     }
 

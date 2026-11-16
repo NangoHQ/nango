@@ -10774,15 +10774,20 @@ deputy:
     authorization_url: https://once.deputy.com/my/oauth/login
     token_url: https://once.deputy.com/my/oauth/access_token
     refresh_url: https://${connectionConfig.endpoint}/oauth/access_token
+    disable_pkce: true
     default_scopes:
         - longlife_refresh_token
     authorization_params:
         response_type: code
     token_params:
         grant_type: authorization_code
+        scope: longlife_refresh_token
     refresh_params:
         grant_type: refresh_token
+        scope: longlife_refresh_token
     token_response_metadata:
+        - endpoint
+    refresh_token_response_metadata:
         - endpoint
     proxy:
         base_url: https://${connectionConfig.endpoint}/api
