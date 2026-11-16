@@ -43,6 +43,7 @@ vi.mock('../../../../services/agentGettingStarted.service.js', () => ({
 }));
 
 const { executeSessionTool, executeTool } = await import('./execute.js');
+const { executeDirectToolCall } = await import('../directCall.js');
 
 const TOOL = {
     config: { uuid: '11111111-1111-4111-8111-111111111111', name: 'read_doc', enabled: true },
@@ -568,6 +569,31 @@ describe('nango_execute', () => {
 
         expect(errorOf(result).message).toContain('Invalid nango_execute arguments');
         expect(codeOf(result)).toBe('invalid_input');
+        expect(executeAction).not.toHaveBeenCalled();
+    });
+
+    it('tracks which argument made a call invalid', async () => {
+        const track = vi.spyOn(productTracking, 'track').mockImplementation(() => {});
+
+        await executeTool.handler({ tool: 'notion__read_doc', goal: PURPOSE.goal }, context());
+
+        expect(track).toHaveBeenCalledWith(
+            expect.objectContaining({ eventProperties: expect.objectContaining({ error_code: 'invalid_input', invalid_arguments: 'intent: invalid_type' }) })
+        );
+    });
+
+    it('tracks which argument made a direct call invalid', async () => {
+        const track = vi.spyOn(productTracking, 'track').mockImplementation(() => {});
+        const ctx = context();
+        const tool = ctx.callable.get('notion__read_doc')!;
+
+        await executeDirectToolCall({ name: 'notion__read_doc', tool, args: { goal: PURPOSE.goal, intent: 7 }, context: ctx });
+
+        expect(track).toHaveBeenCalledWith(
+            expect.objectContaining({
+                eventProperties: expect.objectContaining({ tool_name: 'read_doc', error_code: 'invalid_input', invalid_arguments: 'intent: invalid_type' })
+            })
+        );
         expect(executeAction).not.toHaveBeenCalled();
     });
 

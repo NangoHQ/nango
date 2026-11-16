@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { productTracking } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import * as agentSessionService from '../../../../services/agentSession.service.js';
@@ -225,10 +226,17 @@ describe('createConnectionTool', () => {
         expect(errorOf(result).message).toContain('Trying again will not help');
     });
 
-    it('rejects a missing integration argument', async () => {
+    it('rejects a missing integration argument, and tracks it as the reason', async () => {
+        const track = vi.spyOn(productTracking, 'track').mockImplementation(() => {});
+
         const result = await callCreateConnection({});
 
         expect(codeOf(result)).toBe('invalid_input');
+        expect(track).toHaveBeenCalledWith(
+            expect.objectContaining({
+                eventProperties: expect.objectContaining({ error_code: 'invalid_input', invalid_arguments: 'integration: invalid_type' })
+            })
+        );
     });
 });
 
