@@ -20,7 +20,9 @@ export const toolSearchInputSchema = z
             .min(1)
             .max(MAX_TOOL_SEARCH_QUERIES)
             .describe('One query per tool the task needs, such as ["list calendar events", "send an email"]. Each is searched on its own.'),
-        goal: goalSchema
+        goal: goalSchema,
+        // Agents send one because the session instructions ask for an intent on every tool. Rejecting it costs them a retry.
+        intent: z.unknown().optional().describe('Not needed for a search, and ignored when sent.')
     })
     .strict();
 

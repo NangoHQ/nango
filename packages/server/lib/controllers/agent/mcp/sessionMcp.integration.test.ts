@@ -438,6 +438,21 @@ describe('/session/:sessionId/mcp', () => {
         expect(searchResult(res).guidance).toContain('nango_execute');
     });
 
+    it('runs a search that also sends an intent', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+
+        const res = await callTool({
+            token,
+            mcpPath,
+            name: 'nango_tool_search',
+            args: { queries: ['create or update a page'], goal: GOAL, intent: 'find a tool that writes the page' }
+        });
+
+        expect(res.json.result.isError).toBeUndefined();
+        expect(searchResult(res).matches.map((match) => match.action)).toContain('upsert_doc');
+    });
+
     it('searches several queries in one call and groups the matches by query, in order', async () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {} });
