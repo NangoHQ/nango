@@ -30,9 +30,11 @@ const privateKeyPem = privateKey.export({ type: 'pkcs8', format: 'pem' }).toStri
 let knex: Knex;
 let api: Server;
 let url: string;
+const servers: Server[] = [];
 
 async function listen(config: ManualTelemetryExportConfig | null): Promise<Server> {
     const server = createInstallationServer({ manualTelemetryExport: config }).listen(0);
+    servers.push(server);
     await new Promise((resolve) => server.once('listening', resolve));
     return server;
 }
@@ -93,7 +95,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await new Promise((resolve) => api.close(resolve));
+    await Promise.all(servers.map((server) => new Promise((resolve) => server.close(resolve))));
     await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [schema]);
     await knex.destroy();
 });
@@ -220,7 +222,6 @@ describe('GET /v1/telemetry/export', () => {
 
         expect(res.status).toBe(500);
         expect(await res.json()).toEqual({ error: { code: 'server_error', message: 'the telemetry could not be read' } });
-        await new Promise((resolve) => broken.close(resolve));
     });
 
     it('does not exist on an installation without an export key', async () => {
@@ -229,6 +230,5 @@ describe('GET /v1/telemetry/export', () => {
         const res = await download({ from: '2026-11-08', to: '2026-11-09' }, { to: address(off) });
 
         expect(res.status).toBe(404);
-        await new Promise((resolve) => off.close(resolve));
     });
 });
