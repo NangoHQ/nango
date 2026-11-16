@@ -114,7 +114,7 @@ export const CatalogProviderShow: React.FC = () => {
                     return (
                         <SplitButton variant="primary" size={size} disabled={!allowed}>
                             <SplitButtonAction loading={settingUp} onClick={() => void addIntegration(source)}>
-                                <Zap />
+                                <Zap className="fill-current stroke-none" />
                                 Add integration
                             </SplitButtonAction>
                             <DropdownMenu>
@@ -128,7 +128,7 @@ export const CatalogProviderShow: React.FC = () => {
                                             void navigate(`/${env}/integrations/create/${provider.name}`);
                                         }}
                                     >
-                                        Configure first…
+                                        Advanced…
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -137,7 +137,7 @@ export const CatalogProviderShow: React.FC = () => {
                 }
                 return oneClickSetupBody ? (
                     <Button variant="primary" size={size} disabled={!allowed} loading={settingUp} onClick={() => void addIntegration(source)}>
-                        <Zap />
+                        <Zap className="fill-current stroke-none" />
                         Add integration
                     </Button>
                 ) : (
