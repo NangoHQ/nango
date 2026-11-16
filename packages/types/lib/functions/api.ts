@@ -387,7 +387,14 @@ export type GetFunctionInvocation = ApiEndpoint<{
     Path: '/connections/:connectionId/functions/:functionUuid/invocations/:id';
     Params: { connectionId: string; functionUuid: string; id: string };
     Error: ApiError<
-        'invalid_uri_params' | 'not_found' | 'function_not_found' | 'connection_not_found' | 'function_failed' | 'function_runtime_error' | 'server_error'
+        | 'invalid_uri_params'
+        | 'invalid_invocation'
+        | 'not_found'
+        | 'function_not_found'
+        | 'connection_not_found'
+        | 'function_failed'
+        | 'function_runtime_error'
+        | 'server_error'
     >;
     Success: FunctionInvocationSuccess;
 }>;

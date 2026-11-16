@@ -13,7 +13,7 @@ export { reconcile } from './reconcile.js';
 export type { DeploymentBundleReconciliation } from './reconcile.js';
 export { functionVersionHash } from './version.js';
 export { validateFunctionInput } from './models/validate.js';
-export { getFunctionMaxConcurrency, invokeFunction } from './invoke.js';
+export { getFunctionMaxConcurrency, invokeFunction, resolveFunctionConnection } from './invoke.js';
 export type { FunctionInvocation, FunctionInvokeError } from './invoke.js';
 export * as toolService from './tools.js';
 export type { ResolvedTool } from './tools.js';
