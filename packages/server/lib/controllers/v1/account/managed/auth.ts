@@ -5,7 +5,7 @@ import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 import { envs } from '../../../../env.js';
 import { parseAnalyticsSessionId } from '../../../../middleware/productTracking.middleware.js';
 import { identifyAccountMembership } from '../../../../services/accountAnalytics.service.js';
-import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
+import { linkNewTeamToBilling } from '../../../../utils/billing.js';
 import { isDisposableEmail } from '../../../../utils/disposableEmail.js';
 import { signupAcquisitionSchema } from '../../../../utils/signupAcquisition.js';
 import { signupAdvertisingFromRequest } from '../../../../utils/signupAdvertising.js';
@@ -219,7 +219,8 @@ export async function finalizeManagedAuthentication({
                 return;
             }
 
-            account = resAccount;
+            account = resAccount.account;
+            isNewTeam = resAccount.created;
             await expirePreviousInvitations({ accountId: account.id, email: authorizedUser.email, trx: db.knex });
         } else {
             if (!envs.AUTH_ALLOW_SIGNUP) {
@@ -271,15 +272,7 @@ export async function finalizeManagedAuthentication({
         void identifyAccountMembership(account.id);
 
         if (isNewTeam && flagHasUsage) {
-            const linkOrbCustomerRes = await linkBillingCustomer(account, user);
-            if (linkOrbCustomerRes.isErr()) {
-                report(linkOrbCustomerRes.error);
-            } else {
-                const linkOrbSubscriptionRes = await linkBillingFreeSubscription(account);
-                if (linkOrbSubscriptionRes.isErr()) {
-                    report(linkOrbSubscriptionRes.error);
-                }
-            }
+            await linkNewTeamToBilling(account, user);
         }
     }
 

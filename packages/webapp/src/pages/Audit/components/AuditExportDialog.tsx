@@ -13,7 +13,8 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger
+    DialogTrigger,
+    LinkButton
 } from '@nangohq/design-system';
 
 import { apiAuditTrailExport } from '@/hooks/useAudit';
@@ -143,9 +144,9 @@ export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ query, sel
                     )}
                     <p className="mt-4 text-body-small-regular text-text-secondary">
                         Need a larger or scheduled export?{' '}
-                        <Button variant="link-accent" size="sm" onClick={onContact}>
+                        <LinkButton size="sm" onClick={onContact}>
                             Contact us
-                        </Button>
+                        </LinkButton>
                         .
                     </p>
                 </DialogBody>

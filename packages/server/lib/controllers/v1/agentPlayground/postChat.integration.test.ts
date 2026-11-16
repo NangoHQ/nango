@@ -41,7 +41,7 @@ function twoStepModel(secondStep: LanguageModelV4StreamPart[] | 'until-aborted' 
                                 type: 'tool-call',
                                 toolCallId: 'call-1',
                                 toolName: 'nango_tool_search',
-                                input: JSON.stringify({ query: 'calendar', goal: 'show my calendar for today' })
+                                input: JSON.stringify({ queries: ['calendar'], goal: 'show my calendar for today' })
                             },
                             { type: 'finish', finishReason: { unified: 'tool-calls', raw: undefined }, usage: stepUsage }
                         ]

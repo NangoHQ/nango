@@ -1,0 +1,34 @@
+---
+title: 'AppVeyor - How do I link my account?'
+sidebarTitle: 'AppVeyor'
+---
+
+## Overview
+
+To authenticate with AppVeyor, you need:
+
+1. **API Key** — an AppVeyor API key.
+
+This guide will show you where to find it.
+
+### Prerequisites
+
+- An AppVeyor account. You can [sign up](https://ci.appveyor.com/signup) for free.
+
+### Step 1: Copy your API key
+
+1. Sign in to [AppVeyor](https://ci.appveyor.com).
+2. Open the [API keys page](https://ci.appveyor.com/api-keys) of your account.
+3. Copy the key you want to use:
+    - The **account-level key** works with this AppVeyor account only.
+    - The **user-level key (v2)** works with every account you have access to. Requests made with it must include the account name in the path, for example `/account/<account-name>/roles`.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with AppVeyor.
+2. Enter your key in the **API Key** field.
+3. Submit the form. The connection is saved without checking the key: if the key is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/appveyor/form.png" alt="AppVeyor Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to AppVeyor.

@@ -285,14 +285,19 @@ class AccountService {
         return account[0].uuid;
     }
 
-    async getOrCreateAccount(name: string, acquisition?: SignupAcquisition, advertising?: SignupAdvertising): Promise<DBTeam | null> {
+    async getOrCreateAccount(
+        name: string,
+        acquisition?: SignupAcquisition,
+        advertising?: SignupAdvertising
+    ): Promise<{ account: DBTeam; created: boolean } | null> {
         const account = await db.knex.select('*').from<DBTeam>(`_nango_accounts`).where({ name });
 
         if (account == null || account.length == 0 || !account[0]) {
-            return await this.createAccount({ name, acquisition, advertising });
+            const created = await this.createAccount({ name, acquisition, advertising });
+            return created ? { account: created, created: true } : null;
         }
 
-        return account[0];
+        return { account: account[0], created: false };
     }
 
     /**

@@ -1,7 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import { LinkButton } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog.js';
@@ -35,8 +35,9 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
         <>
             <PermissionGate condition={canDeleteIntegration} asChild>
                 {(allowed) => (
-                    <Button
-                        variant="link-danger"
+                    <LinkButton
+                        tone="danger"
+                        size="lg"
                         loading={isPending}
                         disabled={!allowed}
                         onClick={() =>
@@ -52,7 +53,7 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
                     >
                         <Trash2 />
                         Delete
-                    </Button>
+                    </LinkButton>
                 )}
             </PermissionGate>
             {DialogComponent}
