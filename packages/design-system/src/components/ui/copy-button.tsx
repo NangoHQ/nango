@@ -2,12 +2,13 @@ import { Check, Copy } from 'lucide-react';
 import { forwardRef, useEffect, useRef, useState } from 'react';
 
 import { copyText } from '../../lib/clipboard';
+import { cn } from '../../lib/cn';
 import { IconButton } from './button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 
 import type { IconButtonProps } from './button';
 
-export const COPY_BUTTON_SIZES = ['xs', 'sm'] as const;
+export const COPY_BUTTON_SIZES = ['2xs', 'xs', 'sm'] as const;
 export type CopyButtonSize = (typeof COPY_BUTTON_SIZES)[number];
 
 export const COPY_BUTTON_RESET_MS = 1500;
@@ -32,6 +33,8 @@ export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>(
         const [tooltipOpen, setTooltipOpen] = useState(false);
         const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
         const copied = copiedProp ?? copiedState;
+        // 2xs sets no icon size of its own; NAN-8095 replaces it with an inline icon button size.
+        const iconSize = size === '2xs' ? 'size-3.5' : undefined;
 
         useEffect(() => () => clearTimeout(timer.current), []);
 
@@ -77,7 +80,7 @@ export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>(
                             className={className}
                             {...props}
                         >
-                            {copied ? <Check className="text-icon-success" /> : <Copy />}
+                            {copied ? <Check className={cn('text-icon-success', iconSize)} /> : <Copy className={iconSize} />}
                         </IconButton>
                     </TooltipTrigger>
                     <TooltipContent>{copied ? copiedLabel : label}</TooltipContent>
