@@ -1,0 +1,52 @@
+---
+title: 'ntfy - How do I link my account?'
+sidebarTitle: 'ntfy'
+---
+
+## Overview
+
+To authenticate with ntfy, you need:
+
+1. **Server Host** — the host of your ntfy server: `ntfy.sh` or your self-hosted domain.
+2. **Access Token** — a token that starts with `tk_`.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A user account on ntfy.sh or on your self-hosted ntfy server.
+
+### Step 1: Find your ntfy server host
+
+- On the public server, your host is `ntfy.sh`.
+- On a self-hosted server, copy the host from the address bar of your ntfy web app, without `https://` or any path, for example `ntfy.example.com`.
+
+### Step 2: Create an access token
+
+1. Sign in to the ntfy web app (for example [ntfy.sh/app](https://ntfy.sh/app)) and click **Account** in the left sidebar.
+
+<img src="/api-integrations/ntfy/open_account.png" alt="ntfy web app with Account in the left sidebar"/>
+
+2. Scroll to **Access tokens** and click **Create access token**.
+
+<img src="/api-integrations/ntfy/create_access_token.png" alt="ntfy Account page with the Create access token button in the Access tokens section"/>
+
+3. Enter a label, choose an expiry, and click **Create token**.
+
+<img src="/api-integrations/ntfy/create_token_dialog.png" alt="ntfy Create access token dialog with a label, an expiry and the Create token button"/>
+
+4. In the **Access tokens** table, click the copy icon next to the new token to copy it.
+
+<img src="/api-integrations/ntfy/copy_access_token.png" alt="ntfy Access tokens table with the copy icon next to the new token"/>
+
+On a self-hosted server, you can also create a token with the ntfy CLI, for example `ntfy token add --expires=30d --label="nango" <username>`. See [Access tokens](https://docs.ntfy.sh/publish/#access-tokens) for details.
+
+### Step 3: Enter your server host and access token in the Connect UI
+
+1. Open the form where you need to authenticate with ntfy.
+2. Enter your **Server Host** and your token in the **Access Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/ntfy/form.png" alt="ntfy Connect UI form with the Server Host and Access Token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to ntfy.

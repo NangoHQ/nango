@@ -72,7 +72,7 @@ export const UserSettings: React.FC = () => {
 
     if (loading) {
         return (
-            <DashboardLayout fullWidth>
+            <DashboardLayout width="wide">
                 <Helmet>
                     <title>Profile Settings - Nango</title>
                 </Helmet>
@@ -93,7 +93,7 @@ export const UserSettings: React.FC = () => {
     }
 
     return (
-        <DashboardLayout fullWidth>
+        <DashboardLayout width="wide">
             <Helmet>
                 <title>Profile Settings - Nango</title>
             </Helmet>

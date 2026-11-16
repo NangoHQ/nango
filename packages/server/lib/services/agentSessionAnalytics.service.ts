@@ -59,6 +59,8 @@ interface ToolCallParams extends Outcome {
 interface ToolSearchParams extends Outcome {
     session: AgentSession;
     query?: string | undefined;
+    /** How many queries the call carried. Each query sends its own event, and they share the log operation id. */
+    queryCount?: number | undefined;
     goal?: string | undefined;
     matches: AgentSessionToolSearchHit[];
     related: AgentSessionToolSearchHit[];
@@ -215,7 +217,7 @@ export function trackAgentSessionProxyRequest({
  * results ride along so a query can be read next to what it returned, which is the exception the
  * taxonomy grants this event: everywhere else a property is a primitive.
  */
-export function trackAgentSessionToolSearch({ session, query, goal, matches, related, ...outcome }: ToolSearchParams): void {
+export function trackAgentSessionToolSearch({ session, query, queryCount, goal, matches, related, ...outcome }: ToolSearchParams): void {
     sendMeasured((measurement) =>
         productTracking.track({
             name: 'agents:tool_search_complete',
@@ -223,6 +225,7 @@ export function trackAgentSessionToolSearch({ session, query, goal, matches, rel
                 ...sessionProperties(session),
                 meta_tool: 'nango_tool_search',
                 ...(query === undefined ? {} : { query }),
+                ...(queryCount === undefined ? {} : { query_count: queryCount }),
                 ...(goal === undefined ? {} : { goal }),
                 match_count: matches.length,
                 related_count: related.length,

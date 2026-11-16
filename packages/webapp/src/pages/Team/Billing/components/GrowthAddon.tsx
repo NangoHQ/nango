@@ -1,4 +1,4 @@
-import { Badge, Button } from '@nangohq/design-system';
+import { Badge, Button, LinkButton } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { Dot } from '@/components/ui/Dot';
@@ -26,7 +26,7 @@ export const GrowthAddon: React.FC<{ state: GrowthAddonState; endsAt?: string; o
 
     return (
         <div className="flex flex-col gap-2 rounded bg-surface-input-muted border border-dashed border-border-strong p-3">
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center justify-between gap-2">
                 <span className="text-text-strong text-body-medium-medium">{GROWTH_ADDON_COPY.title}</span>
                 {state === 'none' && (
                     <ConditionalTooltip condition={!!lockedReason} content={lockedReason} side="left" asChild>
@@ -38,9 +38,9 @@ export const GrowthAddon: React.FC<{ state: GrowthAddonState; endsAt?: string; o
                 {state === 'pending-activation' && <Badge variant="success">Included</Badge>}
                 {state === 'active' && (
                     <ConditionalTooltip condition={!!lockedReason} content={lockedReason} side="left" asChild>
-                        <Button variant="link-danger" size="sm" disabled={!!lockedReason} onClick={onActionClicked}>
+                        <LinkButton tone="danger" size="sm" disabled={!!lockedReason} onClick={onActionClicked}>
                             Remove
-                        </Button>
+                        </LinkButton>
                     </ConditionalTooltip>
                 )}
             </div>

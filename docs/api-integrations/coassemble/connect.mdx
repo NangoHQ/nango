@@ -1,0 +1,44 @@
+---
+title: 'Coassemble - How do I link my account?'
+sidebarTitle: 'Coassemble'
+---
+
+## Overview
+
+To authenticate with Coassemble, you need:
+
+1. **API Key** — a Production or Test API key from your Coassemble workspace.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Coassemble workspace with API access. Build, Scale and Partner plans carry the full API, and developers can start a free [Sandbox](https://coassemble.com/pricing). The legacy Flow plan has no API access.
+- The Owner, Admin or Developer role in the workspace: only these roles see the Developer console.
+
+### Step 1: Create an API key
+
+1. Sign in to your Coassemble workspace.
+2. In the left sidebar, click **Developer**, then open the **API keys** tab.
+3. Click **Create key**.
+
+<img src="/api-integrations/coassemble/api_keys_tab.png" alt="Coassemble Developer page on the API keys tab with the Create key button highlighted"/>
+
+4. Enter a **Key name**. Under **Key type**, choose **Production** (the default) for your live integration, or **Test** for building and testing. On a Sandbox workspace the dialog is called **Create a test key** and only creates Test keys.
+5. Click **Create key**.
+
+<img src="/api-integrations/coassemble/create_key_dialog.png" alt="Coassemble Create a test key dialog with a key name entered and the Create key button highlighted"/>
+
+6. Copy the key straight away: it is shown only once. The key starts with `COASSEMBLE:` and already includes your workspace ID. Paste it whole, without adding `Bearer`.
+
+<img src="/api-integrations/coassemble/key_created.png" alt="Coassemble dialog showing the new test key with its copy button highlighted"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Coassemble.
+2. Paste your key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/coassemble/form.png" alt="Coassemble Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Coassemble.

@@ -85,11 +85,11 @@ export const Enable2FA: React.FC = () => {
     const hasValidCode = /^\d{6}$/.test(code);
 
     return (
-        <DashboardLayout fullWidth>
+        <DashboardLayout width="narrow">
             <Helmet>
                 <title>Enable 2FA - Nango</title>
             </Helmet>
-            <div className="mx-auto flex max-w-[640px] flex-col gap-8 py-4">
+            <div className="flex flex-col gap-8 py-4">
                 <MfaStepper current={step} />
 
                 <div className="rounded-ds-sm border-ds-hairline border-border-default bg-surface-panel">

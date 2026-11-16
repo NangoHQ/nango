@@ -13,6 +13,7 @@ import type { DBEnvironment, DBSyncConfig, DBTeam, FunctionSource, SyncDeploymen
 
 describe('functionDeploymentService', () => {
     beforeEach(() => {
+        vi.spyOn(shared.functionLookupService, 'hasActiveLegacyActions').mockResolvedValue(true);
         vi.spyOn(shared.functionConfigService, 'search').mockResolvedValue(Ok([]));
     });
 
@@ -182,6 +183,23 @@ describe('functionDeploymentService', () => {
         });
 
         expect(createSpy).toHaveBeenCalledOnce();
+    });
+
+    it('rejects an action deployment when the account has no active legacy actions', async () => {
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue({ id: 12 } as Config);
+        const hasActiveLegacyActionsSpy = vi.spyOn(shared.functionLookupService, 'hasActiveLegacyActions').mockResolvedValue(false);
+        mockExisting({});
+        const createSpy = vi.spyOn(sandbox, 'createFunctionDeployment');
+
+        const result = await deployFunction({
+            environment,
+            parentCustomerApiKeyId: 7,
+            body: { type: 'function', integration_id: 'github', function_name: 'create-issue', function_type: 'action', code: 'export default {}' }
+        });
+
+        expect(result.isErr() && result.error).toMatchObject({ code: 'legacy_actions_deprecated' });
+        expect(hasActiveLegacyActionsSpy).toHaveBeenCalledExactlyOnceWith({ accountId: environment.account_id });
+        expect(createSpy).not.toHaveBeenCalled();
     });
 
     it('updates a standalone tool and keeps allow_destructive', async () => {
@@ -483,7 +501,7 @@ describe('functionDeploymentService', () => {
 
 const deploymentId = '3c66291f-6247-47a6-a100-f4d621d751f7';
 const account = { id: 1, name: 'Test account' } as DBTeam;
-const environment = { id: 42, name: 'dev' } as DBEnvironment;
+const environment = { id: 42, account_id: 24, name: 'dev' } as DBEnvironment;
 
 function existingFunction(source: FunctionSource): shared.functionConfigService.CurrentFunctionConfig {
     return { currentVersion: { source } } as shared.functionConfigService.CurrentFunctionConfig;
