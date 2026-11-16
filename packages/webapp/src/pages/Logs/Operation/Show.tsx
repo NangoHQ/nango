@@ -179,7 +179,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                             <div className="font-semibold text-sm">Session</div>
                             <div className="flex gap-1 items-center text-text-muted text-s font-code truncate">
                                 <div className="truncate">{sessionId}</div>
-                                <CopyButton value={sessionId} size="xs" />
+                                <CopyButton value={sessionId} size="2xs" />
                             </div>
                         </div>
                     </>

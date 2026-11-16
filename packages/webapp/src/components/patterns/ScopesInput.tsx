@@ -130,7 +130,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <span>
-                                    <CopyButton value={scopes.join(',')} size="xs" />
+                                    <CopyButton value={scopes.join(',')} size="2xs" />
                                 </span>
                             </TooltipTrigger>
                             <TooltipContent side="top">Copy all</TooltipContent>
@@ -176,7 +176,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span>
-                                            <CopyButton value={scopes.join(',')} size="xs" />
+                                            <CopyButton value={scopes.join(',')} size="2xs" />
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent side="top">Copy all</TooltipContent>

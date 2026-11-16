@@ -99,7 +99,7 @@ const columns: ColumnDef<ConnectionRow>[] = [
             return (
                 <div className="flex gap-1.5 items-center min-w-0">
                     <span className="text-body-extra-small-medium text-text-secondary truncate flex-1 min-w-0">{connection_id}</span>
-                    <CopyButton value={connection_id} size="xs" />
+                    <CopyButton value={connection_id} size="2xs" />
                 </div>
             );
         }

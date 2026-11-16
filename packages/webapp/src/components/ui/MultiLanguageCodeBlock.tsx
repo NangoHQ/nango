@@ -91,7 +91,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                             )}
                         </Button>
                     )}
-                    <CopyButton value={snippets[selectedSnippetIndex].code} size="xs" />
+                    <CopyButton value={snippets[selectedSnippetIndex].code} size="2xs" />
                 </div>
             </header>
             <div className="overflow-x-auto">

@@ -56,7 +56,7 @@ export const SecretTextArea: React.FC<SecretTextAreaProps> = ({ copy, canRead = 
                         </IconButton>
                     )}
                 </PermissionGate>
-                {copy && <PermissionGate condition={canRead}>{(allowed) => <CopyButton value={textToCopy} size="xs" disabled={!allowed} />}</PermissionGate>}
+                {copy && <PermissionGate condition={canRead}>{(allowed) => <CopyButton value={textToCopy} size="2xs" disabled={!allowed} />}</PermissionGate>}
             </InputGroupAddon>
         </InputGroup>
     );

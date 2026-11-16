@@ -302,7 +302,7 @@ export const AccountApiKeysShow: React.FC = () => {
                                         <div className="flex items-center gap-1">
                                             <CopyButton
                                                 value={apiKey.secret}
-                                                size="xs"
+                                                size="2xs"
                                                 onCopy={() => track('auth:copy_button_click', { copied_item: 'api_key_secret' })}
                                             />
                                             <DeleteAccountApiKeyButton apiKey={apiKey} disabled={isDeleting || !canDeleteAccountKeys} onDelete={handleDelete} />

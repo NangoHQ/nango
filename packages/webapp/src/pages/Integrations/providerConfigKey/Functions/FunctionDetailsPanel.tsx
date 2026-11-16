@@ -144,7 +144,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                             <span className="min-w-0 flex-1 type-code-medium-xs text-text-secondary">
                                 {pullCommand ?? 'Pulling tools is not supported yet.'}
                             </span>
-                            {pullCommand && <CopyButton size="xs" value={pullCommand} />}
+                            {pullCommand && <CopyButton size="2xs" value={pullCommand} />}
                         </div>
                     </div>
                 </div>

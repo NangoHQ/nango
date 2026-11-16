@@ -68,7 +68,7 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
                 <InputGroup>
                     <InputGroupInput disabled value={callbackUrl} />
                     <InputGroupAddon align="inline-end">
-                        <CopyButton size="xs" value={callbackUrl} />
+                        <CopyButton size="2xs" value={callbackUrl} />
                     </InputGroupAddon>
                 </InputGroup>
             </SettingsField>

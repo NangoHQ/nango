@@ -10,7 +10,7 @@ export const LineSnippet: React.FC<{ snippet: string; className?: string }> = ({
             </div>
             <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-surface-canvas to-transparent" />
             <div className="relative flex items-center pr-2">
-                <CopyButton value={snippet} size="xs" />
+                <CopyButton value={snippet} size="2xs" />
             </div>
         </div>
     );

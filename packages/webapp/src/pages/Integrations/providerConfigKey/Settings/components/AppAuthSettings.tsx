@@ -53,7 +53,7 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
                 <InputGroup>
                     <InputGroupInput disabled value={setupUrl} />
                     <InputGroupAddon align="inline-end">
-                        <CopyButton size="xs" value={setupUrl} />
+                        <CopyButton size="2xs" value={setupUrl} />
                     </InputGroupAddon>
                 </InputGroup>
             </SettingsField>

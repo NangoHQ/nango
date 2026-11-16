@@ -192,7 +192,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                         <InputGroup>
                             <InputGroupInput disabled value={webhookUrl} />
                             <InputGroupAddon align="inline-end">
-                                <CopyButton size="xs" value={webhookUrl} />
+                                <CopyButton size="2xs" value={webhookUrl} />
                             </InputGroupAddon>
                         </InputGroup>
                     </SettingsField>
@@ -209,7 +209,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                             <InputGroup>
                                 <InputGroupInput disabled value={meta.webhookSecret} />
                                 <InputGroupAddon align="inline-end">
-                                    <CopyButton size="xs" value={meta.webhookSecret} />
+                                    <CopyButton size="2xs" value={meta.webhookSecret} />
                                 </InputGroupAddon>
                             </InputGroup>
                         </SettingsField>

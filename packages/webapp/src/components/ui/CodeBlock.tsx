@@ -218,7 +218,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                             </IconButton>
                         </>
                     )}
-                    {!editing && copyable && <CopyButton value={copyText} size="xs" />}
+                    {!editing && copyable && <CopyButton value={copyText} size="2xs" />}
                 </div>
             </header>
             <div className={cn(constrainHeight && 'max-h-128 overflow-auto')}>
