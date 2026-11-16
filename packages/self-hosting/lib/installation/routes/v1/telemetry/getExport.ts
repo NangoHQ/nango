@@ -32,21 +32,28 @@ export const route: Route<GetExport> = { path, method };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const startOf = (day: string) => new Date(`${day}T00:00:00.000Z`);
+const today = () => new Date().toISOString().slice(0, 10);
 
-/** Both are UTC days. `from` is the first day in the file and `to` is the first day that is not. */
-const querySchema = z
-    .strictObject({ from: z.iso.date(), to: z.iso.date() })
-    .refine(({ from, to }) => from < to, { path: ['to'], message: '`to` must be after `from`' })
-    .refine(({ from, to }) => startOf(to).getTime() - startOf(from).getTime() <= MANUAL_TELEMETRY_EXPORT_MAX_DAYS * DAY_MS, {
-        path: ['to'],
-        message: `an export holds at most ${MANUAL_TELEMETRY_EXPORT_MAX_DAYS} days`
-    })
-    .refine(({ to }) => startOf(to).getTime() <= Date.now() - DAY_SETTLE_MINUTES * 60_000, {
-        path: ['to'],
-        message: 'the last day of the range is not complete yet'
-    });
-
-const validate = validateRequest<GetExport>({ parseQuery: (query) => querySchema.parse(query) });
+/**
+ * Both are UTC days. `from` is the first day in the file and `to` is the first day that is not. A day the installation
+ * no longer keeps is rejected, because the file would say that nothing happened on it.
+ */
+const querySchema = (retentionDays: number) =>
+    z
+        .strictObject({ from: z.iso.date(), to: z.iso.date() })
+        .refine(({ from }) => startOf(from).getTime() >= startOf(today()).getTime() - retentionDays * DAY_MS, {
+            path: ['from'],
+            message: `the installation only keeps ${retentionDays} days of telemetry`
+        })
+        .refine(({ from, to }) => from < to, { path: ['to'], message: '`to` must be after `from`' })
+        .refine(({ from, to }) => startOf(to).getTime() - startOf(from).getTime() <= MANUAL_TELEMETRY_EXPORT_MAX_DAYS * DAY_MS, {
+            path: ['to'],
+            message: `an export holds at most ${MANUAL_TELEMETRY_EXPORT_MAX_DAYS} days`
+        })
+        .refine(({ to }) => startOf(to).getTime() <= Date.now() - DAY_SETTLE_MINUTES * 60_000, {
+            path: ['to'],
+            message: 'the last day of the range is not complete yet'
+        });
 
 /** Reads the first chunk now, so a source that fails at once fails before the response starts. */
 async function primed(chunks: AsyncGenerator<string>): Promise<AsyncGenerator<string>> {
@@ -100,5 +107,6 @@ const handler = ({ knex, schema, installationId, privateKeyPem, metrics }: Manua
 };
 
 export const routeHandler = (config: ManualTelemetryExportConfig): RouteHandler<GetExport> => {
-    return { ...route, validate, handler: handler(config) };
+    const query = querySchema(config.retentionDays);
+    return { ...route, validate: validateRequest<GetExport>({ parseQuery: (input) => query.parse(input) }), handler: handler(config) };
 };

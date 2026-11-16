@@ -38,6 +38,7 @@ export interface ManualTelemetryExportConfig {
     installationId: string;
     privateKeyPem: string;
     metrics: string[];
+    retentionDays: number;
 }
 
 /** Returns no configuration when the installation has no export key, which is how the export is turned off. */
@@ -58,7 +59,14 @@ export async function manualTelemetryExportConfig(): Promise<Result<ManualTeleme
     if (!knex) {
         return Err(new Error('hosted telemetry has no database'));
     }
-    return Ok({ key, knex, installationId: license.value.installation_id, privateKeyPem: privateKeyPem.value, metrics: storedMetricNames() });
+    return Ok({
+        key,
+        knex,
+        installationId: license.value.installation_id,
+        privateKeyPem: privateKeyPem.value,
+        metrics: storedMetricNames(),
+        retentionDays: envs.NANGO_HOSTED_TELEMETRY_POSTGRES_RETENTION_DAYS
+    });
 }
 
 /**

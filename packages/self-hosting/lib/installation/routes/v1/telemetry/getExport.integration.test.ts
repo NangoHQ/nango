@@ -90,7 +90,7 @@ beforeAll(async () => {
         })
     ).unwrap();
 
-    api = await listen({ key, knex, schema, installationId, privateKeyPem, metrics: [concurrency, connections] });
+    api = await listen({ key, knex, schema, installationId, privateKeyPem, metrics: [concurrency, connections], retentionDays: 90 });
     url = address(api);
 });
 
@@ -197,6 +197,7 @@ describe('GET /v1/telemetry/export', () => {
         ['a range that ends where it starts', { from: '2026-11-08', to: '2026-11-08' }, '`to` must be after `from`'],
         ['more than 31 days', { from: '2026-10-09', to: '2026-11-10' }, 'an export holds at most 31 days'],
         ['a day that is not over', { from: '2026-11-08', to: '2026-11-11' }, 'the last day of the range is not complete yet'],
+        ['a day the installation no longer keeps', { from: '2026-08-11', to: '2026-08-12' }, 'the installation only keeps 90 days of telemetry'],
         ['a parameter we do not know', { from: '2026-11-08', to: '2026-11-09', metric: concurrency }, 'Unrecognized key']
     ])('rejects %s', async (_name, query, message) => {
         const res = await download(query);
@@ -205,8 +206,9 @@ describe('GET /v1/telemetry/export', () => {
         expect(JSON.stringify(await res.json())).toContain(message);
     });
 
-    it('accepts 31 days, and yesterday only once its last rows had time to be written', async () => {
+    it('accepts 31 days, the oldest day still kept, and yesterday only once its last rows had time to be written', async () => {
         expect((await download({ from: '2026-10-10', to: '2026-11-10' })).status).toBe(200);
+        expect((await download({ from: '2026-08-12', to: '2026-08-13' })).status).toBe(200);
 
         vi.setSystemTime(new Date('2026-11-10T00:14:59Z'));
         expect((await download({ from: '2026-11-09', to: '2026-11-10' })).status).toBe(400);
@@ -216,7 +218,15 @@ describe('GET /v1/telemetry/export', () => {
     });
 
     it('answers 500 before sending anything when the telemetry cannot be read', async () => {
-        const broken = await listen({ key, knex, schema: 'a_schema_that_does_not_exist', installationId, privateKeyPem, metrics: [concurrency, connections] });
+        const broken = await listen({
+            key,
+            knex,
+            schema: 'a_schema_that_does_not_exist',
+            installationId,
+            privateKeyPem,
+            metrics: [concurrency, connections],
+            retentionDays: 90
+        });
 
         const res = await download({ from: '2026-11-08', to: '2026-11-09' }, { to: address(broken) });
 
