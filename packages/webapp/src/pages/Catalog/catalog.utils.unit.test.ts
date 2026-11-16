@@ -67,6 +67,18 @@ describe('getOneClickSetupBody', () => {
         expect(getOneClickSetupBody(provider({ name: 'x', authMode }))).toBeNull();
     });
 
+    it('needs the setup form when a managed provider has integration config', () => {
+        expect(
+            getOneClickSetupBody(
+                provider({
+                    name: 'x',
+                    preConfigured: true,
+                    integration_config: { region: { type: 'string', title: 'Region', description: '', order: 0, automated: false } }
+                })
+            )
+        ).toBeNull();
+    });
+
     it('needs the setup form when the provider has integration config', () => {
         expect(
             getOneClickSetupBody(

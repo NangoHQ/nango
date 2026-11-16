@@ -28,11 +28,14 @@ export function getOneClickSetupBody(
     provider: Pick<ApiProviderListItem, 'name' | 'preConfigured' | 'authMode' | 'clientRegistration' | 'integration_config'>
 ): PostIntegration['Body'] | null {
     const instantSetup = getInstantSetup(provider);
+    const hasIntegrationConfig = Object.keys(provider.integration_config ?? {}).length > 0;
+    if (hasIntegrationConfig) {
+        return null;
+    }
     if (instantSetup === 'managed') {
         return { provider: provider.name, useSharedCredentials: true };
     }
-    const hasIntegrationConfig = Object.keys(provider.integration_config ?? {}).length > 0;
-    if (instantSetup !== 'no-dev-app' || hasIntegrationConfig || AUTH_MODES_WITH_REQUIRED_SETUP_FIELDS.includes(provider.authMode)) {
+    if (instantSetup !== 'no-dev-app' || AUTH_MODES_WITH_REQUIRED_SETUP_FIELDS.includes(provider.authMode)) {
         return null;
     }
     if (provider.authMode === 'MCP_OAUTH2') {
