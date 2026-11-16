@@ -202,6 +202,42 @@ describe(`POST ${endpoint}`, () => {
         }
     });
 
+    it('should reject actions when the account has no active legacy actions', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                debug: false,
+                flowConfigs: [
+                    {
+                        syncName: 'create-issue',
+                        fileBody: { js: 'js file', ts: 'ts file' },
+                        providerConfigKey: 'unauthenticated',
+                        endpoints: [{ method: 'POST', path: '/issues' }],
+                        type: 'action',
+                        runs: null,
+                        track_deletes: false,
+                        attributes: {},
+                        metadata: {},
+                        models: []
+                    }
+                ],
+                nangoYamlBody: '',
+                onEventScriptsByProvider: [],
+                reconcile: false,
+                deployMode: 'all'
+            }
+        });
+
+        expect(res.res.status).toBe(403);
+        expect(res.json).toStrictEqual({
+            error: { code: 'legacy_actions_deprecated', message: 'Actions are deprecated. Use createTool instead. Found: unauthenticated/create-issue.' }
+        });
+        expect(await db.knex('_nango_sync_configs').where({ environment_id: env.id })).toHaveLength(0);
+    });
+
     describe('deploy', () => {
         let env: DBEnvironment;
         let apiKey: DBCustomerKey;

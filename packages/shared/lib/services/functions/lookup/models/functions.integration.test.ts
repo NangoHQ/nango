@@ -8,7 +8,7 @@ import { createEnvironmentSeed } from '../../../../seeders/environment.seeder.js
 import { getCatalogTool } from '../../../catalog/actions.js';
 import * as functionConfigService from '../../models/functions.js';
 import { findTool } from '../../tools.js';
-import { findActiveByName, findActiveFunctionAvailability, findInputSchemas, findIntegrationFunctions } from './functions.js';
+import { findActiveByName, findActiveFunctionAvailability, findInputSchemas, findIntegrationFunctions, hasActiveLegacyActions } from './functions.js';
 
 import type { DBEnvironment, DBFunctionConfigVersion, DBSyncConfig, IntegrationConfig, NangoConfigMetadata } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
@@ -118,6 +118,49 @@ const toolInput: { definitions: Record<string, JSONSchema7> } = {
 const objectInput: { definitions: Record<string, JSONSchema7> } = {
     definitions: { SendEmailInput: { type: 'object', properties: { to: { type: 'string' } }, required: ['to'] } }
 };
+
+describe(hasActiveLegacyActions, () => {
+    beforeAll(async () => {
+        await multipleMigrations();
+    });
+
+    it.each(['repo', 'standalone', 'catalog'] as const)('counts disabled persisted %s actions across environments', async (source) => {
+        const account = await createAccount();
+        await createEnvironmentSeed(account.id);
+        const environment = await createEnvironmentSeed(account.id);
+        const integration = await createConfigSeed(environment, 'github', 'github');
+        const scope = { accountId: account.id };
+        expect(await hasActiveLegacyActions(scope)).toBe(false);
+        await insertSyncConfig({ environmentId: environment.id, integration, name: 'legacy', type: 'action', enabled: false });
+        await db.knex('_nango_sync_configs').where({ environment_id: environment.id }).update({ source });
+        await insertFunction({ environment, integrationId: integration.unique_key, name: 'legacy' });
+        expect(await hasActiveLegacyActions(scope)).toBe(true);
+        expect(await hasActiveLegacyActions({ accountId: (await createAccount()).id })).toBe(false);
+        await db.knex('_nango_sync_configs').where({ environment_id: environment.id }).update({ deleted: true });
+        expect(await hasActiveLegacyActions(scope)).toBe(false);
+    });
+
+    it.each(['inactive', 'deleted-action', 'deleted-integration', 'deleted-environment', 'sync'] as const)('excludes %s', async (exclusion) => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const integration = await createConfigSeed(environment, 'github', 'github');
+        await insertSyncConfig({
+            environmentId: environment.id,
+            integration,
+            name: 'legacy',
+            type: exclusion === 'sync' ? 'sync' : 'action',
+            active: exclusion !== 'inactive',
+            deleted: exclusion === 'deleted-action'
+        });
+        if (exclusion === 'deleted-integration') {
+            await db.knex('_nango_configs').where({ id: integration.id }).update({ deleted: true });
+        }
+        if (exclusion === 'deleted-environment') {
+            await db.knex('_nango_environments').where({ id: environment.id }).update({ deleted_at: new Date() });
+        }
+        expect(await hasActiveLegacyActions({ accountId: account.id })).toBe(false);
+    });
+});
 
 describe(findActiveFunctionAvailability, () => {
     beforeAll(async () => {

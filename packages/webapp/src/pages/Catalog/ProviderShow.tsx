@@ -47,7 +47,7 @@ export const CatalogProviderShow: React.FC = () => {
     }
     if (isPending) {
         return (
-            <DashboardLayout fullWidth>
+            <DashboardLayout>
                 <Skeleton className="h-24 w-full" />
             </DashboardLayout>
         );
@@ -76,7 +76,7 @@ export const CatalogProviderShow: React.FC = () => {
     const categories = getVisibleCategories(provider);
 
     return (
-        <DashboardLayout fullWidth hasPageHeading breadcrumbLabel={provider.displayName} className="flex flex-col gap-6">
+        <DashboardLayout hasPageHeading breadcrumbLabel={provider.displayName} className="flex flex-col gap-6">
             <Helmet>
                 <title>{provider.displayName} - Catalog - Nango</title>
             </Helmet>

@@ -1,0 +1,77 @@
+---
+title: 'Tiny ERP'
+sidebarTitle: 'Tiny ERP'
+description: 'Integrate your application with the Tiny ERP (Olist ERP) API'
+---
+
+## 🚀 Quickstart
+
+Connect to Tiny ERP with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Tiny ERP_. Paste the client ID and secret of a Tiny ERP app. Each Tiny ERP account creates its own app, so you can also let each user enter their own app's credentials (see the setup guide).
+    </Step>
+    <Step id="authorize-tiny-erp" title="Authorize Tiny ERP">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then log in to Tiny ERP and allow access. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-tiny-erp-api" title="Call the Tiny ERP API">
+    Let's make your first request to the Tiny ERP API to read the account's company information (the app needs the account information permission). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v3/info" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v3/info',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Tiny ERP integration guides
+
+- [How to register your own Tiny ERP OAuth app](/api-integrations/tiny-erp/how-to-register-your-own-tiny-erp-oauth-app)  
+Create an app in a Tiny ERP account and connect its credentials to Nango.
+
+Official docs: [Tiny ERP API v3](https://api-docs.erp.olist.com)
+
+## 🧩 Pre-built syncs & tools for Tiny ERP
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/tiny-erp/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

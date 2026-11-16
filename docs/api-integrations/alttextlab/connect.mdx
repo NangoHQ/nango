@@ -1,0 +1,45 @@
+---
+title: 'AltTextLab - How do I link my account?'
+sidebarTitle: 'AltTextLab'
+---
+
+## Overview
+
+To authenticate with AltTextLab, you need:
+
+1. **API Key** — an AltTextLab API key.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- An AltTextLab account. You can start free with 25 credits. If you don't have an account, [sign up](https://app.alttextlab.com/sign-up).
+
+### Step 1: Create an API key
+
+1. Sign in to the [AltTextLab dashboard](https://app.alttextlab.com/sign-in).
+2. In the left sidebar, under **Connect**, click **API keys** ([direct link](https://app.alttextlab.com/settings/api-keys)).
+
+<img src="/api-integrations/alttextlab/api_keys_nav.png" alt="AltTextLab dashboard sidebar with API keys under Connect"/>
+
+3. Click **Create API key**.
+
+<img src="/api-integrations/alttextlab/create_api_key.png" alt="AltTextLab API keys page with the Create API key button"/>
+
+4. Enter a name for the key. You can also set a monthly usage limit, or leave it at **No limit**. Then click **Create key**.
+
+<img src="/api-integrations/alttextlab/create_api_key_dialog.png" alt="AltTextLab Create API key dialog with the key name and monthly usage limit fields"/>
+
+5. Click **Copy** to copy the key and save it right away. It is shown only once.
+
+<img src="/api-integrations/alttextlab/api_key_created.png" alt="AltTextLab dialog showing the new API key with the Copy button"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with AltTextLab.
+2. Enter your key in the **API Key** field.
+3. Submit the form. The connection is saved without checking the key: if the key is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/alttextlab/form.png" alt="AltTextLab Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to AltTextLab.

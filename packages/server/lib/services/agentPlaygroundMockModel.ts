@@ -37,7 +37,7 @@ export function createMockModel(): MockLanguageModelV4 {
                         type: 'tool-call',
                         toolCallId: crypto.randomUUID(),
                         toolName: 'nango_tool_search',
-                        input: JSON.stringify({ query: text.slice(0, 255) || 'list tools', goal: text.slice(0, 500) || 'list tools' })
+                        input: JSON.stringify({ queries: [text.slice(0, 255) || 'list tools'], goal: text.slice(0, 500) || 'list tools' })
                     }
                 ],
                 finishReason: { unified: 'tool-calls', raw: undefined },

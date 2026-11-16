@@ -157,7 +157,7 @@ describe('toolNeedsApproval', () => {
         { toolName: 'pg-google-docs__export-document', input: {}, expected: false },
         { toolName: 'pg-slack__post-message', input: {}, expected: true },
         { toolName: 'pg-slack__open-dm', input: {}, expected: true },
-        { toolName: 'nango_tool_search', input: { query: 'delete event' }, expected: false },
+        { toolName: 'nango_tool_search', input: { queries: ['delete event'] }, expected: false },
         { toolName: 'nango_create_connection', input: {}, expected: false }
     ])('$toolName $input → $expected', ({ toolName, input, expected }) => {
         expect(toolNeedsApproval(toolName, input)).toBe(expected);
