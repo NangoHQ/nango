@@ -57,6 +57,11 @@ describe('isNonEnvPath', () => {
             expect(isNonEnvPath('/teams')).toBe(false);
             expect(isNonEnvPath('/profiles')).toBe(false);
         });
+
+        it('treats the pages of an environment named team or profile as env pages', () => {
+            expect(isNonEnvPath('/team/integrations')).toBe(false);
+            expect(isNonEnvPath('/profile/connections')).toBe(false);
+        });
     });
 
     describe('legacy env-prefixed paths', () => {

@@ -4,10 +4,17 @@ export const NON_ENV_PATH_PREFIXES = [
     '/account-settings',
     '/team-settings',
     '/user-settings',
-    '/team',
-    '/profile',
+    '/team/billing',
+    '/team/audit',
+    '/profile/enable-2fa',
     '/api-keys'
 ];
+
+// Exact matches, so an environment named `team` or `profile` keeps its own pages.
+const NON_ENV_EXACT_PATHS = ['/team', '/profile'];
+
+const matchesNonEnvPath = (path: string): boolean =>
+    NON_ENV_EXACT_PATHS.includes(path) || NON_ENV_PATH_PREFIXES.some((p) => path === p || path.startsWith(p + '/'));
 
 // Raising this past the server's MAX_RETURN_TO_LENGTH sends destinations it silently resolves to `/`.
 export const MAX_NEXT_LENGTH = 1024;
@@ -52,12 +59,12 @@ export const safeNextPath = (next: string | null | undefined): string => {
 };
 
 export const isNonEnvPath = (pathname: string): boolean => {
-    if (NON_ENV_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+    if (matchesNonEnvPath(pathname)) {
         return true;
     }
     // Legacy env-prefixed path: /:env/team-settings, /:env/team/billing, etc.
     const withoutEnvSegment = pathname.replace(/^\/[^/]+/, '');
-    return NON_ENV_PATH_PREFIXES.some((p) => withoutEnvSegment === p || withoutEnvSegment.startsWith(p + '/'));
+    return matchesNonEnvPath(withoutEnvSegment);
 };
 
 export const envSwitchPath = (pathname: string, selected: string): string | null => {
