@@ -1,4 +1,5 @@
 import tracer from 'dd-trace';
+import * as z from 'zod/v4';
 
 import { getProvider } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
@@ -22,6 +23,11 @@ import type { Span } from 'dd-trace';
 
 const PROVIDER_ERROR_CODE = /^[A-Za-z0-9][\w.:-]{0,63}$/;
 
+const invalidProxyArgsSchema = z.object({
+    integration: proxyInputSchema.shape.integration.optional().catch(undefined),
+    method: proxyInputSchema.shape.method.optional().catch(undefined)
+});
+
 export const proxyTool = defineAgentSessionMcpTool({
     name: 'nango_proxy',
     description: `Make an authenticated HTTP request to a provider API, on the connection this session resolved for the integration. The escape hatch for when no tool covers what you need, so search with nango_tool_search first and use this only if nothing fits. Returns JSON or UTF-8 text responses up to ${MAX_MCP_PROXY_RESPONSE_SIZE_LABEL}.`,
@@ -35,11 +41,11 @@ export const proxyTool = defineAgentSessionMcpTool({
     },
     isEnabled: (metaTools) => metaTools.nangoProxy,
     onInvalidArguments: ({ session }, { args, error }) => {
-        const raw: Record<string, unknown> = typeof args === 'object' && args !== null ? (args as Record<string, unknown>) : {};
+        const { integration, method } = invalidProxyArgsSchema.safeParse(args).data ?? {};
         trackAgentSessionProxyRequest({
             session,
-            integrationId: proxyInputSchema.shape.integration.safeParse(raw['integration']).data,
-            method: proxyInputSchema.shape.method.safeParse(raw['method']).data,
+            integrationId: integration,
+            method,
             errorCode: 'invalid_input',
             invalidArguments: invalidArgumentsOf(error)
         });
