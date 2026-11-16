@@ -1,4 +1,5 @@
 import { ArrowUpRight, Bot, Play } from 'lucide-react';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
@@ -32,6 +33,8 @@ export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
     const env = useStore((state) => state.env);
     const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
+    const [functionOpen, setFunctionOpen] = useState(false);
+    const functionDrawerOpen = activeTab === 'functions' && functionOpen;
 
     const { data: environmentData, isLoading: loadingEnvironment, error: environmentError } = useEnvironment(env);
     const environmentAndAccount = environmentData?.environmentAndAccount;
@@ -129,7 +132,7 @@ export const ShowIntegration: React.FC = () => {
                         <Link to={`/${env}/connections?integrations=${integration.integration.unique_key}`} className={integrationLinkClassName}>
                             Connections
                         </Link>
-                        {canRunFunctions && (
+                        {canRunFunctions && !functionDrawerOpen && (
                             <div className="ml-3">
                                 <Button
                                     variant="outline"
@@ -144,7 +147,7 @@ export const ShowIntegration: React.FC = () => {
                     </div>
                 </div>
                 <TabsContent value="functions">
-                    <FunctionsTab integration={integration.integration} />
+                    <FunctionsTab integration={integration.integration} onFunctionOpenChange={setFunctionOpen} />
                 </TabsContent>
                 <TabsContent value="settings">
                     <SettingsTab
