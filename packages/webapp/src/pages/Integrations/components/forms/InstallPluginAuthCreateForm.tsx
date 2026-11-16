@@ -103,7 +103,7 @@ export const InstallPluginAuthCreateForm: React.FC<{ provider: ApiProviderListIt
 
                     <div>
                         <Button type="submit" loading={loading}>
-                            Create
+                            Add integration
                         </Button>
                     </div>
                 </form>

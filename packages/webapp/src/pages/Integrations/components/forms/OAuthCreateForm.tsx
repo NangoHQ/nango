@@ -155,7 +155,7 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
 
                     <div>
                         <Button loading={loading} onClick={onCreatePreProvisioned}>
-                            Create
+                            Add integration
                         </Button>
                     </div>
                 </div>
@@ -235,7 +235,7 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
 
                             <div>
                                 <Button type="submit" loading={loading}>
-                                    Create
+                                    Add integration
                                 </Button>
                             </div>
                         </form>
