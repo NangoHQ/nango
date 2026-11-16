@@ -50,6 +50,16 @@ describe('parse', () => {
         expect(() => parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '-1' })).toThrowError(/LOCAL_NANGO_USER_ID/);
     });
 
+    it('rejects an audit batch window the visibility timeout cannot cover', () => {
+        // 30 s visibility leaves 10 s after the 20 s write, half of it for the delete: 5 s.
+        expect(parseEnvs(ENVS, {}).NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS).toBe(5000);
+        expect(() => parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS: '5001' })).toThrowError(/NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS/);
+        expect(
+            parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS: '10000', NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS: '60' })
+                .NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS
+        ).toBe(10000);
+    });
+
     it('should parse the throttled immediate limit', () => {
         expect(parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '123' }).ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN).toBe(123);
         // 0 disables throttling

@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 
-import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
+import { DeleteMessageBatchCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import * as z from 'zod';
 
 import { getSubjectMessageAttribute, serde, unwrapSqsBody } from '@nangohq/pubsub';
@@ -14,12 +14,14 @@ import type { AuditBatchWriter } from '@nangohq/audit';
 import type { AuditRecordedEvent } from '@nangohq/types';
 
 const SUBJECT = 'audit';
+const SQS_BATCH_LIMIT = 10;
 
 interface Received {
     receiptHandle: string;
     event: AuditRecordedEvent;
     messageId: string | undefined;
     receiveCount: number | undefined;
+    receivedAt: number;
 }
 
 export interface AuditProcessorProps {
@@ -29,17 +31,22 @@ export interface AuditProcessorProps {
     maxMessages: number;
     waitTimeSeconds: number;
     visibilityTimeoutSeconds: number;
+    batchMaxEvents: number;
+    batchMaxWaitMs: number;
     sqs?: SQSClient;
 }
 
 /**
- * Polls SQS itself rather than through `@nangohq/pubsub`'s Subscriber, so a whole batch collapses into one
- * insert and this consumer decides when messages are acknowledged.
+ * Polls SQS itself rather than through `@nangohq/pubsub`'s Subscriber, so events from many receives collapse
+ * into one insert and this consumer decides when messages are acknowledged. ClickHouse pays a fixed cost per
+ * insert, so a batch is written when it reaches `batchMaxEvents` or its oldest event has waited
+ * `batchMaxWaitMs`. Messages are deleted only after the insert, so a crash redelivers the buffer.
  */
 export class AuditProcessor {
     private readonly sqs: SQSClient;
     private readonly abortController = new AbortController();
     private loops: Promise<void>[] = [];
+    private readonly buffers: Received[][] = [];
 
     constructor(private readonly props: AuditProcessorProps) {
         this.sqs = props.sqs ?? new SQSClient(envs.AWS_REGION ? { region: envs.AWS_REGION } : {});
@@ -50,17 +57,34 @@ export class AuditProcessor {
             return;
         }
         logger.info(`Starting audit consumer on ${this.props.queueUrl}`, { concurrency: this.props.concurrency });
-        this.loops = Array.from({ length: this.props.concurrency }, () => this.pollLoop());
+        this.loops = Array.from({ length: this.props.concurrency }, () => {
+            const buffer: Received[] = [];
+            this.buffers.push(buffer);
+            return this.pollLoop(buffer);
+        });
     }
 
     public async stop(): Promise<void> {
         this.abortController.abort();
-        await Promise.allSettled(this.loops);
+
+        // Past the visibility timeout the buffered messages redeliver anyway, so waiting longer gains nothing.
+        let deadline: NodeJS.Timeout | undefined;
+        const timedOut = new Promise<false>((resolve) => {
+            deadline = setTimeout(() => resolve(false), this.props.visibilityTimeoutSeconds * 1000);
+        });
+        const drained = await Promise.race([Promise.allSettled(this.loops).then(() => true as const), timedOut]);
+        clearTimeout(deadline);
+        if (!drained) {
+            logger.warning('Audit consumer stopped before writing every buffered event; they will be redelivered', {
+                unwritten: this.buffers.reduce((total, buffer) => total + buffer.length, 0)
+            });
+        }
         this.loops = [];
         this.sqs.destroy();
     }
 
-    private async pollLoop(): Promise<void> {
+    // Each loop owns its buffer, so its inserts never overlap.
+    private async pollLoop(buffer: Received[]): Promise<void> {
         const signal = this.abortController.signal;
         while (!signal.aborted) {
             try {
@@ -68,17 +92,14 @@ export class AuditProcessor {
                     new ReceiveMessageCommand({
                         QueueUrl: this.props.queueUrl,
                         MaxNumberOfMessages: this.props.maxMessages,
-                        WaitTimeSeconds: this.props.waitTimeSeconds,
+                        WaitTimeSeconds: this.waitTimeSeconds(buffer),
                         VisibilityTimeout: this.props.visibilityTimeoutSeconds,
                         MessageAttributeNames: ['All'],
                         MessageSystemAttributeNames: ['ApproximateReceiveCount']
                     }),
                     { abortSignal: signal }
                 );
-                const messages = res.Messages ?? [];
-                if (messages.length > 0) {
-                    await this.processBatch(messages, signal);
-                }
+                buffer.push(...(res.Messages ?? []).flatMap((msg) => this.decode(msg)));
             } catch (err) {
                 if (err instanceof Error && err.name === 'AbortError') {
                     break;
@@ -86,14 +107,43 @@ export class AuditProcessor {
                 report(new Error('Audit consumer receive failed', { cause: err }));
                 await new Promise((resolve) => setTimeout(resolve, 1000));
             }
+            while (buffer.length >= this.props.batchMaxEvents || this.isDue(buffer)) {
+                await this.writeBatch(buffer);
+            }
+        }
+        while (buffer.length > 0) {
+            await this.writeBatch(buffer);
         }
     }
 
-    private async processBatch(messages: Message[], signal: AbortSignal): Promise<void> {
-        const received = messages.flatMap((msg) => this.decode(msg));
-        if (received.length === 0) {
-            return;
+    // A long poll would hold a due batch back, so it never waits past the oldest event's window.
+    private waitTimeSeconds(buffer: Received[]): number {
+        const oldest = buffer[0];
+        if (!oldest) {
+            return this.props.waitTimeSeconds;
         }
+        const dueInMs = oldest.receivedAt + this.props.batchMaxWaitMs - Date.now();
+        return Math.min(this.props.waitTimeSeconds, Math.max(0, Math.ceil(dueInMs / 1000)));
+    }
+
+    private isDue(buffer: Received[]): boolean {
+        const oldest = buffer[0];
+        return oldest !== undefined && Date.now() - oldest.receivedAt >= this.props.batchMaxWaitMs;
+    }
+
+    // The batch leaves the buffer whatever the outcome: a failed write left its messages undeleted, so they redeliver.
+    private async writeBatch(buffer: Received[]): Promise<void> {
+        const batch = buffer.slice(0, this.props.batchMaxEvents);
+        try {
+            await this.write(batch);
+        } catch (err) {
+            report(new Error('Audit consumer write failed', { cause: err }));
+        } finally {
+            buffer.splice(0, batch.length);
+        }
+    }
+
+    private async write(received: Received[]): Promise<void> {
         metrics.histogram(metrics.Types.AUDIT_CONSUMER_BATCH_SIZE, received.length);
 
         const result = await this.props.store.recordMany(
@@ -114,7 +164,11 @@ export class AuditProcessor {
             return;
         }
 
-        await Promise.all(received.map(({ receiptHandle }) => this.deleteMessage(receiptHandle, signal)));
+        const chunks: Received[][] = [];
+        for (let i = 0; i < received.length; i += SQS_BATCH_LIMIT) {
+            chunks.push(received.slice(i, i + SQS_BATCH_LIMIT));
+        }
+        await Promise.all(chunks.map((chunk) => this.deleteMessages(chunk)));
     }
 
     // Anything it drops is left undeleted, so it reaches the DLQ with its payload intact instead of being
@@ -154,14 +208,25 @@ export class AuditProcessor {
                 receiptHandle: msg.ReceiptHandle,
                 event: decoded.value,
                 messageId: msg.MessageId,
-                receiveCount: Number.isFinite(receiveCount) ? receiveCount : undefined
+                receiveCount: Number.isFinite(receiveCount) ? receiveCount : undefined,
+                receivedAt: Date.now()
             }
         ];
     }
 
-    private async deleteMessage(receiptHandle: string, signal: AbortSignal): Promise<void> {
+    // A message whose delete fails redelivers after its visibility timeout. The table is a ReplacingMergeTree keyed
+    // on (account_id, occurred_at, id), so the second copy is folded away on merge.
+    private async deleteMessages(chunk: Received[]): Promise<void> {
         try {
-            await this.sqs.send(new DeleteMessageCommand({ QueueUrl: this.props.queueUrl, ReceiptHandle: receiptHandle }), { abortSignal: signal });
+            const res = await this.sqs.send(
+                new DeleteMessageBatchCommand({
+                    QueueUrl: this.props.queueUrl,
+                    Entries: chunk.map((r, index) => ({ Id: String(index), ReceiptHandle: r.receiptHandle }))
+                })
+            );
+            if (res.Failed?.length) {
+                report(new Error('Audit consumer delete partially failed'), { failed: res.Failed.length });
+            }
         } catch (err) {
             report(new Error('Audit consumer delete failed', { cause: err }));
         }
