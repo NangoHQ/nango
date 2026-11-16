@@ -1,6 +1,6 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { ExternalLink, PauseCircle, Plus, Search, ShieldAlert, TriangleAlert } from 'lucide-react';
-import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
+import { parseAsArrayOf, parseAsBoolean, parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
@@ -16,11 +16,13 @@ import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ComboboxSelect } from '@/components/ui/Combobox';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
+import { Switch } from '@/components/ui/Switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConnections } from '@/hooks/useConnections';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useSearchQueryState } from '@/hooks/useSearchQueryState';
+import { useUser } from '@/hooks/useUser';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
@@ -173,6 +175,9 @@ export const ConnectionList = () => {
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
     const [selectedIntegrations, setSelectedIntegrations] = useQueryState('integrations', parseIntegrations);
     const [rawStatusFilters, setSelectedStatusFilters] = useQueryState('status', parseStatusFilters);
+    const [mineOnly, setMineOnly] = useQueryState('mine', parseAsBoolean.withDefault(false));
+    const { user } = useUser();
+    const tags = useMemo(() => (mineOnly && user ? { end_user_email: user.email } : undefined), [mineOnly, user]);
     const selectedStatusFilters = useMemo(
         () => (rawStatusFilters ?? []).filter((s): s is StatusFilterValue => validStatusFilterValues.has(s)),
         [rawStatusFilters]
@@ -208,7 +213,8 @@ export const ConnectionList = () => {
         env,
         search: debouncedSearch,
         integrationIds,
-        withError
+        withError,
+        tags
     });
 
     const connectionsWithIntegrations = useMemo(() => {
@@ -246,7 +252,7 @@ export const ConnectionList = () => {
         }
     }, [displayedConnections.length, selectedStatusFilters.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    const hasFiltered = debouncedSearch || (selectedIntegrations && selectedIntegrations.length > 0) || selectedStatusFilters.length > 0;
+    const hasFiltered = debouncedSearch || (selectedIntegrations && selectedIntegrations.length > 0) || selectedStatusFilters.length > 0 || mineOnly;
 
     const connectionCount = displayedConnections.length;
     const hasConnections = connectionCount > 0;
@@ -338,6 +344,10 @@ export const ConnectionList = () => {
                                     reorderOnSelect={false}
                                     showSearch={false}
                                 />
+                                <label className="flex shrink-0 cursor-pointer items-center gap-2 px-1.5 type-text-regular-sm text-text-default">
+                                    <Switch checked={mineOnly} onCheckedChange={(checked) => void setMineOnly(checked || null)} />
+                                    My connections
+                                </label>
                                 <PermissionGate condition={canCreateTestConnection}>
                                     {(allowed) => (
                                         <ButtonLink to={`/${env}/connections/create`} size="md" disabled={!allowed} className="ml-auto">
