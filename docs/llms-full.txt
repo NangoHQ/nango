@@ -16231,6 +16231,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `deepseek` | DeepSeek | API_KEY | [docs](https://nango.dev/docs/api-integrations/deepseek.md) | [connect](https://nango.dev/docs/api-integrations/deepseek/connect.md) |  | other |
 | `demodesk` | DemoDesk | API_KEY | [docs](https://nango.dev/docs/api-integrations/demodesk.md) | [connect](https://nango.dev/docs/api-integrations/demodesk/connect.md) |  | productivity |
 | `dentally` | Dentally | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/dentally.md) | [connect](https://nango.dev/docs/api-integrations/dentally/connect.md) | [setup](https://nango.dev/docs/api-integrations/dentally/how-to-register-your-own-dentally-oauth-app.md) | other |
+| `deputy` | Deputy | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/deputy.md) |  | [setup](https://nango.dev/docs/api-integrations/deputy/how-to-register-your-own-deputy-oauth-app.md) | hr |
 | `devin` | Devin | API_KEY | [docs](https://nango.dev/docs/integrations/all/devin.md) | [connect](https://nango.dev/docs/integrations/all/devin/connect.md) |  | dev-tools |
 | `dialpad` | Dialpad | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/dialpad.md) |  |  | communication |
 | `dialpad-sandbox` | Dialpad (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/dialpad-sandbox.md) |  |  | communication |

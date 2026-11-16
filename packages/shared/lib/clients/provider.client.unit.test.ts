@@ -73,3 +73,60 @@ describe('microsoft-admin client_credentials', () => {
         });
     });
 });
+
+describe('deputy', () => {
+    async function withDeputyServer(response: Record<string, unknown>, fn: (host: string, requests: { url: string; body: string }[]) => Promise<void>): Promise<void> {
+        const requests: { url: string; body: string }[] = [];
+        const server = http.createServer((req, res) => {
+            let body = '';
+            req.on('data', (chunk) => (body += chunk));
+            req.on('end', () => {
+                requests.push({ url: req.url ?? '', body });
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(response));
+            });
+        });
+        await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+        const { port } = server.address() as AddressInfo;
+        try {
+            await fn(`127.0.0.1:${port}`, requests);
+        } finally {
+            await new Promise<void>((resolve) => server.close(() => resolve()));
+        }
+    }
+    const deputy = { ...config, unique_key: 'deputy', provider: 'deputy', oauth_scopes: '' } as unknown as ProviderConfig;
+
+    it('stores the install endpoint without its scheme', async () => {
+        const raw = { access_token: 'token', refresh_token: 'refresh', expires_in: 86400, endpoint: 'https://acme.au.deputy.com/' };
+        await withDeputyServer(raw, async (host, requests) => {
+            const token = await providerClient.getToken(deputy, { auth_mode: 'OAUTH2' } as ProviderOAuth2, `http://${host}/my/oauth/access_token`, 'the-code', 'https://cb', '');
+            expect(Object.fromEntries(new URLSearchParams(requests[0]!.body))).toEqual({
+                client_id: 'client-id',
+                client_secret: 'client-secret',
+                redirect_uri: 'https://cb',
+                grant_type: 'authorization_code',
+                code: 'the-code',
+                scope: 'longlife_refresh_token'
+            });
+            expect(token).toMatchObject({ access_token: 'token', refresh_token: 'refresh', endpoint: 'acme.au.deputy.com' });
+        });
+    });
+
+    it('refreshes on the install endpoint, not the token URL', async () => {
+        await withDeputyServer({ access_token: 'new', refresh_token: 'rotated', expires_in: 86400 }, async (host, requests) => {
+            const provider = {
+                auth_mode: 'OAUTH2',
+                token_url: 'https://once.deputy.com/my/oauth/access_token',
+                refresh_url: 'http://${connectionConfig.endpoint}/oauth/access_token'
+            } as ProviderOAuth2;
+            const connection = {
+                credentials: { type: 'OAUTH2', access_token: 'old', refresh_token: 'refresh', raw: {} },
+                connection_config: { endpoint: host }
+            } as unknown as DBConnectionDecrypted;
+            const token = await providerClient.refreshToken(provider, deputy, connection, 'https://cb');
+            expect(requests[0]!.url).toBe('/oauth/access_token');
+            expect(Object.fromEntries(new URLSearchParams(requests[0]!.body))).toMatchObject({ grant_type: 'refresh_token', refresh_token: 'refresh', scope: 'longlife_refresh_token' });
+            expect(token).toMatchObject({ access_token: 'new', refresh_token: 'rotated' });
+        });
+    });
+});

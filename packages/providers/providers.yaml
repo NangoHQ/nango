@@ -10766,6 +10766,29 @@ dentally:
                 - api.ca.dentally.com
             doc_section: '#step-1-choose-your-environment'
 
+deputy:
+    display_name: Deputy
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://once.deputy.com/my/oauth/login
+    token_url: https://once.deputy.com/my/oauth/access_token
+    refresh_url: https://${connectionConfig.endpoint}/oauth/access_token
+    default_scopes:
+        - longlife_refresh_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_response_metadata:
+        - endpoint
+    proxy:
+        base_url: https://${connectionConfig.endpoint}/api
+    docs: https://nango.dev/docs/api-integrations/deputy
+    setup_guide_url: https://nango.dev/docs/api-integrations/deputy/how-to-register-your-own-deputy-oauth-app
+
 devin:
     display_name: Devin
     categories:

@@ -1436,6 +1436,7 @@
               "api-integrations/deepseek",
               "api-integrations/demodesk",
               "api-integrations/dentally",
+              "api-integrations/deputy",
               "integrations/all/devin",
               "integrations/all/dialpad",
               "integrations/all/dialpad-sandbox",
