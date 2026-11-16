@@ -99,7 +99,8 @@ export const auditConnectionCredentialsRead = maybeAuditable<GetConnection>({
 // Data plane: the hot path, so nothing here does a lookup.
 export const auditPublicConnectionCredentialsRead = maybeAuditable<GetPublicConnection>({
     policy: Audit.auditable({ resource: 'connection', action: 'credentials_read', scope: 'environment', dataPlaneScope: 'read_credentials' }),
-    // The endpoint returns credentials whenever the key allows it, so every denial is a denied credentials read.
+    // No parameter asks for credentials here: a plain read returns them when the API key's scopes allow it,
+    // so every denial is recorded, even one that might only have wanted the connection.
     skipWhen: skipUnlessCredentialsRead(() => true),
     subject: callerSubject,
     atFinish: (req) => ({
