@@ -15,7 +15,7 @@ export interface FunctionDetails extends FunctionSchemas {
     scopes: string[];
     scopesMatch: 'all' | 'any';
     frequency: string | null;
-    pullCommand: string | null;
+    pullCommand: string;
     runType: 'sync' | 'action' | 'tool' | null;
     delete: { type: 'sync' | 'action'; description: string } | undefined;
     code: { kind: 'deployed'; type: FunctionListType } | { kind: 'template'; type: FunctionType };
@@ -76,7 +76,7 @@ export function toFunctionDetails(
             ...base,
             scopes: requiredScopes?.all ?? requiredScopes?.any ?? [],
             scopesMatch: requiredScopes?.any ? 'any' : 'all',
-            pullCommand: null,
+            pullCommand: buildPullCommand({ integration, name: fn.name, type: 'tool', source: { env } }),
             code: { kind: 'deployed', type: 'tool' }
         };
     }

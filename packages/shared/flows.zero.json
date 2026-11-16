@@ -459440,7 +459440,7 @@
                 "output": ["ActionOutput_highlevel_listcustomfields"],
                 "scopes": ["locations/customFields.readonly"],
                 "usedModels": ["ActionInput_highlevel_listcustomfields", "ActionOutput_highlevel_listcustomfields"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_highlevel_listcustomfields": {

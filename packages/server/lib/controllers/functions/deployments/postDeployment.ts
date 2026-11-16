@@ -77,6 +77,9 @@ export const postFunctionDeployment = asyncWrapperWithEnvironment<PostFunctionDe
 
 function sendDeployFunctionError(res: DeploymentResponse, error: DeployFunctionServiceError): void {
     switch (error.code) {
+        case 'legacy_actions_deprecated':
+            res.status(403).send({ error: { code: error.code, message: error.message } });
+            return;
         case 'customer_api_key_required':
             res.status(403).send({ error: { code: 'forbidden', message: error.message } });
             return;
@@ -103,6 +106,9 @@ function sendDeployFunctionError(res: DeploymentResponse, error: DeployFunctionS
 
 function sendDeployTemplateError(res: DeploymentResponse, error: DeployTemplateServiceError): void {
     switch (error.code) {
+        case 'legacy_actions_deprecated':
+            res.status(403).send({ error: { code: error.code, message: error.message } });
+            return;
         case 'integration_not_found':
             res.status(404).send({ error: { code: 'integration_not_found', message: error.message } });
             return;

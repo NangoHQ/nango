@@ -13,7 +13,10 @@ import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
 import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
 import { parseIntegrationDefinitions } from './definitions.js';
+import { createFunctionsBundle, resolveDeploySource } from './functions.js';
+import { tsToJsPath } from './project-path.js';
 import { badExportCompilerError, CompileError, fileErrorToText, ReadableError, tsDiagnosticToText } from './utils.js';
+import { functionVersionHash } from './version.js';
 
 // import type { BabelErrorType } from './constants.js';
 import type { SourcemapOption } from '../types.js';
@@ -122,8 +125,22 @@ export async function compileAllFunctions({
             );
         }
 
+        const bundle = await createFunctionsBundle({
+            fullPath,
+            functionConfigs: def.value.functions,
+            reconciliationScope: { kind: 'environment' },
+            source: resolveDeploySource()
+        });
+        if (bundle.isErr()) {
+            spinner.fail('Failed to compute function versions');
+            console.log('');
+            console.error(chalk.red(bundle.error.message));
+            return Err(bundle.error);
+        }
+        const functions = def.value.functions.map((config, i) => ({ ...config, version: functionVersionHash(bundle.value.functions[i]!) }));
+
         generateNangoJson({ parsed: def.value, fullPath, debug });
-        generateFunctionsJson({ functions: def.value.functions, fullPath, debug });
+        generateFunctionsJson({ functions, fullPath, debug });
 
         spinner.succeed();
     } catch (err) {
@@ -429,10 +446,6 @@ export async function compileFunction({
         return Err('failed_to_write_output');
     }
     return Ok(true);
-}
-
-export function tsToJsPath(filePath: string) {
-    return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace(/\.js$/, '.cjs');
 }
 
 const FEATURE_NANGO_METHODS: Record<Feature, string[]> = {
