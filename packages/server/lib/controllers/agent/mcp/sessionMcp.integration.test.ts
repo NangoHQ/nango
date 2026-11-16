@@ -763,20 +763,6 @@ describe('/session/:sessionId/mcp', () => {
         });
     });
 
-    it('tells a 2025-11-25 client every tool runs without tasks', async () => {
-        const { apiKey } = await seedTenant();
-        const { token, mcpPath } = await createSession(apiKey);
-        const { client, responses } = await connectClient({ token, mcpPath, era: 'legacy' });
-
-        await client.listTools();
-
-        const listed = responses.at(-1).result;
-        expect(listed.tools.map((tool: { execution?: unknown }) => tool.execution)).toStrictEqual(Array(4).fill({ taskSupport: 'forbidden' }));
-        expect(listed).not.toHaveProperty('ttlMs');
-
-        await client.close();
-    });
-
     // Tool definitions change without notice, so a client must not cache them.
     it('tells a 2026-07-28 client not to cache the tool list', async () => {
         const { apiKey } = await seedTenant();

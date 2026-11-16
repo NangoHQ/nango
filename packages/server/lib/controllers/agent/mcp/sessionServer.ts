@@ -14,7 +14,7 @@ import { callAgentSessionTool, MAX_TOOL_NAME_LENGTH } from './sessionTool.js';
 import { toolSearchTool } from './toolSearch/search.js';
 
 import type { AgentSessionCallableTool, AgentSessionMcpContext, AgentSessionMcpTool } from './sessionTool.js';
-import type { ProtocolEra, RegisteredTool, RequestId, Tool, ToolAnnotations } from '@modelcontextprotocol/server';
+import type { RegisteredTool, RequestId, Tool, ToolAnnotations } from '@modelcontextprotocol/server';
 import type { AgentSession, AgentSessionCompiledTool, AgentSessionCompiledToolset, AgentSessionToolInput } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -55,11 +55,7 @@ const REGISTRATION_INPUT_SCHEMA = fromJsonSchema<Record<string, unknown>>({
 
 const INTEGRATION_TOOL_METRIC = 'integration_tool';
 
-export function createAgentSessionMcpServer(
-    params: Omit<AgentSessionMcpContext, 'callable'>,
-    requestBody?: unknown,
-    protocolEra: ProtocolEra = 'modern'
-): McpServer {
+export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext, 'callable'>, requestBody?: unknown): McpServer {
     const { session, account } = params;
     const originalToolArgumentsByRequestId = getOriginalToolArgumentsByRequestId(requestBody);
 
@@ -139,7 +135,7 @@ export function createAgentSessionMcpServer(
         const tools = await withActionInputSchemas({ page, actions, environmentId: session.environmentId });
 
         return {
-            tools: protocolEra === 'legacy' ? tools.map((tool) => ({ ...tool, execution: { taskSupport: 'forbidden' as const } })) : tools,
+            tools,
             ...(next < listed.length ? { nextCursor: encodeCursor(next) } : {})
         };
     });

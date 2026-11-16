@@ -31,7 +31,7 @@ export const postAgentSessionMcp = asyncWrapperWithEnvironment<PostAgentSessionM
                       return agentSession;
                   })
             : agentSession;
-    const handler = createMcpHandler(({ era }) => createAgentSessionMcpServer({ account, environment, plan, session }, req.body, era));
+    const handler = createMcpHandler(() => createAgentSessionMcpServer({ account, environment, plan, session }, req.body));
 
     try {
         await toNodeHandler(handler)(req, res, req.body);
