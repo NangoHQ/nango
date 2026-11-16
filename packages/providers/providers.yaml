@@ -15205,6 +15205,66 @@ fullenrich:
             format: uuid
             doc_section: '#step-1-getting-your-api-key'
 
+fuse:
+    display_name: Fuse
+    categories:
+        - crm
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.tryfuse.ai/api/v1
+        headers:
+            authorization: Basic ${base64(${apiKey}:)}
+        verification:
+            method: GET
+            endpoints:
+                - /business/me
+    docs: https://nango.dev/docs/api-integrations/fuse
+    docs_connect: https://nango.dev/docs/api-integrations/fuse/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Fuse API key, created under Settings > API Cockpit.
+            example: af_3de1c09a4b2f48a1b7c2d5e6f7a8b9c0
+            pattern: '^af_[A-Za-z0-9]+$'
+            doc_section: '#step-1-creating-your-api-key'
+
+fuse-mcp:
+    display_name: Fuse (MCP)
+    categories:
+        - crm
+        - marketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://core.backend.fuseai.com/oauth/authorize
+    token_url: https://core.backend.fuseai.com/oauth/token
+    registration_url: https://core.backend.fuseai.com/oauth/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.fuseai.com
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+        resource: https://mcp.fuseai.com
+    refresh_params:
+        grant_type: refresh_token
+        resource: https://mcp.fuseai.com
+    default_scopes:
+        - mcp:tools
+    mcp_endpoint: /mcp
+    proxy:
+        headers:
+            accept: application/json,text/event-stream
+        base_url: https://mcp.fuseai.com
+    docs: https://nango.dev/docs/api-integrations/fuse-mcp
+
 gainsight-cc:
     display_name: Gainsight CC
     categories:

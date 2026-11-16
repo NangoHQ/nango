@@ -1,0 +1,97 @@
+---
+title: 'Fuse (MCP)'
+sidebarTitle: 'Fuse (MCP)'
+description: 'Integrate your application with the Fuse MCP server'
+---
+
+## 🚀 Quickstart
+
+Connect to Fuse (MCP) with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Fuse (MCP)_.
+    </Step>
+    <Step title="Authorize Fuse">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then sign in to Fuse and approve access. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Initialize the Fuse MCP connection">
+    Make your first MCP request to Fuse (initialize handshake). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/mcp" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {
+                        "name": "nango-client",
+                        "version": "1.0.0"
+                    }
+                }
+            }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/mcp',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'initialize',
+                params: {
+                    protocolVersion: '2024-11-05',
+                    capabilities: {},
+                    clientInfo: {
+                        name: 'nango-client',
+                        version: '1.0.0'
+                    }
+                }
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+     </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Fuse (MCP) guides
+
+Nango uses **dynamic client registration** with Fuse's OAuth server, so you do not need to register an application: create the integration in Nango and authorize with your Fuse account. Nango requests the `mcp:tools` scope. Access tokens last one hour and Nango refreshes them for you. Tool calls run as the Fuse user who authorized the connection, with that user's team data and credits.
+
+The server exposes Fuse's tools for B2B prospect and company search, contact enrichment (verified emails and phone numbers), buying signals such as job changes, hiring and funding, lists, AI-written email and LinkedIn campaigns, and CRM sync. Call `tools/list` after initializing to see the current set. Fuse limits each user to 60 requests per minute and 5,000 per day.
+
+Official docs: [Connect to the Fuse MCP server](https://docs.fuseai.com/mcp/connect)
+
+---
