@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { rankSessionTools, searchOperationMeta, toolInputOf, withModelDefinitionsHoisted } from './agentSessionToolSearch.service.js';
+import { rankSessionTools, searchOperationMeta, toolInputOf, trimRelated, withModelDefinitionsHoisted } from './agentSessionToolSearch.service.js';
 
 import type { ToolSlugLookup } from './agentSessionToolSearch.service.js';
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, AgentSessionToolMatch } from '@nangohq/types';
@@ -345,6 +345,90 @@ describe('withModelDefinitionsHoisted', () => {
         { type: 'object' }
     ])('leaves a schema with nothing to hoist unchanged', (schema) => {
         expect(withModelDefinitionsHoisted(schema)).toBe(schema);
+    });
+});
+
+describe('trimRelated', () => {
+    function scored(slug: string, score: number) {
+        return {
+            slug,
+            integration: 'gmail',
+            action: slug,
+            provider: 'google-mail',
+            description: '',
+            connection: { status: 'not_connected' } as const,
+            listed: false,
+            score
+        };
+    }
+
+    function tools(prefix: string, count: number) {
+        return Array.from({ length: count }, (_, index) => scored(`${prefix}_${index}`, 0.5 + index / 100));
+    }
+
+    function slugs(ranking: { related: { slug: string }[] } | undefined) {
+        return ranking?.related.map(({ slug }) => slug);
+    }
+
+    it('keeps fewer related tools when the query already has a match', () => {
+        const [withMatch, withoutMatch] = trimRelated([
+            { best: [scored('send_email', 0.1)], related: tools('a', 15) },
+            { best: [], related: tools('b', 15) }
+        ]);
+
+        expect(slugs(withMatch)).toStrictEqual(['a_0', 'a_1', 'a_2']);
+        expect(slugs(withoutMatch)).toStrictEqual(['b_0', 'b_1', 'b_2', 'b_3', 'b_4']);
+    });
+
+    it('drops a related tool that another query returns as a match', () => {
+        const [send, read] = trimRelated([
+            { best: [scored('send_email', 0.1)], related: [scored('get_message', 0.6)] },
+            { best: [scored('get_message', 0.2)], related: [scored('send_email', 0.7), scored('list_labels', 0.7)] }
+        ]);
+
+        expect(slugs(send)).toStrictEqual([]);
+        expect(slugs(read)).toStrictEqual(['list_labels']);
+    });
+
+    it('lists a tool related to several queries once, under the one it scores best on', () => {
+        const [first, second, third] = trimRelated([
+            { best: [], related: [scored('list_labels', 0.7)] },
+            { best: [], related: [scored('list_labels', 0.5)] },
+            { best: [], related: [scored('list_labels', 0.5)] }
+        ]);
+
+        expect(slugs(first)).toStrictEqual([]);
+        expect(slugs(second)).toStrictEqual(['list_labels']);
+        expect(slugs(third)).toStrictEqual([]);
+    });
+
+    it('fills the cap from deeper down when a query loses tools to another', () => {
+        const [first, second] = trimRelated([
+            { best: [scored('send_email', 0.1)], related: tools('a', 3) },
+            { best: [scored('get_message', 0.1)], related: [...tools('a', 3), ...tools('b', 3)] }
+        ]);
+
+        expect(slugs(first)).toStrictEqual(['a_0', 'a_1', 'a_2']);
+        expect(slugs(second)).toStrictEqual(['b_0', 'b_1', 'b_2']);
+    });
+
+    it('says when a query lost related tools to another query', () => {
+        const [first, second, third] = trimRelated([
+            { best: [], related: [scored('list_labels', 0.5)] },
+            { best: [], related: [scored('list_labels', 0.6)] },
+            { best: [], related: [] }
+        ]);
+
+        expect(first?.relatedElsewhere).toBe(false);
+        expect(second?.relatedElsewhere).toBe(true);
+        expect(third?.relatedElsewhere).toBe(false);
+    });
+
+    it('trims a single query the same way', () => {
+        const [only] = trimRelated([{ best: [scored('send_email', 0.1)], related: tools('a', 15) }]);
+
+        expect(slugs(only)).toHaveLength(3);
+        expect(only?.relatedElsewhere).toBe(false);
     });
 });
 

@@ -93,7 +93,10 @@ const LEADING_MATCH_SCORE = 0.65;
 const LEADING_MATCH_MARGIN = 0.1;
 
 const MAX_BEST_MATCHES = 5;
-const MAX_RELATED_MATCHES = 15;
+const MAX_RELATED_WITH_MATCH = 3;
+const MAX_RELATED_WITHOUT_MATCH = 5;
+// Kept deeper than either cap, so a query that loses tools to another query in the same call still has some left.
+const MAX_RELATED_CANDIDATES = 15;
 
 interface SearchCandidate {
     slug: string;
@@ -142,17 +145,17 @@ export async function searchSessionTools({
             void logCtx.warn('Could not look up connections created in this session', { error: err });
             return session;
         });
-        const ranked = queries.map((query) => ({ query, ...rankSessionTools({ session: current, query, slugOf }) }));
+        const ranked = trimRelated(queries.map((query) => ({ query, ...rankSessionTools({ session: current, query, slugOf }) })));
         const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.flatMap(({ best }) => best) });
 
-        const results = ranked.map(({ query, best, related: weaker }): AgentSessionToolSearchQueryResult => {
+        const results = ranked.map(({ query, best, related: weaker, relatedElsewhere }): AgentSessionToolSearchQueryResult => {
             // It's possible a tool was removed after the session compiled, so we set input as unavailable.
             const matches = best.map((candidate) =>
                 toMatch(candidate, candidate.input ?? inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' })
             );
             const related = weaker.map((candidate) => toMatch(candidate, undefined));
 
-            return { query, guidance: guidanceFor({ session, query, matches, related }), matches, related };
+            return { query, guidance: guidanceFor({ session, query, matches, related, relatedElsewhere }), matches, related };
         });
 
         await logCtx.enrichOperation({ meta: searchOperationMeta({ goal, results }) });
@@ -209,7 +212,7 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
     for (const { candidate, score } of scored) {
         if (score <= bestMatchScore && best.length < MAX_BEST_MATCHES) {
             best.push({ ...candidate, score });
-        } else if (related.length < MAX_RELATED_MATCHES) {
+        } else if (related.length < MAX_RELATED_CANDIDATES) {
             related.push({ ...candidate, score });
         }
     }
@@ -226,6 +229,32 @@ function bestMatchScoreFor(topScore: number | undefined): number {
     }
 
     return Math.max(BEST_MATCH_SCORE, topScore + LEADING_MATCH_MARGIN);
+}
+
+/**
+ * A related tool is listed once per call, under the query it scores best on, and not at all when another
+ * query already returns it as a match. A query with a match gets fewer, since the agent already has a
+ * tool to call. Matches are left alone, so every query keeps its own answer.
+ */
+export function trimRelated<T extends { best: ScoredCandidate[]; related: ScoredCandidate[] }>(rankings: T[]): (T & { relatedElsewhere: boolean })[] {
+    const matched = new Set(rankings.flatMap(({ best }) => best.map((candidate) => candidate.slug)));
+
+    const closest = new Map<string, { index: number; score: number }>();
+    rankings.forEach(({ related }, index) => {
+        for (const { slug, score } of related) {
+            const current = closest.get(slug);
+            if (!current || score < current.score) {
+                closest.set(slug, { index, score });
+            }
+        }
+    });
+
+    return rankings.map((ranking, index) => {
+        const own = ranking.related.filter(({ slug }) => !matched.has(slug) && closest.get(slug)?.index === index);
+        const max = ranking.best.length > 0 ? MAX_RELATED_WITH_MATCH : MAX_RELATED_WITHOUT_MATCH;
+
+        return { ...ranking, related: own.slice(0, max), relatedElsewhere: own.length < ranking.related.length };
+    });
 }
 
 /**
@@ -425,13 +454,19 @@ function guidanceFor({
     session,
     query,
     matches,
-    related
+    related,
+    relatedElsewhere
 }: {
     session: AgentSession;
     query: string;
     matches: AgentSessionToolMatch[];
     related: AgentSessionToolMatch[];
+    relatedElsewhere: boolean;
 }): string {
+    if (matches.length === 0 && related.length === 0 && relatedElsewhere) {
+        return `No tool closely matches '${query}'. The tools closest to it are already listed under another query in this search.`;
+    }
+
     if (matches.length === 0 && related.length === 0) {
         return `No tool in this session matches '${query}'. Try a shorter query, or words describing the operation rather than the product, and note that this session may simply not carry a tool for it.`;
     }
