@@ -3,7 +3,7 @@ import { useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useUnmount } from 'react-use';
 
-import { Button } from '@nangohq/design-system';
+import { Button, LinkButton } from '@nangohq/design-system';
 import Nango from '@nangohq/frontend';
 
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
@@ -139,12 +139,12 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                 <p className="text-text-muted text-sm">
                     Connect your account just like your users would in your app. <br />
                     This will create a connection for your{' '}
-                    <Button asChild variant="link-accent">
+                    <LinkButton asChild size="lg">
                         <Link to={`/${env}/integrations/${integration?.unique_key}`}>
                             Github integration
                             <LinkIcon />
                         </Link>
-                    </Button>
+                    </LinkButton>
                     .
                 </p>
             </div>

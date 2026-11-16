@@ -67,6 +67,17 @@ describe('deployTemplateTool', () => {
         }
     });
 
+    it('returns the deprecation message publicly', async () => {
+        const message = 'Actions are deprecated. Use createTool instead.';
+        vi.spyOn(functionDeploymentService, 'deployTemplate').mockResolvedValue(Err(new functionDeploymentService.LegacyActionsDeprecatedError()));
+        const result = await deployTemplateTool.handler({ integration_id: 'github', template: 'legacy', function_type: 'action' }, context);
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+            expect(result.error.message).toBe(message);
+        }
+    });
+
     it('maps infrastructure template failures to an internal MCP error', async () => {
         vi.spyOn(functionDeploymentService, 'deployTemplate').mockResolvedValue(
             Err(

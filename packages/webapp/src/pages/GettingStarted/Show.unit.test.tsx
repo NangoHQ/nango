@@ -27,7 +27,7 @@ vi.mock('../PageNotFound', () => ({ default: () => null }));
 vi.mock('../../hooks/useToast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('../../store', () => ({ useStore: (selector: (state: Record<string, unknown>) => unknown) => selector({ env: 'dev' }) }));
 vi.mock('../../layout/DashboardLayout', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
-vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }));
+vi.mock('@sentry/react', () => ({ captureException: vi.fn() }));
 vi.mock('react-helmet', () => ({ Helmet: () => null }));
 
 describe('GettingStarted', () => {

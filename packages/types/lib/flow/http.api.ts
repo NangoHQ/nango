@@ -32,7 +32,7 @@ export type PostPreBuiltDeploy = ApiEndpoint<{
         scriptName: string;
         type: ScriptTypeLiteral;
     };
-    Error: ApiError<'unknown_provider'> | ApiError<'failed_to_deploy', Error[]>;
+    Error: ApiError<'unknown_provider' | 'legacy_actions_deprecated'> | ApiError<'failed_to_deploy', Error[]>;
     Success: {
         data: {
             id: number;

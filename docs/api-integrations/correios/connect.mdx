@@ -1,0 +1,42 @@
+---
+title: 'Correios - How do I link my account?'
+sidebarTitle: 'Correios'
+---
+
+## Overview
+
+To authenticate with Correios, you need:
+
+1. **Meu Correios Username** - the login of your company's Meu Correios account.
+2. **API Access Code** - an access code generated in Correios Web Services (CWS).
+3. **Contract Number** - your commercial contract number with Correios.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A company (CNPJ) Meu Correios account.
+- A commercial contract with Correios, with the APIs you need enabled on it.
+
+### Step 1: Create an API access code
+
+1. Log in to [Correios Web Services (CWS)](https://cws.correios.com.br) with your Meu Correios account.
+2. Open **Gestão de acesso a APIs** and generate an API access code.
+3. Copy the access code and keep it safe: it is used as the password for the API.
+
+### Step 2: Find your contract number
+
+1. Find your commercial contract number in CWS or in your contract with Correios.
+2. Use the production environment (`api.correios.com.br`) unless Correios has set you up for homologation (`apihom.correios.com.br`).
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Correios.
+2. Choose the **Environment**, then enter your **Meu Correios Username**, **API Access Code** and **Contract Number**.
+3. Submit the form, and you should be successfully authenticated.
+
+Nango sends them to the Correios Token API, which returns a token for the other Correios APIs. Wrong credentials are rejected there, so the connection is only created when they are valid.
+
+<img src="/api-integrations/correios/form.png" alt="Correios Connect UI form with the Environment, Meu Correios Username, API Access Code and Contract Number fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Correios.

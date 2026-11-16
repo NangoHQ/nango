@@ -628,7 +628,7 @@ export const analyticsEventCatalogue = defineCatalogue({
     'agents:tool_call_complete': {
         surface: 'server',
         insight:
-            'Which tools do agents call most, which fail most often, which return large results or run slowly, and what the agent was trying to get done with each call',
+            'Which tools do agents call most, which fail most often and whether a failing function is ours or one the customer wrote, which return large results or run slowly, and what the agent was trying to get done with each call',
         fires: 'When a tool call in an agent session returns',
         properties: z.object({
             ...agentSession,
@@ -640,13 +640,15 @@ export const analyticsEventCatalogue = defineCatalogue({
             integration_id: z.string().optional(),
             underlying_error_code: z.string().optional(),
             is_mcp_tool: z.boolean().optional(),
+            // Catalog is a function Nango ships, custom is one the customer wrote. Unset for MCP tools and calls that failed before the tool resolved.
+            function_source: z.enum(['catalog', 'custom']).optional(),
             goal: z.string().optional(),
             intent: z.string().optional()
         })
     },
     'agents:proxy_request_complete': {
         surface: 'server',
-        insight: 'Which integration APIs agents call through the proxy, and how often those requests fail',
+        insight: 'Which integration APIs agents call through the proxy, how often those requests fail, and which missing tools sent the agent there',
         fires: 'When a proxy request from an agent session returns',
         properties: z.object({
             ...agentSession,
@@ -657,19 +659,23 @@ export const analyticsEventCatalogue = defineCatalogue({
             http_method: stringOf<HTTP_METHOD>().optional(),
             provider: z.string().optional(),
             http_status: z.number().optional(),
-            provider_error_code: z.string().optional()
+            provider_error_code: z.string().optional(),
+            goal: z.string().optional(),
+            intent: z.string().optional()
         })
     },
     'agents:tool_search_complete': {
         surface: 'server',
         insight: 'How often does tool search return a tool the agent then uses, read against the task the agent was searching for',
-        fires: 'When a tool search in an agent session returns',
+        fires: 'Once per query when a tool search in an agent session returns',
         properties: z.object({
             ...agentSession,
             meta_tool: z.literal('nango_tool_search'),
             ...outcome,
             ...toolCallResult,
             query: z.string().optional(),
+            // A call searches several queries at once. Its events share log_operation_id, so searches per task count distinct ids.
+            query_count: z.number().optional(),
             goal: z.string().optional(),
             match_count: z.number(),
             related_count: z.number(),

@@ -1,0 +1,29 @@
+---
+title: 'How to register your own Melhor Envio OAuth app'
+sidebarTitle: 'Melhor Envio Setup'
+description: 'Create a Melhor Envio app and connect its credentials to Nango'
+---
+
+This guide shows you how to create a Melhor Envio app to get your OAuth credentials (client ID & secret). Production and sandbox are separate environments: create an app in each one you use, and a Nango integration for each.
+
+<Steps>
+  <Step title="Create a Melhor Envio account">
+    Sign up for [Melhor Envio](https://melhorenvio.com.br) (production) or the [sandbox](https://app-sandbox.melhorenvio.com.br) for testing.
+  </Step>
+  <Step title="Create an app">
+    1. In the Melhor Envio panel, open **Integrações > Área Dev.** ([production](https://app.melhorenvio.com.br/integracoes/area-dev), [sandbox](https://app-sandbox.melhorenvio.com.br/integracoes/area-dev)).
+    2. Click **Cadastrar aplicativo** and fill in the app details.
+    3. Set the callback URL to `https://api.nango.dev/oauth/callback` (or your own [custom callback URL](/guides/auth/auth-guide#custom-oauth-callback-url-optional)). It must match exactly, or Melhor Envio answers `Client invalid`.
+    4. Save, then copy the **Client ID** and **Client Secret**.
+  </Step>
+  <Step title="Add the credentials in Nango">
+    In your Melhor Envio integration in Nango, paste the client ID and secret, and add the [scopes](https://docs.melhorenvio.com.br/reference/fluxo-de-autoriza%C3%A7%C3%A3o) your integration needs, for example `users-read`, `shipping-calculate` and `shipping-tracking`.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details, see [Melhor Envio's authorization flow](https://docs.melhorenvio.com.br/reference/fluxo-de-autoriza%C3%A7%C3%A3o).
+
+---

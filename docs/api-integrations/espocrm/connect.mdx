@@ -1,0 +1,60 @@
+---
+title: 'EspoCRM - How do I link my account?'
+sidebarTitle: 'EspoCRM'
+---
+
+## Overview
+
+To authenticate with EspoCRM, you need:
+
+1. **EspoCRM Host** — the host of your EspoCRM instance, for example `crm.example.com`.
+2. **API Key** — the API key of an EspoCRM API user.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- An EspoCRM instance, self-hosted or on [EspoCRM Cloud](https://www.espocrm.com/cloud-registration/). EspoCRM Cloud offers a 30-day free trial.
+- An administrator account on that instance. API users are created under **Administration**.
+
+### Step 1: Find your EspoCRM host
+
+1. Open your EspoCRM instance in your browser.
+2. Copy the host from the address bar, without `https://` or any path. On EspoCRM Cloud it looks like `yourcompany.espocloud.com`; on a self-hosted install it is your own domain, such as `crm.example.com`.
+
+### Step 2: Create a role for the API user
+
+An API user can only access what its role allows, so create a role that covers the data your integration needs.
+
+1. In EspoCRM, open **Administration** and, under **Users**, click **Roles**.
+
+<img src="/api-integrations/espocrm/admin_roles_link.png" alt="EspoCRM Administration page with the Roles link under Users"/>
+
+2. Create a new role and enter a **Name**.
+3. Under **Scope Level**, set **Access** to **enabled** for each entity the integration needs (for example Accounts and Contacts), and choose the **Create**, **Read**, **Edit** and **Delete** levels it should have.
+4. Click **Save**.
+
+<img src="/api-integrations/espocrm/create_read_only_role.png" alt="EspoCRM role creation form with the role name, permissions and the Save button"/>
+
+### Step 3: Create an API user
+
+1. Go back to **Administration** and, under **Users**, click **API Users**, then click **Create API User**.
+2. Enter a **User Name** and select the role from Step 2 under **Roles**.
+3. Leave **Authentication Method** set to **API Key**, then click **Save**.
+
+<img src="/api-integrations/espocrm/create_api_user.png" alt="EspoCRM Create API User form with a user name, a role and the API Key authentication method"/>
+
+4. On the API user's detail view, click the copy button next to **API Key** to copy the key.
+
+<img src="/api-integrations/espocrm/api_key_created.png" alt="EspoCRM API user detail view with the copy button next to the API Key"/>
+
+### Step 4: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with EspoCRM.
+2. In **EspoCRM Host**, enter your host from Step 1 (for example, `crm.example.com`).
+3. In **API Key**, paste the API key from Step 3.
+4. Submit the form. Nango checks the API key with your EspoCRM instance before saving the connection.
+
+<img src="/api-integrations/espocrm/form.png" alt="EspoCRM Connect UI form with the EspoCRM Host and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to EspoCRM.

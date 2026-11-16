@@ -89,7 +89,7 @@ export const AgentPlayground: React.FC = () => {
     }
 
     return (
-        <DashboardLayout fullWidth className="h-full" actions={<div ref={setToolbarSlot} />}>
+        <DashboardLayout width="narrow" className="h-full" actions={<div ref={setToolbarSlot} />}>
             <Helmet>
                 <title>Agent Playground - Nango</title>
             </Helmet>
@@ -290,14 +290,14 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
 
     if (messages.length === 0) {
         return (
-            <div className="mx-auto flex h-full max-w-[800px] flex-col">
+            <div className="flex h-full flex-col">
                 <EmptyState composer={composer} onPick={send} />
             </div>
         );
     }
 
     return (
-        <div className="mx-auto flex h-full max-w-3xl flex-col">
+        <div className="flex h-full flex-col">
             {toolbarSlot &&
                 createPortal(
                     <Button onClick={onReset}>

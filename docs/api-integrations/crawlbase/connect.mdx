@@ -1,0 +1,36 @@
+---
+title: 'Crawlbase - How do I link my account?'
+sidebarTitle: 'Crawlbase'
+---
+
+## Overview
+
+To authenticate with Crawlbase, you need:
+
+1. **API Token** — your Crawlbase Normal token or JavaScript token.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Crawlbase account. You can [sign up](https://crawlbase.com/signup) for free; no card is needed to start.
+
+### Step 1: Copy your API token
+
+1. Log in to the [Crawlbase console](https://crawlbase.com/console). Your tokens are created automatically when you sign up.
+2. In the left sidebar, open **Settings**, then the [API tokens](https://crawlbase.com/console/settings?tab=tokens) tab.
+3. Under **Default · Standard token**, click **Copy**. This is your Normal token.
+
+<img src="/api-integrations/crawlbase/settings_api_tokens.png" alt="Crawlbase console Settings page on the API tokens tab with the Copy button of the Standard token highlighted"/>
+
+To crawl pages that render content with JavaScript, copy the token under **Default · JavaScript token** instead. Both tokens work with this connection. Use **Rotate** on a token card to reset that token.
+
+### Step 2: Enter your token in the Connect UI
+
+1. Open the form where you need to authenticate with Crawlbase.
+2. Paste your token in the **API Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/crawlbase/form.png" alt="Crawlbase Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Crawlbase.
