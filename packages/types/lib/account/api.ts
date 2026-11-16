@@ -16,7 +16,7 @@ export interface AccountApiKey {
 }
 
 export type ListAccountApiKeys = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'api_key', 'credentials_read', 'account'>;
     Method: 'GET';
     Path: '/api/v1/account/api-keys';
     Success: { data: AccountApiKey[] };

@@ -76,7 +76,7 @@ export const SlackAlertsSettings: React.FC = () => {
                             <Button
                                 className="px-4"
                                 disabled={slackIsConnecting || !allowed}
-                                variant={isConnected ? 'outline' : 'primary'}
+                                variant={isConnected ? 'danger-ghost' : 'primary'}
                                 onClick={isConnected ? slackDisconnect : slackConnect}
                             >
                                 <SlackIcon className="w-5 h-5" />

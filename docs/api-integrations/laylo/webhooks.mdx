@@ -1,0 +1,71 @@
+---
+title: 'How to set up webhooks with Laylo on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive Laylo RSVP and opt-out events in your app using Nango webhooks'
+---
+
+Laylo sends a webhook when a fan RSVPs to a drop (`rsvp`) or opts out (`opt_out`). The event type is in the payload's `type` field.
+
+## How it works
+
+1. Each Laylo account sends its events to your Nango webhook URL with `?nangoConnectionId=<CONNECTION-ID>` appended, so Nango knows which connection they belong to.
+2. Nango verifies the HMAC signature (`X-Signature-256`, computed over `X-Laylo-Timestamp` + the request body) with that connection's secret, and rejects requests older than 5 minutes.
+3. Nango forwards the event to your app or runs your webhook functions for that connection.
+
+## Setup
+
+Repeat these steps for each connection.
+
+### 1. Build the webhook URL
+
+In the Nango dashboard, open your Laylo integration and copy the **Webhook URL**. Append the URL-encoded connection ID:
+
+```
+<NANGO-WEBHOOK-URL>?nangoConnectionId=<URL-ENCODED-CONNECTION-ID>
+```
+
+Connection IDs can contain characters such as `&`, `#`, `+` or spaces, which break the query string if pasted as-is. Encode the ID first, for example with `encodeURIComponent(connectionId)` in JavaScript.
+
+### 2. Register the webhook in Laylo
+
+1. Log in to the connection's Laylo account and go to **Settings → Integrations**.
+2. Paste the URL from step 1 into the **Webhooks** field and click **Submit**.
+3. Laylo generates an **HMAC secret** and shows it once. Copy it.
+
+### 3. Store the HMAC secret on the connection
+
+Laylo issues one secret per Laylo account. Store it as `webhookSecret` in the connection's metadata with [Update connection metadata](/reference/backend/http-api/connections/update-metadata):
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": "<LAYLO-HMAC-SECRET>" }
+  }'
+```
+
+Nango rejects an event if its URL has no `nangoConnectionId`, the connection doesn't exist or has no `webhookSecret`, or the signature doesn't match.
+
+Use **Send test payload** on Laylo's **Settings → Integrations** page to check your setup.
+
+## Handle the webhook
+
+- **Forward it to your app:** Nango forwards the event with connection attribution. See [Webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a function:** see [Webhook functions](/guides/functions/webhook-functions).
+
+Example payload:
+
+```json
+{
+  "type": "rsvp",
+  "email": "test@test.com",
+  "phoneNumber": "+11112223333",
+  "productId": "drop_id_12345",
+  "creatorId": "creator_id_67890"
+}
+```
+
+`opt_out` events have the same shape without `productId`.

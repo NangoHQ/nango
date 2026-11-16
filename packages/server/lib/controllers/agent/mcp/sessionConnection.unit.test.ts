@@ -88,7 +88,7 @@ describe('withMcpToolsDiscovered', () => {
     });
 
     it('keeps every name the session already gave out', async () => {
-        const prefix = 'x'.repeat(30);
+        const prefix = 'x'.repeat(64);
         const toolset: AgentSessionCompiledToolset = {
             'notion-mcp': {
                 provider: 'notion-mcp',

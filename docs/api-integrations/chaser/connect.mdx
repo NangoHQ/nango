@@ -1,0 +1,48 @@
+---
+title: 'Chaser - How do I link my account?'
+sidebarTitle: 'Chaser'
+---
+
+## Overview
+
+To authenticate with Chaser, you need:
+
+1. **API Key** — the key of your Chaser organisation's API key pair.
+2. **API Secret** — the secret issued together with the API key.
+
+This guide will show you how to get both in Chaser.
+
+### Prerequisites
+
+- A Chaser account. You can [start a 10-day free trial](https://www.chaserhq.com/signup) with your name and email, no credit card required.
+
+### Step 1: Create an API organisation
+
+Chaser API keys belong to an organisation that is connected through the Chaser API. If your organisation already uses the Chaser API, skip to Step 2.
+
+1. Log in to [Chaser](https://my.chaserhq.com/login).
+2. On the **Welcome** screen, under **Other ways to connect**, select the API option and click **Connect with Chaser API**.
+3. Enter your company name and click **Connect**.
+
+### Step 2: Get your API key and secret
+
+1. In Chaser, go to **Management** > **Integration**.
+2. On the **Chaser API** card, click **Get API keys**.
+
+<img src="/api-integrations/chaser/integration_get_api_keys.png" alt="Chaser Integration tab with the Get API keys button on the Chaser API card"/>
+
+3. In the **Your Chaser API keys** dialog, copy the **Key** and the **Secret**, then click **Done**.
+
+<img src="/api-integrations/chaser/api_keys_created.png" alt="Chaser dialog Your Chaser API keys showing the Host, Key and Secret fields"/>
+
+<Note>Chaser gives each organisation one key pair, with full access to the organisation. You cannot name it or limit its permissions.</Note>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Chaser.
+2. Enter the **Key** in the **API Key** field and the **Secret** in the **API Secret** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/chaser/form.png" alt="Chaser Connect UI form with the API Key and API Secret fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Chaser.

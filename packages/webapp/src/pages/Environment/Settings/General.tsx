@@ -2,7 +2,7 @@ import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Alert, AlertDescription, Input } from '@nangohq/design-system';
+import { Alert, AlertDescription, InlineCode, Input } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { DocsIconLink } from '@/components/patterns/DocsIconLink';
@@ -91,11 +91,11 @@ export const General: React.FC = () => {
                             <Info />
                             <AlertDescription>
                                 <span>
-                                    When using the CLI for custom functions, add this to your .env:{' '}
-                                    <code className="text-text-strong">
+                                    When using the CLI for custom functions, add{' '}
+                                    <InlineCode>
                                         NANGO_SECRET_KEY_{env.toUpperCase()}={'<secret-key>'}
-                                    </code>
-                                    .
+                                    </InlineCode>{' '}
+                                    to your <InlineCode>.env</InlineCode>.
                                 </span>
                             </AlertDescription>
                         </Alert>

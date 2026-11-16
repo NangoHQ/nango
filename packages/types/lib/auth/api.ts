@@ -72,12 +72,22 @@ export interface ApiKeyCredentials {
     apiKey: string;
 }
 
+/**
+ * Connection-level GitHub App credentials, used instead of the integration's.
+ * Only usable when the `github-app-connection-credentials` flag is enabled.
+ */
+export interface GithubAppConfigOverride {
+    private_key: string;
+    webhook_secret: string;
+}
+
 export interface AppCredentials {
     type: AuthModes['App'];
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
     jwtToken?: string;
+    config_override?: GithubAppConfigOverride | undefined;
 }
 
 export interface OAuth2Credentials extends CredentialsCommon {

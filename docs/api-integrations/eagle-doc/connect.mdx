@@ -1,0 +1,55 @@
+---
+title: 'Eagle Doc - How do I link my account?'
+sidebarTitle: 'Eagle Doc'
+---
+
+## Overview
+
+To authenticate with Eagle Doc, you need:
+
+1. **API Key** — a personal Eagle Doc API key (starts with `API-`) or a business API key (starts with `APIB-`).
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- An Eagle Doc account. You can [sign up](https://docai.eagle-doc.com/#/auth/signup) for the free plan; no credit card is required.
+
+### Step 1: Get your API key
+
+Both kinds of key work. Use a personal key for your own account, or a business key to call the API on behalf of an Eagle Doc business.
+
+**Personal API key**
+
+1. [Log in](https://docai.eagle-doc.com/#/auth/login) to the Eagle Doc dashboard.
+2. In the left menu, expand **For Developer** and click **API key**.
+
+<img src="/api-integrations/eagle-doc/open_api_key_menu.png" alt="Eagle Doc dashboard with the For Developer menu expanded and the API key item highlighted"/>
+
+3. Your personal API key (starts with `API-`) is shown on the page. Click **Copy API key**. Do not click **Generate new API key**: it revokes the current key right away.
+
+<img src="/api-integrations/eagle-doc/copy_api_key.png" alt="Eagle Doc API key page with the Copy API key button"/>
+
+**Business API key**
+
+Business API keys are created by a business owner or admin.
+
+1. If you don't have a business yet, click the account switcher at the top of the dashboard (**Personal**) and choose **Create business**.
+2. Switch to your business, open **Settings** under **Business**, and select the **API keys** tab.
+3. Enter a key name, then click **Create key**.
+
+<img src="/api-integrations/eagle-doc/create_business_api_key.png" alt="Eagle Doc business Settings page with the API keys tab, the key name field and the Create key button"/>
+
+4. Copy the key (starts with `APIB-`) from the **API key created** dialog. It will not be shown again.
+
+<img src="/api-integrations/eagle-doc/business_api_key_created.png" alt="Eagle Doc API key created dialog with the copy button for the new business API key"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Eagle Doc.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/eagle-doc/form.png" alt="Eagle Doc connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Eagle Doc.

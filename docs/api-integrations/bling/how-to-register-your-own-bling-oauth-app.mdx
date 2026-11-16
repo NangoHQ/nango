@@ -1,0 +1,30 @@
+---
+title: 'How to register your own Bling OAuth app'
+sidebarTitle: 'Bling Setup'
+description: 'Create a Bling app and connect its credentials to Nango'
+---
+
+This guide shows you how to create a Bling app to get your OAuth credentials (client ID & secret). Your users then authorize your app to access their Bling account through the API v3.
+
+<Steps>
+  <Step title="Create a Bling account">
+    If you don't have a Bling account, [sign up](https://www.bling.com.br) for one.
+  </Step>
+  <Step title="Create an app">
+    1. In Bling, open the **Central de Extensões** and click **Área do integrador**.
+    2. Click **Criar aplicativo** and fill in the app's basic data.
+    3. Set the **Link de redirecionamento** to `https://api.nango.dev/oauth/callback` (or your own [custom callback URL](/guides/auth/auth-guide#custom-oauth-callback-url-optional)). A Bling app has a single redirect URL.
+    4. Choose the scopes your integration needs, for example products to list products.
+    5. Save, then copy the **Client ID** and **Client Secret** from the **Informações do app** tab.
+  </Step>
+  <Step title="Add the credentials in Nango">
+    In your Bling integration in Nango, paste the client ID and secret. Leave scopes empty: Bling applies the scopes chosen on the app.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details, see [Bling's API v3 documentation](https://developer.bling.com.br/aplicativos).
+
+---

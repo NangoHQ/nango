@@ -148,7 +148,7 @@ export const AppSidebar: React.FC = () => {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
-                <SidebarSeparator className="mb-2" />
+                <SidebarSeparator className="my-1.5" />
                 <ProfileDropdown />
             </SidebarFooter>
         </Sidebar>
