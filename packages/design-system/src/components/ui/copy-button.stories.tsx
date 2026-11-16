@@ -21,9 +21,6 @@ const SIZE_SPEC: Record<(typeof COPY_BUTTON_SIZES)[number], string> = {
     sm: '28 · icon 14'
 };
 
-// One row per size. `extra` freezes a state: data-story-state maps onto the real hover:/focus-visible: variants
-// (see .storybook/preview.css), and `copied` holds the success state that would otherwise revert after 1.5s.
-// Rows are tall enough to fit an open tooltip above the button.
 const Sizes = ({ extra }: { extra: Partial<CopyButtonProps> & Record<`data-${string}`, string> }) => (
     <div className="inline-grid grid-cols-[auto_max-content] items-center gap-x-8 gap-y-12 pt-10">
         {COPY_BUTTON_SIZES.map((size) => (

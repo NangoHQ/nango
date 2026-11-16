@@ -1,16 +1,15 @@
 import { Check, Copy } from 'lucide-react';
-import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 
+import { copyText } from '../../lib/clipboard';
 import { IconButton } from './button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 
 import type { IconButtonProps } from './button';
 
-/** CopyButton only comes in the two smallest IconButton sizes — xs 24 / icon 12, sm 28 / icon 14. */
 export const COPY_BUTTON_SIZES = ['xs', 'sm'] as const;
 export type CopyButtonSize = (typeof COPY_BUTTON_SIZES)[number];
 
-/** How long the check icon and "Copied" tooltip stay before reverting. */
 export const COPY_BUTTON_RESET_MS = 1500;
 
 export interface CopyButtonProps extends Omit<IconButtonProps, 'variant' | 'size' | 'label' | 'children' | 'asChild' | 'loading' | 'onCopy'> {
@@ -36,21 +35,24 @@ export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>(
 
         useEffect(() => () => clearTimeout(timer.current), []);
 
-        const copy = useCallback(async () => {
+        const copy = async () => {
             try {
-                await navigator.clipboard.writeText(value);
+                await copyText(value);
             } catch {
-                // Clipboard access denied or unavailable — don't claim a copy that didn't happen.
                 return;
             }
             setCopiedState(true);
+            // Radix closes the tooltip on pointer-down; reopen it so "Copied" shows after the click.
+            setTooltipOpen(true);
             // a repeat click restarts the window rather than cutting it short
             clearTimeout(timer.current);
             timer.current = setTimeout(() => setCopiedState(false), COPY_BUTTON_RESET_MS);
             onCopy?.(value);
-        }, [onCopy, value]);
+        };
 
         const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+            // Copy buttons often sit inside clickable rows; copying shouldn't also trigger the row.
+            event.stopPropagation();
             onClick?.(event);
             // a consumer's onClick can call preventDefault() to skip the copy
             if (!event.defaultPrevented) {
@@ -60,8 +62,7 @@ export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>(
 
         return (
             <>
-                {/* Radix closes a tooltip on pointer-down; holding it open while copied keeps "Copied" visible after the click. */}
-                <Tooltip open={(tooltipOpen || copied) && !disabled} onOpenChange={setTooltipOpen}>
+                <Tooltip open={tooltipOpen && !disabled} onOpenChange={setTooltipOpen}>
                     <TooltipTrigger asChild>
                         <IconButton
                             ref={ref}
