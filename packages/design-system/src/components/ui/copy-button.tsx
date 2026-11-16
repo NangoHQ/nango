@@ -72,13 +72,13 @@ export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>(
                             variant="ghost"
                             size={size}
                             label={label}
-                            // the Tooltip replaces IconButton's native `title` fallback, which would show a second chip
-                            title=""
                             disabled={disabled}
                             data-copied={copied || undefined}
                             onClick={handleClick}
                             className={className}
                             {...props}
+                            // the Tooltip replaces IconButton's native `title` fallback, which would show a second chip
+                            title=""
                         >
                             {copied ? <Check className={cn('text-icon-success', iconSize)} /> : <Copy className={iconSize} />}
                         </IconButton>
