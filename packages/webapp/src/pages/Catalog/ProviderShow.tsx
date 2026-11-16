@@ -1,9 +1,9 @@
-import { ArrowUpRight, Bot, Ellipsis } from 'lucide-react';
+import { ArrowUpRight, Bot, Ellipsis, Zap } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import { Alert, AlertDescription, Badge, Button, IconButton } from '@nangohq/design-system';
+import { Alert, AlertDescription, Badge, Button, IconButton, SplitButton, SplitButtonAction, SplitButtonMenuTrigger } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -110,8 +110,34 @@ export const CatalogProviderShow: React.FC = () => {
                         </ButtonLink>
                     );
                 }
+                if (oneClickSetupBody && hasCustomSetup(provider)) {
+                    return (
+                        <SplitButton variant="primary" size={size} disabled={!allowed}>
+                            <SplitButtonAction loading={settingUp} onClick={() => void addIntegration(source)}>
+                                <Zap />
+                                Add integration
+                            </SplitButtonAction>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <SplitButtonMenuTrigger label="More ways to add" />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                        onSelect={() => {
+                                            trackSetupButtonClick(provider.name, source);
+                                            void navigate(`/${env}/integrations/create/${provider.name}`);
+                                        }}
+                                    >
+                                        Configure first…
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </SplitButton>
+                    );
+                }
                 return oneClickSetupBody ? (
                     <Button variant="primary" size={size} disabled={!allowed} loading={settingUp} onClick={() => void addIntegration(source)}>
+                        <Zap />
                         Add integration
                     </Button>
                 ) : (
@@ -128,40 +154,18 @@ export const CatalogProviderShow: React.FC = () => {
             }}
         </PermissionGate>
     );
-    const renderSecondarySetupButton = () => {
-        if (existingIntegrationId) {
-            return (
-                canUseAgentPlayground && (
-                    <Button asChild variant="outline" size="md">
-                        <Link
-                            to={`/${env}/playground/agent`}
-                            state={playgroundDraftState(integrationPrompt({ provider: provider.name, integrationName: provider.displayName }))}
-                        >
-                            <Bot />
-                            Try in Playground
-                        </Link>
-                    </Button>
-                )
-            );
-        }
-        return renderCustomSetupButton();
-    };
-    const renderCustomSetupButton = () =>
-        oneClickSetupBody &&
-        hasCustomSetup(provider) && (
-            <PermissionGate asChild condition={canSetUp}>
-                {(allowed) => (
-                    <ButtonLink
-                        to={`/${env}/integrations/create/${provider.name}`}
-                        variant="outline"
-                        size="md"
-                        disabled={!allowed}
-                        onClick={() => trackSetupButtonClick(provider.name, 'header')}
-                    >
-                        Add with options
-                    </ButtonLink>
-                )}
-            </PermissionGate>
+    const renderSecondarySetupButton = () =>
+        existingIntegrationId &&
+        canUseAgentPlayground && (
+            <Button asChild variant="outline" size="md">
+                <Link
+                    to={`/${env}/playground/agent`}
+                    state={playgroundDraftState(integrationPrompt({ provider: provider.name, integrationName: provider.displayName }))}
+                >
+                    <Bot />
+                    Try in Playground
+                </Link>
+            </Button>
         );
     const instantSetup = getInstantSetup(provider);
     const categories = getVisibleCategories(provider);
