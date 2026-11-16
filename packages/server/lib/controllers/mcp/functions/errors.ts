@@ -27,6 +27,7 @@ export function listFunctionsServiceErrorToMcp(error: ListFunctionsError): Error
 export function deployFunctionServiceErrorToMcp(error: DeployFunctionServiceError): Error {
     const code = error.code;
     switch (code) {
+        case 'legacy_actions_deprecated':
         case 'customer_api_key_required':
         case 'integration_not_found':
         case 'invalid_request':
@@ -47,6 +48,7 @@ export function deployFunctionServiceErrorToMcp(error: DeployFunctionServiceErro
 export function deployTemplateServiceErrorToMcp(error: DeployTemplateServiceError): Error {
     const code = error.code;
     switch (code) {
+        case 'legacy_actions_deprecated':
         case 'invalid_request':
         case 'integration_not_found':
         case 'template_not_found':
