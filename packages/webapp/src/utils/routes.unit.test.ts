@@ -18,7 +18,8 @@ describe('envSwitchPath', () => {
     });
 
     it('stays on non-env pages', () => {
-        expect(envSwitchPath('/team-settings', 'prod')).toBeNull();
+        expect(envSwitchPath('/team', 'prod')).toBeNull();
+        expect(envSwitchPath('/profile', 'prod')).toBeNull();
         expect(envSwitchPath('/dev/team/billing', 'prod')).toBeNull();
     });
 });
@@ -26,6 +27,9 @@ describe('envSwitchPath', () => {
 describe('isNonEnvPath', () => {
     describe('direct non-env paths', () => {
         it('matches exact non-env paths', () => {
+            expect(isNonEnvPath('/team')).toBe(true);
+            expect(isNonEnvPath('/profile')).toBe(true);
+            expect(isNonEnvPath('/team/audit')).toBe(true);
             expect(isNonEnvPath('/team-settings')).toBe(true);
             expect(isNonEnvPath('/user-settings')).toBe(true);
             expect(isNonEnvPath('/team/billing')).toBe(true);
@@ -36,6 +40,7 @@ describe('isNonEnvPath', () => {
 
         it('matches non-env paths with sub-paths', () => {
             expect(isNonEnvPath('/team-settings/members')).toBe(true);
+            expect(isNonEnvPath('/profile/enable-2fa')).toBe(true);
             expect(isNonEnvPath('/team/billing/plans')).toBe(true);
             expect(isNonEnvPath('/api-keys/new')).toBe(true);
         });
@@ -50,6 +55,7 @@ describe('isNonEnvPath', () => {
             expect(isNonEnvPath('/team-settings-prod')).toBe(false);
             expect(isNonEnvPath('/user-settings-backup')).toBe(false);
             expect(isNonEnvPath('/teams')).toBe(false);
+            expect(isNonEnvPath('/profiles')).toBe(false);
         });
     });
 

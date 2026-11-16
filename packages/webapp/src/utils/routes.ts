@@ -4,8 +4,8 @@ export const NON_ENV_PATH_PREFIXES = [
     '/account-settings',
     '/team-settings',
     '/user-settings',
-    '/team/billing',
-    '/team/audit',
+    '/team',
+    '/profile',
     '/api-keys'
 ];
 
@@ -52,7 +52,6 @@ export const safeNextPath = (next: string | null | undefined): string => {
 };
 
 export const isNonEnvPath = (pathname: string): boolean => {
-    // Direct non-env path: /team-settings, /team/billing, etc.
     if (NON_ENV_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
         return true;
     }

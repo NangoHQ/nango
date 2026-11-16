@@ -42,7 +42,7 @@ export const Enable2FA: React.FC = () => {
 
     const enrollmentStarted = useRef(false);
 
-    const goToSettings = () => navigate('/user-settings');
+    const goToSettings = () => navigate('/profile');
 
     const cancel = (fromStep: 'scan' | 'save') => {
         track('auth:two_factor_cancel', { step: fromStep });
