@@ -1,0 +1,47 @@
+---
+title: 'Booqable - How do I link my account?'
+sidebarTitle: 'Booqable'
+---
+
+## Overview
+
+To authenticate with Booqable, you need:
+
+1. **Company Slug** — the part of your Booqable account URL before `.booqable.com`.
+2. **Access Token** — a Booqable access token.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A Booqable account. You can [sign up](https://signup.booqable.com) for a 14-day free trial with full access to all features, no credit card required.
+
+### Step 1: Find your company slug
+
+1. Sign in to Booqable.
+2. Look at the address bar of your browser. Your account URL looks like `https://<company-slug>.booqable.com`. For example, if the URL is `https://example.booqable.com`, your company slug is `example`.
+
+### Step 2: Create an access token
+
+1. Click your name in the lower-left corner of the sidebar, then click **User settings**.
+
+<img src="/api-integrations/booqable/user_settings_menu.png" alt="Booqable sidebar menu with User settings selected"/>
+
+2. Scroll to the **Authentication methods** section and click **New authentication method**.
+3. Enter a name for the token, for example the name of your integration, select **Token** and click **Save**.
+
+<img src="/api-integrations/booqable/new_authentication_method.png" alt="Booqable new authentication method dialog with a name entered and Token selected"/>
+
+4. Copy the new token with the copy button next to it.
+
+<img src="/api-integrations/booqable/token_created.png" alt="Booqable Authentication methods section with the copy button next to the new token"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Booqable.
+2. Enter your company slug in the **Company Slug** field and your token in the **Access Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/booqable/form.png" alt="Booqable Connect UI form with the Company Slug and Access Token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Booqable.
