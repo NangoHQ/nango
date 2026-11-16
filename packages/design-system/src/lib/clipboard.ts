@@ -1,11 +1,15 @@
 /**
  * `navigator.clipboard` only exists on secure origins, so a self-hosted dashboard served over plain HTTP
- * falls back to the legacy copy command.
+ * falls back to the legacy copy command, as does a rejected clipboard write.
  */
 export async function copyText(text: string): Promise<void> {
     if (navigator.clipboard) {
-        await navigator.clipboard.writeText(text);
-        return;
+        try {
+            await navigator.clipboard.writeText(text);
+            return;
+        } catch {
+            // Denied permission or an unfocused document; the copy command can still work.
+        }
     }
 
     const textarea = document.createElement('textarea');

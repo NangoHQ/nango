@@ -95,4 +95,5 @@ export {
     type TooltipProviderProps,
     TooltipTrigger
 } from './components/ui/tooltip';
+export { copyText } from './lib/clipboard';
 export { dsTwMergeConfig } from './lib/twMergeConfig';
