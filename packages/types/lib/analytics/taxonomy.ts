@@ -1,4 +1,4 @@
-export type AnalyticsSurface = 'web' | 'cli' | 'server';
+export type AnalyticsSurface = 'web' | 'website' | 'cli' | 'server';
 
 export interface AnalyticsCategories {
     auth: 'Signing up, logging in and account access';
