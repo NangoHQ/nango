@@ -126,16 +126,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     </span>
                 ))}
                 <div className="ml-auto flex items-center gap-1 shrink-0">
-                    {scopes.length > 0 && (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span>
-                                    <CopyButton value={scopes.join(',')} size="2xs" />
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">Copy all</TooltipContent>
-                        </Tooltip>
-                    )}
+                    {scopes.length > 0 && <CopyButton value={scopes.join(',')} label="Copy all" size="2xs" />}
                     {isSharedCredentials ? <Badge>Nango-managed</Badge> : null}
                 </div>
             </div>
@@ -173,14 +164,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     <div className="ml-auto flex items-center gap-1 shrink-0 pl-1">
                         {scopes.length > 0 && !loading && (
                             <>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <span>
-                                            <CopyButton value={scopes.join(',')} size="2xs" />
-                                        </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="top">Copy all</TooltipContent>
-                                </Tooltip>
+                                <CopyButton value={scopes.join(',')} label="Copy all" size="2xs" />
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <IconButton
