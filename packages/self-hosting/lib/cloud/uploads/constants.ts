@@ -1,3 +1,4 @@
+// The limits are separate caps. An upload stops at whichever it reaches first.
 export const TELEMETRY_UPLOAD_MAX_ROWS = 32_768;
 export const TELEMETRY_UPLOAD_ATTRIBUTES_MAX_BYTES = 1024;
 export const TELEMETRY_UPLOAD_MAX_BODY_BYTES = 8 * 1024 * 1024;
