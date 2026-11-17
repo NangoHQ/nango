@@ -38,11 +38,13 @@ import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
 import { approvalProperties, pendingApprovals } from './approvalTracking';
 import { describeChatError } from './chatError';
+import { AddIntegrationCard } from './components/AddIntegrationCard';
 import { HeroIllustration } from './components/HeroIllustration';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
 import { readPlaygroundDraft } from './draft';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
+import { continuesAfterSetUp, isAdded, isSetUpPart, providersToAdd, setUpApps, setUpResults } from './setUpTool';
 import { STARTER_PROMPTS } from './starterPrompts';
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize, integrationLabels, labelFor } from './toolDisplay';
@@ -144,7 +146,7 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
     const { messages, setMessages, sendMessage, regenerate, status, stop, clearError, addToolApprovalResponse } = useChat<PlaygroundMessage>({
         transport,
         ...(storedMessages ? { messages: storedMessages } : {}),
-        sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
+        sendAutomaticallyWhen: (options) => lastAssistantMessageIsCompleteWithApprovalResponses(options) || continuesAfterSetUp(options),
         onError: (err) => {
             failure.current = err.message;
         },
@@ -236,8 +238,18 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
         }
     };
 
-    const { data: integrations } = useListIntegrations(env);
+    const isAwaitingSetUp = providersToAdd(messages.at(-1)).length > 0;
+    const { data: integrations, dataUpdatedAt: integrationsUpdatedAt } = useListIntegrations(env, { watch: isAwaitingSetUp });
     const labels = useMemo(() => (integrations ? integrationLabels(integrations.data) : undefined), [integrations]);
+    const addedIntegrations = useMemo(
+        () =>
+            new Map(
+                (integrations?.data ?? [])
+                    .filter((integration) => integration.missing_fields.length === 0)
+                    .map((integration) => [integration.provider, integration.unique_key])
+            ),
+        [integrations]
+    );
     const integrationNames = useCallback((ids: string[]) => ids.map((id) => labelFor(id, labels).integrationName).join(' and '), [labels]);
 
     const [pendingConnections, setPendingConnections] = useState<string[]>([]);
@@ -258,6 +270,30 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
         () => new Set([...pendingConnections, ...messages.flatMap((message) => message.metadata?.connectedIntegrations ?? [])]),
         [pendingConnections, messages]
     );
+
+    const awaitingSetUp = useRef<{ messageId: string; since: number; resumed: boolean } | undefined>(undefined);
+    useEffect(() => {
+        const last = messages.at(-1);
+        const providers = providersToAdd(last);
+        if (!last || providers.length === 0 || busy || awaitingApproval) {
+            return;
+        }
+        if (awaitingSetUp.current?.messageId !== last.id) {
+            awaitingSetUp.current = { messageId: last.id, since: Date.now(), resumed: false };
+        }
+        // A list fetched before the setup reply can still hold an integration that was deleted since.
+        if (!integrations || integrationsUpdatedAt <= awaitingSetUp.current.since || awaitingSetUp.current.resumed) {
+            return;
+        }
+        if (providers.every((provider) => addedIntegrations.has(provider))) {
+            awaitingSetUp.current.resumed = true;
+            const names = providers.map(providerName).join(' and ');
+            void sendMessage({
+                text: `I've added the ${names} integration, so it no longer needs setting up. Carry on with my request.`,
+                metadata: { hidden: true }
+            });
+        }
+    }, [messages, integrations, integrationsUpdatedAt, addedIntegrations, busy, awaitingApproval, sendMessage]);
 
     const [newLinkRequests, setNewLinkRequests] = useState<string[]>([]);
     const onRequestNewLink = useCallback((integrationId: string) => {
@@ -369,6 +405,7 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
                                     env={env}
                                     setup={message.metadata.integrationSetup}
                                     labels={labels}
+                                    addedIntegrations={addedIntegrations}
                                     onTryAgain={message.id === lastMessage?.id && !busy ? () => void regenerate() : undefined}
                                 />
                             )}
@@ -380,6 +417,17 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
                                     return part.text ? (
                                         <Markdown key={index}>{part.state === 'streaming' ? hideTrailingLink(part.text) : part.text}</Markdown>
                                     ) : null;
+                                }
+                                if (part.type === 'dynamic-tool' && isSetUpPart(part)) {
+                                    return setUpResults(part).map((setup) => (
+                                        <IntegrationSetupNotice
+                                            key={`${part.toolCallId}-${setup.provider}`}
+                                            env={env}
+                                            setup={setup}
+                                            labels={labels}
+                                            addedIntegrations={addedIntegrations}
+                                        />
+                                    ));
                                 }
                                 if (part.type === 'dynamic-tool') {
                                     return (
@@ -567,6 +615,10 @@ function workingLabel(messages: PlaygroundMessage[]): string | null {
     if (part?.type === 'text') {
         return null;
     }
+    if (part?.type === 'dynamic-tool' && isSetUpPart(part) && (part.state === 'input-streaming' || part.state === 'input-available')) {
+        const apps = setUpApps(part);
+        return apps.length > 0 ? `Adding ${apps.map(providerName).join(' and ')}…` : 'Adding integrations…';
+    }
     if (part?.type === 'dynamic-tool') {
         if (
             part.state === 'approval-requested' ||
@@ -602,59 +654,64 @@ const IntegrationSetupNotice: React.FC<{
     env: string;
     setup: AgentPlaygroundIntegrationSetup;
     labels: IntegrationLabels | undefined;
+    addedIntegrations: Map<string, string>;
     onTryAgain?: (() => void) | undefined;
-}> = ({ env, setup, labels, onTryAgain }) => {
-    const name = (setup.integrationId && labels?.get(setup.integrationId)?.integrationName) || providerName(setup.provider);
-    const href = setup.integrationId ? `/${env}/integrations/${setup.integrationId}` : `/${env}/integrations/create/${setup.provider}`;
+}> = ({ env, setup, labels, addedIntegrations, onTryAgain }) => {
+    const addedSince = isAdded(setup) ? undefined : addedIntegrations.get(setup.provider);
+    const integrationId = addedSince ?? setup.integrationId;
+    const name = (integrationId && labels?.get(integrationId)?.integrationName) || setup.displayName || providerName(setup.provider);
+    const href = integrationId ? `/${env}/integrations/${integrationId}` : `/${env}/integrations/create/${setup.provider}`;
 
-    if (setup.outcome === 'created' || setup.outcome === 'existing') {
+    if (addedSince) {
+        return <AddedIntegrationRow provider={setup.provider} text={`Using your ${name} integration`} href={href} />;
+    }
+
+    if (setup.outcome === 'missing_credentials') {
         return (
-            <div className="flex min-h-7 items-center gap-2 pr-[17px] text-body-medium-regular text-text-secondary" role="status">
-                <IntegrationLogo provider={setup.provider} className="-mx-0.5 size-5 shrink-0 border-0 bg-transparent p-0" />
-                <span className="min-w-0 truncate">{setup.outcome === 'created' ? `Created the ${name} integration` : `Using your ${name} integration`}</span>
-                <span className="ml-auto flex shrink-0 items-center gap-2 pl-2">
-                    <ButtonLink to={href} variant="outline" size="sm">
-                        View integration
-                    </ButtonLink>
-                </span>
-            </div>
+            <Alert variant="warning">
+                <CircleAlert />
+                <AlertTitle>{`Finish setting up your ${name} integration`}</AlertTitle>
+                <AlertDescription>It&apos;s missing its client ID or secret. Add them, then try again.</AlertDescription>
+                <AlertActions>
+                    <AlertButton asChild>
+                        <Link to={href}>
+                            <Settings2 /> Open integration
+                        </Link>
+                    </AlertButton>
+                    {onTryAgain && (
+                        <AlertButton onClick={onTryAgain}>
+                            <RotateCcw /> Try again
+                        </AlertButton>
+                    )}
+                </AlertActions>
+            </Alert>
         );
     }
 
+    if (!isAdded(setup)) {
+        return <AddIntegrationCard provider={setup.provider} name={name} outcome={setup.outcome} href={href} />;
+    }
+
     return (
-        <Alert variant="warning">
-            <CircleAlert />
-            <AlertTitle>
-                {setup.outcome === 'missing_credentials' ? `Finish setting up your ${name} integration` : `Create a ${name} integration to continue`}
-            </AlertTitle>
-            <AlertDescription>
-                {setup.outcome === 'missing_credentials'
-                    ? "It's missing its client ID or secret. Add them, then try again."
-                    : `This session needs a ${name} integration in this environment.`}
-            </AlertDescription>
-            <AlertActions>
-                <AlertButton asChild>
-                    <Link to={href}>
-                        {setup.outcome === 'missing_credentials' ? (
-                            <>
-                                <Settings2 /> Open integration
-                            </>
-                        ) : (
-                            <>
-                                <Plus /> Create integration
-                            </>
-                        )}
-                    </Link>
-                </AlertButton>
-                {onTryAgain && (
-                    <AlertButton onClick={onTryAgain}>
-                        <RotateCcw /> Try again
-                    </AlertButton>
-                )}
-            </AlertActions>
-        </Alert>
+        <AddedIntegrationRow
+            provider={setup.provider}
+            text={setup.outcome === 'created' ? `Created the ${name} integration` : `Using your ${name} integration`}
+            href={href}
+        />
     );
 };
+
+const AddedIntegrationRow: React.FC<{ provider: string; text: string; href: string }> = ({ provider, text, href }) => (
+    <div className="flex min-h-7 items-center gap-2 pr-[17px] text-body-medium-regular text-text-secondary" role="status">
+        <IntegrationLogo provider={provider} className="-mx-0.5 size-5 shrink-0 border-0 bg-transparent p-0" />
+        <span className="min-w-0 truncate">{text}</span>
+        <span className="ml-auto flex shrink-0 items-center gap-2 pl-2">
+            <ButtonLink to={href} variant="outline" size="sm">
+                View integration
+            </ButtonLink>
+        </span>
+    </div>
+);
 
 function sessionNoticeText(reason: AgentPlaygroundSessionCreated['reason'], replaced: boolean): string {
     switch (reason) {

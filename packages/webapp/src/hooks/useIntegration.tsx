@@ -12,7 +12,7 @@ import type {
     PostIntegration
 } from '@nangohq/types';
 
-export function useListIntegrations(env: string) {
+export function useListIntegrations(env: string, { watch = false }: { watch?: boolean } = {}) {
     return useQuery<GetIntegrations['Success'], APIError>({
         queryKey: ['integrations', env],
         queryFn: async (): Promise<GetIntegrations['Success']> => {
@@ -23,7 +23,9 @@ export function useListIntegrations(env: string) {
             }
             return json;
         },
-        refetchInterval: 15000,
+        refetchInterval: watch ? 3000 : 15000,
+        refetchOnWindowFocus: watch ? 'always' : false,
+        refetchOnMount: watch ? 'always' : true,
         enabled: Boolean(env)
     });
 }
