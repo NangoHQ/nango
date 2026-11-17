@@ -1,7 +1,7 @@
-import { ArrowUpRight, Bot, Ellipsis, Zap } from 'lucide-react';
+import { ArrowUpRight, Ellipsis, Zap } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { Alert, AlertDescription, Badge, Button, IconButton, SplitButton, SplitButtonAction, SplitButtonMenuTrigger } from '@nangohq/design-system';
 
@@ -10,14 +10,13 @@ import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { useCanUseAgentPlayground } from '@/hooks/useCanUseAgentPlayground';
 import { useListIntegrations, usePostIntegration } from '@/hooks/useIntegration';
 import { useGetProviderTemplates } from '@/hooks/useIntegrationFunctions';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useProviders } from '@/hooks/useProviders';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
-import { integrationPrompt, playgroundDraftState } from '@/pages/AgentPlayground/draft';
+import { TryInPlaygroundButton } from '@/pages/AgentPlayground/components/TryInPlaygroundButton';
 import { useStore } from '@/store';
 import { getDisplayName } from '../Integrations/utils';
 import PageNotFound from '../PageNotFound';
@@ -38,7 +37,7 @@ export const CatalogProviderShow: React.FC = () => {
     const { data: integrationsData, isPending: integrationsPending } = useListIntegrations(env);
     const { can } = usePermissions();
     const canSetUp = can('environment:integrations:update');
-    const canUseAgentPlayground = useCanUseAgentPlayground();
+    const canCreateConnection = can('environment:connections:update');
     const { data: templatesData, isPending: templatesPending, error: templatesError } = useGetProviderTemplates({ env, provider: providerName });
     const { mutateAsync: postIntegration } = usePostIntegration(env);
     const navigate = useNavigate();
@@ -75,7 +74,7 @@ export const CatalogProviderShow: React.FC = () => {
         if (!oneClickSetupBody) {
             return;
         }
-        trackSetupButtonClick(provider.name, source);
+        trackSetupButtonClick(provider.name, source, 'one_click');
         setSettingUp(true);
         try {
             const response = await postIntegration(oneClickSetupBody);
@@ -88,9 +87,9 @@ export const CatalogProviderShow: React.FC = () => {
         }
     };
     const renderSetupButton = (source: SetupButtonSource, size: 'sm' | 'md') => (
-        <PermissionGate asChild condition={canSetUp}>
+        <PermissionGate asChild condition={existingIntegrationId ? canCreateConnection : canSetUp}>
             {(allowed) => {
-                if (oneClickSetupBody && configuredIntegrationIds === null) {
+                if (configuredIntegrationIds === null) {
                     return (
                         <Button variant="primary" size={size} loading disabled>
                             Add integration
@@ -104,7 +103,6 @@ export const CatalogProviderShow: React.FC = () => {
                             variant="primary"
                             size={size}
                             disabled={!allowed}
-                            onClick={() => trackSetupButtonClick(provider.name, source)}
                         >
                             Add test connection
                         </ButtonLink>
@@ -124,7 +122,7 @@ export const CatalogProviderShow: React.FC = () => {
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem
                                         onSelect={() => {
-                                            trackSetupButtonClick(provider.name, source);
+                                            trackSetupButtonClick(provider.name, source, 'advanced');
                                             void navigate(`/${env}/integrations/create/${provider.name}`);
                                         }}
                                     >
@@ -146,7 +144,7 @@ export const CatalogProviderShow: React.FC = () => {
                         variant="primary"
                         size={size}
                         disabled={!allowed}
-                        onClick={() => trackSetupButtonClick(provider.name, source)}
+                        onClick={() => trackSetupButtonClick(provider.name, source, 'form')}
                     >
                         Add integration
                     </ButtonLink>
@@ -154,19 +152,6 @@ export const CatalogProviderShow: React.FC = () => {
             }}
         </PermissionGate>
     );
-    const renderSecondarySetupButton = () =>
-        existingIntegrationId &&
-        canUseAgentPlayground && (
-            <Button asChild variant="outline" size="md">
-                <Link
-                    to={`/${env}/playground/agent`}
-                    state={playgroundDraftState(integrationPrompt({ provider: provider.name, integrationName: provider.displayName }))}
-                >
-                    <Bot />
-                    Try in Playground
-                </Link>
-            </Button>
-        );
     const instantSetup = getInstantSetup(provider);
     const categories = getVisibleCategories(provider);
 
@@ -201,7 +186,9 @@ export const CatalogProviderShow: React.FC = () => {
                             Docs <ArrowUpRight />
                         </a>
                     </Button>
-                    {renderSecondarySetupButton()}
+                    {existingIntegrationId && (
+                        <TryInPlaygroundButton provider={provider.name} integrationName={provider.displayName} source="catalog" variant="outline" />
+                    )}
                     {renderSetupButton('header', 'md')}
                     {showMoreMenu && (
                         <DropdownMenu>
@@ -211,7 +198,12 @@ export const CatalogProviderShow: React.FC = () => {
                                 </IconButton>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onSelect={() => void navigate(`/${env}/integrations/create/${provider.name}`)}>
+                                <DropdownMenuItem
+                                    onSelect={() => {
+                                        trackSetupButtonClick(provider.name, 'more_menu', 'form');
+                                        void navigate(`/${env}/integrations/create/${provider.name}`);
+                                    }}
+                                >
                                     Add another integration
                                 </DropdownMenuItem>
                             </DropdownMenuContent>

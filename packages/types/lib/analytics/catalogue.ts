@@ -229,6 +229,13 @@ export const analyticsEventCatalogue = defineCatalogue({
             })
         ])
     },
+    'playground:try_button_click': {
+        surface: 'app',
+        insight:
+            'How often catalog, integration and connection pages send people to the Agent Playground, and whether a provider-specific starter prompt was ready for them',
+        fires: 'When someone clicks Try in Playground',
+        properties: z.object({ provider: z.string(), source: z.enum(['catalog', 'integration', 'connection']), has_starter_prompt: z.boolean() })
+    },
     'playground:agent_turn_complete': {
         surface: 'server',
         insight:
@@ -375,9 +382,13 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'catalog:setup_button_click': {
         surface: 'app',
-        insight: 'How many catalog detail visits lead to the setup form, and which placement of the setup button people use',
-        fires: 'When someone clicks a "Set up" button on an API\'s catalog page',
-        properties: z.object({ provider: z.string(), source: z.enum(['header', 'panel']) })
+        insight: 'How many catalog detail visits lead to adding an integration, whether in one click or through the setup form, and which button people use',
+        fires: "When someone clicks Add integration, Advanced… or Add another integration on an API's catalog page",
+        properties: z.object({
+            provider: z.string(),
+            source: z.enum(['header', 'panel', 'more_menu']),
+            setup_type: z.enum(['one_click', 'form', 'advanced']).optional()
+        })
     },
     'integrations:integration_create': {
         surface: 'server',

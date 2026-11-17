@@ -72,7 +72,10 @@ export const AgentPlayground: React.FC = () => {
     const [chatKey, setChatKey] = useState(0);
     const location = useLocation();
     const navigate = useNavigate();
-    const [draft] = useState(() => readPlaygroundDraft(location.state));
+    const [draft, setDraft] = useState(() => readPlaygroundDraft(location.state));
+    if (draft && draft.env !== env) {
+        setDraft(undefined);
+    }
     useEffect(() => {
         if (readPlaygroundDraft(location.state) !== undefined) {
             // Clears the draft, so a reload doesn't open another new chat with it.
@@ -106,7 +109,7 @@ export const AgentPlayground: React.FC = () => {
             <Chat
                 key={`${env}-${chatKey}`}
                 env={env}
-                draft={chatKey === 0 ? draft : undefined}
+                draft={chatKey === 0 && draft?.env === env ? draft.text : undefined}
                 toolbarSlot={toolbarSlot}
                 onNewChat={() => setChatKey((key) => key + 1)}
             />

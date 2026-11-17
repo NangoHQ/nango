@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { integrationPrompt, readPlaygroundDraft } from './draft';
+import { hasStarterPrompt, integrationPrompt, playgroundDraftState, readPlaygroundDraft } from './draft';
 
 describe('integrationPrompt', () => {
     it("uses the provider's starter prompt", () => {
@@ -13,12 +13,20 @@ describe('integrationPrompt', () => {
 });
 
 describe('readPlaygroundDraft', () => {
-    it('reads a draft from router state', () => {
-        expect(readPlaygroundDraft({ playgroundDraft: 'Hi' })).toBe('Hi');
+    it('reads a draft and its environment from router state', () => {
+        expect(readPlaygroundDraft(playgroundDraftState('Hi', 'dev'))).toEqual({ text: 'Hi', env: 'dev' });
     });
 
     it('ignores any other state', () => {
         expect(readPlaygroundDraft(null)).toBeUndefined();
-        expect(readPlaygroundDraft({ playgroundDraft: 1 })).toBeUndefined();
+        expect(readPlaygroundDraft({ playgroundDraft: 'Hi' })).toBeUndefined();
+        expect(readPlaygroundDraft({ playgroundDraft: { text: 'Hi' } })).toBeUndefined();
+    });
+});
+
+describe('hasStarterPrompt', () => {
+    it('is true only for providers with their own starter prompt', () => {
+        expect(hasStarterPrompt('google-calendar')).toBe(true);
+        expect(hasStarterPrompt('unknown-api')).toBe(false);
     });
 });

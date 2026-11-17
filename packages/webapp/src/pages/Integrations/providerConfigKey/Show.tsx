@@ -1,4 +1,4 @@
-import { ArrowUpRight, Bot, Play } from 'lucide-react';
+import { ArrowUpRight, Play } from 'lucide-react';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
@@ -11,13 +11,12 @@ import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Separator } from '@/components/ui/Separator';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { useCanUseAgentPlayground } from '@/hooks/useCanUseAgentPlayground';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import { usePathNavigation } from '@/hooks/usePathNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
-import { integrationPrompt, playgroundDraftState } from '@/pages/AgentPlayground/draft';
+import { TryInPlaygroundButton } from '@/pages/AgentPlayground/components/TryInPlaygroundButton';
 import { CatalogLogo } from '@/pages/Catalog/components/CatalogLogo';
 import { useStore } from '@/store';
 import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
@@ -42,7 +41,6 @@ export const ShowIntegration: React.FC = () => {
     const { can } = usePermissions();
     const canCreateTestConnection = can('environment:connections:update');
     const canRunFunctions = useCanRunFunctions();
-    const canUseAgentPlayground = useCanUseAgentPlayground();
 
     const { data, isLoading: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
     const integration = data?.data;
@@ -91,17 +89,7 @@ export const ShowIntegration: React.FC = () => {
                             Docs <ArrowUpRight />
                         </a>
                     </Button>
-                    {canUseAgentPlayground && (
-                        <Button asChild variant="outline" size="md">
-                            <Link
-                                to={`/${env}/playground/agent`}
-                                state={playgroundDraftState(integrationPrompt({ provider: integration.integration.provider, integrationName: displayName }))}
-                            >
-                                <Bot />
-                                Try in Playground
-                            </Link>
-                        </Button>
-                    )}
+                    <TryInPlaygroundButton provider={integration.integration.provider} integrationName={displayName} source="integration" variant="outline" />
                     <PermissionGate condition={canCreateTestConnection} asChild>
                         {(allowed) => (
                             <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="md" disabled={!allowed}>
