@@ -60,6 +60,16 @@ export function slotEnv(slot, current = {}) {
     return env;
 }
 
+export function exitCode(code, signal) {
+    if (signal === 'SIGINT' || signal === 'SIGTERM') {
+        return 0;
+    }
+    if (signal) {
+        return 1;
+    }
+    return code ?? 1;
+}
+
 function readDotEnv() {
     try {
         return dotenv.parse(readFileSync(path.join(ROOT, '.env'), 'utf8'));
@@ -88,7 +98,7 @@ function main() {
     // Ctrl-C already reaches the child through the process group; forwarding it would deliver it twice.
     process.on('SIGINT', () => {});
     process.on('SIGTERM', () => child.kill('SIGTERM'));
-    child.on('exit', (code, signal) => process.exit(signal ? 0 : (code ?? 1)));
+    child.on('exit', (code, signal) => process.exit(exitCode(code, signal)));
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {

@@ -1,6 +1,23 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseSlot, slotEnv } from './dev-slot.mjs';
+import { exitCode, parseSlot, slotEnv } from './dev-slot.mjs';
+
+describe('exitCode', () => {
+    it('treats a stop signal as a clean exit', () => {
+        expect(exitCode(null, 'SIGINT')).toBe(0);
+        expect(exitCode(null, 'SIGTERM')).toBe(0);
+    });
+
+    it('fails when the child crashes on any other signal', () => {
+        expect(exitCode(null, 'SIGKILL')).toBe(1);
+        expect(exitCode(null, 'SIGSEGV')).toBe(1);
+    });
+
+    it('passes through the child exit code', () => {
+        expect(exitCode(0, null)).toBe(0);
+        expect(exitCode(2, null)).toBe(2);
+    });
+});
 
 describe('parseSlot', () => {
     it('treats an unset slot as slot 0', () => {
