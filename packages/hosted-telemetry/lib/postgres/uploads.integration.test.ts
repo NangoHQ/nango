@@ -150,8 +150,13 @@ describe('withQueuedUpload', () => {
     it('gives each replica a different upload, and none to the one that finds them all taken', async () => {
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-08T10:00:00Z', metric: connections });
         (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
+        let taken = 0;
+        const { promise: bothTaken, resolve: onBothTaken } = Promise.withResolvers<unknown>();
         const metric = (hold: Promise<unknown>) =>
             withQueuedUpload(knex, { idleTimeoutMs, schema }, async (_trx, upload) => {
+                if (++taken === 2) {
+                    onBothTaken(null);
+                }
                 await hold;
                 return Ok(upload.metric);
             });
@@ -159,8 +164,7 @@ describe('withQueuedUpload', () => {
 
         const first = metric(held);
         const second = metric(held);
-        // Lets both take their upload before the third looks for one.
-        await setTimeout(200);
+        await bothTaken;
         const third = await metric(Promise.resolve());
         release(null);
 
