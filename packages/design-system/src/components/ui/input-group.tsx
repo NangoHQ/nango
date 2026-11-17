@@ -187,7 +187,6 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, InputGroupInputProps>
         return (
             <input
                 ref={ref}
-                data-slot="input-group-control"
                 data-filled={isFilled}
                 className={cn(
                     controlBase,
@@ -202,6 +201,8 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, InputGroupInputProps>
                 {...passwordManagerProps(autoComplete)}
                 {...props}
                 {...fieldProps}
+                // Last, so FormControl's data-slot can't replace the one the group's state styles select on
+                data-slot="input-group-control"
             />
         );
     }
@@ -215,7 +216,6 @@ const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, React.Component
         return (
             <textarea
                 ref={ref}
-                data-slot="input-group-control"
                 data-filled={isFilled}
                 className={cn(controlBase, 'font-sans text-ds-sm font-ds-regular leading-ds-normal resize-none self-stretch px-1.5 py-1.5', className)}
                 value={value}
@@ -223,6 +223,7 @@ const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, React.Component
                 onChange={handleChange}
                 {...props}
                 {...fieldProps}
+                data-slot="input-group-control"
             />
         );
     }
