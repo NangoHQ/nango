@@ -54,7 +54,7 @@ const catalogTool: CatalogTool = {
     fileLocation: 'templates-zero/github/build/github_actions_create-issue.cjs',
     sourceLocation: 'templates-zero/github/actions/create-issue.ts',
     capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
-    module: 'action'
+    type: 'action'
 };
 
 describe('resolveLegacyAction', () => {

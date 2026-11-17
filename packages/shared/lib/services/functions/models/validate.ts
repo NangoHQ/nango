@@ -3,7 +3,8 @@ import addFormats from 'ajv-formats';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import type { CatalogFunctionManifestEntry, DBFunctionConfigVersion, ValidationError } from '@nangohq/types';
+import type { CatalogFunctionDefinition } from '../../catalog/reader.js';
+import type { DBFunctionConfigVersion, ValidationError } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AnySchema, ErrorObject, ValidateFunction } from 'ajv';
 import type { JsonValue } from 'type-fest';
@@ -28,7 +29,7 @@ addFormats(ajv);
 const validatorCache = new Map<number | string, 'valid' | 'invalid'>();
 
 type FunctionInputDefinition = Pick<DBFunctionConfigVersion, 'input_schema_ref' | 'json_schema'> &
-    ({ id: number } | Pick<CatalogFunctionManifestEntry, 'uuid' | 'version'>);
+    ({ id: number } | Pick<CatalogFunctionDefinition, 'uuid' | 'version'>);
 
 export function clearFunctionInputValidatorCache(): void {
     for (const [versionId, status] of validatorCache) {

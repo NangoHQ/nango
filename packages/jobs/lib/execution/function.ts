@@ -581,7 +581,7 @@ function toLegacyConfig(fn: ResolvedFunction, { environmentId, configId }: { env
         id: deployed?.id ?? 0,
         sync_name: fn.name,
         nango_config_id: configId,
-        file_location: fn.kind === 'deployed' ? fn.definition.file_location : fn.definition.fileLocation,
+        file_location: fn.kind === 'deployed' ? fn.definition.file_location : fn.definition.location.js,
         version: version.version,
         models: [],
         active: true,

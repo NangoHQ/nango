@@ -5,8 +5,7 @@ const CATALOG_FUNCTION_UUID_PREFIX = 'ca7a10c0';
 const namespace = 'nango:catalog-function:v1';
 const catalogFunctionUuidPattern = new RegExp(`^${CATALOG_FUNCTION_UUID_PREFIX}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`);
 
-// Generate a catalog function identity once, when it is first published.
-// The published uuid must be carried across renames and version changes rather than regenerated.
+// Derive the default catalog identity from provider and public name, independently of the content version.
 export function generateCatalogFunctionUuid({ provider, name }: { provider: string; name: string }): string {
     if (!provider || !name) {
         throw new Error('Catalog function UUID generation requires a provider and name');

@@ -17,8 +17,7 @@ const jsonSchema: JSONSchema7 = {
 
 function nativeFunction(overrides: Partial<CatalogFunctionManifestEntry> = {}): CatalogFunctionManifestEntry {
     return {
-        module: 'function',
-        uuid: generateCatalogFunctionUuid({ provider: 'github', name: overrides.name ?? 'fetch_issue' }),
+        type: 'tool',
         name: 'fetch_issue',
         description: 'Fetch an issue',
         trigger: { kind: 'http' },
@@ -33,9 +32,10 @@ function nativeFunction(overrides: Partial<CatalogFunctionManifestEntry> = {}): 
         checkpoint_schema_ref: '#/definitions/Checkpoint',
         json_schema: jsonSchema,
         version: 'a1b2c3d4e5f6',
-        sdkVersion: '0.72.4',
-        fileLocation: 'build/github_functions_read-issue.cjs',
-        sourceLocation: 'tools/read-issue.ts',
+        location: {
+            js: 'templates-zero/github/tools/read-issue/a1b2c3d4e5f6.cjs',
+            ts: 'templates-zero/github/tools/read-issue/a1b2c3d4e5f6.ts'
+        },
         ...overrides
     };
 }
@@ -91,7 +91,7 @@ describe('CatalogReader', () => {
             {
                 name: 'create-issue',
                 description: 'Create an issue',
-                module: 'action',
+                type: 'action',
                 input: 'Input',
                 output: ['Output'],
                 scopes: ['repo'],
@@ -107,38 +107,39 @@ describe('CatalogReader', () => {
         expect(reader.getAction('github', 'create-issue')).toBe(entry);
     });
 
-    it('reads mixed manifests and preserves native function metadata and explicit artifact paths', () => {
+    it('read catalog manifest', () => {
         const definition = nativeFunction();
         const manifest = integration({ functions: [definition] });
         const original = structuredClone(manifest);
         const reader = readerFor(manifest);
 
-        expect(reader.listEntries('github').map((entry) => entry.module)).toEqual(['action', 'function']);
+        expect(reader.listEntries('github').map((entry) => entry.type)).toEqual(['action', 'tool']);
         expect(reader.getEntry('github', 'fetch_issue')).toEqual({
             ...definition,
+            uuid: generateCatalogFunctionUuid({ provider: 'github', name: definition.name }),
             source: 'catalog',
             provider: 'github',
-            fileLocation: 'templates-zero/github/build/github_functions_read-issue.cjs',
-            sourceLocation: 'templates-zero/github/tools/read-issue.ts'
+            sdkVersion: '0.72.4'
         });
         expect(reader.getEntry('github', 'read-issue')).toBeUndefined();
         expect(manifest).toEqual(original);
     });
 
-    it.each(triggers)('preserves native trigger $kind without restricting the catalog to tools', (trigger) => {
-        const definition = nativeFunction({ trigger });
+    it.each(triggers)('preserves Function trigger $kind', (trigger) => {
+        const definition = nativeFunction({ type: 'function', trigger });
         const reader = readerFor(integration({ functions: [definition] }));
         const entry = reader.getEntry('github', definition.name);
 
-        expect(entry?.module).toBe('function');
-        if (entry?.module !== 'function') {
-            throw new Error('Expected a native function');
+        expect(entry?.type).toBe('function');
+        if (entry?.type !== 'function') {
+            throw new Error('Expected a Function');
         }
         expect(entry.trigger).toEqual(trigger);
     });
 
     it('preserves connectionless requirements, record models, and capabilities', () => {
         const definition = nativeFunction({
+            type: 'function',
             trigger: { kind: 'none' },
             requires: { connection: false, invoke: true },
             capabilities: { usesRecords: true, usesOutbound: false, usesCheckpoints: false, usesMetadata: true, usesInvoke: true },
@@ -149,10 +150,10 @@ describe('CatalogReader', () => {
 
         expect(entry).toEqual({
             ...definition,
+            uuid: generateCatalogFunctionUuid({ provider: 'github', name: definition.name }),
             source: 'catalog',
             provider: 'github',
-            fileLocation: 'templates-zero/github/build/github_functions_read-issue.cjs',
-            sourceLocation: 'templates-zero/github/tools/read-issue.ts'
+            sdkVersion: '0.72.4'
         });
     });
 
@@ -178,20 +179,23 @@ describe('CatalogReader', () => {
         expect(reader.listActions('github')).toEqual([]);
     });
 
-    it('resolves aliases to canonical artifact folders without deriving filenames from public names', () => {
-        const reader = readerFor(integration({ providerConfigKey: 'github-alias', symLinkTargetName: 'github', functions: [nativeFunction()] }));
+    it('resolves legacy alias folders', () => {
+        const reader = readerFor(integration({ providerConfigKey: 'github-alias', symLinkTargetName: 'github' }));
 
-        expect(reader.getEntry('github-alias', 'fetch_issue')).toMatchObject({
-            fileLocation: 'templates-zero/github/build/github_functions_read-issue.cjs',
-            sourceLocation: 'templates-zero/github/tools/read-issue.ts'
-        });
         expect(reader.getAction('github-alias', 'create-issue')?.fileLocation).toBe('templates-zero/github/build/github_actions_create-issue.cjs');
     });
 
     it.each([
         integration({ actions: [action(), action()] }),
         integration({ functions: [nativeFunction({ name: 'create-issue' })] }),
-        integration({ functions: [nativeFunction(), nativeFunction({ uuid: generateCatalogFunctionUuid({ provider: 'github', name: 'another_identity' }) })] })
+        integration({
+            functions: [
+                nativeFunction(),
+                nativeFunction({
+                    location: { js: 'templates-zero/github/tools/another/version.cjs', ts: 'templates-zero/github/tools/another/version.ts' }
+                })
+            ]
+        })
     ])('rejects duplicate names across actions and native functions', (manifest) => {
         const reader = readerFor(manifest);
 
@@ -199,33 +203,35 @@ describe('CatalogReader', () => {
         expect(() => reader.getEntry('github', 'create-issue')).toThrow(/Duplicate catalog function name/);
     });
 
-    it('looks up published UUIDs globally and returns their providers', () => {
+    it('looks up UUIDs globally and returns their providers', () => {
         const github = nativeFunction();
-        const gitlab = nativeFunction({ uuid: generateCatalogFunctionUuid({ provider: 'gitlab', name: 'fetch_issue' }) });
+        const gitlab = nativeFunction({
+            location: { js: 'templates-zero/gitlab/tools/read-issue/version.cjs', ts: 'templates-zero/gitlab/tools/read-issue/version.ts' }
+        });
+        const githubUuid = generateCatalogFunctionUuid({ provider: 'github', name: github.name });
+        const gitlabUuid = generateCatalogFunctionUuid({ provider: 'gitlab', name: gitlab.name });
         const reader = new CatalogReader(() => [
             integration({ functions: [github] }),
             integration({ providerConfigKey: 'gitlab', actions: [], functions: [gitlab] })
         ]);
 
-        expect(reader.getFunctionByUuid(github.uuid)).toBe(reader.getEntry('github', github.name));
-        expect(reader.getFunctionByUuid(github.uuid.toUpperCase())).toBe(reader.getEntry('github', github.name));
-        expect(reader.getFunctionByUuid(github.uuid)?.provider).toBe('github');
-        expect(reader.getFunctionByUuid(gitlab.uuid)).toBe(reader.getEntry('gitlab', gitlab.name));
-        expect(reader.getFunctionByUuid(gitlab.uuid)?.provider).toBe('gitlab');
+        expect(reader.getFunctionByUuid(githubUuid)).toBe(reader.getEntry('github', github.name));
+        expect(reader.getFunctionByUuid(githubUuid.toUpperCase())).toBe(reader.getEntry('github', github.name));
+        expect(reader.getFunctionByUuid(githubUuid)?.provider).toBe('github');
+        expect(reader.getFunctionByUuid(gitlabUuid)).toBe(reader.getEntry('gitlab', gitlab.name));
+        expect(reader.getFunctionByUuid(gitlabUuid)?.provider).toBe('gitlab');
         expect(reader.getFunctionByUuid(generateCatalogFunctionUuid({ provider: 'github', name: 'unknown' }))).toBeUndefined();
         expect(reader.getFunctionByUuid('not-a-uuid')).toBeUndefined();
     });
 
-    it('preserves a published UUID across public-name and version changes', () => {
-        const original = nativeFunction();
-        const renamed = nativeFunction({ uuid: original.uuid, name: 'renamed_issue', version: 'new-content-hash' });
-        const originalReader = readerFor(integration({ functions: [original] }));
-        const renamedReader = readerFor(integration({ functions: [renamed] }));
+    it('preserves an explicit UUID', () => {
+        const uuid = generateCatalogFunctionUuid({ provider: 'github', name: 'original_issue' });
+        const definition = nativeFunction({ uuid, name: 'renamed_issue' });
+        const reader = readerFor(integration({ functions: [definition] }));
 
-        expect(originalReader.getFunctionByUuid(original.uuid)?.version).toBe(original.version);
-        expect(renamedReader.getFunctionByUuid(original.uuid)).toMatchObject({ uuid: original.uuid, name: renamed.name, version: renamed.version });
-        expect(renamedReader.getEntry('github', original.name)).toBeUndefined();
-        expect(renamed.uuid).not.toBe(generateCatalogFunctionUuid({ provider: 'github', name: renamed.name }));
+        expect(reader.getEntry('github', definition.name)).toMatchObject({ uuid, name: definition.name });
+        expect(reader.getFunctionByUuid(uuid)).toBe(reader.getEntry('github', definition.name));
+        expect(reader.getFunctionByUuid(generateCatalogFunctionUuid({ provider: 'github', name: definition.name }))).toBeUndefined();
     });
 
     it.each(['', '11111111-1111-4111-8111-111111111111', 'ca7a10c0-9582-4b46-8c47-f39eee45f2b3'])('rejects invalid published UUIDs: %s', (uuid) => {
@@ -234,49 +240,31 @@ describe('CatalogReader', () => {
         expect(() => reader.listEntries('github')).toThrow("Invalid catalog function UUID for 'fetch_issue' in provider 'github'");
     });
 
-    it('rejects a native entry with no published UUID rather than generating one at load time', () => {
+    it('generates a missing UUID', () => {
         const definition = nativeFunction();
-        Reflect.deleteProperty(definition, 'uuid');
         const reader = readerFor(integration({ functions: [definition] }));
 
-        expect(() => reader.listEntries('github')).toThrow('Invalid catalog function UUID');
-    });
-
-    it('rejects duplicate UUIDs within a provider', () => {
-        const first = nativeFunction();
-        const second = nativeFunction({ name: 'another_issue', uuid: first.uuid });
-        const reader = readerFor(integration({ functions: [first, second] }));
-
-        expect(() => reader.listEntries('github')).toThrow(`Duplicate catalog function UUID '${first.uuid}' for provider 'github'`);
+        expect(reader.getEntry('github', definition.name)).toMatchObject({
+            uuid: generateCatalogFunctionUuid({ provider: 'github', name: definition.name })
+        });
     });
 
     it('rejects non-lowercase published UUIDs', () => {
-        const reader = readerFor(integration({ functions: [nativeFunction({ uuid: nativeFunction().uuid.toUpperCase() })] }));
+        const uuid = generateCatalogFunctionUuid({ provider: 'github', name: 'fetch_issue' }).toUpperCase();
+        const reader = readerFor(integration({ functions: [nativeFunction({ uuid })] }));
 
         expect(() => reader.listEntries('github')).toThrow("Invalid catalog function UUID for 'fetch_issue' in provider 'github'");
     });
 
-    it('uses distinct UUIDs for aliases even when they share artifacts', () => {
-        const definition = nativeFunction();
-        const alias = nativeFunction({ uuid: generateCatalogFunctionUuid({ provider: 'github-alias', name: definition.name }) });
+    it('rejects duplicate UUIDs globally', () => {
+        const uuid = generateCatalogFunctionUuid({ provider: 'github', name: 'fetch_issue' });
+        const definition = nativeFunction({ uuid });
         const reader = new CatalogReader(() => [
             integration({ functions: [definition] }),
-            integration({ providerConfigKey: 'github-alias', symLinkTargetName: 'github', functions: [alias] })
+            integration({ providerConfigKey: 'gitlab', functions: [definition] })
         ]);
 
-        expect(reader.getFunctionByUuid(definition.uuid)?.provider).toBe('github');
-        expect(reader.getFunctionByUuid(alias.uuid)?.provider).toBe('github-alias');
-        expect(reader.getFunctionByUuid(alias.uuid)?.fileLocation).toBe(reader.getFunctionByUuid(definition.uuid)?.fileLocation);
-    });
-
-    it('rejects UUID reuse across providers, including aliases', () => {
-        const definition = nativeFunction();
-        const reader = new CatalogReader(() => [
-            integration({ functions: [definition] }),
-            integration({ providerConfigKey: 'github-alias', symLinkTargetName: 'github', functions: [definition] })
-        ]);
-
-        expect(() => reader.getFunctionByUuid(definition.uuid)).toThrow(`Duplicate catalog function UUID '${definition.uuid}' across the catalog`);
+        expect(() => reader.getFunctionByUuid(uuid)).toThrow(`Duplicate catalog function UUID '${uuid}' across the catalog`);
     });
 
     it('isolates an invalid native entry to its own provider for provider-scoped lookups', () => {
@@ -289,16 +277,6 @@ describe('CatalogReader', () => {
         expect(reader.getAction('gitlab', 'create-issue')?.name).toBe('create-issue');
     });
 
-    it('fails every UUID lookup when any provider has an invalid native entry', () => {
-        const gitlab = nativeFunction({ uuid: generateCatalogFunctionUuid({ provider: 'gitlab', name: 'fetch_issue' }) });
-        const reader = new CatalogReader(() => [
-            integration({ functions: [nativeFunction({ uuid: 'not-a-uuid' })] }),
-            integration({ providerConfigKey: 'gitlab', actions: [], functions: [gitlab] })
-        ]);
-
-        expect(() => reader.getFunctionByUuid(gitlab.uuid)).toThrow("Invalid catalog function UUID for 'fetch_issue' in provider 'github'");
-    });
-
     it('caches normalized entries and name lookups per provider', () => {
         const loadManifest = vi.fn(() => [integration({ functions: [nativeFunction()] })]);
         const reader = new CatalogReader(loadManifest);
@@ -308,9 +286,10 @@ describe('CatalogReader', () => {
         expect(reader.listEntries('github')).toBe(entries);
         expect(reader.listActions('github')).toBe(actions);
         expect(reader.getEntry('github', 'fetch_issue')).toBe(entries[1]);
-        const byUuid = reader.getFunctionByUuid(nativeFunction().uuid);
+        const uuid = generateCatalogFunctionUuid({ provider: 'github', name: 'fetch_issue' });
+        const byUuid = reader.getFunctionByUuid(uuid);
         expect(byUuid).toBe(entries[1]);
-        expect(reader.getFunctionByUuid(nativeFunction().uuid)).toBe(byUuid);
+        expect(reader.getFunctionByUuid(uuid)).toBe(byUuid);
         expect(reader.getAction('github', 'create-issue')).toBe(actions[0]);
         expect(loadManifest).toHaveBeenCalledTimes(2);
     });

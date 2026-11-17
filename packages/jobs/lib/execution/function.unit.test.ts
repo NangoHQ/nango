@@ -33,8 +33,8 @@ vi.mock('@nangohq/logs', async (importOriginal) => ({
     OtlpSpan: class {}
 }));
 
-function catalogFunction(): ResolvedFunction {
-    const definition = shared.getCatalogFunctionByUuid(shared.generateCatalogFunctionUuid({ provider: 'github', name: 'get_issue' }));
+function catalogFunction(): Extract<ResolvedFunction, { kind: 'catalog' }> {
+    const definition = shared.getCatalogFunctionByUuid(shared.generateCatalogFunctionUuid({ provider: 'replicate', name: 'get-model' }));
     if (!definition) throw new Error('Missing catalog fixture');
     return { kind: 'catalog', uuid: definition.uuid, name: definition.name, enabled: true, definition };
 }
@@ -72,7 +72,7 @@ function deployedFunction(): Extract<ResolvedFunction, { kind: 'deployed' }> {
     };
 }
 
-function task(functionUuid = deployedFunction().uuid): TaskFunction {
+function task(functionUuid = deployedFunction().uuid, input: Record<string, string | number> = { issueNumber: 1 }): TaskFunction {
     return TaskFunction({
         id: '11111111-1111-4111-8111-111111111111',
         name: 'function-task',
@@ -89,8 +89,8 @@ function task(functionUuid = deployedFunction().uuid): TaskFunction {
         connection: { id: 3, connection_id: 'connection-1', provider_config_key: 'custom-github', environment_id: 2 },
         trigger: {
             kind: 'http',
-            input: { issueNumber: 1 },
-            request: { method: 'POST', path: '/test', headers: {}, query: {}, body: { issueNumber: 1 } },
+            input,
+            request: { method: 'POST', path: '/test', headers: {}, query: {}, body: input },
             connection: { connectionId: 'connection-1', integrationId: 'custom-github' }
         },
         async: false
@@ -123,11 +123,16 @@ describe('startFunction', () => {
         setTaskSuccess.mockResolvedValue(Ok(task()));
     });
 
-    // TODO: Re-enable once a real function entry is committed to flows.zero.json.
-    it.skip('starts a catalog function', async () => {
+    it('starts a catalog function', async () => {
         const fn = catalogFunction();
         vi.mocked(shared.functionLookupService.resolveFunctionByUuid).mockResolvedValue(Ok(fn));
-        const execution = task(fn.uuid);
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue({
+            id: 9,
+            unique_key: 'custom-github',
+            provider: fn.definition.provider,
+            environment_id: 2
+        } as Config);
+        const execution = task(fn.uuid, { modelId: 'owner/model' });
         const definition = fn.definition;
 
         expect((await startFunction(execution)).isOk()).toBe(true);
@@ -136,10 +141,16 @@ describe('startFunction', () => {
         if (!args) throw new Error('Missing script invocation');
         expect(args.arg).toEqual(execution.trigger);
         expect(args.nangoProps.scriptType).toBe('function');
-        expect(args.nangoProps.syncConfig).toMatchObject({ id: 0, nango_config_id: 9, source: 'catalog', version: definition.version, enabled: true });
-        if (definition.source === 'catalog' && 'fileLocation' in definition) {
-            expect(args.nangoProps.syncConfig.file_location).toBe(definition.fileLocation);
-        }
+        expect(args.nangoProps.syncConfig).toMatchObject({
+            id: 0,
+            nango_config_id: 9,
+            source: 'catalog',
+            version: definition.version,
+            enabled: true,
+            sdk_version: definition.sdkVersion,
+            input: definition.input_schema_ref,
+            file_location: definition.location.js
+        });
     });
 
     it('preserves deployed configuration', async () => {
@@ -159,8 +170,7 @@ describe('startFunction', () => {
         });
     });
 
-    // TODO: Re-enable once a real function entry is committed to flows.zero.json.
-    it.skip('rejects a provider mismatch', async () => {
+    it('rejects a provider mismatch', async () => {
         const fn = catalogFunction();
         if (fn.kind !== 'catalog') throw new Error('Expected catalog function');
         fn.definition = { ...fn.definition, provider: 'gitlab' };

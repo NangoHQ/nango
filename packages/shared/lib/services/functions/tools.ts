@@ -60,7 +60,7 @@ export async function resolveTool({
         }
 
         const definition = getCatalogEntry(integration.provider, name);
-        if (definition?.module !== 'function' || definition.trigger.kind !== 'http' || definition.trigger.subscriptions?.length) {
+        if (definition?.type === 'action' || definition?.trigger.kind !== 'http' || definition.trigger.subscriptions?.length) {
             return Ok({ kind: 'missing' });
         }
         return Ok({ kind: 'function', uuid: definition.uuid, source: definition.source, inputSchemaRef: definition.input_schema_ref });

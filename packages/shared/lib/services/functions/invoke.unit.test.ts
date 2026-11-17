@@ -39,7 +39,7 @@ const connection = {
 } as DBConnection;
 
 function catalogFunction(): ResolvedFunction {
-    const definition = getCatalogFunctionByUuid(generateCatalogFunctionUuid({ provider: 'github', name: 'get_issue' }));
+    const definition = getCatalogFunctionByUuid(generateCatalogFunctionUuid({ provider: 'replicate', name: 'get-model' }));
     if (!definition) throw new Error('Missing catalog fixture');
     return { kind: 'catalog', uuid: definition.uuid, name: definition.name, enabled: true, definition };
 }
@@ -72,8 +72,8 @@ function deployedFunction(): ResolvedFunction {
                 definitions: {
                     Input: {
                         type: 'object',
-                        properties: { issueNumber: { type: 'number' } },
-                        required: ['issueNumber'],
+                        properties: { modelId: { type: 'string' } },
+                        required: ['modelId'],
                         additionalProperties: false
                     }
                 }
@@ -85,7 +85,7 @@ function deployedFunction(): ResolvedFunction {
     };
 }
 
-function invoke(fn = deployedFunction(), invocationType: 'wait' | 'no_wait' = 'wait', input: unknown = { issueNumber: 1 }) {
+function invoke(fn = deployedFunction(), invocationType: 'wait' | 'no_wait' = 'wait', input: unknown = { modelId: 'owner/model' }) {
     return invokeFunction({
         account: { id: 1 } as DBTeam,
         environment: { id: 2, name: 'dev' } as DBEnvironment,
@@ -112,8 +112,7 @@ beforeEach(() => {
 });
 
 describe('invokeFunction', () => {
-    // TODO: Re-enable once a real function entry is committed to flows.zero.json.
-    it.skip('invokes a catalog function', async () => {
+    it('invokes a catalog function', async () => {
         const fn = catalogFunction();
         lookup.mockResolvedValue(Ok(fn));
         const result = await invoke(fn);
@@ -122,7 +121,7 @@ describe('invokeFunction', () => {
         expect(searchConnections).toHaveBeenCalledTimes(1);
         expect(searchConnections).toHaveBeenCalledWith(expect.anything(), {
             environmentId: 2,
-            filter: { connectionId: 'connection-1', provider: 'github' },
+            filter: { connectionId: 'connection-1', provider: 'replicate' },
             limit: 2
         });
         expect(getConnection).not.toHaveBeenCalled();
@@ -131,8 +130,8 @@ describe('invokeFunction', () => {
         expect(args.functionUuid).toBe(fn.uuid);
         expect(args.trigger).toEqual({
             kind: 'http',
-            input: { issueNumber: 1 },
-            request: { method: 'POST', path: '/test', headers: {}, query: {}, body: { issueNumber: 1 } },
+            input: { modelId: 'owner/model' },
+            request: { method: 'POST', path: '/test', headers: {}, query: {}, body: { modelId: 'owner/model' } },
             connection: { connectionId: 'connection-1', integrationId: 'custom-github' }
         });
         expect(createLog.mock.calls[0]?.[1].syncConfig).toEqual({ name: fn.name });
@@ -150,8 +149,7 @@ describe('invokeFunction', () => {
     });
 
     for (const kind of ['catalog', 'deployed'] as const) {
-        // TODO: Re-enable the catalog case once a real function entry is committed to flows.zero.json.
-        it.skipIf(kind === 'catalog')(`schedules async invocation: ${kind}`, async () => {
+        it(`schedules async invocation: ${kind}`, async () => {
             const fn = kind === 'catalog' ? catalogFunction() : deployedFunction();
             lookup.mockResolvedValue(Ok(fn));
             schedule.mockResolvedValue(Ok({ id: 'invocation-1', statusUrl: '/status' }));
@@ -162,8 +160,7 @@ describe('invokeFunction', () => {
         });
     }
 
-    // TODO: Re-enable once a real function entry is committed to flows.zero.json.
-    it.skip('uses trigger rules for catalog functions', async () => {
+    it('uses trigger rules for catalog functions', async () => {
         const fn = catalogFunction();
         fn.definition = { ...fn.definition, trigger: { kind: 'schedule', frequency: 'every hour' }, input_schema_ref: null };
         lookup.mockResolvedValue(Ok(fn));
@@ -186,7 +183,7 @@ describe('invokeFunction', () => {
     });
 
     it('rejects invalid input', async () => {
-        const result = await invoke(deployedFunction(), 'wait', { issueNumber: 'invalid' });
+        const result = await invoke(deployedFunction(), 'wait', { modelId: 42 });
 
         expect(result.result.isErr()).toBe(true);
         if (result.result.isErr()) expect(result.result.error.code).toBe('validation_error');
@@ -231,8 +228,7 @@ describe('invokeFunction', () => {
     });
 });
 
-// TODO: Re-enable once a real function entry is committed to flows.zero.json.
-describe.skip('resolveFunctionConnection', () => {
+describe('resolveFunctionConnection', () => {
     it('returns connection not found', async () => {
         searchConnections.mockResolvedValue(Ok([]));
         const result = await resolveFunctionConnection({ fn: catalogFunction(), environmentId: 2, connectionId: 'connection-1' });

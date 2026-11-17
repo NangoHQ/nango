@@ -51,7 +51,7 @@ const baseRow: FunctionRow = {
 };
 
 describe('resolveFunctionByUuid', () => {
-    const catalogUuid = generateCatalogFunctionUuid({ provider: 'github', name: 'get_issue' });
+    const catalogUuid = generateCatalogFunctionUuid({ provider: 'replicate', name: 'get-model' });
     const deployedUuid = '11111111-1111-4111-8111-111111111111';
 
     beforeEach(() => {
@@ -59,8 +59,7 @@ describe('resolveFunctionByUuid', () => {
         mockSearchFunctions.mockResolvedValue(Ok([]));
     });
 
-    // TODO: Re-enable these catalog tests once reals function entries are committed to flows.zero.json.
-    it.skip('resolves a catalog UUID', async () => {
+    it('resolves a catalog UUID', async () => {
         const result = await resolveFunctionByUuid({ environmentId: 1, functionUuid: catalogUuid });
         const definition = getCatalogFunctionByUuid(catalogUuid);
 
@@ -69,7 +68,7 @@ describe('resolveFunctionByUuid', () => {
         expect(mockSearchFunctions).not.toHaveBeenCalled();
     });
 
-    it.skip('normalizes catalog UUIDs', async () => {
+    it('normalizes catalog UUIDs', async () => {
         const result = await resolveFunctionByUuid({ environmentId: 1, functionUuid: catalogUuid.toUpperCase() });
 
         expect(result.unwrap()?.uuid).toBe(catalogUuid);

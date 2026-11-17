@@ -221,13 +221,12 @@ describe(`GET ${endpoint}`, () => {
         expect(spy).not.toHaveBeenCalled();
     });
 
-    // TODO: Re-enable these catalog tests once a real function entry is committed to flows.zero.json.
-    it.skip('polls a catalog function', async () => {
+    it('polls a catalog function', async () => {
         const { apiKey, env } = await seedAccount(['environment:functions:invocations']);
-        const integration = await seeders.createConfigSeed(env, 'custom-github', 'github');
+        const integration = await seeders.createConfigSeed(env, 'custom-replicate', 'replicate');
         const connection = await seeders.createConnectionSeed({ env, provider: integration.unique_key, connectionId: randomUUID() });
-        const functionUuid = generateCatalogFunctionUuid({ provider: 'github', name: 'get_issue' });
-        vi.spyOn(Orchestrator.prototype, 'getOutput').mockResolvedValue(Ok({ state: 'done', output: { title: 'Issue' } }));
+        const functionUuid = generateCatalogFunctionUuid({ provider: 'replicate', name: 'get-model' });
+        vi.spyOn(Orchestrator.prototype, 'getOutput').mockResolvedValue(Ok({ state: 'done', output: { id: 'owner/model', name: 'model', owner: 'owner' } }));
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
@@ -236,14 +235,14 @@ describe(`GET ${endpoint}`, () => {
         });
 
         expect(res.res.status).toBe(200);
-        expect(res.json).toEqual({ title: 'Issue' });
+        expect(res.json).toEqual({ id: 'owner/model', name: 'model', owner: 'owner' });
     });
 
-    it.skip('rejects a catalog provider mismatch', async () => {
+    it('rejects a catalog provider mismatch', async () => {
         const { apiKey, env } = await seedAccount(['environment:functions:invocations']);
         const integration = await seeders.createConfigSeed(env, 'slack', 'slack');
         const connection = await seeders.createConnectionSeed({ env, provider: integration.unique_key, connectionId: randomUUID() });
-        const functionUuid = generateCatalogFunctionUuid({ provider: 'github', name: 'get_issue' });
+        const functionUuid = generateCatalogFunctionUuid({ provider: 'replicate', name: 'get-model' });
         const output = vi.spyOn(Orchestrator.prototype, 'getOutput').mockResolvedValue(Ok({ state: 'in_progress' }));
 
         const res = await api.fetch(endpoint, {

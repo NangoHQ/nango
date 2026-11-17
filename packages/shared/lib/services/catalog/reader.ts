@@ -1,6 +1,6 @@
 import { filterJsonSchemaForModels } from '@nangohq/utils';
 
-import { isCatalogFunctionUuid } from './uuid.js';
+import { generateCatalogFunctionUuid, isCatalogFunctionUuid } from './uuid.js';
 
 import type { CatalogFunctionManifestEntry, Feature, FlowsZeroJson, FlowZeroJson, FunctionCapabilities } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
@@ -24,16 +24,14 @@ export interface CatalogAction {
     /** TypeScript source under templates-zero/. */
     sourceLocation: string;
     capabilities: FunctionCapabilities;
-    module: 'action';
+    type: 'action';
 }
 
-export type CatalogFunctionDefinition = Omit<CatalogFunctionManifestEntry, 'fileLocation' | 'sourceLocation'> & {
+export type CatalogFunctionDefinition = CatalogFunctionManifestEntry & {
+    uuid: string;
     source: 'catalog';
     provider: string;
-    /** Compiled JavaScript under templates-zero/. */
-    fileLocation: string;
-    /** TypeScript source under templates-zero/. */
-    sourceLocation: string;
+    sdkVersion: string;
 };
 
 export type CatalogEntry = CatalogAction | CatalogFunctionDefinition;
@@ -68,27 +66,20 @@ export class CatalogReader {
         return provider === undefined ? undefined : this.load(provider).byUuid.get(normalized);
     }
 
-    // TODO: decide how catalog function UUIDs work for provider aliases (symLinkTargetName, e.g. github-pat -> github).
-    // Today every alias must publish its own UUIDs, and any UUID repeated across providers fails every UUID lookup.
-    // Alias blocks in the manifest are verbatim copies of their target's actions; if functions are copied the same way
-    // (UUID included), this duplicate check will break the whole catalog.
-    // Leaning option: aliases share the canonical UUID. Index canonical providers only, verify each alias copy's UUID
-    // belongs to its target, set `provider` to the canonical provider, and make invocation accept alias connections.
-    // Parked until the catalog manifest format settles (it may change or move to a different file).
     private indexFunctionUuids(): Map<string, string> {
         if (this.providersByUuid) {
             return this.providersByUuid;
         }
         const providersByUuid = new Map<string, string>();
         for (const integration of this.loadManifest()) {
-            for (const entry of integration.functions ?? []) {
-                if (!isCatalogFunctionUuid(entry.uuid)) {
-                    throw new Error(`Invalid catalog function UUID for '${entry.name}' in provider '${integration.providerConfigKey}'`);
+            if (!integration.functions?.length) {
+                continue;
+            }
+            for (const uuid of this.load(integration.providerConfigKey).byUuid.keys()) {
+                if (providersByUuid.has(uuid)) {
+                    throw new Error(`Duplicate catalog function UUID '${uuid}' across the catalog`);
                 }
-                if (providersByUuid.has(entry.uuid)) {
-                    throw new Error(`Duplicate catalog function UUID '${entry.uuid}' across the catalog`);
-                }
-                providersByUuid.set(entry.uuid, integration.providerConfigKey);
+                providersByUuid.set(uuid, integration.providerConfigKey);
             }
         }
         this.providersByUuid = providersByUuid;
@@ -101,7 +92,7 @@ export class CatalogReader {
 
     public getAction(provider: string, name: string): CatalogAction | undefined {
         const entry = this.getEntry(provider, name);
-        return entry?.module === 'action' ? entry : undefined;
+        return entry?.type === 'action' ? entry : undefined;
     }
 
     private load(provider: string): ProviderCatalog {
@@ -113,13 +104,15 @@ export class CatalogReader {
         const integration = this.loadManifest().find((entry) => entry.providerConfigKey === provider);
         const folder = integration?.symLinkTargetName ?? provider;
         const actions = integration ? loadActions(integration, folder) : [];
-        const functions: CatalogFunctionDefinition[] = (integration?.functions ?? []).map((item) => ({
-            ...item,
-            source: 'catalog',
-            provider,
-            fileLocation: `${TEMPLATES_ZERO_PREFIX}/${folder}/${item.fileLocation}`,
-            sourceLocation: `${TEMPLATES_ZERO_PREFIX}/${folder}/${item.sourceLocation}`
-        }));
+        const functions: CatalogFunctionDefinition[] = integration
+            ? (integration.functions ?? []).map((item) => ({
+                  ...item,
+                  uuid: resolveFunctionUuid(provider, item),
+                  source: 'catalog',
+                  provider,
+                  sdkVersion: integration.sdkVersion
+              }))
+            : [];
         const entries: CatalogEntry[] = [...actions, ...functions];
         const byName = new Map<string, CatalogEntry>();
         for (const entry of entries) {
@@ -131,9 +124,6 @@ export class CatalogReader {
 
         const byUuid = new Map<string, CatalogFunctionDefinition>();
         for (const entry of functions) {
-            if (!isCatalogFunctionUuid(entry.uuid)) {
-                throw new Error(`Invalid catalog function UUID for '${entry.name}' in provider '${provider}'`);
-            }
             if (byUuid.has(entry.uuid)) {
                 throw new Error(`Duplicate catalog function UUID '${entry.uuid}' for provider '${provider}'`);
             }
@@ -144,6 +134,16 @@ export class CatalogReader {
         this.providers.set(provider, catalog);
         return catalog;
     }
+}
+
+function resolveFunctionUuid(provider: string, entry: CatalogFunctionManifestEntry): string {
+    if (entry.uuid === undefined) {
+        return generateCatalogFunctionUuid({ provider, name: entry.name });
+    }
+    if (!isCatalogFunctionUuid(entry.uuid)) {
+        throw new Error(`Invalid catalog function UUID for '${entry.name}' in provider '${provider}'`);
+    }
+    return entry.uuid;
 }
 
 function loadActions(integration: FlowZeroJson, folder: string): CatalogAction[] {
@@ -159,7 +159,7 @@ function loadActions(integration: FlowZeroJson, folder: string): CatalogAction[]
         fileLocation: `${TEMPLATES_ZERO_PREFIX}/${folder}/build/${folder}_actions_${item.name}.cjs`,
         sourceLocation: `${TEMPLATES_ZERO_PREFIX}/${folder}/actions/${item.name}.ts`,
         capabilities: toCapabilities(item.features ?? []),
-        module: 'action'
+        type: 'action'
     }));
 }
 

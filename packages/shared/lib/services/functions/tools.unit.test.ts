@@ -120,12 +120,11 @@ describe('resolveTool', () => {
         expect(result.error).toMatchObject({ message: 'failed_to_resolve_tool', cause });
     });
 
-    // TODO: Re-enable once a real function entry is committed to flows.zero.json.
-    it.skip('resolves a catalog function', async () => {
-        const definition = getCatalogEntry('github', 'get_issue');
-        if (definition?.module !== 'function') throw new Error('Missing catalog fixture');
+    it('resolves a catalog function', async () => {
+        const definition = getCatalogEntry('replicate', 'get-model');
+        if (definition?.type !== 'tool') throw new Error('Missing catalog fixture');
 
-        expect((await resolveTool({ ...args, name: definition.name })).unwrap()).toEqual({
+        expect((await resolveTool({ ...args, integration: { ...args.integration, provider: 'replicate' }, name: definition.name })).unwrap()).toEqual({
             kind: 'function',
             uuid: definition.uuid,
             source: 'catalog',
