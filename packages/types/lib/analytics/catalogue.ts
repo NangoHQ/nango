@@ -362,19 +362,19 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
 
     'catalog:filter_update': {
-        surface: 'web',
+        surface: 'app',
         insight: 'Which catalog filters people use to find an API, and how often they find nothing',
         fires: 'When someone stops typing in the catalog search, or changes the category, the sort order or the Instant setup filter',
         properties: z.object({ filter: z.enum(['search', 'category', 'instant_setup', 'sort']), result_count: z.number() })
     },
     'catalog:provider_link_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'Which APIs people open from the catalog, and whether Instant setup or already configured APIs draw more interest',
         fires: 'When someone clicks an API card in the catalog',
         properties: z.object({ provider: z.string(), is_instant_setup: z.boolean(), is_configured: z.boolean() })
     },
     'catalog:setup_button_click': {
-        surface: 'web',
+        surface: 'app',
         insight: 'How many catalog detail visits lead to the setup form, and which placement of the setup button people use',
         fires: 'When someone clicks a "Set up" button on an API\'s catalog page',
         properties: z.object({ provider: z.string(), source: z.enum(['header', 'panel']) })
