@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { resolveRunnableTool } from './resolveTool.js';
+import { resolveLegacyAction } from './resolveLegacyAction.js';
 
 import type { CatalogTool } from './actions.js';
 import type { DBSyncConfig, IntegrationConfig } from '@nangohq/types';
@@ -57,7 +57,7 @@ const catalogTool: CatalogTool = {
     module: 'action'
 };
 
-describe('resolveRunnableTool', () => {
+describe('resolveLegacyAction', () => {
     beforeEach(() => {
         mockHasCatalogTools.mockResolvedValue(true);
         mockGetSyncConfigRaw.mockReset();
@@ -68,7 +68,7 @@ describe('resolveRunnableTool', () => {
         const deployed = { id: 44, sync_name: 'create-issue', enabled: true } as DBSyncConfig;
         mockGetSyncConfigRaw.mockResolvedValue(deployed);
 
-        const result = await resolveRunnableTool({ accountUuid: 'account-uuid', environmentId: 1, integration: config, name: 'create-issue' });
+        const result = await resolveLegacyAction({ accountUuid: 'account-uuid', environmentId: 1, integration: config, name: 'create-issue' });
 
         expect(result).toEqual({ kind: 'deployed', config: deployed });
         expect(mockGetSyncConfigRaw).toHaveBeenCalledWith({ environmentId: 1, config_id: 9, name: 'create-issue', isAction: true });
@@ -80,7 +80,7 @@ describe('resolveRunnableTool', () => {
         const deployed = { id: 44, sync_name: 'create-issue', enabled: false } as DBSyncConfig;
         mockGetSyncConfigRaw.mockResolvedValue(deployed);
 
-        const result = await resolveRunnableTool({ accountUuid: 'account-uuid', environmentId: 1, integration: config, name: 'create-issue' });
+        const result = await resolveLegacyAction({ accountUuid: 'account-uuid', environmentId: 1, integration: config, name: 'create-issue' });
 
         expect(result).toEqual({ kind: 'deployed', config: { ...deployed, enabled: true } });
         expect(mockHasCatalogTools).toHaveBeenCalledWith('account-uuid');
@@ -92,7 +92,7 @@ describe('resolveRunnableTool', () => {
         const deployed = { id: 44, sync_name: 'create-issue', enabled: false } as DBSyncConfig;
         mockGetSyncConfigRaw.mockResolvedValue(deployed);
 
-        const result = await resolveRunnableTool({ accountUuid: 'account-uuid', environmentId: 1, integration: config, name: 'create-issue' });
+        const result = await resolveLegacyAction({ accountUuid: 'account-uuid', environmentId: 1, integration: config, name: 'create-issue' });
 
         expect(result).toEqual({ kind: 'deployed', config: deployed });
         expect(mockGetCatalogTool).not.toHaveBeenCalled();
@@ -102,7 +102,7 @@ describe('resolveRunnableTool', () => {
         mockGetSyncConfigRaw.mockResolvedValue(null);
         mockGetCatalogTool.mockReturnValue(catalogTool);
 
-        const result = await resolveRunnableTool({ accountUuid: 'account-uuid', environmentId: 1, integration: config, name: 'create-issue' });
+        const result = await resolveLegacyAction({ accountUuid: 'account-uuid', environmentId: 1, integration: config, name: 'create-issue' });
 
         expect(result).toEqual({ kind: 'catalog', tool: catalogTool });
     });
@@ -111,7 +111,7 @@ describe('resolveRunnableTool', () => {
         mockGetSyncConfigRaw.mockResolvedValue(null);
         mockGetCatalogTool.mockReturnValue(undefined);
 
-        const result = await resolveRunnableTool({ accountUuid: 'account-uuid', environmentId: 1, integration: config, name: 'not-a-catalog-action' });
+        const result = await resolveLegacyAction({ accountUuid: 'account-uuid', environmentId: 1, integration: config, name: 'not-a-catalog-action' });
 
         expect(result).toEqual({ kind: 'missing' });
     });
@@ -121,9 +121,8 @@ describe('resolveRunnableTool', () => {
         mockGetSyncConfigRaw.mockResolvedValue(null);
         mockGetCatalogTool.mockReturnValue(catalogTool);
 
-        const result = await resolveRunnableTool({ accountUuid: 'account-uuid', environmentId: 1, integration: config, name: 'create-issue' });
+        const result = await resolveLegacyAction({ accountUuid: 'account-uuid', environmentId: 1, integration: config, name: 'create-issue' });
 
         expect(result).toEqual({ kind: 'missing' });
-        expect(mockGetCatalogTool).not.toHaveBeenCalled();
     });
 });

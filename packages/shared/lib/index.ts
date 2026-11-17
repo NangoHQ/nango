@@ -82,8 +82,8 @@ export { generateCatalogFunctionUuid, isCatalogFunctionUuid } from './services/c
 export type { CatalogEntry, CatalogFunctionDefinition, CatalogTool } from './services/catalog/actions.js';
 export { findCatalogFunctions } from './services/catalog/functions.js';
 export type { CatalogFunction } from './services/catalog/functions.js';
-export { resolveRunnableTool } from './services/catalog/resolveTool.js';
-export type { ResolveRunnableToolResult } from './services/catalog/resolveTool.js';
+export { resolveLegacyAction } from './services/catalog/resolveLegacyAction.js';
+export type { ResolvedLegacyAction } from './services/catalog/resolveLegacyAction.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 export * as mcpClient from './clients/mcp.client.js';

@@ -6,9 +6,9 @@ import { getCatalogTool } from './actions.js';
 import type { CatalogTool } from './actions.js';
 import type { DBSyncConfig, IntegrationConfig } from '@nangohq/types';
 
-export type ResolveRunnableToolResult = { kind: 'deployed'; config: DBSyncConfig } | { kind: 'catalog'; tool: CatalogTool } | { kind: 'missing' };
+export type ResolvedLegacyAction = { kind: 'deployed'; config: DBSyncConfig } | { kind: 'catalog'; tool: CatalogTool } | { kind: 'missing' };
 
-export async function resolveRunnableTool({
+export async function resolveLegacyAction({
     accountUuid,
     environmentId,
     integration,
@@ -18,7 +18,7 @@ export async function resolveRunnableTool({
     environmentId: number;
     integration: Pick<IntegrationConfig, 'id' | 'provider'>;
     name: string;
-}): Promise<ResolveRunnableToolResult> {
+}): Promise<ResolvedLegacyAction> {
     const configId = integration.id;
     if (!configId) {
         return { kind: 'missing' };
@@ -32,12 +32,8 @@ export async function resolveRunnableTool({
         return { kind: 'deployed', config: deployed };
     }
 
-    if (!(await getFlags().hasCatalogTools(accountUuid))) {
-        return { kind: 'missing' };
-    }
-
     const tool = getCatalogTool(integration.provider, name);
-    if (!tool) {
+    if (!tool || !(await getFlags().hasCatalogTools(accountUuid))) {
         return { kind: 'missing' };
     }
 

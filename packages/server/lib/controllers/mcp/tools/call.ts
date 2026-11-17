@@ -80,7 +80,7 @@ export const callToolsTool: ManagementMcpTool<CallToolOutput> = defineManagement
                 account,
                 environment,
                 connectionId: args.connection_id,
-                functionUuid: tool.fn.config.uuid,
+                functionUuid: tool.uuid,
                 input: args.input,
                 request: { method: 'POST', path: '/mcp', headers: {}, query: {} },
                 invocationType: 'wait',

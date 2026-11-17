@@ -95,7 +95,7 @@ export const postToolCall = asyncWrapperWithEnvironment<PostToolCall>(async (req
             account,
             environment,
             connectionId,
-            functionUuid: tool.fn.config.uuid,
+            functionUuid: tool.uuid,
             input,
             request: { method: 'POST', path: req.path, headers: redactHeaders({ headers: getHeaders(req.headers) }), query: {} },
             invocationType: 'wait',

@@ -7,7 +7,7 @@ import { createConfigSeed } from '../../../../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../../../../seeders/environment.seeder.js';
 import { getCatalogTool } from '../../../catalog/actions.js';
 import * as functionConfigService from '../../models/functions.js';
-import { findTool } from '../../tools.js';
+import { resolveTool } from '../../tools.js';
 import { findActiveByName, findActiveFunctionAvailability, findInputSchemas, findIntegrationFunctions, hasActiveLegacyActions } from './functions.js';
 
 import type { DBEnvironment, DBFunctionConfigVersion, DBSyncConfig, IntegrationConfig, NangoConfigMetadata } from '@nangohq/types';
@@ -180,7 +180,10 @@ describe(findActiveFunctionAvailability, () => {
         expect((await findActiveFunctionAvailability(scope)).toolNames).toEqual([]);
         expect(await findIntegrationFunctions({ environmentId: environment.id })).toEqual([expect.objectContaining({ name, type: 'action' })]);
         expect(await findActiveByName({ ...scope, name, type: 'tool' })).toMatchObject({ name, type: 'action' });
-        expect((await findTool({ environmentId: environment.id, integrationKey: github.unique_key, name })).unwrap()).toBeNull();
+        expect((await resolveTool({ accountUuid: account.uuid, environmentId: environment.id, integration: github, name })).unwrap()).toMatchObject({
+            kind: 'deployed',
+            config: { sync_name: name }
+        });
     });
 
     it.each([undefined, []])('HTTP functions without subscriptions are tools (subscriptions: %j)', async (subscriptions) => {
@@ -195,7 +198,11 @@ describe(findActiveFunctionAvailability, () => {
         expect((await findActiveFunctionAvailability(scope)).toolNames).toEqual([name]);
         expect(await findIntegrationFunctions({ environmentId: environment.id })).toEqual([expect.objectContaining({ name, type: 'tool' })]);
         expect(await findActiveByName({ ...scope, name, type: 'tool' })).toMatchObject({ name, type: 'tool' });
-        expect((await findTool({ environmentId: environment.id, integrationKey: github.unique_key, name })).unwrap()?.config.name).toBe(name);
+        expect((await resolveTool({ accountUuid: account.uuid, environmentId: environment.id, integration: github, name })).unwrap()).toMatchObject({
+            kind: 'function',
+            source: 'repo',
+            inputSchemaRef: '#/definitions/ToolInput'
+        });
     });
 
     it('reports a disabled action as enabled and leaves a disabled sync alone when tools-catalog is on', async () => {
