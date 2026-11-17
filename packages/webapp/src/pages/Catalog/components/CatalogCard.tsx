@@ -5,11 +5,10 @@ import { Link } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { trackCatalogCardClick } from '../analytics';
-import { getCardMeta, getInstantSetup } from '../catalog.utils';
+import { getCardMeta } from '../catalog.utils';
 import { CatalogLogo } from './CatalogLogo';
 
-import type { InstantSetup } from '../catalog.utils';
-import type { ApiProviderListItem } from '@nangohq/types';
+import type { ApiProviderListItem, ProviderInstantSetup } from '@nangohq/types';
 
 interface CatalogCardProps {
     provider: ApiProviderListItem;
@@ -18,7 +17,7 @@ interface CatalogCardProps {
 }
 
 export const CatalogCard = memo(function CatalogCard({ provider, env, isConfigured }: CatalogCardProps) {
-    const instantSetup = getInstantSetup(provider);
+    const { instantSetup } = provider;
 
     return (
         <Link
@@ -39,12 +38,12 @@ export const CatalogCard = memo(function CatalogCard({ provider, env, isConfigur
     );
 });
 
-const INSTANT_SETUP_TOOLTIPS: Record<NonNullable<InstantSetup>, string> = {
+const INSTANT_SETUP_TOOLTIPS: Record<NonNullable<ProviderInstantSetup>, string> = {
     managed: 'Instant setup · Nango-managed OAuth app',
     'no-dev-app': 'Instant setup · No developer app needed'
 };
 
-const InstantSetupIcon: React.FC<{ instantSetup: NonNullable<InstantSetup> }> = ({ instantSetup }) => (
+const InstantSetupIcon: React.FC<{ instantSetup: NonNullable<ProviderInstantSetup> }> = ({ instantSetup }) => (
     <Tooltip>
         <TooltipTrigger asChild>
             <Zap aria-label={INSTANT_SETUP_TOOLTIPS[instantSetup]} className="size-3 shrink-0 fill-icon-link text-icon-link" />
