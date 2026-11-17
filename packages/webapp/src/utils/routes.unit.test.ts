@@ -81,6 +81,11 @@ describe('isNonEnvPath', () => {
             expect(isNonEnvPath('/dev/integrations')).toBe(false);
             expect(isNonEnvPath('/team-settings-prod/integrations')).toBe(false);
         });
+
+        it('does not treat the new exact paths as legacy env-prefixed URLs', () => {
+            expect(isNonEnvPath('/dev/team')).toBe(false);
+            expect(isNonEnvPath('/dev/profile')).toBe(false);
+        });
     });
 });
 
