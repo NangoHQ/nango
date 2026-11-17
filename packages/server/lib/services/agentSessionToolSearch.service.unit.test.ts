@@ -437,11 +437,7 @@ describe('searchOperationMeta', () => {
         return {
             tool,
             integration: 'gmail',
-            action: 'send_email',
-            provider: 'google-mail',
             description: 'Send an email message to one or more recipients.',
-            listed: false,
-            connection: { status: 'connected', connection_id: 'conn-1' },
             input: { kind: 'schema', schema: { definitions: { SendEmailInput: { type: 'object' } }, $ref: '#/definitions/SendEmailInput' } }
         };
     }
@@ -451,8 +447,8 @@ describe('searchOperationMeta', () => {
             searchOperationMeta({
                 goal: 'email the weekly report to the team',
                 results: [
-                    { query: 'send an email', guidance: '', matches: [match('gmail__send_email')], related: [match('gmail__list_labels')] },
-                    { query: 'list calendar events', guidance: '', matches: [], related: [] }
+                    { query: 'send an email', matches: [match('gmail__send_email')], related: [match('gmail__list_labels')] },
+                    { query: 'list calendar events', matches: [], related: [] }
                 ]
             })
         ).toStrictEqual({

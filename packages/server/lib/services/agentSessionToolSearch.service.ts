@@ -14,7 +14,9 @@ import type {
     AgentSessionToolConnectionState,
     AgentSessionToolInput,
     AgentSessionToolMatch,
+    AgentSessionToolRelated,
     AgentSessionToolSearchHit,
+    AgentSessionToolSearchIntegrationState,
     AgentSessionToolSearchQueryResult,
     AgentSessionToolSearchResult,
     DBEnvironment,
@@ -153,10 +155,12 @@ export async function searchSessionTools({
             const matches = best.map((candidate) =>
                 toMatch(candidate, candidate.input ?? inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' })
             );
-            const related = weaker.map((candidate) => toMatch(candidate, undefined));
+            const related = weaker.map(toRelated);
+            const guidance = queryGuidance({ matches, related, relatedElsewhere });
 
-            return { query, guidance: guidanceFor({ session, query, matches, related, relatedElsewhere }), matches, related };
+            return { query, ...(guidance ? { guidance } : {}), matches, related };
         });
+        const returned = ranked.flatMap(({ best, related }) => [...best, ...related]);
 
         await logCtx.enrichOperation({ meta: searchOperationMeta({ goal, results }) });
         for (const { query, matches } of results) {
@@ -176,7 +180,7 @@ export async function searchSessionTools({
             });
         }
 
-        return { results };
+        return { guidance: searchGuidance({ session, results, returned }), integrations: integrationStates(returned), results };
     } catch (err) {
         void logCtx.error('Failed to search the session tools', { error: err });
         await logCtx.failed();
@@ -437,88 +441,101 @@ export function searchOperationMeta({ goal, results }: { goal: string; results: 
     };
 }
 
-function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | undefined): AgentSessionToolMatch {
-    return {
-        tool: candidate.slug,
-        integration: candidate.integration,
-        action: candidate.action,
-        provider: candidate.provider,
-        description: candidate.description,
-        listed: candidate.listed,
-        connection: candidate.connection,
-        ...(input ? { input } : {})
-    };
+function toRelated(candidate: SearchCandidate): AgentSessionToolRelated {
+    return { tool: candidate.slug, integration: candidate.integration, description: candidate.description };
 }
 
-function guidanceFor({
-    session,
-    query,
-    matches,
-    related,
-    relatedElsewhere
-}: {
-    session: AgentSession;
-    query: string;
-    matches: AgentSessionToolMatch[];
-    related: AgentSessionToolMatch[];
-    relatedElsewhere: boolean;
-}): string {
-    if (matches.length === 0 && related.length === 0 && relatedElsewhere) {
-        return `No tool closely matches '${query}'. The tools closest to it are already listed under another query in this search.`;
+// The dialect URL would repeat on every match, and the guidance already says what the schemas are.
+function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput): AgentSessionToolMatch {
+    if (input.kind !== 'schema') {
+        return { ...toRelated(candidate), input };
     }
 
-    if (matches.length === 0 && related.length === 0) {
-        return `No tool in this session matches '${query}'. Try a shorter query, or words describing the operation rather than the product, and note that this session may simply not carry a tool for it.`;
+    const schema = { ...input.schema };
+    delete schema.$schema;
+    return { ...toRelated(candidate), input: { kind: 'schema', schema } };
+}
+
+function integrationStates(candidates: SearchCandidate[]): Record<string, AgentSessionToolSearchIntegrationState> {
+    return Object.fromEntries(candidates.map(({ integration, connection }) => [integration, connection.status]));
+}
+
+/** What holds for the whole call, said once rather than under every query it applies to. */
+function searchGuidance({
+    session,
+    results,
+    returned
+}: {
+    session: AgentSession;
+    results: AgentSessionToolSearchQueryResult[];
+    returned: SearchCandidate[];
+}): string {
+    if (returned.length === 0) {
+        return 'No query matched a tool in this session.';
     }
 
     const lines: string[] = [];
 
-    if (matches.length > 0) {
+    if (results.some(({ matches }) => matches.length > 0)) {
         lines.push(
-            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the tool of the one you want, exactly as given, and the input its schema describes. A schema is a JSON Schema document, rooted at its \`$ref\` when it has one.`
-        );
-
-        const takesNothing = matches.filter((match) => match.input?.kind === 'none');
-        if (takesNothing.length > 0) {
-            lines.push(`${toolNames(takesNothing)} ${takesNothing.length === 1 ? 'takes' : 'take'} no arguments.`);
-        }
-
-        const unreadable = matches.filter((match) => match.input?.kind === 'unavailable');
-        if (unreadable.length > 0) {
-            lines.push(
-                `The arguments of ${toolNames(unreadable)} could not be read, so ${unreadable.length === 1 ? 'it has' : 'they have'} to be called on a guess at the shape, and may fail.`
-            );
-        }
-    } else {
-        lines.push(
-            `No tool closely matches '${query}', but ${related.length} ${related.length === 1 ? 'is' : 'are'} related. Search again with wording closer to one of them to get its input schema.`
+            "Call `nango_execute` with a match's `tool`, exactly as given, and an input that fits its schema.",
+            'Schemas are JSON Schema, rooted at their `$ref` when they have one.'
         );
     }
 
-    if (matches.length > 0 && related.length > 0) {
-        lines.push(
-            `${related.length} more ${related.length === 1 ? 'tool is' : 'tools are'} loosely related, listed without their input schemas. Search again to pull one up.`
-        );
+    if (results.some(({ related }) => related.length > 0)) {
+        lines.push('Related tools come without a schema. Search again with wording closer to one to get it.');
     }
 
-    const alreadyListed = [...matches, ...related].filter((match) => match.listed);
-    if (alreadyListed.length > 0) {
-        lines.push(`${toolNames(alreadyListed)} ${alreadyListed.length === 1 ? 'is' : 'are'} also in your tool list under the same name.`);
+    const listed = returned.filter((candidate) => candidate.listed).map(({ slug }) => slug);
+    if (listed.length > 0) {
+        lines.push(`${codeList(listed)} ${listed.length === 1 ? 'is' : 'are'} also in your tool list under the same name.`);
     }
 
-    const unconnected = [...new Set([...matches, ...related].filter((match) => match.connection.status === 'not_connected').map((match) => match.integration))];
-    if (unconnected.length > 0) {
-        lines.push(
-            `${unconnected.map((integration) => `'${integration}'`).join(', ')} ${unconnected.length === 1 ? 'has no connection' : 'have no connections'} in this session. Their tools are listed for completeness and will fail if you call them.`,
-            ...new Set(unconnected.map((integration) => notConnectedGuidance(integration, session)))
-        );
+    const unconnected = [...new Set(returned.filter(({ connection }) => connection.status === 'not_connected').map(({ integration }) => integration))];
+    for (const integration of unconnected) {
+        lines.push(`\`${integration}\` has no connection in this session, so its tools will fail. ${notConnectedGuidance(integration, session)}`);
     }
 
-    return lines.join(' ');
+    return lines.join('\n');
 }
 
-function toolNames(matches: AgentSessionToolMatch[]): string {
-    return matches.map((match) => `'${match.tool}'`).join(', ');
+function queryGuidance({
+    matches,
+    related,
+    relatedElsewhere
+}: {
+    matches: AgentSessionToolMatch[];
+    related: AgentSessionToolRelated[];
+    relatedElsewhere: boolean;
+}): string | undefined {
+    if (matches.length === 0 && related.length === 0) {
+        return relatedElsewhere
+            ? 'No close match. The closest tools are listed under another query.'
+            : 'No tool in this session matches. Try a shorter query, or words for the operation rather than the product. This session may not carry a tool for it.';
+    }
+
+    const lines: string[] = [];
+
+    if (matches.length === 0) {
+        lines.push('No close match, only related tools.');
+    }
+
+    const takesNothing = matches.filter(({ input }) => input.kind === 'none').map(({ tool }) => tool);
+    if (takesNothing.length > 0) {
+        lines.push(`${codeList(takesNothing)} ${takesNothing.length === 1 ? 'takes' : 'take'} no arguments.`);
+    }
+
+    const unreadable = matches.filter(({ input }) => input.kind === 'unavailable').map(({ tool }) => tool);
+    if (unreadable.length > 0) {
+        lines.push(`The arguments of ${codeList(unreadable)} could not be read. Guess the shape, and expect the call may fail.`);
+    }
+
+    return lines.length > 0 ? lines.join('\n') : undefined;
+}
+
+function codeList(names: string[]): string {
+    return names.map((name) => `\`${name}\``).join(', ');
 }
 
 /** Scores run from 0, everything matched, to 1, nothing matched, and the event reports the other way round. */
