@@ -8,30 +8,24 @@ import { cn } from '@/utils/utils';
 
 import type { VariantProps } from 'class-variance-authority';
 
-// Dharma Switch (Figma 2595:352). A switch only says on or off: there are no status colours.
-// The 1px track padding plus the 1px border keeps the thumb 2px from the outer edge on every side.
 export const switchVariants = cva(
     [
+        // The 1px padding plus the 1px border keep the thumb 2px from every edge
         'peer group/switch inline-flex shrink-0 cursor-pointer items-center rounded-ds-full border-ds-1 p-px outline-none',
         'transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out',
-        // Off: the border keeps the track visible in dark mode
+        // The border keeps the off track visible in dark mode
         'border-border-stronger bg-control-switch-track-off',
         'data-[state=unchecked]:not-disabled:hover:border-border-input-hover',
-        // On
         'data-[state=checked]:border-interactive-primary data-[state=checked]:bg-interactive-primary',
         'data-[state=checked]:not-disabled:hover:border-interactive-primary-hover data-[state=checked]:not-disabled:hover:bg-interactive-primary-hover',
-        // Focus: halo + ring, keyboard only
         'focus-visible:shadow-focus-outline-default',
-        // Disabled
         'disabled:cursor-not-allowed disabled:border-border-disabled disabled:bg-state-disabled',
         'disabled:data-[state=checked]:border-border-disabled disabled:data-[state=checked]:bg-state-disabled'
     ],
     {
         variants: {
             size: {
-                // Track 32×18, thumb 14, travel 14
                 md: 'h-4.5 w-8',
-                // Track 28×16, thumb 12, travel 12
                 sm: 'h-4 w-7'
             }
         },
