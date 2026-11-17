@@ -6,8 +6,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { ButtonLink } from '@/components/ui/ButtonLink';
+import { TestConnectionButton } from '@/components/patterns/TestConnectionButton';
 import { Separator } from '@/components/ui/Separator';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
@@ -90,13 +89,7 @@ export const ShowIntegration: React.FC = () => {
                         </a>
                     </Button>
                     <TryInPlaygroundButton provider={integration.integration.provider} integrationName={displayName} source="integration" variant="outline" />
-                    <PermissionGate condition={canCreateTestConnection} asChild>
-                        {(allowed) => (
-                            <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="md" disabled={!allowed}>
-                                Add test connection
-                            </ButtonLink>
-                        )}
-                    </PermissionGate>
+                    <TestConnectionButton env={env} integrationIds={[integration.integration.unique_key]} canCreate={canCreateTestConnection} size="md" />
                 </div>
             </header>
 
