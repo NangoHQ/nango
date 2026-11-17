@@ -1,43 +1,18 @@
-import { SPLIT_BUTTON_SIZES, SPLIT_BUTTON_VARIANTS, SplitButton, SplitButtonAction, SplitButtonMenuTrigger } from './split-button';
+import { SPLIT_BUTTON_SIZES, SplitButton, SplitButtonAction, SplitButtonMenuTrigger } from './split-button';
 
 import type { SplitButtonSize, SplitButtonVariant } from './split-button';
 import type { Meta, StoryObj } from '@storybook/react';
 
-// The composed example with the app's DropdownMenu lives in stories/DeploySplitButton.stories.tsx — this package
-// can't import webapp code from src/ (no `@` path in tsconfig), so these stories show the button on its own.
-
-interface PlaygroundArgs {
-    variant: SplitButtonVariant;
-    size: SplitButtonSize;
-    disabled: boolean;
-    loading: boolean;
-    children: string;
-}
-
-const meta: Meta<PlaygroundArgs> = {
-    title: 'Design System/Components/SplitButton',
-    parameters: { layout: 'padded' },
-    argTypes: {
-        variant: { control: 'select', options: SPLIT_BUTTON_VARIANTS },
-        size: { control: 'select', options: SPLIT_BUTTON_SIZES }
-    }
+const meta: Meta = {
+    title: 'Design System/Components/Buttons/SplitButton',
+    parameters: { layout: 'padded' }
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Playground: Story = {
-    args: { variant: 'primary', size: 'md', disabled: false, loading: false, children: 'Deploy' },
-    render: ({ variant, size, disabled, loading, children }) => (
-        <SplitButton variant={variant} size={size} disabled={disabled}>
-            <SplitButtonAction loading={loading}>{children}</SplitButtonAction>
-            <SplitButtonMenuTrigger label="More deploy options" />
-        </SplitButton>
-    )
-};
-
-// Hover / Pressed / Focus are frozen with data-story-state, which .storybook/preview.css maps onto the real
-// hover:/active:/focus-visible: variants. Each column targets one half, to show the halves keep separate states.
+// .storybook/preview.css maps data-story-state onto the real hover:/active:/focus-visible: variants.
+// Each column targets one half, to show the halves keep separate states.
 interface HalfState {
     label: string;
     group?: { disabled?: boolean };
@@ -63,9 +38,8 @@ const SIZE_SPEC: Record<SplitButtonSize, string> = {
     lg: '36 · icon 16'
 };
 
-// Rows = sizes, columns = states.
 const StateMatrix = ({ variant }: { variant: SplitButtonVariant }) => (
-    <div className="grid items-center gap-x-8 gap-y-6" style={{ gridTemplateColumns: `auto repeat(${STATES.length}, max-content)` }}>
+    <div className="grid items-center gap-x-8 gap-y-6" style={{ gridTemplateColumns: `max-content repeat(${STATES.length}, max-content)` }}>
         <span />
         {STATES.map((state) => (
             <span key={state.label} className="story-section-heading">
@@ -91,16 +65,11 @@ const StateMatrix = ({ variant }: { variant: SplitButtonVariant }) => (
     </div>
 );
 
-// One story per type × theme. `globals.theme` pins the Themes toolbar, so light and dark are both captured.
-const matrixStory = (variant: SplitButtonVariant, theme: 'light' | 'dark'): Story => ({
-    name: `${variant} — ${theme}`,
-    globals: { theme },
+const matrixStory = (variant: SplitButtonVariant): Story => ({
+    name: `${variant} — sizes × states`,
     render: () => <StateMatrix variant={variant} />
 });
 
-export const PrimaryLight = matrixStory('primary', 'light');
-export const PrimaryDark = matrixStory('primary', 'dark');
-export const SecondaryLight = matrixStory('secondary', 'light');
-export const SecondaryDark = matrixStory('secondary', 'dark');
-export const OutlineLight = matrixStory('outline', 'light');
-export const OutlineDark = matrixStory('outline', 'dark');
+export const Primary = matrixStory('primary');
+export const Secondary = matrixStory('secondary');
+export const Outline = matrixStory('outline');
