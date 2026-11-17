@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AuditClient } from '@nangohq/audit';
 import { serde } from '@nangohq/pubsub';
-import { Err, metrics, Ok } from '@nangohq/utils';
+import { Err, metrics, Ok, report } from '@nangohq/utils';
 
 import { logger } from '../utils.js';
 import { AuditProcessor, unstorableReason } from './audit.js';
@@ -11,6 +11,9 @@ import { AuditProcessor, unstorableReason } from './audit.js';
 import type { SQSClient } from '@aws-sdk/client-sqs';
 import type { AuditBatchWriter } from '@nangohq/audit';
 import type { AuditRecordedEvent } from '@nangohq/types';
+import type * as NangoUtils from '@nangohq/utils';
+
+vi.mock('@nangohq/utils', async (importOriginal) => ({ ...(await importOriginal<typeof NangoUtils>()), report: vi.fn() }));
 
 const QUEUE_URL = 'https://sqs.us-west-2.amazonaws.com/1/audit-test-audit-test';
 
@@ -43,8 +46,8 @@ function auditMessage(eventId: string, overrides: Record<string, unknown> = {}) 
     };
 }
 
-// Serves each receive in turn, then nothing.
-function sqsServing(receives: unknown[][]) {
+// Serves each receive in turn, then nothing. Deletes of `failDeletes` come back in `Failed`.
+function sqsServing(receives: unknown[][], failDeletes: string[] = []) {
     const deleted: string[] = [];
     const deleteBatches: number[] = [];
     const pending = [...receives];
@@ -61,8 +64,13 @@ function sqsServing(receives: unknown[][]) {
         if (command instanceof DeleteMessageBatchCommand) {
             const entries = command.input.Entries ?? [];
             deleteBatches.push(entries.length);
-            deleted.push(...entries.map((e) => String(e.ReceiptHandle)));
-            return Promise.resolve({ Successful: entries.map((e) => ({ Id: e.Id })) });
+            const failed = entries.filter((e) => failDeletes.includes(String(e.ReceiptHandle)));
+            const succeeded = entries.filter((e) => !failed.includes(e));
+            deleted.push(...succeeded.map((e) => String(e.ReceiptHandle)));
+            return Promise.resolve({
+                Successful: succeeded.map((e) => ({ Id: e.Id })),
+                Failed: failed.map((e) => ({ Id: e.Id, Code: 'ReceiptHandleIsInvalid', SenderFault: true }))
+            });
         }
         return Promise.resolve({});
     });
@@ -310,6 +318,21 @@ describe('AuditProcessor batching', () => {
 
         await vi.waitFor(() => expect(recordMany).toHaveBeenCalledTimes(1), { timeout: 3000 });
         await proc.stop();
+    });
+
+    it('reports a delete that SQS refused, leaving that message to redeliver and the rest deleted', async () => {
+        const recordMany = vi.fn().mockResolvedValue(Ok(undefined));
+        const { sqs, deleted } = sqsServing([[auditMessage('a'), auditMessage('b')]], ['handle-b']);
+        const proc = processor(sqs, { recordMany }, { maxWaitMs: 20 });
+        proc.start();
+
+        await vi.waitFor(() => expect(recordMany).toHaveBeenCalled());
+        await proc.stop();
+
+        expect(deleted).toEqual(['handle-a']);
+        expect(report).toHaveBeenCalledWith(expect.objectContaining({ message: 'Audit consumer delete partially failed' }), {
+            failed: [expect.objectContaining({ Id: '1', Code: 'ReceiptHandleIsInvalid' })]
+        });
     });
 
     it('deletes in requests of at most ten messages', async () => {

@@ -116,7 +116,8 @@ export class AuditProcessor {
         }
     }
 
-    // A long poll would hold a due batch back, so it never waits past the oldest event's window.
+    // A long poll would hold a due batch back, so it waits only until the oldest event is due. SQS takes whole
+    // seconds, so this rounds up: a window can overrun by under a second, where rounding down would spin on empty polls.
     private waitTimeSeconds(buffer: Received[]): number {
         const oldest = buffer[0];
         if (!oldest) {
@@ -225,7 +226,7 @@ export class AuditProcessor {
                 })
             );
             if (res.Failed?.length) {
-                report(new Error('Audit consumer delete partially failed'), { failed: res.Failed.length });
+                report(new Error('Audit consumer delete partially failed'), { failed: res.Failed });
             }
         } catch (err) {
             report(new Error('Audit consumer delete failed', { cause: err }));
