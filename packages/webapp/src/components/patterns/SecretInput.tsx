@@ -1,10 +1,9 @@
 import { EyeIcon, EyeOff } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
-import { IconButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { CopyButton, IconButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { CopyButton } from '../ui/CopyButton';
 
 import type { InputProps } from '@nangohq/design-system';
 
@@ -33,7 +32,7 @@ export const SecretInput: React.FC<SecretInputProps> = ({ copy, canRead = true, 
                         </IconButton>
                     )}
                 </PermissionGate>
-                {copy && <PermissionGate condition={canRead}>{(allowed) => <CopyButton text={textToCopy} disabled={!allowed} />}</PermissionGate>}
+                {copy && <PermissionGate condition={canRead}>{(allowed) => <CopyButton value={textToCopy} size="2xs" disabled={!allowed} />}</PermissionGate>}
             </InputGroupAddon>
         </InputGroup>
     );

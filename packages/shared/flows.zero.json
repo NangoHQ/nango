@@ -246243,7 +246243,7 @@
                 "output": ["ActionOutput_docusign_addgroupusers"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_addgroupusers", "ActionOutput_docusign_addgroupusers"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_addgroupusers": {
@@ -246318,7 +246318,7 @@
                 "output": ["ActionOutput_docusign_createconnectconfiguration"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_createconnectconfiguration", "ActionOutput_docusign_createconnectconfiguration"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_createconnectconfiguration": {
@@ -246516,7 +246516,7 @@
                 "output": ["ActionOutput_docusign_createenvelopefromtemplate"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_createenvelopefromtemplate", "ActionOutput_docusign_createenvelopefromtemplate"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_createenvelopefromtemplate": {
@@ -246619,7 +246619,7 @@
                 "output": ["ActionOutput_docusign_createenvelope"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_createenvelope", "ActionOutput_docusign_createenvelope"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_createenvelope": {
@@ -246992,7 +246992,7 @@
                 "output": ["ActionOutput_docusign_creategroup"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_creategroup", "ActionOutput_docusign_creategroup"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_creategroup": {
@@ -247067,7 +247067,7 @@
                 "output": ["ActionOutput_docusign_createrecipienttabs"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_createrecipienttabs", "ActionOutput_docusign_createrecipienttabs"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_createrecipienttabs": {
@@ -247293,7 +247293,7 @@
                 "output": ["ActionOutput_docusign_createrecipientview"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_createrecipientview", "ActionOutput_docusign_createrecipientview"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_createrecipientview": {
@@ -247392,7 +247392,7 @@
                 "output": ["ActionOutput_docusign_createtemplate"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_createtemplate", "ActionOutput_docusign_createtemplate"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_createtemplate": {
@@ -247553,7 +247553,7 @@
                 "output": ["ActionOutput_docusign_createuser"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_createuser", "ActionOutput_docusign_createuser"],
-                "version": "3.0.1",
+                "version": "3.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_createuser": {
@@ -247613,7 +247613,7 @@
                 "output": ["ActionOutput_docusign_deleteconnectconfiguration"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_deleteconnectconfiguration", "ActionOutput_docusign_deleteconnectconfiguration"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_deleteconnectconfiguration": {
@@ -247654,7 +247654,7 @@
                 "output": ["ActionOutput_docusign_deleteenveloperecipients"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_deleteenveloperecipients", "ActionOutput_docusign_deleteenveloperecipients"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_deleteenveloperecipients": {
@@ -247768,7 +247768,7 @@
                 "output": ["ActionOutput_docusign_deletegroups"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_deletegroups", "ActionOutput_docusign_deletegroups"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_deletegroups": {
@@ -247825,7 +247825,7 @@
                 "output": ["ActionOutput_docusign_deleteuser"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_deleteuser", "ActionOutput_docusign_deleteuser"],
-                "version": "3.0.1",
+                "version": "3.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_deleteuser": {
@@ -247869,7 +247869,7 @@
                 "output": ["ActionOutput_docusign_getaccountsettings"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_getaccountsettings", "ActionOutput_docusign_getaccountsettings"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_getaccountsettings": {
@@ -247898,7 +247898,7 @@
                 "output": ["ActionOutput_docusign_getbrand"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_getbrand", "ActionOutput_docusign_getbrand"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_getbrand": {
@@ -247964,7 +247964,7 @@
                 "output": ["ActionOutput_docusign_getenvelopeauditevents"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_getenvelopeauditevents", "ActionOutput_docusign_getenvelopeauditevents"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_getenvelopeauditevents": {
@@ -248021,7 +248021,7 @@
                 "output": ["ActionOutput_docusign_getenvelopeformdata"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_getenvelopeformdata", "ActionOutput_docusign_getenvelopeformdata"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_getenvelopeformdata": {
@@ -248150,7 +248150,7 @@
                 "output": ["ActionOutput_docusign_getenvelope"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_getenvelope", "ActionOutput_docusign_getenvelope"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_getenvelope": {
@@ -248269,7 +248269,7 @@
                 "output": ["ActionOutput_docusign_gettemplate"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_gettemplate", "ActionOutput_docusign_gettemplate"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_gettemplate": {
@@ -249551,7 +249551,7 @@
                 "output": ["ActionOutput_docusign_getuser"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_getuser", "ActionOutput_docusign_getuser"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_getuser": {
@@ -249689,7 +249689,7 @@
                 "output": ["ActionOutput_docusign_listbrands"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listbrands", "ActionOutput_docusign_listbrands"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listbrands": {
@@ -249739,7 +249739,7 @@
                 "output": ["ActionOutput_docusign_listconnectconfigurations"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listconnectconfigurations", "ActionOutput_docusign_listconnectconfigurations"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listconnectconfigurations": {
@@ -249945,7 +249945,7 @@
                 "output": ["ActionOutput_docusign_listenveloperecipients"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listenveloperecipients", "ActionOutput_docusign_listenveloperecipients"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listenveloperecipients": {
@@ -250266,7 +250266,7 @@
                 "output": ["ActionOutput_docusign_listenvelopes"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listenvelopes", "ActionOutput_docusign_listenvelopes"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listenvelopes": {
@@ -250657,7 +250657,7 @@
                 "output": ["ActionOutput_docusign_listfolderenvelopes"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listfolderenvelopes", "ActionOutput_docusign_listfolderenvelopes"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listfolderenvelopes": {
@@ -250753,7 +250753,7 @@
                 "output": ["ActionOutput_docusign_listfolders"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listfolders", "ActionOutput_docusign_listfolders"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listfolders": {
@@ -250810,7 +250810,7 @@
                 "output": ["ActionOutput_docusign_listgroupusers"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listgroupusers", "ActionOutput_docusign_listgroupusers"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listgroupusers": {
@@ -250888,7 +250888,7 @@
                 "output": ["ActionOutput_docusign_listgroups"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listgroups", "ActionOutput_docusign_listgroups"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listgroups": {
@@ -250939,7 +250939,7 @@
                 "output": ["ActionOutput_docusign_listpermissionprofiles"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listpermissionprofiles", "ActionOutput_docusign_listpermissionprofiles"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listpermissionprofiles": {
@@ -250989,7 +250989,7 @@
                 "output": ["ActionOutput_docusign_listrecipienttabs"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listrecipienttabs", "ActionOutput_docusign_listrecipienttabs"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listrecipienttabs": {
@@ -252019,7 +252019,7 @@
                 "output": ["ActionOutput_docusign_listsigninggroups"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listsigninggroups", "ActionOutput_docusign_listsigninggroups"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listsigninggroups": {
@@ -252103,7 +252103,7 @@
                 "output": ["ActionOutput_docusign_listtemplaterecipients"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listtemplaterecipients", "ActionOutput_docusign_listtemplaterecipients"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listtemplaterecipients": {
@@ -252171,7 +252171,7 @@
                 "output": ["ActionOutput_docusign_listtemplates"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listtemplates", "ActionOutput_docusign_listtemplates"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listtemplates": {
@@ -252266,7 +252266,7 @@
                 "output": ["ActionOutput_docusign_listusers"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listusers", "ActionOutput_docusign_listusers"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listusers": {
@@ -252355,7 +252355,7 @@
                 "output": ["ActionOutput_docusign_removegroupusers"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_removegroupusers", "ActionOutput_docusign_removegroupusers"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_removegroupusers": {
@@ -252448,7 +252448,7 @@
                 "output": ["ActionOutput_docusign_updateconnectconfiguration"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_updateconnectconfiguration", "ActionOutput_docusign_updateconnectconfiguration"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_updateconnectconfiguration": {
@@ -252826,7 +252826,7 @@
                 "output": ["ActionOutput_docusign_updateenveloperecipients"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_updateenveloperecipients", "ActionOutput_docusign_updateenveloperecipients"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_updateenveloperecipients": {
@@ -253125,7 +253125,7 @@
                 "output": ["ActionOutput_docusign_updateenvelope"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_updateenvelope", "ActionOutput_docusign_updateenvelope"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_updateenvelope": {
@@ -253253,7 +253253,7 @@
                 "output": ["ActionOutput_docusign_updategroup"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_updategroup", "ActionOutput_docusign_updategroup"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_updategroup": {
@@ -253322,7 +253322,7 @@
                 "output": ["ActionOutput_docusign_updaterecipienttabs"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_updaterecipienttabs", "ActionOutput_docusign_updaterecipienttabs"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_updaterecipienttabs": {
@@ -253746,7 +253746,7 @@
                 "output": ["ActionOutput_docusign_updatetemplate"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_updatetemplate", "ActionOutput_docusign_updatetemplate"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_updatetemplate": {
@@ -253815,7 +253815,7 @@
                 "output": ["ActionOutput_docusign_updateuser"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_updateuser", "ActionOutput_docusign_updateuser"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_updateuser": {
@@ -253929,7 +253929,7 @@
                 "output": ["ActionOutput_docusign_voidenvelope"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_voidenvelope", "ActionOutput_docusign_voidenvelope"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_voidenvelope": {
@@ -253989,7 +253989,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Brand"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -254050,7 +254050,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["ConnectConfiguration", "SyncMetadata_docusign_connectconfigurations"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -254144,10 +254144,10 @@
                             "type": "object",
                             "properties": {
                                 "accountId": {
+                                    "description": "DocuSign account ID. Only needed when the connection configuration has no accountId.",
                                     "type": "string"
                                 }
                             },
-                            "required": ["accountId"],
                             "additionalProperties": false
                         }
                     }
@@ -254172,7 +254172,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["CustomField", "SyncMetadata_docusign_customfields"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -254214,10 +254214,10 @@
                             "type": "object",
                             "properties": {
                                 "accountId": {
+                                    "description": "DocuSign account ID. Only needed when the connection configuration has no accountId.",
                                     "type": "string"
                                 }
                             },
-                            "required": ["accountId"],
                             "additionalProperties": false
                         }
                     }
@@ -254242,7 +254242,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Envelope"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -254338,7 +254338,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Folder", "SyncMetadata_docusign_folders"],
-                "version": "1.0.2",
+                "version": "1.0.3",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -254380,10 +254380,10 @@
                             "type": "object",
                             "properties": {
                                 "accountId": {
+                                    "description": "DocuSign account ID. Only needed when the connection configuration has no accountId.",
                                     "type": "string"
                                 }
                             },
-                            "required": ["accountId"],
                             "additionalProperties": false
                         }
                     }
@@ -254403,7 +254403,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Group"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -254469,7 +254469,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["PermissionProfile"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -254525,7 +254525,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["SigningGroup"],
-                "version": "1.0.2",
+                "version": "1.0.3",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -254582,7 +254582,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Template", "SyncMetadata_docusign_templates"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -254615,10 +254615,10 @@
                             "type": "object",
                             "properties": {
                                 "accountId": {
+                                    "description": "DocuSign account ID. Only needed when the connection configuration has no accountId.",
                                     "type": "string"
                                 }
                             },
-                            "required": ["accountId"],
                             "additionalProperties": false
                         }
                     }
@@ -254643,7 +254643,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["User"],
-                "version": "3.0.1",
+                "version": "3.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -254703,7 +254703,7 @@
                 "output": ["ActionOutput_docusign_addgroupusers"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_addgroupusers", "ActionOutput_docusign_addgroupusers"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_addgroupusers": {
@@ -254778,7 +254778,7 @@
                 "output": ["ActionOutput_docusign_createconnectconfiguration"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_createconnectconfiguration", "ActionOutput_docusign_createconnectconfiguration"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_createconnectconfiguration": {
@@ -254976,7 +254976,7 @@
                 "output": ["ActionOutput_docusign_createenvelopefromtemplate"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_createenvelopefromtemplate", "ActionOutput_docusign_createenvelopefromtemplate"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_createenvelopefromtemplate": {
@@ -255079,7 +255079,7 @@
                 "output": ["ActionOutput_docusign_createenvelope"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_createenvelope", "ActionOutput_docusign_createenvelope"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_createenvelope": {
@@ -255452,7 +255452,7 @@
                 "output": ["ActionOutput_docusign_creategroup"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_creategroup", "ActionOutput_docusign_creategroup"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_creategroup": {
@@ -255527,7 +255527,7 @@
                 "output": ["ActionOutput_docusign_createrecipienttabs"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_createrecipienttabs", "ActionOutput_docusign_createrecipienttabs"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_createrecipienttabs": {
@@ -255753,7 +255753,7 @@
                 "output": ["ActionOutput_docusign_createrecipientview"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_createrecipientview", "ActionOutput_docusign_createrecipientview"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_createrecipientview": {
@@ -255852,7 +255852,7 @@
                 "output": ["ActionOutput_docusign_createtemplate"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_createtemplate", "ActionOutput_docusign_createtemplate"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_createtemplate": {
@@ -256013,7 +256013,7 @@
                 "output": ["ActionOutput_docusign_createuser"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_createuser", "ActionOutput_docusign_createuser"],
-                "version": "3.0.1",
+                "version": "3.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_createuser": {
@@ -256073,7 +256073,7 @@
                 "output": ["ActionOutput_docusign_deleteconnectconfiguration"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_deleteconnectconfiguration", "ActionOutput_docusign_deleteconnectconfiguration"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_deleteconnectconfiguration": {
@@ -256114,7 +256114,7 @@
                 "output": ["ActionOutput_docusign_deleteenveloperecipients"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_deleteenveloperecipients", "ActionOutput_docusign_deleteenveloperecipients"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_deleteenveloperecipients": {
@@ -256228,7 +256228,7 @@
                 "output": ["ActionOutput_docusign_deletegroups"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_deletegroups", "ActionOutput_docusign_deletegroups"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_deletegroups": {
@@ -256285,7 +256285,7 @@
                 "output": ["ActionOutput_docusign_deleteuser"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_deleteuser", "ActionOutput_docusign_deleteuser"],
-                "version": "3.0.1",
+                "version": "3.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_deleteuser": {
@@ -256329,7 +256329,7 @@
                 "output": ["ActionOutput_docusign_getaccountsettings"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_getaccountsettings", "ActionOutput_docusign_getaccountsettings"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_getaccountsettings": {
@@ -256358,7 +256358,7 @@
                 "output": ["ActionOutput_docusign_getbrand"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_getbrand", "ActionOutput_docusign_getbrand"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_getbrand": {
@@ -256424,7 +256424,7 @@
                 "output": ["ActionOutput_docusign_getenvelopeauditevents"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_getenvelopeauditevents", "ActionOutput_docusign_getenvelopeauditevents"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_getenvelopeauditevents": {
@@ -256481,7 +256481,7 @@
                 "output": ["ActionOutput_docusign_getenvelopeformdata"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_getenvelopeformdata", "ActionOutput_docusign_getenvelopeformdata"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_getenvelopeformdata": {
@@ -256610,7 +256610,7 @@
                 "output": ["ActionOutput_docusign_getenvelope"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_getenvelope", "ActionOutput_docusign_getenvelope"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_getenvelope": {
@@ -256729,7 +256729,7 @@
                 "output": ["ActionOutput_docusign_gettemplate"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_gettemplate", "ActionOutput_docusign_gettemplate"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_gettemplate": {
@@ -258011,7 +258011,7 @@
                 "output": ["ActionOutput_docusign_getuser"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_getuser", "ActionOutput_docusign_getuser"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_getuser": {
@@ -258149,7 +258149,7 @@
                 "output": ["ActionOutput_docusign_listbrands"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listbrands", "ActionOutput_docusign_listbrands"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listbrands": {
@@ -258199,7 +258199,7 @@
                 "output": ["ActionOutput_docusign_listconnectconfigurations"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listconnectconfigurations", "ActionOutput_docusign_listconnectconfigurations"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listconnectconfigurations": {
@@ -258405,7 +258405,7 @@
                 "output": ["ActionOutput_docusign_listenveloperecipients"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listenveloperecipients", "ActionOutput_docusign_listenveloperecipients"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listenveloperecipients": {
@@ -258726,7 +258726,7 @@
                 "output": ["ActionOutput_docusign_listenvelopes"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listenvelopes", "ActionOutput_docusign_listenvelopes"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listenvelopes": {
@@ -259117,7 +259117,7 @@
                 "output": ["ActionOutput_docusign_listfolderenvelopes"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listfolderenvelopes", "ActionOutput_docusign_listfolderenvelopes"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listfolderenvelopes": {
@@ -259213,7 +259213,7 @@
                 "output": ["ActionOutput_docusign_listfolders"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listfolders", "ActionOutput_docusign_listfolders"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listfolders": {
@@ -259270,7 +259270,7 @@
                 "output": ["ActionOutput_docusign_listgroupusers"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listgroupusers", "ActionOutput_docusign_listgroupusers"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listgroupusers": {
@@ -259348,7 +259348,7 @@
                 "output": ["ActionOutput_docusign_listgroups"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listgroups", "ActionOutput_docusign_listgroups"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listgroups": {
@@ -259399,7 +259399,7 @@
                 "output": ["ActionOutput_docusign_listpermissionprofiles"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listpermissionprofiles", "ActionOutput_docusign_listpermissionprofiles"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listpermissionprofiles": {
@@ -259449,7 +259449,7 @@
                 "output": ["ActionOutput_docusign_listrecipienttabs"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listrecipienttabs", "ActionOutput_docusign_listrecipienttabs"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listrecipienttabs": {
@@ -260479,7 +260479,7 @@
                 "output": ["ActionOutput_docusign_listsigninggroups"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listsigninggroups", "ActionOutput_docusign_listsigninggroups"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listsigninggroups": {
@@ -260563,7 +260563,7 @@
                 "output": ["ActionOutput_docusign_listtemplaterecipients"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listtemplaterecipients", "ActionOutput_docusign_listtemplaterecipients"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listtemplaterecipients": {
@@ -260631,7 +260631,7 @@
                 "output": ["ActionOutput_docusign_listtemplates"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listtemplates", "ActionOutput_docusign_listtemplates"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listtemplates": {
@@ -260726,7 +260726,7 @@
                 "output": ["ActionOutput_docusign_listusers"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_listusers", "ActionOutput_docusign_listusers"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_listusers": {
@@ -260815,7 +260815,7 @@
                 "output": ["ActionOutput_docusign_removegroupusers"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_removegroupusers", "ActionOutput_docusign_removegroupusers"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_removegroupusers": {
@@ -260908,7 +260908,7 @@
                 "output": ["ActionOutput_docusign_updateconnectconfiguration"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_updateconnectconfiguration", "ActionOutput_docusign_updateconnectconfiguration"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_updateconnectconfiguration": {
@@ -261286,7 +261286,7 @@
                 "output": ["ActionOutput_docusign_updateenveloperecipients"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_updateenveloperecipients", "ActionOutput_docusign_updateenveloperecipients"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_updateenveloperecipients": {
@@ -261585,7 +261585,7 @@
                 "output": ["ActionOutput_docusign_updateenvelope"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_updateenvelope", "ActionOutput_docusign_updateenvelope"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_updateenvelope": {
@@ -261713,7 +261713,7 @@
                 "output": ["ActionOutput_docusign_updategroup"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_updategroup", "ActionOutput_docusign_updategroup"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_updategroup": {
@@ -261782,7 +261782,7 @@
                 "output": ["ActionOutput_docusign_updaterecipienttabs"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_updaterecipienttabs", "ActionOutput_docusign_updaterecipienttabs"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_updaterecipienttabs": {
@@ -262206,7 +262206,7 @@
                 "output": ["ActionOutput_docusign_updatetemplate"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_updatetemplate", "ActionOutput_docusign_updatetemplate"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_updatetemplate": {
@@ -262275,7 +262275,7 @@
                 "output": ["ActionOutput_docusign_updateuser"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_updateuser", "ActionOutput_docusign_updateuser"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_updateuser": {
@@ -262389,7 +262389,7 @@
                 "output": ["ActionOutput_docusign_voidenvelope"],
                 "scopes": ["signature"],
                 "usedModels": ["ActionInput_docusign_voidenvelope", "ActionOutput_docusign_voidenvelope"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_docusign_voidenvelope": {
@@ -262449,7 +262449,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Brand"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -262510,7 +262510,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["ConnectConfiguration", "SyncMetadata_docusign_connectconfigurations"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -262604,10 +262604,10 @@
                             "type": "object",
                             "properties": {
                                 "accountId": {
+                                    "description": "DocuSign account ID. Only needed when the connection configuration has no accountId.",
                                     "type": "string"
                                 }
                             },
-                            "required": ["accountId"],
                             "additionalProperties": false
                         }
                     }
@@ -262632,7 +262632,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["CustomField", "SyncMetadata_docusign_customfields"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -262674,10 +262674,10 @@
                             "type": "object",
                             "properties": {
                                 "accountId": {
+                                    "description": "DocuSign account ID. Only needed when the connection configuration has no accountId.",
                                     "type": "string"
                                 }
                             },
-                            "required": ["accountId"],
                             "additionalProperties": false
                         }
                     }
@@ -262702,7 +262702,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Envelope"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -262798,7 +262798,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Folder", "SyncMetadata_docusign_folders"],
-                "version": "1.0.2",
+                "version": "1.0.3",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -262840,10 +262840,10 @@
                             "type": "object",
                             "properties": {
                                 "accountId": {
+                                    "description": "DocuSign account ID. Only needed when the connection configuration has no accountId.",
                                     "type": "string"
                                 }
                             },
-                            "required": ["accountId"],
                             "additionalProperties": false
                         }
                     }
@@ -262863,7 +262863,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Group"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -262929,7 +262929,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["PermissionProfile"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -262985,7 +262985,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["SigningGroup"],
-                "version": "1.0.2",
+                "version": "1.0.3",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -263042,7 +263042,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Template", "SyncMetadata_docusign_templates"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -263075,10 +263075,10 @@
                             "type": "object",
                             "properties": {
                                 "accountId": {
+                                    "description": "DocuSign account ID. Only needed when the connection configuration has no accountId.",
                                     "type": "string"
                                 }
                             },
-                            "required": ["accountId"],
                             "additionalProperties": false
                         }
                     }
@@ -263103,7 +263103,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["User"],
-                "version": "3.0.1",
+                "version": "3.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -273620,7 +273620,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_bindpolicytogroups"],
                 "scopes": ["iam-policies-management"],
                 "usedModels": ["ActionInput_dynatrace_oauth_bindpolicytogroups", "ActionOutput_dynatrace_oauth_bindpolicytogroups"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_bindpolicytogroups": {
@@ -273664,7 +273664,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_creategroup"],
                 "scopes": ["account-idm-write"],
                 "usedModels": ["ActionInput_dynatrace_oauth_creategroup", "ActionOutput_dynatrace_oauth_creategroup"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_creategroup": {
@@ -274013,7 +274013,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_createuser"],
                 "scopes": ["account-idm-write"],
                 "usedModels": ["ActionInput_dynatrace_oauth_createuser", "ActionOutput_dynatrace_oauth_createuser"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_createuser": {
@@ -274053,7 +274053,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_deletegroup"],
                 "scopes": ["account-idm-read", "account-idm-write"],
                 "usedModels": ["ActionInput_dynatrace_oauth_deletegroup", "ActionOutput_dynatrace_oauth_deletegroup"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_deletegroup": {
@@ -274093,7 +274093,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_deleteplatformtoken"],
                 "scopes": ["platform-token:tokens:manage"],
                 "usedModels": ["ActionInput_dynatrace_oauth_deleteplatformtoken", "ActionOutput_dynatrace_oauth_deleteplatformtoken"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_deleteplatformtoken": {
@@ -274130,7 +274130,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_deletepolicy"],
                 "scopes": ["iam-policies-management"],
                 "usedModels": ["ActionInput_dynatrace_oauth_deletepolicy", "ActionOutput_dynatrace_oauth_deletepolicy"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_deletepolicy": {
@@ -274207,7 +274207,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_deleteuser"],
                 "scopes": ["account-idm-write"],
                 "usedModels": ["ActionInput_dynatrace_oauth_deleteuser", "ActionOutput_dynatrace_oauth_deleteuser"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_deleteuser": {
@@ -274543,7 +274543,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_getserviceuser"],
                 "scopes": ["account-idm-read"],
                 "usedModels": ["ActionInput_dynatrace_oauth_getserviceuser", "ActionOutput_dynatrace_oauth_getserviceuser"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_getserviceuser": {
@@ -274595,7 +274595,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_getuser"],
                 "scopes": ["account-idm-read"],
                 "usedModels": ["ActionInput_dynatrace_oauth_getuser", "ActionOutput_dynatrace_oauth_getuser"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_getuser": {
@@ -274745,7 +274745,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_listaccountauditlogs"],
                 "scopes": ["account-audit-logs-read"],
                 "usedModels": ["ActionInput_dynatrace_oauth_listaccountauditlogs", "ActionOutput_dynatrace_oauth_listaccountauditlogs"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_listaccountauditlogs": {
@@ -274855,7 +274855,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_listaccountlimits"],
                 "scopes": ["account-idm-read"],
                 "usedModels": ["ActionInput_dynatrace_oauth_listaccountlimits", "ActionOutput_dynatrace_oauth_listaccountlimits"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_listaccountlimits": {
@@ -275019,7 +275019,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_listenvironments"],
                 "scopes": ["account-env-read"],
                 "usedModels": ["ActionInput_dynatrace_oauth_listenvironments", "ActionOutput_dynatrace_oauth_listenvironments"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_listenvironments": {
@@ -275123,7 +275123,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_listgroupmembers"],
                 "scopes": ["account-idm-read"],
                 "usedModels": ["ActionInput_dynatrace_oauth_listgroupmembers", "ActionOutput_dynatrace_oauth_listgroupmembers"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_listgroupmembers": {
@@ -275376,7 +275376,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_listpolicybindings"],
                 "scopes": ["iam-policies-management"],
                 "usedModels": ["ActionInput_dynatrace_oauth_listpolicybindings", "ActionOutput_dynatrace_oauth_listpolicybindings"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_listpolicybindings": {
@@ -275503,7 +275503,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_listusers"],
                 "scopes": ["account-idm-read"],
                 "usedModels": ["ActionInput_dynatrace_oauth_listusers", "ActionOutput_dynatrace_oauth_listusers"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_listusers": {
@@ -275595,7 +275595,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_removegrouppermission"],
                 "scopes": ["account-idm-write"],
                 "usedModels": ["ActionInput_dynatrace_oauth_removegrouppermission", "ActionOutput_dynatrace_oauth_removegrouppermission"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_removegrouppermission": {
@@ -275689,7 +275689,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_setgrouppermissions"],
                 "scopes": ["account-idm-write"],
                 "usedModels": ["ActionInput_dynatrace_oauth_setgrouppermissions", "ActionOutput_dynatrace_oauth_setgrouppermissions"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_setgrouppermissions": {
@@ -275750,7 +275750,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_setgrouppolicies"],
                 "scopes": ["iam-policies-management"],
                 "usedModels": ["ActionInput_dynatrace_oauth_setgrouppolicies", "ActionOutput_dynatrace_oauth_setgrouppolicies"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_setgrouppolicies": {
@@ -275800,7 +275800,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_setusergroups"],
                 "scopes": ["account-idm-write"],
                 "usedModels": ["ActionInput_dynatrace_oauth_setusergroups", "ActionOutput_dynatrace_oauth_setusergroups"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_setusergroups": {
@@ -275940,7 +275940,7 @@
                 "output": ["ActionOutput_dynatrace_oauth_updateplatformtokenexpiration"],
                 "scopes": ["platform-token:tokens:manage"],
                 "usedModels": ["ActionInput_dynatrace_oauth_updateplatformtokenexpiration", "ActionOutput_dynatrace_oauth_updateplatformtokenexpiration"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_dynatrace_oauth_updateplatformtokenexpiration": {
@@ -276142,7 +276142,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["AccountPolicy", "SyncMetadata_dynatrace_oauth_accountpolicies"],
-                "version": "1.1.1",
+                "version": "1.1.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -276178,10 +276178,10 @@
                             "type": "object",
                             "properties": {
                                 "accountUuid": {
+                                    "description": "Dynatrace account UUID. Only needed when the connection configuration has no accountUuid.",
                                     "type": "string"
                                 }
                             },
-                            "required": ["accountUuid"],
                             "additionalProperties": false
                         }
                     }
@@ -276241,7 +276241,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Group"],
-                "version": "1.1.1",
+                "version": "1.1.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -276290,7 +276290,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["PlatformToken", "SyncMetadata_dynatrace_oauth_platformtokens"],
-                "version": "1.1.1",
+                "version": "1.1.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -276365,10 +276365,10 @@
                             "type": "object",
                             "properties": {
                                 "accountUuid": {
+                                    "description": "Dynatrace account UUID. Only needed when the connection configuration has no accountUuid.",
                                     "type": "string"
                                 }
                             },
-                            "required": ["accountUuid"],
                             "additionalProperties": false
                         }
                     }
@@ -459440,7 +459440,7 @@
                 "output": ["ActionOutput_highlevel_listcustomfields"],
                 "scopes": ["locations/customFields.readonly"],
                 "usedModels": ["ActionInput_highlevel_listcustomfields", "ActionOutput_highlevel_listcustomfields"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_highlevel_listcustomfields": {
@@ -671311,7 +671311,7 @@
                 "output": ["ActionOutput_odoo_api_key_callmethod"],
                 "scopes": [],
                 "usedModels": ["ActionInput_odoo_api_key_callmethod", "ActionOutput_odoo_api_key_callmethod"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_odoo_api_key_callmethod": {
@@ -671367,7 +671367,7 @@
                 "output": ["ActionOutput_odoo_api_key_countrecords"],
                 "scopes": [],
                 "usedModels": ["ActionInput_odoo_api_key_countrecords", "ActionOutput_odoo_api_key_countrecords"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_odoo_api_key_countrecords": {
@@ -671410,7 +671410,7 @@
                 "output": ["ActionOutput_odoo_api_key_createrecord"],
                 "scopes": [],
                 "usedModels": ["ActionInput_odoo_api_key_createrecord", "ActionOutput_odoo_api_key_createrecord"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_odoo_api_key_createrecord": {
@@ -671462,7 +671462,7 @@
                 "output": ["ActionOutput_odoo_api_key_deleterecord"],
                 "scopes": [],
                 "usedModels": ["ActionInput_odoo_api_key_deleterecord", "ActionOutput_odoo_api_key_deleterecord"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_odoo_api_key_deleterecord": {
@@ -671505,7 +671505,7 @@
                 "output": ["ActionOutput_odoo_api_key_duplicaterecord"],
                 "scopes": [],
                 "usedModels": ["ActionInput_odoo_api_key_duplicaterecord", "ActionOutput_odoo_api_key_duplicaterecord"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_odoo_api_key_duplicaterecord": {
@@ -671557,7 +671557,7 @@
                 "output": ["ActionOutput_odoo_api_key_findrecordsbyname"],
                 "scopes": [],
                 "usedModels": ["ActionInput_odoo_api_key_findrecordsbyname", "ActionOutput_odoo_api_key_findrecordsbyname"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_odoo_api_key_findrecordsbyname": {
@@ -671622,7 +671622,7 @@
                 "output": ["ActionOutput_odoo_api_key_getrecordfields"],
                 "scopes": ["read"],
                 "usedModels": ["ActionInput_odoo_api_key_getrecordfields", "ActionOutput_odoo_api_key_getrecordfields"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_odoo_api_key_getrecordfields": {
@@ -671668,7 +671668,7 @@
                 "output": ["ActionOutput_odoo_api_key_readrecord"],
                 "scopes": [],
                 "usedModels": ["ActionInput_odoo_api_key_readrecord", "ActionOutput_odoo_api_key_readrecord"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_odoo_api_key_readrecord": {
@@ -671728,7 +671728,7 @@
                 "output": ["ActionOutput_odoo_api_key_searchreadrecords"],
                 "scopes": [],
                 "usedModels": ["ActionInput_odoo_api_key_searchreadrecords", "ActionOutput_odoo_api_key_searchreadrecords"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_odoo_api_key_searchreadrecords": {
@@ -671787,7 +671787,7 @@
                 "output": ["ActionOutput_odoo_api_key_searchrecords"],
                 "scopes": [],
                 "usedModels": ["ActionInput_odoo_api_key_searchrecords", "ActionOutput_odoo_api_key_searchrecords"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_odoo_api_key_searchrecords": {
@@ -671851,7 +671851,7 @@
                 "output": ["ActionOutput_odoo_api_key_updaterecord"],
                 "scopes": [],
                 "usedModels": ["ActionInput_odoo_api_key_updaterecord", "ActionOutput_odoo_api_key_updaterecord"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_odoo_api_key_updaterecord": {
@@ -671914,7 +671914,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Contact"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -671963,7 +671963,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["CrmLead"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -672024,7 +672024,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Invoice"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -672081,7 +672081,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Payment"],
-                "version": "1.0.1",
+                "version": "1.0.2",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -672139,7 +672139,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["Product"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -672207,7 +672207,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["ProjectTask"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {
@@ -672279,7 +672279,7 @@
                 "sync_type": "full",
                 "track_deletes": false,
                 "usedModels": ["SaleOrder"],
-                "version": "1.0.0",
+                "version": "1.0.1",
                 "webhookSubscriptions": [],
                 "json_schema": {
                     "definitions": {

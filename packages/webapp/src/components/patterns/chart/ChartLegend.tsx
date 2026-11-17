@@ -1,7 +1,8 @@
 import { ArrowUpRight, Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { CopyButton } from '@/components/ui/CopyButton';
+import { CopyButton } from '@nangohq/design-system';
+
 import { cn } from '@/utils/utils';
 
 import type { ChartSeries } from './types';
@@ -113,7 +114,7 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions, 
                                 // changes the row's width — otherwise, in this content-sized wrap layout, the row would
                                 // grow on hover and reflow the wrapped rows below it.
                                 <div className="flex shrink-0 items-center gap-0.5 text-text-secondary opacity-0 transition-opacity duration-150 group-hover/row:opacity-100 group-focus-within/row:opacity-100">
-                                    {copyValue && <CopyButton text={copyValue} className="size-5 p-0" onCopy={() => onSeriesCopy?.(s)} />}
+                                    {copyValue && <CopyButton value={copyValue} size="2xs" onCopy={() => onSeriesCopy?.(s)} />}
                                     {href && (
                                         <Link
                                             to={href}
