@@ -17,7 +17,7 @@ Consuming apps can't restyle these components (a lint rule flags `className`/`st
 
 ### Input `size` is a variant, not the HTML attribute
 
-`Input` and `InputGroupInput` have a cva `size` variant (`'default' | 'auto'`) that replaces the native `<input size>` attribute. A wrapper around either must type its props on `InputProps`, not `React.ComponentProps<'input'>`, or `npm run ts-build` fails with `Type 'number' is not assignable to type '"default" | "auto"'`. `InputGroup` has its own `size` variant, which adds `'composer'` for a chat-style textarea.
+`Input` and `InputGroupInput` have a cva `size` variant (`'md' | 'sm' | 'auto'`, plus the deprecated `'default'`) that replaces the native `<input size>` attribute. A wrapper around either must type its props on `InputProps`, not `React.ComponentProps<'input'>`, or `npm run ts-build` fails with `Type 'number' is not assignable to type …`. `InputGroup` has its own `size` variant, which adds `'composer'` for a chat-style textarea.
 
 ### Forms: the Field family
 
@@ -25,11 +25,12 @@ Form primitives are the Field family in `src/components/ui/field.tsx`: `Field`, 
 
 - There is no standalone `Label`. `FieldLabel` is the only label export.
 - The package has no runtime dependency on react-hook-form. The webapp's `components/ui/Form.tsx` is a thin react-hook-form adapter over the Field family; elsewhere, wire react-hook-form with `Controller` at the call site.
-- `Field orientation="horizontal"` puts the label beside its control, for a switch or checkbox row.
+- `Field orientation="inline"` puts the label beside a small control, for a switch or checkbox row.
+- Field wires its label, description and error to its first control only. In a Field holding a list of inputs, set `aria-invalid` on each row that fails.
 
 ### Label-left forms
 
-For a settings-style form with labels in a left column and controls on the right, use a per-page CSS grid: `grid grid-cols-[237px_1fr] items-center`, with `FieldLabel` and the control as direct grid cells. `pages/User/Settings.tsx` and `pages/Team/components/TeamSettings.tsx` in the webapp follow it. There is no design-system form-grid container yet.
+For a settings row with the label on the left, use `Field orientation="horizontal"`: a 220px label column beside the control, with the error under the control. Wrap the label and its description in `FieldContent`, because only the first child fills the label column. Older pages (`pages/User/Settings.tsx`, `pages/Team/components/TeamSettings.tsx`) still use a per-page grid.
 
 Put grid layout such as `col-span-2` on a wrapper `<div>`, never as `className` on a design-system component. For an inline-editable value, reuse the webapp's `components/patterns/EditableInput.tsx`.
 
