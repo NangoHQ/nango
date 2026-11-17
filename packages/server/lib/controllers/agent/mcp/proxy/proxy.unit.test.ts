@@ -177,7 +177,7 @@ describe('proxyTool', () => {
         expect(request).not.toHaveBeenCalled();
     });
 
-    it('surfaces a proxy failure to the agent', async () => {
+    it('tells the agent a new session is needed when the connection was deleted', async () => {
         vi.spyOn(proxyService, 'request').mockResolvedValue({
             result: Err(new ProxyServiceError({ code: 'connection_not_found', message: 'Connection not found', status: 404 }))
         });
@@ -185,9 +185,9 @@ describe('proxyTool', () => {
         const result = await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1' });
 
         expect(errorOf(result).message).toBe(
-            "Connection not found. No request to 'notion' can be authenticated until then, so tell the user they need to reconnect it."
+            "The connection this session uses for 'notion' was deleted, so nothing on it can run and it cannot be reconnected here. Tell the user a new session is needed to use it again."
         );
-        expect(codeOf(result)).toBe('integration_not_connected');
+        expect(codeOf(result)).toBe('connection_deleted');
     });
 
     it('tells the agent to wait when the provider itself refused the credential refresh', async () => {

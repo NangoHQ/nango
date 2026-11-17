@@ -195,7 +195,7 @@ const routes: RouteObject[] = [
                 element: <AccountDiscovery />
             },
             {
-                path: '/team-settings',
+                path: '/team',
                 element: <TeamSettingsPage />,
                 handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
             },
@@ -205,7 +205,7 @@ const routes: RouteObject[] = [
                 handle: { breadcrumb: 'Account API keys' } as BreadcrumbHandle
             },
             {
-                path: '/user-settings',
+                path: '/profile',
                 handle: { breadcrumb: 'Profile settings' } as BreadcrumbHandle,
                 children: [
                     {
@@ -264,7 +264,7 @@ const routes: RouteObject[] = [
                             },
                             {
                                 path: 'create',
-                                handle: { breadcrumb: 'Set up new integration' } as BreadcrumbHandle,
+                                handle: { breadcrumb: 'Add integration' } as BreadcrumbHandle,
                                 children: [
                                     {
                                         index: true,
@@ -318,7 +318,7 @@ const routes: RouteObject[] = [
                             {
                                 path: 'create',
                                 element: <ConnectionCreate />,
-                                handle: { breadcrumb: 'Create test connection' } as BreadcrumbHandle
+                                handle: { breadcrumb: 'Add test connection' } as BreadcrumbHandle
                             },
                             {
                                 path: 'create-legacy',
@@ -406,15 +406,15 @@ const routes: RouteObject[] = [
                     // Backward compat redirects for old env-prefixed URLs
                     {
                         path: 'account-settings',
-                        element: <RedirectPreservingLocation to="/team-settings" />
+                        element: <RedirectPreservingLocation to="/team" />
                     },
                     {
                         path: 'team-settings',
-                        element: <RedirectPreservingLocation to="/team-settings" />
+                        element: <RedirectPreservingLocation to="/team" />
                     },
                     {
                         path: 'user-settings',
-                        element: <RedirectPreservingLocation to="/user-settings" />
+                        element: <RedirectPreservingLocation to="/profile" />
                     },
                     {
                         path: 'team/billing',
@@ -426,7 +426,27 @@ const routes: RouteObject[] = [
     },
     {
         path: '/account-settings',
-        element: <RedirectPreservingLocation to="/team-settings" />
+        element: <RedirectPreservingLocation to="/team" />
+    },
+    {
+        path: '/account',
+        element: <RedirectPreservingLocation to="/team" />
+    },
+    {
+        path: '/team-settings',
+        element: <RedirectPreservingLocation to="/team" />
+    },
+    {
+        path: '/user-settings',
+        element: <RedirectPreservingLocation to="/profile" />
+    },
+    {
+        path: '/user-settings/enable-2fa',
+        element: <RedirectPreservingLocation to="/profile/enable-2fa" />
+    },
+    {
+        path: '/billing',
+        element: <RedirectPreservingLocation to="/team/billing" />
     },
     {
         path: '/hn-demo',

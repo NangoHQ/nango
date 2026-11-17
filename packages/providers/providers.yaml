@@ -72,12 +72,12 @@
     categories:
         - iam
     auth_mode: OAUTH2_CC
-    token_url: https://${connectionConfig.domain}/v1beta1/users/oauth2/token
+    token_url: https://${connectionConfig.domain}/v1/oauth/token
     token_request_auth_method: basic
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: https://${connectionConfig.domain}/v1beta1/accounts/${connectionConfig.accountId}
+        base_url: https://${connectionConfig.domain}/v1/accounts/${connectionConfig.accountId}
     docs: https://nango.dev/docs/api-integrations/1password-users
     docs_connect: https://nango.dev/docs/api-integrations/1password-users/connect
     connection_config:
@@ -89,6 +89,7 @@
                 - api.1password.com
                 - api.1password.ca
                 - api.1password.eu
+                - api.ent.1password.com
             order: 1
         accountId:
             type: string
@@ -102,13 +103,14 @@
             type: string
             title: Client ID
             description: Your 1Password OAuth application Client ID.
-            format: uuid
-            example: 5ab87915-2deb-429c-a1e2-8b0495900f45
+            pattern: '^([A-Z0-9]{26}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$'
+            example: K7RX**********************
             doc_section: '#step-3-obtain-your-client-credentials'
         client_secret:
             type: string
             title: Client Secret
             description: Your 1Password OAuth application Client Secret.
+            example: Xq9T***************************************
             secret: true
             doc_section: '#step-3-obtain-your-client-credentials'
 
