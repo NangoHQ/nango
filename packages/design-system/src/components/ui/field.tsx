@@ -19,11 +19,7 @@ export const fieldVariants = cva('group/field w-full', {
                 '[&>:first-child]:row-span-2 [&>:first-child]:pt-1.5',
                 '[&>:not(:first-child)]:col-start-2'
             ],
-            inline: [
-                'flex flex-row items-start gap-2',
-                '[&>[data-slot=checkbox]]:mt-0.5 [&>[data-slot=switch]]:mt-px',
-                'has-[>[data-slot=checkbox]:enabled]:cursor-pointer has-[>[data-slot=switch]:enabled]:cursor-pointer'
-            ]
+            inline: ['flex flex-row items-start gap-2', '[&>[data-slot=checkbox]]:mt-0.5 [&>[data-slot=switch]]:mt-px']
         }
     },
     defaultVariants: {
@@ -36,10 +32,7 @@ export interface FieldProps extends React.ComponentProps<'div'>, VariantProps<ty
     'data-disabled'?: boolean | 'true' | 'false' | undefined;
 }
 
-const ROW_CONTROL_SELECTOR = ':scope > [data-slot=checkbox], :scope > [data-slot=switch]';
-const INTERACTIVE_SELECTOR = 'a, button, input, label, select, textarea, [role=checkbox], [role=switch]';
-
-function Field({ className, orientation, children, onClick, ...props }: FieldProps) {
+function Field({ className, orientation, children, ...props }: FieldProps) {
     const baseId = React.useId();
     const [renderedDescriptionId, registerDescription] = React.useState<string | null>(null);
     const [renderedErrorId, registerError] = React.useState<string | null>(null);
@@ -78,18 +71,6 @@ function Field({ className, orientation, children, onClick, ...props }: FieldPro
         [controlId, invalid, disabled, registerControl, setControlId, primary?.key, primary?.id, renderedDescriptionId, renderedErrorId]
     );
 
-    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-        onClick?.(event);
-        if (orientation !== 'inline' || event.defaultPrevented) {
-            return;
-        }
-        // A label or the control already toggled it; clicking it again would undo that.
-        if (event.target instanceof Element && event.target.closest(INTERACTIVE_SELECTOR)) {
-            return;
-        }
-        event.currentTarget.querySelector<HTMLElement>(ROW_CONTROL_SELECTOR)?.click();
-    };
-
     return (
         <FieldContext.Provider value={value}>
             <div
@@ -97,7 +78,6 @@ function Field({ className, orientation, children, onClick, ...props }: FieldPro
                 data-slot="field"
                 data-orientation={orientation ?? 'vertical'}
                 className={cn(fieldVariants({ orientation }), className)}
-                onClick={handleClick}
                 {...props}
             >
                 {children}

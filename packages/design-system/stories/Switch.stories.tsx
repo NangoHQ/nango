@@ -19,7 +19,7 @@ const CHECKED = [
     ['On', true]
 ] as const;
 
-// Hover and focus are frozen with data-story-state; in the app they come from the pointer and keyboard focus (Tab).
+// Hover and focus are frozen with data-story-state (see .storybook/preview.css)
 const STATES: [string, Partial<SwitchProps> & { 'data-story-state'?: string }][] = [
     ['Default', {}],
     ['Hover', { 'data-story-state': 'hover' }],
@@ -29,7 +29,6 @@ const STATES: [string, Partial<SwitchProps> & { 'data-story-state'?: string }][]
 
 const SIZES = ['md', 'sm'] as const;
 
-/** Every Checked × State × Size (Figma 2595:352). A switch has no error or status colours. Toggle the theme toolbar for dark. */
 export const States: Story = {
     render: () => (
         <div className="grid grid-cols-[96px_repeat(4,88px)] items-center gap-x-4 gap-y-4">
@@ -57,7 +56,6 @@ export const States: Story = {
     )
 };
 
-/** Inline Field, control first. The whole row is clickable; Space toggles when the switch is focused. */
 export const WithLabel: Story = {
     render: () => (
         <div className="grid grid-cols-[repeat(2,300px)] gap-x-10 gap-y-6">
@@ -106,7 +104,6 @@ const EVENTS = [
     { key: 'deleted', label: 'Connection deleted', description: 'When a connection is deleted.' }
 ] as const;
 
-/** Webhook event toggles: switch rows with descriptions. A switch applies immediately; no Save button. */
 export const WebhookEvents: Story = {
     render: function WebhookEventsStory() {
         const [enabled, setEnabled] = useState<Record<(typeof EVENTS)[number]['key'], boolean>>({ created: true, refresh: true, deleted: false });

@@ -138,7 +138,6 @@ export const FunctionSwitch: React.FC<{
                     <Switch
                         name="script"
                         checked={flow.enabled}
-                        className="cursor-pointer"
                         disabled={loading || !allowed || flow.source === 'tools-catalog'}
                         onClick={(e) => {
                             e.preventDefault();
