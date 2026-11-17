@@ -231,7 +231,8 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'playground:agent_turn_complete': {
         surface: 'server',
-        insight: 'What the Agent Playground costs per account, how often turns fail or get stopped, and whether first chats start from a starter',
+        insight:
+            'What the Agent Playground costs per account, how often turns fail or get stopped, whether first chats start from a starter, and what first messages ask for',
         fires: 'When an Agent Playground turn finishes, fails or is stopped',
         properties: z.object({
             agent_session_id: z.string(),
@@ -239,6 +240,11 @@ export const analyticsEventCatalogue = defineCatalogue({
             environment_id: z.number(),
             is_first_turn: z.boolean(),
             starter_provider: z.string().optional(),
+            intent: z.string().optional(),
+            // An array, because counting typed requests per app needs every app named. The labeller caps it at 10.
+            requested_providers: z.array(z.string()).optional(),
+            requested_provider_count: z.number().optional(),
+            has_unsupported_provider: z.boolean().optional(),
             is_success: z.boolean(),
             error_code: z.string().optional(),
             is_stopped: z.boolean(),
