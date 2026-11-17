@@ -5,6 +5,8 @@ import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { createFunctionSandbox } from './sandbox.js';
 import { compileTimeoutMs, dryrunSandboxTimeoutMs, dryrunTimeoutMs } from './timeouts.js';
 
+import type { RunnableFunctionType } from '@nangohq/types';
+
 const asyncDryrunScriptUrl = new URL('./async-dryrun-script.js', import.meta.url);
 const asyncDryrunScript = readFileSync(asyncDryrunScriptUrl, 'utf8');
 // These workspace-relative files are written through sandbox.writeFiles before
@@ -17,7 +19,7 @@ const dryrunCheckpointPath = '.nango/runtime/nango-dryrun-checkpoint.json';
 export interface DryrunRequest {
     integration_id: string;
     function_name: string;
-    function_type: 'action' | 'sync';
+    function_type: RunnableFunctionType;
     code: string;
     environment_name: string;
     connection_id: string;
@@ -89,7 +91,7 @@ export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<P
                         NANGO_SECRET_KEY: request.nango_secret_key,
                         NANGO_HOSTPORT: request.nango_host,
                         NANGO_DRYRUN_CALLBACK_URL: request.callback_url,
-                        NANGO_DRYRUN_ARGS: JSON.stringify(buildDryrunArgs(request)),
+                        NANGO_DRYRUN_ARGS: JSON.stringify(buildDryrunArgs({ request, tsFilePath })),
                         NANGO_DRYRUN_COMPILE_TIMEOUT_MS: String(compileTimeoutMs),
                         NANGO_DRYRUN_TIMEOUT_MS: String(dryrunTimeoutMs),
                         NANGO_DRYRUN_COMPILE_EXIT_CODE: String(NangoCliExitCode.CompileError)
@@ -110,18 +112,8 @@ export function buildAsyncDryrunScript(): string {
     return asyncDryrunScript;
 }
 
-function buildDryrunArgs(request: DryrunRequest): string[] {
-    const args = [
-        'dryrun',
-        request.function_name,
-        request.connection_id,
-        '--environment',
-        request.environment_name,
-        '--integration-id',
-        request.integration_id,
-        '--auto-confirm',
-        '--no-interactive'
-    ];
+function buildDryrunArgs({ request, tsFilePath }: { request: DryrunRequest; tsFilePath: string }): string[] {
+    const args = ['dryrun', tsFilePath, request.connection_id, '--environment', request.environment_name, '--auto-confirm', '--no-interactive'];
 
     if (request.input !== undefined) {
         args.push('--input', `@${dryrunInputPath}`);

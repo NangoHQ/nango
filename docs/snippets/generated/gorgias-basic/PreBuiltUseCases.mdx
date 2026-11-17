@@ -2,90 +2,90 @@
 
 | Function name | Description | Type |
 | - | - | - |
-| `add-ticket-tags` | Add one or more existing tags to a ticket (additive, does not remove existing tags). | [Action](/guides/functions/action-functions) |
-| `bulk-update-custom-fields` | Bulk update custom field definitions. | [Action](/guides/functions/action-functions) |
-| `cancel-job` | Cancel a pending/running bulk-operation job | [Action](/guides/functions/action-functions) |
-| `create-custom-field` | Create a custom field definition for tickets or customers. | [Action](/guides/functions/action-functions) |
-| `create-customer` | Create a customer with one or more contact channels. | [Action](/guides/functions/action-functions) |
-| `create-macro` | Create a macro with one or more actions (e.g. setResponseText). | [Action](/guides/functions/action-functions) |
-| `create-rule` | Create an automation rule with JavaScript-like condition/action code. | [Action](/guides/functions/action-functions) |
-| `create-satisfaction-survey` | Create a satisfaction survey record for a ticket and customer. | [Action](/guides/functions/action-functions) |
-| `create-tag` | Create a tag. | [Action](/guides/functions/action-functions) |
-| `create-team` | Create a team. | [Action](/guides/functions/action-functions) |
-| `create-ticket-message` | Add a new message to an existing ticket. | [Action](/guides/functions/action-functions) |
-| `create-ticket` | Create a ticket, finding or creating the customer by email/phone and choosing the phone vs. email message channel based on account settings. | [Action](/guides/functions/action-functions) |
-| `create-user` | Create a new user with a role in Gorgias. Defaults to agent if a role is not provided. | [Action](/guides/functions/action-functions) |
-| `create-view` | Create a view (saved filter) for tickets or customers. | [Action](/guides/functions/action-functions) |
-| `delete-customer-custom-field-value` | Clear a single custom field value on a customer. | [Action](/guides/functions/action-functions) |
-| `delete-customer` | Delete a customer. | [Action](/guides/functions/action-functions) |
-| `delete-macro` | Delete a macro | [Action](/guides/functions/action-functions) |
-| `delete-rule` | Delete a rule. | [Action](/guides/functions/action-functions) |
-| `delete-tag` | Delete a tag. | [Action](/guides/functions/action-functions) |
-| `delete-tags` | Delete multiple tags in one call. | [Action](/guides/functions/action-functions) |
-| `delete-team` | Delete a team | [Action](/guides/functions/action-functions) |
-| `delete-ticket-custom-field-value` | Clear a single custom field value on a ticket | [Action](/guides/functions/action-functions) |
-| `delete-ticket-message` | Delete a message from a ticket. | [Action](/guides/functions/action-functions) |
-| `delete-ticket` | Delete a ticket. | [Action](/guides/functions/action-functions) |
-| `delete-user` | Delete a user in Gorgias. | [Action](/guides/functions/action-functions) |
-| `delete-view` | Delete a view. | [Action](/guides/functions/action-functions) |
-| `get-account` | Get details about the current Gorgias account. | [Action](/guides/functions/action-functions) |
-| `get-custom-field` | Retrieve a single custom field definition. | [Action](/guides/functions/action-functions) |
-| `get-customer` | Retrieve a single customer, including their contact channels. | [Action](/guides/functions/action-functions) |
-| `get-event` | Retrieve a single event. | [Action](/guides/functions/action-functions) |
-| `get-integration` | Retrieve a single integration's configuration. | [Action](/guides/functions/action-functions) |
-| `get-job` | Retrieve a single job's status/progress. | [Action](/guides/functions/action-functions) |
-| `get-macro` | Retrieve a single macro. | [Action](/guides/functions/action-functions) |
-| `get-rule` | Retrieve a single automation rule, including its code and parsed AST. | [Action](/guides/functions/action-functions) |
-| `get-satisfaction-survey` | Retrieve a single satisfaction survey. | [Action](/guides/functions/action-functions) |
-| `get-stats-overview` | Retrieve a named statistic over a date range. | [Action](/guides/functions/action-functions) |
-| `get-tag` | Retrieve a single tag. | [Action](/guides/functions/action-functions) |
-| `get-team` | Retrieve a single team. | [Action](/guides/functions/action-functions) |
-| `get-ticket-message` | Retrieve a single message on a ticket. | [Action](/guides/functions/action-functions) |
-| `get-ticket` | Retrieve a single ticket, including its full messages array. | [Action](/guides/functions/action-functions) |
-| `get-user` | Retrieve a single user. | [Action](/guides/functions/action-functions) |
-| `get-view` | Retrieve a single view. | [Action](/guides/functions/action-functions) |
-| `list-account-settings` | List account-level settings (business hours, ticket assignment, satisfaction survey config, access/SSO, auto-merge, auto-split, default integration, etc.). | [Action](/guides/functions/action-functions) |
-| `list-custom-fields` | List custom field definitions for tickets or customers. | [Action](/guides/functions/action-functions) |
-| `list-customer-custom-field-values` | List all custom field values set on a customer. | [Action](/guides/functions/action-functions) |
-| `list-customers` | List customers, optionally filtered by email, name, external ID, language, timezone, view, or channel. | [Action](/guides/functions/action-functions) |
-| `list-events` | List account audit-trail events, filterable by object type/ID, event types, user, and creation-date range. | [Action](/guides/functions/action-functions) |
-| `list-integrations` | List configured integrations (email senders, HTTP integrations, apps, etc.) on the account. | [Action](/guides/functions/action-functions) |
-| `list-jobs` | List bulk-operation jobs (e.g., bulk delete/export), filterable by status and type. | [Action](/guides/functions/action-functions) |
-| `list-macros` | List macros (canned response templates), optionally searched, filtered by tags/language/archived state, or ranked by relevance to a ticket/message. | [Action](/guides/functions/action-functions) |
-| `list-rules` | List automation rules, optionally searched. | [Action](/guides/functions/action-functions) |
-| `list-satisfaction-surveys` | List satisfaction surveys, optionally filtered by ticket. | [Action](/guides/functions/action-functions) |
-| `list-tags` | List tags, optionally searched or ordered by usage. | [Action](/guides/functions/action-functions) |
-| `list-teams` | List teams. | [Action](/guides/functions/action-functions) |
-| `list-ticket-custom-field-values` | List all custom field values set on a ticket. | [Action](/guides/functions/action-functions) |
-| `list-ticket-messages` | List messages on a specific ticket | [Action](/guides/functions/action-functions) |
-| `list-ticket-tags` | List tags currently applied to a ticket. | [Action](/guides/functions/action-functions) |
-| `list-tickets` | List tickets, optionally filtered by customer, view, rule, or specific IDs. | [Action](/guides/functions/action-functions) |
-| `list-users` | List users (agents/admins/bots), optionally filtered by role, email, or search term. | [Action](/guides/functions/action-functions) |
-| `list-view-items` | List the tickets or customers matching a view's saved filter. | [Action](/guides/functions/action-functions) |
-| `list-views` | List views (saved ticket/customer filter definitions), optionally filtered to system or user-created views. | [Action](/guides/functions/action-functions) |
-| `merge-customers` | Merge one customer into another, deleting the source customer. | [Action](/guides/functions/action-functions) |
-| `merge-tags` | Merge one or more source tags into a destination tag. | [Action](/guides/functions/action-functions) |
-| `remove-ticket-tags` | Remove one or more tags from a ticket. | [Action](/guides/functions/action-functions) |
-| `search` | Search across agents, customers, customer channels/profiles, integrations, teams, or tags by a text query. | [Action](/guides/functions/action-functions) |
-| `set-customer-data` | Set arbitrary structured JSON data on a customer data field. | [Action](/guides/functions/action-functions) |
-| `set-ticket-tags` | Replace a ticket's full tag list with the given set of existing tags. | [Action](/guides/functions/action-functions) |
-| `unarchive-macros` | Unarchive up to 30 macros in one call. | [Action](/guides/functions/action-functions) |
-| `update-custom-field` | Update a custom field definition, or deactivate it. | [Action](/guides/functions/action-functions) |
-| `update-customer-custom-field-value` | Set a single custom field value on a customer. | [Action](/guides/functions/action-functions) |
-| `update-customer-custom-field-values` | Set multiple custom field values on a customer in one call. | [Action](/guides/functions/action-functions) |
-| `update-customer` | Update a customer's fields (name, email, channels, language, timezone, external ID). | [Action](/guides/functions/action-functions) |
-| `update-macro` | Update a macro's name, actions, tags, or language. | [Action](/guides/functions/action-functions) |
-| `update-rule-priorities` | Reorder the execution priority of multiple rules in one call. | [Action](/guides/functions/action-functions) |
-| `update-rule` | Update a rule's name, code, or description. | [Action](/guides/functions/action-functions) |
-| `update-satisfaction-survey` | Update a satisfaction survey (e.g. record a customer's score). | [Action](/guides/functions/action-functions) |
-| `update-tag` | Rename a tag or change its decoration or description. | [Action](/guides/functions/action-functions) |
-| `update-team` | Update a team's name or description. | [Action](/guides/functions/action-functions) |
-| `update-ticket-custom-field-value` | Set a single custom field value on a ticket. | [Action](/guides/functions/action-functions) |
-| `update-ticket-custom-field-values` | Set multiple custom field values on a ticket in one call. | [Action](/guides/functions/action-functions) |
-| `update-ticket-message` | Update a message's fields (e.g. body_text/body_html). | [Action](/guides/functions/action-functions) |
-| `update-ticket` | Update a ticket's fields (subject, status, priority, assignee, tags, channel, custom fields, etc.). | [Action](/guides/functions/action-functions) |
-| `update-user` | Update a user's fields (name, email, role, bio, etc.). | [Action](/guides/functions/action-functions) |
-| `update-view` | Update a view's fields. | [Action](/guides/functions/action-functions) |
+| `add-ticket-tags` | Add one or more existing tags to a ticket (additive, does not remove existing tags). | [Tool](/guides/functions/tools) |
+| `bulk-update-custom-fields` | Bulk update custom field definitions. | [Tool](/guides/functions/tools) |
+| `cancel-job` | Cancel a pending/running bulk-operation job | [Tool](/guides/functions/tools) |
+| `create-custom-field` | Create a custom field definition for tickets or customers. | [Tool](/guides/functions/tools) |
+| `create-customer` | Create a customer with one or more contact channels. | [Tool](/guides/functions/tools) |
+| `create-macro` | Create a macro with one or more actions (e.g. setResponseText). | [Tool](/guides/functions/tools) |
+| `create-rule` | Create an automation rule with JavaScript-like condition/action code. | [Tool](/guides/functions/tools) |
+| `create-satisfaction-survey` | Create a satisfaction survey record for a ticket and customer. | [Tool](/guides/functions/tools) |
+| `create-tag` | Create a tag. | [Tool](/guides/functions/tools) |
+| `create-team` | Create a team. | [Tool](/guides/functions/tools) |
+| `create-ticket-message` | Add a new message to an existing ticket. | [Tool](/guides/functions/tools) |
+| `create-ticket` | Create a ticket, finding or creating the customer by email/phone and choosing the phone vs. email message channel based on account settings. | [Tool](/guides/functions/tools) |
+| `create-user` | Create a new user with a role in Gorgias. Defaults to agent if a role is not provided. | [Tool](/guides/functions/tools) |
+| `create-view` | Create a view (saved filter) for tickets or customers. | [Tool](/guides/functions/tools) |
+| `delete-customer-custom-field-value` | Clear a single custom field value on a customer. | [Tool](/guides/functions/tools) |
+| `delete-customer` | Delete a customer. | [Tool](/guides/functions/tools) |
+| `delete-macro` | Delete a macro | [Tool](/guides/functions/tools) |
+| `delete-rule` | Delete a rule. | [Tool](/guides/functions/tools) |
+| `delete-tag` | Delete a tag. | [Tool](/guides/functions/tools) |
+| `delete-tags` | Delete multiple tags in one call. | [Tool](/guides/functions/tools) |
+| `delete-team` | Delete a team | [Tool](/guides/functions/tools) |
+| `delete-ticket-custom-field-value` | Clear a single custom field value on a ticket | [Tool](/guides/functions/tools) |
+| `delete-ticket-message` | Delete a message from a ticket. | [Tool](/guides/functions/tools) |
+| `delete-ticket` | Delete a ticket. | [Tool](/guides/functions/tools) |
+| `delete-user` | Delete a user in Gorgias. | [Tool](/guides/functions/tools) |
+| `delete-view` | Delete a view. | [Tool](/guides/functions/tools) |
+| `get-account` | Get details about the current Gorgias account. | [Tool](/guides/functions/tools) |
+| `get-custom-field` | Retrieve a single custom field definition. | [Tool](/guides/functions/tools) |
+| `get-customer` | Retrieve a single customer, including their contact channels. | [Tool](/guides/functions/tools) |
+| `get-event` | Retrieve a single event. | [Tool](/guides/functions/tools) |
+| `get-integration` | Retrieve a single integration's configuration. | [Tool](/guides/functions/tools) |
+| `get-job` | Retrieve a single job's status/progress. | [Tool](/guides/functions/tools) |
+| `get-macro` | Retrieve a single macro. | [Tool](/guides/functions/tools) |
+| `get-rule` | Retrieve a single automation rule, including its code and parsed AST. | [Tool](/guides/functions/tools) |
+| `get-satisfaction-survey` | Retrieve a single satisfaction survey. | [Tool](/guides/functions/tools) |
+| `get-stats-overview` | Retrieve a named statistic over a date range. | [Tool](/guides/functions/tools) |
+| `get-tag` | Retrieve a single tag. | [Tool](/guides/functions/tools) |
+| `get-team` | Retrieve a single team. | [Tool](/guides/functions/tools) |
+| `get-ticket-message` | Retrieve a single message on a ticket. | [Tool](/guides/functions/tools) |
+| `get-ticket` | Retrieve a single ticket, including its full messages array. | [Tool](/guides/functions/tools) |
+| `get-user` | Retrieve a single user. | [Tool](/guides/functions/tools) |
+| `get-view` | Retrieve a single view. | [Tool](/guides/functions/tools) |
+| `list-account-settings` | List account-level settings (business hours, ticket assignment, satisfaction survey config, access/SSO, auto-merge, auto-split, default integration, etc.). | [Tool](/guides/functions/tools) |
+| `list-custom-fields` | List custom field definitions for tickets or customers. | [Tool](/guides/functions/tools) |
+| `list-customer-custom-field-values` | List all custom field values set on a customer. | [Tool](/guides/functions/tools) |
+| `list-customers` | List customers, optionally filtered by email, name, external ID, language, timezone, view, or channel. | [Tool](/guides/functions/tools) |
+| `list-events` | List account audit-trail events, filterable by object type/ID, event types, user, and creation-date range. | [Tool](/guides/functions/tools) |
+| `list-integrations` | List configured integrations (email senders, HTTP integrations, apps, etc.) on the account. | [Tool](/guides/functions/tools) |
+| `list-jobs` | List bulk-operation jobs (e.g., bulk delete/export), filterable by status and type. | [Tool](/guides/functions/tools) |
+| `list-macros` | List macros (canned response templates), optionally searched, filtered by tags/language/archived state, or ranked by relevance to a ticket/message. | [Tool](/guides/functions/tools) |
+| `list-rules` | List automation rules, optionally searched. | [Tool](/guides/functions/tools) |
+| `list-satisfaction-surveys` | List satisfaction surveys, optionally filtered by ticket. | [Tool](/guides/functions/tools) |
+| `list-tags` | List tags, optionally searched or ordered by usage. | [Tool](/guides/functions/tools) |
+| `list-teams` | List teams. | [Tool](/guides/functions/tools) |
+| `list-ticket-custom-field-values` | List all custom field values set on a ticket. | [Tool](/guides/functions/tools) |
+| `list-ticket-messages` | List messages on a specific ticket | [Tool](/guides/functions/tools) |
+| `list-ticket-tags` | List tags currently applied to a ticket. | [Tool](/guides/functions/tools) |
+| `list-tickets` | List tickets, optionally filtered by customer, view, rule, or specific IDs. | [Tool](/guides/functions/tools) |
+| `list-users` | List users (agents/admins/bots), optionally filtered by role, email, or search term. | [Tool](/guides/functions/tools) |
+| `list-view-items` | List the tickets or customers matching a view's saved filter. | [Tool](/guides/functions/tools) |
+| `list-views` | List views (saved ticket/customer filter definitions), optionally filtered to system or user-created views. | [Tool](/guides/functions/tools) |
+| `merge-customers` | Merge one customer into another, deleting the source customer. | [Tool](/guides/functions/tools) |
+| `merge-tags` | Merge one or more source tags into a destination tag. | [Tool](/guides/functions/tools) |
+| `remove-ticket-tags` | Remove one or more tags from a ticket. | [Tool](/guides/functions/tools) |
+| `search` | Search across agents, customers, customer channels/profiles, integrations, teams, or tags by a text query. | [Tool](/guides/functions/tools) |
+| `set-customer-data` | Set arbitrary structured JSON data on a customer data field. | [Tool](/guides/functions/tools) |
+| `set-ticket-tags` | Replace a ticket's full tag list with the given set of existing tags. | [Tool](/guides/functions/tools) |
+| `unarchive-macros` | Unarchive up to 30 macros in one call. | [Tool](/guides/functions/tools) |
+| `update-custom-field` | Update a custom field definition, or deactivate it. | [Tool](/guides/functions/tools) |
+| `update-customer-custom-field-value` | Set a single custom field value on a customer. | [Tool](/guides/functions/tools) |
+| `update-customer-custom-field-values` | Set multiple custom field values on a customer in one call. | [Tool](/guides/functions/tools) |
+| `update-customer` | Update a customer's fields (name, email, channels, language, timezone, external ID). | [Tool](/guides/functions/tools) |
+| `update-macro` | Update a macro's name, actions, tags, or language. | [Tool](/guides/functions/tools) |
+| `update-rule-priorities` | Reorder the execution priority of multiple rules in one call. | [Tool](/guides/functions/tools) |
+| `update-rule` | Update a rule's name, code, or description. | [Tool](/guides/functions/tools) |
+| `update-satisfaction-survey` | Update a satisfaction survey (e.g. record a customer's score). | [Tool](/guides/functions/tools) |
+| `update-tag` | Rename a tag or change its decoration or description. | [Tool](/guides/functions/tools) |
+| `update-team` | Update a team's name or description. | [Tool](/guides/functions/tools) |
+| `update-ticket-custom-field-value` | Set a single custom field value on a ticket. | [Tool](/guides/functions/tools) |
+| `update-ticket-custom-field-values` | Set multiple custom field values on a ticket in one call. | [Tool](/guides/functions/tools) |
+| `update-ticket-message` | Update a message's fields (e.g. body_text/body_html). | [Tool](/guides/functions/tools) |
+| `update-ticket` | Update a ticket's fields (subject, status, priority, assignee, tags, channel, custom fields, etc.). | [Tool](/guides/functions/tools) |
+| `update-user` | Update a user's fields (name, email, role, bio, etc.). | [Tool](/guides/functions/tools) |
+| `update-view` | Update a view's fields. | [Tool](/guides/functions/tools) |
 | `custom-fields` | Sync custom field definitions for both tickets and customers | [Sync](/guides/functions/syncs/sync-functions) |
 | `customers` | Sync customers and their contact channels. | [Sync](/guides/functions/syncs/sync-functions) |
 | `events` | Sync the account's audit-trail events (ticket/customer/user/tag/rule/etc. lifecycle events). | [Sync](/guides/functions/syncs/sync-functions) |

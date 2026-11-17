@@ -1,15 +1,16 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, deployTemplate, startTrial, syncManager } from '@nangohq/shared';
+import { configService, deployTemplate, functionLookupService, startTrial, syncManager } from '@nangohq/shared';
 
 import { getOrchestrator } from '../utils/utils.js';
 import flowService from './flow.service.js';
 
-import type { DBEnvironment, DBPlan, DBTeam, RunnableFunctionType, ScriptTypeLiteral, SyncDeploymentResult } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam, ScriptTypeLiteral, SyncDeploymentResult } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
 export type DeployIntegrationTemplateReason =
+    | 'legacy_actions_deprecated'
     | 'integration_not_found'
     | 'plan_limit'
     | 'template_not_found'
@@ -19,7 +20,7 @@ export type DeployIntegrationTemplateReason =
     | 'failed_to_deploy';
 
 export type DeployIntegrationTemplateOutcome =
-    | { ok: true; result: SyncDeploymentResult; type: RunnableFunctionType }
+    | { ok: true; result: SyncDeploymentResult; type: 'action' | 'sync' }
     | { ok: false; reason: DeployIntegrationTemplateReason; cause?: Error };
 
 /**
@@ -49,9 +50,6 @@ export async function deployIntegrationTemplate({
     if (plan && plan.auto_idle && plan.trial_end_at && plan.trial_end_at.getTime() < Date.now()) {
         return { ok: false, reason: 'plan_limit' };
     }
-    if (plan && !plan.trial_end_at && plan.auto_idle) {
-        await startTrial(db.knex, plan);
-    }
 
     // When `type` is omitted, infer it from the catalog: a template name is almost always unique
     // across sync/action for a provider. Only flag ambiguity when the same name exists as both.
@@ -71,6 +69,16 @@ export async function deployIntegrationTemplate({
     const { type: resolvedType, template } = match;
     if (resolvedType !== 'sync' && resolvedType !== 'action') {
         return { ok: false, reason: 'non_runnable_type', cause: new Error(`Template '${name}' resolved to non-runnable type '${resolvedType}'`) };
+    }
+
+    if (resolvedType === 'action') {
+        const canDeployActions = await functionLookupService.hasActiveLegacyActions({ accountId: account.id });
+        if (!canDeployActions) {
+            return { ok: false, reason: 'legacy_actions_deprecated' };
+        }
+    }
+    if (plan && !plan.trial_end_at && plan.auto_idle) {
+        await startTrial(db.knex, plan);
     }
 
     const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'prebuilt' } }, { account, environment });

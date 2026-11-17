@@ -1,14 +1,19 @@
 import { makeAuditTarget as makeTarget } from '../../audit.js';
-import { Audit, auditable } from './auditable.js';
+import { Audit, auditable, maybeAuditable } from './auditable.js';
+import { callerSubject, credentialsReadTargets, skipUnlessCredentialsRead } from './credentialsRead.js';
 import { bodyField, nonEmptyString, omitUndefined, stringArray } from './input.js';
 import { accountApiKeyTarget, apiKeyTarget, environmentFromUuid, publicEnvApiKeyTarget } from './lookups.js';
 
+import type { AuditTarget } from '@nangohq/audit';
 import type {
     CreateAccountApiKey,
     CreateApiKey,
     DeleteAccountApiKey,
     DeleteApiKey,
     DeletePublicApiKey,
+    GetPublicApiKey,
+    ListAccountApiKeys,
+    ListApiKeys,
     PatchApiKey,
     PatchPublicApiKey,
     PostPublicApiKey
@@ -74,4 +79,22 @@ export const auditPublicApiKeyDeleted = auditable<DeletePublicApiKey>({
 export const auditAccountApiKeyDeleted = auditable<DeleteAccountApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'account' }),
     target: (req, locals) => accountApiKeyTarget(req.params.keyId, locals)
+});
+
+export const auditApiKeysCredentialsRead = maybeAuditable<ListApiKeys>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'credentials_read', scope: 'environment' }),
+    skipWhen: skipUnlessCredentialsRead(),
+    subject: callerSubject,
+    atFinish: (req) => credentialsReadTargets('api_key', req)
+});
+
+export const auditPublicApiKeyCredentialsRead = auditable<GetPublicApiKey>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'credentials_read', scope: 'environment' }),
+    environment: (req, locals) => environmentFromUuid(req.params.environmentUuid, locals),
+    target: (req, locals) => publicEnvApiKeyTarget(req.params.keyUuid, req.params.environmentUuid, locals)
+});
+
+export const auditAccountApiKeysCredentialsRead = auditable<ListAccountApiKeys>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'credentials_read', scope: 'account' }),
+    targetFromResponse: (response) => response.data.flatMap<AuditTarget>((key) => makeTarget('api_key', key.uuid, key.display_name) ?? [])
 });

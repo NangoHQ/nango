@@ -26,11 +26,11 @@ With Nango, you can describe the integration you need, generate working code in 
   </Step>
 
   <Step id="generate-functions" title="You generate functions">
-    Build the integration logic as Nango Functions: TypeScript functions that call provider APIs, transform data, sync records, process webhooks, or perform actions. Generate them with AI, then edit them like normal application code.
+    Build the integration logic as Nango Functions: TypeScript functions that call provider APIs, transform data, sync records, process webhooks, or run on-demand operations. Generate them with AI, then edit them like normal application code.
   </Step>
 
   <Step id="use-functions" title="Your app or agents use them">
-    Call functions from your backend, trigger them on schedules or webhooks, or expose selected action functions as tools for AI agents through schemas and MCP.
+    Call functions from your backend, trigger them on schedules or webhooks, or expose selected tools for AI agents through schemas and MCP.
   </Step>
 </Steps>
 
@@ -42,7 +42,7 @@ Explore the main product integration use cases:
 
 <CardGroup cols={3}>
   <Card title="Tool calling for AI agents" icon="robot" href="/getting-started/use-cases/tool-calling">
-    Give agents scoped, observable access to external APIs through Nango action functions.
+    Give agents scoped, observable access to external APIs through Nango tools.
   </Card>
   <Card title="Sync external API data" icon="arrows-rotate" href="/getting-started/use-cases/syncs">
     Keep external API data fresh for your product, RAG pipeline, or change-detection workflow.
@@ -68,10 +68,10 @@ Explore the main product integration use cases:
     OAuth flows, API keys, token refresh, scopes, provider quirks, and per-user access to external APIs.
   </Card>
   <Card title="Integration runtime" icon="server" href="/guides/functions/functions-guide">
-    Actions, syncs, webhooks, schedules, retries, rate-limit backoff, checkpoints, and resumable execution.
+    Tools, syncs, webhooks, schedules, retries, rate-limit backoff, checkpoints, and resumable execution.
   </Card>
   <Card title="Agent-ready access" icon="robot" href="/guides/agent-sessions">
-    Tool schemas, MCP support, and scoped action functions your agents can call without handling provider credentials.
+    Tool schemas, MCP support, and scoped tools your agents can call without handling provider credentials.
   </Card>
   <Card title="Production controls" icon="chart-line" href="/guides/platform/observability">
     Logs, metrics, alerts, isolated environments, CI/CD workflows, tenant isolation, open-source deployment, and compliance controls.

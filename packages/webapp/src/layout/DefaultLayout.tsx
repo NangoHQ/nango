@@ -1,4 +1,5 @@
 import { LogoInverted } from '@/assets/LogoInverted';
+import { useViewport } from '@/hooks/useViewport';
 import { cn } from '@/utils/utils';
 
 interface DefaultLayoutI {
@@ -8,6 +9,8 @@ interface DefaultLayoutI {
 }
 
 export default function DefaultLayout({ children, className, wide = false }: DefaultLayoutI) {
+    useViewport('device');
+
     return (
         <div className="w-full h-full flex justify-center items-center bg-surface-canvas py-22">
             {/* Card */}

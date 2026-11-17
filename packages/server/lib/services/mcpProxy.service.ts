@@ -33,6 +33,7 @@ export interface McpProxyRequest {
     retryOn?: number[] | undefined;
     forwardHeadersOnRedirect?: boolean | undefined;
     actor?: OperationActor | undefined;
+    logMeta?: Record<string, unknown> | undefined;
 }
 
 export interface McpProxyExecution {
@@ -73,7 +74,8 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<M
         decompress: params.decompress,
         retryOn: params.retryOn,
         forwardHeadersOnRedirect: params.forwardHeadersOnRedirect,
-        actor: params.actor
+        actor: params.actor,
+        logMeta: params.logMeta
     });
 
     if (execution.result.isErr()) {

@@ -46,7 +46,8 @@ export const getEnvJs: RequestHandler = (_, res) => {
             gettingStarted: true,
             slack: flagHasSlack,
             plan: flagHasPlan,
-            authRoles: flags.hasAuthRoles
+            authRoles: flags.hasAuthRoles,
+            mfa: flags.hasMFA
         }
     };
     res.setHeader('content-type', 'text/javascript');

@@ -82,8 +82,8 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functions
             .map((fn) => ({
                 value: functionOptionValue(fn.type, fn.name),
                 label: fn.name,
-                filterValue: `${fn.name} ${fn.type}`,
-                tag: <Badge case="capitalize">{fn.type}</Badge>
+                filterValue: fn.type === 'action' ? `${fn.name} ${fn.type} tool` : `${fn.name} ${fn.type}`,
+                tag: <Badge case="capitalize">{fn.type === 'action' ? 'tool' : fn.type}</Badge>
             }));
         if (selectedFunctionValue && playgroundFunction && !opts.some((option) => option.value === selectedFunctionValue)) {
             opts.unshift({ value: selectedFunctionValue, label: playgroundFunction, filterValue: playgroundFunction });

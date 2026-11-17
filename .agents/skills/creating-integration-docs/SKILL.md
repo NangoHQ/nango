@@ -131,7 +131,7 @@ Register an OAuth app with [Integration Name] and obtain credentials to connect 
 
 Official docs: [[Integration Name] API docs]([API_DOCS_URL])
 
-## 🧩 Pre-built syncs & actions for [Integration Name]
+## 🧩 Pre-built syncs & tools for [Integration Name]
 
 Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
 
@@ -189,7 +189,7 @@ For more details, see [[Integration Name]'s OAuth documentation]([OAUTH_DOCS_URL
 **Path:** `snippets/generated/[slug]/PreBuiltUseCases.mdx`
 
 ```mdx
-_No pre-built syncs or actions available yet._
+_No pre-built syncs or tools available yet._
 
 <Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/functions/functions-guide) independently.</Tip>
 ```

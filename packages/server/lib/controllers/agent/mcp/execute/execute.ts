@@ -11,12 +11,12 @@ import { getOrchestrator } from '../../../../utils/utils.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { notConnectedGuidance } from '../notConnectedGuidance.js';
 import { resolveSessionConnection } from '../sessionConnection.js';
-import { defineAgentSessionMcpTool, RemoteToolResult } from '../sessionTool.js';
+import { defineAgentSessionMcpTool, invalidArgumentsOf, RemoteToolResult } from '../sessionTool.js';
 import { actionExecutionErrorToMcp, functionInvokeErrorToMcp, remoteMcpErrorToMcp, toolUnavailableError } from './errors.js';
 import { executeInputSchema } from './schema.js';
 
 import type { AgentSessionMcpContext } from '../sessionTool.js';
-import type { AgentSession, AgentSessionMetaTool, AgentSessionResolvedConnection } from '@nangohq/types';
+import type { AgentSession, AgentSessionMetaTool, AgentSessionResolvedConnection, FunctionSource } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
@@ -26,7 +26,7 @@ const RETRY_MAX = 0;
 export const executeTool = defineAgentSessionMcpTool({
     name: 'nango_execute',
     description:
-        "Run one of this session's tools, named as it is listed in tools/list or returned by nango_tool_search, on the connection the session resolved for it. Reaches tools that are not listed, and tools whose input is not an object.",
+        "Run one of this session's tools, named as it is listed in tools/list or returned by nango_tool_search, on the connection the session resolved for it. Reaches tools that are not listed.",
     inputSchema: executeInputSchema,
     annotations: {
         readOnlyHint: false,
@@ -35,8 +35,8 @@ export const executeTool = defineAgentSessionMcpTool({
         openWorldHint: true
     },
     isEnabled: (metaTools) => metaTools.nangoExecute,
-    onInvalidArguments: ({ session }) => {
-        trackAgentSessionToolCall({ metaTool: 'nango_execute', session, errorCode: 'invalid_input' });
+    onInvalidArguments: ({ session }, { error }) => {
+        trackAgentSessionToolCall({ metaTool: 'nango_execute', session, errorCode: 'invalid_input', invalidArguments: invalidArgumentsOf(error) });
     },
     async handler({ args, ...context }) {
         const { session, callable } = context;
@@ -167,13 +167,15 @@ export async function executeSessionTool({
             return Err(tool.error);
         }
 
-        if (tool.value && !tool.value.config.enabled) {
-            track({ errorCode: 'tool_not_in_session' });
-            return Err(toolUnavailableError({ integrationId, toolName }));
-        }
-
         if (tool.value) {
+            const functionSource = tool.value.currentVersion.source;
+            if (!tool.value.config.enabled) {
+                track({ errorCode: 'tool_not_in_session', functionSource });
+                return Err(toolUnavailableError({ integrationId, toolName }));
+            }
+
             const { logCtx, result } = await invokeFunction({
+                operation: { type: 'tool', action: 'call' },
                 account,
                 environment,
                 connectionId: connection.connectionId,
@@ -190,17 +192,18 @@ export async function executeSessionTool({
                 span.setTag('nango.error', result.error);
                 track({
                     logOperationId: logCtx?.id,
+                    functionSource,
                     errorCode: result.error.code,
                     underlyingErrorCode: result.error.cause instanceof NangoError ? result.error.cause.type : undefined
                 });
                 return Err(functionInvokeErrorToMcp({ error: result.error, integrationId, toolName }));
             }
 
-            track({ logOperationId: logCtx?.id });
+            track({ logOperationId: logCtx?.id, functionSource });
             return Ok('data' in result.value ? result.value.data : null);
         }
 
-        const { logCtx, result } = await executeAction({
+        const { logCtx, functionSource, result } = await executeAction({
             account,
             environment,
             connectionId: connection.connectionId,
@@ -216,11 +219,11 @@ export async function executeSessionTool({
 
         if (result.isErr()) {
             span.setTag('nango.error', result.error);
-            track({ logOperationId: logCtx?.id, errorCode: result.error.code, underlyingErrorCode: result.error.nangoError?.type });
+            track({ logOperationId: logCtx?.id, functionSource, errorCode: result.error.code, underlyingErrorCode: result.error.nangoError?.type });
             return Err(actionExecutionErrorToMcp({ error: result.error, integrationId, toolName }));
         }
 
-        track({ logOperationId: logCtx?.id });
+        track({ logOperationId: logCtx?.id, functionSource });
         return Ok('data' in result.value ? result.value.data : null);
     });
 }
@@ -235,6 +238,8 @@ interface ToolCallOutcome {
     errorCode?: string | undefined;
     underlyingErrorCode?: string | undefined;
     mcpTool?: boolean | undefined;
+    functionSource?: FunctionSource | undefined;
+    invalidArguments?: string[] | undefined;
 }
 
 async function executeRemoteTool({
@@ -257,7 +262,7 @@ async function executeRemoteTool({
     const { account, environment, plan, session } = context;
 
     if (input !== undefined && (typeof input !== 'object' || input === null || Array.isArray(input))) {
-        track({ errorCode: 'invalid_input' });
+        track({ errorCode: 'invalid_input', invalidArguments: ['input: invalid_type'] });
         return Err(
             new PublicMcpError(`Tool '${toolName}' takes an object as its input. Correct the input and call it again.`, {
                 code: 'invalid_input',

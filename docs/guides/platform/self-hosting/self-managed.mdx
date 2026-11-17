@@ -324,9 +324,9 @@ OPENAI_API_KEY=<your-openai-api-key>
 NANGO_AGENT_PLAYGROUND_MODEL=<openai-model-id>
 ```
 
-Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the jobs service as well, because jobs runs the catalog actions the agent calls.
+Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the jobs service as well, because jobs runs the catalog tools the agent calls.
 
-The `tools-catalog` flag lets the agent run Nango's pre-built actions without deploying them first. The agent runs on OpenAI, so `OPENAI_API_KEY` is required, and messages from the chat are sent to OpenAI with that key. Without the key, the dashboard shows the playground as unavailable.
+The `tools-catalog` flag lets the agent run Nango's pre-built tools without deploying them first. The agent runs on OpenAI, so `OPENAI_API_KEY` is required, and messages from the chat are sent to OpenAI with that key. Without the key, the dashboard shows the playground as unavailable.
 
 ### Connect UI
 
@@ -449,7 +449,7 @@ The runner boundary has the same set of variables prefixed with `NANGO_CUSTOMER_
 
 The [proxy](/guides/platform/proxy-requests) can send authenticated requests to external APIs. Some proxy calls accept a **base URL override** (HTTP header `Base-Url-Override`, SDK `baseUrlOverride`, or an integration `custom.baseUrl`) to target a host that differs from the provider's default API base URL.
 
-Because the proxy makes outbound HTTP requests from your Nango server (and from the runner for sync and action scripts), a caller with permission to use the proxy could use an override to reach hosts that were not meant to be exposed—such as cloud metadata services or `localhost` on the host making the request. This is a classic **SSRF** risk.
+Because the proxy makes outbound HTTP requests from your Nango server (and from the runner for sync functions and tools), a caller with permission to use the proxy could use an override to reach hosts that were not meant to be exposed—such as cloud metadata services or `localhost` on the host making the request. This is a classic **SSRF** risk.
 
 By default, Nango keeps base URL override **enabled** and blocks override targets and redirect hops whose hostnames match a built-in denylist (cloud metadata and loopback addresses). Configure these environment variables and restart the **server** and **runners** after changes:
 
@@ -464,6 +464,7 @@ NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='["169.254.169.254","metadata.google.inte
 | `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST` | Secure defaults when unset | JSON array of hostnames or URLs to block; custom entries are merged with defaults |
 | `NANGO_OUTBOUND_URL_POLICY` | Secure defaults when unset | JSON object controlling SSRF protection for proxy, customer webhooks, and `uncontrolledFetch` |
 | `NANGO_OUTBOUND_URL_POLICY_OAUTH` | Inherits the base policy; RFC1918 allowed | JSON object overlay controlling SSRF protection for OAuth/token flows (token, refresh, STS, JWT-bearer endpoints) |
+| `NANGO_OUTBOUND_URL_POLICY_MCP` | Inherits the OAuth policy; https only | JSON object overlay controlling SSRF protection for MCP OAuth flows (metadata discovery, client registration, token exchange, refresh) |
 
 **Operator guidance:**
 
@@ -511,6 +512,12 @@ The same DNS-pinning protection also covers OAuth/token flows (token exchange, r
 
 ```sh
 NANGO_OUTBOUND_URL_POLICY_OAUTH='{"blockPrivateIps":true}'
+```
+
+MCP OAuth flows (metadata discovery, client registration, token exchange, and refresh for MCP servers) use the OAuth policy with one more overlay, `NANGO_OUTBOUND_URL_POLICY_MCP`, on top. It has the same JSON shape. MCP OAuth only connects over `https`, and the overlay cannot change that. Nango does not follow redirects to another origin during MCP OAuth. To keep MCP servers on public hosts only while still allowing private OAuth token endpoints, set `blockPrivateIps` on the MCP overlay:
+
+```sh
+NANGO_OUTBOUND_URL_POLICY_MCP='{"blockPrivateIps":true}'
 ```
 
 #### Securing the dashboard

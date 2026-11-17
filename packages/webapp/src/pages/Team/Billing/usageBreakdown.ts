@@ -43,15 +43,16 @@ export const DIMENSION_LABELS: Record<AnyBreakdownDimension, string> = {
 };
 
 /**
- * Display label for a dimension value. Only `success` needs mapping: the backend
- * emits the boolean strings `'true'`/`'false'`, which we show as Success/Failed to
- * match the logs screen. Other dimensions are shown verbatim.
+ * Display label for a dimension value. The backend emits `success` as the boolean
+ * strings `'true'`/`'false'`, which we show as Success/Failed to match the logs screen,
+ * and the `action` function type is shown as tool. Other values are shown verbatim.
  */
 export function formatDimensionValue(dimension: AnyBreakdownDimension, value: string): string {
     if (dimension === 'success') {
         if (value === 'true') return 'Success';
         if (value === 'false') return 'Failed';
     }
+    if (dimension === 'function_type' && value === 'action') return 'tool';
     return value;
 }
 

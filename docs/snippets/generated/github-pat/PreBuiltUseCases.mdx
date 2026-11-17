@@ -8,59 +8,59 @@
 
 | Function name | Description | Type |
 | - | - | - |
-| `add-issue-comment` | Create a new comment on an issue or pull request discussion thread | [Action](/guides/functions/action-functions) |
-| `create-branch` | Create a branch ref from an existing commit SHA | [Action](/guides/functions/action-functions) |
-| `create-issue` | Open a new GitHub issue in a repository. | [Action](/guides/functions/action-functions) |
-| `create-label` | Create a repository label with name, color, and description | [Action](/guides/functions/action-functions) |
-| `create-or-update-file` | Create a new file or update existing repository contents in a branch. | [Action](/guides/functions/action-functions) |
-| `create-pull-request` | Open a pull request from one branch into another. | [Action](/guides/functions/action-functions) |
-| `create-release` | Publish a Git tag release for a repository. | [Action](/guides/functions/action-functions) |
-| `create-review-request` | Request reviewers or teams on an open pull request | [Action](/guides/functions/action-functions) |
-| `create-tag-object` | Create an annotated Git tag object for a commit or object SHA. | [Action](/guides/functions/action-functions) |
-| `delete-file` | Delete a file from a repository branch. | [Action](/guides/functions/action-functions) |
-| `delete-label` | Delete a repository label by name | [Action](/guides/functions/action-functions) |
-| `delete-release` | Delete a release by release ID. | [Action](/guides/functions/action-functions) |
-| `get-branch` | Retrieve branch metadata and protection status. | [Action](/guides/functions/action-functions) |
-| `get-commit` | Retrieve a commit with changed files and stats | [Action](/guides/functions/action-functions) |
-| `get-file-contents` | Retrieve a file or directory entry from repository contents. | [Action](/guides/functions/action-functions) |
-| `get-issue` | Fetch a single issue or pull request issue record by number. | [Action](/guides/functions/action-functions) |
-| `get-job-logs-download-url` | Get the API endpoint URL for a workflow job log download. Due to Nango proxy limitations with 302 redirects, this returns the API endpoint rather than the actual download URL. | [Action](/guides/functions/action-functions) |
-| `get-label` | Retrieve a single repository label by name. | [Action](/guides/functions/action-functions) |
-| `get-pull-request` | Fetch a single pull request by number. | [Action](/guides/functions/action-functions) |
-| `get-release` | Retrieve a single release by release ID. | [Action](/guides/functions/action-functions) |
-| `get-repository` | Retrieve repository metadata, visibility, default branch, and owner info. | [Action](/guides/functions/action-functions) |
-| `get-review` | Retrieve a pull request review by review ID. | [Action](/guides/functions/action-functions) |
-| `get-tag-ref` | Retrieve a tag ref or branch-style Git reference | [Action](/guides/functions/action-functions) |
-| `get-workflow-run` | Retrieve a workflow run with status and conclusion details. | [Action](/guides/functions/action-functions) |
-| `get-workflow` | Retrieve metadata for a GitHub Actions workflow. | [Action](/guides/functions/action-functions) |
-| `list-branches` | List branches for a repository with optional pagination and protected filtering. | [Action](/guides/functions/action-functions) |
-| `list-commits` | List commits for a repository or branch with common filters | [Action](/guides/functions/action-functions) |
-| `list-issue-comments` | List comments attached to an issue or pull request thread | [Action](/guides/functions/action-functions) |
-| `list-issues` | List repository issues with state, assignee, label, and pagination filters. | [Action](/guides/functions/action-functions) |
-| `list-labels` | List repository labels with pagination | [Action](/guides/functions/action-functions) |
-| `list-pull-request-files` | List files changed by a pull request | [Action](/guides/functions/action-functions) |
-| `list-pull-request-reviews` | List reviews submitted on a pull request | [Action](/guides/functions/action-functions) |
-| `list-pull-requests` | List pull requests for a repository with state and branch filters | [Action](/guides/functions/action-functions) |
-| `list-release-assets` | List assets uploaded to a repository release. | [Action](/guides/functions/action-functions) |
-| `list-releases` | List published and draft releases for a repository. | [Action](/guides/functions/action-functions) |
-| `list-workflow-jobs` | List jobs in a workflow run attempt | [Action](/guides/functions/action-functions) |
-| `list-workflow-runs` | List workflow runs for a repository or a specific workflow | [Action](/guides/functions/action-functions) |
-| `list-workflows` | List GitHub Actions workflows configured in a repository. | [Action](/guides/functions/action-functions) |
-| `merge-pull-request` | Merge an open pull request using the selected merge method. | [Action](/guides/functions/action-functions) |
-| `rerun-workflow-run` | Rerun a completed or failed workflow run. | [Action](/guides/functions/action-functions) |
-| `search-code` | Search file contents across indexed GitHub repositories using code-search qualifiers. | [Action](/guides/functions/action-functions) |
-| `search-commits` | Search commits across indexed repositories by message, author, or metadata qualifiers. | [Action](/guides/functions/action-functions) |
-| `search-issues-and-pull-requests` | Search issues and pull requests across indexed repositories using GitHub's issue-search qualifiers. | [Action](/guides/functions/action-functions) |
-| `search-labels` | Search for labels within a specific repository by name or description. | [Action](/guides/functions/action-functions) |
-| `search-repositories` | Search public and accessible repositories using GitHub's repository-search qualifiers. | [Action](/guides/functions/action-functions) |
-| `search-topics` | Search GitHub topics (the tagging/categorization objects behind repository topic pages). | [Action](/guides/functions/action-functions) |
-| `search-users` | Search GitHub user and organization accounts using user-search qualifiers. | [Action](/guides/functions/action-functions) |
-| `submit-pull-request-review` | Create a pull request review with approval, comment, or change request. | [Action](/guides/functions/action-functions) |
-| `trigger-workflow-dispatch` | Trigger a GitHub Actions workflow_dispatch run for a workflow file or ID | [Action](/guides/functions/action-functions) |
-| `update-issue` | Edit an issue's title, body, state, assignees, labels, or milestone. | [Action](/guides/functions/action-functions) |
-| `update-label` | Update a repository label's name, color, or description. | [Action](/guides/functions/action-functions) |
-| `update-pull-request` | Edit a pull request's title, body, base branch, or state. | [Action](/guides/functions/action-functions) |
-| `update-release` | Edit release metadata such as name, notes, or draft state. | [Action](/guides/functions/action-functions) |
+| `add-issue-comment` | Create a new comment on an issue or pull request discussion thread | [Tool](/guides/functions/tools) |
+| `create-branch` | Create a branch ref from an existing commit SHA | [Tool](/guides/functions/tools) |
+| `create-issue` | Open a new GitHub issue in a repository. | [Tool](/guides/functions/tools) |
+| `create-label` | Create a repository label with name, color, and description | [Tool](/guides/functions/tools) |
+| `create-or-update-file` | Create a new file or update existing repository contents in a branch. | [Tool](/guides/functions/tools) |
+| `create-pull-request` | Open a pull request from one branch into another. | [Tool](/guides/functions/tools) |
+| `create-release` | Publish a Git tag release for a repository. | [Tool](/guides/functions/tools) |
+| `create-review-request` | Request reviewers or teams on an open pull request | [Tool](/guides/functions/tools) |
+| `create-tag-object` | Create an annotated Git tag object for a commit or object SHA. | [Tool](/guides/functions/tools) |
+| `delete-file` | Delete a file from a repository branch. | [Tool](/guides/functions/tools) |
+| `delete-label` | Delete a repository label by name | [Tool](/guides/functions/tools) |
+| `delete-release` | Delete a release by release ID. | [Tool](/guides/functions/tools) |
+| `get-branch` | Retrieve branch metadata and protection status. | [Tool](/guides/functions/tools) |
+| `get-commit` | Retrieve a commit with changed files and stats | [Tool](/guides/functions/tools) |
+| `get-file-contents` | Retrieve a file or directory entry from repository contents. | [Tool](/guides/functions/tools) |
+| `get-issue` | Fetch a single issue or pull request issue record by number. | [Tool](/guides/functions/tools) |
+| `get-job-logs-download-url` | Get the API endpoint URL for a workflow job log download. Due to Nango proxy limitations with 302 redirects, this returns the API endpoint rather than the actual download URL. | [Tool](/guides/functions/tools) |
+| `get-label` | Retrieve a single repository label by name. | [Tool](/guides/functions/tools) |
+| `get-pull-request` | Fetch a single pull request by number. | [Tool](/guides/functions/tools) |
+| `get-release` | Retrieve a single release by release ID. | [Tool](/guides/functions/tools) |
+| `get-repository` | Retrieve repository metadata, visibility, default branch, and owner info. | [Tool](/guides/functions/tools) |
+| `get-review` | Retrieve a pull request review by review ID. | [Tool](/guides/functions/tools) |
+| `get-tag-ref` | Retrieve a tag ref or branch-style Git reference | [Tool](/guides/functions/tools) |
+| `get-workflow-run` | Retrieve a workflow run with status and conclusion details. | [Tool](/guides/functions/tools) |
+| `get-workflow` | Retrieve metadata for a GitHub Actions workflow. | [Tool](/guides/functions/tools) |
+| `list-branches` | List branches for a repository with optional pagination and protected filtering. | [Tool](/guides/functions/tools) |
+| `list-commits` | List commits for a repository or branch with common filters | [Tool](/guides/functions/tools) |
+| `list-issue-comments` | List comments attached to an issue or pull request thread | [Tool](/guides/functions/tools) |
+| `list-issues` | List repository issues with state, assignee, label, and pagination filters. | [Tool](/guides/functions/tools) |
+| `list-labels` | List repository labels with pagination | [Tool](/guides/functions/tools) |
+| `list-pull-request-files` | List files changed by a pull request | [Tool](/guides/functions/tools) |
+| `list-pull-request-reviews` | List reviews submitted on a pull request | [Tool](/guides/functions/tools) |
+| `list-pull-requests` | List pull requests for a repository with state and branch filters | [Tool](/guides/functions/tools) |
+| `list-release-assets` | List assets uploaded to a repository release. | [Tool](/guides/functions/tools) |
+| `list-releases` | List published and draft releases for a repository. | [Tool](/guides/functions/tools) |
+| `list-workflow-jobs` | List jobs in a workflow run attempt | [Tool](/guides/functions/tools) |
+| `list-workflow-runs` | List workflow runs for a repository or a specific workflow | [Tool](/guides/functions/tools) |
+| `list-workflows` | List GitHub Actions workflows configured in a repository. | [Tool](/guides/functions/tools) |
+| `merge-pull-request` | Merge an open pull request using the selected merge method. | [Tool](/guides/functions/tools) |
+| `rerun-workflow-run` | Rerun a completed or failed workflow run. | [Tool](/guides/functions/tools) |
+| `search-code` | Search file contents across indexed GitHub repositories using code-search qualifiers. | [Tool](/guides/functions/tools) |
+| `search-commits` | Search commits across indexed repositories by message, author, or metadata qualifiers. | [Tool](/guides/functions/tools) |
+| `search-issues-and-pull-requests` | Search issues and pull requests across indexed repositories using GitHub's issue-search qualifiers. | [Tool](/guides/functions/tools) |
+| `search-labels` | Search for labels within a specific repository by name or description. | [Tool](/guides/functions/tools) |
+| `search-repositories` | Search public and accessible repositories using GitHub's repository-search qualifiers. | [Tool](/guides/functions/tools) |
+| `search-topics` | Search GitHub topics (the tagging/categorization objects behind repository topic pages). | [Tool](/guides/functions/tools) |
+| `search-users` | Search GitHub user and organization accounts using user-search qualifiers. | [Tool](/guides/functions/tools) |
+| `submit-pull-request-review` | Create a pull request review with approval, comment, or change request. | [Tool](/guides/functions/tools) |
+| `trigger-workflow-dispatch` | Trigger a GitHub Actions workflow_dispatch run for a workflow file or ID | [Tool](/guides/functions/tools) |
+| `update-issue` | Edit an issue's title, body, state, assignees, labels, or milestone. | [Tool](/guides/functions/tools) |
+| `update-label` | Update a repository label's name, color, or description. | [Tool](/guides/functions/tools) |
+| `update-pull-request` | Edit a pull request's title, body, base branch, or state. | [Tool](/guides/functions/tools) |
+| `update-release` | Edit release metadata such as name, notes, or draft state. | [Tool](/guides/functions/tools) |
 | `commits` | Sync commits for repositories and branches in scope | [Sync](/guides/functions/syncs/sync-functions) |
 | `issues` | Sync issues for one or more GitHub repositories with incremental updates based on issue activity | [Sync](/guides/functions/syncs/sync-functions) |
 | `pull-requests` | Sync pull requests for one or more GitHub repositories, including status, branches, and merge state. | [Sync](/guides/functions/syncs/sync-functions) |

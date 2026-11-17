@@ -106,4 +106,36 @@ describe(`PATCH ${endpoint}`, () => {
             }
         });
     });
+
+    it('should disable a shared credential and keep it disabled when enabled is omitted', async () => {
+        const created = (
+            await sharedCredentialsService.createSharedCredentials({
+                name: 'github',
+                client_id: 'client-id',
+                client_secret: 'client-secret'
+            })
+        ).unwrap();
+
+        const disable = await api.fetch(endpoint, {
+            method: 'PATCH',
+            token: internalKey,
+            params: { id: created },
+            body: { name: 'github', client_id: 'client-id', client_secret: 'client-secret', enabled: false }
+        });
+        isSuccess(disable.json);
+        expect((await sharedCredentialsService.getSharedCredentialsById(created)).unwrap().enabled).toBe(false);
+
+        const edit = await api.fetch(endpoint, {
+            method: 'PATCH',
+            token: internalKey,
+            params: { id: created },
+            body: { name: 'github', client_id: 'new-client-id', client_secret: 'client-secret' }
+        });
+        isSuccess(edit.json);
+        expect((await sharedCredentialsService.getSharedCredentialsById(created)).unwrap().enabled).toBe(false);
+
+        const get = await api.fetch(endpoint, { method: 'GET', token: internalKey, params: { id: created } });
+        isSuccess(get.json);
+        expect(get.json.data.enabled).toBe(false);
+    });
 });

@@ -2,6 +2,154 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.72.6] - 2026-11-16
+
+### Added
+
+- *(self-hosting)* Telemetry upload endpoint for installations (#8243) by @pfreixes
+- *(audit)* Record data-plane connection credential reads behind a rollout flag (#8272) by @pfreixes
+- *(CLI)* Compilation to output functions version hash (#8314) by @TBonnin
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/60e41920a22b33d8272a4813b91dc456d50d4fe3 by Victor Lang'at by @github-actions[bot]
+- *(agent-sessions)* Note that tools may change at any time (#8309) by @rguldener
+- Update version in manifest by @actions-user
+
+## [v0.72.5] - 2026-11-16
+
+### Added
+
+- *(webapp)* Rename actions to tools (#8157) by @TBonnin
+- *(docs)* Action -> tools (#8100) by @TBonnin
+- *(providers)* Allow skipping token revocation on connection deletion for linear (#8222) by @hassan254-prog
+- *(pre-approved)* Expose and update enabled in the internal api (#8213) by @hassan254-prog
+- *(integrations)* Add support for new providers (#8225) by @hassan254-prog
+- *(webapp)* Restyle sidebar to navigation v2 (#8186) by @kaposke
+- *(providers)* Add function counts to provider list (#8198) by @kaposke
+- *(webapp)* Keep integrations search in the url (#8199) by @kaposke
+- *(webapp)* Add catalog page (#8201) by @kaposke
+- Support standalone native function/tool deletion (#8226) by @TBonnin
+- *(webapp)* Use breadcrumbs as page titles in the app shell (#8216) by @kaposke
+- *(webapp)* Default the webapp theme to the OS preference (#8233) by @macko911
+- *(mfa)* Gate 2FA setup to Cloud and enterprise self-hosted (NAN-8096) (#8211) by @agusayerza
+- *(integrations)* Add support for new providers (#8230) by @hassan254-prog
+- *(agent)* Record result size and latency on tool call events (NAN-8054) (#8191) by @agusayerza
+- *(server)* Allow passing GitHub app config overrides on connection (#8215) by @rbwest
+- *(integrations)* Add DocuSign Connect webhook routing (#8241) by @hassan254-prog
+- *(audit)* Record control-plane credential reads (#8228) by @pfreixes
+- *(agent-sessions)* Track session configuration on session start (NAN-7475) (#8240) by @agusayerza
+- *(plans)* Add audit_trail_data_plane_scopes to plans (#8237) by @pfreixes
+- *(plans)* Backfill audit_trail_data_plane_scopes for paying plans (#8238) by @pfreixes
+- *(persist)* Accept task capability tokens (#7980) by @rossmcewan
+- *(integrations)* Add support for new providers (#8253) by @hassan254-prog
+- *(design-system)* Segmented Control + theme switcher (#8247) by @gabrielle-svg
+- *(design-system)* Sync design tokens with Figma (#8251) by @macko911
+- *(agent)* Make goal and intent clearer to agents on tool calls (NAN-8183) (#8257) by @agusayerza
+- *(agent-sessions)* Name the connected account in session instructions (NAN-8055) (#8232) by @agusayerza
+- *(agent)* Ask for goal and intent on direct tool calls and nango_proxy (NAN-8005) (#8255) by @agusayerza
+- *(agent-sessions)* Record the function source on tool calls (NAN-8186) (#8254) by @agusayerza
+- *(button)* Add danger-ghost variant (#8262) by @gabrielle-svg
+- *(self-hosting)* Installation tokens, minted on the installation and verified against the registry (#8224) by @pfreixes
+- *(self-hosting)* ClickHouse installations.metrics table and the batch insert (#8239) by @pfreixes
+- *(ds)* InlineCode + rebuilt Alert (#8266) by @gabrielle-svg
+- *(webhooks)* Add support for woocommerce webhooks (#8273) by @agusayerza
+- *(agent)* Accept several queries in one nango_tool_search call (NAN-8053) (#8192) by @agusayerza
+- *(webhooks)* Add support for laylo webhooks (#8287) by @hassan254-prog
+- *(integrations)* Add support for new providers (#8279) by @hassan254-prog
+- *(integrations)* Add support for new providers (#8290) by @hassan254-prog
+- *(integrations)* Add support for new providers (#8298) by @hassan254-prog
+- *(integrations)* Add support for new providers (#8286) by @hassan254-prog
+- *(webapp)* Replace the catalog's Show more button with infinite scroll (#8275) by @macko911
+- *(webapp)* Finish the app shell: secondary nav column and page spacing (#8269) by @macko911
+- *(design-system)* Add LinkButton and migrate link buttons to it (#8177) by @gabrielle-svg
+
+### Changed
+
+- Changelog entries for November 9 (#8227) by @sapnesh-nango
+- *(webapp)* Split function panel into reusable pieces (#8200) by @kaposke
+- Pull request template update (#8223) by @TBonnin
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/8ac1f1f4420406fd2d00ac2f47a8da16a1ff9ba4 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/756773c85fc09566c7e91554e25469fa1f233b8e by Victor Lang'at by @github-actions[bot]
+- Update Nango-managed OAuth apps list (#8267) by @viictoo
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/2b30b08c8711e68900023e3088ae2d40166229be by Victor Lang'at by @github-actions[bot]
+- *(agents)* Move design-system agent conventions into the repo (#8261) by @macko911
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/d52846afe0814ecbbbcde6ba47da2d17ca62f63d by Victor Lang'at by @github-actions[bot]
+- Reject action deployments for account without any actions (#8236) by @TBonnin
+- *(docker)* Build nangohq/nango and nango-server:hosted for arm64 (#8289) by @AClarkie
+
+### Fixed
+
+- Function with http subscriptions are not tools (#8221) by @TBonnin
+- *(server)* Return 400 for paths that cannot be percent-decoded (#8220) by @pfreixes
+- *(webapp)* Apply catalog feedback from launch review (#8235) by @macko911
+- *(webapp)* Fix keyboard access to integration function details (#8250) by @macko911
+- *(webapp)* 12px spacing above sidebar user row (#8242) by @gabrielle-svg
+- *(webapp)* Stop theme switcher tooltip flicker on hover (#8264) by @macko911
+- *(agent-sessions)* Raise tool name part limit to 64 (NAN-8152) (#8231) by @agusayerza
+- *(webapp)* Show the dashboard at desktop width on phones (#8268) by @macko911
+- *(server)* Fix missing replay session on Google signup events (#8022) by @macko911
+- *(webapp)* Fix dashboard error pages reporting no details to Sentry (#8002) by @macko911
+- *(server)* Fix missing Orb link for teams of removed users (#8234) by @macko911
+- *(agent)* Promote the leading tool search result (NAN-8248) (#8297) by @agusayerza
+- *(providers)* Drop pkce for teamviewer (#8302) by @hassan254-prog
+- `nango pull` support for native tools (#8252) by @TBonnin
+- *(self-hosting)* Keep idle connections open longer than the load balancer (#8270) by @pfreixes
+
+## [v0.72.4] - 2026-11-09
+
+### Added
+
+- *(integrations)* Add support for new providers (#8210) by @hassan254-prog
+- *(integrations)* Add support for new providers (#8212) by @hassan254-prog
+- Remote deploy/dryrun to support tools (#8208) by @TBonnin
+
+## [v0.72.3] - 2026-11-06
+
+### Added
+
+- *(oauth2)* Add token_request_auth_method none for public clients (#8156) by @hassan254-prog
+- *(webapp)* Load catalog function code from the Nango API instead of GitHub (#8046) by @kaposke
+- *(cli)* Remove nango clone (#8059) by @kaposke
+- *(db)* Add account_getting_started table (#8144) by @kaposke
+- *(server)* Track agent getting started progress per account (#8145) by @kaposke
+- *(webapp)* Agent-first getting started page (#8146) by @kaposke
+- *(integrations)* Add support for new providers (#8095) by @hassan254-prog
+- *(webapp)* Move function drawer actions out of the three-dot menu (#8190) by @macko911
+- Add public environment updates (#8150) by @ErickRDev
+- Audit public environment updates (#8151) by @ErickRDev
+- Allow importing webhook signing keys during rotation (#8164) by @ErickRDev
+- *(integrations)* Add support for new providers (#8162) by @hassan254-prog
+- *(integrations)* Add support for sharefile (#8127) by @pebbleworks-ai
+- *(database)* Add enabled flag to providers_shared_credentials (#8183) by @hassan254-prog
+- *(shared-credentials)* Allow disabling Nango-managed apps (#8184) by @hassan254-prog
+- *(integrations)* Add support for new providers (#8178) by @hassan254-prog
+- *(design-system)* Refresh Button to the Dharma spec (#8172) by @gabrielle-svg
+- Prepare CLI/server to tools support in sandbox deploy/dryrun  (#8206) by @TBonnin
+- *(design-system)* Add button CTA variant to Alert (#8203) by @gabrielle-svg
+- *(design-system)* Align IconButton with the Dharma spec (#8174) by @gabrielle-svg
+- *(self-hosting)* Registry services and the license CLI (#8185) by @pfreixes
+- *(integrations)* Add support for Anymail Finder (#7764) by @emma-anymailfinder
+
+### Changed
+
+- *(self-hosting)* Explain how to create the first administrator (#8182) by @pfreixes
+- Suggest GitHub in quickstart and push agents to install the Management MCP (#8188) by @rguldener
+- Update README introduction for AI agents (#8189) by @sapnesh-nango
+- Fold webhook settings audit events under environment.updated (#8166) by @ErickRDev
+- Update rotate-webhook-signing-key docs (#8195) by @ErickRDev
+- Drop the retired MFA flag from self-managed docs (NAN-8077) (#8194) by @agusayerza
+- Update version in manifest by @actions-user
+- Remove old 0.0.1 package versions from the GitHub registry (#8040) by @macko911
+
+### Fixed
+
+- Support deleting the last legacy scripts (#8154) by @TBonnin
+- *(docs)* Rotate-webhook-signing-key response (#8196) by @ErickRDev
+- *(dev)* Fix orphaned local dev processes after nodemon restarts (#7994) by @macko911
+- *(persist)* Deleting a missing checkpoint is a no-op (#8169) by @hassan254-prog
+
 ## [v0.72.2] - 2026-11-05
 
 ### Added
@@ -377,7 +525,7 @@ All notable changes to this project will be documented in this file.
 - *(integrations)* Add support for Slack app configuration tokens (#7669) by @arctic-char
 - *(server)* Add the Agent Playground chat API (#7697) by @macko911
 - *(integrations)* Add support for modmed-fhir (#7745) by @hassan254-prog
-- *(integrations)* Add Discogs OAuth1 and personal token providers (#7340) by @aquarazorda
+- *(integrations)* Add Discogs OAuth1 and personal token providers (#7340) by @arazorda
 - *(integrations)* Add support for Mailtrap (#7150) by @mazu-rok
 - *(runner-sdk)* Support redirect error in nango.uncontrolledfetch (#7758) by @rbwest
 
@@ -8650,6 +8798,10 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.72.6]: https://github.com/NangoHQ/nango/compare/v0.72.5..v0.72.6
+[v0.72.5]: https://github.com/NangoHQ/nango/compare/v0.72.4..v0.72.5
+[v0.72.4]: https://github.com/NangoHQ/nango/compare/v0.72.3..v0.72.4
+[v0.72.3]: https://github.com/NangoHQ/nango/compare/v0.72.2..v0.72.3
 [v0.72.2]: https://github.com/NangoHQ/nango/compare/v0.72.1..v0.72.2
 [v0.72.1]: https://github.com/NangoHQ/nango/compare/v0.72.0..v0.72.1
 [v0.72.0]: https://github.com/NangoHQ/nango/compare/v0.71.14..v0.72.0

@@ -14,7 +14,7 @@ Each session has three parts:
 
 Your backend creates the session and exposes it to the agent as an MCP server. The agent never sees raw credentials, and cannot change the scope of its own session.
 
-The available toolset can include Nango catalog actions, action functions you manage yourself, and the tools of [MCP servers](#mcp-server-tools) your tenant has connected. Catalog actions are available out of the box and update automatically.
+The available toolset can include Nango catalog tools, tools you manage yourself, and the tools of [MCP servers](#mcp-server-tools) your tenant has connected. Catalog tools are available out of the box and update automatically.
 
 Example sessions:
 - A sales agent with a user's personal Gmail & Google Calendar, and a read-only org-wide Salesforce connection
@@ -267,6 +267,24 @@ Every session exposes its own MCP server at its `mcp_url`. It speaks Streamable 
 
 `tools/list` returns the enabled meta tools plus the pinned tools, paginated 50 at a time through `nextCursor`. Searchable tools are callable but not listed, and the agent finds them with the `nango_tool_search` meta tool.
 
+A tool called directly by its name takes its input under `input`, next to the task's `goal` and the call's `intent`, the same way [`nango_execute`](#nango_execute) does. A tool that takes no input takes only `goal` and `intent`.
+
+```json
+{
+    "input": { "timeMin": "2026-11-05T00:00:00Z", "timeMax": "2026-11-06T00:00:00Z" },
+    "goal": "move my Thursday 1:1 with my manager to Friday and let them know",
+    "intent": "find the 1:1 to move"
+}
+```
+
+### Tool changes
+
+Tools are not a stable contract. The tools available in a session, their inputs and their output schemas [may change at any time](https://modelcontextprotocol.io/specification/2026-07-28/server/tools#capabilities). This includes Nango's meta tools.
+
+Your agent is expected to adjust to changes dynamically:
+- Use the tool definitions the session's MCP server returns, and [re-fetch them](https://modelcontextprotocol.io/specification/2026-07-28/server/utilities/caching#time-to-live-ttl-field) when an error indicates that the tool is unavailable or its input no longer matches the schema. Don't hard-code them.
+- Pass tool errors back to the model, so it can [self-correct](https://modelcontextprotocol.io/specification/2026-07-28/server/tools#error-handling) and retry with the updated definition.
+
 ### Terminating a session
 
 Sessions are immutable and cannot be extended. They expire on their own once `expires_in` is up, and you can end one early with `DELETE /sessions/{session_id}`:
@@ -379,7 +397,7 @@ The toolset is a subset of the Integrations that are enabled in your Nango envir
 ```
 
 You can use the following selectors:
-- `"*"` on an integration means every action function on it, and every tool of its MCP server
+- `"*"` on an integration means every tool on it, and every tool of its MCP server
 - `allow` makes the integration an allowlist, where `"*"` means every tool
 - `deny` always subtracts from whatever `allow` gave
 - To deny an integration entirely, leave it out of the toolset
@@ -390,7 +408,7 @@ You can use the following selectors:
 `allow` and `deny` limit which tools the agent can call, not which API endpoints it can reach. With [`nango_proxy`](#nango_proxy) on, the agent can call any endpoint of a connected integration in the toolset, including ones your deny list was meant to keep out. For an MCP server, that includes sending `tools/call` to the server directly, for any of its tools.
 </Warning>
 
-Only action functions and [MCP server tools](#mcp-server-tools) can be tools. Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
+Sessions can expose the tools in your integration and [MCP server tools](#mcp-server-tools). Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
 
 ### Pinned tools
 
@@ -411,7 +429,7 @@ A pinned tool must be in the toolset, otherwise creation fails with `tool_not_in
 
 Integrations for MCP servers, such as [Notion (MCP)](/api-integrations/notion-mcp) or [Linear (MCP)](/api-integrations/linear-mcp), bring the server's own tools into the session. There is nothing to deploy and nothing to turn on. Include the integration in the toolset like any other and give the tenant a connection to it.
 
-When the session is created, Nango lists the tools of each connected MCP server in the toolset and adds them alongside its actions. From then on they work like any other tool:
+When the session is created, Nango lists the tools of each connected MCP server in the toolset and adds them alongside its Nango tools. From then on they work like any other tool:
 
 - `nango_tool_search` finds them, with the input schema the server gave
 - Pinned, they are listed with that input schema and the server's annotations
@@ -427,7 +445,7 @@ When the session is created, Nango lists the tools of each connected MCP server 
 }
 ```
 
-`allow`, `deny` and `pinned_tools` name a tool exactly as the server lists it. In the session, the tool gets a name like an action's, such as `notion-mcp__notion-search`. Agents call it by the name the tool list or `nango_tool_search` gives.
+`allow`, `deny` and `pinned_tools` name a tool exactly as the server lists it. In the session, the tool gets a name like a Nango tool's, such as `notion-mcp__notion-search`. Agents call it by the name the tool list or `nango_tool_search` gives.
 
 The list is taken once, at creation. Tools the server adds or removes afterwards don't change the session, so create a new one to pick them up.
 
@@ -462,7 +480,7 @@ Meta tools are Nango's own tools. They are always pinned to the MCP server's too
 
 | Tool | What it does |
 | --- | --- |
-| `nango_tool_search` | Finds tools in the session's toolset from a few keywords and the task's goal |
+| `nango_tool_search` | Finds tools in the session's toolset from a few keywords per tool and the task's goal |
 | `nango_execute` | Runs one of the session's tools by name |
 | `nango_proxy` | Makes an authenticated request to a provider API, for when no tool fits. Bypasses `allow` and `deny`, [see the warning](#toolsets-%26-tools) |
 | `nango_create_connection` | Returns a connect link for one of the session's integrations that has no connection, or a reconnect link for one that has |
@@ -475,13 +493,16 @@ Meta tools are Nango's own tools. They are always pinned to the MCP server's too
 
 ### nango_tool_search
 
-Takes a `query` of a few keywords naming the action, and a `goal` with the task the user asked for, in their words.
+Takes up to five `queries`, each a few keywords naming one action, and a `goal` with the task the user asked for, in their words. An agent that needs several tools searches for all of them in one call.
 
 ```json
-{ "query": "find emails by subject", "goal": "find the invoice email from last week and forward it to accounting" }
+{
+    "queries": ["find emails by subject", "forward an email"],
+    "goal": "find the invoice email from last week and forward it to accounting"
+}
 ```
 
-The result carries `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status.
+The result holds one entry in `results` per query, in the order sent. Each entry carries its `query`, `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status.
 
 Only a best match includes `input`, its argument schema — a weak match is a lead, not something to call yet.
 
@@ -500,15 +521,24 @@ Runs one of the session's tools by name, on the connection the session resolved 
 
 The goal stays the same on every call made for one task. The intent changes with each call. A later call to the same tool for Friday keeps the goal and sends the intent `check Friday has a free slot`.
 
-Execution is synchronous and goes through the same path as [triggering an action function](/reference/backend/http-api/action/trigger), so it is capped by the synchronous execution limit and appears in Nango logs like any other function run.
+Execution is synchronous and appears in Nango logs. See [Limits](/guides/platform/limits#function-execution-limits) for execution limits.
 
 ### nango_proxy
 
 The escape hatch for when no tool in the session covers what the agent needs. It makes an authenticated HTTP request to a provider API on the connection the session resolved for that integration, so the agent names an integration and never a connection.
 
 ```json
-{ "integration": "notion", "method": "POST", "path": "/v1/search", "body": { "query": "roadmap" } }
+{
+    "integration": "notion",
+    "method": "POST",
+    "path": "/v1/search",
+    "body": { "query": "roadmap" },
+    "goal": "find the roadmap doc and summarize what ships this quarter",
+    "intent": "no tool searches pages by title, a search pages tool would"
+}
 ```
+
+Like the other tools, it takes the task's `goal`. Its `intent` says why no tool fit and which tool would have done it.
 
 It also takes `query_params` and `headers`. Nango authenticates the request from the session's connection, so credential headers are rejected rather than forwarded, including the provider's own (`x-api-key` and the like) alongside `authorization`.
 

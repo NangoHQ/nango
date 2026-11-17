@@ -389,6 +389,22 @@ describe('parse', () => {
         }).toThrow();
     });
 
+    it('should default NANGO_OUTBOUND_URL_POLICY_MCP to undefined when unset', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_OUTBOUND_URL_POLICY_MCP).toBeUndefined();
+    });
+
+    it('should parse a valid NANGO_OUTBOUND_URL_POLICY_MCP', () => {
+        const res = parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_MCP: JSON.stringify({ blockPrivateIps: true }) });
+        expect(res.NANGO_OUTBOUND_URL_POLICY_MCP).toEqual({ blockPrivateIps: true });
+    });
+
+    it('should throw on invalid JSON in NANGO_OUTBOUND_URL_POLICY_MCP', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_MCP: 'not-json' });
+        }).toThrow('Invalid JSON in NANGO_OUTBOUND_URL_POLICY_MCP');
+    });
+
     it('should throw on unknown keys in NANGO_OUTBOUND_URL_POLICY_OAUTH (typos fail fast)', () => {
         expect(() => {
             parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_OAUTH: JSON.stringify({ blockPrivateIp: false }) });

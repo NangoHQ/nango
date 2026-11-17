@@ -113,7 +113,7 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
     const filterLabelValues = filterLabelQuery.data?.pages.flatMap((p) => p.data.values) ?? null;
     // Non-env dimensions already store a readable value. For environment_id, resolve the id to the
     // env name once loaded; `null` means it's still loading, which renders a skeleton in the chip.
-    let filterLabel: string | null = filter ? filter.value : '';
+    let filterLabel: string | null = filter ? formatDimensionValue(filter.dimension, filter.value) : '';
     if (filter && filterNeedsLabel) {
         filterLabel = filterLabelValues ? (filterLabelValues.find((v) => v.id === filter.value)?.label ?? filter.value) : null;
     }

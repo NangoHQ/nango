@@ -1,0 +1,35 @@
+---
+title: 'Promobrands - How do I link my account?'
+sidebarTitle: 'Promobrands'
+---
+
+## Overview
+
+To authenticate with Promobrands, you need:
+
+1. **Client ID** - the client identifier Promobrands issued for your API access.
+2. **Refresh Token** - the refresh token issued with it.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An approved Promobrands API access application. Promobrands issues the credentials once your application is approved.
+
+### Step 1: Get your API credentials
+
+1. Apply to Promobrands for API access.
+2. Once approved, Promobrands sends you a **Client ID** and a **Refresh Token**. Both stay valid until you ask Promobrands to cancel them.
+3. Store the refresh token somewhere safe: it gives access to the API.
+
+Nango sends both values to Promobrands' token endpoint, which returns an ID token for the API calls. Wrong credentials are rejected there, so the connection is only created when they are valid.
+
+### Step 2: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Promobrands.
+2. Enter your **Client ID** and **Refresh Token**.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/promobrands/form.png" alt="Promobrands Connect UI form with the Client ID and Refresh Token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Promobrands.

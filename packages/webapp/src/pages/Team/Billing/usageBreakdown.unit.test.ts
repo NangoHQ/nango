@@ -48,6 +48,12 @@ describe('formatDimensionValue', () => {
         expect(formatDimensionValue('success', 'pending')).toBe('pending');
         expect(formatDimensionValue('integration_id', 'true')).toBe('true');
         expect(formatDimensionValue('model', 'gpt-4o')).toBe('gpt-4o');
+        expect(formatDimensionValue('function_type', 'sync')).toBe('sync');
+        expect(formatDimensionValue('function_name', 'action')).toBe('action');
+    });
+
+    it('shows the action function type as tool', () => {
+        expect(formatDimensionValue('function_type', 'action')).toBe('tool');
     });
 });
 

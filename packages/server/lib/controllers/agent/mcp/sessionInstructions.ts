@@ -1,4 +1,6 @@
-import type { AgentSession } from '@nangohq/types';
+import type { AgentSession, AgentSessionResolvedConnection } from '@nangohq/types';
+
+const MAX_ACCOUNT_LABEL_LENGTH = 100;
 
 /**
  * Sent once in the initialize result. Only what the session was created with goes in, so it says
@@ -16,40 +18,41 @@ export function buildSessionInstructions(session: AgentSession): string {
 - You do not need to ask the user before calling a tool. Whoever runs you decides what needs their approval.`
     ];
 
-    if (nangoToolSearch || nangoExecute) {
-        sections.push(`## Stating your goal
-- Pass a goal to ${[nangoToolSearch && 'nango_tool_search', nangoExecute && 'nango_execute'].filter(Boolean).join(' and ')}: the task the user asked you to do, kept as close to their own words as you can.
+    sections.push(`## Stating your goal and intent
+- Pass a goal with every tool you run${nangoToolSearch ? ' and every nango_tool_search' : ''}: the overall task the user asked you to do, kept as close to their own words as you can.
 - Send the same goal on every call made for one task, and a new one only when the user asks for something else.
-- Leave names, emails, IDs and other personal details out of it.`);
-    }
+- Also pass an intent with every tool you run: how that one call helps toward the goal. It changes with every step, and is never the goal again or the tool's description.
+- For example, when the user asks to "summarize my unread emails and save the summary in Notion", every call has that goal, and the intents go "list unread emails", "read the next batch of unread emails", then "create the summary page in Notion".
+- Leave names, emails, IDs and other personal details out of both.`);
 
     if (nangoToolSearch) {
         sections.push(`## Finding a tool
 - When no listed tool fits the task, use nango_tool_search to find one.
 - Search with a few keywords naming the action and what it acts on, such as "list calendar events", not a full sentence.
-- Leave the app's name out of the query, because every tool of that app matches it.
-- If a search finds nothing that fits, try again with other words for the action or the object, such as "create" instead of "add", before deciding no tool covers the task.
+- When the task needs several tools, search for all of them in one call, one query per tool, such as ["list calendar events", "send an email"]. Results come back grouped by query.
+- Leave the app's name out of each query, because every tool of that app matches it.
+- If a query finds nothing that fits, try again with other words for the action or the object, such as "create" instead of "add", before deciding no tool covers the task.
 - Matches usually come with their input schema. When a match's input.kind is unavailable, the input has to be guessed, so if the call fails, read the error and adjust the input.
 - Related results are weaker leads: when one of them fits, search again with its exact tool name to get its input.
 - If you already have a tool's input schema from earlier in this conversation, reuse it instead of searching again.`);
     }
 
-    if (nangoExecute) {
-        sections.push(`## Running a tool
-- Call a tool through nango_execute with its name exactly as listed${nangoToolSearch ? ' or as nango_tool_search returned it' : ''}, and its input.
-- nango_execute also runs tools that are not in your tool list, and tools whose input is not an object.
-- Also pass its intent: why you are calling this tool, such as "read the next batch of unread emails".
+    const howToRun = nangoExecute
+        ? `- Call a tool through nango_execute with its name exactly as listed${nangoToolSearch ? ' or as nango_tool_search returned it' : ''}, and its input.
+- nango_execute also runs tools that are not in your tool list.
+- When you call a tool directly by its name instead, pass its input as \`input\`, next to \`goal\` and \`intent\`.`
+        : `- Call a tool directly by its name${nangoToolSearch ? ', whether it is in your tool list or nango_tool_search returned it' : ''}.
+- Pass its input as \`input\`, next to \`goal\` and \`intent\`, such as {"input": {"limit": 10}, "goal": "...", "intent": "..."}. A tool that takes no input takes only \`goal\` and \`intent\`.`;
+
+    sections.push(`## Running a tool
+${howToRun}
 - Ask tools for no more results than the task needs, and page through results rather than requesting everything at once.`);
-    } else {
-        sections.push(`## Running a tool
-- Call a tool directly by its name${nangoToolSearch ? ', whether it is in your tool list or nango_tool_search returned it' : ''}.
-- Ask tools for no more results than the task needs, and page through results rather than requesting everything at once.`);
-    }
 
     if (nangoProxy) {
         sections.push(`## Calling an API directly
 - nango_proxy calls the app's API directly on a connected integration, and Nango authenticates the request for you. Unlike the session's tools, it is not limited to what the session was set up to do, so it is a last resort: use it only when no tool covers the task${nangoToolSearch ? ', after searching' : ''}.
-- Use it to fill a gap in the session's tools, not to get around them. Do not use it for something a tool refused or limited, and be careful with writes on an integration whose tools only read. When a write through nango_proxy goes beyond what the session's tools suggest it was set up for, check with the user first.`);
+- Use it to fill a gap in the session's tools, not to get around them. Do not use it for something a tool refused or limited, and be careful with writes on an integration whose tools only read. When a write through nango_proxy goes beyond what the session's tools suggest it was set up for, check with the user first.
+- Pass the goal, and as its intent say why no tool fit and which tool would have done it.`);
     }
 
     if (nangoCreateConnection.enabled) {
@@ -72,14 +75,42 @@ export function buildSessionInstructions(session: AgentSession): string {
 }
 
 function describeIntegrations(session: AgentSession): string {
-    const integrations = Object.entries(session.compiledToolset).sort(([a], [b]) => a.localeCompare(b));
+    const integrations = Object.entries(session.compiledToolset)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([id, { provider }]) => ({ id, provider, connection: connectionOf(session, id) }));
     if (integrations.length === 0) {
         return 'This session has no integrations, so it cannot act on any app.';
     }
 
     return [
         'By the integration id every tool expects:',
-        ...integrations.map(([id, { provider }]) => `- ${id} (${provider}): ${Object.hasOwn(session.resolvedConnections, id) ? 'connected' : 'not connected'}`),
+        ...integrations.map(({ id, provider, connection }) => `- ${id} (${provider}): ${describeConnection(connection)}`),
+        'Each connected integration is on the account of the user this session acts for.',
         `This is each integration's status when you received these instructions. ${session.metaTools.nangoCreateConnection.enabled ? 'After you connect one, or when unsure' : 'When unsure'}, trust ${session.metaTools.nangoToolSearch ? 'nango_tool_search results and ' : ''}tool errors over this list.`
     ].join('\n');
+}
+
+function connectionOf(session: AgentSession, integrationId: string): AgentSessionResolvedConnection | undefined {
+    return Object.hasOwn(session.resolvedConnections, integrationId) ? session.resolvedConnections[integrationId] : undefined;
+}
+
+function describeConnection(connection: AgentSessionResolvedConnection | undefined): string {
+    if (!connection) {
+        return 'not connected';
+    }
+
+    const accountLabel = connection.accountLabel ? cleanAccountLabel(connection.accountLabel) : '';
+    return accountLabel ? `connected by ${JSON.stringify(accountLabel)}` : 'connected';
+}
+
+/**
+ * The label is tag text the instructions quote, so it is kept to one short line that cannot start
+ * a line or a section of its own.
+ */
+function cleanAccountLabel(label: string): string {
+    return label
+        .replace(/[\s\p{Cc}\p{Cf}]+/gu, ' ')
+        .trim()
+        .slice(0, MAX_ACCOUNT_LABEL_LENGTH)
+        .trim();
 }

@@ -3,6 +3,7 @@ import { getFlags } from '@nangohq/feature-flags';
 import { SCHEMA_REF_PREFIX } from '@nangohq/utils';
 
 import { listCatalogTools } from '../../../catalog/actions.js';
+import { whereHttpTrigger } from '../../models/filters.js';
 
 import type { CatalogTool } from '../../../catalog/actions.js';
 import type { FunctionListSource, FunctionListType, FunctionSource, FunctionTags, NangoConfigMetadata, ToolTags } from '@nangohq/types';
@@ -44,6 +45,22 @@ export interface FunctionAvailabilityRow {
 }
 
 type ScopedFunctionRow = FunctionRow & { integration_id: string };
+
+export async function hasActiveLegacyActions({ accountId }: { accountId: number }): Promise<boolean> {
+    const row = await db.knex
+        .from({ sc: '_nango_sync_configs' })
+        .join({ env: '_nango_environments' }, 'env.id', 'sc.environment_id')
+        .join({ nc: '_nango_configs' }, 'nc.id', 'sc.nango_config_id')
+        .where('env.account_id', accountId)
+        .whereNull('env.deleted_at')
+        .where('nc.deleted', false)
+        .where('sc.type', 'action')
+        .where('sc.active', true)
+        .where('sc.deleted', false)
+        .select<{ id: number }[]>('sc.id')
+        .first();
+    return row !== undefined;
+}
 
 const listingOrderBy = "type = 'tool' DESC, type, name, event, id";
 
@@ -335,7 +352,7 @@ function activeToolBase(scope: FunctionLookupScope): Knex.QueryBuilder {
         .andWhere('fc.environment_id', scope.environmentId)
         .whereNull('fc.deleted_at')
         .whereNull('fv.deleted_at')
-        .andWhereRaw("fv.trigger->>'kind' = 'http'");
+        .modify(whereHttpTrigger, { column: 'fv.trigger', subscriptions: 'none' });
 }
 
 function activeToolNamed(nameColumn: string): Knex.QueryBuilder {
@@ -348,7 +365,7 @@ function activeToolNamed(nameColumn: string): Knex.QueryBuilder {
         .whereRaw('?? = ??', ['fc.name', nameColumn])
         .whereNull('fc.deleted_at')
         .whereNull('fv.deleted_at')
-        .andWhereRaw("fv.trigger->>'kind' = 'http'")
+        .modify(whereHttpTrigger, { column: 'fv.trigger', subscriptions: 'none' })
         .select(db.knex.raw('1'));
 }
 

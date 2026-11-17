@@ -1,0 +1,63 @@
+---
+title: 'JFrog - How do I link my account?'
+sidebarTitle: 'JFrog'
+---
+
+## Overview
+
+To authenticate with JFrog, you need:
+
+1. **JFrog Platform Hostname** — the hostname of your JFrog Platform, for example `mycompany.jfrog.io`.
+2. **Access Token** — a reference token (identity token) or a full access token.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A JFrog Platform account, on JFrog Cloud or self-hosted.
+
+### Step 1: Find your JFrog Platform hostname
+
+1. Sign in to your JFrog Platform in your browser.
+2. Copy the hostname from the address bar, without `https://` or any path. On JFrog Cloud it looks like `mycompany.jfrog.io`; on a self-hosted install it is your own domain.
+
+### Step 2: Generate an access token
+
+Any user can generate a reference token for themselves from their profile:
+
+1. Click your profile icon in the top-right corner and choose **Edit Profile**.
+
+<img src="/api-integrations/jfrog/user_menu_edit_profile.png" alt="JFrog user menu with the Edit Profile option"/>
+
+2. Enter your password and click **Unlock** to open your profile.
+3. Under **Authentication Settings**, click **Generate an Identity Token**, add a description, and click **Next**.
+
+<img src="/api-integrations/jfrog/generate_identity_token.png" alt="JFrog Edit Profile page with the Generate an Identity Token button"/>
+
+4. Copy the **Reference Token**, then click **Close**. The token is shown only once.
+
+<img src="/api-integrations/jfrog/identity_token_created.png" alt="JFrog Generate Identity Token dialog showing the reference token"/>
+
+Admins can generate a full access token instead:
+
+1. Go to **Administration** → **User Management** → **Access Tokens** and click **Generate Token**.
+2. Keep **Scoped Token** selected, choose the token scope (for example **User**) and the user, and set the expiration time.
+3. Leave **Create Reference Token** unchecked to get the full access token, then click **Generate**.
+
+<img src="/api-integrations/jfrog/generate_scoped_access_token.png" alt="JFrog Generate Token dialog with Scoped Token, User scope and expiration time"/>
+
+4. Copy the token before closing the dialog. It is shown only once.
+
+<img src="/api-integrations/jfrog/jwt_access_token_created.png" alt="JFrog dialog showing the generated access token"/>
+
+Tokens expire according to the expiration set when they were generated. When a token expires, generate a new one and update your connection. See [Access Tokens](https://docs.jfrog.com/administration/docs/access-tokens) for details.
+
+### Step 3: Enter your hostname and access token in the Connect UI
+
+1. Open the form where you need to authenticate with JFrog.
+2. Enter your **JFrog Platform Hostname** and your token in the **Access Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/jfrog/form.png" alt="JFrog Connect UI form with the JFrog Platform Hostname and Access Token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to JFrog.

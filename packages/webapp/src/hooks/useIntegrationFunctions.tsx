@@ -8,7 +8,8 @@ import type {
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
-    GetProviderTemplateCode
+    GetProviderTemplateCode,
+    GetProviderTemplates
 } from '@nangohq/types';
 
 interface UseGetIntegrationFunctionsArgs {
@@ -158,6 +159,27 @@ export function useGetTemplateFunctionCode({ env, provider, name, type, enabled 
         },
         enabled: enabled && Boolean(env && provider && name && type),
         retry: false,
+        staleTime: 5 * 60 * 1000
+    });
+}
+
+export function useGetProviderTemplates({ env, provider }: { env: string; provider: string }) {
+    return useQuery<GetProviderTemplates['Success'], APIError>({
+        queryKey: ['providers', provider, 'templates'],
+        queryFn: async (): Promise<GetProviderTemplates['Success']> => {
+            const usp = new URLSearchParams();
+            usp.set('env', env);
+
+            const res = await apiFetch(`/api/v1/providers/${encodeURIComponent(provider)}/templates?${usp.toString()}`, { method: 'GET' });
+
+            const json = (await res.json()) as GetProviderTemplates['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        },
+        enabled: Boolean(env && provider),
         staleTime: 5 * 60 * 1000
     });
 }

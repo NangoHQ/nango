@@ -1,0 +1,34 @@
+---
+title: 'ModernLoop - How do I link my account?'
+sidebarTitle: 'ModernLoop'
+---
+
+## Overview
+
+To authenticate with ModernLoop, you need:
+
+1. **API Key** — a ModernLoop API token for your organization.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A ModernLoop account in the organization you want to connect, with access to create API tokens. If you don't see where to create one, ask your ModernLoop administrator or ModernLoop support.
+
+### Step 1: Create an API token
+
+1. Sign in to [ModernLoop](https://app.modernloop.io/) and create an API token for your organization.
+2. Grant only the read and write scopes your integration needs. A call that needs a scope the token doesn't have fails with `INSUFFICIENT_SCOPE`. See [Required permissions](https://docs.modernloop.io/mcp/setup.md#required-permissions) for the list of scopes.
+3. Copy the token.
+
+The token is scoped to your organization and acts on behalf of the user who created it. See the [ModernLoop API docs](https://docs.modernloop.io/) for details.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with ModernLoop.
+2. Enter your token in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/modernloop/form.png" alt="ModernLoop Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to ModernLoop.

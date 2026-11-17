@@ -6,6 +6,12 @@
     },
     "references": [
         {
+            "path": "../clickhouse-migrations"
+        },
+        {
+            "path": "../license"
+        },
+        {
             "path": "../migrations"
         },
         {

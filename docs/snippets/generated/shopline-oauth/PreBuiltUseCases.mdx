@@ -2,88 +2,88 @@
 
 | Function name | Description | Type |
 | - | - | - |
-| `add-order-risk` | Add a fraud risk flag to an order. | [Action](/guides/functions/action-functions) |
-| `add-product-to-collection` | Link one product to one collection (creates a single "collect" relationship row). | [Action](/guides/functions/action-functions) |
-| `adjust-inventory-level` | Adjust an inventory item's available quantity at a location by a relative delta. | [Action](/guides/functions/action-functions) |
-| `bulk-add-products-to-collection` | Add multiple products to a manual collection in one call. | [Action](/guides/functions/action-functions) |
-| `bulk-remove-products-from-collection` | Remove multiple products from a manual collection in one call. | [Action](/guides/functions/action-functions) |
-| `cancel-fulfillment` | Cancel a fulfillment. | [Action](/guides/functions/action-functions) |
-| `cancel-order` | Cancel an order. | [Action](/guides/functions/action-functions) |
-| `create-customer-address` | Add a new address to a customer. | [Action](/guides/functions/action-functions) |
-| `create-customer` | Create a customer. | [Action](/guides/functions/action-functions) |
-| `create-discount-code` | Create a redeemable discount code under a price rule | [Action](/guides/functions/action-functions) |
-| `create-fulfillment` | Create a fulfillment for an order's line items, with optional tracking info. | [Action](/guides/functions/action-functions) |
-| `create-manual-collection` | Create a manual (custom) collection. | [Action](/guides/functions/action-functions) |
-| `create-order` | Create an order directly (not a draft/checkout flow). | [Action](/guides/functions/action-functions) |
-| `create-price-rule` | Create a discount price rule. | [Action](/guides/functions/action-functions) |
-| `create-product-image` | Add an image to a product from a URL | [Action](/guides/functions/action-functions) |
-| `create-product-variant` | Create a new variant on a product. | [Action](/guides/functions/action-functions) |
-| `create-product` | Create a product. | [Action](/guides/functions/action-functions) |
-| `create-smart-collection` | Create a smart collection with membership rules. | [Action](/guides/functions/action-functions) |
-| `delete-customer-address` | Delete a customer address. | [Action](/guides/functions/action-functions) |
-| `delete-customer` | Delete a customer. | [Action](/guides/functions/action-functions) |
-| `delete-discount-code` | Delete a discount code. | [Action](/guides/functions/action-functions) |
-| `delete-manual-collection` | Delete a manual collection. | [Action](/guides/functions/action-functions) |
-| `delete-order` | Permanently delete an order. | [Action](/guides/functions/action-functions) |
-| `delete-price-rule` | Delete a price rule. | [Action](/guides/functions/action-functions) |
-| `delete-product-image` | Delete a product image | [Action](/guides/functions/action-functions) |
-| `delete-product-variant` | Delete a product variant. | [Action](/guides/functions/action-functions) |
-| `delete-product` | Delete a product. | [Action](/guides/functions/action-functions) |
-| `delete-smart-collection` | Delete a smart collection. | [Action](/guides/functions/action-functions) |
-| `get-collection-product-link` | Retrieve a single product-collection relationship ("collect") by ID. | [Action](/guides/functions/action-functions) |
-| `get-customer-address` | Retrieve a single customer address by ID. | [Action](/guides/functions/action-functions) |
-| `get-customer-count` | Get the total count of customers. | [Action](/guides/functions/action-functions) |
-| `get-customer` | Retrieve a single customer by ID. | [Action](/guides/functions/action-functions) |
-| `get-discount-code-by-code` | Look up a discount code by the code string itself (not its ID or price rule). | [Action](/guides/functions/action-functions) |
-| `get-discount-code` | Retrieve a single discount code by its ID (scoped to its price rule). | [Action](/guides/functions/action-functions) |
-| `get-inventory-item` | Retrieve a single inventory item by ID. | [Action](/guides/functions/action-functions) |
-| `get-inventory-levels` | Get available inventory quantities for inventory items, optionally scoped to locations. | [Action](/guides/functions/action-functions) |
-| `get-location` | Retrieve a single location by ID. | [Action](/guides/functions/action-functions) |
-| `get-manual-collection` | Retrieve a single manual collection by ID. | [Action](/guides/functions/action-functions) |
-| `get-order-count` | Get the total count of orders, optionally filtered. | [Action](/guides/functions/action-functions) |
-| `get-order-fraud-risks` | List fraud risk assessments for an order. | [Action](/guides/functions/action-functions) |
-| `get-order-transactions` | Query payment transactions for an order. | [Action](/guides/functions/action-functions) |
-| `get-order` | Retrieve a single order (via list-orders scoped by the ids param - no dedicated single-order endpoint exists). | [Action](/guides/functions/action-functions) |
-| `get-price-rule` | Retrieve a single price rule by ID. | [Action](/guides/functions/action-functions) |
-| `get-product-count` | Get the total count of products, optionally filtered. | [Action](/guides/functions/action-functions) |
-| `get-product-image` | Retrieve a single product image by ID. | [Action](/guides/functions/action-functions) |
-| `get-product-variant` | Retrieve a single product variant by ID. | [Action](/guides/functions/action-functions) |
-| `get-product` | Retrieve a single product by ID. | [Action](/guides/functions/action-functions) |
-| `get-smart-collection` | Retrieve a single smart collection by ID. | [Action](/guides/functions/action-functions) |
-| `list-collection-product-links` | List product-collection relationships ("collects"), filterable by product or collection. | [Action](/guides/functions/action-functions) |
-| `list-customer-addresses` | Batch-fetch addresses for one or more customers by ID. | [Action](/guides/functions/action-functions) |
-| `list-customers` | List customers with filtering and pagination. | [Action](/guides/functions/action-functions) |
-| `list-discount-codes-for-price-rule` | List all discount codes attached to a given price rule. | [Action](/guides/functions/action-functions) |
-| `list-inventory-items` | Retrieve inventory items by ID. | [Action](/guides/functions/action-functions) |
-| `list-locations` | List all store locations. | [Action](/guides/functions/action-functions) |
-| `list-manual-collections` | List manual (custom) collections. | [Action](/guides/functions/action-functions) |
-| `list-order-fulfillments` | List all fulfillments for an order. | [Action](/guides/functions/action-functions) |
-| `list-order-refunds` | List refunds associated with an order | [Action](/guides/functions/action-functions) |
-| `list-orders` | List orders with filtering and pagination. | [Action](/guides/functions/action-functions) |
-| `list-price-rules` | List discount price rules with filtering and pagination. | [Action](/guides/functions/action-functions) |
-| `list-product-images` | List images for a product by image IDs. | [Action](/guides/functions/action-functions) |
-| `list-product-variants` | List variants for a product. | [Action](/guides/functions/action-functions) |
-| `list-products-in-collection` | List products belonging to a collection (manual or smart). | [Action](/guides/functions/action-functions) |
-| `list-products` | List products with filtering and pagination. | [Action](/guides/functions/action-functions) |
-| `list-smart-collections` | List smart (intelligent, rule-based) collections. | [Action](/guides/functions/action-functions) |
-| `remove-order-risk` | Remove a fraud risk assessment from an order. | [Action](/guides/functions/action-functions) |
-| `remove-product-from-collection` | Remove a single product-collection relationship ("collect") by its ID | [Action](/guides/functions/action-functions) |
-| `search-customers` | Fuzzy/structured search for customers. | [Action](/guides/functions/action-functions) |
-| `set-default-customer-address` | Mark an address as a customer's default. | [Action](/guides/functions/action-functions) |
-| `set-inventory-level` | Set an inventory item's available quantity at a location to an absolute value. | [Action](/guides/functions/action-functions) |
-| `update-customer-address` | Update an existing customer address. | [Action](/guides/functions/action-functions) |
-| `update-customer` | Update a customer's fields. | [Action](/guides/functions/action-functions) |
-| `update-discount-code` | Update a discount code. | [Action](/guides/functions/action-functions) |
-| `update-fulfillment-tracking` | Update (overwrite) tracking info on an existing fulfillment. | [Action](/guides/functions/action-functions) |
-| `update-inventory-item` | Update an inventory item (e.g. enable tracking, set cost). | [Action](/guides/functions/action-functions) |
-| `update-manual-collection` | Update a manual collection's fields. | [Action](/guides/functions/action-functions) |
-| `update-order-risk` | Update an existing fraud risk assessment on an order. | [Action](/guides/functions/action-functions) |
-| `update-order` | Update an order's fields (notes, tags, contact info, shipping address). | [Action](/guides/functions/action-functions) |
-| `update-price-rule` | Update a price rule's fields. | [Action](/guides/functions/action-functions) |
-| `update-product-image` | Update a product image's metadata (alt text, position, variant association). | [Action](/guides/functions/action-functions) |
-| `update-product-variant` | Update a product variant's fields. | [Action](/guides/functions/action-functions) |
-| `update-product` | Update a product's fields, including adding options, variants, and media. | [Action](/guides/functions/action-functions) |
-| `update-smart-collection` | Update a smart collection's fields or rules. | [Action](/guides/functions/action-functions) |
+| `add-order-risk` | Add a fraud risk flag to an order. | [Tool](/guides/functions/tools) |
+| `add-product-to-collection` | Link one product to one collection (creates a single "collect" relationship row). | [Tool](/guides/functions/tools) |
+| `adjust-inventory-level` | Adjust an inventory item's available quantity at a location by a relative delta. | [Tool](/guides/functions/tools) |
+| `bulk-add-products-to-collection` | Add multiple products to a manual collection in one call. | [Tool](/guides/functions/tools) |
+| `bulk-remove-products-from-collection` | Remove multiple products from a manual collection in one call. | [Tool](/guides/functions/tools) |
+| `cancel-fulfillment` | Cancel a fulfillment. | [Tool](/guides/functions/tools) |
+| `cancel-order` | Cancel an order. | [Tool](/guides/functions/tools) |
+| `create-customer-address` | Add a new address to a customer. | [Tool](/guides/functions/tools) |
+| `create-customer` | Create a customer. | [Tool](/guides/functions/tools) |
+| `create-discount-code` | Create a redeemable discount code under a price rule | [Tool](/guides/functions/tools) |
+| `create-fulfillment` | Create a fulfillment for an order's line items, with optional tracking info. | [Tool](/guides/functions/tools) |
+| `create-manual-collection` | Create a manual (custom) collection. | [Tool](/guides/functions/tools) |
+| `create-order` | Create an order directly (not a draft/checkout flow). | [Tool](/guides/functions/tools) |
+| `create-price-rule` | Create a discount price rule. | [Tool](/guides/functions/tools) |
+| `create-product-image` | Add an image to a product from a URL | [Tool](/guides/functions/tools) |
+| `create-product-variant` | Create a new variant on a product. | [Tool](/guides/functions/tools) |
+| `create-product` | Create a product. | [Tool](/guides/functions/tools) |
+| `create-smart-collection` | Create a smart collection with membership rules. | [Tool](/guides/functions/tools) |
+| `delete-customer-address` | Delete a customer address. | [Tool](/guides/functions/tools) |
+| `delete-customer` | Delete a customer. | [Tool](/guides/functions/tools) |
+| `delete-discount-code` | Delete a discount code. | [Tool](/guides/functions/tools) |
+| `delete-manual-collection` | Delete a manual collection. | [Tool](/guides/functions/tools) |
+| `delete-order` | Permanently delete an order. | [Tool](/guides/functions/tools) |
+| `delete-price-rule` | Delete a price rule. | [Tool](/guides/functions/tools) |
+| `delete-product-image` | Delete a product image | [Tool](/guides/functions/tools) |
+| `delete-product-variant` | Delete a product variant. | [Tool](/guides/functions/tools) |
+| `delete-product` | Delete a product. | [Tool](/guides/functions/tools) |
+| `delete-smart-collection` | Delete a smart collection. | [Tool](/guides/functions/tools) |
+| `get-collection-product-link` | Retrieve a single product-collection relationship ("collect") by ID. | [Tool](/guides/functions/tools) |
+| `get-customer-address` | Retrieve a single customer address by ID. | [Tool](/guides/functions/tools) |
+| `get-customer-count` | Get the total count of customers. | [Tool](/guides/functions/tools) |
+| `get-customer` | Retrieve a single customer by ID. | [Tool](/guides/functions/tools) |
+| `get-discount-code-by-code` | Look up a discount code by the code string itself (not its ID or price rule). | [Tool](/guides/functions/tools) |
+| `get-discount-code` | Retrieve a single discount code by its ID (scoped to its price rule). | [Tool](/guides/functions/tools) |
+| `get-inventory-item` | Retrieve a single inventory item by ID. | [Tool](/guides/functions/tools) |
+| `get-inventory-levels` | Get available inventory quantities for inventory items, optionally scoped to locations. | [Tool](/guides/functions/tools) |
+| `get-location` | Retrieve a single location by ID. | [Tool](/guides/functions/tools) |
+| `get-manual-collection` | Retrieve a single manual collection by ID. | [Tool](/guides/functions/tools) |
+| `get-order-count` | Get the total count of orders, optionally filtered. | [Tool](/guides/functions/tools) |
+| `get-order-fraud-risks` | List fraud risk assessments for an order. | [Tool](/guides/functions/tools) |
+| `get-order-transactions` | Query payment transactions for an order. | [Tool](/guides/functions/tools) |
+| `get-order` | Retrieve a single order (via list-orders scoped by the ids param - no dedicated single-order endpoint exists). | [Tool](/guides/functions/tools) |
+| `get-price-rule` | Retrieve a single price rule by ID. | [Tool](/guides/functions/tools) |
+| `get-product-count` | Get the total count of products, optionally filtered. | [Tool](/guides/functions/tools) |
+| `get-product-image` | Retrieve a single product image by ID. | [Tool](/guides/functions/tools) |
+| `get-product-variant` | Retrieve a single product variant by ID. | [Tool](/guides/functions/tools) |
+| `get-product` | Retrieve a single product by ID. | [Tool](/guides/functions/tools) |
+| `get-smart-collection` | Retrieve a single smart collection by ID. | [Tool](/guides/functions/tools) |
+| `list-collection-product-links` | List product-collection relationships ("collects"), filterable by product or collection. | [Tool](/guides/functions/tools) |
+| `list-customer-addresses` | Batch-fetch addresses for one or more customers by ID. | [Tool](/guides/functions/tools) |
+| `list-customers` | List customers with filtering and pagination. | [Tool](/guides/functions/tools) |
+| `list-discount-codes-for-price-rule` | List all discount codes attached to a given price rule. | [Tool](/guides/functions/tools) |
+| `list-inventory-items` | Retrieve inventory items by ID. | [Tool](/guides/functions/tools) |
+| `list-locations` | List all store locations. | [Tool](/guides/functions/tools) |
+| `list-manual-collections` | List manual (custom) collections. | [Tool](/guides/functions/tools) |
+| `list-order-fulfillments` | List all fulfillments for an order. | [Tool](/guides/functions/tools) |
+| `list-order-refunds` | List refunds associated with an order | [Tool](/guides/functions/tools) |
+| `list-orders` | List orders with filtering and pagination. | [Tool](/guides/functions/tools) |
+| `list-price-rules` | List discount price rules with filtering and pagination. | [Tool](/guides/functions/tools) |
+| `list-product-images` | List images for a product by image IDs. | [Tool](/guides/functions/tools) |
+| `list-product-variants` | List variants for a product. | [Tool](/guides/functions/tools) |
+| `list-products-in-collection` | List products belonging to a collection (manual or smart). | [Tool](/guides/functions/tools) |
+| `list-products` | List products with filtering and pagination. | [Tool](/guides/functions/tools) |
+| `list-smart-collections` | List smart (intelligent, rule-based) collections. | [Tool](/guides/functions/tools) |
+| `remove-order-risk` | Remove a fraud risk assessment from an order. | [Tool](/guides/functions/tools) |
+| `remove-product-from-collection` | Remove a single product-collection relationship ("collect") by its ID | [Tool](/guides/functions/tools) |
+| `search-customers` | Fuzzy/structured search for customers. | [Tool](/guides/functions/tools) |
+| `set-default-customer-address` | Mark an address as a customer's default. | [Tool](/guides/functions/tools) |
+| `set-inventory-level` | Set an inventory item's available quantity at a location to an absolute value. | [Tool](/guides/functions/tools) |
+| `update-customer-address` | Update an existing customer address. | [Tool](/guides/functions/tools) |
+| `update-customer` | Update a customer's fields. | [Tool](/guides/functions/tools) |
+| `update-discount-code` | Update a discount code. | [Tool](/guides/functions/tools) |
+| `update-fulfillment-tracking` | Update (overwrite) tracking info on an existing fulfillment. | [Tool](/guides/functions/tools) |
+| `update-inventory-item` | Update an inventory item (e.g. enable tracking, set cost). | [Tool](/guides/functions/tools) |
+| `update-manual-collection` | Update a manual collection's fields. | [Tool](/guides/functions/tools) |
+| `update-order-risk` | Update an existing fraud risk assessment on an order. | [Tool](/guides/functions/tools) |
+| `update-order` | Update an order's fields (notes, tags, contact info, shipping address). | [Tool](/guides/functions/tools) |
+| `update-price-rule` | Update a price rule's fields. | [Tool](/guides/functions/tools) |
+| `update-product-image` | Update a product image's metadata (alt text, position, variant association). | [Tool](/guides/functions/tools) |
+| `update-product-variant` | Update a product variant's fields. | [Tool](/guides/functions/tools) |
+| `update-product` | Update a product's fields, including adding options, variants, and media. | [Tool](/guides/functions/tools) |
+| `update-smart-collection` | Update a smart collection's fields or rules. | [Tool](/guides/functions/tools) |
 | `customers` | Sync customers, including embedded addresses and marketing consent | [Sync](/guides/functions/syncs/sync-functions) |
 | `discount-codes` | Sync discount codes (the redeemable code strings), scoped per price rule. | [Sync](/guides/functions/syncs/sync-functions) |
 | `locations` | Sync store locations. | [Sync](/guides/functions/syncs/sync-functions) |

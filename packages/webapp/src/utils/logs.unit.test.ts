@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
-import { getLogsUrl } from './logs.js';
+import { expandLogsTypes, getLogsUrl } from './logs.js';
+
+describe('expandLogsTypes', () => {
+    it.each(['tool', 'tool:call'] as const)('includes legacy actions when filtering by %s', (type) => {
+        expect(expandLogsTypes([type])).toEqual([type, 'action:run']);
+    });
+
+    it('preserves other filters and avoids duplicate action filters', () => {
+        expect(expandLogsTypes(['sync', 'tool', 'action:run'])).toEqual(['sync', 'tool', 'action:run']);
+        expect(expandLogsTypes(['all'])).toEqual(['all']);
+        expect(expandLogsTypes(['action'])).toEqual(['action']);
+    });
+});
 
 describe('getLogsUrl', () => {
     it('omits undefined and null filter values', () => {

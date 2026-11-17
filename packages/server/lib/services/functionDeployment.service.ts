@@ -11,7 +11,7 @@ import {
     sandboxApiKeyService,
     toFunctionDeploymentCreate
 } from '@nangohq/sandbox';
-import { configService, getSyncConfigRaw } from '@nangohq/shared';
+import { configService, functionConfigService, functionLookupService, getSyncConfigRaw } from '@nangohq/shared';
 import { baseUrl, Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { deployIntegrationTemplate } from './integrationTemplate.service.js';
@@ -20,19 +20,20 @@ import type { FunctionDeploymentError } from '@nangohq/sandbox';
 import type {
     DBEnvironment,
     DBPlan,
-    DBSyncConfig,
     DBTeam,
     DeployedFunction,
     FunctionDeploymentCodeBody,
     FunctionDeploymentCreateSuccess,
     FunctionDeploymentResultSuccess,
-    FunctionDeploymentTemplateBody
+    FunctionDeploymentTemplateBody,
+    FunctionSource
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
 
 export type DeployFunctionServiceErrorCode =
+    | 'legacy_actions_deprecated'
     | 'customer_api_key_required'
     | 'integration_not_found'
     | 'invalid_request'
@@ -41,6 +42,8 @@ export type DeployFunctionServiceErrorCode =
     | 'deployment_failed';
 
 export type DeployTemplateServiceErrorCode =
+    | 'legacy_actions_deprecated'
+    | 'invalid_request'
     | 'integration_not_found'
     | 'template_not_found'
     | 'ambiguous_function'
@@ -61,6 +64,16 @@ export class FunctionDeploymentServiceError<TCode extends FunctionDeploymentServ
         super(message, { cause });
         this.name = 'FunctionDeploymentServiceError';
         this.code = code;
+    }
+}
+
+export class LegacyActionsDeprecatedError extends FunctionDeploymentServiceError<'legacy_actions_deprecated'> {
+    constructor({ actionNames = [] }: { actionNames?: string[] } = {}) {
+        super({
+            code: 'legacy_actions_deprecated',
+            message: `Actions are deprecated. Use createTool instead.${actionNames.length > 0 ? ` Found: ${actionNames.join(', ')}.` : ''}`
+        });
+        this.name = 'LegacyActionsDeprecatedError';
     }
 }
 
@@ -110,14 +123,34 @@ export async function deployFunction({
         );
     }
 
-    const existingSyncConfig = await getSyncConfigRaw({
-        environmentId: environment.id,
-        config_id: providerConfig.id,
-        name: body.function_name,
-        isAction: body.function_type === 'action'
-    });
+    let existingSource: FunctionSource | undefined;
+    if (body.function_type === 'tool' || body.function_type === 'function') {
+        const existing = await functionConfigService.search(
+            db.knex,
+            { environmentId: environment.id, filter: { integrationKey: body.integration_id, name: body.function_name } },
+            { limit: 1 }
+        );
+        if (existing.isErr()) {
+            return Err(
+                new FunctionDeploymentServiceError({
+                    code: 'deployment_creation_failed',
+                    message: 'Failed to look up existing functions',
+                    cause: existing.error
+                })
+            );
+        }
+        existingSource = existing.value[0]?.currentVersion.source;
+    } else {
+        const existing = await getSyncConfigRaw({
+            environmentId: environment.id,
+            config_id: providerConfig.id,
+            name: body.function_name,
+            isAction: body.function_type === 'action'
+        });
+        existingSource = existing?.source;
+    }
 
-    if (isProtectedExistingFunction(existingSyncConfig)) {
+    if (existingSource && existingSource !== 'standalone') {
         return Err(
             new FunctionDeploymentServiceError({
                 code: 'invalid_request',
@@ -126,7 +159,14 @@ export async function deployFunction({
         );
     }
 
-    const allowDestructiveDeploy = shouldAllowDestructiveDeploy(existingSyncConfig, body.allow_destructive ?? false);
+    if (body.function_type === 'action') {
+        const canDeployActions = await functionLookupService.hasActiveLegacyActions({ accountId: environment.account_id });
+        if (!canDeployActions) {
+            return Err(new LegacyActionsDeprecatedError());
+        }
+    }
+
+    const allowDestructiveDeploy = Boolean(body.allow_destructive && existingSource === 'standalone');
     const deploymentResult = await createFunctionDeployment({
         environmentId: environment.id,
         request: {
@@ -208,6 +248,16 @@ export async function deployTemplate({
     plan,
     body
 }: DeployTemplateParams): Promise<Result<FunctionDeploymentCreateSuccess, DeployTemplateServiceError>> {
+    // TODO: support tool and function templates
+    if (body.function_type === 'tool' || body.function_type === 'function') {
+        return Err(
+            new FunctionDeploymentServiceError({
+                code: 'invalid_request',
+                message: `Deploying a ${body.function_type} template is not supported yet`
+            })
+        );
+    }
+
     const outcome = await deployIntegrationTemplate({
         environment,
         account,
@@ -219,6 +269,8 @@ export async function deployTemplate({
 
     if (!outcome.ok) {
         switch (outcome.reason) {
+            case 'legacy_actions_deprecated':
+                return Err(new LegacyActionsDeprecatedError());
             case 'integration_not_found':
                 return Err(
                     new FunctionDeploymentServiceError({
@@ -344,14 +396,6 @@ export function toFunctionDeploymentError(err: unknown): FunctionDeploymentError
         code: 'deployment_error',
         message: stringifyError(err)
     };
-}
-
-function isProtectedExistingFunction(existingSyncConfig: Pick<DBSyncConfig, 'source'> | null): boolean {
-    return Boolean(existingSyncConfig && existingSyncConfig.source !== 'standalone');
-}
-
-function shouldAllowDestructiveDeploy(existingSyncConfig: Pick<DBSyncConfig, 'source'> | null, allowDestructive: boolean): boolean {
-    return Boolean(allowDestructive && existingSyncConfig?.source === 'standalone');
 }
 
 async function createDeploySandboxApiKey(parentApiKeyId: number, environmentId: number, deploymentId: string) {

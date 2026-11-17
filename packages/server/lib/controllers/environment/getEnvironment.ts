@@ -79,6 +79,10 @@ export const getPublicEnvironment = asyncWrapper<GetPublicEnvironment>(async (re
         }
         data.webhooks.signing_key = signingKey.value;
         data.otlp_headers = Object.entries(environment.otlp_settings?.headers ?? {}).map(([name, value]) => ({ name, value }));
+        req.audit = {
+            ...req.audit,
+            credentialsRead: { targets: [{ id: environment.uuid, display: environment.name }], environment: { uuid: environment.uuid, name: environment.name } }
+        };
     }
 
     res.status(200).send({ data });

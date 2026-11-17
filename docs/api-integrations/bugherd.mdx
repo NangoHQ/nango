@@ -1,0 +1,75 @@
+---
+title: 'BugHerd'
+sidebarTitle: 'BugHerd'
+description: 'Integrate your application with the BugHerd API'
+---
+
+## 🚀 Quickstart
+
+Connect to BugHerd with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _BugHerd_.
+    </Step>
+    <Step id="authorize-bugherd" title="Authorize BugHerd">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your BugHerd API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-bugherd-api" title="Call the BugHerd API">
+    Let's make your first request to the BugHerd API (fetch your organization's details). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api_v2/organization.json" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api_v2/organization.json',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 BugHerd integration guides
+
+- [How do I link my account?](/api-integrations/bugherd/connect)  
+Copy your BugHerd API key and connect it in the Connect UI.
+
+Official docs: [BugHerd API documentation](https://docs.bugherd.com/api)
+
+## 🧩 Pre-built syncs & tools for BugHerd
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/bugherd/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />

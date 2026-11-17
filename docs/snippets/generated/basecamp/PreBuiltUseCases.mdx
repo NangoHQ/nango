@@ -2,108 +2,108 @@
 
 | Function name | Description | Type |
 | - | - | - |
-| `archive-project` | Archive a project. | [Action](/guides/functions/action-functions) |
-| `archive-recording` | Archive any recording. | [Action](/guides/functions/action-functions) |
-| `change-card-table-column-color` | Change a card table column's color. | [Action](/guides/functions/action-functions) |
-| `complete-todo` | Mark a to-do as completed. | [Action](/guides/functions/action-functions) |
-| `create-campfire-line` | Post a line (message) to a Campfire. | [Action](/guides/functions/action-functions) |
-| `create-card-table-card` | Create a card in a Card Table column. | [Action](/guides/functions/action-functions) |
-| `create-card-table-column` | Create a new column on a Card Table. | [Action](/guides/functions/action-functions) |
-| `create-card-table-step` | Create a checklist step on a card table card. | [Action](/guides/functions/action-functions) |
-| `create-comment` | Post a comment on any recording | [Action](/guides/functions/action-functions) |
-| `create-document` | Create a document in a vault. | [Action](/guides/functions/action-functions) |
-| `create-message` | Create a message on a project message board. | [Action](/guides/functions/action-functions) |
-| `create-project` | Create a project. | [Action](/guides/functions/action-functions) |
-| `create-schedule-entry` | Create a schedule entry on a project schedule | [Action](/guides/functions/action-functions) |
-| `create-todo` | Create a to-do in a specific to-do list, resolving assignee/completion-subscriber emails to person IDs first. | [Action](/guides/functions/action-functions) |
-| `create-todolist-group` | Create a group (section) within a to-do list. | [Action](/guides/functions/action-functions) |
-| `create-todolist` | Create a to-do list under a project to-do set. | [Action](/guides/functions/action-functions) |
-| `create-upload-version` | Replace an upload file with a new version. | [Action](/guides/functions/action-functions) |
-| `create-upload` | Attach a previously-staged file (from upload-attachment) into a vault as an Upload record. | [Action](/guides/functions/action-functions) |
-| `create-vault-folder` | Create a sub-folder inside a vault. | [Action](/guides/functions/action-functions) |
-| `delete-campfire-line` | Permanently delete a Campfire line. | [Action](/guides/functions/action-functions) |
-| `disable-tool` | Disable a project dock tool, removing it from the dock without deleting its content (reversible via enable-tool). | [Action](/guides/functions/action-functions) |
-| `enable-tool` | Enable a project's dock tool (e.g. Message Board, Docs & Files, Chat, Card Table, Calendar), adding it back to the dock. | [Action](/guides/functions/action-functions) |
-| `fetch-accounts` | Get the token owner's identity and the list of Basecamp accounts (and other 37signals products) the token can access. | [Action](/guides/functions/action-functions) |
-| `fetch-todolists` | Fetch all to-do lists in a project's to-do set. | [Action](/guides/functions/action-functions) |
-| `get-account` | Get details about the current Basecamp account (subscription plan, limits, trial status). | [Action](/guides/functions/action-functions) |
-| `get-campfire-line` | Retrieve a single Campfire line. | [Action](/guides/functions/action-functions) |
-| `get-campfire` | Get a project's Campfire (chat room). | [Action](/guides/functions/action-functions) |
-| `get-card-table-card` | Retrieve a single Card Table card. | [Action](/guides/functions/action-functions) |
-| `get-card-table-column` | Retrieve a single Card Table column. | [Action](/guides/functions/action-functions) |
-| `get-card-table` | Get a Basecamp card table (Kanban board) including its columns. | [Action](/guides/functions/action-functions) |
-| `get-comment` | Retrieve a single comment. | [Action](/guides/functions/action-functions) |
-| `get-document` | Retrieve a single document. | [Action](/guides/functions/action-functions) |
-| `get-message-board` | Get a project's message board (the container for all its messages) and message count. | [Action](/guides/functions/action-functions) |
-| `get-message` | Retrieve a single message. | [Action](/guides/functions/action-functions) |
-| `get-my-preferences` | Get the current token owner's account preferences (time zone, first day of week, time format). | [Action](/guides/functions/action-functions) |
-| `get-my-profile` | Get the current token owner's own profile. | [Action](/guides/functions/action-functions) |
-| `get-person` | Retrieve a single person's profile by ID. | [Action](/guides/functions/action-functions) |
-| `get-project` | Retrieve a single project, including its dock (tool list) and team sample. | [Action](/guides/functions/action-functions) |
-| `get-recording-events` | Get the audit-trail events for any recording | [Action](/guides/functions/action-functions) |
-| `get-schedule-entry` | Retrieve a single schedule entry. | [Action](/guides/functions/action-functions) |
-| `get-schedule` | Get a project's schedule (calendar). | [Action](/guides/functions/action-functions) |
-| `get-todo` | Retrieve a single to-do. | [Action](/guides/functions/action-functions) |
-| `get-todolist` | Get a single to-do list. | [Action](/guides/functions/action-functions) |
-| `get-todoset` | Get a project's to-do set and a summary list of its to-do lists. | [Action](/guides/functions/action-functions) |
-| `get-tool` | Get a single dock tool (e.g. a project's Chat, Card Table, or Message Board tool object) by its ID. | [Action](/guides/functions/action-functions) |
-| `get-upload-versions` | List the version history of an upload's file content. | [Action](/guides/functions/action-functions) |
-| `get-upload` | Retrieve a single upload's metadata. | [Action](/guides/functions/action-functions) |
-| `get-vault` | Get a project's top-level vault (Docs & Files) or a sub-folder vault. | [Action](/guides/functions/action-functions) |
-| `list-campfire-lines` | List messages (lines) in a Campfire. | [Action](/guides/functions/action-functions) |
-| `list-campfire-uploads` | List file uploads posted in a Campfire, newest first. | [Action](/guides/functions/action-functions) |
-| `list-card-table-cards` | List the cards in a Card Table column. | [Action](/guides/functions/action-functions) |
-| `list-comments` | List comments on any recording (to-do, message, document, upload, card, schedule entry, to-do list, etc). | [Action](/guides/functions/action-functions) |
-| `list-documents` | List documents in a vault. | [Action](/guides/functions/action-functions) |
-| `list-messages` | List messages on a project's message board | [Action](/guides/functions/action-functions) |
-| `list-people` | List all people visible to the current user across the whole account. | [Action](/guides/functions/action-functions) |
-| `list-pingable-people` | List people on the account who can be pinged (direct messaged). | [Action](/guides/functions/action-functions) |
-| `list-project-people` | List the people who have access to a specific project. | [Action](/guides/functions/action-functions) |
-| `list-projects` | List active projects visible to the current user. | [Action](/guides/functions/action-functions) |
-| `list-recordings-by-type` | List all recordings of a given type across one or more projects, account-wide. | [Action](/guides/functions/action-functions) |
-| `list-schedule-entries` | List entries (events) on a project's schedule. | [Action](/guides/functions/action-functions) |
-| `list-todolist-groups` | List the sub-groups (sections) within a to-do list. | [Action](/guides/functions/action-functions) |
-| `list-todos` | List active (non-completed) to-dos in a to-do list. | [Action](/guides/functions/action-functions) |
-| `list-uploads` | List file uploads in a vault. | [Action](/guides/functions/action-functions) |
-| `list-vault-folders` | List sub-folders (nested vaults) inside a vault. | [Action](/guides/functions/action-functions) |
-| `move-card-table-card` | Move a card to a different column (and optionally a position within it). | [Action](/guides/functions/action-functions) |
-| `move-card-table-column` | Reposition a column within its Card Table. | [Action](/guides/functions/action-functions) |
-| `pin-message` | Pin a message to the top of the message board. | [Action](/guides/functions/action-functions) |
-| `remove-card-table-column-on-hold` | Remove the on-hold section from a card table column | [Action](/guides/functions/action-functions) |
-| `reposition-card-table-step` | Change the position of a step within its card. | [Action](/guides/functions/action-functions) |
-| `reposition-todo` | Change a to-do's position within its list, optionally moving it to a different to-do list. | [Action](/guides/functions/action-functions) |
-| `reposition-todolist-group` | Change a to-do list group's position within its parent to-do list. | [Action](/guides/functions/action-functions) |
-| `reposition-todolist` | Change a to-do list's position within its to-do set. | [Action](/guides/functions/action-functions) |
-| `reposition-tool` | Change a dock tool's position in the project dock. | [Action](/guides/functions/action-functions) |
-| `set-card-table-column-on-hold` | Add an on-hold section to a Card Table column (used to visually pause cards within a column). | [Action](/guides/functions/action-functions) |
-| `set-card-table-step-completion` | Mark a card table step as completed or uncompleted. | [Action](/guides/functions/action-functions) |
-| `set-recording-client-visibility` | Toggle whether clients can see a recording | [Action](/guides/functions/action-functions) |
-| `trash-project` | Move a project to the trash (recoverable for 30 days, then auto-deleted). | [Action](/guides/functions/action-functions) |
-| `trash-recording` | Move any recording (to-do, to-do list, message, document, upload, card, column, step, schedule entry, comment, etc.) to the account trash. | [Action](/guides/functions/action-functions) |
-| `unarchive-project` | Restore a project from the archive or trash back to active. | [Action](/guides/functions/action-functions) |
-| `unarchive-recording` | Restore an archived recording to active | [Action](/guides/functions/action-functions) |
-| `uncomplete-todo` | Mark a to-do as not completed. | [Action](/guides/functions/action-functions) |
-| `unpin-message` | Unpin a message. | [Action](/guides/functions/action-functions) |
-| `unwatch-card-table-column` | Unsubscribe the current user from notifications for a Card Table column. | [Action](/guides/functions/action-functions) |
-| `update-campfire-line` | Edit a Campfire line's content. | [Action](/guides/functions/action-functions) |
-| `update-card-table-card` | Update a card's title, content, due date, or assignees. | [Action](/guides/functions/action-functions) |
-| `update-card-table-column` | Update a card table column title or description. | [Action](/guides/functions/action-functions) |
-| `update-card-table-step` | Update a card step title, due date, or assignees. | [Action](/guides/functions/action-functions) |
-| `update-comment` | Update a comment's content. | [Action](/guides/functions/action-functions) |
-| `update-document` | Update a document title or content. | [Action](/guides/functions/action-functions) |
-| `update-message` | Update a message's subject, content, or category. | [Action](/guides/functions/action-functions) |
-| `update-project-access` | Grant, revoke, or create-and-grant people's access to a project. | [Action](/guides/functions/action-functions) |
-| `update-project` | Update a project's name, description, schedule dates, or access policy. | [Action](/guides/functions/action-functions) |
-| `update-schedule-entry` | Update a schedule entry's summary, times, or other fields. | [Action](/guides/functions/action-functions) |
-| `update-schedule` | Change whether a schedule includes due dates from to-dos, cards, and steps. | [Action](/guides/functions/action-functions) |
-| `update-todo` | Update a to-do's content, description, dates, or assignees. | [Action](/guides/functions/action-functions) |
-| `update-todolist` | Rename a to-do list or change its description. | [Action](/guides/functions/action-functions) |
-| `update-tool` | Rename a dock tool. | [Action](/guides/functions/action-functions) |
-| `update-upload` | Update a Basecamp upload metadata (base_name and description) without replacing the file content. | [Action](/guides/functions/action-functions) |
-| `update-vault-folder` | Rename a vault folder. | [Action](/guides/functions/action-functions) |
-| `upload-attachment` | Upload raw file bytes to Basecamp blob storage and get back an attachable_sgid | [Action](/guides/functions/action-functions) |
-| `upload-campfire-file` | Upload a file directly into a Campfire as a chat attachment. | [Action](/guides/functions/action-functions) |
-| `watch-card-table-column` | Subscribe the current user to notifications for a Card Table column. | [Action](/guides/functions/action-functions) |
+| `archive-project` | Archive a project. | [Tool](/guides/functions/tools) |
+| `archive-recording` | Archive any recording. | [Tool](/guides/functions/tools) |
+| `change-card-table-column-color` | Change a card table column's color. | [Tool](/guides/functions/tools) |
+| `complete-todo` | Mark a to-do as completed. | [Tool](/guides/functions/tools) |
+| `create-campfire-line` | Post a line (message) to a Campfire. | [Tool](/guides/functions/tools) |
+| `create-card-table-card` | Create a card in a Card Table column. | [Tool](/guides/functions/tools) |
+| `create-card-table-column` | Create a new column on a Card Table. | [Tool](/guides/functions/tools) |
+| `create-card-table-step` | Create a checklist step on a card table card. | [Tool](/guides/functions/tools) |
+| `create-comment` | Post a comment on any recording | [Tool](/guides/functions/tools) |
+| `create-document` | Create a document in a vault. | [Tool](/guides/functions/tools) |
+| `create-message` | Create a message on a project message board. | [Tool](/guides/functions/tools) |
+| `create-project` | Create a project. | [Tool](/guides/functions/tools) |
+| `create-schedule-entry` | Create a schedule entry on a project schedule | [Tool](/guides/functions/tools) |
+| `create-todo` | Create a to-do in a specific to-do list, resolving assignee/completion-subscriber emails to person IDs first. | [Tool](/guides/functions/tools) |
+| `create-todolist-group` | Create a group (section) within a to-do list. | [Tool](/guides/functions/tools) |
+| `create-todolist` | Create a to-do list under a project to-do set. | [Tool](/guides/functions/tools) |
+| `create-upload-version` | Replace an upload file with a new version. | [Tool](/guides/functions/tools) |
+| `create-upload` | Attach a previously-staged file (from upload-attachment) into a vault as an Upload record. | [Tool](/guides/functions/tools) |
+| `create-vault-folder` | Create a sub-folder inside a vault. | [Tool](/guides/functions/tools) |
+| `delete-campfire-line` | Permanently delete a Campfire line. | [Tool](/guides/functions/tools) |
+| `disable-tool` | Disable a project dock tool, removing it from the dock without deleting its content (reversible via enable-tool). | [Tool](/guides/functions/tools) |
+| `enable-tool` | Enable a project's dock tool (e.g. Message Board, Docs & Files, Chat, Card Table, Calendar), adding it back to the dock. | [Tool](/guides/functions/tools) |
+| `fetch-accounts` | Get the token owner's identity and the list of Basecamp accounts (and other 37signals products) the token can access. | [Tool](/guides/functions/tools) |
+| `fetch-todolists` | Fetch all to-do lists in a project's to-do set. | [Tool](/guides/functions/tools) |
+| `get-account` | Get details about the current Basecamp account (subscription plan, limits, trial status). | [Tool](/guides/functions/tools) |
+| `get-campfire-line` | Retrieve a single Campfire line. | [Tool](/guides/functions/tools) |
+| `get-campfire` | Get a project's Campfire (chat room). | [Tool](/guides/functions/tools) |
+| `get-card-table-card` | Retrieve a single Card Table card. | [Tool](/guides/functions/tools) |
+| `get-card-table-column` | Retrieve a single Card Table column. | [Tool](/guides/functions/tools) |
+| `get-card-table` | Get a Basecamp card table (Kanban board) including its columns. | [Tool](/guides/functions/tools) |
+| `get-comment` | Retrieve a single comment. | [Tool](/guides/functions/tools) |
+| `get-document` | Retrieve a single document. | [Tool](/guides/functions/tools) |
+| `get-message-board` | Get a project's message board (the container for all its messages) and message count. | [Tool](/guides/functions/tools) |
+| `get-message` | Retrieve a single message. | [Tool](/guides/functions/tools) |
+| `get-my-preferences` | Get the current token owner's account preferences (time zone, first day of week, time format). | [Tool](/guides/functions/tools) |
+| `get-my-profile` | Get the current token owner's own profile. | [Tool](/guides/functions/tools) |
+| `get-person` | Retrieve a single person's profile by ID. | [Tool](/guides/functions/tools) |
+| `get-project` | Retrieve a single project, including its dock (tool list) and team sample. | [Tool](/guides/functions/tools) |
+| `get-recording-events` | Get the audit-trail events for any recording | [Tool](/guides/functions/tools) |
+| `get-schedule-entry` | Retrieve a single schedule entry. | [Tool](/guides/functions/tools) |
+| `get-schedule` | Get a project's schedule (calendar). | [Tool](/guides/functions/tools) |
+| `get-todo` | Retrieve a single to-do. | [Tool](/guides/functions/tools) |
+| `get-todolist` | Get a single to-do list. | [Tool](/guides/functions/tools) |
+| `get-todoset` | Get a project's to-do set and a summary list of its to-do lists. | [Tool](/guides/functions/tools) |
+| `get-tool` | Get a single dock tool (e.g. a project's Chat, Card Table, or Message Board tool object) by its ID. | [Tool](/guides/functions/tools) |
+| `get-upload-versions` | List the version history of an upload's file content. | [Tool](/guides/functions/tools) |
+| `get-upload` | Retrieve a single upload's metadata. | [Tool](/guides/functions/tools) |
+| `get-vault` | Get a project's top-level vault (Docs & Files) or a sub-folder vault. | [Tool](/guides/functions/tools) |
+| `list-campfire-lines` | List messages (lines) in a Campfire. | [Tool](/guides/functions/tools) |
+| `list-campfire-uploads` | List file uploads posted in a Campfire, newest first. | [Tool](/guides/functions/tools) |
+| `list-card-table-cards` | List the cards in a Card Table column. | [Tool](/guides/functions/tools) |
+| `list-comments` | List comments on any recording (to-do, message, document, upload, card, schedule entry, to-do list, etc). | [Tool](/guides/functions/tools) |
+| `list-documents` | List documents in a vault. | [Tool](/guides/functions/tools) |
+| `list-messages` | List messages on a project's message board | [Tool](/guides/functions/tools) |
+| `list-people` | List all people visible to the current user across the whole account. | [Tool](/guides/functions/tools) |
+| `list-pingable-people` | List people on the account who can be pinged (direct messaged). | [Tool](/guides/functions/tools) |
+| `list-project-people` | List the people who have access to a specific project. | [Tool](/guides/functions/tools) |
+| `list-projects` | List active projects visible to the current user. | [Tool](/guides/functions/tools) |
+| `list-recordings-by-type` | List all recordings of a given type across one or more projects, account-wide. | [Tool](/guides/functions/tools) |
+| `list-schedule-entries` | List entries (events) on a project's schedule. | [Tool](/guides/functions/tools) |
+| `list-todolist-groups` | List the sub-groups (sections) within a to-do list. | [Tool](/guides/functions/tools) |
+| `list-todos` | List active (non-completed) to-dos in a to-do list. | [Tool](/guides/functions/tools) |
+| `list-uploads` | List file uploads in a vault. | [Tool](/guides/functions/tools) |
+| `list-vault-folders` | List sub-folders (nested vaults) inside a vault. | [Tool](/guides/functions/tools) |
+| `move-card-table-card` | Move a card to a different column (and optionally a position within it). | [Tool](/guides/functions/tools) |
+| `move-card-table-column` | Reposition a column within its Card Table. | [Tool](/guides/functions/tools) |
+| `pin-message` | Pin a message to the top of the message board. | [Tool](/guides/functions/tools) |
+| `remove-card-table-column-on-hold` | Remove the on-hold section from a card table column | [Tool](/guides/functions/tools) |
+| `reposition-card-table-step` | Change the position of a step within its card. | [Tool](/guides/functions/tools) |
+| `reposition-todo` | Change a to-do's position within its list, optionally moving it to a different to-do list. | [Tool](/guides/functions/tools) |
+| `reposition-todolist-group` | Change a to-do list group's position within its parent to-do list. | [Tool](/guides/functions/tools) |
+| `reposition-todolist` | Change a to-do list's position within its to-do set. | [Tool](/guides/functions/tools) |
+| `reposition-tool` | Change a dock tool's position in the project dock. | [Tool](/guides/functions/tools) |
+| `set-card-table-column-on-hold` | Add an on-hold section to a Card Table column (used to visually pause cards within a column). | [Tool](/guides/functions/tools) |
+| `set-card-table-step-completion` | Mark a card table step as completed or uncompleted. | [Tool](/guides/functions/tools) |
+| `set-recording-client-visibility` | Toggle whether clients can see a recording | [Tool](/guides/functions/tools) |
+| `trash-project` | Move a project to the trash (recoverable for 30 days, then auto-deleted). | [Tool](/guides/functions/tools) |
+| `trash-recording` | Move any recording (to-do, to-do list, message, document, upload, card, column, step, schedule entry, comment, etc.) to the account trash. | [Tool](/guides/functions/tools) |
+| `unarchive-project` | Restore a project from the archive or trash back to active. | [Tool](/guides/functions/tools) |
+| `unarchive-recording` | Restore an archived recording to active | [Tool](/guides/functions/tools) |
+| `uncomplete-todo` | Mark a to-do as not completed. | [Tool](/guides/functions/tools) |
+| `unpin-message` | Unpin a message. | [Tool](/guides/functions/tools) |
+| `unwatch-card-table-column` | Unsubscribe the current user from notifications for a Card Table column. | [Tool](/guides/functions/tools) |
+| `update-campfire-line` | Edit a Campfire line's content. | [Tool](/guides/functions/tools) |
+| `update-card-table-card` | Update a card's title, content, due date, or assignees. | [Tool](/guides/functions/tools) |
+| `update-card-table-column` | Update a card table column title or description. | [Tool](/guides/functions/tools) |
+| `update-card-table-step` | Update a card step title, due date, or assignees. | [Tool](/guides/functions/tools) |
+| `update-comment` | Update a comment's content. | [Tool](/guides/functions/tools) |
+| `update-document` | Update a document title or content. | [Tool](/guides/functions/tools) |
+| `update-message` | Update a message's subject, content, or category. | [Tool](/guides/functions/tools) |
+| `update-project-access` | Grant, revoke, or create-and-grant people's access to a project. | [Tool](/guides/functions/tools) |
+| `update-project` | Update a project's name, description, schedule dates, or access policy. | [Tool](/guides/functions/tools) |
+| `update-schedule-entry` | Update a schedule entry's summary, times, or other fields. | [Tool](/guides/functions/tools) |
+| `update-schedule` | Change whether a schedule includes due dates from to-dos, cards, and steps. | [Tool](/guides/functions/tools) |
+| `update-todo` | Update a to-do's content, description, dates, or assignees. | [Tool](/guides/functions/tools) |
+| `update-todolist` | Rename a to-do list or change its description. | [Tool](/guides/functions/tools) |
+| `update-tool` | Rename a dock tool. | [Tool](/guides/functions/tools) |
+| `update-upload` | Update a Basecamp upload metadata (base_name and description) without replacing the file content. | [Tool](/guides/functions/tools) |
+| `update-vault-folder` | Rename a vault folder. | [Tool](/guides/functions/tools) |
+| `upload-attachment` | Upload raw file bytes to Basecamp blob storage and get back an attachable_sgid | [Tool](/guides/functions/tools) |
+| `upload-campfire-file` | Upload a file directly into a Campfire as a chat attachment. | [Tool](/guides/functions/tools) |
+| `watch-card-table-column` | Subscribe the current user to notifications for a Card Table column. | [Tool](/guides/functions/tools) |
 | `campfire-lines` | Sync chat lines across all known projects' Campfires. | [Sync](/guides/functions/syncs/sync-functions) |
 | `card-table-cards` | Sync Kanban cards across all known projects' Card Tables. | [Sync](/guides/functions/syncs/sync-functions) |
 | `comments` | Sync comments across all known recordings | [Sync](/guides/functions/syncs/sync-functions) |

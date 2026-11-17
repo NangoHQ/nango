@@ -76,6 +76,7 @@ export const callToolsTool: ManagementMcpTool<CallToolOutput> = defineManagement
 
         if (tool.kind === 'function') {
             const { result } = await invokeFunction({
+                operation: { type: 'tool', action: 'call' },
                 account,
                 environment,
                 connectionId: args.connection_id,

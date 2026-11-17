@@ -55,7 +55,7 @@ describe('checkEnterpriseLicense', () => {
     let envelope: string;
 
     beforeAll(async () => {
-        envelope = await signLicense(license, key);
+        ({ envelope } = await signLicense(license, key));
     });
 
     beforeEach(() => {
@@ -123,7 +123,7 @@ describe('checkEnterpriseLicense', () => {
     });
 
     it('fails a license signed by a key this build does not trust', async () => {
-        state.envs.NANGO_LICENSE = await signLicense(license, keyPair());
+        state.envs.NANGO_LICENSE = (await signLicense(license, keyPair())).envelope;
         await checkEnterpriseLicense();
         expect(state.logger.warning).toHaveBeenCalledWith(expect.stringContaining('this build trusts'));
     });

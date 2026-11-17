@@ -142,6 +142,23 @@ describe('Flow service tests', () => {
         }
     });
 
+    it('should not change the cached flows when getting a single flow', () => {
+        const integration = flowService.getAllAvailableFlowsAsStandardConfig().find((flow) => flow.syncs.length > 0 && flow.actions.length > 0);
+        const [sync] = integration?.syncs ?? [];
+        const [action] = integration?.actions ?? [];
+        if (!integration || !sync || !action) {
+            throw new Error('expected a provider with both syncs and actions in flows.zero.json');
+        }
+        const { syncs, actions } = integration;
+
+        flowService.getSingleFlowAsStandardConfig(sync.name);
+        flowService.getSingleFlowAsStandardConfig(action.name);
+
+        const cached = flowService.getAllAvailableFlowsAsStandardConfig().find((flow) => flow.providerConfigKey === integration.providerConfigKey);
+        expect(cached?.syncs).toEqual(syncs);
+        expect(cached?.actions).toEqual(actions);
+    });
+
     it('should resolve the symlink target name for symlinked providers and return null otherwise', () => {
         const symlinked = flowService.flowsJson.find((flow) => flow.symLinkTargetName);
         expect(symlinked, 'expected at least one symlinked provider in flows.zero.json').toBeDefined();
