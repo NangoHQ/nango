@@ -199,7 +199,7 @@ describe('GET /v1/telemetry/export', () => {
     });
 
     it.each([
-        ['a timestamp instead of a day', { from: '2026-11-08T00:00:00Z', to: '2026-11-09' }, 'Invalid ISO date'],
+        ['a timestamp instead of a day', { from: '2026-11-08T00:00:00Z', to: '2026-11-09' }, 'must be a day written as YYYY-MM-DD'],
         ['a range that ends where it starts', { from: '2026-11-08', to: '2026-11-08' }, '`to` must be after `from`'],
         ['more than 31 days', { from: '2026-10-09', to: '2026-11-10' }, 'an export holds at most 31 days'],
         ['a day that is not over', { from: '2026-11-08', to: '2026-11-11' }, 'the last day of the range is not complete yet'],
@@ -210,6 +210,15 @@ describe('GET /v1/telemetry/export', () => {
 
         expect(res.status).toBe(400);
         expect(JSON.stringify(await res.json())).toContain(message);
+    });
+
+    it('only says that a day is badly written, without checking the range it would give', async () => {
+        const res = await download({ from: 'last week', to: '2026-11-09' });
+
+        expect(res.status).toBe(400);
+        expect(await res.json()).toEqual({
+            error: { code: 'invalid_request', errors: [{ code: 'invalid_format', message: 'must be a day written as YYYY-MM-DD', path: ['from'] }] }
+        });
     });
 
     it('accepts 31 days, the oldest day still kept, and yesterday only once its last rows had time to be written', async () => {

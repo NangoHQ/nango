@@ -38,9 +38,12 @@ const today = () => new Date().toISOString().slice(0, 10);
  * Both are UTC days. `from` is the first day in the file and `to` is the first day that is not. A day the installation
  * no longer keeps is rejected, because the file would say that nothing happened on it.
  */
+// Stops at a badly written day, so the range checks below only see real days.
+const day = z.iso.date({ error: 'must be a day written as YYYY-MM-DD', abort: true });
+
 const querySchema = (retentionDays: number) =>
     z
-        .strictObject({ from: z.iso.date(), to: z.iso.date() })
+        .strictObject({ from: day, to: day })
         .refine(({ from }) => startOf(from).getTime() >= startOf(today()).getTime() - retentionDays * DAY_MS, {
             path: ['from'],
             message: `the installation only keeps ${retentionDays} days of telemetry`
