@@ -4,7 +4,7 @@ const AUTH_MODES_NEEDING_DEV_APP: AuthModeType[] = ['OAUTH1', 'OAUTH2', 'APP', '
 const AUTH_MODES_WITH_REQUIRED_SETUP_FIELDS: AuthModeType[] = ['TBA', 'INSTALL_PLUGIN'];
 
 export function needsSetupFields(provider: Provider): boolean {
-    return AUTH_MODES_WITH_REQUIRED_SETUP_FIELDS.includes(provider.auth_mode) || Object.keys(provider.integration_config ?? {}).length > 0;
+    return AUTH_MODES_WITH_REQUIRED_SETUP_FIELDS.includes(provider.auth_mode) || provider.integration_config !== undefined;
 }
 
 export function getInstantSetup(provider: Provider, preConfigured: boolean): ProviderInstantSetup {
