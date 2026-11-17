@@ -1,0 +1,80 @@
+---
+title: 'Fuse'
+sidebarTitle: 'Fuse'
+description: 'Integrate your application with the Fuse API'
+---
+
+## 🚀 Quickstart
+
+Connect to Fuse with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="configure-fuse-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Fuse_.
+    </Step>
+    <Step id="authorize-fuse" title="Authorize Fuse">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Fuse API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-fuse-api" title="Call the Fuse API">
+    Let's make your first request to the Fuse API to fetch the account the key belongs to. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/business/me" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/business/me',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Fuse Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my Fuse account?](/api-integrations/fuse/connect)  
+Learn how to create a Fuse API key and link your account
+
+Fuse is an AI sales platform. Its API covers prospect and company search, contact enrichment with verified emails and phone numbers, lists, campaigns, signal agents (job changes, hiring, funding) and deep research. To connect AI agents through the Model Context Protocol instead, use [Fuse (MCP)](/api-integrations/fuse-mcp).
+
+Official docs: [Fuse API reference](https://docs.fuseai.com)
+
+## 🧩 Pre-built syncs & tools for Fuse
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/fuse/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />

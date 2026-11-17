@@ -1587,6 +1587,8 @@
               "integrations/all/front",
               "api-integrations/front-api-key",
               "api-integrations/fullenrich",
+              "api-integrations/fuse",
+              "api-integrations/fuse-mcp",
               "integrations/all/gainsight-cc",
               "api-integrations/gamma",
               "integrations/all/garmin",

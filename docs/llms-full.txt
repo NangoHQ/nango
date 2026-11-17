@@ -16386,6 +16386,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `front` | Front | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/front.md) |  |  | support, ticketing |
 | `front-api-key` | Front (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/front-api-key.md) | [connect](https://nango.dev/docs/api-integrations/front-api-key/connect.md) |  | support, ticketing |
 | `fullenrich` | FullEnrich | API_KEY | [docs](https://nango.dev/docs/api-integrations/fullenrich.md) | [connect](https://nango.dev/docs/api-integrations/fullenrich/connect.md) |  | crm |
+| `fuse` | Fuse | API_KEY | [docs](https://nango.dev/docs/api-integrations/fuse.md) | [connect](https://nango.dev/docs/api-integrations/fuse/connect.md) |  | crm, marketing |
+| `fuse-mcp` | Fuse (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/fuse-mcp.md) |  |  | crm, marketing, mcp |
 | `gainsight-cc` | Gainsight CC | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/gainsight-cc.md) | [connect](https://nango.dev/docs/integrations/all/gainsight-cc/connect.md) |  | support, crm |
 | `gamma` | Gamma | API_KEY | [docs](https://nango.dev/docs/api-integrations/gamma.md) | [connect](https://nango.dev/docs/api-integrations/gamma/connect.md) |  | productivity |
 | `garmin` | Garmin | OAUTH1 | [docs](https://nango.dev/docs/integrations/all/garmin.md) |  |  | sports |
