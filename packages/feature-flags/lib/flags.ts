@@ -93,9 +93,6 @@ export function buildFlags(client: FeatureFlagsClient) {
         allowUnauthorizedAirtableWebhook(accountUuid: string) {
             return client.isEnabled('allow-unauthorized-airtable-webhook', { targetingKey: accountUuid, accountUuid }, false);
         },
-        isAgentPlaygroundEnabled(accountUuid: string) {
-            return client.isEnabled('agent-playground', { targetingKey: accountUuid, accountUuid }, false);
-        },
         /**
          * Whether the deprecated `search` query param on GET /connections is still honored for this
          * account. Deprecation: default `true`; on cloud, Unleash restricts it to an allowlist.
