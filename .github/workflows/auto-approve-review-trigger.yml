@@ -1,0 +1,14 @@
+name: Auto-Approve Review Trigger
+on:
+    pull_request_review:
+        types: [submitted]
+    pull_request_review_thread:
+        types: [resolved, unresolved]
+permissions: {}
+jobs:
+    trigger:
+        if: github.event_name == 'pull_request_review_thread' || github.event.review.user.login == 'cubic-dev-ai[bot]'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Trigger auto-approval check
+              run: echo "Review activity on PR ${{ github.event.pull_request.number }}"
