@@ -23,7 +23,7 @@ describe('callAgentSessionTool', () => {
         const result = await call(() => Promise.resolve(Ok({ ok: true })));
 
         expect(result.isError).toBeUndefined();
-        expect(result.content[0]).toStrictEqual({ type: 'text', text: JSON.stringify({ ok: true }, null, 2) });
+        expect(result.content[0]).toStrictEqual({ type: 'text', text: JSON.stringify({ ok: true }) });
     });
 
     // JSON.stringify(undefined) is undefined, not a string, so this would render an invalid content block.
@@ -73,7 +73,7 @@ describe('callAgentSessionTool in structured mode', () => {
         const result = await callStructured(() => Promise.resolve(Ok({ matches: [] })));
 
         expect(result.structuredContent).toStrictEqual({ matches: [] });
-        expect(result.content[0]).toStrictEqual({ type: 'text', text: JSON.stringify({ matches: [] }, null, 2) });
+        expect(result.content[0]).toStrictEqual({ type: 'text', text: JSON.stringify({ matches: [] }) });
     });
 
     /**
@@ -131,8 +131,8 @@ describe('callAgentSessionTool analytics', () => {
                 })
         );
 
-        const bytes = Buffer.byteLength(JSON.stringify(data, null, 2));
-        expect(result.content[0]).toStrictEqual({ type: 'text', text: JSON.stringify(data, null, 2) });
+        const bytes = Buffer.byteLength(JSON.stringify(data));
+        expect(result.content[0]).toStrictEqual({ type: 'text', text: JSON.stringify(data) });
         expect(capture).toHaveBeenCalledTimes(1);
         const [payload] = capture.mock.calls[0] ?? [];
         expect(payload?.properties).toMatchObject({ result_size_bytes: bytes, result_token_estimate: Math.ceil(bytes / 4) });
