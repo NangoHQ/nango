@@ -1,12 +1,12 @@
-import { setTimeout } from 'node:timers/promises';
 import { gunzipSync } from 'node:zlib';
 
 import { createClient } from '@clickhouse/client';
 import knexFactory from 'knex';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { HOSTED_TELEMETRY_TABLE, HOSTED_TELEMETRY_UPLOADS_TABLE, listQueuedUploads, migrate as migrateTelemetry } from '@nangohq/hosted-telemetry';
+import { HOSTED_TELEMETRY_TABLE, HOSTED_TELEMETRY_UPLOADS_TABLE, migrate as migrateTelemetry } from '@nangohq/hosted-telemetry';
 import { ensureDailyPartitions } from '@nangohq/migrations';
+import { Err, Ok } from '@nangohq/utils';
 
 import { installationsClickhouseClient } from '../cloud/clickhouse/clickhouse.js';
 import { migrate as migrateClickhouse } from '../cloud/clickhouse/migrate.js';
@@ -14,11 +14,12 @@ import { migrate as migrateRegistry } from '../cloud/db/migrate.js';
 import { seedInstallation, seedLicense } from '../cloud/seeders/installation.seeder.js';
 import { createCloudServer } from '../cloud/server.js';
 import { TELEMETRY_UPLOAD_MAX_ROWS } from '../cloud/uploads/constants.js';
-import { uploadQueuedDays, UploadRequestError } from './uploader.js';
+import { fillUploadQueue, uploadNextPage, UploadRequestError } from './uploader.js';
 
 import type { TelemetryUploadHeader } from '../cloud/uploads/reader.js';
 import type { UploaderConfig } from './uploader.js';
 import type { ClickHouseClient } from '@clickhouse/client';
+import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
@@ -83,9 +84,32 @@ const sent = () =>
         return { metric, from, to, rows: rows.length };
     });
 
-const run = (config: UploaderConfig, deadline = new Date(Date.now() + 60_000)) => uploadQueuedDays(config, { now, deadline });
+/** What a replica does: fills the queue, then sends a page at a time until nothing is left or a page cannot be sent. */
+async function run(config: UploaderConfig, loopStartedAt = now): Promise<Result<{ succeeded: number; rejected: number }>> {
+    (await fillUploadQueue(config, { now })).unwrap();
+    const done = { succeeded: 0, rejected: 0 };
+    for (;;) {
+        const step = await uploadNextPage(config, { rejectedBefore: loopStartedAt });
+        if (step.isErr()) {
+            return Err(step.error);
+        }
+        const { outcome } = step.value;
+        if (outcome === 'idle') {
+            return Ok(done);
+        }
+        done.succeeded += outcome === 'finished' ? 1 : 0;
+        done.rejected += outcome === 'rejected' ? 1 : 0;
+    }
+}
 
-const queued = async () => (await listQueuedUploads(knex, { schema: telemetry })).unwrap();
+async function uploads(status: 'queued' | 'succeeded' | 'failed'): Promise<{ day: string; metric: string; cursor_ts: Date | null }[]> {
+    const res = await knex.raw<{ rows: { day: string; metric: string; cursor_ts: Date | null }[] }>(
+        `SELECT to_char(day, 'YYYY-MM-DD') AS day, metric, cursor_ts FROM ??.?? WHERE status = ? ORDER BY day, metric`,
+        [telemetry, HOSTED_TELEMETRY_UPLOADS_TABLE, status]
+    );
+    return res.rows;
+}
+const queued = () => uploads('queued');
 
 async function uploader(name: string, options?: { licensed?: boolean }): Promise<UploaderConfig & { id: number }> {
     const { id, uuid, privateKeyPem } = await seedInstallation({ knex, schema: registry }, name, options);
@@ -146,14 +170,13 @@ afterAll(async () => {
 beforeEach(async () => {
     await knex.raw('TRUNCATE ??.??, ??.??', [telemetry, HOSTED_TELEMETRY_TABLE, telemetry, HOSTED_TELEMETRY_UPLOADS_TABLE]);
     vi.spyOn(Math, 'random').mockReturnValue(0);
-    vi.mocked(setTimeout).mockClear();
 });
 
 afterEach(() => {
     vi.restoreAllMocks();
 });
 
-describe('uploadQueuedDays', () => {
+describe('uploader', () => {
     it('uploads every metric of each past day and skips today', async () => {
         const config = await uploader('past-days');
         await insert(
@@ -165,8 +188,7 @@ describe('uploadQueuedDays', () => {
 
         const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 3, failed: 0, outOfTime: false });
-        expect(vi.mocked(setTimeout).mock.calls).toEqual([[5_000], [5_000], [5_000]]);
+        expect(res.unwrap()).toEqual({ succeeded: 3, rejected: 0 });
         expect(await stored(config.installationId)).toEqual([
             { ts: '2026-11-08 10:00:00.000', metric: concurrency, value: 3 },
             { ts: '2026-11-09 23:59:00.000', metric: concurrency, value: 5 },
@@ -182,7 +204,7 @@ describe('uploadQueuedDays', () => {
 
         const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 2, failed: 0, outOfTime: false });
+        expect(res.unwrap()).toEqual({ succeeded: 2, rejected: 0 });
         expect(sent()).toEqual([
             { metric: concurrency, from: '2026-11-09T00:00:00.000Z', to: '2026-11-10T00:00:00.000Z', rows: 1 },
             { metric: connections, from: '2026-11-09T00:00:00.000Z', to: '2026-11-10T00:00:00.000Z', rows: 0 }
@@ -198,7 +220,7 @@ describe('uploadQueuedDays', () => {
 
         const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
+        expect(res.unwrap()).toEqual({ succeeded: 1, rejected: 0 });
         expect(sent()).toEqual([
             { metric: concurrency, from: '2026-11-08T00:00:00.000Z', to: '2026-11-08T19:30:00.000Z', rows: TELEMETRY_UPLOAD_MAX_ROWS },
             { metric: concurrency, from: '2026-11-08T19:30:00.000Z', to: '2026-11-09T00:00:00.000Z', rows: BIG_DAY_ROWS - TELEMETRY_UPLOAD_MAX_ROWS }
@@ -212,7 +234,7 @@ describe('uploadQueuedDays', () => {
 
         const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
+        expect(res.unwrap()).toEqual({ succeeded: 1, rejected: 0 });
         expect(sent()).toEqual([
             { metric: concurrency, from: '2026-11-08T00:00:00.000Z', to: '2026-11-08T17:03:00.000Z', rows: TELEMETRY_UPLOAD_MAX_ROWS },
             { metric: concurrency, from: '2026-11-08T17:03:00.000Z', to: '2026-11-09T00:00:00.000Z', rows: 0 }
@@ -226,22 +248,33 @@ describe('uploadQueuedDays', () => {
 
         const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
+        expect(res.unwrap()).toEqual({ succeeded: 1, rejected: 0 });
         expect(await stored(config.installationId)).toEqual([{ ts: '2026-11-09 10:00:00.000', metric: concurrency, value: 2 }]);
+    });
+
+    it('does not queue a day until 15 minutes after it ended', async () => {
+        const config = await uploader('settling');
+        await insert({ ts: '2026-11-09T23:59:00Z', metric: concurrency });
+
+        (await fillUploadQueue(config, { now: new Date('2026-11-10T00:14:59Z') })).unwrap();
+        const before = await queued();
+        (await fillUploadQueue(config, { now: new Date('2026-11-10T00:15:00Z') })).unwrap();
+
+        expect(before).toEqual([]);
+        expect(await queued()).toEqual([{ day: '2026-11-09', metric: concurrency, cursor_ts: null }]);
     });
 
     it('marks an upload as failed, without sending it, once it is older than the configured number of days', async () => {
         const config = await uploader('expired');
         await insert({ ts: '2026-10-10T10:00:00Z', metric: concurrency });
-        const whenItWasRecent = new Date('2026-10-12T08:00:00Z');
-        await uploadQueuedDays({ ...config, url: 'http://127.0.0.1:1' }, { now: whenItWasRecent, deadline: new Date(Date.now() + 60_000) });
+        (await fillUploadQueue(config, { now: new Date('2026-10-12T08:00:00Z') })).unwrap();
         const requests = vi.spyOn(globalThis, 'fetch');
 
         const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 0, failed: 1, outOfTime: false });
+        expect(res.unwrap()).toEqual({ succeeded: 0, rejected: 0 });
         expect(requests).not.toHaveBeenCalled();
-        expect(await stored(config.installationId)).toEqual([]);
+        expect(await uploads('failed')).toEqual([{ day: '2026-10-10', metric: concurrency, cursor_ts: null }]);
     });
 
     it('continues a day from the last page Nango accepted', async () => {
@@ -255,13 +288,13 @@ describe('uploadQueuedDays', () => {
 
         expect(interrupted.isErr() && interrupted.error).toBeInstanceOf(UploadRequestError);
         expect(await stored(config.installationId)).toHaveLength(TELEMETRY_UPLOAD_MAX_ROWS);
-        expect(await queued()).toMatchObject([{ day: '2026-11-08', metric: concurrency, cursor: { ts: expect.any(Date) } }]);
+        expect(await queued()).toEqual([{ day: '2026-11-08', metric: concurrency, cursor_ts: new Date('2026-11-08T19:30:00Z') }]);
 
         vi.restoreAllMocks();
         const requests = vi.spyOn(globalThis, 'fetch');
         const resumed = await run(config);
 
-        expect(resumed.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
+        expect(resumed.unwrap()).toEqual({ succeeded: 1, rejected: 0 });
         expect(requests).toHaveBeenCalledTimes(1);
         expect(await stored(config.installationId)).toHaveLength(BIG_DAY_ROWS);
     });
@@ -273,50 +306,72 @@ describe('uploadQueuedDays', () => {
 
         const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
+        expect(res.unwrap()).toEqual({ succeeded: 1, rejected: 0 });
         expect(requests).toHaveBeenCalledTimes(2);
         expect(await stored(config.installationId)).toHaveLength(1440 * 8);
         expect(await queued()).toEqual([]);
     });
 
-    it('stops when the run is out of time and continues on the next run', async () => {
-        const config = await uploader('out-of-time');
+    it('sends every page once when two replicas upload at the same time', async () => {
+        const config = { ...(await uploader('two-replicas')), backfillDays: 2, metrics: [concurrency, connections] };
         await insertBigDay(concurrency);
-        const send = globalThis.fetch;
-        const deadline = new Date(Date.now() + 60_000);
-        vi.spyOn(globalThis, 'fetch').mockImplementationOnce(async (...args) => {
-            const answer = await send(...args);
-            deadline.setTime(0);
-            return answer;
-        });
+        await insertBigDay(connections);
+        vi.spyOn(globalThis, 'fetch');
 
-        const stopped = await run(config, deadline);
+        const [one, other] = await Promise.all([run(config), run(config)]);
 
-        expect(stopped.unwrap()).toEqual({ succeeded: 0, failed: 0, outOfTime: true });
-        expect(await stored(config.installationId)).toHaveLength(TELEMETRY_UPLOAD_MAX_ROWS);
-        expect(await queued()).toMatchObject([{ day: '2026-11-08', metric: concurrency, cursor: { ts: expect.any(Date) } }]);
-
-        expect((await run(config)).unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
-        expect(await stored(config.installationId)).toHaveLength(BIG_DAY_ROWS);
+        expect(one.unwrap().succeeded + other.unwrap().succeeded).toBe(4);
+        expect(sent().sort((a, b) => `${a.metric} ${a.from}`.localeCompare(`${b.metric} ${b.from}`))).toEqual(
+            [concurrency, connections].flatMap((metric) => [
+                { metric, from: '2026-11-08T00:00:00.000Z', to: '2026-11-08T19:30:00.000Z', rows: TELEMETRY_UPLOAD_MAX_ROWS },
+                { metric, from: '2026-11-08T19:30:00.000Z', to: '2026-11-09T00:00:00.000Z', rows: BIG_DAY_ROWS - TELEMETRY_UPLOAD_MAX_ROWS },
+                { metric, from: '2026-11-09T00:00:00.000Z', to: '2026-11-10T00:00:00.000Z', rows: 0 }
+            ])
+        );
+        expect(await stored(config.installationId)).toHaveLength(2 * BIG_DAY_ROWS);
     });
 
-    it('marks an upload that Nango rejects as failed, does not retry it, and continues with the others', async () => {
+    it('keeps an upload that Nango rejects in the queue, continues with the others, and does not send it again in the same loop', async () => {
         const config = await uploader('turned-down');
         const tooLong = 'm'.repeat(300);
         await insert({ ts: '2026-11-08T10:00:00Z', metric: tooLong }, { ts: '2026-11-09T10:00:00Z', metric: concurrency, value: 5 });
 
+        (await fillUploadQueue(config, { now })).unwrap();
+        const rejected = await uploadNextPage(config, { rejectedBefore: now });
         const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 1, outOfTime: false });
+        expect(rejected.unwrap()).toMatchObject({
+            outcome: 'rejected',
+            day: '2026-11-08',
+            metric: tooLong,
+            rejection: { status: 400, code: 'invalid_header' }
+        });
+        expect(res.unwrap()).toEqual({ succeeded: 1, rejected: 0 });
         expect(await stored(config.installationId)).toEqual([{ ts: '2026-11-09 10:00:00.000', metric: concurrency, value: 5 }]);
-        expect(await queued()).toEqual([]);
+        expect(await queued()).toEqual([{ day: '2026-11-08', metric: tooLong, cursor_ts: null }]);
 
         const requests = vi.spyOn(globalThis, 'fetch');
-        expect((await run(config)).unwrap()).toEqual({ succeeded: 0, failed: 0, outOfTime: false });
+        expect((await run(config)).unwrap()).toEqual({ succeeded: 0, rejected: 0 });
         expect(requests).not.toHaveBeenCalled();
     });
 
-    it('stops the run and keeps the queue when Nango does not accept the installation, and uploads once it does', async () => {
+    it('sends a rejected upload again on the next loop, and uploads it once Nango accepts it', async () => {
+        const config = await uploader('accepted-later');
+        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency, value: 3 });
+        vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(Response.json({ error: { code: 'invalid_row' } }, { status: 400 }));
+
+        const first = await run(config);
+        const storedAfterFirst = await stored(config.installationId);
+        const next = await run(config, new Date(now.getTime() + 60 * 60 * 1000));
+
+        expect(first.unwrap()).toEqual({ succeeded: 0, rejected: 1 });
+        expect(storedAfterFirst).toEqual([]);
+        expect(next.unwrap()).toEqual({ succeeded: 1, rejected: 0 });
+        expect(await stored(config.installationId)).toEqual([{ ts: '2026-11-08 10:00:00.000', metric: concurrency, value: 3 }]);
+        expect(await queued()).toEqual([]);
+    });
+
+    it('stops and keeps the queue when Nango does not accept the installation, and uploads once it does', async () => {
         const config = await uploader('unlicensed', { licensed: false });
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency, value: 2 }, { ts: '2026-11-09T10:00:00Z', metric: concurrency, value: 4 });
         const requests = vi.spyOn(globalThis, 'fetch');
@@ -329,14 +384,14 @@ describe('uploadQueuedDays', () => {
 
         await seedLicense({ knex, schema: registry }, config.id);
 
-        expect((await run(config)).unwrap()).toEqual({ succeeded: 2, failed: 0, outOfTime: false });
+        expect((await run(config)).unwrap()).toEqual({ succeeded: 2, rejected: 0 });
         expect(await stored(config.installationId)).toEqual([
             { ts: '2026-11-08 10:00:00.000', metric: concurrency, value: 2 },
             { ts: '2026-11-09 10:00:00.000', metric: concurrency, value: 4 }
         ]);
     });
 
-    it('retries within the same run when Nango is failing', async () => {
+    it('retries the page right away when Nango is failing', async () => {
         const config = await uploader('second-attempt');
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency, value: 3 });
         vi.spyOn(Math, 'random').mockReturnValue(0);
@@ -344,9 +399,25 @@ describe('uploadQueuedDays', () => {
 
         const res = await run(config);
 
-        expect(res.unwrap()).toEqual({ succeeded: 1, failed: 0, outOfTime: false });
+        expect(res.unwrap()).toEqual({ succeeded: 1, rejected: 0 });
         expect(requests).toHaveBeenCalledTimes(2);
         expect(await stored(config.installationId)).toEqual([{ ts: '2026-11-08 10:00:00.000', metric: concurrency, value: 3 }]);
+    });
+
+    it('stops retrying a page once it has taken five minutes', async () => {
+        const config = await uploader('slow-attempts');
+        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency });
+        const requests = vi.spyOn(globalThis, 'fetch').mockImplementation(() => {
+            vi.setSystemTime(now.getTime() + 5 * 60 * 1000);
+            return Promise.resolve(Response.json({ error: { code: 'insert_failed' } }, { status: 500 }));
+        });
+
+        const res = await run(config);
+        vi.setSystemTime(now);
+
+        expect(res.isErr() && res.error).toMatchObject({ name: 'UploadRequestError', status: 500 });
+        expect(requests).toHaveBeenCalledTimes(1);
+        expect(await queued()).toHaveLength(1);
     });
 
     it.each([
@@ -354,7 +425,7 @@ describe('uploadQueuedDays', () => {
         ['right away on a 429', () => Response.json({ error: { code: 'too_many_requests' } }, { status: 429 }), 1],
         ['right away on a 404', () => Response.json({ error: { code: 'not_found' } }, { status: 404 }), 1],
         ['right away when a proxy rejects the request', () => new Response('Request Entity Too Large', { status: 413 }), 1]
-    ])('stops the run and keeps the queue, %s', async (name, answer, attempts) => {
+    ])('stops and keeps the queue, %s', async (name, answer, attempts) => {
         const config = await uploader(`kept ${name}`);
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });
         vi.spyOn(Math, 'random').mockReturnValue(0);
@@ -367,7 +438,7 @@ describe('uploadQueuedDays', () => {
         expect(await queued()).toHaveLength(2);
     });
 
-    it('stops the run and keeps the queue, after three attempts when Nango cannot be reached', async () => {
+    it('stops and keeps the queue, after three attempts when Nango cannot be reached', async () => {
         const config = { ...(await uploader('unreachable')), url: 'http://127.0.0.1:1' };
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });
         vi.spyOn(Math, 'random').mockReturnValue(0);
