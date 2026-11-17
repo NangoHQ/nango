@@ -27,7 +27,7 @@ export interface SecretInputProps extends Omit<InputProps, 'type' | 'value' | 'd
     defaultValue?: string;
     /** A form field the user types into. Without it, the input shows a stored secret: masked, with reveal and copy. */
     editable?: boolean;
-    /** Whether the viewer may see the secret. When false, the value stays fully masked and reveal and copy are disabled. */
+    /** When false, the value stays fully masked, and reveal and copy are disabled with `disabledReason` as a tooltip. */
     canReveal?: boolean;
     disabledReason?: string;
     onCopy?: (value: string) => void;
